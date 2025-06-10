@@ -1,12 +1,12 @@
 import { env } from '@/env';
-import { customDomains, customDomainVerification, DomainStatus, previewDomains, publishedDomains } from '@onlook/db';
+import { customDomains, customDomainVerification, previewDomains, publishedDomains } from '@onlook/db';
+import { VerificationRequestStatus } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
-// Check if FREESTYLE_API_KEY is available before initializing SDK
 const initializeSdk = () => {
     if (!env.FREESTYLE_API_KEY) {
         throw new TRPCError({
@@ -51,33 +51,61 @@ export const domainRouter = createTRPCRouter({
         domain: z.string(),
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
+        // Create if not exists
+        await ctx.db.insert(customDomains).values({
+            apexDomain: input.domain,
+        }).onConflictDoNothing();
+
+        // Check if verification request already exists
+        const verification = await ctx.db.query.customDomainVerification.findFirst({
+            where: and(eq(customDomainVerification.domainId, input.domain), eq(customDomainVerification.projectId, input.projectId)),
+        });
+        if (verification) {
+            return verification;
+        }
+
         const sdk = initializeSdk();
         const res = await sdk.createDomainVerificationRequest(input.domain);
-        await ctx.db
-            .transaction(
-                async (tx) => {
-                    await tx.insert(customDomains).values({
-                        apexDomain: input.domain,
-                        status: DomainStatus.PENDING,
-                    });
-                    await tx.insert(customDomainVerification).values({
-                        domainId: res.domain,
-                        verificationId: res.id,
-                        verificationCode: res.verificationCode,
-                    });
-                },
-            );
+        await ctx.db.insert(customDomainVerification).values({
+            domainId: res.domain,
+            verificationId: res.id,
+            verificationCode: res.verificationCode,
+        });
         return res;
     }),
     verify: protectedProcedure.input(z.object({
-        domain: z.string(),
+        verificationId: z.string(),
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
+        const verification = await ctx.db.query.customDomainVerification.findFirst({
+            where: and(eq(customDomainVerification.verificationId, input.verificationId), eq(customDomainVerification.projectId, input.projectId)),
+        });
+        if (!verification) {
+            throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: 'Verification request not found',
+            });
+        }
+
+        if (verification.status === VerificationRequestStatus.USED) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Domain already verified',
+            });
+        }
+
+        if (verification.status === VerificationRequestStatus.EXPIRED) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Verification request expired',
+            });
+        }
+
         const sdk = initializeSdk();
         const res: {
             domain?: string;
             message?: string;
-        } = await sdk.verifyDomain(input.domain);
+        } = await sdk.verifyDomainVerificationRequest(input.verificationId);
         if (res.message || !res.domain) {
             throw new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',

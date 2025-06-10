@@ -1,5 +1,5 @@
-export enum DomainVerificationStatus {
-    PENDING = 'pending',
-    APPROVED = 'approved',
-    REJECTED = 'rejected',
+export enum VerificationRequestStatus {
+    ACTIVE = 'active',
+    EXPIRED = 'expired',
+    USED = 'used',
 }
