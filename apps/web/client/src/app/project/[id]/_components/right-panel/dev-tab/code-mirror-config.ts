@@ -176,7 +176,7 @@ export const getBasicSetup = (saveFile: () => void) => {
             },
         ]),
 
-        customDarkTheme,
+        EditorView.theme(basicTheme, { dark: true }),
         syntaxHighlighting(customDarkHighlightStyle)
     ];
 
