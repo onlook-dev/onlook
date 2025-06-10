@@ -4,7 +4,7 @@ import { pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { projects } from '../project';
 import { customDomains } from './custom';
 
-export const verificationRequestStatus = pgEnum('status', VerificationRequestStatus);
+export const verificationRequestStatus = pgEnum('verification_request_status', VerificationRequestStatus);
 
 export const customDomainVerification = pgTable('custom_domain_verification', {
     id: uuid('id').primaryKey().defaultRandom(),

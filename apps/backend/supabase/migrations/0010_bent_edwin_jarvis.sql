@@ -1,4 +1,4 @@
-CREATE TYPE "public"."status" AS ENUM('active', 'expired', 'used');--> statement-breakpoint
+CREATE TYPE "public"."verification_request_status" AS ENUM('active', 'expired', 'used');--> statement-breakpoint
 CREATE TABLE "custom_domains" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"apex_domain" text NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE "custom_domain_verification" (
 	"verification_code" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"status" "status" DEFAULT 'active' NOT NULL
+	"status" "verification_request_status" DEFAULT 'active' NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "projects" ADD COLUMN "preview_img_url" varchar;--> statement-breakpoint
