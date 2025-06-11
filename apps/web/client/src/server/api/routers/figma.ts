@@ -1,270 +1,221 @@
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
-interface MCPRequest {
-    jsonrpc: '2.0';
-    id: string | number;
-    method: string;
-    params?: any;
-}
-
-interface MCPResponse {
-    jsonrpc: '2.0';
-    id: string | number;
-    result?: any;
-    error?: {
-        code: number;
-        message: string;
-        data?: any;
-    };
-}
-
 class ServerSideFigmaMCP {
     private readonly MCP_BASE_URL = process.env.MCP_SERVER_URL || 'http://127.0.0.1:3845';
     private requestId = 0;
     private sessionId: string | null = null;
-    private messageEndpoint: string | null = null;
     private lastConnectionTime = 0;
     private sessionExpiry = 5 * 60 * 1000; // 5 minutes
+    
+    // For persistent SSE connection
+    private sseController: AbortController | null = null;
+    private pendingRequests = new Map<number, { resolve: Function, reject: Function, timeout: NodeJS.Timeout }>();
+    private isConnected = false;
 
     private isSessionValid(): boolean {
         return this.sessionId !== null && 
-               this.messageEndpoint !== null && 
+               this.isConnected &&
                (Date.now() - this.lastConnectionTime) < this.sessionExpiry;
     }
 
-    async connectAndGetSession(): Promise<boolean> {
-        // Reuse existing session if still valid
+    async connectAndMaintainSession(): Promise<boolean> {
         if (this.isSessionValid()) {
             return true;
         }
 
-        const abortController = new AbortController();
-        const connectionTimeout = setTimeout(() => {
-            abortController.abort();
-        }, 10000);
-
+        // Clean up any existing connection
+        if (this.sseController) {
+            this.sseController.abort();
+        }
+        
+        this.sseController = new AbortController();
+        
         try {
-            // First, get the session ID by connecting to SSE endpoint
             const response = await fetch(`${this.MCP_BASE_URL}/sse`, {
                 headers: {
                     'Accept': 'text/event-stream',
                     'Cache-Control': 'no-cache'
                 },
-                signal: abortController.signal
+                signal: this.sseController.signal
             });
 
             if (!response.ok) {
                 throw new Error(`SSE connection failed: ${response.status}`);
             }
 
-            // Reads the SSE stream to get endpoint info
             const reader = response.body?.getReader();
             if (!reader) {
                 throw new Error('Failed to read SSE stream');
             }
 
-            const decoder = new TextDecoder();
-            let buffer = '';
-
-            try {
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-
-                    buffer += decoder.decode(value, { stream: true });
-                    const lines = buffer.split('\n');
-                    buffer = lines.pop() || '';
-
-                    for (const line of lines) {
-                        if (line.startsWith('event: endpoint')) {
-                            continue;
-                        }
-                        if (line.startsWith('data: ')) {
-                            const eventData = line.substring(6);
-                            this.messageEndpoint = eventData;
-                            
-                            // Extracts session ID
-                            const sessionMatch = eventData.match(/sessionId=([^&]+)/);
-                            if (sessionMatch && sessionMatch[1]) {
-                                this.sessionId = sessionMatch[1];
-                                this.lastConnectionTime = Date.now();
-                                clearTimeout(connectionTimeout);
-                                reader.cancel();
-                                return true;
-                            }
-                        }
-                    }
-
-                    // Does not wait too long for each chunk
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                }
-            } finally {
-                clearTimeout(connectionTimeout);
-                reader.cancel();
-            }
-
-            return this.sessionId !== null;
-        } catch (error) {
-            this.sessionId = null;
-            this.messageEndpoint = null;
-            clearTimeout(connectionTimeout);
+            // Starts processing the SSE stream in the background
+            this.processSSEStream(reader);
             
-            if (error instanceof Error && error.name === 'AbortError') {
-                throw new Error('Connection timeout: Failed to establish session within 10 seconds');
-            }
+            // Waits for session establishment
+            return new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => {
+                    reject(new Error('Session establishment timeout'));
+                }, 10000);
+
+                const checkSession = () => {
+                    if (this.sessionId) {
+                        clearTimeout(timeout);
+                        resolve(true);
+                    } else {
+                        setTimeout(checkSession, 100);
+                    }
+                };
+                checkSession();
+            });
+
+        } catch (error) {
+            this.cleanup();
+            console.error('Figma MCP: Failed to establish SSE connection:', error);
             return false;
         }
     }
 
+    private async processSSEStream(reader: ReadableStreamDefaultReader<Uint8Array>) {
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split('\n');
+                buffer = lines.pop() || '';
+
+                for (const line of lines) {
+                    if (line.startsWith('event: endpoint')) {
+                        continue;
+                    }
+                    if (line.startsWith('data: ')) {
+                        const eventData = line.substring(6).trim();
+                        
+                        // Checks if this is session establishment
+                        if (eventData.includes('sessionId=')) {
+                            const sessionMatch = eventData.match(/sessionId=([^&]+)/);
+                            if (sessionMatch && sessionMatch[1]) {
+                                this.sessionId = sessionMatch[1];
+                                this.lastConnectionTime = Date.now();
+                                this.isConnected = true;
+                                continue;
+                            }
+                        }
+                        
+                        // Try to parse as JSON-RPC response
+                        try {
+                            const mcpResponse = JSON.parse(eventData);
+                            if (mcpResponse.jsonrpc === '2.0' && mcpResponse.id) {
+                                this.handleMCPResponse(mcpResponse);
+                            }
+                        } catch (parseError) {
+                            // Not a JSON-RPC response, continue
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            if (!this.sseController?.signal.aborted) {
+                console.error('Figma MCP: SSE stream error:', error);
+                this.cleanup();
+            }
+        }
+    }
+
+    private handleMCPResponse(response: any) {
+        const requestId = response.id;
+        const pending = this.pendingRequests.get(requestId);
+        
+        if (pending) {
+            clearTimeout(pending.timeout);
+            this.pendingRequests.delete(requestId);
+            
+            if (response.error) {
+                pending.reject(new Error(`MCP error: ${response.error.message}`));
+            } else {
+                pending.resolve(response.result);
+            }
+        }
+    }
+
+    private cleanup() {
+        this.isConnected = false;
+        this.sessionId = null;
+        
+        if (this.sseController) {
+            this.sseController.abort();
+            this.sseController = null;
+        }
+        
+        // Reject all pending requests
+        for (const [id, pending] of this.pendingRequests) {
+            clearTimeout(pending.timeout);
+            pending.reject(new Error('Connection closed'));
+        }
+        this.pendingRequests.clear();
+    }
+
     async sendMCPRequest(method: string, params?: any): Promise<any> {
         if (!this.isSessionValid()) {
-            const connected = await this.connectAndGetSession();
+            const connected = await this.connectAndMaintainSession();
             if (!connected) {
                 throw new Error('Failed to connect to Figma MCP server');
             }
         }
 
         const id = ++this.requestId;
-        const request: MCPRequest = {
-            jsonrpc: '2.0',
+        const request = {
+            jsonrpc: '2.0' as const,
             id,
             method,
-            params
+            ...(params && { params })
         };
 
-        const endpoint = this.messageEndpoint 
-            ? `${this.MCP_BASE_URL}${this.messageEndpoint}`
-            : `${this.MCP_BASE_URL}/messages?sessionId=${this.sessionId}`;
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                this.pendingRequests.delete(id);
+                reject(new Error(`Request ${id} timeout after 30 seconds`));
+            }, 30000);
 
-        const abortController = new AbortController();
-        const requestTimeout = setTimeout(() => {
-            abortController.abort();
-        }, 10000); 
+            this.pendingRequests.set(id, { resolve, reject, timeout });
 
+            this.sendJSONRPCOverHTTP(request).catch(error => {
+                clearTimeout(timeout);
+                this.pendingRequests.delete(id);
+                reject(error);
+            });
+        });
+    }
+
+    private async sendJSONRPCOverHTTP(request: any): Promise<void> {
+        if (!this.sessionId) {
+            throw new Error('No session ID available');
+        }
+
+        const endpoint = `${this.MCP_BASE_URL}/messages?sessionId=${this.sessionId}`;
+        
         try {
-            // Send the MCP request
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(request),
-                signal: abortController.signal
+                body: JSON.stringify(request)
             });
-
-            clearTimeout(requestTimeout);
 
             if (!response.ok) {
-                throw new Error(`MCP request failed: ${response.status} ${response.statusText}`);
+                const responseText = await response.text();
+                throw new Error(`HTTP request failed: ${response.status} ${response.statusText} - ${responseText}`);
             }
-
-            const responseText = await response.text();
-
-            // Listens for the actual response on the SSE endpoint
-            return await this.waitForMCPResponse(id);
         } catch (error) {
-            clearTimeout(requestTimeout);
-            
-            if (error instanceof Error && error.name === 'AbortError') {
-                throw new Error(`Request timeout: MCP request (method: ${method}) timed out after 10 seconds`);
-            }
-            
-            throw new Error(`Failed to send MCP request (method: ${method}): ${error instanceof Error ? error.message : 'Unknown error'}`);
-        }
-    }
-
-    async waitForMCPResponse(requestId: number): Promise<any> {
-        const abortController = new AbortController();
-        const responseTimeout = setTimeout(() => {
-            abortController.abort();
-        }, 15000);
-
-        try {
-            const sseResponse = await fetch(`${this.MCP_BASE_URL}/sse`, {
-                headers: {
-                    'Accept': 'text/event-stream',
-                    'Cache-Control': 'no-cache'
-                },
-                signal: abortController.signal
-            });
-
-            if (!sseResponse.ok) {
-                throw new Error(`SSE response failed: ${sseResponse.status}`);
-            }
-
-            const reader = sseResponse.body?.getReader();
-            if (!reader) {
-                throw new Error('Failed to read SSE stream');
-            }
-
-            return new Promise((resolve, reject) => {
-                const decoder = new TextDecoder();
-                let buffer = '';
-
-                const cleanup = () => {
-                    clearTimeout(responseTimeout);
-                    reader.cancel();
-                };
-
-                const processStream = async () => {
-                    try {
-                        while (true) {
-                            const { done, value } = await reader.read();
-                            if (done) break;
-
-                            buffer += decoder.decode(value, { stream: true });
-                            const lines = buffer.split('\n');
-                            buffer = lines.pop() || '';
-
-                            for (const line of lines) {
-                                if (line.startsWith('data: ')) {
-                                    const eventData = line.substring(6);
-                                    
-                                    // Skips endpoint info
-                                    if (eventData.startsWith('/messages')) {
-                                        continue;
-                                    }
-                                    
-                                    try {
-                                        const mcpResponse = JSON.parse(eventData) as MCPResponse;
-                                        
-                                        if (mcpResponse.id === requestId) {
-                                            cleanup();
-                                            
-                                            if (mcpResponse.error) {
-                                                reject(new Error(`MCP error: ${mcpResponse.error.message}`));
-                                                return;
-                                            }
-                                            
-                                            resolve(mcpResponse.result);
-                                            return;
-                                        }
-                                    } catch (parseError) {
-                                        // Continue, this might not be our response
-                                    }
-                                }
-                            }
-                        }
-
-                        cleanup();
-                        reject(new Error(`No matching response found for request ${requestId}`));
-                    } catch (error) {
-                        cleanup();
-                        reject(error);
-                    }
-                };
-
-                // Start processing the stream
-                processStream();
-            });
-        } catch (error) {
-            clearTimeout(responseTimeout);
-            
-            if (error instanceof Error && error.name === 'AbortError') {
-                throw new Error(`Timeout waiting for MCP response ${requestId} after 15 seconds`);
-            }
-            
+            console.error('Figma MCP: Failed to send JSON-RPC:', error);
             throw error;
         }
     }
@@ -317,21 +268,30 @@ class ServerSideFigmaMCP {
         return {
             isValid: this.isSessionValid(),
             sessionId: this.sessionId,
+            isConnected: this.isConnected,
             lastConnectionTime: this.lastConnectionTime
         };
     }
 
     public extractContent(data: any): string | null {
-        if (!data) return null;
+        if (!data) {
+            return null;
+        }
         
         // Handle different response formats
         if (data.content && Array.isArray(data.content)) {
             return data.content.map((item: any) => item.text || item.data || item).join('\n');
         }
         
-        if (typeof data === 'string') return data;
-        if (data.text) return data.text;
-        if (data.data) return data.data;
+        if (typeof data === 'string') {
+            return data;
+        }
+        if (data.text) {
+            return data.text;
+        }
+        if (data.data) {
+            return data.data;
+        }
         
         return JSON.stringify(data, null, 2);
     }
@@ -339,7 +299,8 @@ class ServerSideFigmaMCP {
     async safeRequest<T>(requestFn: () => Promise<T>, requestName: string): Promise<T | null> {
         try {
             return await requestFn();
-        } catch (error) {   
+        } catch (error) {
+            console.error(`Figma MCP ${requestName} failed:`, error);
             return null;
         }
     }
@@ -401,7 +362,6 @@ export const figmaRouter = createTRPCRouter({
     getCurrentSelection: protectedProcedure
         .query(async () => {
             try {
-                // Gets code first, then tries others
                 const codeData = await figmaMCP.safeRequest(
                     () => figmaMCP.getCode(),
                     'Selection Code'
@@ -415,6 +375,10 @@ export const figmaRouter = createTRPCRouter({
                 const imageResult = imageData.status === 'fulfilled' ? imageData.value : null;
                 const variablesResult = variablesData.status === 'fulfilled' ? variablesData.value : null;
 
+                const extractedCode = figmaMCP.extractContent(codeData);
+                const extractedImage = figmaMCP.extractContent(imageResult);
+                const extractedVariables = figmaMCP.extractContent(variablesResult);
+
                 const designData = {
                     node: {
                         id: 'current-selection',
@@ -422,9 +386,9 @@ export const figmaRouter = createTRPCRouter({
                         type: 'FRAME',
                         visible: true
                     },
-                    code: figmaMCP.extractContent(codeData),
-                    image: figmaMCP.extractContent(imageResult),
-                    variables_defs: figmaMCP.extractContent(variablesResult)
+                    code: extractedCode,
+                    image: extractedImage,
+                    variables_defs: extractedVariables
                 };
 
                 return {
@@ -437,6 +401,7 @@ export const figmaRouter = createTRPCRouter({
                     }
                 };
             } catch (error) {
+                console.error('Figma MCP getCurrentSelection error:', error);
                 throw new Error(error instanceof Error ? error.message : 'Unknown error occurred');
             }
         }),
@@ -444,7 +409,7 @@ export const figmaRouter = createTRPCRouter({
     checkConnection: protectedProcedure
         .query(async () => {
             try {
-                const connected = await figmaMCP.connectAndGetSession();
+                const connected = await figmaMCP.connectAndMaintainSession();
                 return {
                     connected,
                     message: connected 
@@ -452,6 +417,7 @@ export const figmaRouter = createTRPCRouter({
                         : 'Failed to connect. Make sure Figma desktop app is running with MCP server enabled.'
                 };
             } catch (error) {
+                console.error('Figma MCP connection check error:', error);
                 return {
                     connected: false,
                     message: error instanceof Error ? error.message : 'Unknown connection error'

@@ -65,9 +65,9 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
             successfulFeatures.push('Variables (no data fetched)');
         }
 
-        // Add image info if available
+        // Add image if available
         if (designData.image) {
-            content += `Design Image: Available\n`;
+            content += `Design Image:\n![Figma Design](data:image/png;base64,${designData.image})\n\n`;
             successfulFeatures.push('Design screenshot');
         } else {
             successfulFeatures.push('Screenshot (no data fetched)');
