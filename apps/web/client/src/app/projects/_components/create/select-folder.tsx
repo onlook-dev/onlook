@@ -1,0 +1,325 @@
+import { Button } from '@onlook/ui/button';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
+import { Icons } from '@onlook/ui/icons';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
+import type { StepProps } from '../../constants';
+import type { StepComponent } from '../with-step-props';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { BINARY_EXTENSIONS, IGNORED_DIRECTORIES, IGNORED_FILES } from '@onlook/constants';
+interface ProcessedFile {
+    path: string;
+    content: string | ArrayBuffer;
+    isBinary: boolean;
+}
+const NewSelectFolder: StepComponent = ({
+    props,
+    variant,
+}: {
+    props: StepProps;
+    variant: 'header' | 'content' | 'footer';
+}) => {
+    const { projectData, setProjectData, prevStep, nextStep } = props;
+    const [isDragging, setIsDragging] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState('');
+    const [error, setError] = useState('');
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    function nameToFolderName(name: string): string {
+        return name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .replace(/^(\d)/, '_$1');
+    }
+
+    const extractProjectName = (files: ProcessedFile[]): string | null => {
+        const packageJsonFile = files.find((f) => f.path.endsWith('package.json') && !f.isBinary);
+
+        if (packageJsonFile) {
+            try {
+                const packageJson = JSON.parse(packageJsonFile.content as string);
+                return packageJson.name || null;
+            } catch (error) {
+                console.warn('Error parsing package.json for name:', error);
+            }
+        }
+
+        return null;
+    };
+
+    const handleClickUpload = () => {
+        fileInputRef.current?.click();
+    };
+
+    useEffect(() => {
+        if (fileInputRef.current !== null) {
+            // 2. set attribute as JS does
+            fileInputRef.current.setAttribute('directory', '');
+            fileInputRef.current.setAttribute('webkitdirectory', '');
+        }
+    }, [fileInputRef]);
+    const filterAndProcessFiles = async (files: File[]): Promise<ProcessedFile[]> => {
+        const processedFiles: ProcessedFile[] = [];
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+        for (const file of files) {
+            // Skip if file is too large
+            if (file.size > MAX_FILE_SIZE) {
+                console.warn(`Skipping large file: ${file.name} (${file.size} bytes)`);
+                continue;
+            }
+
+            // Get relative path from webkitRelativePath or name
+            const relativePath = (file as any).webkitRelativePath || file.name;
+
+            // Skip ignored directories
+            if (
+                IGNORED_DIRECTORIES.some(
+                    (dir) => relativePath.includes(`${dir}/`) || relativePath.startsWith(`${dir}/`),
+                )
+            ) {
+                continue;
+            }
+
+            // Skip ignored files
+            if (IGNORED_FILES.includes(file.name)) {
+                continue;
+            }
+
+            // Determine if file is binary
+            const extension = '.' + file.name.split('.').pop()?.toLowerCase();
+            const isBinary = BINARY_EXTENSIONS.includes(extension);
+
+            try {
+                let content: string | ArrayBuffer;
+
+                if (isBinary) {
+                    content = await file.arrayBuffer();
+                } else {
+                    content = await file.text();
+                }
+
+                processedFiles.push({
+                    path: relativePath,
+                    content,
+                    isBinary,
+                });
+            } catch (error) {
+                console.warn(`Error reading file ${file.name}:`, error);
+            }
+        }
+        return processedFiles;
+    };
+
+    const processProjectFiles = async (fileList: FileList | File[]) => {
+        setIsUploading(true);
+        setError('');
+        setUploadProgress('Processing files...');
+
+        try {
+            const files = Array.from(fileList);
+            const fullPath = files[0]?.webkitRelativePath;
+            const folderPath = fullPath?.substring(0, fullPath.indexOf('/'));
+
+            const processedFiles = await filterAndProcessFiles(files);
+
+            if (processedFiles.length === 0) {
+                throw new Error('No valid files found in the selected folder');
+            }
+
+            const projectName = extractProjectName(processedFiles);
+
+            if (!projectName) {
+                throw new Error('No project name found in the selected folder');
+            }
+
+            setProjectData({
+                name: projectName,
+                folderPath: folderPath,
+                files: processedFiles,
+            });
+        } catch (error) {
+            console.error('Error processing project:', error);
+            setError(error instanceof Error ? error.message : 'Failed to process project');
+        } finally {
+            setIsUploading(false);
+            setTimeout(() => setUploadProgress(''), 3000);
+        }
+    };
+
+    // File upload functions
+    const handleFileInputChange = useCallback(
+        async (event: React.ChangeEvent<HTMLInputElement>) => {
+            console.log(event.target);
+            const files = event.target.files;
+            console.log(files?.[0]);
+            if (files && files.length > 0) {
+                await processProjectFiles(files);
+            }
+        },
+        [],
+    );
+
+    const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(false);
+
+        const items = e.dataTransfer.items;
+        const files: File[] = [];
+
+        for (const item of items) {
+            if (item.kind === 'file') {
+                const file = item.getAsFile();
+                if (file) {
+                    files.push(file);
+                }
+            }
+        }
+
+        if (files.length > 0) {
+            await processProjectFiles(files);
+        }
+    }, []);
+
+    const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setIsDragging(true);
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setIsDragging(false);
+        }
+    }, []);
+
+    const renderHeader = () => (
+        <>
+            <CardTitle>{'Select your project folder'}</CardTitle>
+            <CardDescription>{"This is where we'll reference your App"}</CardDescription>
+        </>
+    );
+
+    const renderContent = () => (
+        <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
+            <AnimatePresence mode="popLayout">
+                {projectData.folderPath ? (
+                    <motion.div
+                        key="folderPath"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="w-full flex flex-row items-center border px-4 py-5 rounded bg-background-onlook gap-2"
+                    >
+                        <div className="flex flex-col gap-1 break-all">
+                            <p className="text-regular">{projectData.name}</p>
+                            <p className="text-mini text-foreground-onlook">
+                                {projectData.folderPath}
+                            </p>
+                        </div>
+                        <Button
+                            className="ml-auto w-10 h-10"
+                            variant={'ghost'}
+                            size={'icon'}
+                            onClick={() =>
+                                setProjectData({
+                                    folderPath: undefined,
+                                })
+                            }
+                        >
+                            <Icons.MinusCircled />
+                        </Button>
+                    </motion.div>
+                ) : (
+                    <motion.div
+                        key="selectFolder"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="w-full space-y-4"
+                    >
+                        <div
+                            className={`
+                        w-full h-20 rounded-lg bg-gray-900 border border-gray rounded-lg m-0
+                        flex flex-col items-center justify-center gap-4
+                        transition-colors duration-200 cursor-pointer
+                        ${
+                            isDragging
+                                ? 'border-blue-400 bg-blue-50'
+                                : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
+                        }
+                        ${isUploading ? 'pointer-events-none opacity-50' : ''}
+                    `}
+                            onDrop={handleDrop}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onClick={handleClickUpload}
+                        >
+                            {isUploading ? (
+                                <div className="text-center">
+                                    <p className="text-sm font-medium text-gray-900">
+                                        Uploading...
+                                    </p>
+                                    <p className="text-xs text-gray-500">{uploadProgress}</p>
+                                </div>
+                            ) : (
+                                <div className="flex gap-3">
+                                    <Icons.DirectoryOpen className="w-5 h-5 text-gray-200" />
+                                    <p className="text-sm font-medium text-gray-200 font-medium">
+                                        Click to select your folder
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Hidden file input */}
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            style={{ display: 'none' }}
+                            onChange={handleFileInputChange}
+                            accept=".js,.jsx,.ts,.tsx,.json,.md,.txt,.css,.scss,.less,.html,.svg,.png,.jpg,.jpeg,.gif,.ico"
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </MotionConfig>
+    );
+
+    const renderFooter = () => (
+        <div className="flex flex-row w-full justify-between">
+            <Button type="button" onClick={prevStep} variant="ghost"                 className='px-3 py-2'
+            >
+                Cancel
+            </Button>
+            <Button
+                disabled={!projectData.folderPath || !!error || isUploading}
+                type="button"
+                onClick={nextStep}
+                className='px-3 py-2'
+            >
+                Continue
+            </Button>
+        </div>
+    );
+
+    switch (variant) {
+        case 'header':
+            return renderHeader();
+        case 'content':
+            return renderContent();
+        case 'footer':
+            return renderFooter();
+    }
+};
+
+NewSelectFolder.Header = (props) => <NewSelectFolder props={props} variant="header" />;
+NewSelectFolder.Content = (props) => <NewSelectFolder props={props} variant="content" />;
+NewSelectFolder.Footer = (props) => <NewSelectFolder props={props} variant="footer" />;
+NewSelectFolder.Header.displayName = 'NewSelectFolder.Header';
+NewSelectFolder.Content.displayName = 'NewSelectFolder.Content';
+NewSelectFolder.Footer.displayName = 'NewSelectFolder.Footer';
+
+export { NewSelectFolder };

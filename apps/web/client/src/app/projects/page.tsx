@@ -6,6 +6,8 @@ import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { SelectProject } from './_components/select';
 import { TopBar } from './_components/top-bar';
+import { ProjectTabs } from '@/components/store/projects/manager';
+import { ImportProject } from './_components/create/new-project';
 
 const Page = observer(() => {
     const projectsManager = useProjectsManager();
@@ -25,11 +27,20 @@ const Page = observer(() => {
         )
     }
 
+    const renderTab = () => {
+        switch (projectsManager.projectsTab) {
+            case ProjectTabs.PROJECTS:
+                return <SelectProject />;
+            case ProjectTabs.IMPORT_PROJECT:
+                return <ImportProject />;
+        }
+    }
+
     return (
         <div className="w-screen h-screen flex flex-col">
             <TopBar />
             <div className="flex justify-center overflow-hidden w-full h-full">
-                <SelectProject />
+                {renderTab()}
             </div>
         </div>
     );
