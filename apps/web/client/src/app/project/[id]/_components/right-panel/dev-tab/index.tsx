@@ -147,7 +147,7 @@ export const DevTab = observer(() => {
             for (let i = 0; i < ide.highlightRange.startLineNumber - 1; i++) {
                 startPos += (lines[i]?.length || 0) + 1; // +1 for newline
             }
-            startPos += ide.highlightRange.startColumn - 1; // -1 because CodeMirror is 0-based
+            startPos += ide.highlightRange.startColumn;
 
             // Calculate end position
             let endPos = 0;
@@ -173,7 +173,7 @@ export const DevTab = observer(() => {
                 selection,
                 effects: [
                     EditorView.scrollIntoView(selection.main, {
-                        y: 'center'
+                        y: 'start'
                     })
                 ],
                 userEvent: 'select.element'
