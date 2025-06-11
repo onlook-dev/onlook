@@ -67,11 +67,7 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste(), { preventDefault: true });
     useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut(), { preventDefault: true });
     useHotkeys(Hotkey.DUPLICATE.command, () => {
-        if (editorEngine.frames.canDuplicate()) {
-            editorEngine.frames.duplicateSelected();
-        } else {
-            editorEngine.copy.duplicate();
-        }
+        editorEngine.copy.duplicate();
     }, { preventDefault: true });
 
     // AI
