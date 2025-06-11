@@ -45,4 +45,4 @@ ALTER TABLE "published_domains" ADD CONSTRAINT "published_domains_domain_id_cust
 ALTER TABLE "published_domains" ADD CONSTRAINT "published_domains_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ADD CONSTRAINT "custom_domain_verification_domain_id_custom_domains_id_fk" FOREIGN KEY ("domain_id") REFERENCES "public"."custom_domains"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ADD CONSTRAINT "custom_domain_verification_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "projects" DROP COLUMN "preview_img";
+ALTER TABLE "projects" DROP COLUMN IF EXISTS "preview_img";
