@@ -12889,16 +12889,19 @@ function startEditingText(domId) {
   }
   const childNodes = Array.from(el.childNodes).filter((node) => node.nodeType !== Node.COMMENT_NODE);
   let targetEl = null;
+  const hasOnlyTextAndBreaks = childNodes.every((node) => node.nodeType === Node.TEXT_NODE || node.nodeType === Node.ELEMENT_NODE && node.tagName.toLowerCase() === "br");
   if (childNodes.length === 0) {
     targetEl = el;
-  } else if (childNodes.length === 1 && el.childNodes[0]?.nodeType === Node.TEXT_NODE) {
+  } else if (childNodes.length === 1 && childNodes[0]?.nodeType === Node.TEXT_NODE) {
+    targetEl = el;
+  } else if (hasOnlyTextAndBreaks) {
     targetEl = el;
   }
   if (!targetEl) {
     console.warn("Start editing text failed. No target element found for selector:", domId);
     return null;
   }
-  const originalContent = el.textContent || "";
+  const originalContent = extractTextContent(el);
   prepareElementForEditing(targetEl);
   return { originalContent };
 }
@@ -12920,7 +12923,7 @@ function stopEditingText(domId) {
   }
   cleanUpElementAfterEditing(el);
   publishEditText(getDomElement(el, true));
-  return { newContent: el.textContent || "", domEl: getDomElement(el, true) };
+  return { newContent: extractTextContent(el), domEl: getDomElement(el, true) };
 }
 function prepareElementForEditing(el) {
   el.setAttribute("data-onlook-editing-text" /* DATA_ONLOOK_EDITING_TEXT */, "true");
@@ -12933,7 +12936,17 @@ function removeEditingAttributes(el) {
   el.removeAttribute("data-onlook-editing-text" /* DATA_ONLOOK_EDITING_TEXT */);
 }
 function updateTextContent(el, content) {
-  el.textContent = content;
+  const htmlContent = content.replace(/\n/g, "<br>");
+  el.innerHTML = htmlContent;
+}
+function extractTextContent(el) {
+  let content = el.innerHTML;
+  content = content.replace(/<br\s*\/?>/gi, `
+`);
+  content = content.replace(/<[^>]*>/g, "");
+  const textArea = document.createElement("textarea");
+  textArea.innerHTML = content;
+  return textArea.value;
 }
 function isChildTextEditable(oid) {
   return true;
@@ -17359,5 +17372,5 @@ export {
   penpalParent
 };
 
-//# debugId=063B7F3A5134580A64756E2164756E21
+//# debugId=1F8F09CA958308FB64756E2164756E21
 //# sourceMappingURL=index.js.map

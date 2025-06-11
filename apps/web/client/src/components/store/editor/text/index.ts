@@ -160,7 +160,6 @@ export class TextEditingManager {
                 originalContent: this.originalContent ?? '',
                 newContent,
             });
-
             const adjustedRect = adaptRectToCanvas(domEl.rect, frameView);
             this.editorEngine.overlay.state.updateTextEditor(adjustedRect);
             await this.editorEngine.overlay.refresh();

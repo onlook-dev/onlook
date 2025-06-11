@@ -25,16 +25,27 @@ export function startEditingText(domId: string): EditTextResult | null {
     );
 
     let targetEl: HTMLElement | null = null;
+    // Check for element type
+    const hasOnlyTextAndBreaks = childNodes.every(node => 
+        node.nodeType === Node.TEXT_NODE || 
+        (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName.toLowerCase() === 'br')
+    );
+
     if (childNodes.length === 0) {
         targetEl = el as HTMLElement;
-    } else if (childNodes.length === 1 && el.childNodes[0]?.nodeType === Node.TEXT_NODE) {
+    } else if (childNodes.length === 1 && childNodes[0]?.nodeType === Node.TEXT_NODE) {
+        targetEl = el as HTMLElement;
+    } else if (hasOnlyTextAndBreaks) {
+        // Handle elements with text and <br> tags
         targetEl = el as HTMLElement;
     }
+
     if (!targetEl) {
         console.warn('Start editing text failed. No target element found for selector:', domId);
         return null;
     }
-    const originalContent = el.textContent || '';
+    
+    const originalContent = extractTextContent(el);
     prepareElementForEditing(targetEl);
 
     return { originalContent };
@@ -59,7 +70,7 @@ export function stopEditingText(domId: string): { newContent: string; domEl: Dom
     }
     cleanUpElementAfterEditing(el);
     publishEditText(getDomElement(el, true));
-    return { newContent: el.textContent || '', domEl: getDomElement(el, true) };
+    return { newContent: extractTextContent(el), domEl: getDomElement(el, true) };
 }
 
 function prepareElementForEditing(el: HTMLElement) {
@@ -76,7 +87,18 @@ function removeEditingAttributes(el: HTMLElement) {
 }
 
 function updateTextContent(el: HTMLElement, content: string): void {
-    el.textContent = content;
+    // Convert newlines to <br> tags in the DOM
+    const htmlContent = content.replace(/\n/g, '<br>');
+    el.innerHTML = htmlContent;
+}
+
+function extractTextContent(el: HTMLElement): string {
+    let content = el.innerHTML;
+    content = content.replace(/<br\s*\/?>/gi, '\n');
+    content = content.replace(/<[^>]*>/g, '');
+    const textArea = document.createElement('textarea');
+    textArea.innerHTML = content;
+    return textArea.value;
 }
 
 export function isChildTextEditable(oid: string): boolean | null {
