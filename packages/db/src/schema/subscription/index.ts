@@ -1,6 +1,6 @@
 import { boolean, integer, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
-export const planType = pgEnum('plan_type', ['free', 'pro', 'teams'])
+export const planType = pgEnum('plan_type', ['free', 'pro'])
 
 export const plans = pgTable('plans', {
     id: text('id').primaryKey(),
