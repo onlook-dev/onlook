@@ -249,7 +249,7 @@ export const DevTab = observer(() => {
 
         ide.isFilesLoading = true;
         try {
-            await editorEngine.sandbox.index();
+            await editorEngine.sandbox.index(true);
             await ide.refreshFiles();
         } catch (error) {
             console.error('Error refreshing files:', error);
@@ -422,12 +422,12 @@ export const DevTab = observer(() => {
             <div className="flex items-center justify-between h-11 pl-4 pr-2 border-b-[0.5px]">
                 <div className="flex gap-1 items-center h-full">
                     <Tooltip>
-                        <TooltipTrigger>
+                        <TooltipTrigger asChild>
                             <Button variant="ghost" size="icon" onClick={() => setIsFilesVisible(!isFilesVisible)}>
                                 <Icons.CollapseSidebar />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent side="bottom" hideArrow>
                             {isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
                         </TooltipContent>
                     </Tooltip>
@@ -437,7 +437,7 @@ export const DevTab = observer(() => {
                                 <Icons.FilePlus />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent side="bottom" hideArrow>
                             New File
                         </TooltipContent>
                     </Tooltip>
@@ -447,7 +447,7 @@ export const DevTab = observer(() => {
                                 <Icons.DirectoryPlus />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent side="bottom" hideArrow>
                             New Folder
                         </TooltipContent>
                     </Tooltip>
@@ -457,7 +457,7 @@ export const DevTab = observer(() => {
                                 <Icons.FloppyDisk />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent side="bottom" hideArrow>
                             Save changes
                         </TooltipContent>
                     </Tooltip>

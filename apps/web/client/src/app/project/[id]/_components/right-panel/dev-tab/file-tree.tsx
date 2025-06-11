@@ -208,7 +208,7 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
             await onRefresh();
         } else {
             try {
-                await editorEngine.sandbox.index();
+                await editorEngine.sandbox.index(true);
                 await editorEngine.sandbox.listAllFiles();
             } catch (error) {
                 console.error('Error refreshing files:', error);
