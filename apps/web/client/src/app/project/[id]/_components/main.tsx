@@ -93,7 +93,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
     useEffect(() => {
         if (tabState === 'reactivated') {
-            editorEngine.sandbox.session.reconnect();
+            editorEngine.sandbox.session.reconnect(projectId, userManager.user?.id);
         }
     }, [tabState]);
 
