@@ -74,7 +74,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
     async addOrUpdateMessage(message: ChatMessageImpl) {
-        const index = this.messages.findIndex((m) => m.id === message.id);
+        const index = this.messages.findIndex((m) => m.id === message.id || (m.aiSdkId && m.aiSdkId === message.aiSdkId));
         if (index !== -1) {
             this.messages[index] = message;
         } else {

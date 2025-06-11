@@ -2,7 +2,7 @@ import stripAnsi from 'strip-ansi';
 
 export interface ParsedError {
     sourceId: string;
-    type: 'frame' | 'terminal';
+    type: 'frame' | 'terminal' | 'apply-code';
     content: string;
 }
 
