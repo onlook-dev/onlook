@@ -4,7 +4,6 @@ import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { adaptRectToCanvas } from '../overlay/utils';
-import { getEditTextRequests } from '../code/requests';
 
 export class TextEditingManager {
     private targetDomEl: DomElement | null = null;
@@ -161,27 +160,6 @@ export class TextEditingManager {
                 originalContent: this.originalContent ?? '',
                 newContent,
             });
-            //  Write changes back to code files
-            try{
-                const requests = await getEditTextRequests({
-                    type:'edit-text',
-                    targets:[
-                        {
-                            frameId:frameView.id,
-                            domId:domEl.domId,
-                            oid:domEl.oid
-                        },
-                ],
-                originalContent:this.originalContent ?? '',
-                newContent
-                })
-                if(requests.length>0){
-                    await this.editorEngine.code.writeRequest(requests)
-                }
-            }catch(codeWriteError){
-                console.error('error writing text changes to code:', codeWriteError)
-            }
-
             const adjustedRect = adaptRectToCanvas(domEl.rect, frameView);
             this.editorEngine.overlay.state.updateTextEditor(adjustedRect);
             await this.editorEngine.overlay.refresh();
