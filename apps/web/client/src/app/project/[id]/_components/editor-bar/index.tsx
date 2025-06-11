@@ -8,6 +8,7 @@ import { motion } from 'motion/react';
 import { DivSelected } from './div-selected';
 import { DropdownManagerProvider } from './hooks/use-dropdown-manager';
 import { TextSelected } from './text-selected';
+import { WindowToolbar } from './window-toolbar';
 
 enum TAG_CATEGORIES {
     TEXT = 'text',
@@ -51,7 +52,7 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
                 className={cn(
-                    "flex flex-col border-[0.5px] border-border p-1 px-1.5 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50 overflow-hidden",
+                    "flex flex-col gap-2 border-[0.5px] border-border p-1 px-1.5 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50 overflow-hidden",
                     editorEngine.state.editorMode === EditorMode.PREVIEW && "hidden"
                 )}
                 transition={{
@@ -62,6 +63,7 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
                     damping: 25,
                 }}
             >
+                {editorEngine.frames.selected.length > 0 && <WindowToolbar />}
                 {selectedTag === TAG_CATEGORIES.TEXT && <TextSelected availableWidth={availableWidth} />}
                 {selectedTag === TAG_CATEGORIES.DIV && <DivSelected availableWidth={availableWidth} />}
                 {/* {selectedTag === 'image' && <ImgSelected />} */}

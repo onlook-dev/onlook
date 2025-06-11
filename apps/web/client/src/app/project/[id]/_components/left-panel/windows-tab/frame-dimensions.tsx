@@ -75,17 +75,44 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
     const handleDeviceChange = (value: string) => {
         setDevice(value);
         const [category, deviceName] = value.split(':');
-        if (
-            category &&
-            deviceName &&
-            DEVICE_OPTIONS[category] &&
-            DEVICE_OPTIONS[category][deviceName] &&
-            deviceName !== 'Custom'
-        ) {
+        
+        if (category === 'Custom') {
+            // Reset to default dimensions
+            updateFrame(1536, 960);
+            return;
+        }
+
+        if (category && deviceName && DEVICE_OPTIONS[category] && DEVICE_OPTIONS[category][deviceName]) {
             const [w, h] = DEVICE_OPTIONS[category][deviceName].split('x').map(Number);
             if (typeof w === 'number' && !isNaN(w) && typeof h === 'number' && !isNaN(h)) {
                 updateFrame(w, h);
             }
+        }
+    };
+
+    const getDeviceIcon = (category: string, dimensions: string) => {
+        const [widthStr, heightStr] = dimensions.split('x');
+        if (!widthStr || !heightStr) return null;
+
+        const width = parseInt(widthStr);
+        const height = parseInt(heightStr);
+        if (isNaN(width) || isNaN(height)) return null;
+
+        const isPortrait = height > width;
+
+        switch (category) {
+            case 'Phone':
+                return <Icons.Mobile className="h-4 w-4 mr-2 text-foreground" />;
+            case 'Tablet':
+                return <Icons.Tablet className="h-4 w-4 mr-2 text-foreground" />;
+            case 'Laptop':
+                return <Icons.Laptop className="h-4 w-4 mr-2 text-foreground" />;
+            case 'Desktop':
+                return <Icons.Desktop className="h-4 w-4 mr-2 text-foreground" />;
+            case 'Custom':
+                return isPortrait ? <Icons.Portrait className="h-4 w-4 mr-2 text-foreground" /> : <Icons.Landscape className="h-4 w-4 mr-2 text-foreground" />;
+            default:
+                return null;
         }
     };
 
@@ -96,37 +123,58 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
                 <span className="text-xs text-foreground-secondary">Device</span>
                 <Select value={device} onValueChange={handleDeviceChange}>
                     <SelectTrigger className="w-3/5 bg-background-secondary border-background-secondary py-1.5 px-2 h-fit text-xs rounded focus:outline-none focus:ring-0">
-                        <SelectValue placeholder="Select device" />
+                        <div className="flex items-center">
+                            {(() => {
+                                const [category, name] = device.split(':');
+                                if (!category || !name) return <span>Custom</span>;
+
+                                const dimensions = category === 'Custom' 
+                                    ? `${metadata.width}x${metadata.height}`
+                                    : DEVICE_OPTIONS[category]?.[name];
+
+                                return (
+                                    <>
+                                        {getDeviceIcon(category, dimensions || '')}
+                                        <span className="truncate">{name}</span>
+                                    </>
+                                );
+                            })()}
+                        </div>
                     </SelectTrigger>
                     <SelectContent className="rounded-md bg-background-secondary">
+                        <SelectItem
+                            value="Custom:Custom"
+                            className="focus:bg-background-tertiary rounded-md text-xs cursor-pointer"
+                        >
+                            <div className="flex items-center">
+                                {getDeviceIcon('Custom', `${metadata.width}x${metadata.height}`)}
+                                <span>Custom</span>
+                            </div>
+                        </SelectItem>
+                        <SelectSeparator className="text-white" />
                         {Object.entries(DEVICE_OPTIONS).map(([category, devices], index) =>
-                            category !== 'Custom' ? (
+                            category !== 'Custom' && (
                                 <React.Fragment key={index}>
-                                    <SelectGroup key={index}>
+                                    <SelectGroup>
                                         <SelectLabel>{category}</SelectLabel>
-                                        {Object.entries(devices).map(([deviceName], idx) => (
+                                        {Object.entries(devices).map(([deviceName, dimensions], idx) => (
                                             <SelectItem
                                                 key={idx}
-                                                value={category + ':' + deviceName}
+                                                value={`${category}:${deviceName}`}
                                                 className="focus:bg-background-tertiary rounded-md text-xs cursor-pointer"
                                             >
-                                                {deviceName}
+                                                <div className="flex items-center">
+                                                    {getDeviceIcon(category, dimensions)}
+                                                    <span>{deviceName}</span>
+                                                </div>
                                             </SelectItem>
                                         ))}
                                     </SelectGroup>
-                                    {index < Object.entries(DEVICE_OPTIONS).length - 1 && (
+                                    {index < Object.entries(DEVICE_OPTIONS).length - 2 && (
                                         <SelectSeparator className="text-white" />
                                     )}
                                 </React.Fragment>
-                            ) : (
-                                <SelectItem
-                                    key={'Custom'}
-                                    value={'Custom:Custom'}
-                                    className="focus:bg-background-tertiary rounded-md text-xs cursor-pointer"
-                                >
-                                    {'Custom'}
-                                </SelectItem>
-                            ),
+                            )
                         )}
                     </SelectContent>
                 </Select>

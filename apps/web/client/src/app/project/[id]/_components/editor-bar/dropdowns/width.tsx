@@ -9,6 +9,8 @@ import { useDimensionControl } from '../hooks/use-dimension-control';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputDropdown } from '../inputs/input-dropdown';
+import { LeftPanelTabValue } from '@onlook/models';
+import { useEditorEngine } from '@/components/store/editor';
 
 export const Width = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
@@ -18,8 +20,18 @@ export const Width = observer(() => {
         id: 'width-dropdown' 
     });
 
+    const editorEngine = useEditorEngine();
+
+    const handleOpenChange = (open: boolean) => {
+        if (open) {
+            editorEngine.state.leftPanelTab = LeftPanelTabValue.WINDOWS;
+            editorEngine.state.leftPanelLocked = true;
+        }
+        onOpenChange(open);
+    };
+
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
             <HoverOnlyTooltip content="Width" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
