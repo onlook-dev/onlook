@@ -74,6 +74,10 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                         editorEngine.elements.shiftClick(el);
                     } else {
                         editorEngine.elements.click([el]);
+                        // If we're in design mode, also show the code
+                        if (editorEngine.state.editorMode === EditorMode.DESIGN) {
+                          await editorEngine.code.viewCodeBlock(el.oid || '');
+                        }
                         await editorEngine.move.start(el, pos, frameData);
                     }
                     break;

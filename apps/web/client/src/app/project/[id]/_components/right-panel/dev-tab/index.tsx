@@ -147,7 +147,7 @@ export const DevTab = observer(() => {
             for (let i = 0; i < ide.highlightRange.startLineNumber - 1; i++) {
                 startPos += (lines[i]?.length || 0) + 1; // +1 for newline
             }
-            startPos += ide.highlightRange.startColumn;
+            startPos += ide.highlightRange.startColumn - 1; // -1 because CodeMirror is 0-based
 
             // Calculate end position
             let endPos = 0;
@@ -155,6 +155,7 @@ export const DevTab = observer(() => {
                 endPos += (lines[i]?.length || 0) + 1; // +1 for newline
             }
             endPos += ide.highlightRange.endColumn;
+
             if (
                 startPos >= ide.activeFile!.content.length ||
                 endPos > ide.activeFile!.content.length ||
@@ -166,17 +167,20 @@ export const DevTab = observer(() => {
                 return;
             }
 
-            // Creates a selection at the highlight position
+            // Create the selection and apply it in a single transaction
+            const selection = EditorSelection.create([EditorSelection.range(startPos, endPos)]);
             editorView.dispatch({
-                selection: EditorSelection.create([EditorSelection.range(startPos, endPos)]),
+                selection,
+                effects: [
+                    EditorView.scrollIntoView(selection.main, {
+                        y: 'center'
+                    })
+                ],
+                userEvent: 'select.element'
             });
 
-            // Scrolls to the selection
-            editorView.dispatch({
-                effects: EditorView.scrollIntoView(editorView.state.selection.main, {
-                    y: 'center',
-                }),
-            });
+            // Force the editor to focus
+            editorView.focus();
         } catch (error) {
             console.error('Error applying highlight:', error);
             ide.setHighlightRange(null);
