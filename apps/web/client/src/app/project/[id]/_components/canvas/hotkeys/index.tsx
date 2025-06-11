@@ -49,8 +49,12 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys('alt', () => editorEngine.overlay.removeMeasurement(), { keyup: true });
 
     // Actions
-    useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
-    useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
+    useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo(), {
+        preventDefault: true,
+    });
+    useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo(), {
+        preventDefault: true,
+    });
     useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => editorEngine.elements.delete());
 
