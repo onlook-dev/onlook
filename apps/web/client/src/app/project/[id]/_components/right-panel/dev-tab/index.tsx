@@ -249,7 +249,7 @@ export const DevTab = observer(() => {
 
         ide.isFilesLoading = true;
         try {
-            await editorEngine.sandbox.index();
+            await editorEngine.sandbox.index(true);
             await ide.refreshFiles();
         } catch (error) {
             console.error('Error refreshing files:', error);
