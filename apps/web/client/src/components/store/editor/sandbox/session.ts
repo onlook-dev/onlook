@@ -23,6 +23,14 @@ export class SessionManager {
                 return await api.sandbox.start.mutate({ sandboxId: id, userId });
             },
         });
+        this.session.keepActiveWhileConnected(true);
+        this.session.onStateChange((state) => {
+            if (state.state === 'DISCONNECTED' || state.state === 'HIBERNATED') {
+                this.session?.reconnect().catch((err) => {
+                    console.error('Failed to reconnect session:', err);
+                });
+            }
+        });
         this.isConnecting = false;
         await this.createTerminalSessions(this.session);
     }
