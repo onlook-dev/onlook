@@ -20,6 +20,8 @@ export class SandboxManager {
     private fileSync: FileSyncManager = new FileSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
     readonly fileEventBus: FileEventBus = new FileEventBus();
+    private isIndexed = false;
+    private isIndexing = false;
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
@@ -28,6 +30,7 @@ export class SandboxManager {
         reaction(
             () => this.session.session,
             (session) => {
+                this.isIndexed = false;
                 if (session) {
                     this.fileSync.clear(); // Clear cache when switching projects
                     this.index();
@@ -36,25 +39,35 @@ export class SandboxManager {
         );
     }
 
-    async index() {
+    async index(force = false) {
+        if (this.isIndexing || (this.isIndexed && !force)) {
+            return;
+        }
+
         if (!this.session.session) {
             console.error('No session found');
             return;
         }
 
-        const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES);
-        for (const file of files) {
-            const normalizedPath = normalizePath(file);
-            const content = await this.readFile(normalizedPath);
-            if (content === null) {
-                console.error(`Failed to read file ${normalizedPath}`);
-                continue;
+        this.isIndexing = true;
+        try {
+            const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES);
+            for (const file of files) {
+                const normalizedPath = normalizePath(file);
+                const content = await this.readFile(normalizedPath);
+                if (content === null) {
+                    console.error(`Failed to read file ${normalizedPath}`);
+                    continue;
+                }
+
+                await this.processFileForMapping(normalizedPath);
             }
 
-            await this.processFileForMapping(normalizedPath);
+            await this.watchFiles();
+            this.isIndexed = true;
+        } finally {
+            this.isIndexing = false;
         }
-
-        await this.watchFiles();
     }
 
     private async readRemoteFile(filePath: string): Promise<string | null> {
@@ -415,5 +428,7 @@ export class SandboxManager {
         this.fileSync.clear();
         this.templateNodeMap.clear();
         this.session.disconnect();
+        this.isIndexed = false;
+        this.isIndexing = false;
     }
 }
