@@ -3,12 +3,13 @@ import { MotionConfig } from 'motion/react';
 import { CardDescription } from '@onlook/ui/card';
 import { CardTitle } from '@onlook/ui/card';
 import { AnimatePresence } from 'motion/react';
-import type { ProcessedFile, StepProps } from '../../constants';
+import type { ProcessedFile } from '../../constants';
 import { Button } from '@onlook/ui/button';
 import { motion } from 'motion/react';
 import { Icons } from '@onlook/ui/icons';
 import type { StepComponent } from '../with-step-props';
 import { useEffect, useState } from 'react';
+import { useProjectCreation } from './project-creation-context';
 import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
 
 interface NextJsProjectValidation {
@@ -18,13 +19,11 @@ interface NextJsProjectValidation {
 }
 
 const VerifyProject: StepComponent = ({
-    props,
     variant,
 }: {
-    props: StepProps;
     variant: 'header' | 'content' | 'footer';
 }) => {
-    const { projectData, prevStep, nextStep, isFinalizing } = props;
+    const { projectData, prevStep, nextStep, isFinalizing } = useProjectCreation();
     const [validation, setValidation] = useState<NextJsProjectValidation | null>(null);
     useEffect(() => {
         validateProject();
@@ -149,7 +148,7 @@ const VerifyProject: StepComponent = ({
                 <>
                     <CardTitle>{'Verifying compatibility with Onlook'}</CardTitle>
                     <CardDescription>
-                        {'We’re checking to make sure this project can work with Onlook'}
+                        {"We're checking to make sure this project can work with Onlook"}
                     </CardDescription>
                 </>
             );
@@ -164,7 +163,7 @@ const VerifyProject: StepComponent = ({
         } else {
             return (
                 <>
-                    <CardTitle>{'This project won’t work with Onlook '}</CardTitle>
+                    <CardTitle>{"This project won't work with Onlook"}</CardTitle>
                     <CardDescription>
                         {'Onlook only works with NextJS + React + Tailwind projects'}
                     </CardDescription>
@@ -228,9 +227,9 @@ const VerifyProject: StepComponent = ({
     }
 };
 
-VerifyProject.Header = (props: StepProps) => <VerifyProject props={props} variant="header" />;
-VerifyProject.Content = (props: StepProps) => <VerifyProject props={props} variant="content" />;
-VerifyProject.Footer = (props: StepProps) => <VerifyProject props={props} variant="footer" />;
+VerifyProject.Header = () => <VerifyProject variant="header" />;
+VerifyProject.Content = () => <VerifyProject variant="content" />;
+VerifyProject.Footer = () => <VerifyProject variant="footer" />;
 
 VerifyProject.Header.displayName = 'VerifyProject.Header';
 VerifyProject.Content.displayName = 'VerifyProject.Content';

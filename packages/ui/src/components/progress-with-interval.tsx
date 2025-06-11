@@ -15,8 +15,6 @@ export interface ProgressWithIntervalProps {
     maxValue?: number;
     /** Duration to animate to completion when loading stops (default: 300ms) */
     completionDuration?: number;
-    /** Callback when progress is complete */
-    onComplete?: () => void;
 }
 
 export const ProgressWithInterval = ({
@@ -25,14 +23,11 @@ export const ProgressWithInterval = ({
     intervalMs = 100,
     className,
     maxValue = 100,
-    completionDuration = 300,
-    onComplete,
 }: ProgressWithIntervalProps) => {
     const [progress, setProgress] = useState(0);
 
     useEffect(() => {
         let progressInterval: Timer | null = null;
-        let completionTimeout: Timer | null = null;
 
         if (progressInterval) {
             clearInterval(progressInterval);
@@ -43,42 +38,14 @@ export const ProgressWithInterval = ({
             progressInterval = setInterval(() => {
                 setProgress((prev) => Math.min(prev + increment, maxValue));
             }, intervalMs);
-        } else {
-            // When loading stops, quickly animate to 100%
-            if (progress > 0 && progress < maxValue) {
-                const remainingProgress = maxValue - progress;
-                const steps = Math.ceil(completionDuration / 16); // ~60fps
-                const stepIncrement = remainingProgress / steps;
-
-                let currentStep = 0;
-                progressInterval = setInterval(() => {
-                    currentStep++;
-                    if (currentStep >= steps) {
-                        setProgress(maxValue);
-                        if (progressInterval) clearInterval(progressInterval);
-                        onComplete?.();
-                        // Reset to 0 after a brief delay
-                        completionTimeout = setTimeout(() => {
-                            setProgress(0);
-                        }, 200);
-                    } else {
-                        setProgress((prev) => Math.min(prev + stepIncrement, maxValue));
-                    }
-                }, 16);
-            } else {
-                setProgress(0);
-            }
         }
 
         return () => {
             if (progressInterval) {
                 clearInterval(progressInterval);
             }
-            if (completionTimeout) {
-                clearTimeout(completionTimeout);
-            }
         };
-    }, [isLoading, increment, intervalMs, maxValue, completionDuration]);
+    }, [isLoading, increment, intervalMs, maxValue]);
 
     return <Progress value={progress} className={cn('w-full', className)} />;
 };

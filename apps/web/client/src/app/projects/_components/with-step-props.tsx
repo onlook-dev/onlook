@@ -1,34 +1,32 @@
 import type React from 'react';
 import { MotionCardContent, MotionCardHeader } from '@onlook/ui/motion-card';
-import type { StepProps } from '../constants';
 
 interface StepComponentProps {
-    props: StepProps;
     variant: 'header' | 'content' | 'footer';
 }
 
 export interface StepComponent extends React.FC<StepComponentProps> {
-    Header: React.FC<StepProps>;
-    Content: React.FC<StepProps>;
-    Footer: React.FC<StepProps>;
+    Header: React.FC;
+    Content: React.FC;
+    Footer: React.FC;
 }
 
 export function withStepProps(Component: StepComponent): {
-    header: React.FC<StepProps>;
-    content: React.FC<StepProps>;
-    footerButtons: (props: StepProps) => React.ReactNode;
+    header: () => React.ReactElement;
+    content: () => React.ReactElement;
+    footerButtons: () => React.ReactNode;
 } {
     return {
-        header: (props: StepProps) => (
+        header: () => (
             <MotionCardHeader>
-                <Component props={props} variant="header" />
+                <Component variant="header" />
             </MotionCardHeader>
         ),
-        content: (props: StepProps) => (
+        content: () => (
             <MotionCardContent className="flex items-center w-full min-h-24">
-                <Component props={props} variant="content" />
+                <Component variant="content" />
             </MotionCardContent>
         ),
-        footerButtons: (props: StepProps) => <Component props={props} variant="footer" />,
+        footerButtons: () => <Component variant="footer" />,
     };
 }

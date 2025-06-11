@@ -2,36 +2,43 @@ import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
-import type { StepProps } from '../../constants';
 import type { StepComponent } from '../with-step-props';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BINARY_EXTENSIONS, IGNORED_DIRECTORIES, IGNORED_FILES } from '@onlook/constants';
+import { useProjectCreation } from './project-creation-context';
+
+// TypeScript declarations for File System Access API
+declare global {
+    interface DataTransferItem {
+        webkitGetAsEntry(): FileSystemEntry | null;
+    }
+}
+
 interface ProcessedFile {
     path: string;
     content: string | ArrayBuffer;
     isBinary: boolean;
 }
+
 const NewSelectFolder: StepComponent = ({
-    props,
     variant,
 }: {
-    props: StepProps;
     variant: 'header' | 'content' | 'footer';
 }) => {
-    const { projectData, setProjectData, prevStep, nextStep } = props;
+    const { projectData, setProjectData, prevStep, nextStep } = useProjectCreation();
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState('');
     const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    function nameToFolderName(name: string): string {
-        return name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '')
-            .replace(/^(\d)/, '_$1');
-    }
+    // function nameToFolderName(name: string): string {
+    //     return name
+    //         .toLowerCase()
+    //         .replace(/[^a-z0-9]+/g, '-')
+    //         .replace(/^-+|-+$/g, '')
+    //         .replace(/^(\d)/, '_$1');
+    // }
 
     const extractProjectName = (files: ProcessedFile[]): string | null => {
         const packageJsonFile = files.find((f) => f.path.endsWith('package.json') && !f.isBinary);
@@ -54,14 +61,20 @@ const NewSelectFolder: StepComponent = ({
 
     useEffect(() => {
         if (fileInputRef.current !== null) {
-            // 2. set attribute as JS does
             fileInputRef.current.setAttribute('directory', '');
             fileInputRef.current.setAttribute('webkitdirectory', '');
         }
     }, [fileInputRef]);
+    
     const filterAndProcessFiles = async (files: File[]): Promise<ProcessedFile[]> => {
         const processedFiles: ProcessedFile[] = [];
         const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+        // Find the common root path from all files
+        const allPaths = files.map(file => (file as any).webkitRelativePath || file.name);
+        const rootPath = allPaths.length > 0 && allPaths[0].includes('/') 
+            ? allPaths[0].split('/')[0] 
+            : '';
 
         for (const file of files) {
             // Skip if file is too large
@@ -71,7 +84,12 @@ const NewSelectFolder: StepComponent = ({
             }
 
             // Get relative path from webkitRelativePath or name
-            const relativePath = (file as any).webkitRelativePath || file.name;
+            let relativePath = (file as any).webkitRelativePath || file.name;
+            
+            // If we have a root path and the file doesn't include it, prepend it
+            if (rootPath && !relativePath.includes('/')) {
+                relativePath = `${rootPath}/${relativePath}`;
+            }
 
             // Skip ignored directories
             if (
@@ -120,16 +138,20 @@ const NewSelectFolder: StepComponent = ({
         try {
             const files = Array.from(fileList);
             const fullPath = files[0]?.webkitRelativePath;
-            const folderPath = fullPath?.substring(0, fullPath.indexOf('/'));
+            
+            // Normalize path by removing leading slash if present
+            const normalizedPath = fullPath?.startsWith('/') ? fullPath.substring(1) : fullPath;
+            const folderPath = normalizedPath?.substring(0, normalizedPath.indexOf('/'));
 
             const processedFiles = await filterAndProcessFiles(files);
 
             if (processedFiles.length === 0) {
                 throw new Error('No valid files found in the selected folder');
             }
+            
 
             const projectName = extractProjectName(processedFiles);
-
+            
             if (!projectName) {
                 throw new Error('No project name found in the selected folder');
             }
@@ -151,15 +173,66 @@ const NewSelectFolder: StepComponent = ({
     // File upload functions
     const handleFileInputChange = useCallback(
         async (event: React.ChangeEvent<HTMLInputElement>) => {
-            console.log(event.target);
             const files = event.target.files;
-            console.log(files?.[0]);
             if (files && files.length > 0) {
                 await processProjectFiles(files);
             }
         },
         [],
     );
+
+    // Helper function to recursively read directory entries
+    const readDirectory = async (dirEntry: any): Promise<File[]> => {
+        const files: File[] = [];
+        
+        return new Promise((resolve) => {
+            const reader = dirEntry.createReader();
+            
+            const readEntries = () => {
+                reader.readEntries(async (entries: any[]) => {
+                    if (entries.length === 0) {
+                        resolve(files);
+                        return;
+                    }
+                    
+                    for (const entry of entries) {
+                        if (entry.isFile) {
+                            const fileEntry = entry;
+                            try {
+                                let file = await new Promise<File>((resolve, reject) => {
+                                    fileEntry.file(resolve, reject);
+                                });
+                                
+                                // Create a new File object with webkitRelativePath
+                                const fileWithPath = new File([file], file.name, {
+                                    type: file.type,
+                                    lastModified: file.lastModified,
+                                });
+                                Object.defineProperty(fileWithPath, 'webkitRelativePath', {
+                                    value: fileEntry.fullPath,
+                                    writable: false,
+                                    enumerable: true,
+                                    configurable: false,
+                                });
+                                
+                                files.push(fileWithPath);
+                            } catch (error) {
+                                console.warn(`Error reading file ${entry.name}:`, error);
+                            }
+                        } else if (entry.isDirectory) {
+                            const subFiles = await readDirectory(entry);
+                            files.push(...subFiles);
+                        }
+                    }
+                    
+                    // Continue reading entries (directories can have many entries)
+                    readEntries();
+                });
+            };
+            
+            readEntries();
+        });
+    };
 
     const handleDrop = useCallback(async (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -168,17 +241,43 @@ const NewSelectFolder: StepComponent = ({
         const items = e.dataTransfer.items;
         const files: File[] = [];
 
-        for (const item of items) {
-            if (item.kind === 'file') {
-                const file = item.getAsFile();
-                if (file) {
-                    files.push(file);
+        for (let i = 0; i < items.length; i++) {
+            const item = items[i];
+            
+            if (item && item.kind === 'file') {
+                const entry = item.webkitGetAsEntry();
+                
+                if (entry) {
+                    if (entry.isFile) {
+                        // Handle individual file
+                        const fileEntry = entry as any;
+                        try {
+                            const file = await new Promise<File>((resolve, reject) => {
+                                fileEntry.file(resolve, reject);
+                            });
+                            files.push(file);
+                        } catch (error) {
+                            console.warn(`Error reading file ${entry.name}:`, error);
+                        }
+                    } else if (entry.isDirectory) {
+                        // Handle directory
+                        const dirFiles = await readDirectory(entry);
+                        files.push(...dirFiles);
+                    }
+                } else {
+                    // Fallback for browsers that don't support webkitGetAsEntry
+                    const file = item.getAsFile();
+                    if (file) {
+                        files.push(file);
+                    }
                 }
             }
         }
 
         if (files.length > 0) {
             await processProjectFiles(files);
+        } else {
+            setError('No files found in the dropped folder');
         }
     }, []);
 
@@ -290,8 +389,7 @@ const NewSelectFolder: StepComponent = ({
 
     const renderFooter = () => (
         <div className="flex flex-row w-full justify-between">
-            <Button type="button" onClick={prevStep} variant="ghost"                 className='px-3 py-2'
-            >
+            <Button type="button" onClick={prevStep} variant="ghost" className='px-3 py-2'>
                 Cancel
             </Button>
             <Button
@@ -315,9 +413,9 @@ const NewSelectFolder: StepComponent = ({
     }
 };
 
-NewSelectFolder.Header = (props) => <NewSelectFolder props={props} variant="header" />;
-NewSelectFolder.Content = (props) => <NewSelectFolder props={props} variant="content" />;
-NewSelectFolder.Footer = (props) => <NewSelectFolder props={props} variant="footer" />;
+NewSelectFolder.Header = () => <NewSelectFolder variant="header" />;
+NewSelectFolder.Content = () => <NewSelectFolder variant="content" />;
+NewSelectFolder.Footer = () => <NewSelectFolder variant="footer" />;
 NewSelectFolder.Header.displayName = 'NewSelectFolder.Header';
 NewSelectFolder.Content.displayName = 'NewSelectFolder.Content';
 NewSelectFolder.Footer.displayName = 'NewSelectFolder.Footer';
