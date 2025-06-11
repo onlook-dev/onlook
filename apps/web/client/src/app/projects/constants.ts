@@ -21,4 +21,5 @@ export interface StepProps {
     totalSteps: number;
     prevStep: () => void;
     nextStep: () => void;
+    isFinalizing?: boolean;
 }

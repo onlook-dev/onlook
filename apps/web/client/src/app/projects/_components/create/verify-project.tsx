@@ -8,26 +8,13 @@ import { Button } from '@onlook/ui/button';
 import { motion } from 'motion/react';
 import { Icons } from '@onlook/ui/icons';
 import type { StepComponent } from '../with-step-props';
-import { api } from '@/trpc/client';
 import { useEffect, useState } from 'react';
-import { blobToBase64String } from 'blob-util';
+import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
 
 interface NextJsProjectValidation {
     isValid: boolean;
     routerType?: 'app' | 'pages';
     error?: string;
-}
-
-interface CodeSandboxFile {
-    content: string;
-    isBinary?: boolean;
-}
-
-interface CodeSandboxProject {
-    files: Record<string, CodeSandboxFile>;
-    template?: string;
-    dependencies?: Record<string, string>;
-    devDependencies?: Record<string, string>;
 }
 
 const VerifyProject: StepComponent = ({
@@ -37,9 +24,8 @@ const VerifyProject: StepComponent = ({
     props: StepProps;
     variant: 'header' | 'content' | 'footer';
 }) => {
-    const { projectData, prevStep, nextStep } = props;
+    const { projectData, prevStep, nextStep, isFinalizing } = props;
     const [validation, setValidation] = useState<NextJsProjectValidation | null>(null);
-
     useEffect(() => {
         validateProject();
     }, [projectData]);
@@ -112,98 +98,6 @@ const VerifyProject: StepComponent = ({
         }
     };
 
-
-    const finalizeProject = async () => {
-        console.log(projectData);
-        if (!projectData.files) {
-            return;
-        }
-        const codeSandboxProject = await convertToCodeSandboxFormat(projectData.files);
-        console.log(codeSandboxProject);
-        const { sandboxId, previewUrl } = await uploadToCodeSandbox(codeSandboxProject);
-        console.log(sandboxId, previewUrl); 
-    };
-
-    const convertToCodeSandboxFormat = async (
-        files: ProcessedFile[],
-    ): Promise<CodeSandboxProject> => {
-        try {
-            const sandboxFiles: Record<string, CodeSandboxFile> = {};
-            let dependencies: Record<string, string> = {};
-            let devDependencies: Record<string, string> = {};
-
-            // Add the Script to the 'layouts.tsx' file
-            // Test on firefox, chrome, safari, edge, opera, brave, etc.
-    
-            for (const file of files) {
-                if (file.isBinary) {
-                    // Convert binary files to base64
-                    const buffer = file.content as ArrayBuffer;
-                    const blob = new Blob([buffer]);
-                    const base64 = await blobToBase64String(blob);
-                    
-                    sandboxFiles[file.path] = {
-                        content: base64,
-                        isBinary: true,
-                    };
-                } else {
-                    const content = file.content as string;
-    
-                    // Extract dependencies from package.json
-                    if (file.path.endsWith('package.json')) {
-                        try {
-                            const pkg = JSON.parse(content);
-                            dependencies = pkg.dependencies || {};
-                            devDependencies = pkg.devDependencies || {};
-                        } catch (error) {
-                            console.warn('Error parsing package.json:', error);
-                        }
-                    }
-    
-                    sandboxFiles[file.path] = {
-                        content,
-                    };
-                }
-            }
-    
-            return {
-                files: sandboxFiles,
-                template: 'node',
-                dependencies,
-                devDependencies,
-            };
-        } catch (error) {
-            console.error('Error converting to CodeSandbox format:', error);
-            return {
-                files: {},
-                template: 'node',
-                dependencies: {},
-                devDependencies: {},
-            };
-        }
-    };
-
-    const uploadToCodeSandbox = async (
-        project: CodeSandboxProject,
-    ): Promise<{ sandboxId: string; previewUrl: string }> => {
-        try {
-            const response = await api.sandbox.uploadProject.mutate({
-                files: project.files,
-                dependencies: project.dependencies,
-                devDependencies: project.devDependencies,
-                projectName: projectData.name,
-            });
-
-            return {
-                sandboxId: response.sandboxId,
-                previewUrl: response.previewUrl,
-            };
-        } catch (error) {
-            console.error('Error uploading to CodeSandbox:', error);
-            throw new Error('Failed to upload project to CodeSandbox');
-        }
-    };
-
     const validProject = () => (
         <motion.div
             key="name"
@@ -264,9 +158,7 @@ const VerifyProject: StepComponent = ({
             return (
                 <>
                     <CardTitle>{'Project verified'}</CardTitle>
-                    <CardDescription>
-                        {'Your project is ready to import to Onlook'}
-                    </CardDescription>  
+                    <CardDescription>{'Your project is ready to import to Onlook'}</CardDescription>
                 </>
             );
         } else {
@@ -279,7 +171,6 @@ const VerifyProject: StepComponent = ({
                 </>
             );
         }
-
     };
 
     const renderContent = () => (
@@ -292,17 +183,23 @@ const VerifyProject: StepComponent = ({
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="w-full"
                 >
-                    {validation?.isValid ? validProject() : invalidProject()}
+                    { validation?.isValid ? (
+                        validProject()
+                    ) : (
+                        invalidProject()
+                    )}
                 </motion.div>
             </AnimatePresence>
         </MotionConfig>
     );
-    const renderFooter = () => {
+    const renderFooter = () => {        
         if (validation?.isValid) {
             return (
                 <div className="flex flex-row w-full justify-between">
-                    <Button onClick={prevStep}>Cancel</Button>
-                    <Button className='px-3 py-2' onClick={finalizeProject}>Continue setup</Button>
+                    <Button onClick={prevStep} disabled={isFinalizing}>Cancel</Button>
+                    <Button className="px-3 py-2" onClick={nextStep} disabled={isFinalizing}>
+                        Finish setup
+                    </Button>
                 </div>
             );
         }

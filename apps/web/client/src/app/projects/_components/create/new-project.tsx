@@ -1,16 +1,33 @@
 import { MotionCard, MotionCardFooter } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import type { Project, StepProps } from '../../constants';
+import type { ProcessedFile, Project, StepProps } from '../../constants';
 import type { StepContent } from '../step-contents';
 import { useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import { withStepProps } from '../with-step-props';
 import { NewSelectFolder } from './select-folder';
 import { VerifyProject } from './verify-project';
+import { api } from '@/trpc/client';
+import { useUserManager } from '@/components/store/user';
+import { blobToBase64String } from 'blob-util';
+import { FinalizingProject } from './finalizing-project';
+import { Routes } from '@/utils/constants';
+import { redirect } from 'next/navigation';
+
+interface CodeSandboxFile {
+    content: string;
+    isBinary?: boolean;
+}
+
+interface CodeSandboxProject {
+    files: Record<string, CodeSandboxFile>;
+    template?: string;
+}
 
 const steps: StepContent[] = [
     withStepProps(NewSelectFolder),
     withStepProps(VerifyProject),
+    withStepProps(FinalizingProject),
 ];
 
 export const ImportProject = () => {
@@ -21,7 +38,9 @@ export const ImportProject = () => {
         folderPath: '',
         files: [],
     });
+    const userManager = useUserManager();
     const [direction, setDirection] = useState(0);
+    const [isFinalizing, setIsFinalizing] = useState(false);
 
     const { ref, height } = useResizeObserver();
 
@@ -59,6 +78,7 @@ export const ImportProject = () => {
             totalSteps: steps.length,
             prevStep,
             nextStep,
+            isFinalizing,
         };
 
 
@@ -70,17 +90,113 @@ export const ImportProject = () => {
         );
     };
 
-    const finalizeProject = () => {
-        console.log('finalizeProject');
+    const finalizeProject = async () => {
+        try {
+            setIsFinalizing(true);
+            if (!projectData.files) {
+                return;
+            }
+
+            const codeSandboxProject = await convertToCodeSandboxFormat(projectData.files);
+            const { sandboxId, previewUrl } = await uploadToCodeSandbox(codeSandboxProject);
+            if (!userManager.user?.id) {
+                console.error('No user found');
+                return;
+            }
+            const project = await api.project.create.mutate({
+                project: {
+                    name: projectData.name ?? 'New project',
+                    sandboxId,
+                    sandboxUrl: previewUrl,
+                    description: 'Your new project',
+                },
+                userId: userManager.user.id,
+            });
+            if (!project) {
+                console.error('Failed to create project');
+                return;
+            }
+            // Open the project
+            console.log('redirecting to project');
+            
+            redirect(`${Routes.PROJECT}/${project.id}`);
+        } catch (error) {
+            console.error('Error creating project:', error);
+            return;
+        } finally {
+            setIsFinalizing(false);
+        }
+    };
+
+    const convertToCodeSandboxFormat = async (
+        files: ProcessedFile[],
+    ): Promise<CodeSandboxProject> => {
+        try {
+            const sandboxFiles: Record<string, CodeSandboxFile> = {};
+
+            // Add the Script to the 'layouts.tsx' file
+            // Test on firefox, chrome, safari, edge, opera, brave, etc.
+
+            for (const file of files) {
+                if (file.isBinary) {
+                    // Convert binary files to base64
+                    const buffer = file.content as ArrayBuffer;
+                    const blob = new Blob([buffer]);
+                    const base64 = await blobToBase64String(blob);
+
+                    sandboxFiles[file.path] = {
+                        content: base64,
+                        isBinary: true,
+                    };
+                } else {
+                    const content = file.content as string;
+
+                    sandboxFiles[file.path] = {
+                        content,
+                    };
+                }
+            }
+
+            return {
+                files: sandboxFiles,
+                template: 'nextjs',
+            };
+        } catch (error) {
+            console.error('Error converting to CodeSandbox format:', error);
+            return {
+                files: {},
+                template: 'nextjs',
+            };
+        }
+    };
+
+    const uploadToCodeSandbox = async (
+        project: CodeSandboxProject,
+    ): Promise<{ sandboxId: string; previewUrl: string }> => {
+        try {
+            const response = await api.sandbox.uploadProject.mutate({
+                files: project.files,
+                projectName: projectData.folderPath,
+            });
+
+            return {
+                sandboxId: response.sandboxId,
+                previewUrl: response.previewUrl,
+            };
+        } catch (error) {
+            console.error('Error uploading to CodeSandbox:', error);
+            throw new Error('Failed to upload project to CodeSandbox');
+        }
     };
 
 
     const nextStep = () => {
-        if (currentStep < steps.length - 1) {
+        if (currentStep < steps.length - 2) { // -2 because we have 2 final steps
             setDirection(1);
             setCurrentStep((prev) => prev + 1);
         } else {
-            // This is the last step, so we should finalize the project
+            // This is the final step, so we should finalize the project
+            setCurrentStep((prev) => prev + 1);
             finalizeProject();
         }
     };
@@ -160,6 +276,7 @@ export const ImportProject = () => {
                                             totalSteps: steps.length,
                                             prevStep,
                                             nextStep,
+                                            isFinalizing,
                                         })}
                                     </div>
                                 </MotionCardFooter>

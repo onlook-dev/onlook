@@ -4,11 +4,10 @@ import { useDomainsManager } from '@/components/store/project';
 import { PublishStatus, type PublishState, DomainType, type DomainSettings, SettingsTabValue } from '@onlook/models';
 import { UsagePlanType } from '@onlook/models/usage';
 import { Button } from '@onlook/ui/button';
-import { Progress } from '@onlook/ui/progress';
+import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
 import { cn } from '@onlook/ui/utils';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
 import { DefaultSettings } from '@onlook/constants';
 import { UrlSection } from './url';
 import { toJS } from 'mobx';
@@ -25,33 +24,10 @@ export const DomainSection = observer(
         const domainsManager = useDomainsManager();
         const userManager = useUserManager();
 
-        const [progress, setProgress] = useState(0);
         const plan = userManager.subscription.plan;
         const state = domainsManager.state;
         const isAnyDomainLoading =
             state.status === PublishStatus.LOADING;
-
-        useEffect(() => {
-            let progressInterval: Timer | null = null;
-
-            if (state.status === PublishStatus.LOADING) {
-                setProgress(0);
-                progressInterval = setInterval(() => {
-                    setProgress((prev) => Math.min(prev + 0.167, 100));
-                }, 100);
-            } else {
-                setProgress(0);
-                if (progressInterval) {
-                    clearInterval(progressInterval);
-                }
-            }
-
-            return () => {
-                if (progressInterval) {
-                    clearInterval(progressInterval);
-                }
-            };
-        }, [state.status]);
 
         const openCustomDomain = () => {
             editorEngine.state.publishOpen = false;
@@ -216,7 +192,7 @@ export const DomainSection = observer(
                     {state.status === PublishStatus.LOADING && (
                         <div className="w-full flex flex-col gap-2 py-1">
                             <p>{state.message}</p>
-                            <Progress value={progress} className="w-full" />
+                            <ProgressWithInterval isLoading={state.status === PublishStatus.LOADING} />
                         </div>
                     )}
                 </div>
