@@ -12,53 +12,57 @@ import { LayersTab } from './layers-tab';
 import { PagesTab } from './page-tab';
 import { WindowsTab } from './windows-tab';
 import { ZoomControls } from './zoom-controls';
+import { useChatContext } from '../../_hooks/use-chat';
 
-const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; disabled?: boolean }[] =
-    [
-
-        {
-            value: LeftPanelTabValue.BRAND,
-            icon: <Icons.Brand className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.brand,
-        },
-        {
-            value: LeftPanelTabValue.PAGES,
-            icon: <Icons.File className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.pages,
-        },
-        {
-            value: LeftPanelTabValue.WINDOWS,
-            icon: <Icons.Desktop className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.windows.name,
-        },
-        {
-            value: LeftPanelTabValue.LAYERS,
-            icon: <Icons.Layers className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.layers,
-            disabled: true,
-        },
-
-        {
-            value: LeftPanelTabValue.IMAGES,
-            icon: <Icons.Image className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.images,
-            disabled: true,
-        },
-        {
-            value: LeftPanelTabValue.APPS,
-            icon: <Icons.ViewGrid className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.apps,
-            disabled: true,
-        },
-        {
-            value: LeftPanelTabValue.COMPONENTS,
-            icon: <Icons.Component className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.components,
-            disabled: true,
-        },
-    ];
+const tabs: {
+    value: LeftPanelTabValue;
+    icon: React.ReactNode;
+    label: string;
+    disabled?: boolean;
+}[] = [
+    {
+        value: LeftPanelTabValue.BRAND,
+        icon: <Icons.Brand className="w-5 h-5" />,
+        label: transKeys.editor.panels.layers.tabs.brand,
+    },
+    {
+        value: LeftPanelTabValue.PAGES,
+        icon: <Icons.File className="w-5 h-5" />,
+        label: transKeys.editor.panels.layers.tabs.pages,
+    },
+    {
+        value: LeftPanelTabValue.WINDOWS,
+        icon: <Icons.Desktop className="w-5 h-5" />,
+        label: transKeys.editor.panels.layers.tabs.windows.name,
+    },
+    {
+        value: LeftPanelTabValue.LAYERS,
+        icon: <Icons.Layers className="w-5 h-5" />,
+        label: transKeys.editor.panels.layers.tabs.layers,
+        disabled: true,
+    },
+    {
+        value: LeftPanelTabValue.IMAGES,
+        icon: <Icons.Image className="w-5 h-5" />,
+        label: transKeys.editor.panels.layers.tabs.images,
+        disabled: true,
+    },
+    {
+        value: LeftPanelTabValue.APPS,
+        icon: <Icons.ViewGrid className="w-5 h-5" />,
+        label: transKeys.editor.panels.layers.tabs.apps,
+        disabled: true,
+    },
+    {
+        value: LeftPanelTabValue.COMPONENTS,
+        icon: <Icons.Component className="w-5 h-5" />,
+        label: transKeys.editor.panels.layers.tabs.components,
+        disabled: true,
+    },
+];
 
 export const LeftPanel = observer(() => {
+    const { isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const isLocked = editorEngine.state.leftPanelLocked;
@@ -85,7 +89,7 @@ export const LeftPanel = observer(() => {
     };
 
     const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!isLocked) {
+        if (!isLocked && !isWaiting) {
             // This is to handle things like dropdown where the mouse is still in the content panel
             if (!isMouseInContentPanel(e)) {
                 editorEngine.state.leftPanelTab = null;
@@ -93,7 +97,7 @@ export const LeftPanel = observer(() => {
                 // TODO: Since mouse leave won't trigger anymore, we need to listen and check
                 //  if the mouse actually left the content panel and then close the content panel
             }
-        } else {
+        } else if (isLocked) {
             // If we're locked, return to the locked tab when mouse leaves
             editorEngine.state.leftPanelTab = selectedTab;
         }
@@ -126,7 +130,8 @@ export const LeftPanel = observer(() => {
                             selectedTab === tab.value && isLocked
                                 ? 'bg-accent text-foreground border-[0.5px] border-foreground/20 '
                                 : 'text-muted-foreground hover:text-foreground hover:bg-accent/50',
-                            tab.disabled && 'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground',
+                            tab.disabled &&
+                                'opacity-50 cursor-not-allowed hover:bg-transparent hover:text-muted-foreground',
                         )}
                         disabled={tab.disabled}
                         onClick={() => !tab.disabled && handleClick(tab.value)}
@@ -146,7 +151,7 @@ export const LeftPanel = observer(() => {
             {/* Content panel */}
             {editorEngine.state.leftPanelTab && (
                 <>
-                    <div className="flex-1 w-[280px] bg-background/95 rounded-xl">
+                    <div className="relative flex-1 w-[280px] bg-background/95 rounded-xl">
                         <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
                             {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
                             {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
@@ -154,10 +159,17 @@ export const LeftPanel = observer(() => {
                             {selectedTab === LeftPanelTabValue.WINDOWS && <WindowsTab />}
                             {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
                         </div>
+                        {isWaiting && (
+                            <div
+                                className="absolute inset-0 z-50 bg-transparent cursor-not-allowed"
+                                style={{ pointerEvents: 'all' }}
+                            />
+                        )}
                     </div>
-
                     {/* Invisible padding area that maintains hover state */}
-                    {!isLocked && <div className="w-24 h-full" />}
+                    {editorEngine.state.leftPanelTab && !isLocked && (
+                        <div className="w-24 h-full" />
+                    )}
                 </>
             )}
         </div>
