@@ -427,7 +427,7 @@ export const DevTab = observer(() => {
                                 <Icons.CollapseSidebar />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent side="bottom" hideArrow>
                             {isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
                         </TooltipContent>
                     </Tooltip>
@@ -437,7 +437,7 @@ export const DevTab = observer(() => {
                                 <Icons.FilePlus />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent side="bottom" hideArrow>
                             New File
                         </TooltipContent>
                     </Tooltip>
@@ -447,7 +447,7 @@ export const DevTab = observer(() => {
                                 <Icons.DirectoryPlus />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent side="bottom" hideArrow>
                             New Folder
                         </TooltipContent>
                     </Tooltip>
@@ -457,7 +457,7 @@ export const DevTab = observer(() => {
                                 <Icons.FloppyDisk />
                             </Button>
                         </TooltipTrigger>
-                        <TooltipContent>
+                        <TooltipContent side="bottom" hideArrow>
                             Save changes
                         </TooltipContent>
                     </Tooltip>

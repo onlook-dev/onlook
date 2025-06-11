@@ -71,7 +71,7 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                                     </Button>
                                 </span>
                             </TooltipTrigger>
-                            <TooltipContent side="bottom">
+                            <TooltipContent side="bottom" hideArrow>
                                 <HotkeyLabel hotkey={hotkey} />
                             </TooltipContent>
                         </Tooltip>
