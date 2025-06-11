@@ -288,6 +288,9 @@ export class IDEManager {
 
     setHighlightRange(range: CodeRange | null) {
         this.highlightRange = range;
+        if (this.activeFile) {
+            this.activeFile = { ...this.activeFile };
+        }
     }
 
     clear() {

@@ -32,7 +32,7 @@ export class CodeManager {
         console.log('viewSourceFile', fileName);
     }
 
-    viewCodeBlock(oid: string) {
+    async viewCodeBlock(oid: string) {
         try {
             this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
             const element =
@@ -40,9 +40,16 @@ export class CodeManager {
                 this.editorEngine.elements.selected.find((el: DomElement) => el.instanceId === oid);
 
             if (element) {
-                setTimeout(() => {
-                    this.editorEngine.elements.selected = [element];
-                }, 500);
+                // First get the file path and load the file
+                const filePath = await this.editorEngine.ide.getFilePathFromOid(element.oid || '');
+                if (filePath) {
+                    // Load the file first
+                    await this.editorEngine.ide.openFile(filePath);
+                    // Then select the element after a small delay to ensure the file is loaded
+                    setTimeout(() => {
+                        this.editorEngine.elements.selected = [element];
+                    }, 500);
+                }
             }
         } catch (error) {
             console.error('Error viewing source:', error);
