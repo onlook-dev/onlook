@@ -3,12 +3,12 @@ import { invitationRouter, projectRouter, userRouter } from './routers';
 import { canvasRouter } from './routers/canvas';
 import { chatRouter } from './routers/chat';
 import { codeRouter } from './routers/code';
+import { domainRouter } from './routers/domain';
 import { figmaRouter } from './routers/figma';
 import { frameRouter } from './routers/frame';
 import { memberRouter } from './routers/member';
 import { sandboxRouter } from './routers/sandbox';
 import { userCanvasRouter } from './routers/user-canvas';
-import { domainRouter } from './routers/domain';
 
 /**
  * This is the primary router for your server.

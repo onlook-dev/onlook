@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager } from '@/components/store/project';
 import { PublishStatus } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
@@ -9,31 +8,7 @@ import { observer } from 'mobx-react-lite';
 
 export const TriggerButton = observer(() => {
     const editorEngine = useEditorEngine();
-    const domainsManager = useDomainsManager();
-    const baseStatus = domainsManager.state?.status;
-    const customStatus = domainsManager.state?.status;
-
-    const computeStatus = () => {
-        if (!baseStatus && !customStatus) {
-            return PublishStatus.UNPUBLISHED;
-        }
-
-        if (baseStatus === PublishStatus.ERROR || customStatus === PublishStatus.ERROR) {
-            return PublishStatus.ERROR;
-        }
-
-        if (baseStatus === PublishStatus.LOADING || customStatus === PublishStatus.LOADING) {
-            return PublishStatus.LOADING;
-        }
-
-        if (baseStatus === PublishStatus.PUBLISHED || customStatus === PublishStatus.PUBLISHED) {
-            return PublishStatus.PUBLISHED;
-        }
-
-        return PublishStatus.UNPUBLISHED;
-    };
-
-    const status: PublishStatus = computeStatus();
+    const status = editorEngine.hosting.state.status;
 
     let colorClasses = 'border-input bg-background hover:bg-background-onlook text-foreground';
     let icon: React.ReactNode | null = <Icons.Globe className="mr-2 h-4 w-4" />;

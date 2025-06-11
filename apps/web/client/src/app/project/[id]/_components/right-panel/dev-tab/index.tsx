@@ -2,7 +2,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import type { CodeRange, EditorFile } from '@/components/store/editor/dev';
 import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
 import { EditorView } from '@codemirror/view';
-import { SystemTheme } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -17,7 +16,7 @@ import { getMimeType } from '@onlook/utility';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getBasicSetup, getExtensions } from './code-mirror-config';
 import { FileModal } from './file-modal';
 import { FileTab } from './file-tab';
@@ -38,9 +37,9 @@ export const DevTab = observer(() => {
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
 
     // Helper function to check if sandbox is connected and ready
-    const isSandboxReady = (): boolean => {
+    const isSandboxReady = useCallback((): boolean => {
         return !!(editorEngine.sandbox.session.session && !editorEngine.sandbox.session.isConnecting);
-    };
+    }, [editorEngine.sandbox.session.session, editorEngine.sandbox.session.isConnecting]);
 
     // Helper function to handle sandbox not ready scenarios
     const handleSandboxNotReady = (operation: string): void => {
@@ -242,7 +241,7 @@ export const DevTab = observer(() => {
         }
     }, [editorEngine.sandbox.session.session, editorEngine.sandbox.session.isConnecting]);
 
-    const handleRefreshFiles = async () => {
+    const handleRefreshFiles = useCallback(async () => {
         if (!isSandboxReady()) {
             handleSandboxNotReady('refresh files');
             return;
@@ -255,7 +254,7 @@ export const DevTab = observer(() => {
         } catch (error) {
             console.error('Error refreshing files:', error);
         }
-    };
+    }, [isSandboxReady]);
 
     async function loadNewContent(filePath: string) {
         if (!isSandboxReady()) {
@@ -270,7 +269,7 @@ export const DevTab = observer(() => {
         }
     }
 
-    async function loadFile(filePath: string): Promise<EditorFile | null> {
+    const loadFile = useCallback(async (filePath: string): Promise<EditorFile | null> => {
         if (!isSandboxReady()) {
             handleSandboxNotReady('load file');
             return null;
@@ -282,7 +281,7 @@ export const DevTab = observer(() => {
             console.error('Error loading file:', error);
             return null;
         }
-    }
+    }, [isSandboxReady]);
 
     function handleFileSelect(file: EditorFile) {
         ide.setHighlightRange(null);
@@ -562,9 +561,9 @@ export const DevTab = observer(() => {
                                                 key={file.id}
                                                 value={file.content}
                                                 height="100%"
-                                                theme={theme === SystemTheme.DARK ? 'dark' : 'light'}
+                                                theme="dark"
                                                 extensions={[
-                                                    ...getBasicSetup(theme === SystemTheme.DARK, saveFile),
+                                                    ...getBasicSetup(saveFile),
                                                     ...getExtensions(file.language),
                                                 ]}
                                                 onChange={(value) => {

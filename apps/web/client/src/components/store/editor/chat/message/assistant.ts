@@ -10,9 +10,11 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     applied: boolean = false;
     snapshots: Record<string, CodeDiff> = {};
     parts: Message['parts'] = [];
+    aiSdkId: string | undefined;
 
-    constructor(message: Message) {
+    private constructor(message: Message) {
         this.id = uuidv4();
+        this.aiSdkId = message.id;
         this.content = message.content;
         this.parts = message.parts;
     }

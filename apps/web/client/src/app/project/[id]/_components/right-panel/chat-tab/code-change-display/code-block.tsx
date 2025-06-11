@@ -33,7 +33,7 @@ export const CodeBlock = ({
                     'flex-1 w-full h-full min-h-full max-h-full overflow-auto',
                     className,
                 )}
-                theme={theme === SystemTheme.DARK ? SystemTheme.DARK : SystemTheme.LIGHT}
+                theme={SystemTheme.DARK}
                 extensions={extensions}
             />
         </div>

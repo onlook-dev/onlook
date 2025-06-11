@@ -23,103 +23,117 @@ export class ChatCodeManager {
 
     async applyCode(messageId: string) {
         this.isApplying = true;
-        const message = this.chat.conversation.current?.getMessageById(messageId);
-        if (!message) {
-            console.error('No message found with id', messageId);
-            return;
-        }
-        if (message.role !== ChatMessageRole.ASSISTANT) {
-            console.error('Can only apply code to assistant messages');
-            return;
-        }
-
-        const fileToCodeBlocks = this.getFileToCodeBlocks(message);
-
-        for (const [filePath, codeBlocks] of fileToCodeBlocks) {
-            // If file doesn't exist, we'll assume it's a new file and create it
-            const originalContent = (await this.editorEngine.sandbox.readFile(filePath)) || '';
-            if (originalContent == null) {
-                console.error('Failed to get file content', filePath);
-                continue;
+        try {
+            const message = this.chat.conversation.current?.getMessageById(messageId);
+            if (!message) {
+                throw new Error(`No message found with id ${messageId}`);
             }
-            let content = originalContent;
-            for (const block of codeBlocks) {
-                const result = await api.code.applyDiff.mutate({
-                    originalCode: content,
-                    updateSnippet: block.content,
-                });
-                if (result.error || !result.result) {
-                    console.error('Failed to apply code block', block);
-                    toast.error('Failed to apply code block', {
-                        description: 'Please try again or prompt the AI to fix it.',
-                    });
-                    continue;
+            if (message.role !== ChatMessageRole.ASSISTANT) {
+                throw new Error('Can only apply code to assistant messages');
+            }
+
+            const fileToCodeBlocks = this.getFileToCodeBlocks(message);
+
+            for (const [filePath, codeBlocks] of fileToCodeBlocks) {
+                // If file doesn't exist, we'll assume it's a new file and create it
+                const originalContent = (await this.editorEngine.sandbox.readFile(filePath)) || '';
+                if (originalContent == null) {
+                    throw new Error(`Failed to get file content from ${filePath}`);
                 }
-                content = result.result;
+                let content = originalContent;
+                for (const block of codeBlocks) {
+                    const result = await api.code.applyDiff.mutate({
+                        originalCode: content,
+                        updateSnippet: block.content,
+                    });
+                    if (result.error || !result.result) {
+                        const errorMessage = `Failed to apply code block in ${filePath}: ${result.error || 'Unknown error'}`;
+                        this.editorEngine.error.addCodeApplicationError(errorMessage, { filePath, block });
+                        throw new Error(errorMessage);
+                    }
+                    content = result.result;
+                }
+
+                const success = await this.editorEngine.sandbox.writeFile(filePath, content);
+                if (!success) {
+                    throw new Error(`Failed to write file content to ${filePath}`);
+                }
+
+                message.applied = true;
+                message.snapshots[filePath] = {
+                    path: filePath,
+                    original: originalContent,
+                    generated: content,
+                };
+                await this.chat.conversation.current?.updateMessage(message);
             }
 
-            const success = await this.editorEngine.sandbox.writeFile(filePath, content);
-            if (!success) {
-                console.error('Failed to write file content');
-                continue;
+            const selectedWebviews = this.editorEngine.frames.selected;
+            for (const frame of selectedWebviews) {
+                await this.editorEngine.ast.refreshAstDoc(frame.view);
             }
 
-            message.applied = true;
-            message.snapshots[filePath] = {
-                path: filePath,
-                original: originalContent,
-                generated: content,
-            };
-            await this.chat.conversation.current?.updateMessage(message);
+            setTimeout(() => {
+                this.editorEngine.frames.reloadAll();
+                this.editorEngine.error.clear();
+            }, 500);
+
+        } catch (error) {
+            console.error('Failed to apply code', error);
+            this.editorEngine.error.addCodeApplicationError(error instanceof Error ? error.message : 'Unknown error', { messageId });
+            toast.error('Failed to apply code', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+        } finally {
+            this.chat.suggestions.shouldHide = false;
+            this.isApplying = false;
         }
 
-        const selectedWebviews = this.editorEngine.frames.selected;
-        for (const frame of selectedWebviews) {
-            await this.editorEngine.ast.refreshAstDoc(frame.view);
-        }
-
-        this.chat.suggestions.shouldHide = false;
-        this.isApplying = false;
-
-        setTimeout(() => {
-            this.editorEngine.frames.reloadAll();
-            this.editorEngine.error.clear();
-        }, 500);
         sendAnalytics('apply code change');
     }
 
     async revertCode(messageId: string) {
-        const message = this.chat.conversation.current?.getMessageById(messageId);
-        if (!message) {
-            console.error('No message found with id', messageId);
-            return;
-        }
-        if (message.role !== ChatMessageRole.ASSISTANT) {
-            console.error('Can only revert code to assistant messages');
-            return;
-        }
-        if (!message.applied) {
-            console.error('Code is not applied');
-            return;
-        }
-
-        for (const [file, snapshot] of Object.entries(message.snapshots)) {
-            const success = await this.writeFileContent(
-                file,
-                snapshot.original,
-                snapshot.generated,
-            );
-            if (!success) {
-                console.error('Failed to revert code change');
+        try {
+            const message = this.chat.conversation.current?.getMessageById(messageId);
+            if (!message) {
+                console.error('No message found with id', messageId);
                 return;
             }
-        }
+            if (message.role !== ChatMessageRole.ASSISTANT) {
+                console.error('Can only revert code to assistant messages');
+                return;
+            }
+            if (!message.applied) {
+                console.error('Code is not applied');
+                return;
+            }
 
-        message.applied = false;
-        this.chat.conversation.current?.updateMessage(message);
-        setTimeout(() => {
-            this.editorEngine.frames.reloadAll();
-        }, 500);
+            for (const [file, snapshot] of Object.entries(message.snapshots)) {
+                const success = await this.writeFileContent(
+                    file,
+                    snapshot.original,
+                    snapshot.generated,
+                );
+                if (!success) {
+                    console.error('Failed to revert code change');
+                    return;
+                }
+            }
+
+            message.applied = false;
+            this.chat.conversation.current?.updateMessage(message);
+            setTimeout(() => {
+                this.editorEngine.frames.reloadAll();
+            }, 500);
+        } catch (error) {
+            console.error('Failed to revert code', error);
+            this.editorEngine.error.addCodeApplicationError(error instanceof Error ? error.message : 'Unknown error', { messageId });
+            toast.error('Failed to revert code', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+        } finally {
+            this.isApplying = false;
+        }
         sendAnalytics('revert code change');
     }
 
@@ -149,6 +163,8 @@ export class ChatCodeManager {
         for (const codeBlock of codeBlocks) {
             if (!codeBlock.fileName) {
                 console.error('No file name found in code block', codeBlock);
+                const errorMessage = `Code block found without file name: ${codeBlock.content.substring(0, 100)}...`;
+                this.editorEngine.error.addCodeApplicationError(errorMessage, codeBlock);
                 continue;
             }
             fileToCode.set(codeBlock.fileName, [
