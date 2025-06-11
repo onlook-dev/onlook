@@ -65,7 +65,7 @@
         "dayjs": "^1.11.13",
         "embla-carousel-react": "^8.6.0",
         "flexsearch": "^0.8.160",
-        "freestyle-sandboxes": "^0.0.77",
+        "freestyle-sandboxes": "^0.0.78",
         "localforage": "^1.10.0",
         "lucide-react": "^0.486.0",
         "mobx-react-lite": "^4.1.0",
