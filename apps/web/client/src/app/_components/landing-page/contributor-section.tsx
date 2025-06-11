@@ -1,7 +1,9 @@
 'use client';
 
+import './contributor.css';
+
 import { Icons } from '@onlook/ui/icons/index';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Contributor {
     login: string;
@@ -11,12 +13,12 @@ interface Contributor {
 
 // Floating Circles: two concentric rings
 const FloatingRings = () => {
-    const [isMd, setIsMd] = React.useState(false);
+    const [isMd, setIsMd] = useState(false);
     const [contributors, setContributors] = useState<Contributor[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [mounted, setMounted] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setMounted(true);
         const media = window.matchMedia('(min-width: 768px)');
         const listener = () => setIsMd(media.matches);
