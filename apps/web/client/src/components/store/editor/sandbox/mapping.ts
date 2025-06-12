@@ -9,6 +9,7 @@ import {
 export class TemplateNodeMapper {
     private oidToTemplateNodeMap = new Map<string, TemplateNode>();
     private storageKey = 'template-node-map';
+    private readonly maxCacheSize = 5000;
 
     constructor(private localforage: LocalForage) {
         this.restoreFromLocalStorage();
@@ -40,6 +41,12 @@ export class TemplateNodeMapper {
 
     updateMapping(newMap: Map<string, TemplateNode>) {
         this.oidToTemplateNodeMap = new Map([...this.oidToTemplateNodeMap, ...newMap]);
+        
+        if (this.oidToTemplateNodeMap.size > this.maxCacheSize) {
+            const keysToDelete = Array.from(this.oidToTemplateNodeMap.keys()).slice(0, this.oidToTemplateNodeMap.size - this.maxCacheSize);
+            keysToDelete.forEach(key => this.oidToTemplateNodeMap.delete(key));
+        }
+        
         this.saveToLocalStorage();
     }
 

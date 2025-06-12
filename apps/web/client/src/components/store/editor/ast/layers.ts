@@ -114,10 +114,17 @@ export class LayersManager {
     }
 
     remove(frameId: string) {
+        const metadata = this.frameIdToLayerMetadata.get(frameId);
+        if (metadata) {
+            metadata.domIdToLayerNode.clear();
+        }
         this.frameIdToLayerMetadata.delete(frameId);
     }
 
     clear() {
+        this.frameIdToLayerMetadata.forEach(metadata => {
+            metadata.domIdToLayerNode.clear();
+        });
         this.frameIdToLayerMetadata.clear();
     }
 }

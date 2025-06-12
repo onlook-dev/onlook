@@ -3,6 +3,7 @@ import { makeAutoObservable } from 'mobx';
 export class FileSyncManager {
     private cache: Map<string, string>;
     private storageKey = 'file-sync-cache';
+    private readonly maxCacheSize = 1000;
 
     constructor() {
         this.cache = new Map();
@@ -59,6 +60,12 @@ export class FileSyncManager {
     }
 
     async updateCache(filePath: string, content: string): Promise<void> {
+        if (this.cache.size >= this.maxCacheSize) {
+            const firstKey = this.cache.keys().next().value;
+            if (firstKey) {
+                this.cache.delete(firstKey);
+            }
+        }
         this.cache.set(filePath, content);
         await this.saveToLocalStorage();
     }

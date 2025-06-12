@@ -22,12 +22,13 @@ export class SandboxManager {
     readonly fileEventBus: FileEventBus = new FileEventBus();
     private isIndexed = false;
     private isIndexing = false;
+    private reactionDisposer: (() => void) | null = null;
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
         makeAutoObservable(this);
 
-        reaction(
+        this.reactionDisposer = reaction(
             () => this.session.session,
             (session) => {
                 this.isIndexed = false;
@@ -423,10 +424,13 @@ export class SandboxManager {
     }
 
     clear() {
+        this.reactionDisposer?.();
+        this.reactionDisposer = null;
         this.fileWatcher?.dispose();
         this.fileWatcher = null;
         this.fileSync.clear();
         this.templateNodeMap.clear();
+        this.fileEventBus.clearSubscribers();
         this.session.disconnect();
         this.isIndexed = false;
         this.isIndexing = false;
