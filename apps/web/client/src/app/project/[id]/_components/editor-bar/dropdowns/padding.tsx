@@ -7,7 +7,6 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { cn } from "@onlook/ui/utils";
 import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
@@ -16,69 +15,13 @@ import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 import { observer } from "mobx-react-lite";
 
-export const Padding = observer(function Padding() {
+export const Padding = observer(() => {
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('padding');
     
     const { isOpen, onOpenChange } = useDropdownControl({ 
         id: 'padding-dropdown' 
     });
-
-    const getPaddingIcon = () => {
-        const top = boxState.paddingTop.num ?? 0;
-        const right = boxState.paddingRight.num ?? 0;
-        const bottom = boxState.paddingBottom.num ?? 0;
-        const left = boxState.paddingLeft.num ?? 0;
-
-        if (top === 0 && right === 0 && bottom === 0 && left === 0) {
-            return Icons.PaddingEmpty;
-        }
-        
-        const allSame = top === right && right === bottom && bottom === left && top !== 0;
-        if (allSame) {
-            return Icons.PaddingFull;
-        }
-
-        if (top && right && bottom && left) return Icons.PaddingFull;
-        if (top && right && bottom) return Icons.PaddingTRB;
-        if (top && right && left) return Icons.PaddingTRL;
-        if (top && bottom && left) return Icons.PaddingTBL;
-        if (right && bottom && left) return Icons.PaddingRBL;
-        if (top && right) return Icons.PaddingTR;
-        if (top && bottom) return Icons.PaddingTB;
-        if (top && left) return Icons.PaddingTL;
-        if (right && bottom) return Icons.PaddingRB;
-        if (right && left) return Icons.PaddingRL;
-        if (bottom && left) return Icons.PaddingBL;
-        if (top) return Icons.PaddingTop;
-        if (right) return Icons.PaddingRight;
-        if (bottom) return Icons.PaddingBottom;
-        if (left) return Icons.PaddingLeft;
-
-        return Icons.PaddingEmpty;
-    };
-
-    const getPaddingDisplay = () => {
-        const top = boxState.paddingTop.num ?? 0;
-        const right = boxState.paddingRight.num ?? 0;
-        const bottom = boxState.paddingBottom.num ?? 0;
-        const left = boxState.paddingLeft.num ?? 0;
-
-        if (top === right && right === bottom && bottom === left) {
-            if (top === 0) return null;
-            return boxState.padding.unit === 'px' ? `${top}` : `${boxState.padding.value}`;
-        }
-
-        if (top || right || bottom || left) {
-            return 'Mixed';
-        }
-
-        return null;
-    };
-
-    const PaddingIcon = getPaddingIcon();
-    const paddingValue = getPaddingDisplay();
-    const hasPadding = paddingValue !== null;
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
@@ -87,18 +30,15 @@ export const Padding = observer(function Padding() {
                     <Button
                         variant="ghost"
                         size="toolbar"
-                        className={cn(
-                            "gap-1 flex cursor-pointer items-center border hover:border focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0",
-                            hasPadding 
-                                ? "bg-background-tertiary/20 text-white border-border" 
-                                : "text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border hover:text-white",
-                            "data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border data-[state=open]:text-white"
-                        )}
+                        className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border gap-1 flex cursor-pointer items-center border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                     >
-                        <PaddingIcon className="h-4 min-h-4 w-4 min-w-4" />
-                        {paddingValue && (
-                            <span className="text-small">{paddingValue}</span>
-                        )}
+                        <Icons.Padding className="h-4 min-h-4 w-4 min-w-4" />
+                        {boxState.padding.unit === 'px' && typeof boxState.padding.num === 'number' && boxState.padding.num !== 0 ? (
+                            <span className="text-small">{boxState.padding.num}</span>
+                        ) : null}
+                        {boxState.padding.unit !== 'px' && boxState.padding.value ? (
+                            <span className="text-small">{boxState.padding.value}</span>
+                        ) : null}
                     </Button>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
