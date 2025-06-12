@@ -8,8 +8,6 @@
     "types": "src/index.ts",
     "scripts": {
         "clean": "rm -rf node_modules",
-        "lint": "eslint --fix .",
-        "format": "prettier --write .",
         "typecheck": "tsc --noEmit",
         "setup:product": "bun src/scripts/product.ts"
     },

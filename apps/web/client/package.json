@@ -45,6 +45,7 @@
         "@onlook/parser": "*",
         "@onlook/penpal": "*",
         "@onlook/rpc": "*",
+        "@onlook/stripe": "*",
         "@onlook/ui": "*",
         "@onlook/utility": "*",
         "@radix-ui/react-slot": "^1.1.2",
