@@ -43,7 +43,8 @@ export class TemplateNodeMapper {
         this.oidToTemplateNodeMap = new Map([...this.oidToTemplateNodeMap, ...newMap]);
         
         if (this.oidToTemplateNodeMap.size > this.maxCacheSize) {
-            const keysToDelete = Array.from(this.oidToTemplateNodeMap.keys()).slice(0, this.oidToTemplateNodeMap.size - this.maxCacheSize);
+            const entriesToKeep = this.maxCacheSize;
+            const keysToDelete = Array.from(this.oidToTemplateNodeMap.keys()).slice(0, this.oidToTemplateNodeMap.size - entriesToKeep);
             keysToDelete.forEach(key => this.oidToTemplateNodeMap.delete(key));
         }
         
