@@ -54,7 +54,7 @@ export class ChatContext {
         const figmaContext = this.context.filter(
             (context) => context.type === MessageContextType.FIGMA,
         );
-        return figmaContext;
+        return JSON.parse(JSON.stringify(figmaContext));
     }
 
     private async getFileContext(fileNames: Set<string>): Promise<FileMessageContext[]> {
