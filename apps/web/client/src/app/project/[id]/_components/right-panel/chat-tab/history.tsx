@@ -93,6 +93,7 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                                 </span>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
+                                                    <div className='absolute right-0 px-2.5 py-2 top-1/2 -translate-y-1/2'>
                                                         <Button
                                                             variant={'ghost'}
                                                             size={'icon'}
@@ -107,6 +108,7 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                                         >
                                                             <Icons.Trash className="w-4 h-4" />
                                                         </Button>
+                                                        </div>
                                                     </TooltipTrigger>
                                                     <TooltipContent side="right">
                                                         <p className="font-normal">
