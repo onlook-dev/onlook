@@ -43,6 +43,15 @@ export class TemplateNodeMapper {
         this.saveToLocalStorage();
     }
 
+    updateMappingForFile(filePath: string, newMap: Map<string, TemplateNode>) {
+        for (const [oid, node] of this.oidToTemplateNodeMap.entries()) {
+            if (node.path === filePath) {
+                this.oidToTemplateNodeMap.delete(oid);
+            }
+        }
+        this.updateMapping(newMap);
+    }
+
     async processFileForMapping(
         file: string,
         readFile: (path: string) => Promise<string | null>,
@@ -62,7 +71,7 @@ export class TemplateNodeMapper {
 
         const { ast: astWithIds, modified } = addOidsToAst(ast);
         const templateNodeMap = createTemplateNodeMap(astWithIds, file);
-        this.updateMapping(templateNodeMap);
+        this.updateMappingForFile(file, templateNodeMap);
 
         // Write the file if it has changed
         if (modified) {

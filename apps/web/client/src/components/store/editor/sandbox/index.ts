@@ -33,6 +33,7 @@ export class SandboxManager {
                 this.isIndexed = false;
                 if (session) {
                     this.fileSync.clear(); // Clear cache when switching projects
+                    this.templateNodeMap.clear(); // Remove stale template mappings
                     this.index();
                 }
             },

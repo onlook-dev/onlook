@@ -52,6 +52,23 @@ describe('TemplateNodeMapper', () => {
         expect(result.has('oid2')).toBe(true);
     });
 
+    test('updateMappingForFile should replace existing entries for the same file', () => {
+        const file = 'test.tsx';
+        const map1 = new Map<string, TemplateNode>();
+        map1.set('oid1', createMockTemplateNode('oid1', 'Component1'));
+
+        const map2 = new Map<string, TemplateNode>();
+        const node2 = createMockTemplateNode('oid2', 'Component2');
+        map2.set('oid2', node2);
+
+        mapper.updateMappingForFile(file, map1);
+        mapper.updateMappingForFile(file, map2);
+
+        const result = mapper.getTemplateNodeMap();
+        expect(result.size).toBe(1);
+        expect(result.get('oid2')).toEqual(node2);
+    });
+
     test('updateMapping should call localforage.setItem with correct parameters', async () => {
         // Arrange
         const nodeMap = new Map<string, TemplateNode>();
@@ -134,7 +151,7 @@ describe('TemplateNodeMapper', () => {
             return true;
         });
 
-        const processFileSpy = spyOn(mapper, 'updateMapping');
+        const processFileSpy = spyOn(mapper, 'updateMappingForFile');
 
         // Act
         await mapper.processFileForMapping('test.tsx', mockReadFile, mockWriteFile);
