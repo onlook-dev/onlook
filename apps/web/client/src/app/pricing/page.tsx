@@ -5,25 +5,44 @@ import { useTranslations } from 'next-intl';
 import { Footer } from '../_components/landing-page/page-footer';
 import { TopBar } from '../_components/top-bar';
 import { PricingCard } from './pricing-card';
+import { TierPricingTable } from './tier-pricing';
 
 enum PlanKey {
-    BASIC = 'basic',
+    FREE = 'free',
     PRO = 'pro',
-    LAUNCH = 'launch',
-    SCALE = 'scale',
+    TEAMS = 'teams',
 }
 
-export default function PricingPage() {
-    const t = useTranslations();
-    const plans = [PlanKey.BASIC, PlanKey.PRO, PlanKey.LAUNCH, PlanKey.SCALE];
+interface PlanData {
+    key: PlanKey;
+    name: string;
+    price: string;
+    description: string;
+    features: string[];
+}
 
-    const data = plans.map((key: PlanKey) => ({
-        key,
-        plan: t(transKeys.pricing.plans[key].name),
-        price: t(transKeys.pricing.plans[key].price),
-        description: t(transKeys.pricing.plans[key].description),
-        features: t.raw(transKeys.pricing.plans[key].features as any),
-    }));
+const plans: PlanData[] = [
+    {
+        key: PlanKey.FREE,
+        name: 'Free',
+        price: '$0/month',
+        description: 'Prototype and experiment in code with ease.',
+        features: ['TBD'],
+    },
+    {
+        key: PlanKey.PRO,
+        name: 'Pro',
+        price: '$20/month',
+        description: 'For teams and individuals.',
+        features: ['TBD'],
+    },
+]
+
+export default function PricingPage() {
+    // Hide for now
+    return <div>Coming Soon</div>;
+
+    const t = useTranslations();
 
     return (
         <div className="flex flex-col min-h-screen justify-center items-center">
@@ -34,19 +53,20 @@ export default function PricingPage() {
                 <h1 className="text-foreground-primary text-4xl font-light mb-10">
                     {t(transKeys.pricing.titles.choosePlan)}
                 </h1>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-                    {data.map((plan) => (
+                <div className="grid grid-cols-2 gap-6 w-2/3">
+                    {plans.map((plan) => (
                         <PricingCard
                             key={plan.key}
-                            plan={plan.plan}
+                            plan={plan.name}
                             price={plan.price}
                             description={plan.description}
                             features={plan.features}
-                            buttonText={plan.key === 'basic' ? t(transKeys.pricing.buttons.currentPlan) : `Get ${t(transKeys.pricing.plans[plan.key].name)}`}
+                            buttonText={plan.key === PlanKey.FREE ? t(transKeys.pricing.buttons.currentPlan) : `Get ${plan.name}`}
                         />
                     ))}
                 </div>
             </main>
+            <TierPricingTable />
             <Footer />
         </div>
     );
