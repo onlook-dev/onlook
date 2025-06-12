@@ -7,10 +7,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { BINARY_EXTENSIONS, IGNORED_DIRECTORIES, IGNORED_FILES } from '@onlook/constants';
 import { useProjectCreation } from './project-creation-context';
 
-// TypeScript declarations for File System Access API
-declare global {
-    interface DataTransferItem {
-        webkitGetAsEntry(): FileSystemEntry | null;
+declare module "react" {
+    interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
+        webkitdirectory?: string;
+        directory?: string;
     }
 }
 
@@ -25,20 +25,12 @@ const NewSelectFolder: StepComponent = ({
 }: {
     variant: 'header' | 'content' | 'footer';
 }) => {
-    const { projectData, setProjectData, prevStep, nextStep } = useProjectCreation();
+    const { projectData, setProjectData, prevStep, nextStep, resetProjectData } = useProjectCreation();
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState('');
     const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // function nameToFolderName(name: string): string {
-    //     return name
-    //         .toLowerCase()
-    //         .replace(/[^a-z0-9]+/g, '-')
-    //         .replace(/^-+|-+$/g, '')
-    //         .replace(/^(\d)/, '_$1');
-    // }
 
     const extractProjectName = (files: ProcessedFile[]): string | null => {
         const packageJsonFile = files.find((f) => f.path.endsWith('package.json') && !f.isBinary);
@@ -59,22 +51,14 @@ const NewSelectFolder: StepComponent = ({
         fileInputRef.current?.click();
     };
 
-    useEffect(() => {
-        if (fileInputRef.current !== null) {
-            fileInputRef.current.setAttribute('directory', '');
-            fileInputRef.current.setAttribute('webkitdirectory', '');
-        }
-    }, [fileInputRef]);
-    
     const filterAndProcessFiles = async (files: File[]): Promise<ProcessedFile[]> => {
         const processedFiles: ProcessedFile[] = [];
         const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
         // Find the common root path from all files
-        const allPaths = files.map(file => (file as any).webkitRelativePath || file.name);
-        const rootPath = allPaths.length > 0 && allPaths[0].includes('/') 
-            ? allPaths[0].split('/')[0] 
-            : '';
+        const allPaths = files.map((file) => (file as any).webkitRelativePath || file.name);
+        const rootPath =
+            allPaths.length > 0 && allPaths[0].includes('/') ? allPaths[0].split('/')[0] : '';
 
         for (const file of files) {
             // Skip if file is too large
@@ -85,7 +69,7 @@ const NewSelectFolder: StepComponent = ({
 
             // Get relative path from webkitRelativePath or name
             let relativePath = (file as any).webkitRelativePath || file.name;
-            
+
             // If we have a root path and the file doesn't include it, prepend it
             if (rootPath && !relativePath.includes('/')) {
                 relativePath = `${rootPath}/${relativePath}`;
@@ -138,7 +122,7 @@ const NewSelectFolder: StepComponent = ({
         try {
             const files = Array.from(fileList);
             const fullPath = files[0]?.webkitRelativePath;
-            
+
             // Normalize path by removing leading slash if present
             const normalizedPath = fullPath?.startsWith('/') ? fullPath.substring(1) : fullPath;
             const folderPath = normalizedPath?.substring(0, normalizedPath.indexOf('/'));
@@ -148,10 +132,9 @@ const NewSelectFolder: StepComponent = ({
             if (processedFiles.length === 0) {
                 throw new Error('No valid files found in the selected folder');
             }
-            
 
             const projectName = extractProjectName(processedFiles);
-            
+
             if (!projectName) {
                 throw new Error('No project name found in the selected folder');
             }
@@ -184,17 +167,17 @@ const NewSelectFolder: StepComponent = ({
     // Helper function to recursively read directory entries
     const readDirectory = async (dirEntry: any): Promise<File[]> => {
         const files: File[] = [];
-        
+
         return new Promise((resolve) => {
             const reader = dirEntry.createReader();
-            
+
             const readEntries = () => {
                 reader.readEntries(async (entries: any[]) => {
                     if (entries.length === 0) {
                         resolve(files);
                         return;
                     }
-                    
+
                     for (const entry of entries) {
                         if (entry.isFile) {
                             const fileEntry = entry;
@@ -202,7 +185,7 @@ const NewSelectFolder: StepComponent = ({
                                 let file = await new Promise<File>((resolve, reject) => {
                                     fileEntry.file(resolve, reject);
                                 });
-                                
+
                                 // Create a new File object with webkitRelativePath
                                 const fileWithPath = new File([file], file.name, {
                                     type: file.type,
@@ -214,7 +197,7 @@ const NewSelectFolder: StepComponent = ({
                                     enumerable: true,
                                     configurable: false,
                                 });
-                                
+
                                 files.push(fileWithPath);
                             } catch (error) {
                                 console.warn(`Error reading file ${entry.name}:`, error);
@@ -224,12 +207,12 @@ const NewSelectFolder: StepComponent = ({
                             files.push(...subFiles);
                         }
                     }
-                    
+
                     // Continue reading entries (directories can have many entries)
                     readEntries();
                 });
             };
-            
+
             readEntries();
         });
     };
@@ -243,10 +226,10 @@ const NewSelectFolder: StepComponent = ({
 
         for (let i = 0; i < items.length; i++) {
             const item = items[i];
-            
+
             if (item && item.kind === 'file') {
                 const entry = item.webkitGetAsEntry();
-                
+
                 if (entry) {
                     if (entry.isFile) {
                         // Handle individual file
@@ -300,6 +283,15 @@ const NewSelectFolder: StepComponent = ({
         </>
     );
 
+    const reset = () => {
+        resetProjectData();
+        // Reset all related states
+        setError('');
+        setUploadProgress('');
+        setIsUploading(false);
+        setIsDragging(false);
+    };
+
     const renderContent = () => (
         <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
             <AnimatePresence mode="popLayout">
@@ -321,11 +313,7 @@ const NewSelectFolder: StepComponent = ({
                             className="ml-auto w-10 h-10"
                             variant={'ghost'}
                             size={'icon'}
-                            onClick={() =>
-                                setProjectData({
-                                    folderPath: undefined,
-                                })
-                            }
+                            onClick={() => reset()}
                         >
                             <Icons.MinusCircled />
                         </Button>
@@ -365,7 +353,7 @@ const NewSelectFolder: StepComponent = ({
                             ) : (
                                 <div className="flex gap-3">
                                     <Icons.DirectoryOpen className="w-5 h-5 text-gray-200" />
-                                    <p className="text-sm font-medium text-gray-200 font-medium">
+                                    <p className="text-sm font-medium text-gray-200">
                                         Click to select your folder
                                     </p>
                                 </div>
@@ -373,6 +361,7 @@ const NewSelectFolder: StepComponent = ({
                         </div>
 
                         {/* Hidden file input */}
+                        
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -380,6 +369,8 @@ const NewSelectFolder: StepComponent = ({
                             style={{ display: 'none' }}
                             onChange={handleFileInputChange}
                             accept=".js,.jsx,.ts,.tsx,.json,.md,.txt,.css,.scss,.less,.html,.svg,.png,.jpg,.jpeg,.gif,.ico"
+                            directory="" 
+                            webkitdirectory=""
                         />
                     </motion.div>
                 )}
@@ -389,14 +380,14 @@ const NewSelectFolder: StepComponent = ({
 
     const renderFooter = () => (
         <div className="flex flex-row w-full justify-between">
-            <Button type="button" onClick={prevStep} variant="ghost" className='px-3 py-2'>
+            <Button type="button" onClick={prevStep} variant="ghost" className="px-3 py-2">
                 Cancel
             </Button>
             <Button
                 disabled={!projectData.folderPath || !!error || isUploading}
                 type="button"
                 onClick={nextStep}
-                className='px-3 py-2'
+                className="px-3 py-2"
             >
                 Continue
             </Button>

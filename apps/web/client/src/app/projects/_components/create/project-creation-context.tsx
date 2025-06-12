@@ -33,6 +33,7 @@ interface ProjectCreationContextValue {
     prevStep: () => void;
     setCurrentStep: (step: number) => void;
     setDirection: (direction: number) => void;
+    resetProjectData: () => void;
 }
 
 const ProjectCreationContext = createContext<ProjectCreationContextValue | undefined>(undefined);
@@ -148,6 +149,12 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
             }
             // Open the project
             router.push(`${Routes.PROJECT}/${project.id}`);
+
+            // Set the project tab to projects after a delay
+            setTimeout(() => {
+                projectsManager.projectsTab = ProjectTabs.PROJECTS;
+            }, 1000);
+
         } catch (error) {
             console.error('Error creating project:', error);
             return;
@@ -169,10 +176,21 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
 
     const prevStep = () => {
         if (currentStep === 0) {
+            projectsManager.projectsTab = ProjectTabs.PROJECTS;
+            resetProjectData();
             return;
         }
         setDirection(-1);
         setCurrentStep((prev) => prev - 1);
+    };
+
+    const resetProjectData = () => {
+        setProjectData({
+            folderPath: undefined,
+            name: undefined,
+            files: undefined,
+        });
+        setCurrentStep(0);
     };
 
     const value: ProjectCreationContextValue = {
@@ -186,6 +204,7 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
         prevStep,
         setCurrentStep,
         setDirection,
+        resetProjectData,
     };
 
     return (
