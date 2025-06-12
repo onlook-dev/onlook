@@ -8,7 +8,6 @@ import { motion } from 'motion/react';
 import { DivSelected } from './div-selected';
 import { DropdownManagerProvider } from './hooks/use-dropdown-manager';
 import { TextSelected } from './text-selected';
-import { WindowToolbar } from './window-toolbar';
 
 enum TAG_CATEGORIES {
     TEXT = 'text',
@@ -63,7 +62,6 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
                     damping: 25,
                 }}
             >
-                {editorEngine.frames.selected.length > 0 && <WindowToolbar />}
                 {selectedTag === TAG_CATEGORIES.TEXT && <TextSelected availableWidth={availableWidth} />}
                 {selectedTag === TAG_CATEGORIES.DIV && <DivSelected availableWidth={availableWidth} />}
                 {/* {selectedTag === 'image' && <ImgSelected />} */}

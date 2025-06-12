@@ -1,9 +1,9 @@
 import { sendAnalytics } from '@/utils/analytics';
 import {
-    type BrandTabValue,
+    BrandTabValue,
     EditorMode,
     EditorTabValue,
-    type LeftPanelTabValue,
+    LeftPanelTabValue,
     SettingsTabValue,
 } from '@onlook/models';
 import { debounce } from 'lodash';
@@ -27,6 +27,16 @@ export class StateManager {
 
     constructor() {
         makeAutoObservable(this);
+    }
+
+    toggleWindowPanel() {
+        if (this.leftPanelTab === LeftPanelTabValue.WINDOWS && this.leftPanelLocked) {
+            this.leftPanelLocked = false;
+            this.leftPanelTab = null;
+        } else {
+            this.leftPanelTab = LeftPanelTabValue.WINDOWS;
+            this.leftPanelLocked = true;
+        }
     }
 
     set canvasScrolling(value: boolean) {
