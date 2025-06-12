@@ -286,6 +286,7 @@ export class SandboxManager {
             const eventType = event.type;
             if (event.type === 'remove') {
                 await this.fileSync.delete(normalizedPath);
+                this.templateNodeMap.removeMappingForFile(normalizedPath);
             } else if (eventType === 'change' || eventType === 'add') {
                 const content = await this.readRemoteFile(normalizedPath);
                 if (content === null) {
@@ -405,8 +406,9 @@ export class SandboxManager {
             // Delete the file using the filesystem API
             await this.session.session.fs.remove(normalizedPath, recursive);
 
-            // Clean up the file sync cache
+            // Clean up the file sync cache and template mappings
             await this.fileSync.delete(normalizedPath);
+            this.templateNodeMap.removeMappingForFile(normalizedPath);
 
             // Publish file deletion event
             this.fileEventBus.publish({

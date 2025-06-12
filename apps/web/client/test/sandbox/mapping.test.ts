@@ -69,6 +69,17 @@ describe('TemplateNodeMapper', () => {
         expect(result.get('oid2')).toEqual(node2);
     });
 
+    test('removeMappingForFile should delete all entries for the file', () => {
+        const file = 'test.tsx';
+        const map = new Map<string, TemplateNode>();
+        map.set('oid1', createMockTemplateNode('oid1', 'Component1'));
+        mapper.updateMappingForFile(file, map);
+
+        mapper.removeMappingForFile(file);
+
+        expect(mapper.getTemplateNodeMap().size).toBe(0);
+    });
+
     test('updateMapping should call localforage.setItem with correct parameters', async () => {
         // Arrange
         const nodeMap = new Map<string, TemplateNode>();

@@ -52,6 +52,15 @@ export class TemplateNodeMapper {
         this.updateMapping(newMap);
     }
 
+    removeMappingForFile(filePath: string) {
+        for (const [oid, node] of this.oidToTemplateNodeMap.entries()) {
+            if (node.path === filePath) {
+                this.oidToTemplateNodeMap.delete(oid);
+            }
+        }
+        this.saveToLocalStorage();
+    }
+
     async processFileForMapping(
         file: string,
         readFile: (path: string) => Promise<string | null>,
