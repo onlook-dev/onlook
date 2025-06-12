@@ -1,49 +1,42 @@
 import { env } from '@/env'
 import { createStripeClient } from '@onlook/stripe'
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { buffer } from 'node:stream/consumers'
 import Stripe from 'stripe'
 
-export const config = {
-    api: {
-        bodyParser: false,
-    },
-}
+export async function POST(request: Request) {
+    const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
+    const endpointSecret = env.STRIPE_WEBHOOK_SECRET
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    if (!env.STRIPE_WEBHOOK_SECRET) {
-        return res.status(500).end('STRIPE_WEBHOOK_SECRET is not set')
-    }
-
-    if (req.method !== 'POST') {
-        res.setHeader('Allow', 'POST')
-        return res.status(405).end('Method Not Allowed')
-    }
-
-    const sig = req.headers['stripe-signature'] as string
+    const buf = Buffer.from(await request.arrayBuffer())
     let event: Stripe.Event
 
-    const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
+    if (!endpointSecret) {
+        return new Response('STRIPE_WEBHOOK_SECRET is not set', { status: 400 })
+    }
+
+    const signature = request.headers.get('stripe-signature') as string
     try {
-        const buf = await buffer(req)
-        event = stripe.webhooks.constructEvent(buf, sig, env.STRIPE_WEBHOOK_SECRET)
+        event = stripe.webhooks.constructEvent(buf, signature, endpointSecret)
     } catch (err: any) {
-        console.error('⚠️  Webhook signature verification failed.', err.message)
-        return res.status(400).send(`Webhook Error: ${err.message}`)
+        console.log(`⚠️  Webhook signature verification failed.`, err.message)
+        return new Response('Webhook signature verification failed', { status: 400 })
     }
 
     switch (event.type) {
-        case 'payment_intent.succeeded':
+        case 'payment_intent.succeeded': {
             const paymentIntent = event.data.object as Stripe.PaymentIntent
-            console.log(`💰 PaymentIntent ${paymentIntent.id} succeeded for ${paymentIntent.amount}`)
+            console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`)
+            // handlePaymentIntentSucceeded(paymentIntent)
             break
-        case 'payment_method.attached':
+        }
+        case 'payment_method.attached': {
             const paymentMethod = event.data.object as Stripe.PaymentMethod
-            console.log(`🔗 PaymentMethod ${paymentMethod.id} attached.`)
+            // handlePaymentMethodAttached(paymentMethod)
             break
+        }
         default:
-            console.log(`Unhandled event type ${event.type}`)
+            // Unexpected event type
+            console.log(`Unhandled event type ${event.type}.`)
     }
 
-    res.status(200).end()
+    return new Response(null, { status: 200 })
 }

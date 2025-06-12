@@ -1,7 +1,6 @@
 import { config } from 'dotenv';
 import Stripe from 'stripe';
 
-// Load .env file
 config({ path: '../.env' });
 
 export const createStripeClient = (secretKey?: string) => {

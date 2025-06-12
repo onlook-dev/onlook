@@ -15,10 +15,10 @@ export const createMeterEvent = async ({
     customerId: string;
 }) => {
     const stripe = createStripeClient();
-    return await stripe.v2.billing.meterEvents.create({
+    return await stripe.billing.meterEvents.create({
         event_name: eventName,
         payload: {
-            value: value + '',
+            value: value.toString(),
             stripe_customer_id: customerId,
         },
     });
