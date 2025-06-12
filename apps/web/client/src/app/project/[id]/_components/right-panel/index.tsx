@@ -15,6 +15,7 @@ import { ChatControls } from './chat-tab/controls';
 import { ChatHistory } from './chat-tab/history';
 import { ChatPanelDropdown } from './chat-tab/panel-dropdown';
 import { DevTab } from './dev-tab';
+import { CodeControls } from './dev-tab/code-controls';
 
 const EDIT_PANEL_WIDTHS = {
     [EditorTabValue.CHAT]: 352,
@@ -68,6 +69,7 @@ export const RightPanel = observer(() => {
                             </TabsTrigger>
                         </div>
                         {selectedTab === EditorTabValue.CHAT && <ChatControls />}
+                        {selectedTab === EditorTabValue.DEV && <CodeControls />}
                     </TabsList>
                     <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
                     <TabsContent className="h-full overflow-y-auto" value={EditorTabValue.CHAT}>

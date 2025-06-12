@@ -423,50 +423,6 @@ export const DevTab = observer(() => {
 
     return (
         <div className="size-full flex flex-col">
-            <div className="flex items-center justify-between h-11 pl-4 pr-2 border-b-[0.5px]">
-                <div className="flex gap-1 items-center h-full">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => setIsFilesVisible(!isFilesVisible)}>
-                                <Icons.CollapseSidebar />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" hideArrow>
-                            {isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
-                        </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Button variant="ghost" size="icon" onClick={() => setFileModalOpen(true)}>
-                                <Icons.FilePlus />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" hideArrow>
-                            New File
-                        </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Button variant="ghost" size="icon" onClick={() => setFolderModalOpen(true)}>
-                                <Icons.DirectoryPlus />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" hideArrow>
-                            New Folder
-                        </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Button variant="ghost" size="icon" onClick={saveFile} disabled={!isDirty}>
-                                <Icons.FloppyDisk />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" hideArrow>
-                            Save changes
-                        </TooltipContent>
-                    </Tooltip>
-                </div>
-            </div>
 
             {/* Show connection status when sandbox is not ready */}
             {!isSandboxReady() && (
@@ -498,23 +454,27 @@ export const DevTab = observer(() => {
                     {/* Editor section */}
                     <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                         {/* File tabs */}
-                        <div className="flex items-center justify-between h-10 border-b-[0.5px] flex-shrink-0">
-                            <div className="flex items-center h-full overflow-x-auto">
-                                {ide.openedFiles.map((file: EditorFile) => (
-                                    <FileTab
-                                        key={file.id}
-                                        filename={file.filename}
-                                        isActive={ide.activeFile?.id === file.id}
-                                        isDirty={file.isDirty}
-                                        onClick={() => handleFileSelect(file)}
-                                        onClose={() => closeFile(file.id)}
-                                    />
-                                ))}
+                        <div className="flex items-center justify-between h-11 pl-0 border-b-[0.5px] flex-shrink-0 relative">
+                            <div className="absolute left-0 top-0 bottom-0 z-20 border-r-[0.5px] h-full flex items-center p-1 bg-background">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => setIsFilesVisible(!isFilesVisible)}
+                                            className="text-muted-foreground hover:text-foreground"
+                                        >
+                                            <Icons.CollapseSidebar />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="mt-1" hideArrow>
+                                        {isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
+                                    </TooltipContent>
+                                </Tooltip>
                             </div>
-
-                            <div className="border-l-[0.5px] h-full flex items-center p-1">
+                            <div className="absolute right-0 top-0 bottom-0 z-20 flex items-center h-full border-l-[0.5px] p-1 bg-background w-12">
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger className="text-foreground hover:text-foreground-hover hover:bg-foreground/5 p-1 rounded h-full w-full flex items-center justify-center px-3">
+                                    <DropdownMenuTrigger className="text-muted-foreground hover:text-foreground hover:bg-foreground/5 p-1 rounded h-full w-full flex items-center justify-center px-2.5">
                                         <Icons.DotsHorizontal className="h-4 w-4" />
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="-mt-1">
@@ -532,6 +492,18 @@ export const DevTab = observer(() => {
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
+                            </div>
+                            <div className="flex items-center h-full overflow-x-auto w-full pl-11 pr-12">
+                                {ide.openedFiles.map((file) => (
+                                    <FileTab
+                                        key={file.id}
+                                        filename={file.filename}
+                                        isActive={ide.activeFile?.id === file.id}
+                                        isDirty={file.isDirty}
+                                        onClick={() => handleFileSelect(file)}
+                                        onClose={() => closeFile(file.id)}
+                                    />
+                                ))}
                             </div>
                         </div>
 
