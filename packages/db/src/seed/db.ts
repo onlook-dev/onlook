@@ -3,6 +3,7 @@ import {
     conversations,
     frames,
     messages,
+    previewDomains,
     projects,
     userCanvases,
     userProjects,
@@ -184,6 +185,7 @@ export const seedDb = async () => {
 export const resetDb = async () => {
     console.log('Resetting the database...');
     await db.transaction(async (tx) => {
+        await tx.delete(previewDomains);
         await tx.delete(messages);
         await tx.delete(conversations);
         await tx.delete(frames);
