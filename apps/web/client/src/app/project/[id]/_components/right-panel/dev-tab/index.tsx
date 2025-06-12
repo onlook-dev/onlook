@@ -173,7 +173,7 @@ export const DevTab = observer(() => {
                 selection,
                 effects: [
                     EditorView.scrollIntoView(selection.main, {
-                        y: 'center'
+                        y: 'start'
                     })
                 ],
                 userEvent: 'select.element'

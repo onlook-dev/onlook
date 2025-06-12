@@ -23,6 +23,7 @@ export class SessionManager {
                 return await api.sandbox.start.mutate({ sandboxId: id, userId });
             },
         });
+        this.session.keepActiveWhileConnected(true);
         this.isConnecting = false;
         await this.createTerminalSessions(this.session);
     }
@@ -55,8 +56,22 @@ export class SessionManager {
         await api.sandbox.hibernate.mutate({ sandboxId });
     }
 
-    async reconnect() {
-        await this.session?.reconnect();
+    async reconnect(sandboxId: string, userId: string | undefined) {
+        if (!this.session) {
+            console.error('No session found');
+            return;
+        }
+        this.isConnecting = true;
+        await this.session.reconnect().catch(async (err) => {
+            console.error('Failed to reconnect session:', err);
+            if (!userId) {
+                console.error('No user id found');
+                return;
+            }
+            await this.start(sandboxId, userId);
+        }).finally(() => {
+            this.isConnecting = false;
+        });
     }
 
     async disconnect() {
