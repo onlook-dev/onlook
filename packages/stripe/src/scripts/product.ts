@@ -12,19 +12,27 @@ const cleanupExistingProduct = async (stripe: Stripe, productName: string) => {
         const existingProduct = products.data.find((p) => p.name === productName);
 
         if (existingProduct) {
+            console.log('Found existing product', existingProduct.id);
             // Find and delete associated prices
             const prices = await stripe.prices.list({ product: existingProduct.id });
             for (const price of prices.data) {
-                await stripe.prices.update(price.id, { active: false });
+                if (price.product === existingProduct.id) {
+                    console.log('Deactivating price', price.id);
+                    await stripe.prices.update(price.id, { active: false });
+                }
             }
 
             // Find and delete associated meters
             const meters = await stripe.billing.meters.list();
             for (const meter of meters.data) {
-                await stripe.billing.meters.deactivate(meter.id);
+                if (meter.display_name === productName) {
+                    console.log('Deactivating meter', meter.id);
+                    await stripe.billing.meters.deactivate(meter.id);
+                }
             }
 
             // Delete the product
+            console.log('Deleting product', existingProduct.id);
             await stripe.products.del(existingProduct.id);
         }
     } catch (error) {
