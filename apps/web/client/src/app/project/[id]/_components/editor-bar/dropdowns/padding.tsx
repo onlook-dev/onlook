@@ -22,6 +22,7 @@ export const Padding = observer(() => {
     const { isOpen, onOpenChange } = useDropdownControl({ 
         id: 'padding-dropdown' 
     });
+    
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>

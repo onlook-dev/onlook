@@ -1398,6 +1398,7 @@ export const Icons = {
     ViewGrid: ViewGridIcon,
     ViewHorizontal: ViewHorizontalIcon,
     ViewVertical: ViewVerticalIcon,
+
     EmptyState: ({ className, ...props }: IconProps) => (
         <svg
             width="130"

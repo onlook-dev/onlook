@@ -22,6 +22,7 @@ export const Margin = observer(() => {
     const { isOpen, onOpenChange } = useDropdownControl({ 
         id: 'margin-dropdown' 
     });
+    
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
