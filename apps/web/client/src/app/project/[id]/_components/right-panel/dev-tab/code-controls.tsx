@@ -65,7 +65,7 @@ export const CodeControls = observer(() => {
                             disabled={!isDirty}
                             className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
                         >
-                            <Icons.FloppyDisk className="h-4 w-4" />
+                            <Icons.Save className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" hideArrow>

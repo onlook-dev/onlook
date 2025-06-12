@@ -464,7 +464,7 @@ export const DevTab = observer(() => {
                                             onClick={() => setIsFilesVisible(!isFilesVisible)}
                                             className="text-muted-foreground hover:text-foreground"
                                         >
-                                            <Icons.CollapseSidebar />
+                                            {isFilesVisible ? <Icons.SidebarLeftCollapse /> : <Icons.SidebarLeftExpand />}
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="mt-1" hideArrow>
@@ -472,7 +472,7 @@ export const DevTab = observer(() => {
                                     </TooltipContent>
                                 </Tooltip>
                             </div>
-                            <div className="absolute right-0 top-0 bottom-0 z-20 flex items-center h-full border-l-[0.5px] p-1 bg-background w-12">
+                            <div className="absolute right-0 top-0 bottom-0 z-20 flex items-center h-full border-l-[0.5px] p-1 bg-background w-11">
                                 <DropdownMenu>
                                     <DropdownMenuTrigger className="text-muted-foreground hover:text-foreground hover:bg-foreground/5 p-1 rounded h-full w-full flex items-center justify-center px-2.5">
                                         <Icons.DotsHorizontal className="h-4 w-4" />
@@ -481,12 +481,14 @@ export const DevTab = observer(() => {
                                         <DropdownMenuItem
                                             onClick={() => ide.activeFile && closeFile(ide.activeFile.id)}
                                             disabled={!ide.activeFile}
+                                            className="cursor-pointer"
                                         >
                                             Close file
                                         </DropdownMenuItem>
                                         <DropdownMenuItem
                                             onClick={() => closeAllFiles()}
                                             disabled={ide.openedFiles.length === 0}
+                                            className="cursor-pointer"
                                         >
                                             Close all
                                         </DropdownMenuItem>
@@ -518,101 +520,110 @@ export const DevTab = observer(() => {
                                 </div>
                             )}
                             <div ref={editorContainer} className="h-full">
-                                {ide.openedFiles.map((file) => (
-                                    <div
-                                        key={file.id}
-                                        className="h-full"
-                                        style={{
-                                            display: ide.activeFile?.id === file.id ? 'block' : 'none',
-                                        }}
-                                    >
-                                        {file.isBinary ? (
-                                            <img
-                                                src={getFileUrl(file)}
-                                                alt={file.filename}
-                                                className="w-full h-full object-contain p-5"
-                                            />
-                                        ) : (
-                                            <CodeMirror
-                                                key={file.id}
-                                                value={file.content}
-                                                height="100%"
-                                                theme="dark"
-                                                extensions={[
-                                                    ...getBasicSetup(saveFile),
-                                                    ...getExtensions(file.language),
-                                                ]}
-                                                onChange={(value) => {
-                                                    if (ide.highlightRange) {
-                                                        ide.setHighlightRange(null);
-                                                    }
-                                                    updateFileContent(file.id, value);
-                                                }}
-                                                className="h-full overflow-hidden"
-                                                onCreateEditor={(editor) => {
-                                                    editorViewsRef.current.set(file.id, editor);
-
-                                                    editor.dom.addEventListener('mousedown', () => {
+                                {/* Empty state when no file is selected */}
+                                {ide.openedFiles.length === 0 || !ide.activeFile ? (
+                                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                                        <div className="text-center text-muted-foreground text-base">
+                                            Open a file or select an element on the page.
+                                        </div>
+                                    </div>
+                                ) : (
+                                    ide.openedFiles.map((file) => (
+                                        <div
+                                            key={file.id}
+                                            className="h-full"
+                                            style={{
+                                                display: ide.activeFile?.id === file.id ? 'block' : 'none',
+                                            }}
+                                        >
+                                            {file.isBinary ? (
+                                                <img
+                                                    src={getFileUrl(file)}
+                                                    alt={file.filename}
+                                                    className="w-full h-full object-contain p-5"
+                                                />
+                                            ) : (
+                                                <CodeMirror
+                                                    key={file.id}
+                                                    value={file.content}
+                                                    height="100%"
+                                                    theme="dark"
+                                                    extensions={[
+                                                        ...getBasicSetup(saveFile),
+                                                        ...getExtensions(file.language),
+                                                    ]}
+                                                    onChange={(value) => {
                                                         if (ide.highlightRange) {
                                                             ide.setHighlightRange(null);
                                                         }
-                                                    });
+                                                        updateFileContent(file.id, value);
+                                                    }}
+                                                    className="h-full overflow-hidden"
+                                                    onCreateEditor={(editor) => {
+                                                        editorViewsRef.current.set(file.id, editor);
 
-                                                    // If this file is the active file and we have a highlight range,
-                                                    // trigger the highlight effect again
-                                                    if (
-                                                        ide.activeFile &&
-                                                        ide.activeFile.id === file.id &&
-                                                        ide.highlightRange
-                                                    ) {
-                                                        setTimeout(() => {
+                                                        editor.dom.addEventListener('mousedown', () => {
                                                             if (ide.highlightRange) {
-                                                                ide.setHighlightRange(ide.highlightRange);
+                                                                ide.setHighlightRange(null);
                                                             }
-                                                        }, 300);
-                                                    }
-                                                }}
-                                            />
-                                        )}
-                                        {ide.activeFile?.isDirty && showUnsavedDialog && (
-                                            <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 shadow-lg rounded-lg p-4 w-[320px]">
-                                                <div className="text-sm text-gray-800 dark:text-gray-100 mb-4">
-                                                    You have unsaved changes. Are you sure you want
-                                                    to close this file?
+                                                        });
+
+                                                        // If this file is the active file and we have a highlight range,
+                                                        // trigger the highlight effect again
+                                                        if (
+                                                            ide.activeFile &&
+                                                            ide.activeFile.id === file.id &&
+                                                            ide.highlightRange
+                                                        ) {
+                                                            setTimeout(() => {
+                                                                if (ide.highlightRange) {
+                                                                    ide.setHighlightRange(ide.highlightRange);
+                                                                }
+                                                            }, 300);
+                                                        }
+                                                    }}
+                                                />
+                                            )}
+                                            {ide.activeFile?.isDirty && showUnsavedDialog && (
+                                                <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 shadow-lg rounded-lg p-4 w-[320px]">
+                                                    <div className="text-sm text-gray-800 dark:text-gray-100 mb-4">
+                                                        You have unsaved changes. Are you sure you want
+                                                        to close this file?
+                                                    </div>
+                                                    <div className="flex justify-end gap-1">
+                                                        <Button
+                                                            onClick={async () => {
+                                                                await discardChanges(file.id);
+                                                            }}
+                                                            variant="ghost"
+                                                            className="text-red hover:text-red"
+                                                        >
+                                                            Discard
+                                                        </Button>
+                                                        <Button
+                                                            onClick={async () => {
+                                                                await saveFile();
+                                                            }}
+                                                            variant="ghost"
+                                                            className="text-sm text-blue-500 hover:text-blue-500"
+                                                        >
+                                                            Save
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            onClick={() => {
+                                                                setShowUnsavedDialog(false);
+                                                                setPendingCloseAll(false);
+                                                            }}
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex justify-end gap-1">
-                                                    <Button
-                                                        onClick={async () => {
-                                                            await discardChanges(file.id);
-                                                        }}
-                                                        variant="ghost"
-                                                        className="text-red hover:text-red"
-                                                    >
-                                                        Discard
-                                                    </Button>
-                                                    <Button
-                                                        onClick={async () => {
-                                                            await saveFile();
-                                                        }}
-                                                        variant="ghost"
-                                                        className="text-sm text-blue-500 hover:text-blue-500"
-                                                    >
-                                                        Save
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        onClick={() => {
-                                                            setShowUnsavedDialog(false);
-                                                            setPendingCloseAll(false);
-                                                        }}
-                                                    >
-                                                        Cancel
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                            )}
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
