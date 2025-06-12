@@ -35,6 +35,7 @@ export const DevTab = observer(() => {
     const isDirty = ide.activeFile?.isDirty ?? false;
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
+    const fileTabsContainerRef = useRef<HTMLDivElement>(null);
 
     // Helper function to check if sandbox is connected and ready
     const isSandboxReady = useCallback((): boolean => {
@@ -421,6 +422,32 @@ export const DevTab = observer(() => {
         };
     }, []);
 
+    const scrollToActiveTab = useCallback(() => {
+        if (!fileTabsContainerRef.current || !ide.activeFile) return;
+        
+        const container = fileTabsContainerRef.current;
+        const activeTab = container.querySelector('[data-active="true"]');
+        
+        if (activeTab) {
+            const containerRect = container.getBoundingClientRect();
+            const tabRect = activeTab.getBoundingClientRect();
+            
+            // Calculate if the tab is outside the visible area
+            if (tabRect.left < containerRect.left) {
+                // Tab is to the left of the visible area
+                container.scrollLeft += tabRect.left - containerRect.left;
+            } else if (tabRect.right > containerRect.right) {
+                // Tab is to the right of the visible area
+                container.scrollLeft += tabRect.right - containerRect.right;
+            }
+        }
+    }, [ide.activeFile]);
+
+    // Scroll to active tab when it changes
+    useEffect(() => {
+        scrollToActiveTab();
+    }, [ide.activeFile, scrollToActiveTab]);
+
     return (
         <div className="size-full flex flex-col">
 
@@ -495,7 +522,7 @@ export const DevTab = observer(() => {
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
-                            <div className="flex items-center h-full overflow-x-auto w-full pl-11 pr-12">
+                            <div className="flex items-center h-full overflow-x-auto w-full ml-11 mr-10.5" ref={fileTabsContainerRef}>
                                 {ide.openedFiles.map((file) => (
                                     <FileTab
                                         key={file.id}
@@ -504,6 +531,7 @@ export const DevTab = observer(() => {
                                         isDirty={file.isDirty}
                                         onClick={() => handleFileSelect(file)}
                                         onClose={() => closeFile(file.id)}
+                                        data-active={ide.activeFile?.id === file.id}
                                     />
                                 ))}
                             </div>

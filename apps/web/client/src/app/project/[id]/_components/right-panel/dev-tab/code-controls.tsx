@@ -7,6 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { FileModal } from './file-modal';
 import { FolderModal } from './folder-modal';
+import { cn } from '@onlook/ui/utils';
 
 export const CodeControls = observer(() => {
     const editorEngine = useEditorEngine();
@@ -63,9 +64,17 @@ export const CodeControls = observer(() => {
                             size="icon"
                             onClick={saveFile}
                             disabled={!isDirty}
-                            className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
+                            className={cn(
+                                "p-2 w-fit h-fit cursor-pointer",
+                                isDirty 
+                                    ? "text-teal-200 hover:text-teal-100 hover:bg-teal-500" 
+                                    : "hover:bg-background-onlook hover:text-teal-200"
+                            )}
                         >
-                            <Icons.Save className="h-4 w-4" />
+                            <Icons.Save className={cn(
+                                "h-4 w-4",
+                                isDirty && "text-teal-200 group-hover:text-teal-100"
+                            )} />
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" hideArrow>

@@ -45,7 +45,7 @@ export const RightPanel = observer(() => {
                 maxWidth={1440}
             >
                 <Tabs className='h-full gap-0' onValueChange={(value) => editorEngine.state.rightPanelTab = value as EditorTabValue} value={selectedTab} >
-                    <TabsList className='flex flex-row h-10 w-full border-b-1 border-border items-center bg-transparent select-none pr-2 pl-1.5 justify-between'>
+                    <TabsList className='flex flex-row h-10 w-full border-b-1 border-border items-center bg-transparent select-none pr-1 pl-1.5 justify-between'>
                         <div className="flex flex-row items-center gap-2 ">
                             <ChatPanelDropdown
                                 isChatHistoryOpen={isChatHistoryOpen}
