@@ -63,6 +63,7 @@ const plans: PlanData[] = [
 ];
 
 export default function PricingPage() {
+    return <div>Coming soon</div>;
 
     return (
         <div className="flex flex-col min-h-screen justify-center items-center">
