@@ -1,6 +1,11 @@
 import { boolean, integer, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 
-export const planType = pgEnum('plan_type', ['free', 'pro'])
+export enum SubscriptionPlans {
+    FREE = 'free',
+    PRO = 'pro',
+}
+
+const subscriptionPlanType = pgEnum('subscription_plan_type', SubscriptionPlans)
 
 export const plans = pgTable('plans', {
     id: text('id').primaryKey(),
@@ -13,7 +18,7 @@ export const plans = pgTable('plans', {
 export const planPrices = pgTable('plan_prices', {
     id: uuid('id').defaultRandom().primaryKey(),
     planId: text('plan_id').notNull().references(() => plans.id),
-    type: planType('type').notNull(),
+    type: subscriptionPlanType('type').notNull(),
     pricePerMonth: integer('price_per_month').notNull(),
     stripePriceId: text('stripe_price_id').notNull(),
 })

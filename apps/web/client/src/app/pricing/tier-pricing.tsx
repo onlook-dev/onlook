@@ -9,12 +9,12 @@ import {
 } from "@onlook/ui/table";
 import Link from "next/link";
 
-const tiers = [
-    { tier: 'Tier 1', messages: '100', pro: '$20' },
-    { tier: 'Tier 2', messages: '200', pro: '$40' },
-    { tier: 'Tier 3', messages: '400', pro: '$80' },
-    { tier: 'Tier 4', messages: '800', pro: '$160' },
-    { tier: 'Tier 5', messages: '1,200', pro: '$240' },
+const tiers: { tier: string, messages: string, price: string }[] = [
+    { tier: 'Tier 1', messages: '100', price: '$20' },
+    { tier: 'Tier 2', messages: '200', price: '$40' },
+    { tier: 'Tier 3', messages: '400', price: '$80' },
+    { tier: 'Tier 4', messages: '800', price: '$160' },
+    { tier: 'Tier 5', messages: '1,200', price: '$240' },
 ];
 
 export function TierPricingTable() {
@@ -37,7 +37,7 @@ export function TierPricingTable() {
                         <TableRow key={tier.tier}>
                             <TableCell className="font-medium">{tier.tier}</TableCell>
                             <TableCell>{tier.messages}</TableCell>
-                            <TableCell>{tier.pro}</TableCell>
+                            <TableCell>{tier.price}</TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
@@ -52,4 +52,3 @@ export function TierPricingTable() {
         </div>
     )
 }
-
