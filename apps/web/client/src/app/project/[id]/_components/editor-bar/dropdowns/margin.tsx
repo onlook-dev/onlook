@@ -14,6 +14,7 @@ import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 import { observer } from "mobx-react-lite";
+import { cn } from "@onlook/utils/cn";
 
 export const Margin = observer(() => {
     const [activeTab, setActiveTab] = useState("all");
@@ -22,7 +23,61 @@ export const Margin = observer(() => {
     const { isOpen, onOpenChange } = useDropdownControl({ 
         id: 'margin-dropdown' 
     });
-    
+    const getMarginIcon = () => {
+        const top = boxState.marginTop.num ?? 0;
+        const right = boxState.marginRight.num ?? 0;
+        const bottom = boxState.marginBottom.num ?? 0;
+        const left = boxState.marginLeft.num ?? 0;
+
+        if (top === 0 && right === 0 && bottom === 0 && left === 0) {
+            return Icons.MarginEmpty;
+        }
+
+        const allSame = top === right && right === bottom && bottom === left && top !== 0;
+        if (allSame) {
+            return Icons.MarginFull;
+        }
+
+        if (top && right && bottom && left) return Icons.MarginFull;
+        if (top && right && bottom) return Icons.MarginTRB;
+        if (top && right && left) return Icons.MarginTRL;
+        if (top && bottom && left) return Icons.MarginBLT;
+        if (right && bottom && left) return Icons.MarginRBL;
+        if (top && right) return Icons.MarginTR;
+        if (top && bottom) return Icons.MarginTB;
+        if (top && left) return Icons.MarginTL;
+        if (right && bottom) return Icons.MarginRB;
+        if (right && left) return Icons.MarginRL;
+        if (bottom && left) return Icons.MarginBL;
+        if (top) return Icons.MarginT;
+        if (right) return Icons.MarginR;
+        if (bottom) return Icons.MarginB;
+        if (left) return Icons.MarginL;
+
+        return Icons.MarginEmpty;
+    };
+
+    const getMarginDisplay = () => {
+        const top = boxState.marginTop.num ?? 0;
+        const right = boxState.marginRight.num ?? 0;
+        const bottom = boxState.marginBottom.num ?? 0;
+        const left = boxState.marginLeft.num ?? 0;
+
+        if (top === right && right === bottom && bottom === left) {
+            if (top === 0) return null;
+            return boxState.margin.unit === 'px' ? `${top}` : `${boxState.margin.value}`;
+        }
+
+        if (top || right || bottom || left) {
+            return 'Mixed';
+        }
+
+        return null;
+    };
+
+    const MarginIcon = getMarginIcon();
+    const marginValue = getMarginDisplay();
+    const hasMargin = marginValue !== null;
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
@@ -31,15 +86,21 @@ export const Margin = observer(() => {
                     <Button
                         variant="ghost"
                         size="toolbar"
-                        className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border gap-1 flex cursor-pointer items-center border hover:border hover:text-white focus-visible:ring-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        className={cn(
+                            "gap-1 flex cursor-pointer items-center border hover:border focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0",
+                            hasMargin 
+                                ? "bg-background-tertiary/20 text-white border-border" 
+                                : "text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border hover:text-white",
+                            "data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border data-[state=open]:text-white"
+                        )}
                     >
-                        <Icons.Margin className="h-4 min-h-4 w-4 min-w-4" />
-                        {boxState.margin.unit === 'px' && typeof boxState.margin.num === 'number' && boxState.margin.num !== 0 ? (
-                            <span className="text-small">{boxState.margin.num}</span>
-                        ) : null}
-                        {boxState.margin.unit !== 'px' && boxState.margin.value ? (
-                            <span className="text-small">{boxState.margin.value}</span>
-                        ) : null}
+                        <MarginIcon className="h-4 min-h-4 w-4 min-w-4" />
+                        {marginValue && (
+                            <span className="text-small">{marginValue}</span>
+                        )}
+
+
+
                     </Button>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
