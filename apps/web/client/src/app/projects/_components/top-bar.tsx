@@ -6,10 +6,14 @@ import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useProjectsManager } from '@/components/store/projects';
+import { ProjectTabs } from '@/components/store/projects/manager';
 
 export const TopBar = () => {
     const t = useTranslations();
     const router = useRouter();
+
+    const projectsManager = useProjectsManager();
 
     return (
         <div className="flex flex-row h-12 px-12 items-center">
@@ -22,6 +26,16 @@ export const TopBar = () => {
                     variant="ghost"
                     onClick={() => {
                         router.push(Routes.HOME);
+                    }}
+                >
+                    <Icons.Plus className="w-5 h-5 mr-2" />
+                    {t(transKeys.projects.actions.newProject)}
+                </Button>
+                <Button
+                    className="text-sm text-foreground-onlook focus:outline-none hover:bg-background-onlook cursor-pointer"
+                    variant="ghost"
+                    onClick={() => {
+                        projectsManager.projectsTab = ProjectTabs.IMPORT_GITHUB;
                     }}
                 >
                     <Icons.Plus className="w-5 h-5 mr-2" />
