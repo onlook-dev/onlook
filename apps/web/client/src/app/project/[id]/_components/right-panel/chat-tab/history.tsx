@@ -97,7 +97,7 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                                         <Button
                                                             variant={'ghost'}
                                                             size={'icon'}
-                                                            className="absolute right-0 px-2.5 py-2 top-1/2 -translate-y-1/2 w-fit h-fit opacity-0 group-hover:opacity-100 group-hover:bg-background-primary hover:bg-background-tertiary z-10"
+                                                            className="w-fit h-fit opacity-0 group-hover:opacity-100 group-hover:bg-background-primary hover:bg-background-tertiary z-10"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 setConversationToDelete(
