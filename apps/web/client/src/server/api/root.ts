@@ -8,6 +8,7 @@ import { frameRouter } from './routers/frame';
 import { memberRouter } from './routers/member';
 import { sandboxRouter } from './routers/sandbox';
 import { userCanvasRouter } from './routers/user-canvas';
+import { githubRouter } from './routers/github';
 
 /**
  * This is the primary router for your server.
@@ -26,6 +27,7 @@ export const appRouter = createTRPCRouter({
     code: codeRouter,
     member: memberRouter,
     domain: domainRouter,
+    github: githubRouter,
 });
 
 // export type definition of API
