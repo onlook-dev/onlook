@@ -106,8 +106,15 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
                 setIsOpen(false);
             }
         } catch (error) {
-            console.error('Error adding Figma design:', error);
-            toast.error(error instanceof Error ? error.message : 'Failed to add Figma design. Make sure Figma desktop app is running with MCP server enabled.');
+            console.error('💥 Error in handleAddFigmaUrl:', error);
+
+            // Checks for connection failure
+            const errorMessage = error instanceof Error ? error.message : null;
+            if (errorMessage) {
+                toast.error(errorMessage);
+            } else {
+                toast.error('Failed to add Figma design. Make sure Figma desktop app is running with MCP server enabled.');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -137,8 +144,15 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
                 setIsOpen(false);
             }
         } catch (error) {
-            console.error('Error adding Figma selection:', error);
-            toast.error(error instanceof Error ? error.message : 'Failed to add Figma selection. Make sure Figma desktop app is running with MCP server enabled.');
+            console.error('Error in handleAddCurrentSelection:', error);
+
+            // Checks for connection failure
+            const errorMessage = error instanceof Error ? error.message : null;
+            if (errorMessage) {
+                toast.error(errorMessage);
+            } else {
+                toast.error('Failed to add Figma design. Make sure Figma desktop app is running with MCP server enabled.');
+            }
         } finally {
             setIsLoading(false);
         }

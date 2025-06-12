@@ -332,6 +332,16 @@ export const figmaRouter = createTRPCRouter({
                 const imageResult = imageData.status === 'fulfilled' ? imageData.value : null;
                 const variablesResult = variablesData.status === 'fulfilled' ? variablesData.value : null;
 
+                // Extract content from the responses
+                const extractedCode = figmaMCP.extractContent(codeData);
+                const extractedImage = figmaMCP.extractContent(imageResult);
+                const extractedVariables = figmaMCP.extractContent(variablesResult);
+
+                // If all data is null, the MCP connection likely failed completely
+                if (!extractedCode && !extractedImage && !extractedVariables) {
+                    throw new Error('Connection to Figma failed or aborted. Try again.');
+                }
+
                 const designData = {
                     node: {
                         id: nodeId,
@@ -339,9 +349,9 @@ export const figmaRouter = createTRPCRouter({
                         type: 'FRAME',
                         visible: true
                     },
-                    code: figmaMCP.extractContent(codeData),
-                    image: figmaMCP.extractContent(imageResult), 
-                    variables_defs: figmaMCP.extractContent(variablesResult)
+                    code: extractedCode,
+                    image: extractedImage,
+                    variables_defs: extractedVariables
                 };
 
                 return {
@@ -378,6 +388,11 @@ export const figmaRouter = createTRPCRouter({
                 const extractedCode = figmaMCP.extractContent(codeData);
                 const extractedImage = figmaMCP.extractContent(imageResult);
                 const extractedVariables = figmaMCP.extractContent(variablesResult);
+
+                // If all data is null, the MCP connection likely failed completely
+                if (!extractedCode && !extractedImage && !extractedVariables) {
+                    throw new Error('Connection to Figma failed or aborted. Try again.');
+                }
 
                 const designData = {
                     node: {
