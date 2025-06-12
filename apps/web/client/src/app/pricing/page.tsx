@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { Footer } from '../_components/landing-page/page-footer';
 import { TopBar } from '../_components/top-bar';
 import { PricingCard } from './pricing-card';
-import { TierPricingTable } from './tier-pricing';
+import { TierPricingDropdown } from './tier-pricing-dropdown';
 
 enum PlanKey {
     FREE = 'free',
@@ -39,8 +39,6 @@ const plans: PlanData[] = [
 ]
 
 export default function PricingPage() {
-    // Hide for now
-    return <div>Coming Soon</div>;
 
     const t = useTranslations();
 
@@ -66,7 +64,7 @@ export default function PricingPage() {
                     ))}
                 </div>
             </main>
-            <TierPricingTable />
+            <TierPricingDropdown />
             <Footer />
         </div>
     );
