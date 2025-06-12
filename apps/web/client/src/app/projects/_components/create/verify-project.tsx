@@ -10,7 +10,6 @@ import { Icons } from '@onlook/ui/icons';
 import type { StepComponent } from '../with-step-props';
 import { useEffect, useState } from 'react';
 import { useProjectCreation } from './project-creation-context';
-import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
 
 interface NextJsProjectValidation {
     isValid: boolean;
@@ -195,7 +194,7 @@ const VerifyProject: StepComponent = ({
         if (validation?.isValid) {
             return (
                 <div className="flex flex-row w-full justify-between">
-                    <Button onClick={prevStep} disabled={isFinalizing}>Cancel</Button>
+                    <Button onClick={prevStep} disabled={isFinalizing} variant="outline">Cancel</Button>
                     <Button className="px-3 py-2" onClick={nextStep} disabled={isFinalizing}>
                         Finish setup
                     </Button>
@@ -205,14 +204,14 @@ const VerifyProject: StepComponent = ({
         if (validation?.isValid) {
             return (
                 <div className="flex flex-row w-full justify-between">
-                    <Button onClick={prevStep}>Cancel</Button>
+                    <Button onClick={prevStep} variant="outline">Cancel</Button>
                     <Button onClick={prevStep}>Select a different folder</Button>
                 </div>
             );
         }
         return (
             <div className="flex flex-row w-full justify-between">
-                <Button onClick={prevStep}>Cancel</Button>
+                <Button onClick={prevStep} variant="outline">Cancel</Button>
                 <Button onClick={nextStep}>Start designing</Button>
             </div>
         );

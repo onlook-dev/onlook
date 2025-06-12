@@ -4,6 +4,8 @@ import { shortenUuid } from '@onlook/utility/src/id';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { CSB_BLANK_TEMPLATE_ID } from '@onlook/constants';
+import { addScriptConfig } from '@onlook/parser/src/code-edit/config';
+import { parse, generate } from '@onlook/parser';
 
 const sdk = new CodeSandbox(env.CSB_API_KEY);
 
@@ -78,18 +80,36 @@ export const sandboxRouter = createTRPCRouter({
                 // Upload all project files
                 for (const [path, file] of Object.entries(input.files)) {
                     try {
-                        const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-
                         // Handle binary vs text files using the correct SDK methods
                         if (file.isBinary) {
                             // For binary files, convert base64 string back to Uint8Array
                             const binaryData = Uint8Array.from(atob(file.content), (c) =>
                                 c.charCodeAt(0),
                             );
-                            await session.fs.writeFile(normalizedPath, binaryData);
+                            await session.fs.writeFile(path, binaryData, {
+                                overwrite: true,
+                            });
                         } else {
                             // For text files, use writeTextFile
-                            await session.fs.writeTextFile(normalizedPath, file.content);
+                            let content = file.content;
+                            
+                            // Add script config to the file 'app/layout.tsx'
+                            if (path === 'app/layout.tsx') {
+                                try {
+                                    const ast = parse(content, {
+                                        sourceType: 'module',
+                                        plugins: ['jsx', 'typescript'],
+                                    });
+                                    const modifiedAst = addScriptConfig(ast);
+                                    content = generate(modifiedAst, {}, content).code;
+                                } catch (parseError) {
+                                    console.warn('Failed to add script config to layout.tsx:', parseError);
+                                }
+                            }
+                            
+                            await session.fs.writeTextFile(path, content, {
+                                overwrite: true,
+                            });
                         }
                     } catch (fileError) {
                         console.error(`Error uploading file ${path}:`, fileError);
@@ -99,52 +119,7 @@ export const sandboxRouter = createTRPCRouter({
                     }
                 }
 
-                // Update package.json if dependencies are provided
-                // if (input.dependencies || input.devDependencies || input.projectName) {
-                //     try {
-                //         const packageJsonPath = './package.json';
-                //         let packageJson: any = {};
-
-                //         try {
-                //             const existingPackageJson =
-                //                 await session.fs.readTextFile(packageJsonPath);
-                //             packageJson = JSON.parse(existingPackageJson);
-                //         } catch {
-                //             // If package.json doesn't exist or can't be read, create a basic one
-                //             packageJson = {
-                //                 name: input.projectName || 'uploaded-project',
-                //                 version: '1.0.0',
-                //                 private: true,
-                //             };
-                //         }
-
-                //         if (input.projectName) {
-                //             packageJson.name = input.projectName;
-                //         }
-                //         if (input.dependencies) {
-                //             packageJson.dependencies = {
-                //                 ...packageJson.dependencies,
-                //                 ...input.dependencies,
-                //             };
-                //         }
-                //         if (input.devDependencies) {
-                //             packageJson.devDependencies = {
-                //                 ...packageJson.devDependencies,
-                //                 ...input.devDependencies,
-                //             };
-                //         }
-
-                //         await session.fs.writeTextFile(
-                //             packageJsonPath,
-                //             JSON.stringify(packageJson, null, 2),
-                //         );
-                //         console.log('Updated package.json');
-                //     } catch (packageError) {
-                //         console.error('Error updating package.json:', packageError);
-                //         // Don't throw here, as the files are already uploaded
-                //     }
-                // }
-
+               
                 // Disconnect the session
                 try {
                     await session.disconnect();

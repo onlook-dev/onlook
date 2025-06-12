@@ -16,7 +16,6 @@ interface CodeSandboxFile {
 
 interface CodeSandboxProject {
     files: Record<string, CodeSandboxFile>;
-    template?: string;
 }
 
 interface ProjectCreationContextValue {
@@ -28,12 +27,15 @@ interface ProjectCreationContextValue {
     totalSteps: number;
     
     // Actions
+    error: string | null;
     setProjectData: (newData: Partial<Project>) => void;
     nextStep: () => void;
     prevStep: () => void;
     setCurrentStep: (step: number) => void;
     setDirection: (direction: number) => void;
     resetProjectData: () => void;
+    retry: () => void;
+    cancel: () => void;
 }
 
 const ProjectCreationContext = createContext<ProjectCreationContextValue | undefined>(undefined);
@@ -53,6 +55,7 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
         folderPath: '',
         files: [],
     });
+    const [error, setError] = useState<string | null>(null);
     const [direction, setDirection] = useState(0);
     const [isFinalizing, setIsFinalizing] = useState(false);
     const userManager = useUserManager();
@@ -91,13 +94,11 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
 
             return {
                 files: sandboxFiles,
-                template: 'nextjs',
             };
         } catch (error) {
             console.error('Error converting to CodeSandbox format:', error);
             return {
                 files: {},
-                template: 'nextjs',
             };
         }
     };
@@ -157,6 +158,7 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
 
         } catch (error) {
             console.error('Error creating project:', error);
+            setError('Failed to create project');
             return;
         } finally {
             setIsFinalizing(false);
@@ -191,6 +193,17 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
             files: undefined,
         });
         setCurrentStep(0);
+        setError(null);
+    };
+
+    const retry = () => {
+        setError(null);
+        finalizeProject()
+    };
+
+    const cancel = () => {
+        projectsManager.projectsTab = ProjectTabs.PROJECTS;
+        resetProjectData();
     };
 
     const value: ProjectCreationContextValue = {
@@ -199,13 +212,16 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
         direction,
         isFinalizing,
         totalSteps,
+        error,
         setProjectData,
         nextStep,
         prevStep,
         setCurrentStep,
         setDirection,
         resetProjectData,
-    };
+        retry,
+        cancel,
+        };
 
     return (
         <ProjectCreationContext.Provider value={value}>

@@ -7,24 +7,20 @@ import { motion } from 'motion/react';
 import type { StepComponent } from '../with-step-props';
 import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
 import { useProjectCreation } from './project-creation-context';
+import { Button } from '@onlook/ui/button';
 
 const FinalizingProject: StepComponent = ({
     variant,
 }: {
     variant: 'header' | 'content' | 'footer';
 }) => {
-    const { isFinalizing } = useProjectCreation();
+    const { isFinalizing, error, retry, cancel } = useProjectCreation();
 
     const renderHeader = () => {
-        return isFinalizing ? (
+        return (
             <>
                 <CardTitle>{'Setting up project...'}</CardTitle>
                 <CardDescription>{"We're setting up your project"}</CardDescription>
-            </>
-        ) : (
-            <>
-                <CardTitle>{'Project created successfully'}</CardTitle>
-                <CardDescription>{'Your project is ready to use'}</CardDescription>
             </>
         );
     };
@@ -39,18 +35,23 @@ const FinalizingProject: StepComponent = ({
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="w-full"
                 >
-                    {isFinalizing ? (
-                        <ProgressWithInterval isLoading={isFinalizing ?? false} />
-                    ) : (
+                    {error ? (
                         <div className="w-full h-full flex items-center justify-center">
-                            <p>Project created successfully. Redirecting to project...</p>
+                            <p>{error}</p>
                         </div>
+                    ) : (
+                        <ProgressWithInterval isLoading={isFinalizing ?? false} />
                     )}
                 </motion.div>
             </AnimatePresence>
         </MotionConfig>
     );
-    const renderFooter = () => <></>;
+    const renderFooter = () => (
+        <div className="flex flex-row w-full justify-between">
+            <Button onClick={retry} variant="outline">Retry</Button>
+            <Button onClick={cancel}>Cancel</Button>
+        </div>
+    );
     switch (variant) {
         case 'header':
             return renderHeader();

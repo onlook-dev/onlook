@@ -57,6 +57,7 @@ const NewSelectFolder: StepComponent = ({
 
         // Find the common root path from all files
         const allPaths = files.map((file) => (file as any).webkitRelativePath || file.name);
+        
         const rootPath =
             allPaths.length > 0 && allPaths[0].includes('/') ? allPaths[0].split('/')[0] : '';
 
@@ -68,12 +69,9 @@ const NewSelectFolder: StepComponent = ({
             }
 
             // Get relative path from webkitRelativePath or name
+            // Remove the root path from the relative path
             let relativePath = (file as any).webkitRelativePath || file.name;
-
-            // If we have a root path and the file doesn't include it, prepend it
-            if (rootPath && !relativePath.includes('/')) {
-                relativePath = `${rootPath}/${relativePath}`;
-            }
+            relativePath = relativePath.replace(rootPath, '').replace(/^\//, '');
 
             // Skip ignored directories
             if (
@@ -380,7 +378,7 @@ const NewSelectFolder: StepComponent = ({
 
     const renderFooter = () => (
         <div className="flex flex-row w-full justify-between">
-            <Button type="button" onClick={prevStep} variant="ghost" className="px-3 py-2">
+            <Button type="button" onClick={prevStep} variant="outline" className="px-3 py-2">
                 Cancel
             </Button>
             <Button
