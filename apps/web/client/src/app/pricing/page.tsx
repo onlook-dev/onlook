@@ -39,6 +39,9 @@ const plans: PlanData[] = [
 ]
 
 export default function PricingPage() {
+    // Hide for now
+    return <div>Coming Soon</div>;
+
     const t = useTranslations();
 
     return (
