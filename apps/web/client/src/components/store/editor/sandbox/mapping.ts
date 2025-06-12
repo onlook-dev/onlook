@@ -44,11 +44,13 @@ export class TemplateNodeMapper {
     }
 
     updateMappingForFile(filePath: string, newMap: Map<string, TemplateNode>) {
+        const keysToDelete = [];
         for (const [oid, node] of this.oidToTemplateNodeMap.entries()) {
             if (node.path === filePath) {
-                this.oidToTemplateNodeMap.delete(oid);
+                keysToDelete.push(oid);
             }
         }
+        keysToDelete.forEach(oid => this.oidToTemplateNodeMap.delete(oid));
         this.updateMapping(newMap);
     }
 
