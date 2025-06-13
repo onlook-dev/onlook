@@ -18,8 +18,16 @@ export async function POST(req: Request) {
 
     const result = streamText({
         model,
-        system: systemPrompt,
-        messages,
+        messages: [
+            {
+                role: 'system',
+                content: systemPrompt,
+                providerOptions: {
+                    bedrock: { cachePoint: { type: 'default' } },
+                },
+            },
+            ...messages,
+        ],
         maxSteps,
         tools: chatToolSet,
         toolCallStreaming: true,

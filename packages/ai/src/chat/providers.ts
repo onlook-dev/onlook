@@ -1,4 +1,4 @@
-import { createAmazonBedrock } from '@ai-sdk/amazon-bedrock';
+import { bedrock } from '@ai-sdk/amazon-bedrock';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { BEDROCK_MODEL_MAP, CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
@@ -34,7 +34,6 @@ async function getBedrockProvider(claudeModel: CLAUDE_MODELS) {
         throw new Error('AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, and AWS_REGION must be set');
     }
 
-    const bedrock = createAmazonBedrock();
     const bedrockModel = BEDROCK_MODEL_MAP[claudeModel];
     return bedrock(bedrockModel);
 }

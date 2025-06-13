@@ -10,7 +10,7 @@ export enum CLAUDE_MODELS {
 }
 
 export const BEDROCK_MODEL_MAP = {
-    [CLAUDE_MODELS.SONNET_4]: 'anthropic.claude-sonnet-4-20250514-v1:0',
-    [CLAUDE_MODELS.SONNET_3_7]: 'anthropic.claude-3-7-sonnet-20250219-v1:0',
-    [CLAUDE_MODELS.HAIKU]: 'anthropic.claude-3-5-haiku-20241022-v1:0',
+    [CLAUDE_MODELS.SONNET_4]: 'us.anthropic.claude-sonnet-4-20250514-v1:0',
+    [CLAUDE_MODELS.SONNET_3_7]: 'us.anthropic.claude-3-7-sonnet-20250219-v1:0',
+    [CLAUDE_MODELS.HAIKU]: 'us.anthropic.claude-3-5-haiku-20241022-v1:0',
 };
