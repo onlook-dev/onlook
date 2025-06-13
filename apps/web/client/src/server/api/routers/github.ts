@@ -140,4 +140,27 @@ export const githubRouter = createTRPCRouter({
                 return { connected: false };
             }
         }),
+
+    reconnectGitHub: protectedProcedure
+        .mutation(async ({ ctx }) => {
+            const origin = ctx.headers.get('origin') || 'http://localhost:3000';
+            
+            const { data, error } = await ctx.supabase.auth.signInWithOAuth({
+                provider: 'github',
+                options: {
+                    redirectTo: `${origin}/auth/callback`,
+                    skipBrowserRedirect: true,
+                },
+            });
+
+            if (error) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Failed to initiate GitHub reconnection',
+                    cause: error,
+                });
+            }
+
+            return { url: data.url };
+        }),
 });

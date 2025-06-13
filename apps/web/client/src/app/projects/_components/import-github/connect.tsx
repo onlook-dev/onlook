@@ -10,6 +10,7 @@ import { Icons } from '@onlook/ui/icons';
 import type { StepComponent } from '../with-step-props';
 import { useEffect, useState } from 'react';
 import { useImportGithubProject } from './context';
+import { Separator } from '@onlook/ui/separator';
 
 const ConnectGithub: StepComponent = ({
     variant,
@@ -21,8 +22,19 @@ const ConnectGithub: StepComponent = ({
     const renderHeader = () => {
         return (
             <>
-                <CardTitle>{'Connect to GitHub'}</CardTitle>
-                <CardDescription>{'Work with real code directly in Onlook'}</CardDescription>
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-gray-700 rounded-lg">
+                        <Icons.OnlookLogo className="w-6 h-6" />
+                    </div>
+                    <Icons.DotsHorizontal className="w-6 h-6" />
+                    <div className="p-3 bg-gray-700 rounded-lg">
+                        <Icons.GitHubLogo className="w-6 h-6" />
+                    </div>
+                </div>
+                <CardTitle className="text-xl font-normal">{'Connect to GitHub'}</CardTitle>
+                <CardDescription className="font-normal">
+                    {'Work with real code directly in Onlook'}
+                </CardDescription>
             </>
         );
     };
@@ -56,6 +68,7 @@ const ConnectGithub: StepComponent = ({
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="w-full gap-6 flex flex-col"
                 >
+                    <Separator orientation="horizontal" className="shrink-0 bg-border" />
                     {itemContent({
                         title: 'This page will redirect to GitHub',
                         description: 'Sign in and confirm permissions in GitHub',
@@ -64,13 +77,14 @@ const ConnectGithub: StepComponent = ({
                     {itemContent({
                         title: 'You set what Onlook can access',
                         description: 'Onlook is strictly limited to the permissions you set',
-                        icon: <Icons.LockClosed className="w-5 h-5" />,
+                        icon: <Icons.Key className="w-5 h-5" />,
                     })}
                     {itemContent({
                         title: 'You’re in control',
                         description: 'Sign in and confirm permissions in GitHub',
                         icon: <Icons.LockClosed className="w-5 h-5" />,
                     })}
+                    <Separator orientation="horizontal" className="shrink-0 bg-border" />
                 </motion.div>
             </AnimatePresence>
         </MotionConfig>
@@ -81,7 +95,7 @@ const ConnectGithub: StepComponent = ({
                 <Button onClick={prevStep} variant="outline">
                     Cancel
                 </Button>
-                <Button className='px-3 py-2' onClick={nextStep}>
+                <Button className="px-3 py-2" onClick={nextStep}>
                     <Icons.GitHubLogo className="w-4 h-4 mr-2" />
                     <span>Continue to GitHub</span>
                 </Button>
