@@ -1,27 +1,29 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type TabActivityState = 'active' | 'inactive' | 'reactivated';
 
 export function useTabActive() {
     const [tabState, setTabState] = useState<TabActivityState>('active');
-
-    const handleVisibilityChange = useCallback(() => {
-        const nowActive = document.visibilityState === 'visible';
-        if (!nowActive) {
-            setTabState('inactive');
-        } else if (tabState === 'inactive') {
-            setTabState('reactivated');
-        } else {
-            setTabState('active');
-        }
-    }, [tabState]);
+    const previousStateRef = useRef<TabActivityState>('active');
 
     useEffect(() => {
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        const handleVisibilityChange = () => {
+            const isVisible = document.visibilityState === 'visible';
+            const previousState = previousStateRef.current;
+            
+            if (isVisible) {
+                const newState = previousState === 'inactive' ? 'reactivated' : 'active';
+                setTabState(newState);
+                previousStateRef.current = newState;
+            } else {
+                setTabState('inactive');
+                previousStateRef.current = 'inactive';
+            }
         };
-    }, [handleVisibilityChange]);
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, []);
 
     return { tabState };
 }
