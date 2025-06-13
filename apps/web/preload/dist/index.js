@@ -17257,6 +17257,12 @@ var ChatSummarySchema = exports_external.object({
   userPreferences: exports_external.string().describe("Specific preferences the user has expressed about implementation, design, etc."),
   currentStatus: exports_external.string().describe("Current state of the project and any pending work")
 });
+// ../../../packages/models/src/llm/index.ts
+var BEDROCK_MODEL_MAP = {
+  ["claude-sonnet-4-20250514" /* SONNET_4 */]: "us.anthropic.claude-sonnet-4-20250514-v1:0",
+  ["claude-3-7-sonnet-20250219" /* SONNET_3_7 */]: "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+  ["claude-3-5-haiku-20241022" /* HAIKU */]: "us.anthropic.claude-3-5-haiku-20241022-v1:0"
+};
 // script/api/theme/index.ts
 function getTheme() {
   try {
@@ -17372,5 +17378,5 @@ export {
   penpalParent
 };
 
-//# debugId=1F8F09CA958308FB64756E2164756E21
+//# debugId=820AA7B0FF5205F764756E2164756E21
 //# sourceMappingURL=index.js.map
