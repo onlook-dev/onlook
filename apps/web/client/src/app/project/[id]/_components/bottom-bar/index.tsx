@@ -64,7 +64,7 @@ export const BottomBar = observer(() => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
-                    className="flex flex-col border p-1 px-1.5 bg-background-secondary/85 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl"
+                    className="flex flex-col border-[0.5px] border-border p-1 px-1.5 bg-background rounded-xl backdrop-blur drop-shadow-xl"
                     transition={{
                         type: 'spring',
                         bounce: 0.1,
@@ -82,6 +82,7 @@ export const BottomBar = observer(() => {
                                     editorEngine.state.editorMode = value as EditorMode;
                                 }
                             }}
+                            className="gap-1"
                         >
                             {toolbarItems.map((item) => (
                                 <Tooltip key={item.mode}>
@@ -90,7 +91,7 @@ export const BottomBar = observer(() => {
                                             value={item.mode}
                                             aria-label={item.hotkey.description}
                                             disabled={item.disabled}
-                                            className="hover:text-foreground-hover text-foreground-tertiary"
+                                            className="hover:text-foreground-hover text-foreground-tertiary rounded-md data-[state=on]:bg-accent data-[state=on]:text-white data-[state=on]:border-white/20 hover:bg-accent/50 border border-transparent"
                                         >
                                             <item.icon />
                                         </ToggleGroupItem>
