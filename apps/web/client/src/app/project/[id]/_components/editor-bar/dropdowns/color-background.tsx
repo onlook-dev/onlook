@@ -44,7 +44,7 @@ export const ColorBackground = observer(() => {
                         >
                             <Icons.PaintBucket className="h-2 w-2" />
                             <div
-                                className="h-[4px] w-6 rounded-full bg-current"
+                                className="h-[4.5px] w-6 rounded-full bg-current"
                                 style={{ backgroundColor: colorHex }}
                             />
                         </Button>

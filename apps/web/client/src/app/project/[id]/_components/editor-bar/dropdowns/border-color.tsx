@@ -49,7 +49,7 @@ export const BorderColor = observer(() => {
                     >
                         <Icons.PencilIcon className="h-4 w-4 min-h-4 min-w-4" />
                         <div
-                            className="h-[4px] w-6 rounded-full bg-current"
+                            className="h-[4.5px] w-6 rounded-full bg-current"
                             style={{ backgroundColor: colorHex }}
                         />
                     </Button>
