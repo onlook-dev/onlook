@@ -51,6 +51,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
     return (
         <html lang={locale} className={inter.variable} suppressHydrationWarning>
+            <head>
+                <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
+            </head>
             <body>
                 <FeatureFlagsProvider>
                     <PostHogProvider>

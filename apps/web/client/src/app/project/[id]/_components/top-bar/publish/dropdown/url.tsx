@@ -1,7 +1,6 @@
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
-import { toast } from '@onlook/ui/sonner';
 import { getValidUrl } from '@onlook/utility';
 import { useState } from 'react';
 
@@ -14,7 +13,6 @@ export const UrlSection = ({ url, isCopyable }: { url: string, isCopyable: boole
 
     const copyUrl = () => {
         navigator.clipboard.writeText(url);
-        toast.success('Copied to clipboard');
         setIsCopied(true);
         setTimeout(() => {
             setIsCopied(false);
