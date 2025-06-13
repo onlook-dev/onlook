@@ -39,7 +39,7 @@ export const TopBar = () => {
                     }}
                 >
                     <Icons.Plus className="w-5 h-5 mr-2" />
-                    {t(transKeys.projects.actions.newProject)}
+                    Import from GitHub
                 </Button>
                 <CurrentUserAvatar className="w-8 h-8" />
             </div>
