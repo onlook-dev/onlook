@@ -1,15 +1,15 @@
-import { MotionConfig } from 'motion/react';
+'use client';
 
 import { CardDescription } from '@onlook/ui/card';
 import { CardTitle } from '@onlook/ui/card';
-import { AnimatePresence } from 'motion/react';
-import type { ProcessedFile } from '../../constants';
 import { Button } from '@onlook/ui/button';
 import { motion } from 'motion/react';
 import { Icons } from '@onlook/ui/icons';
-import type { StepComponent } from '../with-step-props';
 import { useEffect, useState } from 'react';
 import { useProjectCreation } from './project-creation-context';
+import { StepFooter } from './steps';
+import { StepContent } from './steps';
+import { StepHeader } from './steps';
 
 interface NextJsProjectValidation {
     isValid: boolean;
@@ -17,11 +17,13 @@ interface NextJsProjectValidation {
     error?: string;
 }
 
-const VerifyProject: StepComponent = ({
-    variant,
-}: {
-    variant: 'header' | 'content' | 'footer';
-}) => {
+interface ProcessedFile {
+    path: string;
+    content: string | ArrayBuffer;
+    isBinary: boolean;
+}
+
+export const VerifyProject = () => {
     const { projectData, prevStep, nextStep, isFinalizing } = useProjectCreation();
     const [validation, setValidation] = useState<NextJsProjectValidation | null>(null);
     useEffect(() => {
@@ -171,9 +173,10 @@ const VerifyProject: StepComponent = ({
         }
     };
 
-    const renderContent = () => (
-        <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
-            <AnimatePresence mode="popLayout">
+    return (
+        <>
+            <StepHeader>{renderHeader()}</StepHeader>
+            <StepContent>
                 <motion.div
                     key="name"
                     initial={{ opacity: 0, scale: 0.9 }}
@@ -181,57 +184,17 @@ const VerifyProject: StepComponent = ({
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="w-full"
                 >
-                    { validation?.isValid ? (
-                        validProject()
-                    ) : (
-                        invalidProject()
-                    )}
+                    {validation?.isValid ? validProject() : invalidProject()}
                 </motion.div>
-            </AnimatePresence>
-        </MotionConfig>
+            </StepContent>
+            <StepFooter>
+                <Button onClick={prevStep} disabled={isFinalizing} variant="outline">
+                    Cancel
+                </Button>
+                <Button className="px-3 py-2" onClick={validation?.isValid ? nextStep : prevStep} disabled={isFinalizing}>
+                    {validation?.isValid ? 'Finish setup' : 'Select a different folder'}
+                </Button>
+            </StepFooter>
+        </>
     );
-    const renderFooter = () => {        
-        if (validation?.isValid) {
-            return (
-                <div className="flex flex-row w-full justify-between">
-                    <Button onClick={prevStep} disabled={isFinalizing} variant="outline">Cancel</Button>
-                    <Button className="px-3 py-2" onClick={nextStep} disabled={isFinalizing}>
-                        Finish setup
-                    </Button>
-                </div>
-            );
-        }
-        if (validation?.isValid) {
-            return (
-                <div className="flex flex-row w-full justify-between">
-                    <Button onClick={prevStep} variant="outline">Cancel</Button>
-                    <Button onClick={prevStep}>Select a different folder</Button>
-                </div>
-            );
-        }
-        return (
-            <div className="flex flex-row w-full justify-between">
-                <Button onClick={prevStep} variant="outline">Cancel</Button>
-                <Button onClick={nextStep}>Start designing</Button>
-            </div>
-        );
-    };
-    switch (variant) {
-        case 'header':
-            return renderHeader();
-        case 'content':
-            return renderContent();
-        case 'footer':
-            return renderFooter();
-    }
 };
-
-VerifyProject.Header = () => <VerifyProject variant="header" />;
-VerifyProject.Content = () => <VerifyProject variant="content" />;
-VerifyProject.Footer = () => <VerifyProject variant="footer" />;
-
-VerifyProject.Header.displayName = 'VerifyProject.Header';
-VerifyProject.Content.displayName = 'VerifyProject.Content';
-VerifyProject.Footer.displayName = 'VerifyProject.Footer';
-
-export { VerifyProject };

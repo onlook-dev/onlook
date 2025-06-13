@@ -1,13 +1,17 @@
+'use client';
+
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
-import { AnimatePresence, motion, MotionConfig } from 'motion/react';
-import type { StepComponent } from '../with-step-props';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
+import { useCallback, useRef, useState } from 'react';
 import { BINARY_EXTENSIONS, IGNORED_DIRECTORIES, IGNORED_FILES } from '@onlook/constants';
 import { useProjectCreation } from './project-creation-context';
+import { StepHeader } from './steps';
+import { StepContent } from './steps';
+import { StepFooter } from './steps';
 
-declare module "react" {
+declare module 'react' {
     interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
         webkitdirectory?: string;
         directory?: string;
@@ -20,12 +24,9 @@ interface ProcessedFile {
     isBinary: boolean;
 }
 
-const NewSelectFolder: StepComponent = ({
-    variant,
-}: {
-    variant: 'header' | 'content' | 'footer';
-}) => {
-    const { projectData, setProjectData, prevStep, nextStep, resetProjectData } = useProjectCreation();
+export const NewSelectFolder = () => {
+    const { projectData, setProjectData, prevStep, nextStep, resetProjectData } =
+        useProjectCreation();
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState('');
@@ -57,7 +58,7 @@ const NewSelectFolder: StepComponent = ({
 
         // Find the common root path from all files
         const allPaths = files.map((file) => (file as any).webkitRelativePath || file.name);
-        
+
         const rootPath =
             allPaths.length > 0 && allPaths[0].includes('/') ? allPaths[0].split('/')[0] : '';
 
@@ -274,13 +275,6 @@ const NewSelectFolder: StepComponent = ({
         }
     }, []);
 
-    const renderHeader = () => (
-        <>
-            <CardTitle>{'Select your project folder'}</CardTitle>
-            <CardDescription>{"This is where we'll reference your App"}</CardDescription>
-        </>
-    );
-
     const reset = () => {
         resetProjectData();
         // Reset all related states
@@ -290,9 +284,13 @@ const NewSelectFolder: StepComponent = ({
         setIsDragging(false);
     };
 
-    const renderContent = () => (
-        <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
-            <AnimatePresence mode="popLayout">
+    return (
+        <>
+            <StepHeader>
+                <CardTitle>{'Select your project folder'}</CardTitle>
+                <CardDescription>{"This is where we'll reference your App"}</CardDescription>
+            </StepHeader>
+            <StepContent>
                 {projectData.folderPath ? (
                     <motion.div
                         key="folderPath"
@@ -359,7 +357,7 @@ const NewSelectFolder: StepComponent = ({
                         </div>
 
                         {/* Hidden file input */}
-                        
+
                         <input
                             ref={fileInputRef}
                             type="file"
@@ -367,46 +365,25 @@ const NewSelectFolder: StepComponent = ({
                             style={{ display: 'none' }}
                             onChange={handleFileInputChange}
                             accept=".js,.jsx,.ts,.tsx,.json,.md,.txt,.css,.scss,.less,.html,.svg,.png,.jpg,.jpeg,.gif,.ico"
-                            directory="" 
+                            directory=""
                             webkitdirectory=""
                         />
                     </motion.div>
                 )}
-            </AnimatePresence>
-        </MotionConfig>
+            </StepContent>
+            <StepFooter>
+                <Button type="button" onClick={prevStep} variant="outline" className="px-3 py-2">
+                    Cancel
+                </Button>
+                <Button
+                    disabled={!projectData.folderPath || !!error || isUploading}
+                    type="button"
+                    onClick={nextStep}
+                    className="px-3 py-2"
+                >
+                    Continue
+                </Button>
+            </StepFooter>
+        </>
     );
-
-    const renderFooter = () => (
-        <div className="flex flex-row w-full justify-between">
-            <Button type="button" onClick={prevStep} variant="outline" className="px-3 py-2">
-                Cancel
-            </Button>
-            <Button
-                disabled={!projectData.folderPath || !!error || isUploading}
-                type="button"
-                onClick={nextStep}
-                className="px-3 py-2"
-            >
-                Continue
-            </Button>
-        </div>
-    );
-
-    switch (variant) {
-        case 'header':
-            return renderHeader();
-        case 'content':
-            return renderContent();
-        case 'footer':
-            return renderFooter();
-    }
 };
-
-NewSelectFolder.Header = () => <NewSelectFolder variant="header" />;
-NewSelectFolder.Content = () => <NewSelectFolder variant="content" />;
-NewSelectFolder.Footer = () => <NewSelectFolder variant="footer" />;
-NewSelectFolder.Header.displayName = 'NewSelectFolder.Header';
-NewSelectFolder.Content.displayName = 'NewSelectFolder.Content';
-NewSelectFolder.Footer.displayName = 'NewSelectFolder.Footer';
-
-export { NewSelectFolder };

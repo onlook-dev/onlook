@@ -58,7 +58,9 @@ export const TopBar = () => {
                                 'dark:focus:bg-teal-900 dark:focus:text-teal-100',
                                 'dark:hover:bg-teal-900 dark:hover:text-teal-100',
                             )}
-                            onSelect={() => (projectsManager.projectsTab = ProjectTabs.IMPORT_PROJECT)}
+                            onSelect={() => {
+                                router.push(Routes.IMPORT_PROJECT);
+                            }}
                         >
                             <Icons.Download className="w-4 h-4 mr-2" />
                             <p className="text-microPlus">{t('projects.actions.import')}</p>

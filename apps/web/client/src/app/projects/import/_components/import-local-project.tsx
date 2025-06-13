@@ -1,22 +1,18 @@
-import { MotionCard, MotionCardFooter } from '@onlook/ui/motion-card';
+'use client';
+
+import { MotionCard } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import { useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
-import { withStepProps } from '../with-step-props';
 import { NewSelectFolder } from './select-folder';
 import { VerifyProject } from './verify-project';
 import { FinalizingProject } from './finalizing-project';
 import { ProjectCreationProvider, useProjectCreation } from './project-creation-context';
 
-const steps = [
-    withStepProps(NewSelectFolder),
-    withStepProps(VerifyProject),
-    withStepProps(FinalizingProject),
-];
+const steps = [<NewSelectFolder />, <VerifyProject />, <FinalizingProject />];
 
 const ImportProjectContent = () => {
     const { currentStep, direction } = useProjectCreation();
-    const { ref, height } = useResizeObserver();
+    const { ref } = useResizeObserver();
 
     const variants = {
         initial: (direction: number) => {
@@ -28,29 +24,6 @@ const ImportProjectContent = () => {
         },
     };
 
-    const renderStep = () => {
-        const stepContent = steps[currentStep];
-        if (!stepContent) {
-            return (
-                <motion.p
-                    layout="position"
-                    initial={{ opacity: 0, y: 200 }}
-                    animate={{height, opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 200 }}
-                >
-                    {'Project created successfully.'}
-                </motion.p>
-            );
-        }
-
-        return (
-            <>
-                {stepContent.header()}
-                {stepContent.content()}
-            </>
-        );
-    };
-
     return (
         <div className="fixed inset-0">
             <div
@@ -60,7 +33,7 @@ const ImportProjectContent = () => {
                     backgroundPosition: 'center',
                 }}
             >
-                <div className="absolute inset-0 bg-background/50" />
+                <div className="absolute inset-0 bg-background/80" />
                 <div className="relative z-10">
                     <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
                         <MotionCard
@@ -83,20 +56,9 @@ const ImportProjectContent = () => {
                                         animate="active"
                                         exit="exit"
                                     >
-                                        {renderStep()}
+                                        {steps[currentStep]}
                                     </motion.div>
                                 </AnimatePresence>
-                                <MotionCardFooter
-                                    initial={{ opacity: 0, y: 200 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 200 }}
-                                    layout="position"
-                                    className="text-sm pb-4"
-                                >
-                                    <div id="footer-buttons" className="w-full">
-                                        {steps[currentStep]?.footerButtons()}
-                                    </div>
-                                </MotionCardFooter>
                             </motion.div>
                         </MotionCard>
                     </MotionConfig>
@@ -106,7 +68,7 @@ const ImportProjectContent = () => {
     );
 };
 
-export const ImportProject = () => {
+export const ImportLocalProject = () => {
     return (
         <ProjectCreationProvider totalSteps={steps.length}>
             <ImportProjectContent />

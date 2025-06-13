@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState } from 'react';
+'use client';
+
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { ProcessedFile, Project } from '../../constants';
 import { api } from '@/trpc/client';
 import { useUserManager } from '@/components/store/user';
@@ -8,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { ProjectTabs } from '@/components/store/projects/manager';
 import { useProjectsManager } from '@/components/store/projects';
+import { useImport } from '../_context/import-context';
 
 interface CodeSandboxFile {
     content: string;
@@ -25,7 +28,7 @@ interface ProjectCreationContextValue {
     direction: number;
     isFinalizing: boolean;
     totalSteps: number;
-    
+
     // Actions
     error: string | null;
     setProjectData: (newData: Partial<Project>) => void;
@@ -61,7 +64,14 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
     const userManager = useUserManager();
     const router = useRouter();
     const projectsManager = useProjectsManager();
-    
+    const { selectedImportType, setSelectedImportType } = useImport();
+
+    useEffect(() => {
+        if (selectedImportType === 'local') {
+            setCurrentStep(0);
+        }
+    }, [selectedImportType]);
+
     const setProjectData = (newData: Partial<Project>) => {
         setProjectDataState((prevData) => ({ ...prevData, ...newData }));
     };
@@ -150,12 +160,6 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
             }
             // Open the project
             router.push(`${Routes.PROJECT}/${project.id}`);
-
-            // Set the project tab to projects after a delay
-            setTimeout(() => {
-                projectsManager.projectsTab = ProjectTabs.PROJECTS;
-            }, 1000);
-
         } catch (error) {
             console.error('Error creating project:', error);
             setError('Failed to create project');
@@ -166,7 +170,8 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
     };
 
     const nextStep = () => {
-        if (currentStep < totalSteps - 2) { // -2 because we have 2 final steps
+        if (currentStep < totalSteps - 2) {
+            // -2 because we have 2 final steps
             setDirection(1);
             setCurrentStep((prev) => prev + 1);
         } else {
@@ -178,8 +183,8 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
 
     const prevStep = () => {
         if (currentStep === 0) {
-            projectsManager.projectsTab = ProjectTabs.PROJECTS;
             resetProjectData();
+            setSelectedImportType(null); // Close the import local project page
             return;
         }
         setDirection(-1);
@@ -198,11 +203,11 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
 
     const retry = () => {
         setError(null);
-        finalizeProject()
+        finalizeProject();
     };
 
     const cancel = () => {
-        projectsManager.projectsTab = ProjectTabs.PROJECTS;
+        setSelectedImportType(null); // Close the import local project page
         resetProjectData();
     };
 
@@ -221,12 +226,10 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
         resetProjectData,
         retry,
         cancel,
-        };
+    };
 
     return (
-        <ProjectCreationContext.Provider value={value}>
-            {children}
-        </ProjectCreationContext.Provider>
+        <ProjectCreationContext.Provider value={value}>{children}</ProjectCreationContext.Provider>
     );
 };
 
@@ -236,4 +239,4 @@ export const useProjectCreation = (): ProjectCreationContextValue => {
         throw new Error('useProjectCreation must be used within a ProjectCreationProvider');
     }
     return context;
-}; 
+};
