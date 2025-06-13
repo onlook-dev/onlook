@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { Icons } from "@onlook/ui/icons";
 import { Input } from "@onlook/ui/input";
 import { Badge } from "@onlook/ui/badge";
-import { track } from "@/utils/analytics";
+import { usePostHog } from "posthog-js/react";
 
 interface TemplateMeta {
     id: string;
@@ -24,6 +24,7 @@ export default function TemplateGalleryPage() {
     const [search, setSearch] = useState<string>("");
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [allTags, setAllTags] = useState<string[]>([]);
+    const posthog = usePostHog();
 
     useEffect(() => {
         const fetchTemplates = async () => {
@@ -95,7 +96,7 @@ export default function TemplateGalleryPage() {
                             key={t.id}
                             href={`/templates/${t.id}`}
                             className="group"
-                            onClick={() => track("template_click", { id: t.id })}
+                            onClick={() => posthog?.capture("template_click", { id: t.id })}
                             aria-label={`Open template ${t.name}`}
                         >
                             <Card className="hover:shadow-md transition-shadow h-full">
