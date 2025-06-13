@@ -20,9 +20,6 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
         );
     }
 
-    console.log('FrameDimensions', frameData.frame.dimension.width.toString(),
-        frameData.frame.dimension.height.toString());
-
     const [metadata, setMetadata] = useState<WindowMetadata>(() =>
         computeWindowMetadata(
             frameData.frame.dimension.width.toString(),
