@@ -17259,9 +17259,9 @@ var ChatSummarySchema = exports_external.object({
 });
 // ../../../packages/models/src/llm/index.ts
 var BEDROCK_MODEL_MAP = {
-  ["claude-sonnet-4-20250514" /* SONNET_4 */]: "anthropic.claude-sonnet-4-20250514-v1:0",
-  ["claude-3-7-sonnet-20250219" /* SONNET_3_7 */]: "anthropic.claude-3-7-sonnet-20250219-v1:0",
-  ["claude-3-5-haiku-20241022" /* HAIKU */]: "anthropic.claude-3-5-haiku-20241022-v1:0"
+  ["claude-sonnet-4-20250514" /* SONNET_4 */]: "us.anthropic.claude-sonnet-4-20250514-v1:0",
+  ["claude-3-7-sonnet-20250219" /* SONNET_3_7 */]: "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+  ["claude-3-5-haiku-20241022" /* HAIKU */]: "us.anthropic.claude-3-5-haiku-20241022-v1:0"
 };
 // script/api/theme/index.ts
 function getTheme() {
@@ -17378,5 +17378,5 @@ export {
   penpalParent
 };
 
-//# debugId=047B35CBF980E42564756E2164756E21
+//# debugId=820AA7B0FF5205F764756E2164756E21
 //# sourceMappingURL=index.js.map
