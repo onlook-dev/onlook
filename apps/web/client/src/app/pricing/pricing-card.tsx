@@ -6,6 +6,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface TokenTier {
     tokens: string;
@@ -20,12 +21,38 @@ export interface PricingCardProps {
     features: string[];
     buttonText: string;
     tokenTiers?: TokenTier[];
+    priceId?: string;
+    userId?: string;
 }
 
-export function PricingCard({ plan, basePrice, description, features, buttonText, tokenTiers }: PricingCardProps) {
+export function PricingCard({ plan, basePrice, description, features, buttonText, tokenTiers, priceId, userId }: PricingCardProps) {
     const [selectedTier, setSelectedTier] = useState<TokenTier | null>(
         tokenTiers?.[0] || null
     );
+    const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
+    const handleCheckout = async () => {
+        if (!priceId || !userId) return;
+        
+        setIsLoading(true);
+        try {
+            const response = await fetch('/api/stripe/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ priceId, userId }),
+            });
+            
+            const { url } = await response.json();
+            if (url) {
+                window.location.href = url;
+            }
+        } catch (error) {
+            console.error('Checkout error:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const displayPrice = selectedTier ? `$${selectedTier.price}` : basePrice;
     const priceSuffix = plan === 'Teams' ? '/member / month' : '/month';
@@ -88,8 +115,12 @@ export function PricingCard({ plan, basePrice, description, features, buttonText
                 )}
             </div>
             <p className="text-muted-foreground text-sm mt-4 mb-6 flex-grow-0">{description}</p>
-            <Button className="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white">
-                {buttonText}
+            <Button 
+                className="mt-auto w-full bg-blue-600 hover:bg-blue-700 text-white"
+                onClick={handleCheckout}
+                disabled={isLoading}
+            >
+                {isLoading ? 'Loading...' : buttonText}
             </Button>
             <div className="mt-6 space-y-3">
                 <p className="text-sm font-medium text-foreground">You get:</p>
