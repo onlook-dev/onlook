@@ -26,7 +26,7 @@ const ImportPage = () => {
             <TopBar />
             <div className="flex items-center justify-center overflow-hidden w-full h-full gap-6 p-6">
                 <Card 
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${selectedImportType === 'local' ? 'ring-2 ring-primary bg-primary/5' : ''}`}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
                     onClick={() => handleCardClick('local')}
                     onKeyDown={(e) => handleKeyDown(e, 'local')}
                     tabIndex={0}
@@ -52,7 +52,7 @@ const ImportPage = () => {
                 </Card>
 
                 <Card 
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] ${selectedImportType === 'github' ? 'ring-2 ring-primary bg-primary/5' : ''}`}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
                     onClick={() => handleCardClick('github')}
                     onKeyDown={(e) => handleKeyDown(e, 'github')}
                     tabIndex={0}
@@ -78,7 +78,6 @@ const ImportPage = () => {
                 </Card>
 
                 {selectedImportType === 'local' && <ImportLocalProject />}
-                {selectedImportType === 'github' && <div>GitHub integration coming soon...</div>}
             </div>
         </div>
     );

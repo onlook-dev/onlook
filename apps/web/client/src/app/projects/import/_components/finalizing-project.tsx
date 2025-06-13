@@ -35,10 +35,14 @@ export const FinalizingProject = () => {
                 </motion.div>
             </StepContent>
             <StepFooter>
-                <Button onClick={retry} variant="outline">
-                    Retry
+                <Button onClick={cancel} disabled={isFinalizing} variant="outline">
+                    Cancel
                 </Button>
-                <Button onClick={cancel}>Cancel</Button>
+                {error && (
+                    <Button onClick={retry} disabled={isFinalizing}>
+                        Retry
+                    </Button>
+                )}
             </StepFooter>
         </>
     );

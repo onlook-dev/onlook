@@ -40,7 +40,7 @@ const ImportProjectContent = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
-                            className="w-[30rem] min-h-[12rem] backdrop-blur-md bg-background/30 overflow-hidden p-0"
+                            className="w-[30rem] min-h-[12rem] backdrop-blur-md bg-background/30 overflow-hidden p-0 border border-primary/20 rounded-lg shadow-lg"
                         >
                             <motion.div ref={ref} layout="position" className="flex flex-col">
                                 <AnimatePresence
