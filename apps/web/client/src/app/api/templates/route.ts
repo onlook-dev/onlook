@@ -1,28 +1,9 @@
 import { NextResponse } from "next/server";
+import { templates } from "@/data/templates";
 
-const templates = [
-    {
-        id: "nextjs-blog",
-        name: "Next.js Blog",
-        description: "Starter blog with MDX & Tailwind",
-        preview: "/assets/templates/nextjs-blog.png",
-        tags: ["blog", "nextjs", "tailwind"],
-    },
-    {
-        id: "saas-dashboard",
-        name: "SaaS Dashboard",
-        description: "Analytics dashboard layout",
-        preview: "/assets/templates/saas-dashboard.png",
-        tags: ["dashboard", "saas"],
-    },
-    {
-        id: "landing-page",
-        name: "Landing Page",
-        description: "Product launch landing page",
-        preview: "/assets/templates/landing.png",
-        tags: ["landing", "marketing"],
-    },
-];
+// Cache the response at build-time and revalidate once per hour
+export const dynamic = "force-static";
+export const revalidate = 60 * 60; // 1 hour
 
 export async function GET() {
     return NextResponse.json(templates);

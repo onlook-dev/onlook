@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { Icons } from "@onlook/ui/icons";
 import { Input } from "@onlook/ui/input";
 import { Badge } from "@onlook/ui/badge";
+import { track } from "@/utils/analytics";
 
 interface TemplateMeta {
     id: string;
@@ -60,6 +61,7 @@ export default function TemplateGalleryPage() {
                 <div className="relative">
                     <Input
                         placeholder="Search templates"
+                        aria-label="Search templates"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="pl-8 pr-8 h-10"
@@ -68,6 +70,7 @@ export default function TemplateGalleryPage() {
                     {search && (
                         <button
                             className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            aria-label="Clear search"
                             onClick={() => setSearch("")}
                         >
                             <Icons.CrossS className="h-4 w-4" />
@@ -88,11 +91,19 @@ export default function TemplateGalleryPage() {
                     )}
                 >
                     {filtered?.map((t) => (
-                        <Link key={t.id} href={`/templates/${t.id}`} className="group">
+                        <Link
+                            key={t.id}
+                            href={`/templates/${t.id}`}
+                            className="group"
+                            onClick={() => track("template_click", { id: t.id })}
+                            aria-label={`Open template ${t.name}`}
+                        >
                             <Card className="hover:shadow-md transition-shadow h-full">
                                 <CardHeader className="border-b">
-                                    <CardTitle>{t.name}</CardTitle>
-                                    <CardDescription>{t.description}</CardDescription>
+                                    <CardTitle id={`template-${t.id}-title`}>{t.name}</CardTitle>
+                                    <CardDescription id={`template-${t.id}-desc`}>
+                                        {t.description}
+                                    </CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="relative w-full aspect-video overflow-hidden rounded-md border">
@@ -146,4 +157,4 @@ export default function TemplateGalleryPage() {
             )}
         </div>
     );
-} 
+}
