@@ -53,7 +53,7 @@ export const ColorBackground = observer(() => {
                 <DropdownMenuContent
                     align="start"
                     side="bottom"
-                    className="w-[220px] mt-1 p-0 rounded-lg overflow-hidden shadow-xl backdrop-blur-lg"
+                    className="w-[224px] mt-1 p-0 rounded-lg overflow-hidden shadow-xl backdrop-blur-lg"
                 >
                     <ColorPickerContent
                         color={tempColor}
