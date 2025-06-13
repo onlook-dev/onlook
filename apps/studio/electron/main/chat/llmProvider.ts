@@ -1,5 +1,5 @@
 import { createAmazonBedrock, type AmazonBedrockProviderSettings } from '@ai-sdk/amazon-bedrock';
-import { createAnthropic } from '@ai-sdk/anthropic';
+import { createAnthropic, type AnthropicProviderSettings } from '@ai-sdk/anthropic';
 import type { StreamRequestType } from '@onlook/models/chat';
 import { BASE_PROXY_ROUTE, FUNCTIONS_ROUTE, ProxyRoutes } from '@onlook/models/constants';
 import { BEDROCK_MODEL_MAP, CLAUDE_MODELS, LLMProvider } from '@onlook/models/llm';
@@ -31,25 +31,16 @@ async function getAnthropicProvider(
     const proxyUrl = `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_PROXY_ROUTE}${ProxyRoutes.ANTHROPIC}`;
 
     if (apiKey) {
-        // Use provided API key
-        const anthropic = createAnthropic({
-            apiKey,
-        });
-        return anthropic(model, {
-            cacheControl: true,
-        });
+        return createAnthropicDirect({ apiKey }, model);
     }
 
-    const config: AmazonBedrockProviderSettings = {};
+    const config: AnthropicProviderSettings = {};
 
     // Use proxy URL
     const authTokens = await getRefreshedAuthTokens();
     if (!authTokens) {
         throw new Error('No auth tokens found');
     }
-    config.accessKeyId = '';
-    config.secretAccessKey = '';
-    config.region = '';
     config.baseURL = proxyUrl;
     config.headers = {
         Authorization: `Bearer ${authTokens.accessToken}`,
@@ -63,7 +54,18 @@ const createAnthropicBedrock = (
     config: AmazonBedrockProviderSettings,
     claudeModel: CLAUDE_MODELS,
 ) => {
+    config.accessKeyId = '';
+    config.secretAccessKey = '';
+    config.region = '';
+
     const bedrock = createAmazonBedrock(config);
     const bedrockModel = BEDROCK_MODEL_MAP[claudeModel];
     return bedrock(bedrockModel);
+};
+
+const createAnthropicDirect = (config: AnthropicProviderSettings, model: CLAUDE_MODELS) => {
+    const anthropic = createAnthropic(config);
+    return anthropic(model, {
+        cacheControl: true,
+    });
 };
