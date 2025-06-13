@@ -14,6 +14,7 @@ import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { usePanelMeasurements } from '../_hooks/use-panel-measure';
+import { useTabActive } from '../_hooks/use-tab-active';
 import { BottomBar } from './bottom-bar';
 import { Canvas } from './canvas';
 import { EditorBar } from './editor-bar';
@@ -30,6 +31,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId });
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
+    const { tabState } = useTabActive();
 
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,
@@ -68,10 +70,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         initializeProject().catch((error) => {
             console.error('Error initializing project:', error);
         });
-
-        return () => {
-            editorEngine.sandbox.clear();
-        };
     }, [result, userManager.user?.id]);
 
     const resumeCreate = async () => {
@@ -92,6 +90,12 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         createManager.pendingCreationData = null;
         sendMessages(messages, ChatType.CREATE);
     };
+
+    useEffect(() => {
+        if (tabState === 'reactivated') {
+            editorEngine.sandbox.session.reconnect(projectId, userManager.user?.id);
+        }
+    }, [tabState]);
 
     if (isLoading) {
         return (

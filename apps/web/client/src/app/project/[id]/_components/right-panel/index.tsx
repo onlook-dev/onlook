@@ -1,6 +1,7 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
 import { EditorMode, EditorTabValue } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { ResizablePanel } from '@onlook/ui/resizable';
@@ -14,6 +15,7 @@ import { ChatControls } from './chat-tab/controls';
 import { ChatHistory } from './chat-tab/history';
 import { ChatPanelDropdown } from './chat-tab/panel-dropdown';
 import { DevTab } from './dev-tab';
+import { CodeControls } from './dev-tab/code-controls';
 
 const EDIT_PANEL_WIDTHS = {
     [EditorTabValue.CHAT]: 352,
@@ -42,8 +44,8 @@ export const RightPanel = observer(() => {
                 minWidth={240}
                 maxWidth={1440}
             >
-                <Tabs className='h-full' onValueChange={(value) => editorEngine.state.rightPanelTab = value as EditorTabValue} value={selectedTab} >
-                    <TabsList className='flex flex-row h-10 w-full border-b-1 border-border items-center bg-transparent select-none pr-2 pl-1.5 justify-between'>
+                <Tabs className='h-full gap-0' onValueChange={(value) => editorEngine.state.rightPanelTab = value as EditorTabValue} value={selectedTab} >
+                    <TabsList className='flex flex-row h-10 w-full border-b-1 border-border items-center bg-transparent select-none pr-1 pl-1.5 justify-between'>
                         <div className="flex flex-row items-center gap-2 ">
                             <ChatPanelDropdown
                                 isChatHistoryOpen={isChatHistoryOpen}
@@ -54,7 +56,7 @@ export const RightPanel = observer(() => {
                                     value={EditorTabValue.CHAT}
                                 >
                                     <Icons.Sparkles className="mr-0.5 mb-0.5 h-4 w-4" />
-                                    {t('editor.panels.edit.tabs.chat.name')}
+                                    {t(transKeys.editor.panels.edit.tabs.chat.name)}
                                     <Icons.ChevronDown className="ml-0.5 h-3 w-3 text-muted-foreground" />
                                 </TabsTrigger>
                             </ChatPanelDropdown>
@@ -67,6 +69,7 @@ export const RightPanel = observer(() => {
                             </TabsTrigger>
                         </div>
                         {selectedTab === EditorTabValue.CHAT && <ChatControls />}
+                        {selectedTab === EditorTabValue.DEV && <CodeControls />}
                     </TabsList>
                     <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
                     <TabsContent className="h-full overflow-y-auto" value={EditorTabValue.CHAT}>

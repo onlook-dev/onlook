@@ -8,6 +8,9 @@ export enum PublishStatus {
 export interface PublishState {
     status: PublishStatus;
     message: string | null;
+    buildLog: string | null;
+    error: string | null;
+    progress: number | null;
 }
 
 export interface CustomDomain {
@@ -31,7 +34,6 @@ export interface VerifyDomainResponse {
 }
 
 export interface PublishRequest {
-    folderPath: string;
     buildScript: string;
     urls: string[];
     options?: PublishOptions;

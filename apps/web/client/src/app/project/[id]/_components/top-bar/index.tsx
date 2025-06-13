@@ -3,22 +3,21 @@
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
+import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { Button } from '@onlook/ui/button';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useTranslations } from 'next-intl';
 import { useChatContext } from '../../_hooks/use-chat';
+import { Members } from '../members';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
-import { Members } from '../members';
-import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { PublishButton } from './publish';
 
 export const TopBar = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
-    const t = useTranslations();
     const { isWaiting } = useChatContext();
     const { isEnabled } = useFeatureFlags();
 
@@ -43,44 +42,43 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                 <ProjectBreadcrumb />
             </div>
             <ModeToggle />
-            <div className="flex flex-grow basis-0 justify-end items-center gap-2">
-                <div className="flex flex-row items-center layout gap-4">
-                    {isEnabled('NEXT_PUBLIC_FEATURE_COLLABORATION') && (
-                        <Members projectId={projectId} />
-                    )}
-                    <motion.div
-                        className="space-x-0 hidden lg:block"
-                        layout
-                        transition={{
-                            type: 'spring',
-                            stiffness: 300,
-                            damping: 30,
-                            delay: 0,
-                        }}
-                    >
-                        {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
-                            <Tooltip key={hotkey.description}>
-                                <TooltipTrigger asChild>
-                                    <span>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8"
-                                            onClick={click}
-                                            disabled={isDisabled}
-                                        >
-                                            {icon}
-                                        </Button>
-                                    </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom">
-                                    <HotkeyLabel hotkey={hotkey} />
-                                </TooltipContent>
-                            </Tooltip>
-                        ))}
-                    </motion.div>
-                    {/* TODO: Enable */}
-                    {/* <Tooltip>
+            <div className="flex flex-grow basis-0 justify-end items-center gap-2 mr-2">
+                {isEnabled('NEXT_PUBLIC_FEATURE_COLLABORATION') && (
+                    <Members projectId={projectId} />
+                )}
+                <motion.div
+                    className="space-x-0 hidden lg:block"
+                    layout
+                    transition={{
+                        type: 'spring',
+                        stiffness: 300,
+                        damping: 30,
+                        delay: 0,
+                    }}
+                >
+                    {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
+                        <Tooltip key={hotkey.description}>
+                            <TooltipTrigger asChild>
+                                <span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8"
+                                        onClick={click}
+                                        disabled={isDisabled}
+                                    >
+                                        {icon}
+                                    </Button>
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom" hideArrow>
+                                <HotkeyLabel hotkey={hotkey} />
+                            </TooltipContent>
+                        </Tooltip>
+                    ))}
+                </motion.div>
+                {/* TODO: Enable */}
+                {/* <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
                                 variant="ghost"
@@ -95,11 +93,11 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
-                            {t('editor.toolbar.versionHistory')}
+                            {t(transKeys.editor.toolbar.versionHistory)}
                         </TooltipContent>
                     </Tooltip> */}
-                    <CurrentUserAvatar className="size-8 cursor-pointer hover:opacity-80" />
-                </div>
+                <PublishButton />
+                <CurrentUserAvatar className="size-8 cursor-pointer hover:opacity-80" />
             </div>
         </div>
     );

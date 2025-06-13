@@ -22,5 +22,9 @@ if (process.env.NODE_ENV === 'development') {
     nextConfig.outputFileTracingRoot = path.join(__dirname, '../../..');
 }
 
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin({
+    experimental: {
+        createMessagesDeclaration: './messages/en.json'
+    }
+});
 export default withNextIntl(nextConfig);

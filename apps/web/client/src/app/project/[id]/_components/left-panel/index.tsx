@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
 import { EditorMode, LeftPanelTabValue } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
@@ -18,41 +19,41 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
         {
             value: LeftPanelTabValue.BRAND,
             icon: <Icons.Brand className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.brand',
+            label: transKeys.editor.panels.layers.tabs.brand,
         },
         {
             value: LeftPanelTabValue.PAGES,
             icon: <Icons.File className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.pages',
+            label: transKeys.editor.panels.layers.tabs.pages,
         },
         {
             value: LeftPanelTabValue.WINDOWS,
             icon: <Icons.Desktop className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.windows.name',
+            label: transKeys.editor.panels.layers.tabs.windows.name,
         },
         {
             value: LeftPanelTabValue.LAYERS,
             icon: <Icons.Layers className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.layers',
+            label: transKeys.editor.panels.layers.tabs.layers,
             disabled: true,
         },
 
         {
             value: LeftPanelTabValue.IMAGES,
             icon: <Icons.Image className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.images',
+            label: transKeys.editor.panels.layers.tabs.images,
             disabled: true,
         },
         {
             value: LeftPanelTabValue.APPS,
             icon: <Icons.ViewGrid className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.apps',
+            label: transKeys.editor.panels.layers.tabs.apps,
             disabled: true,
         },
         {
             value: LeftPanelTabValue.COMPONENTS,
             icon: <Icons.Component className="w-5 h-5" />,
-            label: 'editor.panels.layers.tabs.components',
+            label: transKeys.editor.panels.layers.tabs.components,
             disabled: true,
         },
     ];
@@ -132,7 +133,7 @@ export const LeftPanel = observer(() => {
                         onMouseEnter={() => !tab.disabled && handleMouseEnter(tab.value)}
                     >
                         {tab.icon}
-                        <span className="text-xs leading-tight">{t(tab.label)}</span>
+                        <span className="text-xs leading-tight">{t(tab.label as any)}</span>
                     </button>
                 ))}
 

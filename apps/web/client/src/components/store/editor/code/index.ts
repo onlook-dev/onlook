@@ -6,6 +6,7 @@ import {
     type DomElement,
     type FileToRequests,
 } from '@onlook/models';
+import { toast } from '@onlook/ui/sonner';
 import { assertNever } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import {
@@ -31,7 +32,7 @@ export class CodeManager {
         console.log('viewSourceFile', fileName);
     }
 
-    viewCodeBlock(oid: string) {
+    async viewCodeBlock(oid: string) {
         try {
             this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
             const element =
@@ -39,9 +40,16 @@ export class CodeManager {
                 this.editorEngine.elements.selected.find((el: DomElement) => el.instanceId === oid);
 
             if (element) {
-                setTimeout(() => {
-                    this.editorEngine.elements.selected = [element];
-                }, 500);
+                // First get the file path and load the file
+                const filePath = await this.editorEngine.ide.getFilePathFromOid(element.oid || '');
+                if (filePath) {
+                    // Load the file first
+                    await this.editorEngine.ide.openFile(filePath);
+                    // Then select the element after a small delay to ensure the file is loaded
+                    setTimeout(() => {
+                        this.editorEngine.elements.selected = [element];
+                    }, 500);
+                }
             }
         } catch (error) {
             console.error('Error viewing source:', error);
@@ -49,15 +57,23 @@ export class CodeManager {
     }
 
     async write(action: Action) {
-        // TODO: This is a hack to write code, we should refactor this
-        if (action.type === 'write-code' && action.diffs[0]) {
-            await this.editorEngine.sandbox.writeFile(
-                action.diffs[0].path,
-                action.diffs[0].generated,
-            );
-        } else {
-            const requests = await this.collectRequests(action);
-            await this.writeRequest(requests);
+        try {
+            // TODO: This is a hack to write code, we should refactor this
+            if (action.type === 'write-code' && action.diffs[0]) {
+                await this.editorEngine.sandbox.writeFile(
+                    action.diffs[0].path,
+                    action.diffs[0].generated,
+                );
+            } else {
+                const requests = await this.collectRequests(action);
+                await this.writeRequest(requests);
+            }
+        } catch (error) {
+            console.error('Error writing requests:', error);
+            toast.error('Error writing requests', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+            this.editorEngine.error.addCodeApplicationError(error instanceof Error ? error.message : 'Unknown error', action);
         }
     }
 
@@ -102,13 +118,11 @@ export class CodeManager {
         for (const request of requests) {
             const templateNode = await this.editorEngine.sandbox.getTemplateNode(request.oid);
             if (!templateNode) {
-                console.error(`Template node not found for oid: ${request.oid}`);
-                continue;
+                throw new Error(`Template node not found for oid: ${request.oid}`);
             }
             const codeBlock = await this.editorEngine.sandbox.readFile(templateNode.path);
             if (!codeBlock) {
-                console.error(`Failed to read file: ${templateNode.path}`);
-                continue;
+                throw new Error(`Failed to read file: ${templateNode.path}`);
             }
             const path = templateNode.path;
 

@@ -11,6 +11,13 @@ export interface Project {
         id: string;
         url: string;
     };
+    env: Record<string, string> | null;
+}
+
+export interface ProjectCommands {
+    build: string | null;
+    run: string | null;
+    install: string | null;
 }
 
 export interface PreviewImg {

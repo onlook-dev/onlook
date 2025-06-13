@@ -9,14 +9,13 @@ import {
 } from '@onlook/db';
 import { getResendClient, sendInvitationEmail } from '@onlook/email';
 import { ProjectRole } from '@onlook/models';
-import { createDefaultUserCanvas } from '@onlook/utility';
+import { createDefaultUserCanvas, isFreeEmail } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
 import dayjs from 'dayjs';
-import { and, eq, isNull, ilike } from 'drizzle-orm';
+import { and, eq, ilike, isNull } from 'drizzle-orm';
 import urlJoin from 'url-join';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
-import { isFreeEmail } from '@onlook/utility';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 export const invitationRouter = createTRPCRouter({
@@ -35,6 +34,13 @@ export const invitationRouter = createTRPCRouter({
         const inviter = await ctx.db.query.authUsers.findFirst({
             where: eq(authUsers.id, invitation.inviterId),
         });
+
+        if (!inviter) {
+            throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: 'Inviter not found',
+            });
+        }
 
         return {
             ...invitation,
@@ -129,7 +135,7 @@ export const invitationRouter = createTRPCRouter({
                         ),
                     },
                     {
-                        dryRun: env.NODE_ENV !== 'production',
+                        dryRun: process.env.NODE_ENV !== 'production',
                     },
                 );
             }

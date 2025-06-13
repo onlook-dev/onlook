@@ -2,6 +2,7 @@ import { ChatType } from '@/app/api/chat/route';
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
+import { transKeys } from '@/i18n/keys';
 import { EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -260,8 +261,8 @@ export const ChatInput = observer(() => {
                     disabled={disabled}
                     placeholder={
                         disabled
-                            ? t('editor.panels.edit.tabs.chat.emptyState')
-                            : t('editor.panels.edit.tabs.chat.input.placeholder')
+                            ? t(transKeys.editor.panels.edit.tabs.chat.emptyState)
+                            : t(transKeys.editor.panels.edit.tabs.chat.input.placeholder)
                     }
                     className={cn(
                         'bg-transparent dark:bg-transparent mt-2 overflow-auto max-h-32 text-small p-0 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',

@@ -20,6 +20,44 @@ interface TextEditorProps {
     isDisabled?: boolean;
 }
 
+// Helper functions to convert between formats
+const contentHelpers = {
+    // Convert content with newlines to ProseMirror nodes
+    createNodesFromContent: (content: string) => {
+        if (!content) return [];
+        
+        const lines = content.split('\n');
+        const nodes = [];
+        
+        for (let i = 0; i < lines.length; i++) {
+            if (lines[i] || i === 0) {
+                nodes.push(schema.text(lines[i] || ''));
+            }
+            if (i < lines.length - 1) {
+                const hardBreakNode = schema.nodes.hard_break;
+                if (hardBreakNode) {
+                    nodes.push(hardBreakNode.create());
+                }
+            }
+        }
+        
+        return nodes;
+    },
+    
+    // Convert ProseMirror document to text with newlines
+    extractContentWithNewlines: (view: EditorView) => {
+        let content = '';
+        view.state.doc.descendants((node) => {
+            if (node.type.name === 'text' && node.text) {
+                content += node.text || '';
+            } else if (node.type.name === 'hard_break') {
+                content += '\n';
+            }
+        });
+        return content;
+    }
+};
+
 export const TextEditor: React.FC<TextEditorProps> = ({
     rect,
     content,
@@ -50,7 +88,8 @@ export const TextEditor: React.FC<TextEditorProps> = ({
                 const newState = view.state.apply(transaction);
                 view.updateState(newState);
                 if (onChange && transaction.docChanged) {
-                    onChange(view.state.doc.textContent);
+                    const textContent = contentHelpers.extractContentWithNewlines(view);
+                    onChange(textContent);
                 }
             },
             attributes: {
@@ -60,8 +99,9 @@ export const TextEditor: React.FC<TextEditorProps> = ({
 
         editorViewRef.current = view;
 
-        // Set initial content
-        const paragraph = schema.node('paragraph', null, content ? [schema.text(content)] : []);
+        // Set initial content with proper line break handling
+        const nodes = contentHelpers.createNodesFromContent(content);
+        const paragraph = schema.node('paragraph', null, nodes);
         const newDoc = schema.node('doc', null, [paragraph]);
         const tr = view.state.tr.replaceWith(0, view.state.doc.content.size, newDoc.content);
         view.dispatch(tr);
@@ -74,28 +114,19 @@ export const TextEditor: React.FC<TextEditorProps> = ({
             view.focus();
         }
 
-        return () => {
-            view.destroy();
-        };
-    }, [content, styles, isComponent, isDisabled]);
-
-    // Handle blur events
-    useEffect(() => {
+        // Attach blur handler directly to ProseMirror's contenteditable
         const handleBlur = (event: FocusEvent) => {
-            const editorElement = editorRef.current;
-            if (editorElement && !editorElement.contains(event.relatedTarget as Node)) {
-                onStop?.();
+            if (onStop && !editorRef.current?.contains(event.relatedTarget as Node)) {
+                onStop();
             }
         };
+        view.dom.addEventListener('blur', handleBlur, true);
 
-        const editorElement = editorRef.current;
-        if (editorElement) {
-            editorElement.addEventListener('blur', handleBlur, true);
-            return () => {
-                editorElement.removeEventListener('blur', handleBlur, true);
-            };
-        }
-    }, [onStop]);
+        return () => {
+            view.dom.removeEventListener('blur', handleBlur, true);
+            view.destroy();
+        };
+    }, [content, styles, isComponent, isDisabled, onChange, onStop]);
 
     // Update editor state when disabled state changes
     useEffect(() => {

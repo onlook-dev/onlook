@@ -2,7 +2,7 @@
     "pricing": {
         "plans": {
             "basic": {
-                "name": "Onlook Basic",
+                "name": "Basic",
                 "price": "$0/月",
                 "description": "コードで簡単にプロトタイピングと実験を。",
                 "features": [
@@ -14,7 +14,7 @@
                 ]
             },
             "pro": {
-                "name": "Onlook Pro",
+                "name": "Pro",
                 "price": "$20/月",
                 "description": "創造性を解き放とう。AIで美しいサイトを構築。",
                 "features": [
@@ -25,6 +25,29 @@
                     "ビルド時にOnlookの透かしを削除",
                     "Onlookでホスティングされた1つの無料カスタムドメイン",
                     "優先サポート"
+                ]
+            },
+            "launch": {
+                "name": "Launch",
+                "price": "$50/月",
+                "description": "スタートアップや成長中のチームに最適",
+                "features": [
+                    "無制限の毎日のメッセージ",
+                    "優先サポート",
+                    "高度な統合",
+                    "チームコラボレーション機能"
+                ]
+            },
+            "scale": {
+                "name": "Scale",
+                "price": "$100/月",
+                "description": "大規模チーム向けのエンタープライズ機能",
+                "features": [
+                    "Launchプランのすべて",
+                    "専任のアカウントマネージャー",
+                    "カスタム統合",
+                    "高度な分析",
+                    "24/7プレミアムサポート"
                 ]
             }
         },
@@ -245,7 +268,11 @@
             "startFromScratch": "新規作成",
             "importProject": "プロジェクトをインポート",
             "subscriptions": "サブスクリプション",
-            "settings": "設定"
+            "settings": "設定",
+            "downloadCode": "コードをダウンロード",
+            "downloadingCode": "ダウンロードを準備中...",
+            "downloadSuccess": "ダウンロードが正常に開始されました",
+            "downloadError": "ダウンロードの準備に失敗しました"
         },
         "dialogs": {
             "delete": {

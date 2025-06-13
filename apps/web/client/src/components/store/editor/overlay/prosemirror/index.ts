@@ -3,7 +3,7 @@ import { baseKeymap } from 'prosemirror-commands';
 import { history, redo, undo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
 import { Schema } from 'prosemirror-model';
-import { Plugin } from 'prosemirror-state';
+import { Plugin, EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { adaptValueToCanvas } from '../utils';
 
@@ -11,10 +11,16 @@ export const schema = new Schema({
     nodes: {
         doc: { content: 'paragraph+' },
         paragraph: {
-            content: 'text*',
+            content: '(text | hard_break)*',
             toDOM: () => ['p', { style: 'margin: 0; padding: 0;' }, 0],
         },
         text: { inline: true },
+        hard_break: {
+            inline: true,
+            group: 'inline',
+            selectable: false,
+            toDOM: () => ['br'],
+        },
     },
     marks: {
         style: {
@@ -34,15 +40,13 @@ export const schema = new Schema({
 
 export function applyStylesToEditor(editorView: EditorView, styles: Record<string, string>) {
     const { state, dispatch } = editorView;
-    const { tr } = state;
     const styleMark = state.schema.marks?.style;
     if (!styleMark) {
         console.error('No style mark found');
         return;
     }
-    tr.addMark(0, state.doc.content.size, styleMark.create({ style: styles }));
 
-    // Apply container styles
+    const tr = state.tr.addMark(0, state.doc.content.size, styleMark.create({ style: styles }));
     const fontSize = adaptValueToCanvas(parseFloat(styles.fontSize ?? ''));
     const lineHeight = adaptValueToCanvas(parseFloat(styles.lineHeight ?? ''));
 
@@ -63,31 +67,37 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
         backgroundColor: styles.backgroundColor,
         wordBreak: 'break-word',
         overflow: 'visible',
+        height: '100%',
     });
-    editorView.dom.style.height = '100%';
     dispatch(tr);
 }
 
-// Export common plugins configuration
+const createLineBreakHandler = () => (state: EditorState, dispatch?: (tr: any) => void) => {
+    if (dispatch) {
+        const hardBreakNode = state.schema.nodes.hard_break;
+        if (hardBreakNode) {
+            dispatch(state.tr.replaceSelectionWith(hardBreakNode.create()));
+        }
+    }
+    return true;
+};
+
+const createEnterHandler = (onExit: () => void) => (state: EditorState) => {
+    onExit();
+    return true;
+};
+
 export const createEditorPlugins = (onEscape?: () => void, onEnter?: () => void): Plugin[] => [
     history(),
     keymap({
         'Mod-z': undo,
         'Mod-shift-z': redo,
         Escape: () => {
-            if (onEscape) {
-                onEscape();
-                return true;
-            }
-            return false;
+            onEscape?.();
+            return !!onEscape;
         },
-        Enter: () => {
-            if (onEnter) {
-                onEnter();
-                return true;
-            }
-            return false;
-        },
+        Enter: onEnter ? createEnterHandler(onEnter) : () => false,
+        'Shift-Enter': createLineBreakHandler(),
     }),
     keymap(baseKeymap),
 ];

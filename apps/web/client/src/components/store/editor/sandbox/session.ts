@@ -23,6 +23,7 @@ export class SessionManager {
                 return await api.sandbox.start.mutate({ sandboxId: id, userId });
             },
         });
+        this.session.keepActiveWhileConnected(true);
         this.isConnecting = false;
         await this.createTerminalSessions(this.session);
     }
@@ -35,6 +36,7 @@ export class SessionManager {
         const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session, this.editorEngine.error);
         this.terminalSessions.set(task.id, task);
         const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session, this.editorEngine.error);
+
         this.terminalSessions.set(terminal.id, terminal);
         this.activeTerminalSessionId = task.id;
     }
@@ -54,8 +56,22 @@ export class SessionManager {
         await api.sandbox.hibernate.mutate({ sandboxId });
     }
 
-    async reconnect() {
-        await this.session?.reconnect();
+    async reconnect(sandboxId: string, userId: string | undefined) {
+        if (!this.session) {
+            console.error('No session found');
+            return;
+        }
+        this.isConnecting = true;
+        await this.session.reconnect().catch(async (err) => {
+            console.error('Failed to reconnect session:', err);
+            if (!userId) {
+                console.error('No user id found');
+                return;
+            }
+            await this.start(sandboxId, userId);
+        }).finally(() => {
+            this.isConnecting = false;
+        });
     }
 
     async disconnect() {
@@ -85,7 +101,8 @@ export class SessionManager {
                 throw new Error('No session found');
             }
 
-            const terminalSession = this.terminalSessions.get(this.activeTerminalSessionId) as TerminalSession | undefined;
+
+            const terminalSession = Array.from(this.terminalSessions.values()).find(session => session.type === CLISessionType.TERMINAL) as TerminalSession | undefined;
 
             if (!terminalSession?.terminal) {
                 throw new Error('No terminal session found');

@@ -46,3 +46,41 @@ export const formatCommitDate = (
         }),
     });
 };
+
+/**
+ * A utility class for performance logging and timing
+ * Tracks elapsed time since creation and provides logging methods
+ */
+export class LogTimer {
+    private startTime: number;
+    private name: string;
+
+    constructor(name: string) {
+        this.startTime = Date.now();
+        this.name = name;
+    }
+
+    /**
+     * Logs the elapsed time for a specific step
+     * @param step - Description of the step being timed
+     */
+    log(step: string): void {
+        const elapsed = Date.now() - this.startTime;
+        console.log(`[${this.name}] ${step}: ${elapsed}ms`);
+    }
+
+    /**
+     * Gets the elapsed time in milliseconds without logging
+     * @returns Elapsed time in milliseconds
+     */
+    getElapsed(): number {
+        return Date.now() - this.startTime;
+    }
+
+    /**
+     * Resets the timer to the current time
+     */
+    reset(): void {
+        this.startTime = Date.now();
+    }
+}

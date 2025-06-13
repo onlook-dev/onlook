@@ -3,7 +3,7 @@ import type { FrameImpl } from '@/components/store/editor/frames/frame';
 import { DefaultSettings } from '@onlook/constants';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
 
 enum HandleType {
     Right = 'right',
@@ -12,7 +12,9 @@ enum HandleType {
 
 export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
     const editorEngine = useEditorEngine();
-    const aspectRatioLocked = true;
+
+    // TODO implement aspect ratio lock
+    const aspectRatioLocked = false;
     const lockedPreset = false;
 
     const startResize = (e: MouseEvent, types: HandleType[]) => {
@@ -33,6 +35,9 @@ export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
             let newWidth = startWidth + widthDelta;
             let newHeight = startHeight + heightDelta;
 
+            const minWidth = parseInt(DefaultSettings.MIN_DIMENSIONS.width);
+            const minHeight = parseInt(DefaultSettings.MIN_DIMENSIONS.height);
+
             if (aspectRatioLocked) {
                 if (types.includes(HandleType.Right) && !types.includes(HandleType.Bottom)) {
                     newHeight = newWidth / aspectRatio;
@@ -46,9 +51,6 @@ export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
                     }
                 }
 
-                const minWidth = parseInt(DefaultSettings.MIN_DIMENSIONS.width);
-                const minHeight = parseInt(DefaultSettings.MIN_DIMENSIONS.height);
-
                 if (newWidth < minWidth) {
                     newWidth = minWidth;
                     newHeight = newWidth / aspectRatio;
@@ -58,8 +60,8 @@ export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
                     newWidth = newHeight * aspectRatio;
                 }
             } else {
-                newWidth = Math.max(newWidth, parseInt(DefaultSettings.MIN_DIMENSIONS.width));
-                newHeight = Math.max(newHeight, parseInt(DefaultSettings.MIN_DIMENSIONS.height));
+                newWidth = Math.max(newWidth, minWidth);
+                newHeight = Math.max(newHeight, minHeight);
             }
 
             frame.dimension = {

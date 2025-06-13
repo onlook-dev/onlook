@@ -1,0 +1,31 @@
+{
+    "name": "@onlook/stripe",
+    "description": "Stripe configuration, helpers, and scripts",
+    "version": "0.0.0",
+    "private": true,
+    "main": "./src/index.ts",
+    "module": "src/index.ts",
+    "types": "src/index.ts",
+    "scripts": {
+        "clean": "rm -rf node_modules",
+        "typecheck": "tsc --noEmit",
+        "setup:product": "bun src/scripts/product.ts"
+    },
+    "keywords": [
+        "onlook",
+        "stripe"
+    ],
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.com"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://onlook.com",
+    "devDependencies": {
+        "typescript": "^5.8.2"
+    },
+    "dependencies": {
+        "stripe": "^18.2.1",
+        "dotenv": "^16.5.0"
+    }
+}

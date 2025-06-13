@@ -33,10 +33,7 @@
         "prepare": "husky",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
-        "setup:env": "bun --filter @onlook/scripts build && bun packages/scripts/dist/index.js",
-        "increment_tag": "./scripts/increment_tag.sh",
-        "publish_tag": "./scripts/publish_tag.sh",
-        "remove_tag": "./scripts/remove_tag.sh"
+        "setup:env": "bun --filter @onlook/scripts build && bun packages/scripts/dist/index.js"
     },
     "repository": {
         "type": "git",

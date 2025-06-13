@@ -1,6 +1,7 @@
 'use client';
 
 import { Dunes } from '@/components/ui/dunes';
+import { transKeys } from '@/i18n/keys';
 import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -28,10 +29,10 @@ export default function LoginPage() {
                     </div>
                     <div className="space-y-4">
                         <h1 className="text-title1 leading-tight">
-                            {t('welcome.title')}
+                            {t(transKeys.welcome.title)}
                         </h1>
                         <p className="text-foreground-onlook text-regular">
-                            {t('welcome.description')}
+                            {t(transKeys.welcome.description)}
                         </p>
                     </div>
                     <div className="space-x-2 flex flex-row">
@@ -44,28 +45,28 @@ export default function LoginPage() {
                         </Button>
                     )}
                     <p className="text-small text-foreground-onlook">
-                        {t('welcome.terms.agreement')}{' '}
+                        {t(transKeys.welcome.terms.agreement)}{' '}
                         <button
                             onClick={() =>
                                 window.open('https://onlook.com/privacy-policy', '_blank')
                             }
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
-                            {t('welcome.terms.privacy')}
+                            {t(transKeys.welcome.terms.privacy)}
                         </button>{' '}
-                        {t('welcome.terms.and')}{' '}
+                        {t(transKeys.welcome.terms.and)}{' '}
                         <button
                             onClick={() =>
                                 window.open('https://onlook.com/terms-of-service', '_blank')
                             }
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
-                            {t('welcome.terms.tos')}
+                            {t(transKeys.welcome.terms.tos)}
                         </button>
                     </p>
                 </div>
                 <div className="flex flex-row space-x-1 text-small text-gray-600">
-                    <p>{t('welcome.version', { version: '1.0.0' })}</p>
+                    <p>{t(transKeys.welcome.version, { version: '1.0.0' })}</p>
                 </div>
             </div>
             <Dunes />

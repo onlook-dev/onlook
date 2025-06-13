@@ -253,6 +253,12 @@ export class FontManager {
                 console.error('Error scanning existing fonts:', existingFontsError);
             }
 
+            const fileExists = await sandbox.fileExists(this.fontConfigPath);
+            if (!fileExists) {
+                console.log(`Font config file doesn't exist: ${this.fontConfigPath}`);
+                return [];
+            }
+
             const content = (await this.editorEngine.sandbox?.readFile(this.fontConfigPath)) ?? '';
             if (!content) {
                 this._fonts = [];

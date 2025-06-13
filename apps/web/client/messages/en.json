@@ -50,7 +50,11 @@
             "startFromScratch": "Start from scratch",
             "importProject": "Import a project",
             "subscriptions": "Subscriptions",
-            "settings": "Settings"
+            "settings": "Settings",
+            "downloadCode": "Download Code",
+            "downloadingCode": "Preparing download...",
+            "downloadSuccess": "Download started successfully",
+            "downloadError": "Failed to prepare download"
         },
         "dialogs": {
             "delete": {
@@ -99,7 +103,7 @@
     "pricing": {
         "plans": {
             "basic": {
-                "name": "Onlook Basic",
+                "name": "Basic",
                 "price": "$0/month",
                 "description": "Prototype and experiment in code with ease.",
                 "features": [
@@ -111,7 +115,7 @@
                 ]
             },
             "pro": {
-                "name": "Onlook Pro",
+                "name": "Pro",
                 "price": "$20/month",
                 "description": "Creativity – unconstrained. Build stunning sites with AI.",
                 "features": [
@@ -122,6 +126,29 @@
                     "Remove built with Onlook watermark",
                     "1 free custom domain hosted with Onlook",
                     "Priority support"
+                ]
+            },
+            "launch": {
+                "name": "Launch",
+                "price": "$50/month",
+                "description": "Perfect for startups and growing teams",
+                "features": [
+                    "Unlimited daily messages",
+                    "Priority support",
+                    "Advanced integrations",
+                    "Team collaboration features"
+                ]
+            },
+            "scale": {
+                "name": "Scale",
+                "price": "$100/month",
+                "description": "Enterprise-grade features for large teams",
+                "features": [
+                    "Everything in Launch plan",
+                    "Dedicated account manager",
+                    "Custom integrations",
+                    "Advanced analytics",
+                    "24/7 premium support"
                 ]
             }
         },

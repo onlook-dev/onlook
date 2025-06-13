@@ -3,22 +3,15 @@ import { fromProject } from '@onlook/db';
 import type { Project } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 
-// Stubs for now
-export class DomainsManager {
-    constructor() { }
-}
-
 export class VersionsManager {
     constructor(private projectManager: ProjectManager) { }
 }
 
 export class ProjectManager {
     private _project: Project | null = null;
-    readonly domains: DomainsManager | null = null;
     readonly versions: VersionsManager | null = null;
 
     constructor() {
-        this.domains = new DomainsManager();
         this.versions = new VersionsManager(this);
         makeAutoObservable(this);
     }
