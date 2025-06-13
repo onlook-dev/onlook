@@ -10,18 +10,13 @@ import { useProjectCreation } from './project-creation-context';
 import { StepHeader } from './steps';
 import { StepContent } from './steps';
 import { StepFooter } from './steps';
+import type { ProcessedFile } from '../../types';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
         webkitdirectory?: string;
         directory?: string;
     }
-}
-
-interface ProcessedFile {
-    path: string;
-    content: string | ArrayBuffer;
-    isBinary: boolean;
 }
 
 export const NewSelectFolder = () => {

@@ -10,22 +10,12 @@ import { useProjectCreation } from './project-creation-context';
 import { StepFooter } from './steps';
 import { StepContent } from './steps';
 import { StepHeader } from './steps';
-
-interface NextJsProjectValidation {
-    isValid: boolean;
-    routerType?: 'app' | 'pages';
-    error?: string;
-}
-
-interface ProcessedFile {
-    path: string;
-    content: string | ArrayBuffer;
-    isBinary: boolean;
-}
+import type { NextJsProjectValidation, ProcessedFile } from '../../types';
 
 export const VerifyProject = () => {
     const { projectData, prevStep, nextStep, isFinalizing } = useProjectCreation();
     const [validation, setValidation] = useState<NextJsProjectValidation | null>(null);
+    
     useEffect(() => {
         validateProject();
     }, [projectData]);

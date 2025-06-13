@@ -1,15 +1,13 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { ProcessedFile, Project } from '../../constants';
+import type { ProcessedFile, Project } from '../../types';
 import { api } from '@/trpc/client';
 import { useUserManager } from '@/components/store/user';
 import { blobToBase64String } from 'blob-util';
 import { Routes } from '@/utils/constants';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { ProjectTabs } from '@/components/store/projects/manager';
-import { useProjectsManager } from '@/components/store/projects';
 import { useImport } from '../_context/import-context';
 
 interface CodeSandboxFile {
@@ -63,7 +61,6 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
     const [isFinalizing, setIsFinalizing] = useState(false);
     const userManager = useUserManager();
     const router = useRouter();
-    const projectsManager = useProjectsManager();
     const { selectedImportType, setSelectedImportType } = useImport();
 
     useEffect(() => {
