@@ -7,18 +7,22 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Icons } from "@onlook/ui/icons";
 import { Input } from "@onlook/ui/input";
+import { Badge } from "@onlook/ui/badge";
 
 interface TemplateMeta {
     id: string;
     name: string;
     description: string;
     preview: string;
+    tags: string[];
 }
 
 export default function TemplateGalleryPage() {
     const [templates, setTemplates] = useState<TemplateMeta[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [search, setSearch] = useState<string>("");
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [allTags, setAllTags] = useState<string[]>([]);
 
     useEffect(() => {
         const fetchTemplates = async () => {
@@ -27,6 +31,9 @@ export default function TemplateGalleryPage() {
                 if (!res.ok) throw new Error(res.statusText);
                 const data = (await res.json()) as TemplateMeta[];
                 setTemplates(data);
+                const tagSet = new Set<string>();
+                data.forEach((t) => t.tags?.forEach((tag) => tagSet.add(tag)));
+                setAllTags(Array.from(tagSet).sort());
             } catch (err) {
                 setError("Failed to load templates");
             }
@@ -35,12 +42,15 @@ export default function TemplateGalleryPage() {
     }, []);
 
     const filtered = templates?.filter((t) => {
-        if (!search.trim()) return true;
+        if (!search.trim() && selectedTags.length === 0) return true;
         const s = search.toLowerCase();
-        return (
+        const matchesSearch =
+            !search.trim() ||
             t.name.toLowerCase().includes(s) ||
-            t.description.toLowerCase().includes(s)
-        );
+            t.description.toLowerCase().includes(s);
+        const matchesTags =
+            selectedTags.length === 0 || selectedTags.every((tag) => t.tags.includes(tag));
+        return matchesSearch && matchesTags;
     });
 
     return (
@@ -98,6 +108,40 @@ export default function TemplateGalleryPage() {
                             </Card>
                         </Link>
                     ))}
+                </div>
+            )}
+            {allTags.length > 0 && (
+                <div className="flex flex-wrap gap-2 max-w-4xl w-full">
+                    {allTags.map((tag) => {
+                        const active = selectedTags.includes(tag);
+                        return (
+                            <Badge
+                                key={tag}
+                                onClick={() =>
+                                    setSelectedTags((prev) =>
+                                        prev.includes(tag)
+                                            ? prev.filter((t) => t !== tag)
+                                            : [...prev, tag],
+                                    )
+                                }
+                                className={
+                                    active
+                                        ? "cursor-pointer bg-primary text-primary-foreground"
+                                        : "cursor-pointer hover:bg-muted"
+                                }
+                            >
+                                {tag}
+                            </Badge>
+                        );
+                    })}
+                    {selectedTags.length > 0 && (
+                        <button
+                            className="ml-2 text-sm underline text-muted-foreground hover:text-foreground"
+                            onClick={() => setSelectedTags([])}
+                        >
+                            Clear
+                        </button>
+                    )}
                 </div>
             )}
         </div>
