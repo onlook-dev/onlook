@@ -9,7 +9,6 @@ import { motion } from 'motion/react';
 import { Icons } from '@onlook/ui/icons';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
 import type { StepComponent } from '../with-step-props';
-import { useEffect, useState } from 'react';
 import { useImportGithubProject } from './context';
 
 const SetupGithub: StepComponent = ({
@@ -17,12 +16,11 @@ const SetupGithub: StepComponent = ({
 }: {
     variant: 'header' | 'content' | 'footer';
 }) => {
-    const { prevStep, nextStep, organizations, selectedOrg, setSelectedOrg, isLoadingOrganizations, repositories, selectedRepo, setSelectedRepo, isLoadingRepositories } = useImportGithubProject();
+    const { prevStep, organizations, selectedOrg, setSelectedOrg, importRepo, isLoadingOrganizations, repositories, selectedRepo, setSelectedRepo, isLoadingRepositories } = useImportGithubProject();
 
     const handleOrganizationSelect = (value: string) => {
         const organization = organizations.find(org => org.login === value);
         setSelectedOrg(organization || null);
-        // Clear selected repo when organization changes
         setSelectedRepo(null);
     };
 
@@ -31,7 +29,6 @@ const SetupGithub: StepComponent = ({
         setSelectedRepo(repository || null);
     };
 
-    // Filter repositories based on selected organization
     const filteredRepositories = selectedOrg 
         ? repositories.filter(repo => repo.owner.login === selectedOrg.login)
         : repositories;
@@ -63,10 +60,10 @@ const SetupGithub: StepComponent = ({
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select organization" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="max-w-[26rem]">
                                 {organizations.map((org) => (
                                     <SelectItem key={org.id} value={org.login}>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 w-full">
                                             <img 
                                                 src={org.avatar_url} 
                                                 alt={org.login} 
@@ -74,7 +71,7 @@ const SetupGithub: StepComponent = ({
                                             />
                                             <span>{org.login}</span>
                                             {org.description && (
-                                                <span className="text-xs text-foreground-secondary ml-1">
+                                                <span className="text-xs text-foreground-secondary ml-1 truncate">
                                                     - {org.description}
                                                 </span>
                                             )}
@@ -103,10 +100,10 @@ const SetupGithub: StepComponent = ({
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Find a NextJS repository" />
                             </SelectTrigger>
-                            <SelectContent>
+                            <SelectContent className="max-w-[27rem]">
                                 {filteredRepositories.map((repo) => (
                                     <SelectItem key={repo.id} value={repo.name}>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 w-full">
                                             <div className="flex items-center gap-1">
                                                 {repo.private ? (
                                                     <Icons.LockClosed className="w-3 h-3 text-foreground-secondary" />
@@ -116,7 +113,7 @@ const SetupGithub: StepComponent = ({
                                                 <span>{repo.name}</span>
                                             </div>
                                             {repo.description && (
-                                                <span className="text-xs text-foreground-secondary ml-1">
+                                                <span className="text-xs text-foreground-secondary ml-1 truncate max-w-[18rem]">
                                                     - {repo.description}
                                                 </span>
                                             )}
@@ -147,7 +144,7 @@ const SetupGithub: StepComponent = ({
                 <Button onClick={prevStep} variant="outline">
                     Cancel
                 </Button>
-                <Button className='px-3 py-2' onClick={nextStep}>
+                <Button className='px-3 py-2' onClick={importRepo}>
                     <Icons.Download className="w-4 h-4 mr-2" />
                     <span>Import</span>
                 </Button>
