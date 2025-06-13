@@ -14,6 +14,7 @@ export async function POST(req: Request) {
     const { messages, maxSteps, chatType } = await req.json();
     const provider = env.AWS_ACCESS_KEY_ID ? LLMProvider.BEDROCK : LLMProvider.ANTHROPIC;
     const model = await initModel(provider, CLAUDE_MODELS.SONNET_4);
+    const providerOptions = provider === LLMProvider.BEDROCK ? { bedrock: { cachePoint: { type: 'default' } } } : {};
     const systemPrompt = chatType === ChatType.CREATE ? getCreatePageSystemPrompt() : getSystemPrompt();
 
     const result = streamText({
@@ -22,9 +23,7 @@ export async function POST(req: Request) {
             {
                 role: 'system',
                 content: systemPrompt,
-                providerOptions: {
-                    bedrock: { cachePoint: { type: 'default' } },
-                },
+                providerOptions,
             },
             ...messages,
         ],
