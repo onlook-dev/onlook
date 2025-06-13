@@ -56,7 +56,6 @@ export const Radius = observer(() => {
     // Two corners
 
     if (topRight !== 0 && bottomRight !== 0 && topLeft === 0 && bottomLeft === 0) {
-        console.log('Using RadiusTRBR - top right and bottom right have radius:', { topRight, bottomRight });
         return Icons.RadiusTRBR;
     }
      if (topRight !== 0 && topLeft !== 0 && bottomRight === 0 && bottomLeft === 0) {
