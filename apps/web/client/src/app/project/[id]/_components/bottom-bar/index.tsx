@@ -82,7 +82,7 @@ export const BottomBar = observer(() => {
                                     editorEngine.state.editorMode = value as EditorMode;
                                 }
                             }}
-                            className="gap-1"
+                            className="gap-1.5"
                         >
                             {toolbarItems.map((item) => (
                                 <Tooltip key={item.mode}>
@@ -91,7 +91,7 @@ export const BottomBar = observer(() => {
                                             value={item.mode}
                                             aria-label={item.hotkey.description}
                                             disabled={item.disabled}
-                                            className="hover:text-foreground-hover text-foreground-tertiary rounded-md data-[state=on]:bg-accent data-[state=on]:text-white data-[state=on]:border-white/20 hover:bg-accent/50 border border-transparent"
+                                            className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary rounded-md data-[state=on]:bg-accent data-[state=on]:text-white data-[state=on]:border-white/20 hover:bg-accent/50 border border-transparent"
                                         >
                                             <item.icon />
                                         </ToggleGroupItem>
