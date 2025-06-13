@@ -7,12 +7,18 @@ import { type LanguageModelV1 } from 'ai';
 export async function initModel(
     provider: LLMProvider,
     model: CLAUDE_MODELS,
-): Promise<LanguageModelV1> {
+): Promise<{ model: LanguageModelV1; providerOptions: Record<string, any> }> {
     switch (provider) {
         case LLMProvider.ANTHROPIC:
-            return await getAnthropicProvider(model);
+            return {
+                model: await getAnthropicProvider(model),
+                providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
+            };
         case LLMProvider.BEDROCK:
-            return await getBedrockProvider(model);
+            return {
+                model: await getBedrockProvider(model),
+                providerOptions: { bedrock: { cachePoint: { type: 'default' } } },
+            };
         default:
             assertNever(provider);
     }
