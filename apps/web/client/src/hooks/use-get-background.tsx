@@ -1,4 +1,3 @@
-import { Theme } from '@onlook/constants';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
@@ -11,15 +10,11 @@ export const useGetBackground = (type: 'create' | 'login') => {
     const [backgroundImage, setBackgroundImage] = useState<string>('');
     const { theme } = useTheme();
 
-    console.log(window.matchMedia('(prefers-color-scheme: dark)'));
-    
-
     useEffect(() => {
         const determineBackgroundImage = () => {
-            const isDark =
-                theme === Theme.Dark ||
-                (theme === Theme.System &&
-                    window.matchMedia('(prefers-color-scheme: dark)').matches);
+            // Force dark theme for now
+            const isDark = true;
+            // const isDark = theme === Theme.Dark || (theme === Theme.System && window.matchMedia('(prefers-color-scheme: dark)').matches);
             const images = {
                 create: isDark ? createDark : createLight,
                 login: isDark ? loginDark : loginLight,
