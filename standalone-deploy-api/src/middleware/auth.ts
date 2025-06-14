@@ -8,8 +8,12 @@ export interface AuthenticatedRequest extends Request {
 export const authenticateRequest = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     const { client, errorResponse } = getAuthenticatedClient(req, res);
     
-    if (!client || errorResponse) {
+    if (errorResponse) {
         return errorResponse;
+    }
+    
+    if (!client) {
+        return res.status(500).json({ error: "Failed to initialize Supabase client" });
     }
     
     req.supabaseClient = client;

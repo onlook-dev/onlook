@@ -115,9 +115,18 @@ export const verifyDomainHandler = async (client: SupabaseClient, req: Request, 
 const updateDomainRecords = async (domain: string, user: User) => {
     const client = getServiceRoleClient();
 
+    const { data: domainRecord } = await client.from('domains')
+        .select('id')
+        .eq('domain', domain)
+        .single();
+
+    if (!domainRecord) {
+        throw new Error('Domain not found');
+    }
+
     const { data: existingUserVerification } = await client.from('domain_verifications')
         .select('*')
-        .eq('domain', domain)
+        .eq('domain_id', domainRecord.id)
         .eq('user_id', user.id)
         .single<DatabaseTables['domain_verifications']>();
 
