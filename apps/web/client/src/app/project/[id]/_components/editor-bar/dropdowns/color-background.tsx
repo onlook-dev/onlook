@@ -44,7 +44,7 @@ export const ColorBackground = observer(() => {
                         >
                             <Icons.PaintBucket className="h-2 w-2" />
                             <div
-                                className="h-[4px] w-6 rounded-full bg-current"
+                                className="h-[4.5px] w-6 rounded-full bg-current"
                                 style={{ backgroundColor: colorHex }}
                             />
                         </Button>
@@ -53,7 +53,7 @@ export const ColorBackground = observer(() => {
                 <DropdownMenuContent
                     align="start"
                     side="bottom"
-                    className="w-[220px] mt-1 p-0 rounded-lg overflow-hidden shadow-xl backdrop-blur-lg"
+                    className="w-[224px] mt-1 p-0 rounded-lg overflow-hidden shadow-xl backdrop-blur-lg"
                 >
                     <ColorPickerContent
                         color={tempColor}
