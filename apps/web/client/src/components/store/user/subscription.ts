@@ -43,7 +43,7 @@ export class SubscriptionManager {
         if (!plan) {
             return SubscriptionPlans.FREE;
         }
-        this.updatePlan(plan.plan);
-        return plan.plan.name;
+        this.updatePlan(plan.plan.type);
+        return plan.plan.type;
     }
 }

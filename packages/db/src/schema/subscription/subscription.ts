@@ -11,6 +11,7 @@ export const plans = pgTable('plans', {
     name: text('name').notNull(),
     dailyMessages: integer('daily_messages').notNull(),
     monthlyMessages: integer('monthly_messages').notNull(),
+    type: subscriptionPlanType('type').notNull(),
 
     // Stripe
     stripeProductId: text('stripe_product_id').notNull(),
@@ -19,7 +20,6 @@ export const plans = pgTable('plans', {
 export const prices = pgTable('prices', {
     id: uuid('id').primaryKey().defaultRandom(),
     planId: uuid('plan_id').notNull().references(() => plans.id),
-    type: subscriptionPlanType('type').notNull(),
     pricePerMonth: integer('price_per_month').notNull(),
 
     // Stripe
