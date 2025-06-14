@@ -30,9 +30,9 @@ function TooltipTrigger({ ...props }: React.ComponentProps<typeof TooltipPrimiti
 
 function TooltipContent({
     className,
-    sideOffset = 0,
+    sideOffset = 4,
     children,
-    hideArrow = false,
+    hideArrow = true,
     ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Content> & { hideArrow?: boolean }) {
     return (
