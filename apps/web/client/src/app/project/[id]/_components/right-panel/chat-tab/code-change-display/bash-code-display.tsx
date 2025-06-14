@@ -61,7 +61,6 @@ export const BashCodeDisplay = observer(
         const [stdOut, setStdOut] = useState<string | null>(null);
         const [stdErr, setStdErr] = useState<string | null>(null);
 
-
         const runCommand = async () => {
             setRunning(true);
             setStdOut(null);
