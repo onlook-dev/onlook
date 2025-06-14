@@ -154,6 +154,12 @@ export class FramesManager {
         }
     }
 
+    reloadAllFrames() {
+        for (const frameData of this.getAll()) {
+            frameData.view.reload();
+        }
+    }
+
     reload(id: string) {
         const frameData = this.validateFrameData(id, 'reload');
         if (!frameData) return;

@@ -167,7 +167,7 @@ export class IDEManager {
 
         if (this.shouldRefreshPreview(this.activeFile.path)) {
             setTimeout(() => {
-                this.editorEngine.frames.reloadAll();
+                this.editorEngine.frames.reloadAllFrames();
             }, 100);
         }
     }
