@@ -1,6 +1,7 @@
 import {
     canvases,
     conversations,
+    createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
     frames,
     messages,
     previewDomains,
@@ -20,7 +21,6 @@ import {
     ProjectRole,
     type ChatMessageContext,
 } from '@onlook/models';
-import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
 import { v4 as uuidv4 } from 'uuid';
 
 const user0 = {

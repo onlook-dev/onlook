@@ -1,6 +1,7 @@
 import { env } from '@/env';
 import {
     authUsers,
+    createDefaultUserCanvas,
     fromAuthUser,
     projectInvitationInsertSchema,
     projectInvitations,
@@ -9,7 +10,7 @@ import {
 } from '@onlook/db';
 import { getResendClient, sendInvitationEmail } from '@onlook/email';
 import { ProjectRole } from '@onlook/models';
-import { createDefaultUserCanvas, isFreeEmail } from '@onlook/utility';
+import { isFreeEmail } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
 import dayjs from 'dayjs';
 import { and, eq, ilike, isNull } from 'drizzle-orm';
