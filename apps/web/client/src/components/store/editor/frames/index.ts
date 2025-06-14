@@ -149,8 +149,8 @@ export class FramesManager {
     }
 
     reloadAll() {
-        for (const frame of this.selected) {
-            frame.view.reload();
+        for (const frameData of this.getAll()) {
+            frameData.view.reload();
         }
     }
 
