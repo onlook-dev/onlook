@@ -3,7 +3,7 @@
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
-import { EditorMode } from '@onlook/models';
+import { EditorMode, LeftPanelTabValue } from '@onlook/models';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
@@ -57,6 +57,25 @@ export const BottomBar = observer(() => {
     const editorEngine = useEditorEngine();
     const toolbarItems = TOOLBAR_ITEMS({ t });
 
+    const addWindowItem = {
+        icon: Icons.Desktop,
+        hotkey: Hotkey.ADD_WINDOW,
+        label: t(transKeys.editor.toolbar.tools.addWindow.name),
+        tooltip: t(transKeys.editor.toolbar.tools.addWindow.tooltip),
+    };
+    const selected = editorEngine.frames.selected;
+
+    const addWindowFunc = async () => {
+        if (selected.length > 0) {
+            const frameId = selected[0]?.frame.id;
+            if (frameId) {
+                editorEngine.frames.duplicate(frameId);
+            }
+        }
+        editorEngine.frames.deselectAll();
+        editorEngine.state.leftPanelTab = LeftPanelTabValue.WINDOWS;
+    };
+
     return (
         <AnimatePresence mode="wait">
             {editorEngine.state.editorMode !== EditorMode.PREVIEW && (
@@ -101,6 +120,22 @@ export const BottomBar = observer(() => {
                                 </Tooltip>
                             ))}
                         </ToggleGroup>
+
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    aria-label={addWindowItem.hotkey.description}
+                                    disabled={selected.length === 0 || !selected[0]}
+                                    className="hover:text-foreground-hover text-foreground-tertiary p-1"
+                                    onClick={addWindowFunc}
+                                >
+                                    <addWindowItem.icon />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <HotkeyLabel hotkey={addWindowItem.hotkey} />
+                            </TooltipContent>
+                        </Tooltip>
                     </TerminalArea>
                 </motion.div>
             )}
