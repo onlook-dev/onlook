@@ -3,14 +3,17 @@
 import { MotionCard } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import useResizeObserver from 'use-resize-observer';
-import { NewSelectFolder } from './select-folder';
-import { VerifyProject } from './verify-project';
-import { FinalizingProject } from './finalizing-project';
-import { ProjectCreationProvider, useProjectCreation } from './project-creation-context';
+import { NewSelectFolder } from './_components/select-folder';
+import { FinalizingProject } from './_components/finalizing-project';
+import { useProjectCreation } from './_context/project-creation-context';
+import { useGetBackground } from '@/hooks/use-get-background';
+import { Icons } from '@onlook/ui/icons';
+import Link from 'next/link';
+import { Routes } from '@/utils/constants';
+import { CancelButton } from '../cancel-button';
+const steps = [<NewSelectFolder />, <FinalizingProject />];
 
-const steps = [<NewSelectFolder />, <VerifyProject />, <FinalizingProject />];
-
-const ImportProjectContent = () => {
+const Page = () => {
     const { currentStep, direction } = useProjectCreation();
     const { ref } = useResizeObserver();
 
@@ -23,24 +26,30 @@ const ImportProjectContent = () => {
             return { x: `${-120 * direction}%`, opacity: 0 };
         },
     };
-
+    const backgroundUrl = useGetBackground('create');
     return (
-        <div className="fixed inset-0">
-            <div
-                className="relative w-full h-full flex items-center justify-center"
-                style={{
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                }}
-            >
-                <div className="absolute inset-0 bg-background/80" />
+        <div
+            className="w-screen h-screen flex flex-col"
+            style={{
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundImage: `url(${backgroundUrl})`,
+            }}
+        >
+            <div className="flex items-center justify-between px-12 py-4">
+                <Link href={Routes.HOME}>
+                    <Icons.OnlookTextLogo className="h-3" />
+                </Link>
+                <CancelButton />
+            </div>
+            <div className="relative w-full h-full flex items-center justify-center">
                 <div className="relative z-10">
                     <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
                         <MotionCard
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 20 }}
-                            className="w-[30rem] min-h-[12rem] backdrop-blur-md bg-background/30 overflow-hidden p-0 border border-primary/20 rounded-lg shadow-lg"
+                            className="w-[30rem] min-h-[12rem] overflow-hidden p-0 border border-primary/20 rounded-lg shadow-lg !bg-background"
                         >
                             <motion.div ref={ref} layout="position" className="flex flex-col">
                                 <AnimatePresence
@@ -68,10 +77,4 @@ const ImportProjectContent = () => {
     );
 };
 
-export const ImportLocalProject = () => {
-    return (
-        <ProjectCreationProvider totalSteps={steps.length}>
-            <ImportProjectContent />
-        </ProjectCreationProvider>
-    );
-};
+export default Page;

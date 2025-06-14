@@ -3,32 +3,31 @@
 import { CardContent, CardHeader, CardTitle, CardDescription } from '@onlook/ui/card';
 import { Card } from '@onlook/ui/card';
 import { TopBar } from '../_components/top-bar';
-import { ImportLocalProject } from './_components/import-local-project';
 import { Icons } from '@onlook/ui/icons/index';
-import { ImportProvider, useImport } from './_context/import-context';
+import { useRouter } from 'next/navigation';
+import { useGetBackground } from '@/hooks/use-get-background';
 
-const ImportPage = () => {
-    const { selectedImportType, setSelectedImportType } = useImport();
-
+const Page = () => {
+    const router = useRouter();
     const handleCardClick = (type: 'local' | 'github') => {
-        setSelectedImportType(type);
+        router.push(`/projects/import/${type}`);
     };
+    const backgroundUrl = useGetBackground('create');
 
-    const handleKeyDown = (e: React.KeyboardEvent, type: 'local' | 'github') => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            handleCardClick(type);
-        }
-    };
 
     return (
-        <div className="w-screen h-screen flex flex-col">
+        <div className="w-screen h-screen flex flex-col"
+            style={{
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundImage: `url(${backgroundUrl})`,
+            }}
+        >
             <TopBar />
             <div className="flex items-center justify-center overflow-hidden w-full h-full gap-6 p-6">
                 <Card 
                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
                     onClick={() => handleCardClick('local')}
-                    onKeyDown={(e) => handleKeyDown(e, 'local')}
                     tabIndex={0}
                     role="button"
                     aria-label="Import local project"
@@ -54,7 +53,6 @@ const ImportPage = () => {
                 <Card 
                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
                     onClick={() => handleCardClick('github')}
-                    onKeyDown={(e) => handleKeyDown(e, 'github')}
                     tabIndex={0}
                     role="button"
                     aria-label="Connect to GitHub"
@@ -76,18 +74,8 @@ const ImportPage = () => {
                         </p>
                     </CardContent>
                 </Card>
-
-                {selectedImportType === 'local' && <ImportLocalProject />}
             </div>
         </div>
-    );
-};
-
-export const Page = () => {
-    return (
-        <ImportProvider>
-            <ImportPage />
-        </ImportProvider>
     );
 };
 

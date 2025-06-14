@@ -4,7 +4,7 @@ import { CardDescription } from '@onlook/ui/card';
 import { CardTitle } from '@onlook/ui/card';
 import { motion } from 'motion/react';
 import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
-import { useProjectCreation } from './project-creation-context';
+import { useProjectCreation } from '../_context/project-creation-context';
 import { Button } from '@onlook/ui/button';
 import { StepContent, StepFooter, StepHeader } from './steps';
 

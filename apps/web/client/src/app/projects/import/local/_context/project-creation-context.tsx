@@ -1,14 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import type { ProcessedFile, Project } from '../../types';
+import React, { createContext, useContext, useState } from 'react';
+import type { ProcessedFile, Project } from '@/app/projects/types';
 import { api } from '@/trpc/client';
 import { useUserManager } from '@/components/store/user';
 import { blobToBase64String } from 'blob-util';
 import { Routes } from '@/utils/constants';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { useImport } from '../_context/import-context';
 
 interface CodeSandboxFile {
     content: string;
@@ -61,13 +60,6 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
     const [isFinalizing, setIsFinalizing] = useState(false);
     const userManager = useUserManager();
     const router = useRouter();
-    const { selectedImportType, setSelectedImportType } = useImport();
-
-    useEffect(() => {
-        if (selectedImportType === 'local') {
-            setCurrentStep(0);
-        }
-    }, [selectedImportType]);
 
     const setProjectData = (newData: Partial<Project>) => {
         setProjectDataState((prevData) => ({ ...prevData, ...newData }));
@@ -181,7 +173,6 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
     const prevStep = () => {
         if (currentStep === 0) {
             resetProjectData();
-            setSelectedImportType(null); // Close the import local project page
             return;
         }
         setDirection(-1);
@@ -204,7 +195,6 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
     };
 
     const cancel = () => {
-        setSelectedImportType(null); // Close the import local project page
         resetProjectData();
     };
 
