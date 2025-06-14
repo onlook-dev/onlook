@@ -99,16 +99,21 @@ export const Radius = observer(() => {
         const bottomRight = boxState.borderBottomRightRadius.num ?? 0;
         const bottomLeft = boxState.borderBottomLeftRadius.num ?? 0;
 
-        if (topLeft === topRight && topRight === bottomRight && bottomRight === bottomLeft) {
-            if (topLeft === 0) return null;
-            return boxState.borderRadius.unit === 'px' ? `${topLeft}` : `${boxState.borderRadius.value}`;
+        // If all are zero, return null
+        if (topLeft === 0 && topRight === 0 && bottomRight === 0 && bottomLeft === 0) {
+            return null;
         }
 
-        if (topLeft || topRight || bottomRight || bottomLeft) {
-            return 'Mixed';
+        // Get all non-zero values
+        const nonZeroValues = [topLeft, topRight, bottomRight, bottomLeft].filter(val => val !== 0);
+        
+        // If all non-zero values are the same
+        if (nonZeroValues.length > 0 && nonZeroValues.every(val => val === nonZeroValues[0])) {
+            return boxState.borderRadius.unit === 'px' ? `${nonZeroValues[0]}` : `${boxState.borderRadius.value}`;
         }
 
-        return null;
+        // If values are different
+        return 'Mixed';
     };
 
     const RadiusIcon = getRadiusIcon();
@@ -128,7 +133,7 @@ export const Radius = observer(() => {
                     >
                          <RadiusIcon className="h-4 min-h-4 w-4 min-w-4" />
                         {radiusValue && (
-                            <span className="text-small">{radiusValue}</span>
+                            <span className="text-small text-white">{radiusValue}</span>
                         )}
                     </Button>
                 </DropdownMenuTrigger>

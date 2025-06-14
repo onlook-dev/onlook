@@ -1584,17 +1584,20 @@ export const Icons = {
     // Radius Icons
     RadiusEmpty: ({ className, ...props }: IconProps) => (
         <svg
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
         >
             <path
-                d="M14.6966 3.80469H13.4866C10.0983 3.80469 8.40416 3.80469 7.11 4.4641C5.97162 5.04413 5.04609 5.96966 4.46605 7.10804C3.80664 8.40221 3.80664 10.0964 3.80664 13.4847V14.6947"
-                stroke="#494949"
+                d="M20.25 3.75H13.35C9.98969 3.75 8.30953 3.75 7.02606 4.40396C5.89708 4.9792 4.9792 5.89708 4.40396 7.02606C3.75 8.30953 3.75 9.98969 3.75 13.35V20.25"
+                stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="round"
+                strokeLinejoin="round"
             />
         </svg>
     ),
@@ -2094,17 +2097,25 @@ export const Icons = {
     // Margin Icons
     MarginEmpty: ({ className, ...props }: IconProps) => (
         <svg
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
         >
-            <path d="M2.5 5.5L2.5 12.5" stroke="#494949" strokeLinecap="round" />
-            <path d="M5.5 2.5H12.5" stroke="#494949" strokeLinecap="round" />
-            <path d="M5.5 15.25H12.5" stroke="#494949" strokeLinecap="round" />
-            <path d="M15.5 5.5V12.5" stroke="#494949" strokeLinecap="round" />
-            <rect x="4.75" y="4.75" width="8.5" height="8.5" rx="1" stroke="#494949" />
+            <path
+                d="M18 15.6727V8.32727C18 7.51265 18 7.10534 17.8415 6.7942C17.702 6.5205 17.4795 6.29799 17.2058 6.15854C16.8947 6 16.4873 6 15.6727 6H8.32727C7.51265 6 7.10534 6 6.7942 6.15854C6.5205 6.29799 6.29799 6.5205 6.15854 6.7942C6 7.10534 6 7.51265 6 8.32727V15.6727C6 16.4873 6 16.8947 6.15854 17.2058C6.29799 17.4795 6.5205 17.702 6.7942 17.8415C7.10534 18 7.51265 18 8.32727 18H15.6727C16.4873 18 16.8947 18 17.2058 17.8415C17.4795 17.702 17.702 17.4795 17.8415 17.2058C18 16.8947 18 16.4873 18 15.6727Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M7.5 3H16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M7.5 21H16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M21 7.5V16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M3 7.5L3 16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
     ),
     MarginFull: ({ className, ...props }: IconProps) => (
@@ -2419,18 +2430,25 @@ export const Icons = {
     // Padding Icons
     PaddingEmpty: ({ className, ...props }: IconProps) => (
         <svg
-            width="18"
-            height="18"
-            viewBox="0 0 18 18"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
         >
-            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
             <path
-                d="M7 5.5H9H11M5.5 7V9V11M7 12.5H9H11M12.5 11V9V7"
-                stroke="#494949"
+                d="M20.25 17.05V6.95C20.25 5.8299 20.25 5.26984 20.032 4.84202C19.8403 4.46569 19.5343 4.15973 19.158 3.96799C18.7302 3.75 18.1701 3.75 17.05 3.75H6.95C5.8299 3.75 5.26984 3.75 4.84202 3.96799C4.46569 4.15973 4.15973 4.46569 3.96799 4.84202C3.75 5.26984 3.75 5.8299 3.75 6.95V17.05C3.75 18.1701 3.75 18.7302 3.96799 19.158C4.15973 19.5343 4.46569 19.8403 4.84202 20.032C5.26984 20.25 5.8299 20.25 6.95 20.25H17.05C18.1701 20.25 18.7302 20.25 19.158 20.032C19.5343 19.8403 19.8403 19.5343 20.032 19.158C20.25 18.7302 20.25 18.1701 20.25 17.05Z"
+                stroke="currentColor"
+                strokeWidth="1.5"
                 strokeLinecap="round"
+                strokeLinejoin="round"
             />
+            <path d="M9 6.75H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M9 17.25H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M17.25 9V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M6.75 9V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
     ),
     PaddingFull: ({ className, ...props }: IconProps) => (
@@ -2617,7 +2635,6 @@ export const Icons = {
             <path
                 d="M7.5 12.5C7.5 12.2239 7.72386 12 8 12H10C10.2761 12 10.5 12.2239 10.5 12.5C10.5 12.7761 10.2761 13 10 13H8C7.72386 13 7.5 12.7761 7.5 12.5ZM7.5 5.5C7.5 5.22386 7.72386 5 8 5H10C10.2761 5 10.5 5.22386 10.5 5.5C10.5 5.77614 10.2761 6 10 6H8C7.72386 6 7.5 5.77614 7.5 5.5Z"
                 fill="#494949"
-                style="fill:#494949;fill:color(display-p3 0.2863 0.2863 0.2863);fill-opacity:1;"
             />
         </svg>
     ),

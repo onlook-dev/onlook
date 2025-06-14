@@ -62,16 +62,21 @@ export const Padding = observer(() => {
         const bottom = boxState.paddingBottom.num ?? 0;
         const left = boxState.paddingLeft.num ?? 0;
 
-        if (top === right && right === bottom && bottom === left) {
-            if (top === 0) return null;
-            return boxState.padding.unit === 'px' ? `${top}` : `${boxState.padding.value}`;
+        // If all are zero, return null
+        if (top === 0 && right === 0 && bottom === 0 && left === 0) {
+            return null;
         }
 
-        if (top || right || bottom || left) {
-            return 'Mixed';
+        // Get all non-zero values
+        const nonZeroValues = [top, right, bottom, left].filter(val => val !== 0);
+        
+        // If all non-zero values are the same
+        if (nonZeroValues.length > 0 && nonZeroValues.every(val => val === nonZeroValues[0])) {
+            return boxState.padding.unit === 'px' ? `${nonZeroValues[0]}` : `${boxState.padding.value}`;
         }
 
-        return null;
+        // If values are different
+        return 'Mixed';
     };
 
     const PaddingIcon = getPaddingIcon();
@@ -90,7 +95,7 @@ export const Padding = observer(() => {
                     >
                         <PaddingIcon className="h-4 min-h-4 w-4 min-w-4" />
                         {paddingValue && (
-                            <span className="text-small">{paddingValue}</span>
+                            <span className="text-small text-white">{paddingValue}</span>
                         )}
                     </Button>
                 </DropdownMenuTrigger>

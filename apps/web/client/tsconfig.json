@@ -12,7 +12,8 @@
             ],
             "~/*": [
                 "./src/*"
-            ]
+            ],
+            "@onlook/ui/*": ["packages/ui/src/*"]
         }
     },
     "include": [

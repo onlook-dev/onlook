@@ -63,16 +63,21 @@ export const Margin = observer(() => {
         const bottom = boxState.marginBottom.num ?? 0;
         const left = boxState.marginLeft.num ?? 0;
 
-        if (top === right && right === bottom && bottom === left) {
-            if (top === 0) return null;
-            return boxState.margin.unit === 'px' ? `${top}` : `${boxState.margin.value}`;
+        // If all are zero, return null
+        if (top === 0 && right === 0 && bottom === 0 && left === 0) {
+            return null;
         }
 
-        if (top || right || bottom || left) {
-            return 'Mixed';
+        // Get all non-zero values
+        const nonZeroValues = [top, right, bottom, left].filter(val => val !== 0);
+        
+        // If all non-zero values are the same
+        if (nonZeroValues.length > 0 && nonZeroValues.every(val => val === nonZeroValues[0])) {
+            return boxState.margin.unit === 'px' ? `${nonZeroValues[0]}` : `${boxState.margin.value}`;
         }
 
-        return null;
+        // If values are different
+        return 'Mixed';
     };
 
     const MarginIcon = getMarginIcon();
@@ -96,7 +101,7 @@ export const Margin = observer(() => {
                     >
                         <MarginIcon className="h-4 min-h-4 w-4 min-w-4" />
                         {marginValue && (
-                            <span className="text-small">{marginValue}</span>
+                            <span className="text-small text-white">{marginValue}</span>
                         )}
 
 
