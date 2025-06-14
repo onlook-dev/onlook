@@ -1,0 +1,52 @@
+import { SubscriptionPlans } from '@onlook/models';
+import { relations } from 'drizzle-orm';
+import { integer, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { users } from '../user/user';
+import { usageRecords } from './usage';
+
+const subscriptionPlanType = pgEnum('subscription_plan_type', SubscriptionPlans)
+
+export const plans = pgTable('plans', {
+    id: text('id').primaryKey(),
+    name: text('name').notNull(),
+    dailyMessages: integer('daily_messages').notNull(),
+    monthlyMessages: integer('monthly_messages').notNull(),
+
+    // Stripe
+    stripeProductId: text('stripe_product_id').notNull(),
+})
+
+export const prices = pgTable('prices', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    planId: text('plan_id').notNull().references(() => plans.id),
+    type: subscriptionPlanType('type').notNull(),
+    pricePerMonth: integer('price_per_month').notNull(),
+
+    // Stripe
+    stripePriceId: text('stripe_price_id').notNull(),
+})
+
+export const subscriptions = pgTable('subscriptions', {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').notNull().references(() => users.id),
+    planId: text('plan_id').notNull().references(() => plans.id),
+    priceId: uuid('price_id').notNull().references(() => prices.id),
+    startDate: timestamp('start_date', { withTimezone: true }).notNull(),
+    endDate: timestamp('end_date', { withTimezone: true }),
+    status: text('status', { enum: ['active', 'canceled', 'past_due', 'incomplete'] }).notNull(),
+
+    // Stripe
+    stripeSubscriptionId: text('stripe_subscription_id').notNull(),
+})
+
+export const subscriptionRelations = relations(subscriptions, ({ one, many }) => ({
+    plan: one(plans, {
+        fields: [subscriptions.planId],
+        references: [plans.id],
+    }),
+    price: one(prices, {
+        fields: [subscriptions.priceId],
+        references: [prices.id],
+    }),
+    usageRecords: many(usageRecords),
+}));

@@ -1,9 +1,10 @@
-import { UsagePlanType } from '@onlook/models/usage';
+import { api } from '@/trpc/client';
+import { SubscriptionPlans } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
 export class SubscriptionManager {
-    plan: UsagePlanType = UsagePlanType.BASIC;
+    plan: SubscriptionPlans = SubscriptionPlans.FREE;
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
@@ -12,7 +13,7 @@ export class SubscriptionManager {
             () => this.userManager.user,
             (user) => {
                 if (user) {
-                    this.getPlanFromServer();
+                    this.getUserPlan();
                 }
             }
         );
@@ -24,10 +25,10 @@ export class SubscriptionManager {
             return;
         }
         const cachedPlan = window.localStorage?.getItem('currentPlan');
-        this.plan = (cachedPlan as UsagePlanType) || UsagePlanType.BASIC;
+        this.plan = (cachedPlan as SubscriptionPlans) || SubscriptionPlans.FREE;
     }
 
-    async updatePlan(plan: UsagePlanType) {
+    async updatePlan(plan: SubscriptionPlans) {
         if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
             console.error('window or localStorage is undefined');
             return;
@@ -37,25 +38,12 @@ export class SubscriptionManager {
         // await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
     }
 
-    async getPlanFromServer(): Promise<UsagePlanType> {
-        return UsagePlanType.BASIC;
-        // try {
-        //     const res:
-        //         | {
-        //               success: boolean;
-        //               error?: string;
-        //               data?: any;
-        //           }
-        //         | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
-        //     if (!res?.success) {
-        //         throw new Error(res?.error || 'Error checking premium status');
-        //     }
-        //     const newPlan = res.data.name === 'pro' ? UsagePlanType.PRO : UsagePlanType.BASIC;
-        //     await this.updatePlan(newPlan);
-        //     return newPlan;
-        // } catch (error) {
-        //     console.error('Error checking premium status:', error);
-        //     return UsagePlanType.BASIC;
-        // }
+    async getUserPlan(): Promise<SubscriptionPlans> {
+        const plan = await api.subscription.userPlan.query();
+        if (!plan) {
+            return SubscriptionPlans.FREE;
+        }
+        this.updatePlan(plan.plan);
+        return plan.plan.name;
     }
 }

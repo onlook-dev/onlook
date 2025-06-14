@@ -1,13 +1,13 @@
 import { env } from "@/env";
 import { createClient } from "@/utils/supabase/server";
-import { userUsage } from '@onlook/db';
+import { prices, subscriptions } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { createStripeClient } from "@onlook/stripe";
+import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
 export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.CheckoutSessionCompletedEvent) => {
     // Create Supabase client
-    const supabase = await createClient()
     const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
     const session = receivedEvent.data.object
 
@@ -19,35 +19,44 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         }
     );
 
-    const priceId = expandedSession.line_items?.data[0]?.price?.id
+    const subscriptionId = expandedSession.subscription as string
+    if (!subscriptionId) {
+        throw new Error('No subscription ID found')
+    }
 
+    const userId = session.metadata?.user_id
+    if (!userId) {
+        throw new Error('No user ID found')
+    }
+
+    const priceId = expandedSession.line_items?.data[0]?.price?.id
     if (!priceId) {
         throw new Error('No price ID found')
     }
 
-    const { data: plan } = await supabase
-        .from('usage_plans')
-        .select('*')
-        .eq('stripe_price_id', priceId)
-        .single()
-
-    if (!plan) {
-        throw new Error(`No plan found for price ID: ${priceId}`)
+    const price = await db.query.prices.findFirst({
+        where: eq(prices.stripePriceId, priceId),
+    })
+    if (!price) {
+        throw new Error(`No price found for price ID: ${priceId}`)
     }
 
-    // Update or create user_usage
-
-    // Use Drizzle instead of Supabase
-    const [data] = await db.insert(userUsage).values({
-        user_id: session.metadata?.user_id,
-        stripe_customer_id: session.customer,
-        stripe_subscription_id: session.subscription,
-        plan_id: plan.id,
+    // Update or create subscription
+    const [data] = await db.insert(subscriptions).values({
+        userId: userId,
+        priceId: price.id,
+        planId: price.planId,
+        stripeSubscriptionId: subscriptionId,
+        status: 'active',
+        startDate: new Date(),
+        endDate: new Date(),
     }).onConflictDoUpdate({
-        target: [userUsage.user_id],
+        target: [subscriptions.userId],
         set: {
-            stripe_customer_id: session.customer,
-            stripe_subscription_id: session.subscription,
+            stripeSubscriptionId: subscriptionId,
+            status: 'active',
+            startDate: new Date(),
+            endDate: new Date(),
         }
     }).returning()
 
