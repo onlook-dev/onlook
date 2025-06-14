@@ -12,7 +12,7 @@ export const FileTreeRow = forwardRef<
             ref={ref}
             {...attrs}
             className={cn(
-                'outline-none h-6 cursor-pointer w-full rounded',
+                'outline-none h-6 cursor-pointer min-w-0 w-auto rounded',
                 'text-foreground-onlook/70',
                 !attrs['aria-selected'] && [
                     isHighlighted && 'bg-background-onlook text-foreground-primary',

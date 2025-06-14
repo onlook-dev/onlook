@@ -35,6 +35,7 @@ export const DevTab = observer(() => {
     const isDirty = ide.activeFile?.isDirty ?? false;
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
+    const fileTabsContainerRef = useRef<HTMLDivElement>(null);
 
     // Helper function to check if sandbox is connected and ready
     const isSandboxReady = useCallback((): boolean => {
@@ -155,6 +156,7 @@ export const DevTab = observer(() => {
                 endPos += (lines[i]?.length || 0) + 1; // +1 for newline
             }
             endPos += ide.highlightRange.endColumn;
+
             if (
                 startPos >= ide.activeFile!.content.length ||
                 endPos > ide.activeFile!.content.length ||
@@ -166,17 +168,20 @@ export const DevTab = observer(() => {
                 return;
             }
 
-            // Creates a selection at the highlight position
+            // Create the selection and apply it in a single transaction
+            const selection = EditorSelection.create([EditorSelection.range(startPos, endPos)]);
             editorView.dispatch({
-                selection: EditorSelection.create([EditorSelection.range(startPos, endPos)]),
+                selection,
+                effects: [
+                    EditorView.scrollIntoView(selection.main, {
+                        y: 'start'
+                    })
+                ],
+                userEvent: 'select.element'
             });
 
-            // Scrolls to the selection
-            editorView.dispatch({
-                effects: EditorView.scrollIntoView(editorView.state.selection.main, {
-                    y: 'center',
-                }),
-            });
+            // Force the editor to focus
+            editorView.focus();
         } catch (error) {
             console.error('Error applying highlight:', error);
             ide.setHighlightRange(null);
@@ -417,52 +422,34 @@ export const DevTab = observer(() => {
         };
     }, []);
 
+    const scrollToActiveTab = useCallback(() => {
+        if (!fileTabsContainerRef.current || !ide.activeFile) return;
+        
+        const container = fileTabsContainerRef.current;
+        const activeTab = container.querySelector('[data-active="true"]');
+        
+        if (activeTab) {
+            const containerRect = container.getBoundingClientRect();
+            const tabRect = activeTab.getBoundingClientRect();
+            
+            // Calculate if the tab is outside the visible area
+            if (tabRect.left < containerRect.left) {
+                // Tab is to the left of the visible area
+                container.scrollLeft += tabRect.left - containerRect.left;
+            } else if (tabRect.right > containerRect.right) {
+                // Tab is to the right of the visible area
+                container.scrollLeft += tabRect.right - containerRect.right;
+            }
+        }
+    }, [ide.activeFile]);
+
+    // Scroll to active tab when it changes
+    useEffect(() => {
+        scrollToActiveTab();
+    }, [ide.activeFile, scrollToActiveTab]);
+
     return (
         <div className="size-full flex flex-col">
-            <div className="flex items-center justify-between h-11 pl-4 pr-2 border-b-[0.5px]">
-                <div className="flex gap-1 items-center h-full">
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button variant="ghost" size="icon" onClick={() => setIsFilesVisible(!isFilesVisible)}>
-                                <Icons.CollapseSidebar />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" hideArrow>
-                            {isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
-                        </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Button variant="ghost" size="icon" onClick={() => setFileModalOpen(true)}>
-                                <Icons.FilePlus />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" hideArrow>
-                            New File
-                        </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Button variant="ghost" size="icon" onClick={() => setFolderModalOpen(true)}>
-                                <Icons.DirectoryPlus />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" hideArrow>
-                            New Folder
-                        </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                        <TooltipTrigger>
-                            <Button variant="ghost" size="icon" onClick={saveFile} disabled={!isDirty}>
-                                <Icons.FloppyDisk />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" hideArrow>
-                            Save changes
-                        </TooltipContent>
-                    </Tooltip>
-                </div>
-            </div>
 
             {/* Show connection status when sandbox is not ready */}
             {!isSandboxReady() && (
@@ -494,9 +481,49 @@ export const DevTab = observer(() => {
                     {/* Editor section */}
                     <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
                         {/* File tabs */}
-                        <div className="flex items-center justify-between h-10 border-b-[0.5px] flex-shrink-0">
-                            <div className="flex items-center h-full overflow-x-auto">
-                                {ide.openedFiles.map((file: EditorFile) => (
+                        <div className="flex items-center justify-between h-11 pl-0 border-b-[0.5px] flex-shrink-0 relative">
+                            <div className="absolute left-0 top-0 bottom-0 z-20 border-r-[0.5px] h-full flex items-center p-1 bg-background">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button 
+                                            variant="ghost" 
+                                            size="icon" 
+                                            onClick={() => setIsFilesVisible(!isFilesVisible)}
+                                            className="text-muted-foreground hover:text-foreground"
+                                        >
+                                            {isFilesVisible ? <Icons.SidebarLeftCollapse /> : <Icons.SidebarLeftExpand />}
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom" className="mt-1" hideArrow>
+                                        {isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
+                                    </TooltipContent>
+                                </Tooltip>
+                            </div>
+                            <div className="absolute right-0 top-0 bottom-0 z-20 flex items-center h-full border-l-[0.5px] p-1 bg-background w-11">
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger className="text-muted-foreground hover:text-foreground hover:bg-foreground/5 p-1 rounded h-full w-full flex items-center justify-center px-2.5">
+                                        <Icons.DotsHorizontal className="h-4 w-4" />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="-mt-1">
+                                        <DropdownMenuItem
+                                            onClick={() => ide.activeFile && closeFile(ide.activeFile.id)}
+                                            disabled={!ide.activeFile}
+                                            className="cursor-pointer"
+                                        >
+                                            Close file
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onClick={() => closeAllFiles()}
+                                            disabled={ide.openedFiles.length === 0}
+                                            className="cursor-pointer"
+                                        >
+                                            Close all
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                            <div className="flex items-center h-full overflow-x-auto w-full ml-11 mr-10.5" ref={fileTabsContainerRef}>
+                                {ide.openedFiles.map((file) => (
                                     <FileTab
                                         key={file.id}
                                         filename={file.filename}
@@ -504,30 +531,9 @@ export const DevTab = observer(() => {
                                         isDirty={file.isDirty}
                                         onClick={() => handleFileSelect(file)}
                                         onClose={() => closeFile(file.id)}
+                                        data-active={ide.activeFile?.id === file.id}
                                     />
                                 ))}
-                            </div>
-
-                            <div className="border-l-[0.5px] h-full flex items-center p-1">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger className="text-foreground hover:text-foreground-hover hover:bg-foreground/5 p-1 rounded h-full w-full flex items-center justify-center px-3">
-                                        <Icons.DotsHorizontal className="h-4 w-4" />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="-mt-1">
-                                        <DropdownMenuItem
-                                            onClick={() => ide.activeFile && closeFile(ide.activeFile.id)}
-                                            disabled={!ide.activeFile}
-                                        >
-                                            Close file
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem
-                                            onClick={() => closeAllFiles()}
-                                            disabled={ide.openedFiles.length === 0}
-                                        >
-                                            Close all
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
                             </div>
                         </div>
 
@@ -542,101 +548,110 @@ export const DevTab = observer(() => {
                                 </div>
                             )}
                             <div ref={editorContainer} className="h-full">
-                                {ide.openedFiles.map((file) => (
-                                    <div
-                                        key={file.id}
-                                        className="h-full"
-                                        style={{
-                                            display: ide.activeFile?.id === file.id ? 'block' : 'none',
-                                        }}
-                                    >
-                                        {file.isBinary ? (
-                                            <img
-                                                src={getFileUrl(file)}
-                                                alt={file.filename}
-                                                className="w-full h-full object-contain p-5"
-                                            />
-                                        ) : (
-                                            <CodeMirror
-                                                key={file.id}
-                                                value={file.content}
-                                                height="100%"
-                                                theme="dark"
-                                                extensions={[
-                                                    ...getBasicSetup(saveFile),
-                                                    ...getExtensions(file.language),
-                                                ]}
-                                                onChange={(value) => {
-                                                    if (ide.highlightRange) {
-                                                        ide.setHighlightRange(null);
-                                                    }
-                                                    updateFileContent(file.id, value);
-                                                }}
-                                                className="h-full overflow-hidden"
-                                                onCreateEditor={(editor) => {
-                                                    editorViewsRef.current.set(file.id, editor);
-
-                                                    editor.dom.addEventListener('mousedown', () => {
+                                {/* Empty state when no file is selected */}
+                                {ide.openedFiles.length === 0 || !ide.activeFile ? (
+                                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                                        <div className="text-center text-muted-foreground text-base">
+                                            Open a file or select an element on the page.
+                                        </div>
+                                    </div>
+                                ) : (
+                                    ide.openedFiles.map((file) => (
+                                        <div
+                                            key={file.id}
+                                            className="h-full"
+                                            style={{
+                                                display: ide.activeFile?.id === file.id ? 'block' : 'none',
+                                            }}
+                                        >
+                                            {file.isBinary ? (
+                                                <img
+                                                    src={getFileUrl(file)}
+                                                    alt={file.filename}
+                                                    className="w-full h-full object-contain p-5"
+                                                />
+                                            ) : (
+                                                <CodeMirror
+                                                    key={file.id}
+                                                    value={file.content}
+                                                    height="100%"
+                                                    theme="dark"
+                                                    extensions={[
+                                                        ...getBasicSetup(saveFile),
+                                                        ...getExtensions(file.language),
+                                                    ]}
+                                                    onChange={(value) => {
                                                         if (ide.highlightRange) {
                                                             ide.setHighlightRange(null);
                                                         }
-                                                    });
+                                                        updateFileContent(file.id, value);
+                                                    }}
+                                                    className="h-full overflow-hidden"
+                                                    onCreateEditor={(editor) => {
+                                                        editorViewsRef.current.set(file.id, editor);
 
-                                                    // If this file is the active file and we have a highlight range,
-                                                    // trigger the highlight effect again
-                                                    if (
-                                                        ide.activeFile &&
-                                                        ide.activeFile.id === file.id &&
-                                                        ide.highlightRange
-                                                    ) {
-                                                        setTimeout(() => {
+                                                        editor.dom.addEventListener('mousedown', () => {
                                                             if (ide.highlightRange) {
-                                                                ide.setHighlightRange(ide.highlightRange);
+                                                                ide.setHighlightRange(null);
                                                             }
-                                                        }, 300);
-                                                    }
-                                                }}
-                                            />
-                                        )}
-                                        {ide.activeFile?.isDirty && showUnsavedDialog && (
-                                            <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 shadow-lg rounded-lg p-4 w-[320px]">
-                                                <div className="text-sm text-gray-800 dark:text-gray-100 mb-4">
-                                                    You have unsaved changes. Are you sure you want
-                                                    to close this file?
+                                                        });
+
+                                                        // If this file is the active file and we have a highlight range,
+                                                        // trigger the highlight effect again
+                                                        if (
+                                                            ide.activeFile &&
+                                                            ide.activeFile.id === file.id &&
+                                                            ide.highlightRange
+                                                        ) {
+                                                            setTimeout(() => {
+                                                                if (ide.highlightRange) {
+                                                                    ide.setHighlightRange(ide.highlightRange);
+                                                                }
+                                                            }, 300);
+                                                        }
+                                                    }}
+                                                />
+                                            )}
+                                            {ide.activeFile?.isDirty && showUnsavedDialog && (
+                                                <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 shadow-lg rounded-lg p-4 w-[320px]">
+                                                    <div className="text-sm text-gray-800 dark:text-gray-100 mb-4">
+                                                        You have unsaved changes. Are you sure you want
+                                                        to close this file?
+                                                    </div>
+                                                    <div className="flex justify-end gap-1">
+                                                        <Button
+                                                            onClick={async () => {
+                                                                await discardChanges(file.id);
+                                                            }}
+                                                            variant="ghost"
+                                                            className="text-red hover:text-red"
+                                                        >
+                                                            Discard
+                                                        </Button>
+                                                        <Button
+                                                            onClick={async () => {
+                                                                await saveFile();
+                                                            }}
+                                                            variant="ghost"
+                                                            className="text-sm text-blue-500 hover:text-blue-500"
+                                                        >
+                                                            Save
+                                                        </Button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            onClick={() => {
+                                                                setShowUnsavedDialog(false);
+                                                                setPendingCloseAll(false);
+                                                            }}
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex justify-end gap-1">
-                                                    <Button
-                                                        onClick={async () => {
-                                                            await discardChanges(file.id);
-                                                        }}
-                                                        variant="ghost"
-                                                        className="text-red hover:text-red"
-                                                    >
-                                                        Discard
-                                                    </Button>
-                                                    <Button
-                                                        onClick={async () => {
-                                                            await saveFile();
-                                                        }}
-                                                        variant="ghost"
-                                                        className="text-sm text-blue-500 hover:text-blue-500"
-                                                    >
-                                                        Save
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        onClick={() => {
-                                                            setShowUnsavedDialog(false);
-                                                            setPendingCloseAll(false);
-                                                        }}
-                                                    >
-                                                        Cancel
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
+                                            )}
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>

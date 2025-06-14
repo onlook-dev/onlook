@@ -11,13 +11,21 @@ export enum ChatType {
 
 export async function POST(req: Request) {
     const { messages, maxSteps, chatType } = await req.json();
-    const model = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET_4);
+    const provider = LLMProvider.ANTHROPIC;
+    const { model, providerOptions } = await initModel(provider, CLAUDE_MODELS.SONNET_4);
+
     const systemPrompt = chatType === ChatType.CREATE ? getCreatePageSystemPrompt() : getSystemPrompt();
 
     const result = streamText({
         model,
-        system: systemPrompt,
-        messages,
+        messages: [
+            {
+                role: 'system',
+                content: systemPrompt,
+                providerOptions,
+            },
+            ...messages,
+        ],
         maxSteps,
         tools: chatToolSet,
         toolCallStreaming: true,

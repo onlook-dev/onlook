@@ -39,12 +39,14 @@ export const customDarkTheme = EditorView.theme({
         color: '#ffffff',
         backgroundColor: '#000000',
         fontSize: '13px',
+        userSelect: 'none !important',
     },
     '.cm-content': {
         padding: '10px 0',
         lineHeight: '1.5',
         caretColor: customColors.blue,
         backgroundColor: '#000000',
+        userSelect: 'text !important',
     },
     '.cm-focused': {
         outline: 'none',
@@ -55,6 +57,21 @@ export const customDarkTheme = EditorView.theme({
     },
     '&.cm-focused .cm-selectionBackground, ::selection': {
         backgroundColor: 'rgba(63, 164, 255, 0.2)',
+    },
+    '&.cm-editor.cm-focused .cm-selectionBackground': {
+        backgroundColor: `${customColors.green}33 !important`,
+    },
+    '&.cm-editor .cm-selectionBackground': {
+        backgroundColor: `${customColors.green}33 !important`,
+    },
+    '&.cm-editor .cm-content ::selection': {
+        backgroundColor: `${customColors.green}33 !important`,
+    },
+    '.cm-line ::selection': {
+        backgroundColor: `${customColors.green}33 !important`,
+    },
+    '::selection': {
+        backgroundColor: `${customColors.green}33 !important`,
     },
     '.cm-selectionBackground': {
         backgroundColor: 'rgba(63, 164, 255, 0.2)',
@@ -176,7 +193,7 @@ export const getBasicSetup = (saveFile: () => void) => {
             },
         ]),
 
-        EditorView.theme(basicTheme, { dark: true }),
+        customDarkTheme,
         syntaxHighlighting(customDarkHighlightStyle)
     ];
 

@@ -10,7 +10,7 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
 
     // Zoom
     useHotkeys(
-        'mod+0',
+        Hotkey.ZOOM_FIT.command,
         () => {
             editorEngine.canvas.scale = DefaultSettings.SCALE;
             editorEngine.canvas.position = {
@@ -20,10 +20,10 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
         },
         { preventDefault: true },
     );
-    useHotkeys('mod+equal', () => (editorEngine.canvas.scale = editorEngine.canvas.scale * 1.2), {
+    useHotkeys(Hotkey.ZOOM_IN.command, () => (editorEngine.canvas.scale = editorEngine.canvas.scale * 1.2), {
         preventDefault: true,
     });
-    useHotkeys('mod+minus', () => (editorEngine.canvas.scale = editorEngine.canvas.scale * 0.8), {
+    useHotkeys(Hotkey.ZOOM_OUT.command, () => (editorEngine.canvas.scale = editorEngine.canvas.scale * 0.8), {
         preventDefault: true,
     });
 
@@ -49,26 +49,26 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys('alt', () => editorEngine.overlay.removeMeasurement(), { keyup: true });
 
     // Actions
-    useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
-    useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
-    useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
-    useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => editorEngine.elements.delete());
+    useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo(), {
+        preventDefault: true,
+    });
+    useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo(), {
+        preventDefault: true,
+    });
+    useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement(), { preventDefault: true });
+    useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => editorEngine.elements.delete(), { preventDefault: true });
 
     // Group
     useHotkeys(Hotkey.GROUP.command, () => editorEngine.group.groupSelectedElements());
     useHotkeys(Hotkey.UNGROUP.command, () => editorEngine.group.ungroupSelectedElement());
 
     // Copy
-    useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());
-    useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
-    useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
+    useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy(), { preventDefault: true });
+    useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste(), { preventDefault: true });
+    useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut(), { preventDefault: true });
     useHotkeys(Hotkey.DUPLICATE.command, () => {
-        if (editorEngine.frames.canDuplicate()) {
-            editorEngine.frames.duplicateSelected();
-        } else {
-            editorEngine.copy.duplicate();
-        }
-    });
+        editorEngine.copy.duplicate();
+    }, { preventDefault: true });
 
     // AI
     useHotkeys(
