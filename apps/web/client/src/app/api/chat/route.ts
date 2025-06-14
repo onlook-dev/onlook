@@ -1,4 +1,3 @@
-import { env } from '@/env';
 import { chatToolSet, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
@@ -12,7 +11,7 @@ export enum ChatType {
 
 export async function POST(req: Request) {
     const { messages, maxSteps, chatType } = await req.json();
-    const provider = env.AWS_ACCESS_KEY_ID ? LLMProvider.BEDROCK : LLMProvider.ANTHROPIC;
+    const provider = LLMProvider.ANTHROPIC;
     const { model, providerOptions } = await initModel(provider, CLAUDE_MODELS.SONNET_4);
 
     const systemPrompt = chatType === ChatType.CREATE ? getCreatePageSystemPrompt() : getSystemPrompt();
