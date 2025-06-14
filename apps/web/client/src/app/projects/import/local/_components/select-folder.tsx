@@ -1,16 +1,14 @@
 'use client';
 
+import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
+import { BINARY_EXTENSIONS, IGNORED_DIRECTORIES, IGNORED_FILES } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'motion/react';
 import { useCallback, useRef, useState } from 'react';
-import { BINARY_EXTENSIONS, IGNORED_DIRECTORIES, IGNORED_FILES } from '@onlook/constants';
 import { useProjectCreation } from '../_context/project-creation-context';
-import { StepHeader } from './steps';
-import { StepContent } from './steps';
-import { StepFooter } from './steps';
-import type { ProcessedFile, NextJsProjectValidation } from '@/app/projects/types';
+import { StepContent, StepFooter, StepHeader } from './steps';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -44,6 +42,7 @@ export const NewSelectFolder = () => {
     };
 
     const handleClickUpload = () => {
+        setIsUploading(true);
         fileInputRef.current?.click();
     };
 
@@ -215,7 +214,7 @@ export const NewSelectFolder = () => {
             const files = event.target.files;
             if (files && files.length > 0) {
                 await processProjectFiles(files);
-            } 
+            }
         },
         [],
     );
@@ -394,10 +393,9 @@ export const NewSelectFolder = () => {
                             w-full h-20 rounded-lg bg-gray-900 border border-gray rounded-lg m-0
                             flex flex-col items-center justify-center gap-4
                             duration-200 cursor-pointer
-                            ${
-                                isDragging
-                                    ? 'border-blue-400 bg-blue-50'
-                                    : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
+                            ${isDragging
+                                ? 'border-blue-400 bg-blue-50'
+                                : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
                             }
                             ${isUploading ? 'pointer-events-none opacity-50' : ''}
                         `}
@@ -486,7 +484,7 @@ export const NewSelectFolder = () => {
                 </div>
                 {validation?.isValid && (
                     <Button
-                        className={`absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 opacity-0 group-hover:opacity-100 hover:bg-transparent p-0 w-5 h-5 transition-opacity duration-200 ${config.bgColor}`}
+                        className={`absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 hover:bg-transparent p-0 size-10 transition-opacity duration-200 ${config.bgColor}`}
                         variant="ghost"
                         size="icon"
                         onClick={reset}

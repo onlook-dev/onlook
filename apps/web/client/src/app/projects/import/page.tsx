@@ -1,11 +1,11 @@
 'use client';
 
-import { CardContent, CardHeader, CardTitle, CardDescription } from '@onlook/ui/card';
-import { Card } from '@onlook/ui/card';
-import { TopBar } from '../_components/top-bar';
-import { Icons } from '@onlook/ui/icons/index';
-import { useRouter } from 'next/navigation';
 import { useGetBackground } from '@/hooks/use-get-background';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@onlook/ui/card';
+import { Icons } from '@onlook/ui/icons/index';
+import { toast } from '@onlook/ui/sonner';
+import { useRouter } from 'next/navigation';
+import { TopBar } from '../_components/top-bar';
 
 const Page = () => {
     const router = useRouter();
@@ -25,7 +25,7 @@ const Page = () => {
         >
             <TopBar />
             <div className="flex items-center justify-center overflow-hidden w-full h-full gap-6 p-6">
-                <Card 
+                <Card
                     className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
                     onClick={() => handleCardClick('local')}
                     tabIndex={0}
@@ -50,9 +50,12 @@ const Page = () => {
                     </CardContent>
                 </Card>
 
-                <Card 
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
-                    onClick={() => handleCardClick('github')}
+                <Card
+                    className={`opacity-70 cursor-none transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
+                    onClick={() => {
+                        toast.error('Coming soon: Import from GitHub');
+                        // handleCardClick('github')
+                    }}
                     tabIndex={0}
                     role="button"
                     aria-label="Connect to GitHub"
@@ -62,7 +65,7 @@ const Page = () => {
                             <Icons.GitHubLogo className="w-6 h-6 text-primary" />
                         </div>
                         <div className="space-y-2">
-                            <CardTitle className="text-xl">Connect to GitHub</CardTitle>
+                            <CardTitle className="text-xl">Coming soon: Import from GitHub</CardTitle>
                             <CardDescription className="text-base">
                                 Import your project directly from GitHub
                             </CardDescription>

@@ -1,13 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useState } from 'react';
 import type { ProcessedFile, Project } from '@/app/projects/types';
-import { api } from '@/trpc/client';
 import { useUserManager } from '@/components/store/user';
-import { blobToBase64String } from 'blob-util';
+import { api } from '@/trpc/client';
 import { Routes } from '@/utils/constants';
+import { blobToBase64String } from 'blob-util';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 interface CodeSandboxFile {
     content: string;
