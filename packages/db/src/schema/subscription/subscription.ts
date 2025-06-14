@@ -7,7 +7,7 @@ import { usageRecords } from './usage';
 const subscriptionPlanType = pgEnum('subscription_plan_type', SubscriptionPlans)
 
 export const plans = pgTable('plans', {
-    id: text('id').primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     name: text('name').notNull(),
     dailyMessages: integer('daily_messages').notNull(),
     monthlyMessages: integer('monthly_messages').notNull(),
@@ -17,8 +17,8 @@ export const plans = pgTable('plans', {
 })
 
 export const prices = pgTable('prices', {
-    id: uuid('id').defaultRandom().primaryKey(),
-    planId: text('plan_id').notNull().references(() => plans.id),
+    id: uuid('id').primaryKey().defaultRandom(),
+    planId: uuid('plan_id').notNull().references(() => plans.id),
     type: subscriptionPlanType('type').notNull(),
     pricePerMonth: integer('price_per_month').notNull(),
 
@@ -27,9 +27,9 @@ export const prices = pgTable('prices', {
 })
 
 export const subscriptions = pgTable('subscriptions', {
-    id: uuid('id').defaultRandom().primaryKey(),
+    id: uuid('id').primaryKey().defaultRandom(),
     userId: uuid('user_id').notNull().references(() => users.id),
-    planId: text('plan_id').notNull().references(() => plans.id),
+    planId: uuid('plan_id').notNull().references(() => plans.id),
     priceId: uuid('price_id').notNull().references(() => prices.id),
     startDate: timestamp('start_date', { withTimezone: true }).notNull(),
     endDate: timestamp('end_date', { withTimezone: true }),

@@ -4,7 +4,7 @@ import { subscriptions } from './subscription'
 
 export const usageRecords = pgTable('usage_records', {
     id: uuid('id').defaultRandom().primaryKey(),
-    subscriptionId: text('subscription_id').notNull().references(() => subscriptions.id),
+    subscriptionId: uuid('subscription_id').notNull().references(() => subscriptions.id),
     type: text('type', { enum: ['message'] }).notNull(),
     timestamp: timestamp('timestamp', { withTimezone: true }).notNull(),
 })
