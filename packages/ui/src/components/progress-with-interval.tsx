@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { Progress } from './progress';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '../utils';
+import { Progress } from './progress';
 
 export interface ProgressWithIntervalProps {
     /** Whether the progress should be actively running */
@@ -25,24 +25,23 @@ export const ProgressWithInterval = ({
     maxValue = 100,
 }: ProgressWithIntervalProps) => {
     const [progress, setProgress] = useState(0);
+    const progressInterval = useRef<Timer | null>(null);
 
     useEffect(() => {
-        let progressInterval: Timer | null = null;
-
-        if (progressInterval) {
-            clearInterval(progressInterval);
+        if (progressInterval.current) {
+            clearInterval(progressInterval.current);
         }
 
         if (isLoading) {
             setProgress(0);
-            progressInterval = setInterval(() => {
+            progressInterval.current = setInterval(() => {
                 setProgress((prev) => Math.min(prev + increment, maxValue));
             }, intervalMs);
         }
 
         return () => {
-            if (progressInterval) {
-                clearInterval(progressInterval);
+            if (progressInterval.current) {
+                clearInterval(progressInterval.current);
             }
         };
     }, [isLoading, increment, intervalMs, maxValue]);

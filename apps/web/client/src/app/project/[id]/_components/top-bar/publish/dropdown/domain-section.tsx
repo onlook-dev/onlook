@@ -9,7 +9,7 @@ import { Progress } from '@onlook/ui/progress';
 import { cn } from '@onlook/ui/utils';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { UrlSection } from './url';
 
 export const DomainSection = observer(({ type }: { type: DomainType }) => {
@@ -28,24 +28,24 @@ export const DomainSection = observer(({ type }: { type: DomainType }) => {
         ? domainsManager.domains.preview
         : domainsManager.domains.custom;
 
-    useEffect(() => {
-        let progressInterval: Timer | null = null;
+    const progressInterval = useRef<Timer | null>(null);
 
+    useEffect(() => {
         if (state.status === PublishStatus.LOADING) {
             setProgress(0);
-            progressInterval = setInterval(() => {
+            progressInterval.current = setInterval(() => {
                 setProgress((prev) => Math.min(prev + 0.167, 100));
             }, 100);
         } else {
             setProgress(0);
-            if (progressInterval) {
-                clearInterval(progressInterval);
+            if (progressInterval.current) {
+                clearInterval(progressInterval.current);
             }
         }
 
         return () => {
-            if (progressInterval) {
-                clearInterval(progressInterval);
+            if (progressInterval.current) {
+                clearInterval(progressInterval.current);
             }
         };
     }, [state.status]);

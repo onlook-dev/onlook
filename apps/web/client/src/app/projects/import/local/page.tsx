@@ -1,16 +1,17 @@
 'use client';
 
+import { useGetBackground } from '@/hooks/use-get-background';
+import { Routes } from '@/utils/constants';
+import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import useResizeObserver from 'use-resize-observer';
-import { NewSelectFolder } from './_components/select-folder';
-import { FinalizingProject } from './_components/finalizing-project';
-import { useProjectCreation } from './_context/project-creation-context';
-import { useGetBackground } from '@/hooks/use-get-background';
-import { Icons } from '@onlook/ui/icons';
 import Link from 'next/link';
-import { Routes } from '@/utils/constants';
+import useResizeObserver from 'use-resize-observer';
 import { CancelButton } from '../cancel-button';
+import { FinalizingProject } from './_components/finalizing-project';
+import { NewSelectFolder } from './_components/select-folder';
+import { useProjectCreation } from './_context/project-creation-context';
+
 const steps = [<NewSelectFolder />, <FinalizingProject />];
 
 const Page = () => {
