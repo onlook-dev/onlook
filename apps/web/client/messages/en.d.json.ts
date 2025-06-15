@@ -200,6 +200,10 @@ declare const messages: {
         },
         "toolbar": {
             "tools": {
+                "addWindow": {
+                    "tooltip": "Add a new window",
+                    "name": "Add Window"
+                },
                 "select": {
                     "name": "Select",
                     "tooltip": "Select and modify elements"

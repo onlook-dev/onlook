@@ -132,12 +132,7 @@
                 "name": "Launch",
                 "price": "$50/月",
                 "description": "适用于初创公司和成长型团队",
-                "features": [
-                    "无限制的每日消息",
-                    "优先支持",
-                    "高级集成",
-                    "团队协作功能"
-                ]
+                "features": ["无限制的每日消息", "优先支持", "高级集成", "团队协作功能"]
             },
             "scale": {
                 "name": "Scale",
@@ -197,6 +192,11 @@
         },
         "toolbar": {
             "tools": {
+                "addWindow": {
+                    "tooltip": "添加新窗口",
+                    "name": "添加窗口"
+                },
+
                 "select": {
                     "name": "选择",
                     "tooltip": "选择并修改元素"

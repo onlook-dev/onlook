@@ -96,6 +96,11 @@
         },
         "toolbar": {
             "tools": {
+                "addWindow": {
+                    "tooltip": "新しいウィンドウを追加",
+                    "name": "ウィンドウを追加"
+                },
+
                 "select": {
                     "name": "選択",
                     "tooltip": "要素を選択して変更"

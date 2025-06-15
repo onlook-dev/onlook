@@ -197,6 +197,11 @@
         },
         "toolbar": {
             "tools": {
+                "addWindow": {
+                    "tooltip": "Agregar una nueva ventana",
+                    "name": "Agregar ventana"
+                },
+
                 "select": {
                     "name": "Seleccionar",
                     "tooltip": "Seleccionar y modificar elementos"
