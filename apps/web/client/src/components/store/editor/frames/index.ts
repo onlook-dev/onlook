@@ -240,7 +240,6 @@ export class FramesManager {
         const frameImpl = this.validateFrame(id, 'update');
         if (!frameImpl) return;
 
-        console.log('updateLocally', id, newFrame);
         frameImpl.update(newFrame);
     }
 

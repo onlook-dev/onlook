@@ -54,3 +54,16 @@ export const BINARY_EXTENSIONS = [
     '.eot',
     '.otf',
 ];
+
+export const IGNORED_FILES = [
+    '.DS_Store',
+    'Thumbs.db',
+    'yarn.lock',
+    'package-lock.json',
+    'pnpm-lock.yaml',
+    'bun.lockb',
+    '.env.local',
+    '.env.development.local',
+    '.env.production.local',
+    '.env.test.local',
+];
