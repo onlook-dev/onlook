@@ -209,19 +209,19 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
                     </TooltipContent>
                 </TooltipPortal>
             </Tooltip>
-            <PopoverContent className="w-80 p-4" side="top" align="start">
-                <div className="space-y-4">
+            <PopoverContent className="w-80 p-4 bg-background/85 backdrop-blur-xl" side="top" align="center">
+                <div className="space-y-3">
                     <div>
-                        <h4 className="font-medium text-sm mb-2">Add Figma Design</h4>
-                        <p className="text-xs text-foreground-secondary mb-3">
-                            Get React code, design variables, and images from Figma designs
-                        </p>
+                        <h4 className="font-medium text-regular mb-2 select-none">Import a Figma Design</h4>
+                        <div className="flex items-start gap-2 p-2 rounded-md border border-border bg-muted/50 text-small text-foreground-secondary select-none">
+                            <Icons.InfoCircled className="w-4 h-4 mt-0.5 flex-shrink-0 text-foreground-secondary" />
+                            <p className="text-small">Need help? <a href="/docs/features/figma-to-onlook/" target="_blank" rel="noopener noreferrer" className="text-foreground-primary underline">Learn how to import</a>.</p>
+                        </div>
                     </div>
 
                     <div className="space-y-3">
                         <div>
-                            <Label htmlFor="figma-url" className="text-xs">Figma URL</Label>
-                            <div className="flex gap-2 mt-1">
+                            <div className="flex gap-2 mt-0">
                                 <Input
                                     id="figma-url"
                                     placeholder="https://www.figma.com/file/..."
@@ -229,22 +229,26 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
                                     onChange={(e) => setFigmaUrl(e.target.value)}
                                     className="text-xs"
                                 />
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handlePasteFromClipboard}
-                                    className="px-2"
-                                    title="Paste from clipboard"
-                                >
-                                    <Icons.Clipboard className="w-3 h-3" />
-                                </Button>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={handlePasteFromClipboard}
+                                            className="px-2 h-9 hover:text-foreground-primary text-foreground-secondary"
+                                        >
+                                            <Icons.Clipboard className="w-3 h-3" />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Paste from clipboard</TooltipContent>
+                                </Tooltip>
                             </div>
                         </div>
 
                         <Button
                             onClick={handleAddFigmaUrl}
                             disabled={!figmaUrl.trim() || isLoading}
-                            className="w-full text-xs"
+                            className="w-full text-xs h-9"
                             size="sm"
                         >
                             {isLoading ? (
@@ -257,9 +261,9 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
                             )}
                         </Button>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-4">
                             <div className="flex-1 border-t border-border"></div>
-                            <span className="text-xs text-foreground-secondary">or</span>
+                            <span className="text-xs text-foreground-tertiary select-none">or</span>
                             <div className="flex-1 border-t border-border"></div>
                         </div>
 
@@ -267,7 +271,7 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
                             onClick={handleAddCurrentSelection}
                             disabled={isLoading}
                             variant="outline"
-                            className="w-full text-xs"
+                            className="w-full text-xs h-9"
                             size="sm"
                         >
                             {isLoading ? (
@@ -276,13 +280,9 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
                                     Getting selection...
                                 </>
                             ) : (
-                                'Current Selection'
+                                'Add Selected Frame from Figma'
                             )}
                         </Button>
-
-                        <div className="text-xs text-foreground-secondary space-y-1">
-                            <p>Ensure your Figma desktop app is running with MCP server enabled</p>
-                        </div>
                     </div>
                 </div>
             </PopoverContent>
