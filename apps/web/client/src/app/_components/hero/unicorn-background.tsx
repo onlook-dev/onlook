@@ -78,6 +78,8 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
     useEffect(() => {
         if (!isLoaded) return;
 
+        setIsMounted(true);
+
         const initializeScene = async () => {
             const container = document.querySelector('[data-us-project="Gr1LmwbKSeJOXhpYEdit"]');
             if (!container) {
@@ -118,9 +120,24 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
             }
         };
 
-        void initializeScene();
+        let idleId: number;
+
+        const startInit = () => {
+            void initializeScene();
+        };
+
+        if ('requestIdleCallback' in window) {
+            idleId = (window as unknown as { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(startInit);
+        } else {
+            idleId = window.setTimeout(startInit, 0);
+        }
 
         return () => {
+            if ('cancelIdleCallback' in window && idleId) {
+                (window as unknown as { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(idleId);
+            } else {
+                clearTimeout(idleId);
+            }
             if (sceneRef.current?.destroy) {
                 sceneRef.current.destroy();
                 sceneRef.current = null;
