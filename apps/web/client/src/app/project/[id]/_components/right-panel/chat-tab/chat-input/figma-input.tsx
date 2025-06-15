@@ -215,7 +215,7 @@ export const FigmaInput = observer(({ disabled }: { disabled: boolean }) => {
                         <h4 className="font-medium text-regular mb-2 select-none">Import a Figma Design</h4>
                         <div className="flex items-start gap-2 p-2 rounded-md border border-border bg-muted/50 text-small text-foreground-secondary select-none">
                             <Icons.InfoCircled className="w-4 h-4 mt-0.5 flex-shrink-0 text-foreground-secondary" />
-                            <p className="text-small">Need help? <a href="/docs/features/figma-to-onlook/" target="_blank" rel="noopener noreferrer" className="text-foreground-primary underline">Learn how to import</a>.</p>
+                            <p className="text-small">Need help? <a href="https://docs.onlook.com/docs/features/figma-to-onlook" target="_blank" rel="noopener noreferrer" className="text-foreground-primary underline">Learn how to import</a>.</p>
                         </div>
                     </div>
 
