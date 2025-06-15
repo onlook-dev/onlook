@@ -374,10 +374,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
             const newOverlayDimensions = calculateNewOverlayDimensions(
                 position,
                 { width, height },
-                {
-                    x: deltaX,
-                    y: deltaY,
-                },
+                adjustedDelta,
             );
 
             const widthChanged = newElementDimensions.width !== startDimensions.width;
