@@ -1,5 +1,5 @@
 import { env } from '@/env';
-import { CodeSandbox } from '@codesandbox/sdk';
+import { CodeSandbox, Sandbox, WebSocketSession } from '@codesandbox/sdk';
 import { CSB_BLANK_TEMPLATE_ID } from '@onlook/constants';
 import { generate, parse } from '@onlook/parser';
 import { addScriptConfig } from '@onlook/parser/src/code-edit/config';
@@ -66,8 +66,8 @@ export const sandboxRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input }) => {
-            let session: any = null;
-            let templateSandbox: any = null;
+            let session: WebSocketSession | null = null;
+            let templateSandbox: Sandbox | null = null;
 
             try {
                 templateSandbox = await sdk.sandboxes.create({
