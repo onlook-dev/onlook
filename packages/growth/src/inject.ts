@@ -13,12 +13,26 @@ export async function injectBuiltWithScript(
     fileOps: FileOperations,
 ): Promise<boolean> {
     try {
-        // Find the layout file
-        const layoutPath = `${projectPath}/app/layout.tsx`;
-        const layoutExists = await fileOps.fileExists(layoutPath);
+        // Find the layout file - check both app/ and src/app/ directories
+        const possibleLayoutPaths = [
+            `${projectPath}/src/app/layout.tsx`,
+            `${projectPath}/app/layout.tsx`,
+        ];
 
-        if (!layoutExists) {
-            console.error('Layout file not found at', layoutPath);
+        let layoutPath: string | null = null;
+        for (const path of possibleLayoutPaths) {
+            const exists = await fileOps.fileExists(path);
+            if (exists) {
+                layoutPath = path;
+                break;
+            }
+        }
+
+        if (!layoutPath) {
+            console.error(
+                'Layout file not found at any of the expected paths:',
+                possibleLayoutPaths,
+            );
             return false;
         }
 
