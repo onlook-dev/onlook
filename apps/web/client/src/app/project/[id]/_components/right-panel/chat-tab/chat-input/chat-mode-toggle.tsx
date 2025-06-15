@@ -25,8 +25,9 @@ export const ChatModeToggle = ({ chatMode, onModeChange, disabled }: ChatModeTog
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 px-2 text-xs font-medium text-foreground-tertiary hover:text-foreground hover:bg-background-secondary"
+                    className="h-7 px-2 text-xs font-medium text-foreground-tertiary hover:text-foreground hover:bg-background-secondary transition-colors"
                     disabled={disabled}
+                    aria-label={`Current mode: ${currentMode}. Click to change chat mode`}
                 >
                     <CurrentIcon className="w-3.5 h-3.5 mr-1.5" />
                     <span>{currentMode}</span>
@@ -38,7 +39,7 @@ export const ChatModeToggle = ({ chatMode, onModeChange, disabled }: ChatModeTog
                     onClick={() => onModeChange(ChatType.EDIT)}
                     disabled={disabled}
                     className={cn(
-                        "flex items-center gap-2 cursor-pointer",
+                        "flex items-center gap-2 cursor-pointer transition-colors",
                         chatMode === ChatType.EDIT && "bg-accent"
                     )}
                 >
@@ -49,7 +50,7 @@ export const ChatModeToggle = ({ chatMode, onModeChange, disabled }: ChatModeTog
                     onClick={() => onModeChange(ChatType.ASK)}
                     disabled={disabled}
                     className={cn(
-                        "flex items-center gap-2 cursor-pointer",
+                        "flex items-center gap-2 cursor-pointer transition-colors",
                         chatMode === ChatType.ASK && "bg-accent"
                     )}
                 >
