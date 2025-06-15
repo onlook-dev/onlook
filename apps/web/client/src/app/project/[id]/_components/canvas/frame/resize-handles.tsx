@@ -12,6 +12,7 @@ enum HandleType {
 
 export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
     const editorEngine = useEditorEngine();
+
     // TODO implement aspect ratio lock
     const aspectRatioLocked = false;
     const lockedPreset = false;
