@@ -293,7 +293,7 @@ export const ChatInput = observer(() => {
                     }}
                 />
             </div>
-            <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
+            <div className="flex flex-row w-full justify-end items-center pt-2 pb-2 px-2 gap-1.5">
                 <ActionButtons disabled={disabled} handleImageEvent={handleImageEvent} />
                 {isWaiting ? (
                     <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
