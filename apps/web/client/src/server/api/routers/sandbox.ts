@@ -1,11 +1,11 @@
 import { env } from '@/env';
 import { CodeSandbox } from '@codesandbox/sdk';
+import { CSB_BLANK_TEMPLATE_ID } from '@onlook/constants';
+import { generate, parse } from '@onlook/parser';
+import { addScriptConfig } from '@onlook/parser/src/code-edit/config';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { CSB_BLANK_TEMPLATE_ID } from '@onlook/constants';
-import { addScriptConfig } from '@onlook/parser/src/code-edit/config';
-import { parse, generate } from '@onlook/parser';
 
 const sdk = new CodeSandbox(env.CSB_API_KEY);
 
@@ -92,9 +92,9 @@ export const sandboxRouter = createTRPCRouter({
                         } else {
                             // For text files, use writeTextFile
                             let content = file.content;
-                            
-                            // Add script config to the file 'app/layout.tsx'
-                            if (path === 'app/layout.tsx') {
+
+                            // Add script config to the file 'app/layout.tsx' or 'src/app/layout.tsx'
+                            if (path === 'app/layout.tsx' || path === 'src/app/layout.tsx') {
                                 try {
                                     const ast = parse(content, {
                                         sourceType: 'module',
@@ -106,7 +106,7 @@ export const sandboxRouter = createTRPCRouter({
                                     console.warn('Failed to add script config to layout.tsx:', parseError);
                                 }
                             }
-                            
+
                             await session.fs.writeTextFile(path, content, {
                                 overwrite: true,
                             });
@@ -119,7 +119,7 @@ export const sandboxRouter = createTRPCRouter({
                     }
                 }
 
-               
+
                 // Disconnect the session
                 try {
                     await session.disconnect();
