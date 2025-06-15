@@ -53,6 +53,15 @@ export const sandboxRouter = createTRPCRouter({
                 previewUrl: `https://${sandbox.id}-8084.csb.app`,
             };
         }),
+    delete: protectedProcedure
+        .input(
+            z.object({
+                sandboxId: z.string(),
+            }),
+        )
+        .mutation(async ({ input }) => {
+            await sdk.sandboxes.shutdown(input.sandboxId);
+        }),
     uploadProject: protectedProcedure
         .input(
             z.object({
@@ -155,14 +164,5 @@ export const sandboxRouter = createTRPCRouter({
                     `Failed to create project sandbox: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 );
             }
-        }),
-    delete: protectedProcedure
-        .input(
-            z.object({
-                sandboxId: z.string(),
-            }),
-        )
-        .mutation(async ({ input }) => {
-            await sdk.sandboxes.shutdown(input.sandboxId);
         }),
 });
