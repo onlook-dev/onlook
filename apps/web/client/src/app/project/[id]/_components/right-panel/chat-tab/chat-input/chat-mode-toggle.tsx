@@ -34,7 +34,7 @@ export const ChatModeToggle = ({ chatMode, onModeChange, disabled }: ChatModeTog
                     <Icons.ChevronDown className="w-3 h-3 ml-1" />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-32">
+            <DropdownMenuContent align="start" className="w-36 min-w-fit">
                 <DropdownMenuItem
                     onClick={() => onModeChange(ChatType.EDIT)}
                     disabled={disabled}
