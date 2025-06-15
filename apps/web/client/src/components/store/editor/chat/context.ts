@@ -35,9 +35,11 @@ export class ChatContext {
             highlightedContext = await this.getHighlightedContext(selected, fileNames);
         }
         const fileContext = await this.getFileContext(fileNames);
-        const imageContext = await this.getImageContext();
+        const existingImages = this.context.filter(
+            (context) => context.type === MessageContextType.IMAGE,
+        );
         const projectContext = await this.getProjectContext();
-        const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext];
+        const context = [...fileContext, ...highlightedContext, ...existingImages, ...projectContext];
         return context;
     }
 
