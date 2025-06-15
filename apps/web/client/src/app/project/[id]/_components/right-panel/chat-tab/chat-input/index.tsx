@@ -18,6 +18,7 @@ import { useEffect, useRef, useState } from 'react';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
+import { ChatModeToggle } from './chat-mode-toggle';
 
 export const ChatInput = observer(() => {
     const { sendMessages, stop, isWaiting } = useChatContext();
@@ -28,6 +29,7 @@ export const ChatInput = observer(() => {
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [chatMode, setChatMode] = useState<ChatType>(ChatType.EDIT);
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -128,7 +130,7 @@ export const ChatInput = observer(() => {
             return;
         }
 
-        sendMessages(streamMessages, ChatType.EDIT);
+        sendMessages(streamMessages, chatMode);
         setInputValue('');
     }
 
@@ -213,6 +215,15 @@ export const ChatInput = observer(() => {
         );
     };
 
+    const getPlaceholderText = () => {
+        if (disabled) {
+            return t(transKeys.editor.panels.edit.tabs.chat.emptyState);
+        }
+        return chatMode === ChatType.ASK
+            ? 'Ask a question about your project...'
+            : t(transKeys.editor.panels.edit.tabs.chat.input.placeholder);
+    };
+
     return (
         <div
             className={cn(
@@ -259,11 +270,7 @@ export const ChatInput = observer(() => {
                 <Textarea
                     ref={textareaRef}
                     disabled={disabled}
-                    placeholder={
-                        disabled
-                            ? t(transKeys.editor.panels.edit.tabs.chat.emptyState)
-                            : t(transKeys.editor.panels.edit.tabs.chat.input.placeholder)
-                    }
+                    placeholder={getPlaceholderText()}
                     className={cn(
                         'bg-transparent dark:bg-transparent mt-2 overflow-auto max-h-32 text-small p-0 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',
                         'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50 cursor-text',
@@ -293,36 +300,43 @@ export const ChatInput = observer(() => {
                     }}
                 />
             </div>
-            <div className="flex flex-row w-full justify-end items-center pt-2 pb-2 px-2 gap-1.5">
-                <ActionButtons disabled={disabled} handleImageEvent={handleImageEvent} />
-                {isWaiting ? (
-                    <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
-                        <TooltipTrigger asChild>
-                            <Button
-                                size={'icon'}
-                                variant={'secondary'}
-                                className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                                onClick={() => {
-                                    setActionTooltipOpen(false);
-                                    stop();
-                                }}
-                            >
-                                <Icons.Stop />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{'Stop response'}</TooltipContent>
-                    </Tooltip>
-                ) : (
-                    <Button
-                        size={'icon'}
-                        variant={'secondary'}
-                        className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                        disabled={inputEmpty || status !== 'ready'}
-                        onClick={sendMessage}
-                    >
-                        <Icons.ArrowRight />
-                    </Button>
-                )}
+            <div className="flex flex-row w-full justify-between items-center pt-2 pb-2 px-2 gap-1.5">
+                <ChatModeToggle
+                    chatMode={chatMode}
+                    onModeChange={setChatMode}
+                    disabled={disabled}
+                />
+                <div className="flex flex-row items-center gap-1.5">
+                    <ActionButtons disabled={disabled} handleImageEvent={handleImageEvent} />
+                    {isWaiting ? (
+                        <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    size={'icon'}
+                                    variant={'secondary'}
+                                    className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                                    onClick={() => {
+                                        setActionTooltipOpen(false);
+                                        stop();
+                                    }}
+                                >
+                                    <Icons.Stop />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{'Stop response'}</TooltipContent>
+                        </Tooltip>
+                    ) : (
+                        <Button
+                            size={'icon'}
+                            variant={'secondary'}
+                            className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                            disabled={inputEmpty || disabled}
+                            onClick={sendMessage}
+                        >
+                            <Icons.ArrowRight />
+                        </Button>
+                    )}
+                </div>
             </div>
         </div>
     );
