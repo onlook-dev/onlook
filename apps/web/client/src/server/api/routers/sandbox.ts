@@ -119,7 +119,6 @@ export const sandboxRouter = createTRPCRouter({
                     }
                 }
 
-
                 // Disconnect the session
                 try {
                     await session.disconnect();
