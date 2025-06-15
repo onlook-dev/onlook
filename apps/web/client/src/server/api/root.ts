@@ -4,6 +4,7 @@ import { canvasRouter } from './routers/canvas';
 import { chatRouter } from './routers/chat';
 import { codeRouter } from './routers/code';
 import { domainRouter } from './routers/domain';
+import { figmaRouter } from './routers/figma';
 import { frameRouter } from './routers/frame';
 import { memberRouter } from './routers/member';
 import { sandboxRouter } from './routers/sandbox';
@@ -20,6 +21,7 @@ export const appRouter = createTRPCRouter({
     invitation: invitationRouter,
     project: projectRouter,
     chat: chatRouter,
+    figma: figmaRouter,
     frame: frameRouter,
     canvas: canvasRouter,
     userCanvas: userCanvasRouter,

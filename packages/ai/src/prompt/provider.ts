@@ -2,6 +2,7 @@ import type {
     ChatMessageContext,
     ErrorMessageContext,
     FileMessageContext,
+    FigmaMessageContext,
     HighlightMessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
@@ -62,12 +63,21 @@ export function getHydratedUserMessage(
     const errors = context.filter((c) => c.type === 'error').map((c) => c);
     const project = context.filter((c) => c.type === 'project').map((c) => c);
     const images = context.filter((c) => c.type === 'image').map((c) => c);
+    const figmaDesigns = context.filter((c) => c.type === 'figma').map((c) => c);
 
     let prompt = '';
     let contextPrompt = getFilesContent(files, highlights);
     if (contextPrompt) {
         contextPrompt = wrapXml('context', contextPrompt);
         prompt += contextPrompt;
+    }
+
+    if (figmaDesigns.length > 0) {
+        let figmaPrompt = getFigmaContent(figmaDesigns);
+        if (figmaPrompt) {
+            figmaPrompt = wrapXml('figma-designs', figmaPrompt);
+            prompt += figmaPrompt;
+        }
     }
 
     if (errors.length > 0) {
@@ -193,4 +203,33 @@ export function getSummaryExampleConversation() {
 export function getProjectContext(project: ProjectMessageContext) {
     const content = `${CONTEXT_PROMPTS.projectContextPrefix} ${project.path}`;
     return wrapXml('project-info', content);
+}
+
+export function getFigmaContent(figmaDesigns: FigmaMessageContext[]) {
+    if (figmaDesigns.length === 0) {
+        return '';
+    }
+
+    let prompt = '';
+    prompt += `${CONTEXT_PROMPTS.figmaContentPrefix}\n`;
+
+    let index = 1;
+    for (const design of figmaDesigns) {
+        let designPrompt = `Design: ${design.displayName}\n`;
+        if (design.figmaUrl) {
+            designPrompt += `URL: ${design.figmaUrl}\n`;
+        }
+        designPrompt += `Node ID: ${design.nodeId}\n\n`;
+
+        designPrompt += design.content;
+
+        designPrompt = wrapXml(
+            figmaDesigns.length > 1 ? `figma-design-${index}` : 'figma-design',
+            designPrompt,
+        );
+        prompt += designPrompt;
+        index++;
+    }
+
+    return prompt;
 }
