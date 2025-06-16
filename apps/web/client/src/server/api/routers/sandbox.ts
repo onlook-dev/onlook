@@ -4,6 +4,7 @@ import { CSB_PREVIEW_TASK_NAME, getSandboxPreviewUrl, SandboxTemplates, Template
 import { generate, parse } from '@onlook/parser';
 import { addScriptConfig } from '@onlook/parser/src/code-edit/config';
 import { shortenUuid } from '@onlook/utility/src/id';
+import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
@@ -14,13 +15,13 @@ export const sandboxRouter = createTRPCRouter({
         .input(
             z.object({
                 sandboxId: z.string(),
-                userId: z.string(),
+                userId: z.string().optional(),
             }),
         )
         .mutation(async ({ input }) => {
             const startData = await sdk.sandboxes.resume(input.sandboxId);
             const session = await startData.createBrowserSession({
-                id: shortenUuid(input.userId, 20),
+                id: shortenUuid(input.userId ?? uuidv4(), 20),
             });
             return session;
         }),
