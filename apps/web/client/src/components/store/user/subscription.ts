@@ -3,7 +3,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
 export class SubscriptionManager {
-    plan: PlanKey = PlanKey.PRO;
+    plan: PlanKey = PlanKey.FREE;
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
@@ -39,23 +39,5 @@ export class SubscriptionManager {
 
     async getPlanFromServer(): Promise<PlanKey> {
         return PlanKey.FREE;
-        // try {
-        //     const res:
-        //         | {
-        //               success: boolean;
-        //               error?: string;
-        //               data?: any;
-        //           }
-        //         | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
-        //     if (!res?.success) {
-        //         throw new Error(res?.error || 'Error checking premium status');
-        //     }
-        //     const newPlan = res.data.name === 'pro' ? UsagePlanType.PRO : UsagePlanType.BASIC;
-        //     await this.updatePlan(newPlan);
-        //     return newPlan;
-        // } catch (error) {
-        //     console.error('Error checking premium status:', error);
-        //     return UsagePlanType.BASIC;
-        // }
     }
 }
