@@ -54,6 +54,8 @@ export const NodeIcon = ({ iconClass, tagName: preprocessedTagName }: NodeIconPr
         return <Icons.PencilPaper className={iconClass} />;
     } else if (tagName === 'BODY') {
         return <Icons.Desktop className={iconClass} />;
+    } else if (tagName === 'COMPONENT') {
+        return <Icons.Component className={iconClass} />;
     } else {
         return <Icons.Frame className={iconClass} />;
     }
