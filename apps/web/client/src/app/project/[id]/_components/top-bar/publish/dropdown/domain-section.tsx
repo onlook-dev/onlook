@@ -3,7 +3,7 @@ import { useDomainsManager, useProjectManager } from '@/components/store/project
 import { useUserManager } from '@/components/store/user';
 import { DefaultSettings } from '@onlook/constants';
 import { DomainType, PublishStatus, SettingsTabValue } from '@onlook/models';
-import { UsagePlanType } from '@onlook/models/usage';
+import { PlanKey } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Progress } from '@onlook/ui/progress';
 import { cn } from '@onlook/ui/utils';
@@ -137,7 +137,7 @@ export const DomainSection = observer(({ type }: { type: DomainType }) => {
 
         // If the domain is custom, check if the user has a PRO plan
         if (type === DomainType.CUSTOM) {
-            if (plan !== UsagePlanType.PRO) {
+            if (plan !== PlanKey.PRO) {
                 return renderNoDomainCustom();
             }
         }
