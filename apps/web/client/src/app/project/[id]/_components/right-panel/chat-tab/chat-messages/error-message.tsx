@@ -6,6 +6,8 @@ import { observer } from 'mobx-react-lite';
 
 export const ErrorMessage = observer(() => {
     const editorEngine = useEditorEngine();
+    const error = editorEngine.chat.errorMessage;
+    console.log('error', error);
 
     const rateLimited: UsageCheckResult | null = true ? null : {
         reason: 'daily',
@@ -37,12 +39,11 @@ export const ErrorMessage = observer(() => {
         );
     }
 
-    const errorMessage = null;
-    if (errorMessage) {
+    if (error) {
         return (
             <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-red">
                 <Icons.ExclamationTriangle className="w-6" />
-                <p className="w-5/6 text-wrap overflow-auto">{errorMessage}</p>
+                <p className="w-5/6 text-wrap overflow-auto">{error}</p>
             </div>
         );
     }

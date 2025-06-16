@@ -17,6 +17,7 @@ export class ChatManager {
     code: ChatCodeManager;
     context: ChatContext;
     suggestions: SuggestionManager;
+    errorMessage: string | null = null;
 
     constructor(
         private editorEngine: EditorEngine,

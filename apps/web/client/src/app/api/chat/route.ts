@@ -1,6 +1,8 @@
+import { createClient } from '@/utils/supabase/request-server';
 import { chatToolSet, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
+import { type NextRequest } from 'next/server';
 
 export enum ChatType {
     ASK = 'ask',
@@ -9,11 +11,35 @@ export enum ChatType {
     FIX = 'fix',
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
+    try {
+        const user = await getSupabaseUser(req);
+        if (!user) {
+            return new Response('Unauthorized, no user found. Please login again.', { status: 401 });
+        }
+
+        return streamResponse(req);
+    } catch (error: any) {
+        console.error('Error in chat', error);
+        return new Response('Internal Server Error: ' + JSON.stringify(error), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+    }
+}
+
+const getSupabaseUser = async (request: NextRequest) => {
+    const supabase = await createClient(request);
+    const { data: { user } } = await supabase.auth.getUser();
+    return user;
+}
+
+const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType } = await req.json();
     const provider = LLMProvider.ANTHROPIC;
     const { model, providerOptions } = await initModel(provider, CLAUDE_MODELS.SONNET_4);
-
     const systemPrompt = chatType === ChatType.CREATE ? getCreatePageSystemPrompt() : getSystemPrompt();
 
     const result = streamText({
@@ -62,5 +88,4 @@ export async function POST(req: Request) {
         },
     });
 
-    return result.toDataStreamResponse();
 }

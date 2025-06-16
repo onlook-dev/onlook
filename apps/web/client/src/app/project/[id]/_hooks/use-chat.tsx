@@ -26,12 +26,14 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         maxSteps: 10,
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, config) => {
+            console.log('config', config);
             if (config.finishReason === 'stop' || config.finishReason === 'error') {
                 editorEngine.chat.conversation.addAssistantMessage(message);
             }
         },
         onError: (error) => {
             console.error('Error in chat', error);
+            editorEngine.chat.errorMessage = error.toString();
         },
     });
 
