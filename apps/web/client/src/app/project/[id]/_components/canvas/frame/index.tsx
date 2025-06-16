@@ -1,3 +1,6 @@
+'use client';
+
+import { useEditorEngine } from '@/components/store/editor';
 import type { FrameImpl, WebFrameImpl } from '@/components/store/editor/frames/frame';
 import { FrameType } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
@@ -10,10 +13,17 @@ import { WebFrameComponent, type WebFrameView } from './web-frame';
 
 export const FrameView = observer(({ frame }: { frame: FrameImpl }) => {
     const webFrameRef = useRef<WebFrameView>(null);
+    const editorEngine = useEditorEngine();
+
+    const handleFrameClick = () => {
+        editorEngine.frames.select([frame]);
+    };
+
     return (
         <div
             className="flex flex-col fixed"
             style={{ transform: `translate(${frame.position.x}px, ${frame.position.y}px)` }}
+            onClick={handleFrameClick}
         >
             <RightClickMenu>
                 <TopBar frame={frame as WebFrameImpl} />

@@ -21,6 +21,7 @@ import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
+import { WindowToolbar } from './editor-bar/window-toolbar';
 
 export const Main = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
@@ -172,6 +173,11 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up ">
                     <BottomBar />
+                </div>
+
+                {/* Standalone Window Toolbar */}
+                <div className="absolute top-24 left-1/2 transform -translate-x-1/2 z-[100] pointer-events-auto">
+                    <WindowToolbar />
                 </div>
             </div>
         </TooltipProvider>
