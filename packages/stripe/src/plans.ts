@@ -1,10 +1,17 @@
 import Stripe from 'stripe';
 
 export enum PlanKey {
+    FREE = 'free',
     PRO = 'pro',
 }
 
 export const PLANS: Record<PlanKey, { name: string; tiers: Stripe.PriceCreateParams.Tier[] }> = {
+    [PlanKey.FREE]: {
+        name: 'Onlook Free',
+        tiers: [
+            { up_to: 10, unit_amount: 0 },
+        ] satisfies Stripe.PriceCreateParams.Tier[],
+    },
     [PlanKey.PRO]: {
         name: 'Onlook Pro',
         tiers: [

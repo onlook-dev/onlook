@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/request-server';
 import { chatToolSet, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
+import type { MessageLimitCheckResult } from '@onlook/models/usage';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 
@@ -15,18 +16,47 @@ export async function POST(req: NextRequest) {
     try {
         const user = await getSupabaseUser(req);
         if (!user) {
-            return new Response('Unauthorized, no user found. Please login again.', { status: 401 });
+            return new Response(JSON.stringify({
+                error: 'Unauthorized, no user found. Please login again.',
+                code: 401
+            }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
+        const messageLimitCheckResult = await checkMessageLimit();
+        if (messageLimitCheckResult.exceeded) {
+            return new Response(JSON.stringify({
+                error: 'Message limit exceeded. Please upgrade to a paid plan.',
+                code: 402,
+                limitInfo: messageLimitCheckResult
+            }), {
+                status: 402,
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
 
         return streamResponse(req);
     } catch (error: any) {
         console.error('Error in chat', error);
-        return new Response('Internal Server Error: ' + JSON.stringify(error), {
+        return new Response(JSON.stringify({
+            error: 'Internal Server Error',
+            code: 500,
+            details: error instanceof Error ? error.message : String(error)
+        }), {
             status: 500,
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: { 'Content-Type': 'application/json' }
         });
+    }
+}
+
+const checkMessageLimit = async (): Promise<MessageLimitCheckResult> => {
+    return {
+        exceeded: true,
+        period: 'daily',
+        count: 100,
+        limit: 100,
     }
 }
 
@@ -88,4 +118,5 @@ const streamResponse = async (req: NextRequest) => {
         },
     });
 
+    return result.toDataStreamResponse();
 }

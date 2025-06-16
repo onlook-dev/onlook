@@ -1,9 +1,9 @@
-import { UsagePlanType } from '@onlook/models/usage';
+import { PlanKey } from '@onlook/stripe';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
 export class SubscriptionManager {
-    plan: UsagePlanType = UsagePlanType.BASIC;
+    plan: PlanKey = PlanKey.PRO;
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
@@ -24,10 +24,10 @@ export class SubscriptionManager {
             return;
         }
         const cachedPlan = window.localStorage?.getItem('currentPlan');
-        this.plan = (cachedPlan as UsagePlanType) || UsagePlanType.BASIC;
+        this.plan = (cachedPlan as PlanKey) || PlanKey.FREE;
     }
 
-    async updatePlan(plan: UsagePlanType) {
+    async updatePlan(plan: PlanKey) {
         if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
             console.error('window or localStorage is undefined');
             return;
@@ -37,8 +37,8 @@ export class SubscriptionManager {
         // await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
     }
 
-    async getPlanFromServer(): Promise<UsagePlanType> {
-        return UsagePlanType.BASIC;
+    async getPlanFromServer(): Promise<PlanKey> {
+        return PlanKey.FREE;
         // try {
         //     const res:
         //         | {

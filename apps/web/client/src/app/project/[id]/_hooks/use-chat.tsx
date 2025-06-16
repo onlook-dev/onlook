@@ -33,11 +33,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         },
         onError: (error) => {
             console.error('Error in chat', error);
-            editorEngine.chat.errorMessage = error.toString();
+            editorEngine.chat.error.handleChatError(error);
         },
     });
 
     const sendMessages = async (messages: Message[], type: ChatType = ChatType.EDIT) => {
+        editorEngine.chat.error.clear();
         chat.setMessages(messages);
         return chat.reload({
             body: {
