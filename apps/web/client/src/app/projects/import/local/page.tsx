@@ -10,7 +10,7 @@ import useResizeObserver from 'use-resize-observer';
 import { CancelButton } from '../cancel-button';
 import { FinalizingProject } from './_components/finalizing-project';
 import { NewSelectFolder } from './_components/select-folder';
-import { useProjectCreation } from './_context/project-creation-context';
+import { useProjectCreation } from './_context/context';
 
 const steps = [<NewSelectFolder />, <FinalizingProject />];
 

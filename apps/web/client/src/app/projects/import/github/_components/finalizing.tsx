@@ -4,12 +4,12 @@ import { CardDescription } from '@onlook/ui/card';
 import { CardTitle } from '@onlook/ui/card';
 import { motion } from 'motion/react';
 import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
-import { useProjectCreation } from '../_context/context';
 import { Button } from '@onlook/ui/button';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
+import { useImportGithubProject } from '../_context/context';
 
-export const FinalizingProject = () => {
-    const { isFinalizing, error, retry, cancel } = useProjectCreation();
+export const FinalizingGithubProject = () => {
+    const { isFinalizing, filesError, retry, cancel } = useImportGithubProject();
 
     return (
         <>
@@ -25,9 +25,9 @@ export const FinalizingProject = () => {
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="w-full"
                 >
-                    {error ? (
+                    {filesError ? (
                         <div className="w-full h-full flex items-center justify-center">
-                            <p>{error}</p>
+                            <p>{filesError}</p>
                         </div>
                     ) : (
                         <ProgressWithInterval isLoading={isFinalizing ?? false} />
@@ -38,7 +38,7 @@ export const FinalizingProject = () => {
                 <Button onClick={cancel} disabled={isFinalizing} variant="outline">
                     Cancel
                 </Button>
-                {error && (
+                {filesError && (
                     <Button onClick={retry} disabled={isFinalizing}>
                         Retry
                     </Button>

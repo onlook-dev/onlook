@@ -1,20 +1,24 @@
-import { MotionCard, MotionCardFooter } from '@onlook/ui/motion-card';
+'use client';
+
+import { MotionCard } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
-import { useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
-import { withStepProps } from '../with-step-props';
-import { ImportGithubProjectProvider, useImportGithubProject } from './context';
-import { ConnectGithub } from './connect';
-import { SetupGithub } from './setup';
+import { ConnectGithub } from './_components/connect';
+import { SetupGithub } from './_components/setup';
+import { useImportGithubProject } from './_context/context';
+import { useGetBackground } from '@/hooks/use-get-background';
+import { FinalizingGithubProject } from './_components/finalizing';
 
 const steps = [
-    withStepProps(ConnectGithub),
-    withStepProps(SetupGithub),
+   <ConnectGithub />,
+   <SetupGithub />,
+   <FinalizingGithubProject />
 ];
 
-const ImportProjectContent = () => {
+const Page = () => {
     const { currentStep } = useImportGithubProject();
-    const { ref, height } = useResizeObserver();
+    const { ref } = useResizeObserver();
+    const backgroundUrl = useGetBackground('create');
 
     const variants = {
         initial: (direction: number) => {
@@ -26,28 +30,7 @@ const ImportProjectContent = () => {
         },
     };
 
-    const renderStep = () => {
-        const stepContent = steps[currentStep];
-        if (!stepContent) {
-            return (
-                <motion.p
-                    layout="position"
-                    initial={{ opacity: 0, y: 200 }}
-                    animate={{height, opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 200 }}
-                >
-                    {'Project created successfully.'}
-                </motion.p>
-            );
-        }
 
-        return (
-            <>
-                {stepContent.header()}
-                {stepContent.content()}
-            </>
-        );
-    };
 
     return (
         <div className="fixed inset-0">
@@ -56,6 +39,7 @@ const ImportProjectContent = () => {
                 style={{
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
+                    backgroundImage: `url(${backgroundUrl})`,
                 }}
             >
                 <div className="absolute inset-0 bg-background/50" />
@@ -81,20 +65,9 @@ const ImportProjectContent = () => {
                                         animate="active"
                                         exit="exit"
                                     >
-                                        {renderStep()}
+                                        {steps[currentStep]}
                                     </motion.div>
                                 </AnimatePresence>
-                                <MotionCardFooter
-                                    initial={{ opacity: 0, y: 200 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: 200 }}
-                                    layout="position"
-                                    className="text-sm pb-4"
-                                >
-                                    <div id="footer-buttons" className="w-full">
-                                        {steps[currentStep]?.footerButtons()}
-                                    </div>
-                                </MotionCardFooter>
                             </motion.div>
                         </MotionCard>
                     </MotionConfig>
@@ -104,10 +77,4 @@ const ImportProjectContent = () => {
     );
 };
 
-export const ImportGithubProject = () => {
-    return (
-        <ImportGithubProjectProvider totalSteps={steps.length}>
-            <ImportProjectContent />
-        </ImportGithubProjectProvider>
-    );
-};
+export default Page;

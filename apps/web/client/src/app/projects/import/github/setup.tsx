@@ -8,55 +8,62 @@ import { Button } from '@onlook/ui/button';
 import { motion } from 'motion/react';
 import { Icons } from '@onlook/ui/icons';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
-import type { StepComponent } from '../with-step-props';
-import { useImportGithubProject } from './context';
+import { useImportGithubProject } from './_context/context';
+import { StepContent, StepFooter, StepHeader } from '../steps';
 
-const SetupGithub: StepComponent = ({
-    variant,
-}: {
-    variant: 'header' | 'content' | 'footer';
-}) => {
-    const { prevStep, organizations, selectedOrg, setSelectedOrg, importRepo, isLoadingOrganizations, repositories, selectedRepo, setSelectedRepo, isLoadingRepositories } = useImportGithubProject();
+export const SetupGithub = () => {
+    const {
+        prevStep,
+        organizations,
+        selectedOrg,
+        setSelectedOrg,
+        importRepo,
+        isLoadingOrganizations,
+        repositories,
+        selectedRepo,
+        setSelectedRepo,
+        isLoadingRepositories,
+    } = useImportGithubProject();
 
     const handleOrganizationSelect = (value: string) => {
-        const organization = organizations.find(org => org.login === value);
+        const organization = organizations.find((org) => org.login === value);
         setSelectedOrg(organization || null);
         setSelectedRepo(null);
     };
 
     const handleRepositorySelect = (value: string) => {
-        const repository = filteredRepositories.find(repo => repo.name === value);
+        const repository = filteredRepositories.find((repo) => repo.name === value);
         setSelectedRepo(repository || null);
     };
 
-    const filteredRepositories = selectedOrg 
-        ? repositories.filter(repo => repo.owner.login === selectedOrg.login)
+    const filteredRepositories = selectedOrg
+        ? repositories.filter((repo) => repo.owner.login === selectedOrg.login)
         : repositories;
 
-    const renderHeader = () => {
-        return (
-            <>
+    return (
+        <>
+            <StepHeader>
                 <CardTitle>{'Setup your project'}</CardTitle>
                 <CardDescription>{'Select which repo you want to import'}</CardDescription>
-            </>
-        );
-    };
-
-    const renderContent = () => (
-        <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
-            <AnimatePresence mode="popLayout">
+            </StepHeader>
+            <StepContent>
                 <motion.div
                     key="name"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="w-full gap-6 flex flex-col"
+                    className="w-full"
                 >
+                    {' '}
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-medium text-foreground-primary">
                             Organization
                         </label>
-                        <Select value={selectedOrg?.login || ""} onValueChange={handleOrganizationSelect} disabled={isLoadingOrganizations}>
+                        <Select
+                            value={selectedOrg?.login || ''}
+                            onValueChange={handleOrganizationSelect}
+                            disabled={isLoadingOrganizations}
+                        >
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select organization" />
                             </SelectTrigger>
@@ -64,9 +71,9 @@ const SetupGithub: StepComponent = ({
                                 {organizations.map((org) => (
                                     <SelectItem key={org.id} value={org.login}>
                                         <div className="flex items-center gap-2 w-full">
-                                            <img 
-                                                src={org.avatar_url} 
-                                                alt={org.login} 
+                                            <img
+                                                src={org.avatar_url}
+                                                alt={org.login}
                                                 className="w-4 h-4 rounded-full"
                                             />
                                             <span>{org.login}</span>
@@ -87,14 +94,13 @@ const SetupGithub: StepComponent = ({
                             </div>
                         )}
                     </div>
-
                     <div className="flex flex-col gap-2">
                         <label className="text-sm font-medium text-foreground-primary">
                             Repository
                         </label>
-                        <Select 
-                            value={selectedRepo?.name || ""} 
-                            onValueChange={handleRepositorySelect} 
+                        <Select
+                            value={selectedRepo?.name || ''}
+                            onValueChange={handleRepositorySelect}
                             disabled={isLoadingRepositories || !selectedOrg}
                         >
                             <SelectTrigger className="w-full">
@@ -128,45 +134,25 @@ const SetupGithub: StepComponent = ({
                                 Loading repositories...
                             </div>
                         )}
-                        {selectedOrg && filteredRepositories.length === 0 && !isLoadingRepositories && (
-                            <div className="text-sm text-foreground-secondary">
-                                No repositories found for {selectedOrg.login}
-                            </div>
-                        )}
+                        {selectedOrg &&
+                            filteredRepositories.length === 0 &&
+                            !isLoadingRepositories && (
+                                <div className="text-sm text-foreground-secondary">
+                                    No repositories found for {selectedOrg.login}
+                                </div>
+                            )}
                     </div>
                 </motion.div>
-            </AnimatePresence>
-        </MotionConfig>
-    );
-    const renderFooter = () => {
-        return (
-            <div className="flex flex-row w-full justify-between">
+            </StepContent>
+            <StepFooter>
                 <Button onClick={prevStep} variant="outline">
                     Cancel
                 </Button>
-                <Button className='px-3 py-2' onClick={importRepo}>
+                <Button className="px-3 py-2" onClick={importRepo}>
                     <Icons.Download className="w-4 h-4 mr-2" />
                     <span>Import</span>
                 </Button>
-            </div>
-        );
-    };
-    switch (variant) {
-        case 'header':
-            return renderHeader();
-        case 'content':
-            return renderContent();
-        case 'footer':
-            return renderFooter();
-    }
+            </StepFooter>
+        </>
+    );
 };
-
-SetupGithub.Header = () => <SetupGithub variant="header" />;
-SetupGithub.Content = () => <SetupGithub variant="content" />;
-SetupGithub.Footer = () => <SetupGithub variant="footer" />;
-
-SetupGithub.Header.displayName = 'SetupGithub.Header';
-SetupGithub.Content.displayName = 'SetupGithub.Content';
-SetupGithub.Footer.displayName = 'SetupGithub.Footer';
-
-export { SetupGithub };

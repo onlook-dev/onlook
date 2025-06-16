@@ -7,8 +7,6 @@ import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { SelectProject } from './_components/select';
 import { TopBar } from './_components/top-bar';
-import { ProjectTabs } from '@/components/store/projects/manager';
-import { ImportGithubProject } from './_components/import-github';
 
 const Page = observer(() => {
     const projectsManager = useProjectsManager();
@@ -28,20 +26,11 @@ const Page = observer(() => {
         );
     }
 
-    const renderTab = () => {
-        switch (projectsManager.projectsTab) {
-            case ProjectTabs.PROJECTS:
-                return <SelectProject />;
-            case ProjectTabs.IMPORT_GITHUB:
-                return <ImportGithubProject />;
-        }
-    }
-
     return (
         <div className="w-screen h-screen flex flex-col">
             <TopBar />
             <div className="flex justify-center overflow-hidden w-full h-full">
-                {renderTab()}
+                <SelectProject />
             </div>
             <SettingsModal showProjectTabs={false} />
         </div>

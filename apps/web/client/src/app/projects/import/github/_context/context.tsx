@@ -1,9 +1,15 @@
+'use client';
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { api } from '@/trpc/react';
 import { api as clientApi } from '@/trpc/client';
 import { useCreateManager } from '@/components/store/create';
 import { useRouter } from 'next/navigation';
 import { redirect } from 'next/navigation';
+import { login } from '@/app/login/actions';
+import { SignInMethod } from '@onlook/models/auth';
+import { Routes } from '@/utils/constants';
+import { useUserManager } from '@/components/store/user';
 
 const FAKE_ORGANIZATIONS = [
     {
@@ -34,15 +40,6 @@ interface GitHubRepository {
         login: string;
         avatar_url: string;
     };
-}
-
-interface GitHubFile {
-    name: string;
-    path: string;
-    type: 'file' | 'dir';
-    size?: number;
-    download_url?: string;
-    html_url: string;
 }
 
 interface ImportGithubProjectProviderProps {
@@ -78,6 +75,7 @@ interface ImportGithubContextType {
     isLoadingRepositories: boolean;
     isLoadingFiles: boolean;
     isCheckingConnection: boolean;
+    isFinalizing: boolean;
 
     // Connection state
     isGitHubConnected: boolean;
@@ -100,6 +98,8 @@ interface ImportGithubContextType {
     ) => Promise<{ branch: string; isPrivateRepo: boolean } | null>;
     checkGitHubConnection: () => void;
     clearErrors: () => void;
+    retry: () => void;
+    cancel: () => void;
 }
 
 export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderProps> = ({
@@ -125,7 +125,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
     const [isLoadingFiles, setIsLoadingFiles] = useState(false);
     const [isCheckingConnection, setIsCheckingConnection] = useState(false);
-
+    const [isFinalizing, setIsFinalizing] = useState(false);
     // Connection state
     const [isGitHubConnected, setIsGitHubConnected] = useState(false);
 
@@ -137,6 +137,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
 
     // Create manager
     const createManager = useCreateManager();
+    const userManager = useUserManager();
 
     useEffect(() => {
         checkGitHubConnection();
@@ -155,11 +156,8 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     const nextStep = async () => {
         if (currentStep < totalSteps - 1) {
             if (!isGitHubConnected) {
-                const { url } = await reconnectGitHub.mutateAsync();
-                if (url) {
-                    redirect(url);
-                }
-              }
+                await login(SignInMethod.GITHUB);
+            }
             setCurrentStep((prev) => prev + 1);
         } else {
             setCurrentStep((prev) => prev + 1);
@@ -220,15 +218,36 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     };
 
     const importRepo = async () => {
+        setIsFinalizing(true);
         setIsLoadingFiles(true);
         setFilesError(null);
 
         try {
+            if (!userManager.user?.id) {
+                console.error('No user found');
+                return;
+            }
+
             const { sandboxId, previewUrl } = await createManager.createSandboxFromGithub(
                 selectedRepo?.clone_url || '',
                 selectedRepo?.default_branch || '',
             );
-            router.push(`/projects/${sandboxId}`);
+
+            const project = await clientApi.project.create.mutate({
+                project: {
+                    name: selectedRepo?.name ?? 'New project',
+                    sandboxId,
+                    sandboxUrl: previewUrl,
+                    description: 'Your new project',
+                },
+                userId: userManager.user.id,
+            });
+            if (!project) {
+                console.error('Failed to create project');
+                return;
+            }
+            // Open the project
+            router.push(`${Routes.PROJECT}/${project.id}`);
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : 'Failed to fetch repository files';
@@ -236,6 +255,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
             console.error('Error fetching repository files:', error);
         } finally {
             setIsLoadingFiles(false);
+            setIsFinalizing(false);
         }
     };
 
@@ -276,6 +296,32 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
         setConnectionError(null);
     };
 
+    const clearLoadingStates = () => {
+        setIsLoadingOrganizations(false);
+        setIsLoadingRepositories(false);
+        setIsLoadingFiles(false);
+        setIsCheckingConnection(false);
+        setIsFinalizing(false);
+    }
+
+    const clearData = () => {
+        setSelectedRepo(null);
+        setSelectedOrg(null);
+        setRepoUrl('');
+        setBranch('');
+    }
+
+    const retry = () => {
+        setCurrentStep(1);
+        clearLoadingStates();
+    };
+
+    const cancel = () => {
+        clearLoadingStates();
+        clearData();
+        setCurrentStep(1);
+    }
+
     const contextValue: ImportGithubContextType = {
         // Step management
         currentStep,
@@ -302,7 +348,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
         isLoadingRepositories,
         isLoadingFiles,
         isCheckingConnection,
-
+        isFinalizing,
         // Connection state
         isGitHubConnected,
 
@@ -321,6 +367,8 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
         validateRepository,
         checkGitHubConnection,
         clearErrors,
+        retry,
+        cancel,
     };
 
     return (
@@ -356,7 +404,7 @@ const ImportGithubProjectContext = createContext<ImportGithubContextType>({
     isLoadingRepositories: false,
     isLoadingFiles: false,
     isCheckingConnection: false,
-
+    isFinalizing: false,
     // Connection state
     isGitHubConnected: false,
 
@@ -375,6 +423,8 @@ const ImportGithubProjectContext = createContext<ImportGithubContextType>({
     validateRepository: async () => null,
     checkGitHubConnection: () => {},
     clearErrors: () => {},
+    retry: () => {},
+    cancel: () => {},
 });
 
 export const useImportGithubProject = () => {

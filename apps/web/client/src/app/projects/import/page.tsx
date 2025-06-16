@@ -51,11 +51,8 @@ const Page = () => {
                 </Card>
 
                 <Card
-                    className={`opacity-70 cursor-none transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
-                    onClick={() => {
-                        toast.error('Coming soon: Import from GitHub');
-                        // handleCardClick('github')
-                    }}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
+                    onClick={() => handleCardClick('github')}
                     tabIndex={0}
                     role="button"
                     aria-label="Connect to GitHub"
@@ -65,7 +62,7 @@ const Page = () => {
                             <Icons.GitHubLogo className="w-6 h-6 text-primary" />
                         </div>
                         <div className="space-y-2">
-                            <CardTitle className="text-xl">Coming soon: Import from GitHub</CardTitle>
+                            <CardTitle className="text-xl">Import from GitHub</CardTitle>
                             <CardDescription className="text-base">
                                 Import your project directly from GitHub
                             </CardDescription>

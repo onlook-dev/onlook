@@ -143,7 +143,7 @@ export const githubRouter = createTRPCRouter({
 
     reconnectGitHub: protectedProcedure
         .mutation(async ({ ctx }) => {
-            const origin = ctx.headers.get('origin') || 'http://localhost:3000';
+            const origin = process.env.NEXT_PUBLIC_APP_URL;
             
             const { data, error } = await ctx.supabase.auth.signInWithOAuth({
                 provider: 'github',
