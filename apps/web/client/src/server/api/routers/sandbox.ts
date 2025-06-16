@@ -136,6 +136,9 @@ export const sandboxRouter = createTRPCRouter({
                     }
                 }
 
+                // Run setup task
+                await session.setup.run();
+
                 // Start the dev task
                 const task = await session.tasks.get(CSB_PREVIEW_TASK_NAME);
                 if (task) {
