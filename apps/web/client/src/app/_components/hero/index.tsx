@@ -6,6 +6,7 @@ import { vujahdayScript } from '../../fonts';
 import { Create } from './create';
 import { CreateError } from './create-error';
 import { UnicornBackground } from './unicorn-background';
+import { HighDemand } from './high-demand';
 
 export function Hero() {
     const [cardKey, setCardKey] = useState(0);
@@ -36,7 +37,7 @@ export function Hero() {
                     that lets designers and product managers craft<br />
                     web experiences with AI
                 </motion.p>
-                {/* <HighDemand /> */}
+                <HighDemand />
                 <CreateError />
             </div>
             <div className="sm:flex hidden flex-col gap-4 items-center relative z-20">

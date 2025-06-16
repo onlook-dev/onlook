@@ -1,6 +1,6 @@
 import { env } from '@/env';
 import { CodeSandbox, Sandbox, WebSocketSession } from '@codesandbox/sdk';
-import { getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
+import { CSB_PREVIEW_TASK_NAME, getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
 import { generate, parse } from '@onlook/parser';
 import { addScriptConfig } from '@onlook/parser/src/code-edit/config';
 import { shortenUuid } from '@onlook/utility/src/id';
@@ -134,6 +134,12 @@ export const sandboxRouter = createTRPCRouter({
                             `Failed to upload file: ${path} - ${fileError instanceof Error ? fileError.message : 'Unknown error'}`,
                         );
                     }
+                }
+
+                // Start the dev task
+                const task = await session.tasks.get(CSB_PREVIEW_TASK_NAME);
+                if (task) {
+                    await task.run();
                 }
 
                 // Disconnect the session
