@@ -5,11 +5,9 @@ import { DefaultSettings } from '@onlook/constants';
 import { PublishStatus, SettingsTabValue } from '@onlook/models';
 import { PlanKey } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
-import { Progress } from '@onlook/ui/progress';
 import { cn } from '@onlook/ui/utils';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
 import { UrlSection } from './url';
 
 export const CustomDomainSection = observer(() => {
@@ -18,32 +16,10 @@ export const CustomDomainSection = observer(() => {
     const userManager = useUserManager();
     const projectManager = useProjectManager();
     const project = projectManager.project;
-    const [progress, setProgress] = useState(0);
     const plan = userManager.subscription.plan;
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;
     const domain = domainsManager.domains.custom;
-    const progressInterval = useRef<Timer | null>(null);
-
-    useEffect(() => {
-        if (state.status === PublishStatus.LOADING) {
-            setProgress(0);
-            progressInterval.current = setInterval(() => {
-                setProgress((prev) => Math.min(prev + 0.167, 100));
-            }, 100);
-        } else {
-            setProgress(0);
-            if (progressInterval.current) {
-                clearInterval(progressInterval.current);
-            }
-        }
-
-        return () => {
-            if (progressInterval.current) {
-                clearInterval(progressInterval.current);
-            }
-        };
-    }, [state.status]);
 
     if (!project) {
         return 'Something went wrong. Project not found.';
@@ -172,12 +148,6 @@ export const CustomDomainSection = observer(() => {
                         >
                             Try Updating Again
                         </Button>
-                    </div>
-                )}
-                {state.status === PublishStatus.LOADING && (
-                    <div className="w-full flex flex-col gap-2 py-1">
-                        <p>{state.message}</p>
-                        <Progress value={progress} className="w-full" />
                     </div>
                 )}
             </div>
