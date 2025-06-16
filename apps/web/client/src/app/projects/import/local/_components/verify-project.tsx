@@ -6,10 +6,10 @@ import { Button } from '@onlook/ui/button';
 import { motion } from 'motion/react';
 import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
-import { useProjectCreation } from '../_context/project-creation-context';
-import { StepFooter } from './steps';
-import { StepContent } from './steps';
-import { StepHeader } from './steps';
+import { useProjectCreation } from '../_context/context';
+import { StepFooter } from '../../steps';
+import { StepContent } from '../../steps';
+import { StepHeader } from '../../steps';
 import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
 
 export const VerifyProject = () => {

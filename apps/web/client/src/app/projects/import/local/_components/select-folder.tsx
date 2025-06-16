@@ -7,8 +7,8 @@ import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'motion/react';
 import { useCallback, useRef, useState } from 'react';
-import { useProjectCreation } from '../_context/project-creation-context';
-import { StepContent, StepFooter, StepHeader } from './steps';
+import { useProjectCreation } from '../_context/context';
+import { StepContent, StepFooter, StepHeader } from '../../steps';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> extends HTMLAttributes<T> {

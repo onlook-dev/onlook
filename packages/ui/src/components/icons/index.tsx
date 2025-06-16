@@ -1244,7 +1244,31 @@ export const Icons = {
             />
         </svg>
     ),
-
+    Key: ({ className, ...props }: IconProps) => (
+        <svg
+            width="21"
+            height="22"
+            viewBox="0 0 21 22"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M13.5625 12.9688C16.3412 12.9688 18.5938 10.7162 18.5938 7.9375C18.5938 5.15881 16.3412 2.90625 13.5625 2.90625C10.7838 2.90625 8.53125 5.15881 8.53125 7.9375C8.53125 8.35917 8.58312 8.76871 8.68083 9.16012L3.53753 14.3034C3.37344 14.4675 3.28125 14.6901 3.28125 14.9222V17.3438C3.28125 17.827 3.673 18.2188 4.15625 18.2188H6.5779C6.80997 18.2188 7.03252 18.1266 7.19662 17.9625L8.09375 17.0654V14.7188H10.4403L12.34 12.8192C12.7313 12.9169 13.1408 12.9688 13.5625 12.9688Z"
+                stroke="currentColor"
+                strokeWidth="1.3125"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M15.0938 7.9375C15.0938 8.78319 14.4082 9.46875 13.5625 9.46875C12.7168 9.46875 12.0312 8.78319 12.0312 7.9375C12.0312 7.09181 12.7168 6.40625 13.5625 6.40625C14.4082 6.40625 15.0938 7.09181 15.0938 7.9375Z"
+                stroke="currentColor"
+                strokeWidth="1.3125"
+                strokeLinecap="square"
+            />
+        </svg>
+    ),
     ArrowDown: ArrowDownIcon,
     ArrowLeft: ArrowLeftIcon,
     ArrowRight: ArrowRightIcon,

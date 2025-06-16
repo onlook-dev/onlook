@@ -4,10 +4,18 @@ import type { Project } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from '../user/manager';
 
+export enum ProjectTabs {
+    PROJECTS = 'projects',
+    SETTINGS = 'settings',
+    PROMPT_CREATE = 'prompt-create',
+    IMPORT_PROJECT = 'import-project',
+    IMPORT_GITHUB = 'import-github',
+}
 export class ProjectsManager {
 
     private _projects: Project[] = [];
     isFetching = false;
+    projectsTab: ProjectTabs = ProjectTabs.PROJECTS;
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);

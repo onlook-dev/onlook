@@ -1,3 +1,4 @@
+import { injectPreloadScript } from '@/components/store/editor/pages/helper';
 import { env } from '@/env';
 import { CodeSandbox, Sandbox, WebSocketSession } from '@codesandbox/sdk';
 import { CSB_PREVIEW_TASK_NAME, getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
@@ -120,7 +121,10 @@ export const sandboxRouter = createTRPCRouter({
                                     const modifiedAst = addScriptConfig(ast);
                                     content = generate(modifiedAst, {}, content).code;
                                 } catch (parseError) {
-                                    console.warn('Failed to add script config to layout.tsx:', parseError);
+                                    console.warn(
+                                        'Failed to add script config to layout.tsx:',
+                                        parseError,
+                                    );
                                 }
                             }
 
@@ -181,5 +185,29 @@ export const sandboxRouter = createTRPCRouter({
                     `Failed to create project sandbox: ${error instanceof Error ? error.message : 'Unknown error'}`,
                 );
             }
+        }),
+    createFromGitHub: protectedProcedure
+        .input(
+            z.object({
+                repoUrl: z.string(),
+                branch: z.string(),
+            }),
+        )
+        .mutation(async ({ input }) => {
+            const template = SandboxTemplates[Templates.BLANK];
+
+            const sandbox = await sdk.sandboxes.create({
+                source: 'git',
+                url: input.repoUrl,
+                branch: input.branch,
+                async setup(session) {
+                    await injectPreloadScript(session);
+                    await session.setup.run();
+                },
+            });
+            return {
+                sandboxId: sandbox.id,
+                previewUrl: getSandboxPreviewUrl(sandbox.id, template.port),
+            };
         }),
 });

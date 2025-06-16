@@ -124,16 +124,18 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
     const finalizeProject = async () => {
         try {
             setIsFinalizing(true);
+
+            if (!userManager.user?.id) {
+                console.error('No user found');
+                return;
+            }
             if (!projectData.files) {
                 return;
             }
 
             const codeSandboxProject = await convertToCodeSandboxFormat(projectData.files);
             const { sandboxId, previewUrl } = await uploadToCodeSandbox(codeSandboxProject);
-            if (!userManager.user?.id) {
-                console.error('No user found');
-                return;
-            }
+
             const project = await api.project.create.mutate({
                 project: {
                     name: projectData.name ?? 'New project',

@@ -5,12 +5,12 @@ import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import useResizeObserver from 'use-resize-observer';
 import { NewSelectFolder } from './select-folder';
 import { FinalizingProject } from './finalizing-project';
-import { ProjectCreationProvider, useProjectCreation } from '../_context/project-creation-context';
+import { useProjectCreation } from '../_context/context';
 import { useGetBackground } from '@/hooks/use-get-background';
 
 const steps = [<NewSelectFolder />, <FinalizingProject />];
 
-const ImportProjectContent = () => {
+export const ImportLocalProject = () => {
     const { currentStep, direction } = useProjectCreation();
     const { ref } = useResizeObserver();
 
@@ -59,13 +59,5 @@ const ImportProjectContent = () => {
                 </MotionConfig>
             </div>
         </div>
-    );
-};
-
-export const ImportLocalProject = () => {
-    return (
-        <ProjectCreationProvider totalSteps={steps.length}>
-            <ImportProjectContent />
-        </ProjectCreationProvider>
     );
 };
