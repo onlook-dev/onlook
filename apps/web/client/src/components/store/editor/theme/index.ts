@@ -24,7 +24,7 @@ import { getOidFromJsxElement } from '@onlook/parser/src/code-edit/helpers';
 import { Color } from '@onlook/utility';
 import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import colors from 'tailwindcss/colors';
+import { WEB_COLORS } from '@onlook/constants';
 import type { EditorEngine } from '../engine';
 import {
     addTailwindCssVariable,
@@ -253,10 +253,10 @@ export class ThemeManager {
         // Create a record instead of an array
         const defaultColorsRecord: Record<string, TailwindColor[]> = {};
 
-        Object.keys(colors)
+        Object.keys(WEB_COLORS)
             .filter((colorName) => !excludedColors.includes(colorName))
             .forEach((colorName) => {
-                const defaultColorScale = colors[colorName as keyof typeof colors];
+                const defaultColorScale = WEB_COLORS[colorName as keyof typeof WEB_COLORS];
 
                 if (typeof defaultColorScale !== 'object' || defaultColorScale === null) {
                     return;
@@ -272,8 +272,8 @@ export class ThemeManager {
                         return {
                             name: shade,
                             originalKey: `${colorName}-${shade}`,
-                            lightColor: lightModeValue ?? defaultValue,
-                            darkColor: darkModeValue ?? defaultValue,
+                            lightColor: lightModeValue ?? String(defaultValue),
+                            darkColor: darkModeValue ?? String(defaultValue),
                             line: {
                                 config: config[`${colorName}-${shade}`]?.line,
                                 css: {
@@ -318,7 +318,10 @@ export class ThemeManager {
                 // Add to record instead of array
                 defaultColorsRecord[colorName] = colorItems;
             });
-
+        console.log('defaultColorsRecord', defaultColorsRecord);
+        console.log('lightModeColors', lightModeColors);
+        console.log('darkModeColors', darkModeColors);
+        console.log('config', config);
         return defaultColorsRecord;
     }
 
@@ -356,7 +359,7 @@ export class ThemeManager {
             if (originalKey) {
                 const [parentKey, keyName] = originalKey.split('-');
 
-                const isDefaultColor = parentKey && colors[parentKey as keyof typeof colors];
+                const isDefaultColor = parentKey && WEB_COLORS[parentKey as keyof typeof WEB_COLORS];
                 if (isDefaultColor) {
                     const colorIndex = parseInt(keyName ?? '0') / 100;
 
@@ -691,6 +694,7 @@ export class ThemeManager {
         }
 
         const defaultGroup = this.defaultColors[groupName];
+
         if (defaultGroup && shadeName) {
             const color = defaultGroup.find((color) => color.name === shadeName);
             if (color?.lightColor) {
