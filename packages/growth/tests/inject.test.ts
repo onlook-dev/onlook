@@ -127,6 +127,50 @@ describe('Built with Onlook Script', () => {
         expect(fs.existsSync(scriptPath)).toBe(false);
     });
 
+    test('removeBuiltWithScriptFromLayout works with src/app directory structure', async () => {
+        // Remove the original app/layout.tsx
+        fs.unlinkSync(layoutPath);
+
+        // Create src/app directory structure
+        const srcAppDir = path.join(tempDir, 'src', 'app');
+        const srcLayoutPath = path.join(srcAppDir, 'layout.tsx');
+
+        fs.mkdirSync(srcAppDir, { recursive: true });
+
+        // Create a layout.tsx file with Script already injected
+        const layoutWithScript = `import Script from "next/script";
+
+export default function RootLayout({
+    children
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (<html lang="en">
+        <body className={inter.className}>
+            {children}
+            <Script src="/builtwith.js" strategy="afterInteractive" />
+        </body>
+    </html>
+    );
+}`;
+        fs.writeFileSync(srcLayoutPath, layoutWithScript, 'utf8');
+
+        // Remove the script from layout
+        const result = await removeBuiltWithScriptFromLayout(tempDir, fileOps);
+        expect(result).toBe(true);
+
+        // Read the modified layout file
+        const modifiedLayoutContent = fs.readFileSync(srcLayoutPath, 'utf8');
+
+        // Verify Script component was removed
+        expect(modifiedLayoutContent).not.toContain(
+            '<Script src="/builtwith.js" strategy="afterInteractive" />',
+        );
+
+        // Verify Script import was removed
+        expect(modifiedLayoutContent).not.toContain('import Script from "next/script";');
+    });
+
     test('injectBuiltWithScript handles missing layout file', async () => {
         // Remove the layout file
         fs.unlinkSync(layoutPath);
@@ -134,6 +178,47 @@ describe('Built with Onlook Script', () => {
         // Try to inject the script
         const result = await injectBuiltWithScript(tempDir, fileOps);
         expect(result).toBe(false);
+    });
+
+    test('injectBuiltWithScript works with src/app directory structure', async () => {
+        // Remove the original app/layout.tsx
+        fs.unlinkSync(layoutPath);
+
+        // Create src/app directory structure
+        const srcAppDir = path.join(tempDir, 'src', 'app');
+        const srcLayoutPath = path.join(srcAppDir, 'layout.tsx');
+
+        fs.mkdirSync(srcAppDir, { recursive: true });
+
+        // Create a basic layout.tsx file in src/app
+        const layoutContent = `export default function RootLayout({
+    children
+}: Readonly<{
+    children: React.ReactNode;
+}>) {
+    return (<html lang="en">
+        <body className={inter.className}>
+            {children}
+        </body>
+    </html>
+    );
+}`;
+        fs.writeFileSync(srcLayoutPath, layoutContent, 'utf8');
+
+        // Inject the script
+        const result = await injectBuiltWithScript(tempDir, fileOps);
+        expect(result).toBe(true);
+
+        // Read the modified layout file
+        const modifiedLayoutContent = fs.readFileSync(srcLayoutPath, 'utf8');
+
+        // Verify Script import was added
+        expect(modifiedLayoutContent).toContain('import Script from "next/script";');
+
+        // Verify Script component was added
+        expect(modifiedLayoutContent).toContain(
+            '<Script src="/builtwith.js" strategy="afterInteractive" />',
+        );
     });
 
     test('removeBuiltWithScript handles missing script file', async () => {
