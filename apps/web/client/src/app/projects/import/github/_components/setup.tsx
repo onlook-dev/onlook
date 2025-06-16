@@ -1,8 +1,5 @@
-import { MotionConfig } from 'motion/react';
-
 import { CardDescription } from '@onlook/ui/card';
 import { CardTitle } from '@onlook/ui/card';
-import { AnimatePresence } from 'motion/react';
 
 import { Button } from '@onlook/ui/button';
 import { motion } from 'motion/react';
@@ -17,8 +14,9 @@ export const SetupGithub = () => {
         organizations,
         selectedOrg,
         setSelectedOrg,
-        importRepo,
+        nextStep,
         isLoadingOrganizations,
+        isFinalizing,
         repositories,
         selectedRepo,
         setSelectedRepo,
@@ -148,7 +146,7 @@ export const SetupGithub = () => {
                 <Button onClick={prevStep} variant="outline">
                     Cancel
                 </Button>
-                <Button className="px-3 py-2" onClick={importRepo} disabled={!selectedRepo}>
+                <Button className="px-3 py-2" onClick={nextStep} disabled={!selectedRepo || isFinalizing}>
                     <Icons.Download className="w-4 h-4 mr-2" />
                     <span>Import</span>
                 </Button>

@@ -161,6 +161,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
             setCurrentStep((prev) => prev + 1);
         } else {
             setCurrentStep((prev) => prev + 1);
+            importRepo();
         }
     };
 
