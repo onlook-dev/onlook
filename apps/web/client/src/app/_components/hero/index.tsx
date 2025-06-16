@@ -5,7 +5,6 @@ import { useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { Create } from './create';
 import { CreateError } from './create-error';
-import { HighDemand } from './high-demand';
 import { UnicornBackground } from './unicorn-background';
 
 export function Hero() {
@@ -37,7 +36,7 @@ export function Hero() {
                     that lets designers and product managers craft<br />
                     web experiences with AI
                 </motion.p>
-                <HighDemand />
+                {/* <HighDemand /> */}
                 <CreateError />
             </div>
             <div className="sm:flex hidden flex-col gap-4 items-center relative z-20">
