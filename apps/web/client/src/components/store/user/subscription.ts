@@ -7,7 +7,6 @@ export class SubscriptionManager {
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
-        this.restoreCachedPlan();
         reaction(
             () => this.userManager.user,
             (user) => {
@@ -16,15 +15,6 @@ export class SubscriptionManager {
                 }
             }
         );
-    }
-
-    private restoreCachedPlan() {
-        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-            console.error('window or localStorage is undefined');
-            return;
-        }
-        const cachedPlan = window.localStorage?.getItem('currentPlan');
-        this.plan = (cachedPlan as PlanKey) || PlanKey.FREE;
     }
 
     async updatePlan(plan: PlanKey) {
@@ -37,7 +27,7 @@ export class SubscriptionManager {
         // await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
     }
 
-    async getPlanFromServer(): Promise<PlanKey> {
-        return PlanKey.FREE;
+    async getPlanFromServer(): Promise<void> {
+        this.plan = PlanKey.PRO;
     }
 }
