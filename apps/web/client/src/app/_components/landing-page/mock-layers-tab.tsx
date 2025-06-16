@@ -19,7 +19,7 @@ export function MockLayersTab() {
     const [selectedId, setSelectedId] = React.useState<string>('1');
 
     return (
-        <div className="w-72 bg-background/80 rounded-lg shadow-lg p-2 overflow-hidden border border-border max-h-96 flex flex-col gap-1">
+        <div className="w-72 shadow-lg p-2 overflow-hidden max-h-96 flex flex-col gap-1">
             <div className="flex flex-col gap-1.5">
                 {mockLayers.map((layer) => (
                     <div

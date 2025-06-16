@@ -3,6 +3,7 @@
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
 import { ContributorSection } from './_components/landing-page/contributor-section';
+import { WhatCanOnlookDoSection } from './_components/landing-page/what-can-onlook-do-section';
 import { Footer } from './_components/landing-page/page-footer';
 import { TopBar } from './_components/top-bar';
 
@@ -23,7 +24,7 @@ export default function Main() {
             {/* <CTASection /> */}
             <ContributorSection />
             {/* <FAQSection /> */}
-            {/* <WhatCanOnlookDoSection /> */}
+            <WhatCanOnlookDoSection />
             <Footer />
             <AuthModal />
         </div>
