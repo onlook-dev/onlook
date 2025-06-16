@@ -1,7 +1,7 @@
 'use client';
 
 import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
-import { BINARY_EXTENSIONS, IGNORED_DIRECTORIES, IGNORED_FILES } from '@onlook/constants';
+import { BINARY_EXTENSIONS, IGNORED_FILES, IGNORED_UPLOAD_DIRECTORIES } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
@@ -48,7 +48,7 @@ export const NewSelectFolder = () => {
 
     const filterAndProcessFiles = async (files: File[]): Promise<ProcessedFile[]> => {
         const processedFiles: ProcessedFile[] = [];
-        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+        const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
         // Find the common root path from all files
         const allPaths = files.map((file) => (file as any).webkitRelativePath || file.name);
@@ -70,7 +70,7 @@ export const NewSelectFolder = () => {
 
             // Skip ignored directories
             if (
-                IGNORED_DIRECTORIES.some(
+                IGNORED_UPLOAD_DIRECTORIES.some(
                     (dir) => relativePath.includes(`${dir}/`) || relativePath.startsWith(`${dir}/`),
                 )
             ) {

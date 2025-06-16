@@ -1,25 +1,23 @@
-import { useProjectsManager } from '@/components/store/projects';
-import { ProjectTabs } from '@/components/store/projects/manager';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { transKeys } from '@/i18n/keys';
 import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
-import { cn } from '@onlook/ui/utils';
-import { useTranslations } from 'next-intl';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
+import { useTranslations } from 'next-intl';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export const TopBar = () => {
     const t = useTranslations();
     const router = useRouter();
-    const projectsManager = useProjectsManager();
+
     return (
         <div className="flex flex-row h-12 px-12 items-center">
             <Link href={Routes.HOME} className="flex-1 flex items-center justify-start mt-3">

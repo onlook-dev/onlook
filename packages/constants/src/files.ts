@@ -11,6 +11,14 @@ export const IGNORED_DIRECTORIES = [
     CUSTOM_OUTPUT_DIR,
 ];
 
+export const IGNORED_UPLOAD_DIRECTORIES = [
+    'node_modules',
+    'dist',
+    'build',
+    '.next',
+    CUSTOM_OUTPUT_DIR,
+];
+
 export const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
 
 export const JS_FILE_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs'];
