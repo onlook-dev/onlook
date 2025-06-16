@@ -52,8 +52,8 @@ export async function POST(req: NextRequest) {
 }
 
 const checkMessageLimit = async (): Promise<MessageLimitCheckResult> => {
-    const count = 99;
-    const limit = 100;
+    const count = 0;
+    const limit = 10;
     const exceeded = count >= limit;
 
     return {
