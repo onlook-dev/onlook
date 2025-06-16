@@ -1,6 +1,6 @@
 import { api } from '@/trpc/client';
-import { fromProject } from '@onlook/db';
-import type { Project } from '@onlook/models';
+import { fromProject, fromProjectSettings } from '@onlook/db';
+import type { Project, ProjectSettings } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 
 export class VersionsManager {
@@ -9,6 +9,7 @@ export class VersionsManager {
 
 export class ProjectManager {
     private _project: Project | null = null;
+    private _projectSettings: ProjectSettings | null = null;
     readonly versions: VersionsManager | null = null;
 
     constructor() {
@@ -24,6 +25,14 @@ export class ProjectManager {
         this._project = project;
     }
 
+    get projectSettings() {
+        return this._projectSettings;
+    }
+
+    set projectSettings(projectSettings: ProjectSettings | null) {
+        this._projectSettings = projectSettings;
+    }
+
     updatePartialProject(newProject: Partial<Project>) {
         if (!this.project) {
             console.error('Project not found');
@@ -36,6 +45,22 @@ export class ProjectManager {
     updateProject(newProject: Project) {
         this.project = newProject;
         this.saveProjectToStorage();
+    }
+
+    updateProjectSettings(newProjectSettings: Partial<ProjectSettings>) {
+        if (!this.projectSettings) {
+            console.error('Project settings not found');
+            return;
+        }
+        this.projectSettings = { ...this.projectSettings, ...newProjectSettings };
+    }
+
+    async saveProjectSettingsToStorage() {
+        if (!this.projectSettings) {
+            console.error('Project settings not found');
+            return;
+        }
+        return api.settings.update.mutate(fromProjectSettings(this.projectSettings));
     }
 
     async saveProjectToStorage() {

@@ -78,6 +78,13 @@
       "when": 1749589432515,
       "tag": "0010_bent_edwin_jarvis",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1750069359788,
+      "tag": "0011_clean_paladin",
+      "breakpoints": true
     }
   ]
 }

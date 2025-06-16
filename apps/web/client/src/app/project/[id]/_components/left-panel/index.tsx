@@ -12,6 +12,7 @@ import { LayersTab } from './layers-tab';
 import { PagesTab } from './page-tab';
 import { WindowsTab } from './windows-tab';
 import { ZoomControls } from './zoom-controls';
+import { SettingsModal } from './setting';
 
 const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; disabled?: boolean }[] =
     [
@@ -160,6 +161,7 @@ export const LeftPanel = observer(() => {
                     {!isLocked && <div className="w-24 h-full" />}
                 </>
             )}
+            {editorEngine.state.settingsOpen && <SettingsModal />}
         </div>
     );
 });
