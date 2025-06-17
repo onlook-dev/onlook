@@ -57,18 +57,25 @@ export class SessionManager {
     }
 
     async reconnect(sandboxId: string, userId?: string) {
-        if (!this.session) {
-            console.error('No session found');
-            return;
+        try {
+            if (!this.session) {
+                console.error('No session found');
+                return;
+            }
+            this.isConnecting = true;
+            await this.session.reconnect()
+            const isConnected = await this.ping();
+            if (!isConnected) {
+                await this.session.disconnect();
+                this.session = null;
+                // If the session failed to reconnect, we need to start a new session
+                await this.start(sandboxId, userId);
+            }
+            this.isConnecting = false;
+        } catch (error) {
+            console.error('Failed to reconnect to sandbox', error);
+            this.isConnecting = false;
         }
-        this.isConnecting = true;
-        await this.session.reconnect()
-        const isConnected = await this.ping();
-        if (!isConnected) {
-            // If the session failed to reconnect, we need to start a new session
-            await this.start(sandboxId, userId);
-        }
-        this.isConnecting = false;
     }
 
     async ping() {
