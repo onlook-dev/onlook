@@ -10,9 +10,10 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons/index';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export const CurrentUserAvatar = ({ className, disableDropdown = false }: { className?: string, disableDropdown?: boolean }) => {
+    const router = useRouter();
     const userManager = useUserManager();
     const user = userManager.user;
     const initials = user?.name
@@ -23,7 +24,7 @@ export const CurrentUserAvatar = ({ className, disableDropdown = false }: { clas
 
     const handleSignOut = async () => {
         await userManager.signOut();
-        redirect(Routes.LOGIN);
+        router.push(Routes.LOGIN);
     };
 
     return (

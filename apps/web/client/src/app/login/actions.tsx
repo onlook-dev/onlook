@@ -1,6 +1,5 @@
 'use server';
 
-import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 import { SEED_USER } from '@onlook/db';
 import { SignInMethod } from '@onlook/models';
@@ -58,6 +57,6 @@ export async function devLogin() {
         console.error('Error signing in with password:', error);
         throw new Error('Error signing in with password');
     }
-
-    redirect(Routes.HOME);
+    const origin = (await headers()).get('origin');
+    redirect(`${origin}/auth/callback`);
 }

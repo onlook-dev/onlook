@@ -46,23 +46,22 @@ export default function LoginPage() {
                     )}
                     <p className="text-small text-foreground-onlook">
                         {t(transKeys.welcome.terms.agreement)}{' '}
-                        <button
-                            onClick={() =>
-                                window.open('https://onlook.com/privacy-policy', '_blank')
-                            }
+                        <Link
+                            href="https://onlook.com/privacy-policy"
+                            target="_blank"
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {t(transKeys.welcome.terms.privacy)}
-                        </button>{' '}
+                        </Link>
+                        {' '}
                         {t(transKeys.welcome.terms.and)}{' '}
-                        <button
-                            onClick={() =>
-                                window.open('https://onlook.com/terms-of-service', '_blank')
-                            }
+                        <Link
+                            href="https://onlook.com/terms-of-service"
+                            target="_blank"
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {t(transKeys.welcome.terms.tos)}
-                        </button>
+                        </Link>
                     </p>
                 </div>
                 <div className="flex flex-row space-x-1 text-small text-gray-600">
