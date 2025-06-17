@@ -422,7 +422,7 @@ export function WhatCanOnlookDoSection() {
                     {/* Custom Components Menu + Calendar Preview */}
                     <div className="flex flex-row gap-8 relative min-h-[400px] overflow-hidden bg-background-onlook/80 rounded-lg">
                         {/* Left menu container with grey background and overflow hidden */}
-                        <div className="w-56 h-100 rounded-xl overflow-hidden absolute left-8 top-12 flex flex-col items-center justify-start bg-black border-[0.5px] border-foreground-primary/20">
+                        <div className="w-56 h-100 rounded-xl overflow-hidden absolute lg:left-1/20 md:left-1/30 left-1/8 top-12 flex flex-col items-center justify-start bg-black border-[0.5px] border-foreground-primary/20">
                             <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Components</p>
                             <div className="grid grid-cols-2 grid-rows-3 gap-6 w-full h-full p-4">
                                 {[
@@ -436,22 +436,27 @@ export function WhatCanOnlookDoSection() {
                                     <div key={item.label} className="flex flex-col items-center w-full">
                                         <div
                                             className={
-                                                `w-24 h-18 rounded-xs mb-2 flex items-start bg-background-secondary justify-start transition-all ` +
+                                                `w-24 h-24 rounded-xs mb-1.5 flex items-start bg-background-secondary justify-start transition-all ` +
                                                 (item.selected
                                                     ? 'outline outline-1 outline-purple-400 outline-offset-2'
                                                     : '')
                                             }
                                         >
                                             {/* Placeholder for component preview */}
-                                            <div className="w-24 h-24 rounded" />
+                                            <div className="w-24 h-24 rounded"> 
+                                                <div className="w-14 h-14 rounded-xs bg-black relative flex items-center p-1.5 left-1/5 right-1/5 top-1/5">
+                                                 <p className='text-foreground-secondary text-[5px]'>{item.label}</p>
+                                                </div>
+                                            </div>
+                                            
                                         </div>
-                                        <span className="text-foreground-primary text-xs text-left w-full">{item.label}</span>
+                                        <span className="text-foreground-secondary text-mini text-left w-full ml-[-12px]">{item.label}</span>
                                     </div>
                                 ))}
                             </div>
                         </div>
                         {/* Floating calendar preview */}
-                        <div className="absolute left-50 top-30 z-10">
+                        <div className="absolute md:right-1/30 right-1/10 top-30 z-10">
                             <div className="rounded-xl border-1 border-purple-400 bg-black p-4 min-w-[240px]" style={{ fontSize: '0.6rem' }}>
                                 {/* Calendar header */}
                                 <div className="flex items-center justify-between mb-3">
@@ -520,11 +525,19 @@ export function WhatCanOnlookDoSection() {
                 {/* Layers */}
                 <div className="flex flex-col gap-4">
                     <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
-                    <div className="w-56 h-100 rounded-xl overflow-hidden absolute left-8 top-12 flex flex-col items-center justify-start bg-black border-[0.5px] border-foreground-primary/20">
+                    <div className="w-54 h-100 rounded-xl overflow-hidden absolute left-1/30 top-12 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20 z-20">
                         <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Layers</p>
                         <div className="flex flex-row items-start gap-8 w-full">
-                         <MockLayersTab />
+                             <MockLayersTab />
                         </div>
+                    </div>
+                    <div className="w-100 h-100 bg-blue-400 absolute top-20 left-1/4 z-10 rounded-lg overflow-hidden">
+                        <div className="w-full h-10 bg-white/50 flex flex-row gap-4 justify-center p-2">
+                            <p className='text-white'>Hello</p>
+                            <p className='text-white'>Hello</p>
+                        </div>
+
+                        <p>Hey</p>
                     </div>
                     </div>
                     <div className="flex flex-row items-start gap-8 w-full">
@@ -556,7 +569,7 @@ export function WhatCanOnlookDoSection() {
                 <div className="flex flex-col gap-4">
                 <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
                     <ParallaxContainer speed={0.04}>
-                        <div className="w-60 h-100 rounded-xl overflow-hidden absolute left-8 top-7 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20">
+                        <div className="w-60 h-100 rounded-xl overflow-hidden absolute left-1/14 top-7 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20">
                             <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Brand Colors</p>
                             <div className="w-full h-full overflow-y-auto px-3 py-2 flex flex-col gap-2">
                                 <ColorSwatchGroup label="Slate" colorClasses={[
@@ -592,7 +605,7 @@ export function WhatCanOnlookDoSection() {
                         </div>
                     </ParallaxContainer>
                     <ParallaxContainer speed={-0.04}>
-                        <div className="w-60 h-100 rounded-xl overflow-hidden absolute right-10 top-20 flex flex-col items-center justify-start bg-black/50 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20">
+                        <div className="w-60 h-100 rounded-xl overflow-hidden absolute right-1/14 top-20 flex flex-col items-center justify-start bg-black/50 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20">
                             <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Brand Colors</p>
                             <div className="w-full h-full overflow-y-auto px-3 py-2 flex flex-col gap-2">
                                 <ColorSwatchGroup label="Cyan" colorClasses={[
@@ -639,7 +652,31 @@ export function WhatCanOnlookDoSection() {
                 </div>
                 {/* Instantly responsive */}
                 <div className="flex flex-col gap-4">
-                    <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6" />
+                    <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 overflow-hidden">
+                        
+                        <div className="w-100 h-80 bg-background-secondary left-[1/2] right-[1/2] top-12 rounded-lg border-[0.5px] border-foreground-secondary/30">
+                            <div className="w-100% h-6 bg-white mx-4 mt-1 rounded-full shadow-lg shadow-white text-[10px] flex flex-row justify-between p-1 px-3.5">
+                                    <p className="text-blue-300">UltraAssistant</p>
+                                    <p className="text-blue-300">Learn</p>
+                                    <p className="text-blue-300">Get started</p>
+                            </div>
+                            <div className="w-full h-32 bg-red-500">
+                                <div className="w-1/2 h-24 bg-white relative top-24 p-5 text-[12px] text-red-500">
+                                    <p>Your AI code assistant</p>
+                                </div>
+                            </div>
+                            <div className="w-full h-50 bg-gray-200/20 pt-20 flex flex-col gap-4 text-center justify-center">
+                                <p className="text-[10px]">Never worry about the code again</p>
+                                <div className="w-100% h-32 mx-12 flex flex-row gap-2">
+                                    <div className="w-full bg-gray-200 h-20 p-2" />
+                                    <div className="w-full bg-gray-200 h-20 p-2" />
+                                    <div className="w-full bg-gray-200 h-20 p-2" />
+                                </div>
+                            </div>
+                                <div className="w-1.5 h-20 bg-foreground-secondary absolute left-[-16] top-1/3 bottom-1/4 rounded" />
+                                <div className="w-1.5 h-20 bg-foreground-secondary absolute right-[-16] top-1/3 bottom-1/4 rounded" />
+                        </div>
+                    </div>
                     <div className="flex flex-row items-start gap-8 w-full">
                         {/* Icon + Title */}
                         <div className="flex flex-col items-start w-1/2">
