@@ -1,6 +1,9 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { PublishStatus } from '@onlook/models';
+import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
+import { AdvancedSettingsSection } from './advanced-settings';
+import { CustomDomainSection } from './custom-domain-section';
 import { LoadingState } from './loading';
 import { PreviewDomainSection } from './preview-domain-section';
 
@@ -13,11 +16,11 @@ export const PublishDropdown = observer(() => {
             {state.status === PublishStatus.LOADING ? <LoadingState /> : (
                 <>
                     <PreviewDomainSection />
-                    {/*
+
                     <Separator />
-                     <CustomDomainSection />
+                    <CustomDomainSection />
                     <Separator />
-                    <AdvancedSettingsSection /> */}
+                    <AdvancedSettingsSection />
                 </>
             )}
         </div>
