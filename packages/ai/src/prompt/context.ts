@@ -21,9 +21,16 @@ NEVER SUGGEST THE "bun run dev" command. Assume the user is already running the 
 
 const projectContextPrefix = `The project is located in the folder:`;
 
+const figmaContentPrefix = `I have shared Figma design context with you. These contain:
+- React/Tailwind code representations of the design
+- Design system variables and tokens
+- Layout and styling information
+Use this context to create components that match the Figma design exactly.`;
+
 export const CONTEXT_PROMPTS = {
     filesContentPrefix,
     highlightPrefix,
     errorsContentPrefix,
     projectContextPrefix,
+    figmaContentPrefix,
 };
