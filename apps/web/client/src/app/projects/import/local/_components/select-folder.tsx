@@ -78,7 +78,8 @@ export const NewSelectFolder = () => {
             }
 
             // Compress large images files
-            if (file.type.startsWith('image/')) {
+            // But not svg
+            if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
                 const compressedFile = await compressImage(file);
 
                 if (compressedFile) {
