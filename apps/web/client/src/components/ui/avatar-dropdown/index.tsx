@@ -15,12 +15,13 @@ import { Separator } from '@onlook/ui/separator';
 import { redirect } from 'next/navigation';
 import { useState } from 'react';
 
-export const CurrentUserAvatar = ({ className, disableDropdown = false }: { className?: string, disableDropdown?: boolean }) => {
+export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
+    const user = userManager.user;
+
     const [open, setOpen] = useState(false);
 
-    const user = userManager.user;
     const initials = user?.name
         ?.split(' ')
         ?.map((word) => word[0])
@@ -39,7 +40,7 @@ export const CurrentUserAvatar = ({ className, disableDropdown = false }: { clas
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild disabled={disableDropdown} >
+            <PopoverTrigger asChild>
                 <button>
                     <Avatar className={className}>
                         {user?.avatarUrl && <AvatarImage src={user.avatarUrl} alt={initials} />}
