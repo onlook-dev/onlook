@@ -6,7 +6,7 @@ import { PublishStatus, SettingsTabValue } from '@onlook/models';
 import { PlanKey } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { cn } from '@onlook/ui/utils';
-import { timeAgo } from '@onlook/utility';
+import { getPublishUrls, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { UrlSection } from './url';
 
@@ -38,7 +38,7 @@ export const CustomDomainSection = observer(() => {
         }
         const res = await editorEngine.hosting.publish(project.id, {
             buildScript: DefaultSettings.COMMANDS.build,
-            urls: [domain.url],
+            urls: getPublishUrls(domain.url),
             options: {
                 skipBadge: true,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,

@@ -1,9 +1,18 @@
+import type { UsageCheckResult } from '@onlook/models';
 import { PlanKey } from '@onlook/stripe';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
 export class SubscriptionManager {
     plan: PlanKey = PlanKey.FREE;
+    usage: UsageCheckResult = {
+        exceeded: false,
+        reason: 'none',
+        daily_requests_count: 5,
+        daily_requests_limit: 10,
+        monthly_requests_count: 10,
+        monthly_requests_limit: 50,
+    };
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
