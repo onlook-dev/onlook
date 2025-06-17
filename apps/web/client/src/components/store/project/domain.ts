@@ -71,7 +71,7 @@ export class DomainsManager {
             console.error('No project found');
             throw new Error('No project found');
         }
-
+        // TODO: Implement
     }
 
     async verifyCustomDomain(url: string) {
@@ -79,6 +79,7 @@ export class DomainsManager {
             console.error('No project found');
             throw new Error('No project found');
         }
+        // TODO: Implement
         return {
             success: true,
             message: 'Domain verified',
@@ -90,6 +91,7 @@ export class DomainsManager {
             console.error('No project found');
             throw new Error('No project found');
         }
+        // TODO: Implement
         return {
             success: true,
             message: 'Domain verification created',
@@ -102,7 +104,7 @@ export class DomainsManager {
             console.error('No project found');
             throw new Error('No project found');
         }
-
+        // TODO: Implement
     }
 
     dispose() { }

@@ -17,7 +17,7 @@ import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { getValidUrl, isApexDomain } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { RecordField } from './record-field';
 
 enum VerificationStatus {
@@ -51,7 +51,7 @@ export const Verification = observer(() => {
         if (project) {
             domainsManager.getDomains(project.id)
         }
-    }, [editorEngine.state.settingsOpen]);
+    }, [editorEngine.state.settingsOpen, project]);
 
     if (!projectManager.project) {
         return null;
@@ -140,8 +140,6 @@ export const Verification = observer(() => {
         setStatus(VerificationStatus.VERIFIED);
         setError(null);
         addCustomDomain(domain);
-        handleDomainVerified();
-
         sendAnalytics('verify domain success', {
             domain: domain,
         });
@@ -387,12 +385,12 @@ export const Verification = observer(() => {
                 <div className="text-sm font-medium col-span-3">Host</div>
                 <div className="text-sm font-medium col-span-3">Value</div>
 
-                {records.map((record) => (
-                    <>
+                {records.map((record, index) => (
+                    <Fragment key={`${record.type}-${record.host}-${index}`}>
                         <RecordField value={record.type} className="col-span-1" copyable={false} />
                         <RecordField value={record.host} className="col-span-3" />
                         <RecordField value={record.value} className="col-span-3" />
-                    </>
+                    </Fragment>
                 ))}
             </div>
         );
