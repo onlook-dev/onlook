@@ -1,15 +1,15 @@
 'use client';
 
 import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
-import { BINARY_EXTENSIONS, IGNORED_FILES, IGNORED_UPLOAD_DIRECTORIES } from '@onlook/constants';
+import { BINARY_EXTENSIONS, IGNORED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
+import { compressImage } from '@onlook/utility/src/image';
 import { motion } from 'motion/react';
 import { useCallback, useRef, useState } from 'react';
 import { useProjectCreation } from '../_context/project-creation-context';
 import { StepContent, StepFooter, StepHeader } from './steps';
-import { compressImage } from '@onlook/utility/src/image';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -73,13 +73,7 @@ export const NewSelectFolder = () => {
             }
 
             // Skip ignored files
-            if (IGNORED_FILES.includes(file.name)) {
-                continue;
-            }
-
-            // Skip if file is too large
-            if (file.size > MAX_FILE_SIZE) {
-                console.warn(`Skipping large file: ${file.name} (${file.size} bytes)`);
+            if (IGNORED_UPLOAD_FILES.includes(file.name)) {
                 continue;
             }
 
@@ -102,6 +96,12 @@ export const NewSelectFolder = () => {
                     });
                     console.warn(`Using uncompressed image: ${file.name} (compression failed)`);
                 }
+                continue;
+            }
+
+            // Skip if file is too large
+            if (file.size > MAX_FILE_SIZE) {
+                console.warn(`Skipping large file: ${file.name} (${file.size} bytes)`);
                 continue;
             }
 
@@ -416,10 +416,9 @@ export const NewSelectFolder = () => {
                             w-full h-20 rounded-lg bg-gray-900 border border-gray rounded-lg m-0
                             flex flex-col items-center justify-center gap-4
                             duration-200 cursor-pointer
-                            ${
-                                isDragging
-                                    ? 'border-blue-400 bg-blue-50'
-                                    : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
+                            ${isDragging
+                                ? 'border-blue-400 bg-blue-50'
+                                : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
                             }
                             ${isUploading ? 'pointer-events-none opacity-50' : ''}
                         `}
