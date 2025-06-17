@@ -33,7 +33,7 @@ export const PlanSection = observer(() => {
                 </div>
             </div>
             <Progress value={usagePercent} className="w-full" />
-            <Button className="w-full flex items-center justify-center gap-2 bg-blue-400 text-white hover:bg-blue-300" onClick={handleGetMoreCredits}>
+            <Button className="w-full flex items-center justify-center gap-2 bg-blue-400 text-white hover:bg-blue-500" onClick={handleGetMoreCredits}>
                 <Icons.Sparkles className="mr-1 h-4 w-4" /> Get more Credits
             </Button>
         </div>
