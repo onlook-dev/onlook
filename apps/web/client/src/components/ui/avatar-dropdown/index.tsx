@@ -13,10 +13,11 @@ import {
 } from '@onlook/ui/popover';
 import { Separator } from '@onlook/ui/separator';
 import { getInitials } from '@onlook/utility';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
+    const router = useRouter();
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
     const user = userManager.user;
@@ -25,7 +26,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
 
     const handleSignOut = async () => {
         await userManager.signOut();
-        redirect(Routes.LOGIN);
+        router.push(Routes.LOGIN);
     };
 
     const handleOpenSettings = () => {
