@@ -17,6 +17,7 @@ export const IGNORED_UPLOAD_DIRECTORIES = [
     'build',
     '.git',
     '.next',
+    '.git',
     CUSTOM_OUTPUT_DIR,
 ];
 
@@ -64,7 +65,7 @@ export const BINARY_EXTENSIONS = [
     '.otf',
 ];
 
-export const IGNORED_FILES = [
+export const IGNORED_UPLOAD_FILES = [
     '.DS_Store',
     'Thumbs.db',
     'yarn.lock',

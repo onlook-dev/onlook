@@ -3,6 +3,7 @@
 import './contributor.css';
 
 import { Icons } from '@onlook/ui/icons/index';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 interface Contributor {
@@ -182,20 +183,22 @@ export function ContributorSection({
                 </h2>
                 <p className="text-foreground-secondary text-regular text-center mb-8 max-w-xl">Join our mission and be a part of changing<br />the way people craft software</p>
                 <div className="flex gap-4 flex-col md:flex-row w-full justify-center items-center">
-                    <button
-                        onClick={() => window.open(githubLink, '_blank')}
+                    <Link
+                        href={githubLink}
+                        target="_blank"
                         className="bg-foreground-primary text-background-primary text-regularPlus rounded-lg px-6 py-3 flex items-center gap-2 shadow hover:bg-foreground-primary/80 transition cursor-pointer"
                     >
                         Contribute to Onlook
                         <Icons.GitHubLogo className="w-4.5 h-4.5" />
-                    </button>
-                    <button
-                        onClick={() => window.open(discordLink, '_blank')}
+                    </Link>
+                    <Link
+                        href={discordLink}
+                        target="_blank"
                         className="border border-foreground-primary/50 text-foreground-primary text-regularPlus rounded-lg px-6 py-3 flex items-center gap-2 hover:bg-foreground-primary/10 transition cursor-pointer"
                     >
                         Join the Discord
                         <Icons.DiscordLogo className="w-4.5 h-4.5" />
-                    </button>
+                    </Link>
                 </div>
             </div>
         </div>

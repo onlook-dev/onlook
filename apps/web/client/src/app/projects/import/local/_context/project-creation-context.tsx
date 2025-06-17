@@ -73,7 +73,15 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
 
             for (const file of files) {
                 if (file.isBinary) {
-                    // Convert binary files to base64
+                    // Convert binary files to base64 if it's not already converted
+                    if (typeof file.content === 'string' && file.content.startsWith('data:')) {
+                        sandboxFiles[file.path] = {
+                            content: file.content.split(',')[1] ?? '',
+                            isBinary: true,
+                        };
+                        continue;
+                    }
+
                     const buffer = file.content as ArrayBuffer;
                     const blob = new Blob([buffer]);
                     const base64 = await blobToBase64String(blob);
