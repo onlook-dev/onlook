@@ -17,6 +17,7 @@ export const domainRouter = createTRPCRouter({
         const published = await ctx.db.query.publishedDomains.findFirst({
             where: eq(publishedDomains.projectId, input.projectId),
         });
+
         return {
             preview: preview ? toDomainInfoFromPreview(preview) : null,
             published: published ? toDomainInfoFromPublished(published) : null,

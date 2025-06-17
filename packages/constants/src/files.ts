@@ -15,6 +15,7 @@ export const IGNORED_UPLOAD_DIRECTORIES = [
     'node_modules',
     'dist',
     'build',
+    '.git',
     '.next',
     CUSTOM_OUTPUT_DIR,
 ];
