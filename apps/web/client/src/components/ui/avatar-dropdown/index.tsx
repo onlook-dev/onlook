@@ -14,7 +14,6 @@ import {
 import { Separator } from '@onlook/ui/separator';
 import { redirect } from 'next/navigation';
 import { useState } from 'react';
-import { PlanSection } from './plans';
 
 export const CurrentUserAvatar = ({ className, disableDropdown = false }: { className?: string, disableDropdown?: boolean }) => {
     const userManager = useUserManager();
@@ -55,16 +54,16 @@ export const CurrentUserAvatar = ({ className, disableDropdown = false }: { clas
                         <span className="text-xs text-muted-foreground">{user?.email}</span>
                     </div>
                 </div>
-                <Separator />
-                <PlanSection />
+                {/* <Separator />
+                <PlanSection /> */}
                 <Separator />
                 <div className="p-2">
-                    <Button
+                    {/* <Button
                         variant="ghost"
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
                     >
                         <Icons.CornerRadius className="mr-2 h-4 w-4" /> Subscription
-                    </Button>
+                    </Button> */}
                     <Button
                         variant="ghost"
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"

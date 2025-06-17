@@ -8,7 +8,6 @@ import { capitalizeFirstLetter } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { DomainTab } from './domain';
 
 export enum SettingsTabValue {
     DOMAIN = 'domain',
@@ -51,7 +50,7 @@ export const SettingsModal = observer(() => {
         {
             label: SettingsTabValue.DOMAIN,
             icon: <Icons.Globe className="mr-2 h-4 w-4" />,
-            component: <DomainTab />,
+            component: <ComingSoonTab />,
         },
         {
             label: SettingsTabValue.PROJECT,
