@@ -1,5 +1,6 @@
 'use client';
 
+import { useEditorEngine } from '@/components/store/editor';
 import { useUserManager } from '@/components/store/user';
 import { Routes } from '@/utils/constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
@@ -17,6 +18,7 @@ import { PlanSection } from './plans';
 
 export const CurrentUserAvatar = ({ className, disableDropdown = false }: { className?: string, disableDropdown?: boolean }) => {
     const userManager = useUserManager();
+    const editorEngine = useEditorEngine();
     const [open, setOpen] = useState(false);
 
     const user = userManager.user;
@@ -29,6 +31,11 @@ export const CurrentUserAvatar = ({ className, disableDropdown = false }: { clas
     const handleSignOut = async () => {
         await userManager.signOut();
         redirect(Routes.LOGIN);
+    };
+
+    const handleOpenSettings = () => {
+        editorEngine.state.settingsOpen = true;
+        setOpen(false);
     };
 
     return (
@@ -61,15 +68,17 @@ export const CurrentUserAvatar = ({ className, disableDropdown = false }: { clas
                     <Button
                         variant="ghost"
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                        onClick={handleOpenSettings}
                     >
                         <Icons.Gear className="mr-2 h-4 w-4" /> Settings
                     </Button>
-                    <Button
+                    {/* <Button
                         variant="ghost"
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
                     >
                         <Icons.QuestionMarkCircled className="mr-2 h-4 w-4" /> Help Center
-                    </Button>
+                    </Button> */}
+                    <Separator />
                     <Button
                         variant="ghost"
                         onClick={handleSignOut}

@@ -16,6 +16,10 @@ export const PlanSection = observer(() => {
     const dailyLimit = userManager.subscription.usage.daily_requests_limit;
     const usagePercent = dailyLimit > 0 ? (dailyUsed / dailyLimit) * 100 : 0;
 
+    const handleGetMoreCredits = () => {
+        console.log('Open checkout page');
+    };
+
     return (
         <div className="p-4 w-full text-sm flex flex-col gap-4">
             <div className="flex justify-between items-center">
@@ -29,7 +33,7 @@ export const PlanSection = observer(() => {
                 </div>
             </div>
             <Progress value={usagePercent} className="w-full" />
-            <Button className="w-full flex items-center justify-center gap-2 bg-blue-400 text-white hover:bg-blue-300" onClick={() => { }}>
+            <Button className="w-full flex items-center justify-center gap-2 bg-blue-400 text-white hover:bg-blue-300" onClick={handleGetMoreCredits}>
                 <Icons.Sparkles className="mr-1 h-4 w-4" /> Get more Credits
             </Button>
         </div>

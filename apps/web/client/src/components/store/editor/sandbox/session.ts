@@ -62,7 +62,6 @@ export class SessionManager {
                 console.error('No session found');
                 return;
             }
-            this.isConnecting = true;
             await this.session.reconnect()
             const isConnected = await this.ping();
             if (!isConnected) {

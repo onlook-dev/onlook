@@ -11,7 +11,7 @@ export const UrlSection = ({ url, isCopyable }: { url: string, isCopyable: boole
     const validUrl = getValidUrl(url);
 
     const copyUrl = () => {
-        navigator.clipboard.writeText(url);
+        navigator.clipboard.writeText(validUrl);
         toast.success('Copied to clipboard');
         setIsCopied(true);
         setTimeout(() => {
