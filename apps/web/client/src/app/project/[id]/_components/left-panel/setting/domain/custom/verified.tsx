@@ -1,4 +1,4 @@
-import { useProjectManager } from '@/components/store/project';
+import { useDomainsManager, useProjectManager } from '@/components/store/project';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -11,9 +11,8 @@ import { Input } from '@onlook/ui/input';
 import { timeAgo } from '@onlook/utility';
 
 export const Verified = () => {
-    const projectsManager = useProjectManager();
-    const domainsManager = projectsManager.domains;
-    const customDomain = projectsManager.project?.domains?.custom;
+    const domainsManager = useDomainsManager();
+    const customDomain = domainsManager.domains.custom;
     const lastUpdated = customDomain?.publishedAt ? timeAgo(customDomain.publishedAt) : null;
     const baseUrl = customDomain?.url;
 
@@ -22,7 +21,6 @@ export const Verified = () => {
             console.error('No domains manager found');
             return;
         }
-        domainsManager.removeCustomDomainFromProject();
     }
 
     return (

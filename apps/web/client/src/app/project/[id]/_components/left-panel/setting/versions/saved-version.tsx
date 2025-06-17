@@ -1,8 +1,8 @@
 import { useProjectManager } from '@/components/store/project';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { NoSavedVersions } from './EmptyState/Saved';
 import { VersionRow, VersionRowType } from './version-row';
+import { NoSavedVersions } from './empty-state/saved';
 
 export const SavedVersions = observer(() => {
     const projectManager = useProjectManager();

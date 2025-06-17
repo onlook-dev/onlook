@@ -1,4 +1,4 @@
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { useDomainsManager } from '@/components/store/project';
 import { DomainType } from '@onlook/models';
 
 import { Button } from '@onlook/ui/button';

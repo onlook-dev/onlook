@@ -11,7 +11,6 @@ export const projectSettings = pgTable('project_settings', {
     runCommand: text('run_command').notNull().default(''),
     buildCommand: text('build_command').notNull().default(''),
     installCommand: text('install_command').notNull().default(''),
-    env: jsonb('env').$type<Record<string, string>>().notNull().default({}),
 }).enableRLS();
 
 export const projectSettingsInsertSchema = createInsertSchema(projectSettings);

@@ -1,7 +1,3 @@
-import type {
-    CreateDomainVerificationResponse,
-    VerifyDomainResponse,
-} from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,

@@ -25,26 +25,29 @@ export const settingRouter = createTRPCRouter({
             }
             return toProjectSettings(setting);
         }),
-    update: protectedProcedure
-        .input(projectSettingsUpdateSchema)
+    upsert: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string(),
+                settings: projectSettingsInsertSchema,
+            }),
+        )
         .mutation(async ({ ctx, input }) => {
-            if (!input.projectId) {
+            const [updatedSettings] = await ctx.db
+                .insert(projectSettings)
+                .values(input)
+                .onConflictDoUpdate({
+                    target: [projectSettings.projectId],
+                    set: input.settings,
+                })
+                .returning();
+            if (!updatedSettings) {
                 throw new TRPCError({
-                    code: 'BAD_REQUEST',
-                    message: 'Project ID is required',
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Failed to update project settings',
                 });
             }
-            await ctx.db
-                .update(projectSettings)
-                .set(input)
-                .where(eq(projectSettings.projectId, input.projectId));
-            return true;
-        }),
-    create: protectedProcedure
-        .input(projectSettingsInsertSchema)
-        .mutation(async ({ ctx, input }) => {
-            await ctx.db.insert(projectSettings).values(input);
-            return true;
+            return toProjectSettings(updatedSettings);
         }),
     delete: protectedProcedure
         .input(

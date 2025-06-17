@@ -4,7 +4,6 @@ CREATE TABLE "project_settings" (
 	"run_command" text DEFAULT '' NOT NULL,
 	"build_command" text DEFAULT '' NOT NULL,
 	"install_command" text DEFAULT '' NOT NULL,
-	"env" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	CONSTRAINT "project_settings_project_id_unique" UNIQUE("project_id")
 );
 --> statement-breakpoint

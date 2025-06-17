@@ -4,8 +4,9 @@ import type { GitCommit } from '@onlook/git';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
+import { toast } from '@onlook/ui/sonner';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { toast } from '@onlook/ui/use-toast';
+
 import { cn } from '@onlook/ui/utils';
 import { formatCommitDate, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -88,10 +89,7 @@ export const VersionRow = observer(
 
             if (!success) {
                 console.error('Failed to checkout commit', commit.displayName || commit.message);
-                toast({
-                    title: 'Failed to restore',
-                    description: 'Please try again',
-                });
+                toast.error('Failed to restore');
                 return;
             }
             setTimeout(() => {

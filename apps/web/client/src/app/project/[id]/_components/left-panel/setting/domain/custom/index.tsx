@@ -1,12 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useDomainsManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
-import { UsagePlanType } from '@onlook/models/usage';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 import { UpgradePrompt } from '../upgrade-prompt';
 import { Verified } from './verified';
 import { Verification } from './verification';
+import { PlanKey } from '@onlook/stripe';
 
 export const CustomDomain = observer(() => {
     const editorEngine = useEditorEngine();
@@ -15,7 +15,7 @@ export const CustomDomain = observer(() => {
     const plan = userManager.subscription.plan;
 
     const renderContent = () => {
-        if (plan !== UsagePlanType.PRO) {
+        if (plan !== PlanKey.PRO) {
             return (
                 <UpgradePrompt
                     onClick={() => {
@@ -36,7 +36,7 @@ export const CustomDomain = observer(() => {
         <div className="space-y-4">
             <div className="flex items-center justify-start gap-3">
                 <h2 className="text-lg">Custom Domain</h2>
-                {plan === UsagePlanType.PRO && (
+                {plan === PlanKey.PRO && (
                     <div className="flex h-5 items-center space-x-1 bg-blue-500/20 dark:bg-blue-500 px-2 rounded-full">
                         <Icons.Sparkles className="h-4 w-4" />
                         <span className="text-xs">Pro</span>

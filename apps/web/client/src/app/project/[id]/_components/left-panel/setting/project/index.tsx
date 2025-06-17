@@ -5,8 +5,10 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { debounce } from 'lodash';
 import { ReinstallButton } from './reinstall-button';
-
+import { useDebouncedInput } from '@/hooks/use-debounce-input';
 
 export const ProjectTab = observer(() => {
     const projectsManager = useProjectManager();
@@ -19,6 +21,41 @@ export const ProjectTab = observer(() => {
     const name = project?.name ?? '';
     const url = project?.sandbox.url ?? '';
 
+    // Create debounced input handlers
+    const nameInput = useDebouncedInput(
+        name,
+        (value) => projectsManager.updatePartialProject({ name: value })
+    );
+
+    const installInput = useDebouncedInput(
+        installCommand,
+        (value) => projectsManager.updateProjectSettings({
+            commands: {
+                ...projectSettings?.commands,
+                install: value,
+            },
+        })
+    );
+
+    const runInput = useDebouncedInput(
+        runCommand,
+        (value) => projectsManager.updateProjectSettings({
+            commands: {
+                ...projectSettings?.commands,
+                run: value,
+            },
+        })
+    );
+
+    const buildInput = useDebouncedInput(
+        buildCommand,
+        (value) => projectsManager.updateProjectSettings({
+            commands: {
+                ...projectSettings?.commands,
+                build: value,
+            },
+        })
+    );
 
     return (
         <div className="text-sm">
@@ -29,12 +66,8 @@ export const ProjectTab = observer(() => {
                         <p className=" text-muted-foreground">Name</p>
                         <Input
                             id="name"
-                            value={name}
-                            onChange={(e) =>
-                                projectsManager.updatePartialProject({
-                                    name: e.target.value,
-                                })
-                            }
+                            value={nameInput.localValue}
+                            onChange={nameInput.handleChange}
                             className="w-2/3"
                         />
                     </div>
@@ -54,47 +87,26 @@ export const ProjectTab = observer(() => {
                         <p className="text-muted-foreground">Install</p>
                         <Input
                             id="install"
-                            value={installCommand}
+                            value={installInput.localValue}
                             className="w-2/3"
-                            onChange={(e) =>
-                                projectsManager.updateProjectSettings({
-                                    commands: {
-                                        ...projectSettings?.commands,
-                                        install: e.target.value,
-                                    },
-                                })
-                            }
+                            onChange={installInput.handleChange}
                         />
                     </div>
                     <div className="flex justify-between items-center">
                         <p className=" text-muted-foreground">Run</p>
                         <Input
                             id="run"
-                            value={runCommand}
+                            value={runInput.localValue}
                             className="w-2/3"
-                            onChange={(e) =>
-                                projectsManager.updateProjectSettings({
-                                    commands: {
-                                        ...projectSettings?.commands,
-                                        run: e.target.value,
-                                    },
-                                })
-                            }
+                            onChange={runInput.handleChange}
                         />
                     </div>
                     <div className="flex justify-between items-center">
                         <p className=" text-muted-foreground">Build</p>
                         <Input
                             id="build"
-                            value={buildCommand}
-                            onChange={(e) =>
-                                projectsManager.updateProjectSettings({
-                                    commands: {
-                                        ...projectSettings?.commands,
-                                        build: e.target.value,
-                                    },
-                                })
-                            }
+                            value={buildInput.localValue}
+                            onChange={buildInput.handleChange}
                             className="w-2/3"
                         />
                     </div>

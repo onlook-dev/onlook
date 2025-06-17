@@ -7,16 +7,15 @@ export const toProjectSettings = (dbProjectSettings: DbProjectSettings): Project
             build: dbProjectSettings.buildCommand,
             run: dbProjectSettings.runCommand,
             install: dbProjectSettings.installCommand,
-        },
-        env: dbProjectSettings.env,
+        }
     };
 };
 
-export const fromProjectSettings = (projectSettings: ProjectSettings): Omit<DbProjectSettings, 'projectId'> => {
+export const fromProjectSettings = (projectId: string, projectSettings: ProjectSettings): DbProjectSettings => {
     return {
+        projectId,
         buildCommand: projectSettings.commands.build ?? '',
         runCommand: projectSettings.commands.run ?? '',
-        installCommand: projectSettings.commands.install ?? '',
-        env: projectSettings.env ?? {},
+        installCommand: projectSettings.commands.install ?? ''
     };
 };

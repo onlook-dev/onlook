@@ -1,7 +1,8 @@
 import { api } from '@/trpc/client';
-import { fromProject, fromProjectSettings } from '@onlook/db';
+import { fromProject, fromProjectSettings, toProjectSettings } from '@onlook/db';
 import type { Project, ProjectSettings } from '@onlook/models';
-import { makeAutoObservable } from 'mobx';
+import { createDefaultProjectSettings } from '@onlook/utility';
+import { makeAutoObservable, reaction } from 'mobx';
 
 export class VersionsManager {
     constructor(private projectManager: ProjectManager) { }
@@ -9,12 +10,19 @@ export class VersionsManager {
 
 export class ProjectManager {
     private _project: Project | null = null;
-    private _projectSettings: ProjectSettings | null = null;
+    private _projectSettings: ProjectSettings = toProjectSettings(createDefaultProjectSettings(''));
     readonly versions: VersionsManager | null = null;
 
     constructor() {
         this.versions = new VersionsManager(this);
         makeAutoObservable(this);
+
+        reaction(
+            () => this.project,
+            () => {
+                this.restoreProjectSettings();
+            }
+        );
     }
 
     get project() {
@@ -29,8 +37,21 @@ export class ProjectManager {
         return this._projectSettings;
     }
 
-    set projectSettings(projectSettings: ProjectSettings | null) {
+    set projectSettings(projectSettings: ProjectSettings) {
         this._projectSettings = projectSettings;
+    }
+
+    async restoreProjectSettings() {
+        if (!this.project) {
+            console.error('Project not found');
+            return;
+        }
+        const settings = await api.settings.get.query({ projectId: this.project.id });
+        if (!settings) {
+            console.error('Project settings not found');
+            return;
+        }
+        this.projectSettings = settings;
     }
 
     updatePartialProject(newProject: Partial<Project>) {
@@ -53,6 +74,7 @@ export class ProjectManager {
             return;
         }
         this.projectSettings = { ...this.projectSettings, ...newProjectSettings };
+        this.saveProjectSettingsToStorage();
     }
 
     async saveProjectSettingsToStorage() {
@@ -60,7 +82,14 @@ export class ProjectManager {
             console.error('Project settings not found');
             return;
         }
-        return api.settings.update.mutate(fromProjectSettings(this.projectSettings));
+        if (!this.project) {
+            console.error('Project not found');
+            return;
+        }
+        return api.settings.upsert.mutate({
+            projectId: this.project.id,
+            settings: fromProjectSettings(this.project.id , this.projectSettings),
+        });
     }
 
     async saveProjectToStorage() {
