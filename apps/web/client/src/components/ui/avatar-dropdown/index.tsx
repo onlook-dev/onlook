@@ -54,21 +54,18 @@ export const CurrentUserAvatar = ({ className, disableDropdown = false }: { clas
                 <div className="p-2">
                     <Button
                         variant="ghost"
-                        onClick={handleSignOut}
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
                     >
                         <Icons.CornerRadius className="mr-2 h-4 w-4" /> Subscription
                     </Button>
                     <Button
                         variant="ghost"
-                        onClick={handleSignOut}
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
                     >
                         <Icons.Gear className="mr-2 h-4 w-4" /> Settings
                     </Button>
                     <Button
                         variant="ghost"
-                        onClick={handleSignOut}
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
                     >
                         <Icons.QuestionMarkCircled className="mr-2 h-4 w-4" /> Help Center

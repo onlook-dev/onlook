@@ -1,16 +1,20 @@
 'use client';
 
+import { useUserManager } from '@/components/store/user';
+import { PLANS } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Progress } from '@onlook/ui/progress';
+import { observer } from 'mobx-react-lite';
 
-export const PlanSection = () => {
-    // Example values; in a real app, these would be props or come from context/store
-    const planName = "Free Plan";
-    const planStatus = "Trial";
-    const dailyUsed = 4;
-    const dailyLimit = 5;
-    const usagePercent = (dailyUsed / dailyLimit) * 100;
+export const PlanSection = observer(() => {
+    const userManager = useUserManager();
+    const plan = userManager.subscription.plan;
+    const planName = PLANS[plan].name;
+    const planStatus = 'Trial';
+    const dailyUsed = userManager.subscription.usage.daily_requests_count;
+    const dailyLimit = userManager.subscription.usage.daily_requests_limit;
+    const usagePercent = dailyLimit > 0 ? (dailyUsed / dailyLimit) * 100 : 0;
 
     return (
         <div className="p-4 w-full text-sm flex flex-col gap-4">
@@ -30,4 +34,4 @@ export const PlanSection = () => {
             </Button>
         </div>
     );
-};
+});
