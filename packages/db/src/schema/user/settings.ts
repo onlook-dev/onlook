@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { boolean, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { boolean, pgTable, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { users } from './user';
 
@@ -15,8 +15,6 @@ export const userSettings = pgTable("user_settings", {
     showSuggestions: boolean("show_suggestions").notNull().default(true),
     showMiniChat: boolean("show_mini_chat").notNull().default(true),
     shouldWarnDelete: boolean("should_warn_delete").notNull().default(true),
-    enableBunReplace: boolean("enable_bun_replace").notNull().default(true),
-    buildFlags: text("build_flags").notNull().default(""),
 }).enableRLS();
 
 export const userSettingsRelations = relations(userSettings, ({ one }) => ({

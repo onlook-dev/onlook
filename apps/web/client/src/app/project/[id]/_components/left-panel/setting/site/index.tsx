@@ -14,7 +14,7 @@ export const SiteTab = observer(() => {
     const domainsManager = useDomainsManager()
     const project = projectsManager.project;
     const siteSetting = project?.metadata;
-    const baseUrl = domainsManager.domains.preview?.url ?? domainsManager.domains.preview?.url ?? project?.sandbox.url;
+    const baseUrl = domainsManager.domains.preview?.url ?? domainsManager.domains.custom?.url ?? project?.sandbox.url;
 
     const {
         title,

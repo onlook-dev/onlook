@@ -13,6 +13,4 @@ export interface ChatSettings {
 
 export interface EditorSettings {
     shouldWarnDelete: boolean;
-    enableBunReplace: boolean;
-    buildFlags: string;
 }

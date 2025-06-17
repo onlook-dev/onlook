@@ -27,7 +27,7 @@ export const PreferencesTab = observer(() => {
 
     return (
         <div className="flex flex-col gap-8 p-6">
-            <div className="flex justify-between items-center">
+            {/* <div className="flex justify-between items-center">
                 <div className="flex flex-col gap-2">
                     <p className="text-largePlus">Language</p>
                     <p className="text-foreground-onlook text-small">
@@ -99,7 +99,7 @@ export const PreferencesTab = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-            </div>
+            </div> */}
             <div className=" flex justify-between items-center gap-4">
                 <div className=" flex flex-col gap-2">
                     <p className="text-largePlus">{'Warn before delete'}</p>

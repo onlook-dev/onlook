@@ -16,8 +16,6 @@ export const toUserSettings = (settings: DbUserSettings): UserSettings => {
         },
         editor: {
             shouldWarnDelete: settings.shouldWarnDelete ?? DefaultSettings.EDITOR_SETTINGS.shouldWarnDelete,
-            enableBunReplace: settings.enableBunReplace ?? DefaultSettings.EDITOR_SETTINGS.enableBunReplace,
-            buildFlags: settings.buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
         },
     };
 };
@@ -31,8 +29,6 @@ export const fromUserSettings = (userId: string, settings: UserSettings): DbUser
         showSuggestions: settings.chat.showSuggestions,
         showMiniChat: settings.chat.showMiniChat,
         shouldWarnDelete: settings.editor.shouldWarnDelete,
-        enableBunReplace: settings.editor.enableBunReplace,
-        buildFlags: settings.editor.buildFlags,
     };
 };
 
