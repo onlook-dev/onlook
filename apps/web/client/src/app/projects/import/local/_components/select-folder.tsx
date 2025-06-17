@@ -93,6 +93,14 @@ export const NewSelectFolder = () => {
                         content: compressedFile,
                         isBinary: true,
                     });
+                } else {
+                    // Fallback to original file if compression fails
+                    processedFiles.push({
+                        path: relativePath,
+                        content: await file.arrayBuffer(),
+                        isBinary: true,
+                    });
+                    console.warn(`Using uncompressed image: ${file.name} (compression failed)`);
                 }
                 continue;
             }
