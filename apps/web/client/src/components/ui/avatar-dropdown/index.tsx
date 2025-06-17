@@ -12,6 +12,7 @@ import {
     PopoverTrigger,
 } from '@onlook/ui/popover';
 import { Separator } from '@onlook/ui/separator';
+import { getInitials } from '@onlook/utility';
 import { redirect } from 'next/navigation';
 import { useState } from 'react';
 
@@ -19,14 +20,8 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
     const user = userManager.user;
-
+    const initials = getInitials(user?.name ?? '');
     const [open, setOpen] = useState(false);
-
-    const initials = user?.name
-        ?.split(' ')
-        ?.map((word) => word[0])
-        ?.join('')
-        ?.toUpperCase();
 
     const handleSignOut = async () => {
         await userManager.signOut();
