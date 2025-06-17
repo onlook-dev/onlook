@@ -32,7 +32,7 @@ const Page = observer(() => {
             <div className="flex justify-center overflow-hidden w-full h-full">
                 <SelectProject />
             </div>
-            <SettingsModal />
+            <SettingsModal showProjectTabs={false} />
         </div>
     );
 });

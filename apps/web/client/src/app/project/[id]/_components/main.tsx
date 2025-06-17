@@ -175,7 +175,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                     <BottomBar />
                 </div>
             </div>
-            <SettingsModal />
+            <SettingsModal showProjectTabs={true} />
         </TooltipProvider>
     );
 });

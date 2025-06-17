@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectManager } from '@/components/store/project';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
@@ -7,62 +6,13 @@ import { cn } from '@onlook/ui/utils';
 import { capitalizeFirstLetter } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { ComingSoonTab, SettingsTabValue, type SettingTab } from './helpers';
+import { ProjectSettingsTabs } from './with-project';
 
-export enum SettingsTabValue {
-    DOMAIN = 'domain',
-    PROJECT = 'project',
-    PREFERENCES = 'preferences',
-    VERSIONS = 'versions',
-    ADVANCED = 'advanced',
-    SITE = 'site',
-}
-
-interface SettingTab {
-    label: SettingsTabValue | string;
-    icon: React.ReactNode;
-    component: React.ReactNode;
-}
-
-const ComingSoonTab = observer(() => {
-    return <div>Coming soon...</div>;
-});
-
-export const SettingsModal = observer(() => {
+export const SettingsModal = observer(({ showProjectTabs = false }: { showProjectTabs: boolean }) => {
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
-    const project = projectManager.project;
     const pagesManager = editorEngine.pages;
-
-    useEffect(() => {
-        if (editorEngine.state.settingsOpen) {
-            pagesManager.scanPages();
-            editorEngine.image.scanImages();
-        }
-    }, [editorEngine.state.settingsOpen]);
-
-    const projectOnlyTabs: SettingTab[] = [
-        {
-            label: SettingsTabValue.SITE,
-            icon: <Icons.File className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
-        },
-        {
-            label: SettingsTabValue.DOMAIN,
-            icon: <Icons.Globe className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
-        },
-        {
-            label: SettingsTabValue.PROJECT,
-            icon: <Icons.Gear className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
-        },
-        {
-            label: SettingsTabValue.VERSIONS,
-            icon: <Icons.Code className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
-        },
-    ];
 
     const globalTabs: SettingTab[] = [
         {
@@ -75,9 +25,20 @@ export const SettingsModal = observer(() => {
             icon: <Icons.MixerVertical className="mr-2 h-4 w-4" />,
             component: <ComingSoonTab />,
         },
-    ];
+    ]
 
-    const tabs = project ? [...projectOnlyTabs, ...globalTabs] : globalTabs;
+    const [tabs, setTabs] = useState<SettingTab[]>(globalTabs);
+
+    useEffect(() => {
+        if (editorEngine.state.settingsOpen) {
+            pagesManager.scanPages();
+            editorEngine.image.scanImages();
+        }
+    }, [editorEngine.state.settingsOpen]);
+
+    const appendProjectTabs = (projectTabs: SettingTab[]) => {
+        setTabs([...tabs, ...projectTabs]);
+    }
 
     return (
         <AnimatePresence>
@@ -120,29 +81,12 @@ export const SettingsModal = observer(() => {
                                 <div className="flex flex-1 min-h-0 overflow-hidden">
                                     {/* Left navigation - fixed width */}
                                     <div className="flex flex-col overflow-y-scroll">
-                                        <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
+                                        {showProjectTabs && <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
                                             <p className="text-muted-foreground text-smallPlus">
                                                 Project
                                             </p>
-                                            {projectOnlyTabs.map((tab) => (
-                                                <Button
-                                                    key={tab.label}
-                                                    variant="ghost"
-                                                    className={cn(
-                                                        'w-full justify-start px-0 hover:bg-transparent',
-                                                        editorEngine.state.settingsTab === tab.label
-                                                            ? 'text-foreground-active'
-                                                            : 'text-muted-foreground',
-                                                    )}
-                                                    onClick={() =>
-                                                        (editorEngine.state.settingsTab = tab.label)
-                                                    }
-                                                >
-                                                    {tab.icon}
-                                                    {capitalizeFirstLetter(tab.label.toLowerCase())}
-                                                </Button>
-                                            ))}
-                                        </div>
+                                            <ProjectSettingsTabs appendTabs={appendProjectTabs} />
+                                        </div>}
                                         <Separator />
                                         <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
                                             <p className="text-muted-foreground text-smallPlus">
