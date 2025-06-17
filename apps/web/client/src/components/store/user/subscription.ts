@@ -37,6 +37,6 @@ export class SubscriptionManager {
     }
 
     async getPlanFromServer(): Promise<void> {
-        this.plan = PlanKey.PRO;
+        this.plan = PlanKey.FREE;
     }
 }
