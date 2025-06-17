@@ -1,23 +1,20 @@
-import { useProjectsManager } from '@/components/store/projects';
-import { invokeMainChannel } from '@/utils/ipc';
-import { HOSTING_DOMAIN } from '@onlook/constants';
+import { useDomainsManager } from '@/components/store/project';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { getValidSubdomain, getValidUrl, timeAgo } from '@onlook/utility';
+import { getValidUrl, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 
 export const PreviewDomain = observer(() => {
-    const projectsManager = useProjectsManager();
-    if (!projectsManager.domain) {
-        return null;
+    const domains = useDomainsManager();
+    const preview = domains.domains.preview;
+
+    if (!preview) {
+        return <div>No preview domain found</div>;
     }
 
-    const baseDomain = projectsManager.project?.domains?.base;
-    const lastUpdated = baseDomain?.publishedAt ? timeAgo(baseDomain.publishedAt) : null;
-    const baseUrl = baseDomain?.url
-        ? `${getValidSubdomain(projectsManager.project.id)}.${HOSTING_DOMAIN}`
-        : null;
+    const lastUpdated = preview.publishedAt ? timeAgo(preview.publishedAt) : null;
+    const baseUrl = preview.url;
 
     const openUrl = () => {
         if (!baseUrl) {
@@ -41,7 +38,7 @@ export const PreviewDomain = observer(() => {
                         </p>
                     </div>
                     <div className="flex gap-2 flex-1">
-                        <Input value={baseDomain?.url ?? ''} disabled className="bg-muted" />
+                        <Input value={baseUrl} disabled className="bg-muted" />
                         <Button onClick={openUrl} variant="ghost" size="icon" className="text-sm">
                             <Icons.ExternalLink className="h-4 w-4" />
                         </Button>

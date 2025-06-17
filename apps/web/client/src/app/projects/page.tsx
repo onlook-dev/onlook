@@ -1,6 +1,7 @@
 'use client';
 
 import { useProjectsManager } from '@/components/store/projects';
+import { SettingsModal } from '@/components/ui/settings-modal';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';

@@ -18,6 +18,7 @@ export function RecordField({
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
+
     return (
         <div className={cn('text-sm relative group p-1', className)}>
             <p className="pr-6 overflow-auto text-ellipsis">{value}</p>

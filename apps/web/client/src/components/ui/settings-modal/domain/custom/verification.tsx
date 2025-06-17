@@ -1,14 +1,10 @@
-import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import { useEditorEngine } from '@/components/store/editor';
+import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { sendAnalytics } from '@/utils/analytics';
 import {
     FREESTYLE_IP_ADDRESS,
     FRESTYLE_CUSTOM_HOSTNAME,
-    MainChannels,
-} from '@onlook/models/constants';
-import type {
-    CreateDomainVerificationResponse,
-    VerifyDomainResponse,
-} from '@onlook/models/hosting';
+} from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -18,7 +14,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
-import { toast } from '@onlook/ui/use-toast';
+import { toast } from '@onlook/ui/sonner';
 import { getValidUrl, isApexDomain } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -39,8 +35,8 @@ interface DNSRecord {
 
 export const Verification = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();
-    const domainsManager = projectsManager.domains;
+    const domainsManager = useDomainsManager();
+    const projectManager = useProjectManager();
 
     const [status, setStatus] = useState(VerificationStatus.NO_DOMAIN);
     const [domain, setDomain] = useState('');
@@ -48,13 +44,18 @@ export const Verification = observer(() => {
     const [error, setError] = useState<string | null>();
     const [ownedDomains, setOwnedDomains] = useState<string[]>([]);
 
+    const project = projectManager.project;
+    const domains = domainsManager.domains;
+
     useEffect(() => {
-        if (domainsManager) {
-            domainsManager.getOwnedDomains().then((domains) => {
-                setOwnedDomains(domains);
-            });
+        if (project) {
+            domainsManager.getDomains(project.id)
         }
-    }, [editorEngine.isSettingsOpen]);
+    }, [editorEngine.state.settingsOpen]);
+
+    if (!projectManager.project) {
+        return null;
+    }
 
     function editDomain() {
         setStatus(VerificationStatus.NO_DOMAIN);
@@ -106,12 +107,7 @@ export const Verification = observer(() => {
         setError(null);
 
         // Send verification request to server
-        const response: CreateDomainVerificationResponse = await invokeMainChannel(
-            MainChannels.CREATE_DOMAIN_VERIFICATION,
-            {
-                domain: validDomain,
-            },
-        );
+        const response = await domainsManager.createDomainVerification(validDomain);
 
         if (!response.success || !response.verificationCode) {
             setError(response.message ?? 'Failed to create domain verification');
@@ -127,14 +123,9 @@ export const Verification = observer(() => {
     }
 
     async function verifyDomain() {
-        sendAnalytics('verify domain', {
-            domain: domain,
-        });
         setStatus(VerificationStatus.LOADING);
         setError(null);
-        const response: VerifyDomainResponse = await invokeMainChannel(MainChannels.VERIFY_DOMAIN, {
-            domain: domain,
-        });
+        const response = await domainsManager.verifyCustomDomain(domain);
 
         if (!response.success) {
             setError(response.message ?? 'Failed to verify domain');
@@ -157,13 +148,13 @@ export const Verification = observer(() => {
     }
 
     const handleDomainVerified = () => {
-        toast({
-            title: 'Domain verified!',
+        toast.success('Domain verified!', {
             description: 'Your domain is verified and ready to publish.',
         });
+
         setTimeout(() => {
-            editorEngine.isSettingsOpen = false;
-            editorEngine.isPublishOpen = true;
+            editorEngine.state.settingsOpen = false;
+            editorEngine.state.publishOpen = true;
         }, 1000);
     };
 
@@ -179,7 +170,7 @@ export const Verification = observer(() => {
             });
             return;
         }
-        domainsManager.addCustomDomainToProject(url);
+        domainsManager.addCustomDomain(url);
         setStatus(VerificationStatus.VERIFIED);
         setDomain(url);
         setError(null);
@@ -273,8 +264,8 @@ export const Verification = observer(() => {
                         <p className="text-regularPlus text-muted-foreground">Custom URL</p>
                         <p className="text-small text-muted-foreground">
                             {`Input your domain  ${status === VerificationStatus.NO_DOMAIN && ownedDomains.length > 0
-                                    ? 'or use previous'
-                                    : ''
+                                ? 'or use previous'
+                                : ''
                                 }`}
                         </p>
                     </div>
