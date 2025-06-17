@@ -9,7 +9,6 @@ import { ComingSoonTab, SettingsTabValue, type SettingTab } from './helpers';
 
 export const ProjectSettingsTabs = observer(({ appendTabs }: { appendTabs: (tabs: SettingTab[]) => void }) => {
     const editorEngine = useEditorEngine();
-
     const tabs: SettingTab[] = [
         {
             label: SettingsTabValue.SITE,
