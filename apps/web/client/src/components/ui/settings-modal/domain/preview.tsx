@@ -4,6 +4,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { getValidUrl, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import Link from 'next/link';
 
 export const PreviewDomain = observer(() => {
     const domains = useDomainsManager();
@@ -15,16 +16,7 @@ export const PreviewDomain = observer(() => {
 
     const lastUpdated = preview.publishedAt ? timeAgo(preview.publishedAt) : null;
     const baseUrl = preview.url;
-
-    const openUrl = () => {
-        if (!baseUrl) {
-            console.error('No URL found');
-            return;
-        }
-
-        const url = getValidUrl(baseUrl);
-        window.open(url, '_blank', 'noopener,noreferrer');
-    };
+    const validUrl = getValidUrl(baseUrl);
 
     return (
         <div className="space-y-4 flex flex-col">
@@ -39,9 +31,11 @@ export const PreviewDomain = observer(() => {
                     </div>
                     <div className="flex gap-2 flex-1">
                         <Input value={baseUrl} disabled className="bg-muted" />
-                        <Button onClick={openUrl} variant="ghost" size="icon" className="text-sm">
-                            <Icons.ExternalLink className="h-4 w-4" />
-                        </Button>
+                        <Link href={validUrl} target="_blank" className="text-sm" >
+                            <Button variant="ghost" size="icon">
+                                <Icons.ExternalLink className="h-4 w-4" />
+                            </Button>
+                        </Link>
                     </div>
                 </div>
             </div>

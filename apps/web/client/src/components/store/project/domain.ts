@@ -97,5 +97,13 @@ export class DomainsManager {
         };
     }
 
+    async removeCustomDomain(url: string) {
+        if (!this._project) {
+            console.error('No project found');
+            throw new Error('No project found');
+        }
+
+    }
+
     dispose() { }
 }

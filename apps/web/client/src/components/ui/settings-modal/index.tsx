@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useProjectManager } from '@/components/store/project';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
@@ -30,6 +31,8 @@ const ComingSoonTab = observer(() => {
 
 export const SettingsModal = observer(() => {
     const editorEngine = useEditorEngine();
+    const projectManager = useProjectManager();
+    const project = projectManager.project;
     const pagesManager = editorEngine.pages;
 
     useEffect(() => {
@@ -75,7 +78,7 @@ export const SettingsModal = observer(() => {
         },
     ];
 
-    const tabs = [...projectOnlyTabs, ...globalTabs];
+    const tabs = project ? [...projectOnlyTabs, ...globalTabs] : globalTabs;
 
     return (
         <AnimatePresence>

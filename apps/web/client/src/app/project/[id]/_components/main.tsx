@@ -6,6 +6,7 @@ import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
+import { SettingsModal } from '@/components/ui/settings-modal';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons';
@@ -174,6 +175,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                     <BottomBar />
                 </div>
             </div>
+            <SettingsModal />
         </TooltipProvider>
     );
 });

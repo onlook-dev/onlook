@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useUserManager } from '@/components/store/user';
 import { transKeys } from '@/i18n/keys';
 import { Links } from '@onlook/constants';
 import {
@@ -14,15 +13,10 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useTheme } from 'next-themes';
 import { useState } from 'react';
-// import { invokeMainChannel } from '@/lib/utils';
 
 export const HelpDropdown = observer(() => {
     const editorEngine = useEditorEngine();
-    const userManager = useUserManager();
-    
-    const { theme, setTheme } = useTheme();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const t = useTranslations();
 
@@ -93,22 +87,21 @@ export const HelpDropdown = observer(() => {
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuSubContent>
-                </DropdownMenuSub>
-                <DropdownMenuItem
+                </DropdownMenuSub> */}
+                {/* <DropdownMenuItem
                     className="text-sm"
                     onClick={() => (editorEngine.state.hotkeysOpen = true)}
                 >
                     <Icons.Keyboard className="w-4 h-4 mr-2" />
                     {t(transKeys.help.menu.shortcuts)}
-                </DropdownMenuItem>
-                DropdownMenuItem
+                </DropdownMenuItem> */}
+                <DropdownMenuItem
                     className="text-sm"
                     onClick={() => (editorEngine.state.settingsOpen = true)}
                 >
                     <Icons.Gear className="w-4 h-4 mr-2" />
                     {t(transKeys.help.menu.openSettings)}
-                </DropdownMenuItem> 
-                <DropdownMenuSeparator />*/}
+                </DropdownMenuItem>
 
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="text-sm gap-2">
