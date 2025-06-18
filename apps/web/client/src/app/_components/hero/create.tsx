@@ -377,7 +377,7 @@ export function Create({ cardKey }: { cardKey: number }) {
                                 onClick={handleSubmit}
                             >
                                 {isLoading ? (
-                                    <Icons.Shadow className="w-5 h-5 animate-pulse text-background" />
+                                    <Icons.LoadingSpinner className="w-5 h-5 animate-pulse text-background" />
                                 ) : (
                                     <Icons.ArrowRight
                                         className={cn(

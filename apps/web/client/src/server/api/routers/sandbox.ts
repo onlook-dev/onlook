@@ -1,9 +1,10 @@
 import { env } from '@/env';
 import { CodeSandbox, Sandbox, WebSocketSession } from '@codesandbox/sdk';
-import { CSB_BLANK_TEMPLATE_ID } from '@onlook/constants';
+import { CSB_PREVIEW_TASK_NAME, getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
 import { generate, parse } from '@onlook/parser';
 import { addScriptConfig } from '@onlook/parser/src/code-edit/config';
 import { shortenUuid } from '@onlook/utility/src/id';
+import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
@@ -14,13 +15,13 @@ export const sandboxRouter = createTRPCRouter({
         .input(
             z.object({
                 sandboxId: z.string(),
-                userId: z.string(),
+                userId: z.string().optional(),
             }),
         )
         .mutation(async ({ input }) => {
             const startData = await sdk.sandboxes.resume(input.sandboxId);
             const session = await startData.createBrowserSession({
-                id: shortenUuid(input.userId, 20),
+                id: shortenUuid(input.userId ?? uuidv4(), 20),
             });
             return session;
         }),
@@ -40,17 +41,23 @@ export const sandboxRouter = createTRPCRouter({
     fork: protectedProcedure
         .input(
             z.object({
-                sandboxId: z.string(),
+                sandbox: z.object({
+                    id: z.string(),
+                    port: z.number(),
+                }),
             }),
         )
         .mutation(async ({ input }) => {
             const sandbox = await sdk.sandboxes.create({
                 source: 'template',
-                id: input.sandboxId,
+                id: input.sandbox.id,
             });
+
+            const previewUrl = getSandboxPreviewUrl(sandbox.id, input.sandbox.port);
+
             return {
                 sandboxId: sandbox.id,
-                previewUrl: `https://${sandbox.id}-8084.csb.app`,
+                previewUrl,
             };
         }),
     delete: protectedProcedure
@@ -79,9 +86,11 @@ export const sandboxRouter = createTRPCRouter({
             let templateSandbox: Sandbox | null = null;
 
             try {
+                const template = SandboxTemplates[Templates.BLANK];
+
                 templateSandbox = await sdk.sandboxes.create({
                     source: 'template',
-                    id: CSB_BLANK_TEMPLATE_ID,
+                    id: template.id,
                 });
 
                 session = await templateSandbox.connect();
@@ -128,6 +137,15 @@ export const sandboxRouter = createTRPCRouter({
                     }
                 }
 
+                // Run setup task
+                await session.setup.run();
+
+                // Start the dev task
+                const task = await session.tasks.get(CSB_PREVIEW_TASK_NAME);
+                if (task) {
+                    await task.run();
+                }
+
                 // Disconnect the session
                 try {
                     await session.disconnect();
@@ -138,7 +156,7 @@ export const sandboxRouter = createTRPCRouter({
 
                 return {
                     sandboxId: templateSandbox.id,
-                    previewUrl: `https://${templateSandbox.id}-8084.csb.app`,
+                    previewUrl: getSandboxPreviewUrl(templateSandbox.id, template.port),
                 };
             } catch (error) {
                 console.error('Error creating project sandbox:', error);

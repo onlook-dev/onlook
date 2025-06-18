@@ -11,6 +11,16 @@ export const IGNORED_DIRECTORIES = [
     CUSTOM_OUTPUT_DIR,
 ];
 
+export const IGNORED_UPLOAD_DIRECTORIES = [
+    'node_modules',
+    'dist',
+    'build',
+    '.git',
+    '.next',
+    '.git',
+    CUSTOM_OUTPUT_DIR,
+];
+
 export const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
 
 export const JS_FILE_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs'];
@@ -55,7 +65,7 @@ export const BINARY_EXTENSIONS = [
     '.otf',
 ];
 
-export const IGNORED_FILES = [
+export const IGNORED_UPLOAD_FILES = [
     '.DS_Store',
     'Thumbs.db',
     'yarn.lock',

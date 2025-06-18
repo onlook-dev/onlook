@@ -1,10 +1,11 @@
 'use client';
 
 import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
-import { BINARY_EXTENSIONS, IGNORED_DIRECTORIES, IGNORED_FILES } from '@onlook/constants';
+import { BINARY_EXTENSIONS, IGNORED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
+import { compressImage } from '@onlook/utility/src/image';
 import { motion } from 'motion/react';
 import { useCallback, useRef, useState } from 'react';
 import { useProjectCreation } from '../_context/project-creation-context';
@@ -48,7 +49,7 @@ export const NewSelectFolder = () => {
 
     const filterAndProcessFiles = async (files: File[]): Promise<ProcessedFile[]> => {
         const processedFiles: ProcessedFile[] = [];
-        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
         // Find the common root path from all files
         const allPaths = files.map((file) => (file as any).webkitRelativePath || file.name);
@@ -57,12 +58,6 @@ export const NewSelectFolder = () => {
             allPaths.length > 0 && allPaths[0].includes('/') ? allPaths[0].split('/')[0] : '';
 
         for (const file of files) {
-            // Skip if file is too large
-            if (file.size > MAX_FILE_SIZE) {
-                console.warn(`Skipping large file: ${file.name} (${file.size} bytes)`);
-                continue;
-            }
-
             // Get relative path from webkitRelativePath or name
             // Remove the root path from the relative path
             let relativePath = (file as any).webkitRelativePath || file.name;
@@ -70,7 +65,7 @@ export const NewSelectFolder = () => {
 
             // Skip ignored directories
             if (
-                IGNORED_DIRECTORIES.some(
+                IGNORED_UPLOAD_DIRECTORIES.some(
                     (dir) => relativePath.includes(`${dir}/`) || relativePath.startsWith(`${dir}/`),
                 )
             ) {
@@ -78,7 +73,36 @@ export const NewSelectFolder = () => {
             }
 
             // Skip ignored files
-            if (IGNORED_FILES.includes(file.name)) {
+            if (IGNORED_UPLOAD_FILES.includes(file.name)) {
+                continue;
+            }
+
+            // Compress large images files
+            // But not svg
+            if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+                const compressedFile = await compressImage(file);
+
+                if (compressedFile) {
+                    processedFiles.push({
+                        path: relativePath,
+                        content: compressedFile,
+                        isBinary: true,
+                    });
+                } else {
+                    // Fallback to original file if compression fails
+                    processedFiles.push({
+                        path: relativePath,
+                        content: await file.arrayBuffer(),
+                        isBinary: true,
+                    });
+                    console.warn(`Using uncompressed image: ${file.name} (compression failed)`);
+                }
+                continue;
+            }
+
+            // Skip if file is too large
+            if (file.size > MAX_FILE_SIZE) {
+                console.warn(`Skipping large file: ${file.name} (${file.size} bytes)`);
                 continue;
             }
 
@@ -343,20 +367,20 @@ export const NewSelectFolder = () => {
         const headerConfig = {
             initial: {
                 title: 'Select your project folder',
-                description: "This is where we'll reference your App"
+                description: "This is where we'll reference your App",
             },
             validating: {
                 title: 'Verifying compatibility with Onlook',
-                description: "We're checking to make sure this project can work with Onlook"
+                description: "We're checking to make sure this project can work with Onlook",
             },
             valid: {
                 title: 'Project verified',
-                description: 'Your project is ready to import to Onlook'
+                description: 'Your project is ready to import to Onlook',
             },
             invalid: {
                 title: "This project won't work with Onlook",
-                description: 'Onlook only works with NextJS + React + Tailwind projects'
-            }
+                description: 'Onlook only works with NextJS + React + Tailwind projects',
+            },
         };
 
         let config = headerConfig.initial;
@@ -407,7 +431,7 @@ export const NewSelectFolder = () => {
                         {isUploading ? (
                             <div className="text-center">
                                 <div className="flex items-center justify-center gap-2">
-                                    <Icons.Shadow className="w-4 h-4 text-gray-200 animate-spin" />
+                                    <Icons.LoadingSpinner className="w-4 h-4 text-gray-200 animate-spin" />
                                     <p className="text-sm font-medium text-gray-200">
                                         Uploading...
                                     </p>
@@ -443,8 +467,10 @@ export const NewSelectFolder = () => {
                 iconBgColor: 'bg-teal-500',
                 textColor: 'text-teal-100',
                 subTextColor: 'text-teal-200',
-                icon: <Icons.CheckCircled className="w-5 h-5 text-teal-200 group-hover:opacity-0 transition-opacity duration-200" />,
-                showError: false
+                icon: (
+                    <Icons.CheckCircled className="w-5 h-5 text-teal-200 group-hover:opacity-0 transition-opacity duration-200" />
+                ),
+                showError: false,
             },
             invalid: {
                 bgColor: 'bg-amber-900',
@@ -453,8 +479,8 @@ export const NewSelectFolder = () => {
                 textColor: 'text-amber-100',
                 subTextColor: 'text-amber-200',
                 icon: <Icons.ExclamationTriangle className="w-5 h-5 text-amber-200" />,
-                showError: true
-            }
+                showError: true,
+            },
         };
 
         const config = validation?.isValid ? statusConfig.valid : statusConfig.invalid;
@@ -467,19 +493,25 @@ export const NewSelectFolder = () => {
                 exit={{ opacity: 0, scale: 0.9 }}
                 className={`w-full flex flex-row items-center border p-4 rounded-lg ${config.bgColor} ${config.borderColor} gap-2 group relative`}
             >
-                <div className={`flex flex-col gap-2 w-full ${config.showError ? '' : 'flex-row items-center justify-between'}`}>
+                <div
+                    className={`flex flex-col gap-2 w-full ${config.showError ? '' : 'flex-row items-center justify-between'}`}
+                >
                     <div className="flex flex-row items-center justify-between w-full gap-3">
                         <div className={`p-3 ${config.iconBgColor} rounded-lg`}>
                             <Icons.Directory className="w-5 h-5" />
                         </div>
                         <div className="flex flex-col gap-1 break-all w-full">
                             <p className={`text-regular ${config.textColor}`}>{projectData.name}</p>
-                            <p className={`text-mini ${config.subTextColor}`}>{projectData.folderPath}</p>
+                            <p className={`text-mini ${config.subTextColor}`}>
+                                {projectData.folderPath}
+                            </p>
                         </div>
                         {config.icon}
                     </div>
                     {config.showError && (
-                        <p className={`${config.textColor} text-sm`}>This is not a NextJS Project</p>
+                        <p className={`${config.textColor} text-sm`}>
+                            This is not a NextJS Project
+                        </p>
                     )}
                 </div>
                 {validation?.isValid && (
@@ -499,9 +531,7 @@ export const NewSelectFolder = () => {
     return (
         <>
             <StepHeader>{renderHeader()}</StepHeader>
-            <StepContent>
-                {renderProjectInfo()}
-            </StepContent>
+            <StepContent>{renderProjectInfo()}</StepContent>
             <StepFooter>
                 <Button type="button" onClick={prevStep} variant="outline" className="px-3 py-2">
                     Cancel

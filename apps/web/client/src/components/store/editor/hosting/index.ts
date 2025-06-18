@@ -56,21 +56,21 @@ export class HostingManager {
         try {
             const timer = new LogTimer('Deployment');
 
-            this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project...', progress: 0 });
+            this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project...', progress: 5 });
             await this.runPrepareStep();
             timer.log('Prepare completed');
 
             if (!options?.skipBadge) {
-                this.updateState({ status: PublishStatus.LOADING, message: 'Adding badge...', progress: 0.1 });
+                this.updateState({ status: PublishStatus.LOADING, message: 'Adding badge...', progress: 10 });
                 await this.addBadge('./');
                 timer.log('"Built with Onlook" badge added');
             }
 
             // Run the build script
-            this.updateState({ status: PublishStatus.LOADING, message: 'Creating optimized build...', progress: 0.2 });
+            this.updateState({ status: PublishStatus.LOADING, message: 'Creating optimized build...', progress: 20 });
             await this.runBuildStep(buildScript, options);
             timer.log('Build completed');
-            this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project for deployment...', progress: 0.6 });
+            this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project for deployment...', progress: 60 });
 
             // Postprocess the project for deployment
             const { success: postprocessSuccess, error: postprocessError } =
@@ -86,7 +86,7 @@ export class HostingManager {
             // Serialize the files for deployment
             const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
             const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
-            this.updateState({ status: PublishStatus.LOADING, message: 'Deploying project...', progress: 0.8 });
+            this.updateState({ status: PublishStatus.LOADING, message: 'Deploying project...', progress: 80 });
 
             timer.log('Files serialized, sending to Freestyle...');
             const id = await this.deployWeb(projectId, files, urls, options?.envVars);
@@ -94,11 +94,11 @@ export class HostingManager {
             if (!options?.skipBadge) {
                 await this.removeBadge('./');
                 timer.log('"Built with Onlook" badge removed');
-                this.updateState({ status: PublishStatus.LOADING, message: 'Cleaning up...', progress: 0.9 });
+                this.updateState({ status: PublishStatus.LOADING, message: 'Cleaning up...', progress: 90 });
             }
 
             timer.log('Deployment completed');
-            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful, deployment ID: ' + id, progress: 1 });
+            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful, deployment ID: ' + id, progress: 100 });
 
             return {
                 success: true,

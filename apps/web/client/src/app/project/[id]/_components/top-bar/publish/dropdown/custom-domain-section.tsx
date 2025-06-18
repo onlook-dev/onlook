@@ -2,53 +2,24 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useDomainsManager, useProjectManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
 import { DefaultSettings } from '@onlook/constants';
-import { DomainType, PublishStatus, SettingsTabValue } from '@onlook/models';
-import { UsagePlanType } from '@onlook/models/usage';
+import { PublishStatus, SettingsTabValue } from '@onlook/models';
+import { PlanKey } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
-import { Progress } from '@onlook/ui/progress';
 import { cn } from '@onlook/ui/utils';
-import { timeAgo } from '@onlook/utility';
+import { getPublishUrls, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
 import { UrlSection } from './url';
 
-export const DomainSection = observer(({ type }: { type: DomainType }) => {
+export const CustomDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
     const domainsManager = useDomainsManager();
     const userManager = useUserManager();
     const projectManager = useProjectManager();
     const project = projectManager.project;
-
-    const [progress, setProgress] = useState(0);
     const plan = userManager.subscription.plan;
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;
-
-    const domain = type === DomainType.PREVIEW
-        ? domainsManager.domains.preview
-        : domainsManager.domains.custom;
-
-    const progressInterval = useRef<Timer | null>(null);
-
-    useEffect(() => {
-        if (state.status === PublishStatus.LOADING) {
-            setProgress(0);
-            progressInterval.current = setInterval(() => {
-                setProgress((prev) => Math.min(prev + 0.167, 100));
-            }, 100);
-        } else {
-            setProgress(0);
-            if (progressInterval.current) {
-                clearInterval(progressInterval.current);
-            }
-        }
-
-        return () => {
-            if (progressInterval.current) {
-                clearInterval(progressInterval.current);
-            }
-        };
-    }, [state.status]);
+    const domain = domainsManager.domains.custom;
 
     if (!project) {
         return 'Something went wrong. Project not found.';
@@ -60,26 +31,16 @@ export const DomainSection = observer(({ type }: { type: DomainType }) => {
         editorEngine.state.settingsOpen = true;
     };
 
-    const createBaseDomain = async (): Promise<void> => {
-        const domain = await domainsManager.createPreviewDomain();
-        if (!domain) {
-            console.error('Failed to create preview domain');
-            return;
-        }
-
-        publish();
-    };
-
     const publish = async () => {
         if (!domain) {
-            console.error(`No ${type} domain hosting manager found`);
+            console.error(`No custom domain hosting manager found`);
             return;
         }
         const res = await editorEngine.hosting.publish(project.id, {
             buildScript: DefaultSettings.COMMANDS.build,
-            urls: [domain.url],
+            urls: getPublishUrls(domain.url),
             options: {
-                skipBadge: type === DomainType.CUSTOM,
+                skipBadge: true,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
                 envVars: project.env || {},
             },
@@ -89,28 +50,14 @@ export const DomainSection = observer(({ type }: { type: DomainType }) => {
 
     const retry = () => {
         if (!domain) {
-            console.error(`No ${type} domain hosting manager found`);
+            console.error(`No custom domain hosting manager found`);
             return;
         }
         editorEngine.hosting.resetState();
         publish();
     };
 
-    const renderNoDomainBase = () => {
-        return (
-            <>
-                <div className="flex items-center w-full">
-                    <h3 className="">Publish</h3>
-                </div>
-
-                <Button onClick={createBaseDomain} className="w-full rounded-md p-3">
-                    Publish my site
-                </Button>
-            </>
-        );
-    };
-
-    const renderNoDomainCustom = () => {
+    const renderNoDomain = () => {
         return (
             <>
                 <div className="flex items-center w-full">
@@ -135,20 +82,15 @@ export const DomainSection = observer(({ type }: { type: DomainType }) => {
             return 'Something went wrong';
         }
 
-        // If the domain is custom, check if the user has a PRO plan
-        if (type === DomainType.CUSTOM) {
-            if (plan !== UsagePlanType.PRO) {
-                return renderNoDomainCustom();
-            }
+        if (plan !== PlanKey.PRO) {
+            return renderNoDomain();
         }
 
         return (
             <>
                 <div className="flex items-center w-full">
                     <h3 className="">
-                        {type === DomainType.PREVIEW ?
-                            (domain.url ? 'Base Domain' : 'Publish')
-                            : 'Custom Domain'}
+                        Custom Domain
                     </h3>
                     {state.status === PublishStatus.PUBLISHED && domain.publishedAt && (
                         <div className="ml-auto flex items-center gap-2">
@@ -180,7 +122,7 @@ export const DomainSection = observer(({ type }: { type: DomainType }) => {
 
         return (
             <div className="w-full flex flex-col gap-2">
-                <UrlSection url={domain.url} isCopyable={domain.type === DomainType.PREVIEW} />
+                <UrlSection url={domain.url} isCopyable={false} />
                 {(state.status === PublishStatus.PUBLISHED ||
                     state.status === PublishStatus.UNPUBLISHED) && (
                         <Button
@@ -188,15 +130,12 @@ export const DomainSection = observer(({ type }: { type: DomainType }) => {
                             variant="outline"
                             className={cn(
                                 'w-full rounded-md p-3',
-                                domain.type === DomainType.CUSTOM &&
                                 !domain.publishedAt &&
                                 'bg-blue-400 hover:bg-blue-500 text-white',
                             )}
                             disabled={isLoading}
                         >
-                            {domain.type === DomainType.PREVIEW && 'Update'}
-                            {domain.type === DomainType.CUSTOM &&
-                                (domain.publishedAt ? 'Update' : `Publish to ${domain.url}`)}
+                            {domain.publishedAt ? 'Update' : `Publish to ${domain.url}`}
                         </Button>
                     )}
                 {state.status === PublishStatus.ERROR && (
@@ -211,12 +150,6 @@ export const DomainSection = observer(({ type }: { type: DomainType }) => {
                         </Button>
                     </div>
                 )}
-                {state.status === PublishStatus.LOADING && (
-                    <div className="w-full flex flex-col gap-2 py-1">
-                        <p>{state.message}</p>
-                        <Progress value={progress} className="w-full" />
-                    </div>
-                )}
             </div>
         );
     };
@@ -225,9 +158,7 @@ export const DomainSection = observer(({ type }: { type: DomainType }) => {
         <div className="p-4 flex flex-col items-center gap-2">
             {domain?.url
                 ? renderDomain()
-                : type === DomainType.PREVIEW
-                    ? renderNoDomainBase()
-                    : renderNoDomainCustom()}
+                : renderNoDomain()}
         </div>
     );
 });

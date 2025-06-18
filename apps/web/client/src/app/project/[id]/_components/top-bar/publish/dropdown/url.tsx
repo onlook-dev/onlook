@@ -3,17 +3,15 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { getValidUrl } from '@onlook/utility';
+import Link from 'next/link';
 import { useState } from 'react';
 
 export const UrlSection = ({ url, isCopyable }: { url: string, isCopyable: boolean }) => {
     const [isCopied, setIsCopied] = useState(false);
-    const openUrl = () => {
-        const lintedUrl = getValidUrl(url);
-        window.open(lintedUrl, '_blank');
-    };
+    const validUrl = getValidUrl(url);
 
     const copyUrl = () => {
-        navigator.clipboard.writeText(url);
+        navigator.clipboard.writeText(validUrl);
         toast.success('Copied to clipboard');
         setIsCopied(true);
         setTimeout(() => {
@@ -29,9 +27,11 @@ export const UrlSection = ({ url, isCopyable }: { url: string, isCopyable: boole
                     {isCopied ? <Icons.Check className="h-4 w-4" /> : <Icons.Copy className="h-4 w-4" />}
                 </Button>
             ) : (
-                <Button onClick={openUrl} variant="outline" size="icon">
-                    <Icons.ExternalLink className="h-4 w-4" />
-                </Button>
+                <Link href={validUrl} target="_blank" className="text-sm">
+                    <Button variant="outline" size="icon">
+                        <Icons.ExternalLink className="h-4 w-4" />
+                    </Button>
+                </Link>
             )}
         </div>
     );

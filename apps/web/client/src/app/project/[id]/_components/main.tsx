@@ -6,6 +6,7 @@ import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
+import { SettingsModal } from '@/components/ui/settings-modal';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons';
@@ -100,7 +101,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     if (isLoading) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2">
-                <Icons.Shadow className="h-6 w-6 animate-spin text-foreground-primary" />
+                <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
                 <div className="text-xl">Loading project...</div>
             </div>
         );
@@ -120,7 +121,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     if (editorEngine.sandbox.session.isConnecting) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2">
-                <Icons.Shadow className="h-6 w-6 animate-spin text-foreground-primary" />
+                <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
                 <div className="text-xl">Connecting to sandbox...</div>
             </div>
         );
@@ -174,6 +175,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                     <BottomBar />
                 </div>
             </div>
+            <SettingsModal showProjectTabs={true} />
         </TooltipProvider>
     );
 });
