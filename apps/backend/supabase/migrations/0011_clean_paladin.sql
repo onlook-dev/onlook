@@ -1,4 +1,3 @@
-CREATE TYPE "public"."verification_request_status" AS ENUM('active', 'expired', 'used');--> statement-breakpoint
 CREATE TABLE "project_settings" (
 	"project_id" uuid NOT NULL,
 	"run_command" text DEFAULT '' NOT NULL,
