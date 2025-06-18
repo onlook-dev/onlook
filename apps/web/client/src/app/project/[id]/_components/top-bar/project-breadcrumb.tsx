@@ -185,7 +185,13 @@ export const ProjectBreadcrumb = observer(() => {
                             {t(transKeys.projects.actions.newProject)}
                         </div>
                     </DropdownMenuItem>
-
+                    <DropdownMenuItem onClick={() => router.push(Routes.IMPORT_PROJECT)}>
+                        <div className="flex row center items-center group">
+                            <Icons.Upload className="mr-2 group-hover:rotate-12 transition-transform" />
+                            {t(transKeys.projects.actions.import)}
+                        </div>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
                         disabled={isDownloading}
