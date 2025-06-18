@@ -45,14 +45,12 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         stripeSubscriptionId: subscriptionId,
         status: 'active',
         startDate: new Date(),
-        endDate: new Date(),
     }).onConflictDoUpdate({
         target: [subscriptions.userId],
         set: {
             stripeSubscriptionId: subscriptionId,
             status: 'active',
             startDate: new Date(),
-            endDate: new Date(),
         }
     }).returning()
     console.log("Checkout session completed: ", data)
