@@ -18,9 +18,9 @@ import { SpacingInputs } from "../inputs/spacing-inputs";
 export const Radius = observer(() => {
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('radius');
-    
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'radius-dropdown' 
+
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'radius-dropdown'
     });
 
     return (
@@ -34,7 +34,7 @@ export const Radius = observer(() => {
                     >
                         <Icons.CornerRadius className="h-4 min-h-4 w-4 min-w-4" />
                         {boxState.borderRadius.unit === 'px' && typeof boxState.borderRadius.num === 'number' && boxState.borderRadius.num !== 0 ? (
-                            <span className="text-small">{boxState.borderRadius.num}</span>
+                            <span className="text-small">{boxState.borderRadius.num >= 9999 ? 'Full' : boxState.borderRadius.num}</span>
                         ) : null}
                         {boxState.borderRadius.unit !== 'px' && boxState.borderRadius.value ? (
                             <span className="text-small">{boxState.borderRadius.value}</span>

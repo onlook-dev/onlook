@@ -20,7 +20,7 @@ const Page = observer(() => {
         return (
             <div className="w-screen h-screen flex flex-col items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
-                    <Icons.Shadow className="h-6 w-6 animate-spin text-foreground-primary" />
+                    <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
                     <div className="text-lg text-foreground-secondary">Loading projects...</div>
                 </div>
             </div>

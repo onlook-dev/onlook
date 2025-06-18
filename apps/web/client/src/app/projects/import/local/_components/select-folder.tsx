@@ -431,7 +431,7 @@ export const NewSelectFolder = () => {
                         {isUploading ? (
                             <div className="text-center">
                                 <div className="flex items-center justify-center gap-2">
-                                    <Icons.Shadow className="w-4 h-4 text-gray-200 animate-spin" />
+                                    <Icons.LoadingSpinner className="w-4 h-4 text-gray-200 animate-spin" />
                                     <p className="text-sm font-medium text-gray-200">
                                         Uploading...
                                     </p>

@@ -18,7 +18,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
     if (!terminalSessions.size) {
         return (
             <div className="flex items-center justify-center h-full p-1 gap-2">
-                <Icons.Shadow className="animate-spin" />
+                <Icons.LoadingSpinner className="animate-spin" />
                 <p className="text-foreground-secondary">Initializing Sandbox...</p>
             </div>
         )

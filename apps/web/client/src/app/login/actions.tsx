@@ -44,6 +44,7 @@ export async function devLogin() {
     const {
         data: { session },
     } = await supabase.auth.getSession();
+
     if (session) {
         redirect('/');
     }
@@ -57,6 +58,5 @@ export async function devLogin() {
         console.error('Error signing in with password:', error);
         throw new Error('Error signing in with password');
     }
-    const origin = (await headers()).get('origin');
-    redirect(`${origin}/auth/callback`);
+    redirect('/');
 }
