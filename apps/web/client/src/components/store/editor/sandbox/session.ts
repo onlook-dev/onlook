@@ -62,12 +62,23 @@ export class SessionManager {
                 console.error('No session found');
                 return;
             }
-            await this.session.reconnect()
+
+            // Check if the session is still connected
             const isConnected = await this.ping();
             if (!isConnected) {
+                this.isConnecting = false;
+                return;
+            }
+
+            // Attempt soft reconnect
+            this.isConnecting = true;
+            await this.session.reconnect()
+
+            const isConnected2 = await this.ping();
+            if (!isConnected2) {
+                // If the session failed to reconnect, we need to start a new session
                 await this.session.disconnect();
                 this.session = null;
-                // If the session failed to reconnect, we need to start a new session
                 await this.start(sandboxId, userId);
             }
             this.isConnecting = false;
