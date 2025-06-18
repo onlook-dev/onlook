@@ -1,6 +1,7 @@
 'use client';
 
 import { useProjectsManager } from '@/components/store/projects';
+import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
 import { SettingsModal } from '@/components/ui/settings-modal';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -33,6 +34,7 @@ const Page = observer(() => {
                 <SelectProject />
             </div>
             <SettingsModal showProjectTabs={false} />
+            <SubscriptionModal />
         </div>
     );
 });

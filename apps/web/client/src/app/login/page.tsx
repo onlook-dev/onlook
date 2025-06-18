@@ -1,11 +1,12 @@
 'use client';
 
-import { Dunes } from '@/components/ui/dunes';
+import { useGetBackground } from '@/hooks/use-get-background';
 import { transKeys } from '@/i18n/keys';
 import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
+import Image from 'next/image';
 import Link from 'next/link';
 import { GithubLoginButton, GoogleLoginButton } from '../_components/login-button';
 import { useAuthContext } from '../auth/auth-context';
@@ -14,9 +15,10 @@ export default function LoginPage() {
     const isDev = process.env.NODE_ENV === 'development';
     const t = useTranslations();
     const { handleDevLogin } = useAuthContext();
+    const backgroundUrl = useGetBackground('login');
 
     return (
-        <div className="flex h-screen w-screen">
+        <div className="flex h-screen w-screen" >
             <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
                 <div className="flex items-center space-x-2">
                     <Link href={Routes.HOME} className="hover:opacity-80 transition-opacity">
@@ -68,7 +70,15 @@ export default function LoginPage() {
                     <p>{t(transKeys.welcome.version, { version: '1.0.0' })}</p>
                 </div>
             </div>
-            <Dunes />
+            <div className="hidden w-full lg:block md:block m-6">
+                <Image
+                    className="w-full h-full object-cover rounded-xl hidden dark:flex"
+                    src={backgroundUrl}
+                    alt="Onlook dunes dark"
+                    width={1000}
+                    height={1000}
+                />
+            </div>
         </div>
     );
 }

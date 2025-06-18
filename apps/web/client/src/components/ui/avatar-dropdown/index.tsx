@@ -29,6 +29,11 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
         router.push(Routes.LOGIN);
     };
 
+    const handleOpenSubscription = () => {
+        editorEngine.state.plansOpen = true;
+        setOpen(false);
+    };
+
     const handleOpenSettings = () => {
         editorEngine.state.settingsOpen = true;
         setOpen(false);
@@ -58,8 +63,9 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                     {/* <Button
                         variant="ghost"
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                        onClick={handleOpenSubscription}
                     >
-                        <Icons.CornerRadius className="mr-2 h-4 w-4" /> Subscription
+                        <Icons.CreditCard className="mr-2 h-4 w-4" /> Subscription
                     </Button> */}
                     <Button
                         variant="ghost"
