@@ -65,6 +65,30 @@ export const TopBar = observer(
             editorEngine.frames.select([frame]);
         };
 
+		// Don't display any top bar icons when you zoom in past 15% zoom.
+		// This is the point where the window is so small that having a
+		// top bar isn't practical for the user.
+		if (editorEngine.canvas.scale < 0.15) {
+			// Return an empty top bar so that the user can drag the window
+			return (
+				<div
+					className={
+						cn(
+							'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
+							isSelected && 'text-teal-400 fill-teal-400',
+						)
+					}
+					style={{
+						height: `${28 / editorEngine.canvas.scale}px`,
+						width: `${frame.dimension.width}px`,
+						marginBottom: `${10 / editorEngine.canvas.scale}px`,
+					}}
+					onMouseDown={handleMouseDown}
+					onClick={handleClick}
+				></div>
+			);
+		}
+
         return (
             <div
                 className={
