@@ -65,70 +65,52 @@ export const TopBar = observer(
             editorEngine.frames.select([frame]);
         };
 
-        const scale = editorEngine.canvas.scale;
-        const shouldScale = scale > 0.7;
-
         return (
             <div
                 className={
                     cn(
-                        'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-visible relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
+                        'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
                         isSelected && 'text-teal-400 fill-teal-400',
                     )
                 }
                 style={{
-                    height: `${28 / scale}px`,
+                    height: `${28 / editorEngine.canvas.scale}px`,
                     width: `${frame.dimension.width}px`,
-                    marginBottom: `${10 / scale}px`,
+                    marginBottom: `${10 / editorEngine.canvas.scale}px`,
                 }}
                 onMouseDown={handleMouseDown}
                 onClick={handleClick}
             >
                 <div
-                    className="absolute top-0 bottom-0 flex items-center z-10"
+                    className="flex flex-row items-center gap-2 pr-10"
                     style={{
-                        left: shouldScale ? `${4 * (1 / scale)}px` : `${4 * (1 / 0.7)}px`,
-                        transform: shouldScale 
-                            ? `scale(${1 / scale})` 
-                            : 'scale(1.43)',
+                        transform: `scale(${1 / editorEngine.canvas.scale})`,
                         transformOrigin: 'left center',
                     }}
                 >
                     <Button variant="ghost" size="icon" className="cursor-pointer" onClick={handleReload}>
                         <Icons.Reload />
                     </Button>
-                </div>
-
-                <div
-                    className="absolute top-0 bottom-0 flex items-center"
-                    style={{
-                        left: shouldScale ? `${40 / scale}px` : `${40 / 0.7}px`,
-                        transform: shouldScale ? `scale(${1 / scale})` : 'scale(1.43)',
-                        transformOrigin: 'left center',
-                    }}
-                >
                     <div className="text-small overflow-hidden text-ellipsis whitespace-nowrap">
                         {frame.url}
                     </div>
                 </div>
 
-                <div
-                    className="absolute top-0 bottom-0 flex items-center z-10"
+                <Link
+                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                    href={frame.url}
+                    target="_blank"
                     style={{
-                        right: shouldScale ? `${4 * (1 / scale)}px` : `${4 * (1 / 0.7)}px`,
-                        transform: shouldScale 
-                            ? `scale(${1 / scale})` 
-                            : 'scale(1.43)',
-                        transformOrigin: 'right center',
+                        transform: `scale(${1 / editorEngine.canvas.scale})`,
+                        transformOrigin: 'center',
                     }}
                 >
-                    <Link href={frame.url} target="_blank">
-                        <Button variant="ghost" size="icon">
-                            <Icons.ExternalLink />
-                        </Button>
-                    </Link>
-                </div>
+                    <Button variant="ghost" size="icon">
+                        <Icons.ExternalLink />
+                    </Button>
+                </Link>
             </div>
         );
     },
 );
+
