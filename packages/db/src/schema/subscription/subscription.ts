@@ -4,7 +4,7 @@ import { integer, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-
 import { users } from '../user/user';
 import { usageRecords } from './usage';
 
-const subscriptionPlanType = pgEnum('subscription_plan_type', PlanType)
+export const subscriptionPlanType = pgEnum('subscription_plan_type', PlanType)
 
 export const plans = pgTable('plans', {
     id: uuid('id').primaryKey().defaultRandom(),
