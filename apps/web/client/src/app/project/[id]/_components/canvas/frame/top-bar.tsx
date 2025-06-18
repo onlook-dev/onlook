@@ -81,11 +81,6 @@ export const TopBar = observer(
                 onMouseDown={handleMouseDown}
                 onClick={handleClick}
             >
-
-				{ /* Don't display any top bar icons when you zoom in past 15% zoom. */ }
-				{ /* This is the point where the window is so small that having a */ }
-				{ /* top bar isn't practical for the user. */ }
-				{editorEngine.canvas.scale < 0.15 ? <></> : (<>
                 <div
                     className="flex flex-row items-center gap-2"
                     style={{
@@ -101,19 +96,19 @@ export const TopBar = observer(
                     </div>
                 </div>
                 <Link
-                    className="absolute right-1 top-1/2 -translate-y-1/2"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300"
                     href={frame.url}
                     target="_blank"
                     style={{
                         transform: `scale(${1 / editorEngine.canvas.scale})`,
                         transformOrigin: 'right center',
+                        opacity: editorEngine.canvas.scale < 0.20 ? 0 : 1,
                     }}
                 >
                     <Button variant="ghost" size="icon">
                         <Icons.ExternalLink />
                     </Button>
                 </Link>
-					</>)}
             </div>
         );
     },
