@@ -295,7 +295,7 @@ export const Verification = observer(() => {
                                 disabled={status === VerificationStatus.LOADING}
                             >
                                 {status === VerificationStatus.LOADING && (
-                                    <Icons.Shadow className="h-4 w-4 animate-spin mr-2" />
+                                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin mr-2" />
                                 )}
                                 {getInputButtonText()}
                             </Button>
@@ -325,7 +325,7 @@ export const Verification = observer(() => {
                         disabled={status === VerificationStatus.LOADING}
                     >
                         {status === VerificationStatus.LOADING && (
-                            <Icons.Shadow className="h-4 w-4 animate-spin mr-2" />
+                            <Icons.LoadingSpinner className="h-4 w-4 animate-spin mr-2" />
                         )}
                         Verify Setup
                     </Button>
