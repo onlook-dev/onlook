@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
     switch (event.type) {
         case 'checkout.session.completed': {
-            return await handleCheckoutSessionCompleted(event);
+            return await handleCheckoutSessionCompleted(event, stripe);
         }
         // Handle cancellation
         case 'customer.subscription.deleted': {
