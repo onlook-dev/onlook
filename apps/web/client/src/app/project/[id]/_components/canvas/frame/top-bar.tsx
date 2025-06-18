@@ -5,11 +5,13 @@ import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
+import { useRef } from 'react';
 
 export const TopBar = observer(
     ({ frame }: { frame: WebFrame }) => {
         const editorEngine = useEditorEngine();
         const isSelected = editorEngine.frames.isSelected(frame.id);
+        const ref = useRef<HTMLDivElement>(null);
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault();
@@ -67,6 +69,7 @@ export const TopBar = observer(
 
         return (
             <div
+                ref={ref}
                 className={
                     cn(
                         'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
@@ -82,7 +85,7 @@ export const TopBar = observer(
                 onClick={handleClick}
             >
                 <div
-                    className="flex flex-row items-center gap-2 pr-10"
+                    className="flex flex-row items-center gap-2"
                     style={{
                         transform: `scale(${1 / editorEngine.canvas.scale})`,
                         transformOrigin: 'left center',
@@ -95,14 +98,13 @@ export const TopBar = observer(
                         {frame.url}
                     </div>
                 </div>
-
                 <Link
                     className="absolute right-1 top-1/2 -translate-y-1/2"
                     href={frame.url}
                     target="_blank"
                     style={{
                         transform: `scale(${1 / editorEngine.canvas.scale})`,
-                        transformOrigin: 'center',
+                        transformOrigin: 'right center',
                     }}
                 >
                     <Button variant="ghost" size="icon">
