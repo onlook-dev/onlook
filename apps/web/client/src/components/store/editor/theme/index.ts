@@ -1,5 +1,5 @@
 import type { ProjectManager } from '@/components/store/project/manager';
-import { DEFAULT_COLOR_NAME } from '@onlook/constants';
+import { DEFAULT_COLOR_NAME, TAILWIND_WEB_COLORS } from '@onlook/constants';
 import type {
     ClassReplacement,
     ColorUpdate,
@@ -24,7 +24,6 @@ import { getOidFromJsxElement } from '@onlook/parser/src/code-edit/helpers';
 import { Color } from '@onlook/utility';
 import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import { WEB_COLORS } from '@onlook/constants';
 import type { EditorEngine } from '../engine';
 import {
     addTailwindCssVariable,
@@ -253,10 +252,10 @@ export class ThemeManager {
         // Create a record instead of an array
         const defaultColorsRecord: Record<string, TailwindColor[]> = {};
 
-        Object.keys(WEB_COLORS)
+        Object.keys(TAILWIND_WEB_COLORS)
             .filter((colorName) => !excludedColors.includes(colorName))
             .forEach((colorName) => {
-                const defaultColorScale = WEB_COLORS[colorName as keyof typeof WEB_COLORS];
+                const defaultColorScale = TAILWIND_WEB_COLORS[colorName as keyof typeof TAILWIND_WEB_COLORS];
 
                 if (typeof defaultColorScale !== 'object' || defaultColorScale === null) {
                     return;
@@ -355,7 +354,7 @@ export class ThemeManager {
             if (originalKey) {
                 const [parentKey, keyName] = originalKey.split('-');
 
-                const isDefaultColor = parentKey && WEB_COLORS[parentKey as keyof typeof WEB_COLORS];
+                const isDefaultColor = parentKey && TAILWIND_WEB_COLORS[parentKey as keyof typeof TAILWIND_WEB_COLORS];
                 if (isDefaultColor) {
                     const colorIndex = parseInt(keyName ?? '0') / 100;
 

@@ -1,4 +1,4 @@
-export const WEB_COLORS = {
+export const TAILWIND_WEB_COLORS = {
     inherit: 'inherit',
     current: 'currentColor',
     transparent: 'transparent',
