@@ -82,7 +82,7 @@ export const TopBar = observer(
                 onClick={handleClick}
             >
                 <div
-                    className="flex flex-row items-center justify-between gap-2 w-full"
+                    className="flex flex-row items-center gap-2"
                     style={{
                         transform: `scale(${1 / editorEngine.canvas.scale})`,
                         transformOrigin: 'left center',
@@ -94,13 +94,23 @@ export const TopBar = observer(
                     <div className="text-small overflow-hidden text-ellipsis whitespace-nowrap">
                         {frame.url}
                     </div>
-                    <Link className="ml-auto" href={frame.url} target="_blank">
-                        <Button variant="ghost" size="icon">
-                            <Icons.ExternalLink />
-                        </Button>
-                    </Link>
                 </div>
+                <Link
+                    className="absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300"
+                    href={frame.url}
+                    target="_blank"
+                    style={{
+                        transform: `scale(${1 / editorEngine.canvas.scale})`,
+                        transformOrigin: 'right center',
+                        opacity: editorEngine.canvas.scale < 0.20 ? 0 : 1,
+                    }}
+                >
+                    <Button variant="ghost" size="icon">
+                        <Icons.ExternalLink />
+                    </Button>
+                </Link>
             </div>
         );
     },
 );
+

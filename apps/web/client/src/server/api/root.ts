@@ -1,14 +1,14 @@
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
-import { invitationRouter, projectRouter, userRouter } from './routers';
+import { invitationRouter, projectRouter, subscriptionRouter, userRouter } from './routers';
 import { canvasRouter } from './routers/canvas';
 import { chatRouter } from './routers/chat';
 import { codeRouter } from './routers/code';
 import { domainRouter } from './routers/domain';
 import { frameRouter } from './routers/frame';
+import { githubRouter } from './routers/github';
 import { memberRouter } from './routers/member';
 import { sandboxRouter } from './routers/sandbox';
 import { userCanvasRouter } from './routers/user-canvas';
-import { githubRouter } from './routers/github';
 
 /**
  * This is the primary router for your server.
@@ -28,6 +28,7 @@ export const appRouter = createTRPCRouter({
     member: memberRouter,
     domain: domainRouter,
     github: githubRouter,
+    subscription: subscriptionRouter,
 });
 
 // export type definition of API

@@ -1,18 +1,27 @@
-import type { UsageCheckResult } from '@onlook/models';
-import { PlanKey } from '@onlook/stripe';
+import { api } from '@/trpc/client';
+import type { Subscription, Usage } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
+interface UsageMetrics {
+    daily: Usage;
+    monthly: Usage;
+}
+
 export class SubscriptionManager {
-    plan: PlanKey = PlanKey.FREE;
-    usage: UsageCheckResult = {
-        exceeded: false,
-        reason: 'none',
-        daily_requests_count: 5,
-        daily_requests_limit: 10,
-        monthly_requests_count: 10,
-        monthly_requests_limit: 50,
-    };
+    subscription: Subscription | null = null;
+    usage: UsageMetrics = {
+        daily: {
+            period: 'day',
+            usageCount: 0,
+            limitCount: 0,
+        },
+        monthly: {
+            period: 'month',
+            usageCount: 0,
+            limitCount: 0,
+        },
+    }
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
@@ -20,23 +29,27 @@ export class SubscriptionManager {
             () => this.userManager.user,
             (user) => {
                 if (user) {
-                    this.getPlanFromServer();
+                    this.getSubscriptionFromRemote();
                 }
             }
         );
     }
 
-    async updatePlan(plan: PlanKey) {
-        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-            console.error('window or localStorage is undefined');
-            return;
+    async getSubscriptionFromRemote(): Promise<Subscription | null> {
+        const subscription = await api.subscription.get.query();
+        if (!subscription) {
+            return null;
         }
-        this.plan = plan;
-        window.localStorage.setItem('currentPlan', plan);
-        // await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
+        this.subscription = subscription;
+        return subscription;
     }
 
-    async getPlanFromServer(): Promise<void> {
-        this.plan = PlanKey.FREE;
+    async getUsageFromRemote(): Promise<UsageMetrics | null> {
+        const usage = await api.subscription.getUsage.query();
+        if (!usage) {
+            return null;
+        }
+        this.usage = usage;
+        return usage;
     }
 }

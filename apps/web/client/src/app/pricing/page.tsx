@@ -6,7 +6,7 @@ import { TopBar } from '../_components/top-bar';
 import { PricingCard } from './pricing-card';
 import { TierPricingTable } from './tier-pricing';
 
-enum PlanKey {
+enum PlanType {
     FREE = 'free',
     PRO = 'pro',
     TEAMS = 'teams',
@@ -19,7 +19,7 @@ interface TokenTier {
 }
 
 interface PlanData {
-    key: PlanKey;
+    key: PlanType;
     name: string;
     basePrice: string;
     description: string;
@@ -38,14 +38,14 @@ const tokenTiers: TokenTier[] = [
 
 const plans: PlanData[] = [
     {
-        key: PlanKey.FREE,
+        key: PlanType.FREE,
         name: 'Free',
         basePrice: '$0',
         description: 'Explore core features at no cost — perfect for light, personal projects.',
         features: ['1M tokens / month', '150K daily limit', 'Public and private projects'],
     },
     {
-        key: PlanKey.PRO,
+        key: PlanType.PRO,
         name: 'Pro',
         basePrice: '$20',
         description: 'More power for one professional: select your amount of monthly tokens based on your usage.',
@@ -53,7 +53,7 @@ const plans: PlanData[] = [
         tokenTiers: tokenTiers,
     },
     {
-        key: PlanKey.TEAMS,
+        key: PlanType.TEAMS,
         name: 'Teams',
         basePrice: '$30',
         description: 'Role based access with one consolidated management for your whole team.',
@@ -95,7 +95,7 @@ export default function PricingPage() {
                             description={plan.description}
                             features={plan.features}
                             tokenTiers={plan.tokenTiers}
-                            buttonText={plan.key === PlanKey.FREE ? 'Your current plan' : 'Get started'}
+                            buttonText={plan.key === PlanType.FREE ? 'Your current plan' : 'Get started'}
                         />
                     ))}
                 </div>

@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { createStripeClient } from '../client';
-import { PLANS, PlanKey } from '../plans';
+import { PLANS, PlanType } from '../plans';
 
 /**
  * Clean up existing product and related resources
@@ -66,7 +66,7 @@ const createFullTestProduct = async (stripe: Stripe, productName: string) => {
             usage_type: 'metered',
             meter: meter.id,
         },
-        tiers: PLANS[PlanKey.PRO].tiers,
+        tiers: PLANS[PlanType.PRO].tiers,
     });
     console.log('Created price', price);
 
@@ -130,7 +130,7 @@ const createTestCustomerAndSubscribe = async (stripe: Stripe, price: Stripe.Pric
  */
 export const setupProduct = async () => {
     const stripe = createStripeClient();
-    const productName = PLANS[PlanKey.PRO].name;
+    const productName = PLANS[PlanType.PRO].name;
 
     console.log('Cleaning up existing product and related resources');
     // Clean up any existing product and related resources

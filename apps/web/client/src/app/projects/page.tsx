@@ -1,6 +1,7 @@
 'use client';
 
 import { useProjectsManager } from '@/components/store/projects';
+import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
 import { SettingsModal } from '@/components/ui/settings-modal';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -19,7 +20,7 @@ const Page = observer(() => {
         return (
             <div className="w-screen h-screen flex flex-col items-center justify-center">
                 <div className="flex flex-col items-center gap-2">
-                    <Icons.Shadow className="h-6 w-6 animate-spin text-foreground-primary" />
+                    <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
                     <div className="text-lg text-foreground-secondary">Loading projects...</div>
                 </div>
             </div>
@@ -33,6 +34,7 @@ const Page = observer(() => {
                 <SelectProject />
             </div>
             <SettingsModal showProjectTabs={false} />
+            <SubscriptionModal />
         </div>
     );
 });

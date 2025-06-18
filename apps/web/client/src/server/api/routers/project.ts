@@ -12,7 +12,7 @@ import {
     type UserCanvas
 } from '@onlook/db';
 import { ProjectRole } from '@onlook/models';
-import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
+import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
