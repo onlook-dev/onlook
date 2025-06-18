@@ -97,7 +97,7 @@ export const SubscriptionModal = observer(() => {
         <AnimatePresence>
             {editorEngine.state.plansOpen && (
                 <motion.div
-                    className="fixed inset-0"
+                    className="fixed inset-0 z-99"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

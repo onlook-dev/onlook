@@ -55,7 +55,7 @@ export const PricingCard = ({
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a plan" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-99">
                             <SelectGroup>
                                 {selectValues.map((value) => (
                                     <SelectItem key={value.value} value={value.value}>

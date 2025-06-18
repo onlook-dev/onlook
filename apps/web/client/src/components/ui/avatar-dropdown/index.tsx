@@ -60,13 +60,13 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                 <PlanSection /> */}
                 <Separator />
                 <div className="p-2">
-                    <Button
+                    {/* <Button
                         variant="ghost"
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
                         onClick={handleOpenSubscription}
                     >
                         <Icons.CreditCard className="mr-2 h-4 w-4" /> Subscription
-                    </Button>
+                    </Button> */}
                     <Button
                         variant="ghost"
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
