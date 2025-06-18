@@ -1,3 +1,4 @@
+import { transKeys } from '@/i18n/keys';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
@@ -73,7 +74,7 @@ export const PricingCard = ({
                         {isLoading ? (
                             <div className="flex items-center gap-2">
                                 <Icons.Shadow className="w-4 h-4 animate-spin" />
-                                <span>{t('pricing.loading.checkingPayment')}</span>
+                                <span>{t(transKeys.pricing.loading.checkingPayment)}</span>
                             </div>
                         ) : (
                             buttonText

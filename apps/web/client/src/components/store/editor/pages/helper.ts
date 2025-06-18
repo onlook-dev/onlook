@@ -891,7 +891,7 @@ const updatePackageJson = async (session: WebSocketSession) => {
     const pkgJson = JSON.parse(new TextDecoder().decode(pkgRaw));
 
     pkgJson.scripts = pkgJson.scripts || {};
-    pkgJson.scripts.dev = 'PORT=8084 next dev';
+    pkgJson.scripts.dev = 'next dev';
 
     await session.fs.writeFile(
         './package.json',

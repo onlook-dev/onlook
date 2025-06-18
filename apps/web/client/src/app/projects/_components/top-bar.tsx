@@ -61,7 +61,7 @@ export const TopBar = () => {
                             }}
                         >
                             <Icons.Download className="w-4 h-4 mr-2" />
-                            <p className="text-microPlus">{t('projects.actions.import')}</p>
+                            <p className="text-microPlus">{t(transKeys.projects.actions.import)}</p>
 
                         </DropdownMenuItem>
                     </DropdownMenuContent>
