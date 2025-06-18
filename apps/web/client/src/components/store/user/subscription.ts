@@ -1,49 +1,55 @@
 import { api } from '@/trpc/client';
-import { SubscriptionPlans } from '@onlook/models';
+import type { Subscription, Usage } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
+interface UsageMetrics {
+    daily: Usage;
+    monthly: Usage;
+}
+
 export class SubscriptionManager {
-    plan: SubscriptionPlans = SubscriptionPlans.FREE;
+    subscription: Subscription | null = null;
+    usage: UsageMetrics = {
+        daily: {
+            period: 'day',
+            usageCount: 0,
+            limitCount: 0,
+        },
+        monthly: {
+            period: 'month',
+            usageCount: 0,
+            limitCount: 0,
+        },
+    }
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
-        this.restoreCachedPlan();
         reaction(
             () => this.userManager.user,
             (user) => {
                 if (user) {
-                    this.getUserPlan();
+                    this.getSubscriptionFromRemote();
                 }
             }
         );
     }
 
-    private restoreCachedPlan() {
-        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-            console.error('window or localStorage is undefined');
-            return;
+    async getSubscriptionFromRemote(): Promise<Subscription | null> {
+        const subscription = await api.subscription.get.query();
+        if (!subscription) {
+            return null;
         }
-        const cachedPlan = window.localStorage?.getItem('currentPlan');
-        this.plan = (cachedPlan as SubscriptionPlans) || SubscriptionPlans.FREE;
+        this.subscription = subscription;
+        return subscription;
     }
 
-    async updatePlan(plan: SubscriptionPlans) {
-        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-            console.error('window or localStorage is undefined');
-            return;
+    async getUsageFromRemote(): Promise<UsageMetrics | null> {
+        const usage = await api.subscription.getUsage.query();
+        if (!usage) {
+            return null;
         }
-        this.plan = plan;
-        window.localStorage.setItem('currentPlan', plan);
-        // await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
-    }
-
-    async getUserPlan(): Promise<SubscriptionPlans> {
-        const plan = await api.subscription.userPlan.query();
-        if (!plan) {
-            return SubscriptionPlans.FREE;
-        }
-        this.updatePlan(plan.plan.type);
-        return plan.plan.type;
+        this.usage = usage;
+        return usage;
     }
 }

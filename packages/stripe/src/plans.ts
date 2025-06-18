@@ -1,11 +1,14 @@
+import { PlanType } from '@onlook/models';
 import Stripe from 'stripe';
 
-export enum PlanKey {
-    PRO = 'pro',
-}
-
-export const PLANS: Record<PlanKey, { name: string; tiers: Stripe.PriceCreateParams.Tier[] }> = {
-    [PlanKey.PRO]: {
+export const PLANS: Record<PlanType, { name: string; tiers: Stripe.PriceCreateParams.Tier[] }> = {
+    [PlanType.FREE]: {
+        name: 'Onlook Free',
+        tiers: [
+            { up_to: 10, unit_amount: 0 },
+        ] satisfies Stripe.PriceCreateParams.Tier[],
+    },
+    [PlanType.PRO]: {
         name: 'Onlook Pro',
         tiers: [
             { up_to: 100, unit_amount: 2000 },

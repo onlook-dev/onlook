@@ -1,5 +1,5 @@
 import { api } from '@/trpc/client';
-import { CSB_BLANK_TEMPLATE_ID } from '@onlook/constants';
+import { SandboxTemplates, Templates } from '@onlook/constants';
 import type { Project as DbProject } from '@onlook/db';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import { makeAutoObservable } from "mobx";
@@ -65,7 +65,7 @@ export class CreateManager {
 
     async createSandbox() {
         return await api.sandbox.fork.mutate({
-            sandboxId: CSB_BLANK_TEMPLATE_ID,
+            sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
         });
     }
 

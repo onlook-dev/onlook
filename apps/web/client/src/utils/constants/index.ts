@@ -4,4 +4,5 @@ export const Routes = {
     PRICING: '/pricing',
     PROJECTS: '/projects',
     PROJECT: '/project',
+    IMPORT_PROJECT: '/projects/import',
 };

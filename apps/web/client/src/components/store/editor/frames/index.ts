@@ -149,8 +149,8 @@ export class FramesManager {
     }
 
     reloadAll() {
-        for (const frame of this.selected) {
-            frame.view.reload();
+        for (const frameData of this.getAll()) {
+            frameData.view.reload();
         }
     }
 
@@ -240,7 +240,6 @@ export class FramesManager {
         const frameImpl = this.validateFrame(id, 'update');
         if (!frameImpl) return;
 
-        console.log('updateLocally', id, newFrame);
         frameImpl.update(newFrame);
     }
 

@@ -57,7 +57,6 @@ import {
     EyeClosedIcon,
     EyeOpenIcon,
     FileIcon,
-    FilePlusIcon,
     FrameIcon,
     GearIcon,
     GitHubLogoIcon,
@@ -116,7 +115,7 @@ import {
     ViewHorizontalIcon,
     ViewVerticalIcon,
 } from '@radix-ui/react-icons';
-import { MailXIcon } from 'lucide-react';
+import { CreditCardIcon, MailXIcon, SquareXIcon } from 'lucide-react';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
 import H2Icon from './header-level-icons/h2Icon';
@@ -1291,6 +1290,7 @@ export const Icons = {
     Cube: CubeIcon,
     CursorArrow: CursorArrowIcon,
     Circle: CircleIcon,
+    CreditCard: CreditCardIcon,
 
     Desktop: DesktopIcon,
     DiscordLogo: DiscordLogoIcon,
@@ -1362,6 +1362,7 @@ export const Icons = {
     SpaceBetweenHorizontally: SpaceBetweenHorizontallyIcon,
     SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
     Square: SquareIcon,
+    SquareX: SquareXIcon,
     SketchLogo: SketchLogoIcon,
 
     MailX: MailXIcon,
@@ -1692,6 +1693,29 @@ export const Icons = {
                 stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="square"
+            />
+        </svg>
+    ),
+    LoadingSpinner: ({ className, ...props }: IconProps) => (
+        <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M14.1693 8.0026C14.1693 11.4083 11.4083 14.1693 8.0026 14.1693C4.59685 14.1693 1.83594 11.4083 1.83594 8.0026C1.83594 4.59685 4.59685 1.83594 8.0026 1.83594C11.4083 1.83594 14.1693 4.59685 14.1693 8.0026Z"
+                stroke="currentColor"
+                strokeOpacity="0.3"
+            />
+            <path
+                d="M14.1667 8C14.1667 11.4057 11.4057 14.1667 8 14.1667"
+                stroke="currentColor"
+                strokeOpacity="1"
+                strokeLinecap="round"
             />
         </svg>
     ),

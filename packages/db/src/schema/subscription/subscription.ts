@@ -1,10 +1,10 @@
-import { SubscriptionPlans } from '@onlook/models';
+import { PlanType } from '@onlook/models';
 import { relations } from 'drizzle-orm';
 import { integer, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { users } from '../user/user';
 import { usageRecords } from './usage';
 
-const subscriptionPlanType = pgEnum('subscription_plan_type', SubscriptionPlans)
+const subscriptionPlanType = pgEnum('subscription_plan_type', PlanType)
 
 export const plans = pgTable('plans', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -16,6 +16,7 @@ export const plans = pgTable('plans', {
     // Stripe
     stripeProductId: text('stripe_product_id').notNull(),
 })
+export type Plan = typeof plans.$inferSelect;
 
 export const prices = pgTable('prices', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -50,3 +51,5 @@ export const subscriptionRelations = relations(subscriptions, ({ one, many }) =>
     }),
     usageRecords: many(usageRecords),
 }));
+
+export type Subscription = typeof subscriptions.$inferSelect;

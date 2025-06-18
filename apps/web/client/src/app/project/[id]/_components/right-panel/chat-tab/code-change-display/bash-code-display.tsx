@@ -61,7 +61,6 @@ export const BashCodeDisplay = observer(
         const [stdOut, setStdOut] = useState<string | null>(null);
         const [stdErr, setStdErr] = useState<string | null>(null);
 
-
         const runCommand = async () => {
             setRunning(true);
             setStdOut(null);
@@ -119,7 +118,7 @@ export const BashCodeDisplay = observer(
                             disabled={running || isStream}
                         >
                             {running ? (
-                                <Icons.Shadow className="animate-spin" />
+                                <Icons.LoadingSpinner className="animate-spin" />
                             ) : (
                                 <Icons.Reload className="text-foreground group-hover:text-foreground-secondary transition-none" />
                             )}
@@ -134,7 +133,7 @@ export const BashCodeDisplay = observer(
                             disabled={running || isStream}
                         >
                             {running ? (
-                                <Icons.Shadow className="animate-spin" />
+                                <Icons.LoadingSpinner className="animate-spin" />
                             ) : (
                                 <Icons.Play className="text-teal-300 group-hover:text-teal-100 transition-none" />
                             )}
