@@ -8,6 +8,7 @@ import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Color, toNormalCase, type Palette } from '@onlook/utility';
 import { useEffect, useRef, useState } from 'react';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 
 
 const ColorGroup = ({
@@ -161,6 +162,18 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         onChangeEnd(colorItem);
     };
 
+    const handleRemoveColor = () => {
+        const removeColorAction: TailwindColor = {
+            name: 'remove',
+            originalKey: '',
+            lightColor: '',
+            darkColor: '',
+        };
+        onChangeEnd(removeColorAction);
+    };
+    
+    const isColorRemoved = (colorToCheck: Color) => colorToCheck.isEqual(Color.from('transparent'));
+
     function renderPalette() {
         const colors = Object.keys(palette.colors);
         return (
@@ -219,19 +232,48 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     return (
         <div className="flex flex-col justify-between items-center">
             <Tabs defaultValue={TabValue.BRAND} className="w-full">
-                <TabsList className="bg-transparent px-2 m-0 gap-2">
-                    <TabsTrigger
-                        value={TabValue.BRAND}
-                        className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                <TabsList className="bg-transparent px-2 m-0 gap-2 justify-between w-full">
+                    <div className="flex gap-2">
+                        <TabsTrigger
+                            value={TabValue.BRAND}
+                            className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                        >
+                            Brand
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value={TabValue.CUSTOM}
+                            className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                        >
+                            Custom
+                        </TabsTrigger>
+                    </div>
+
+
+                    <HoverOnlyTooltip
+                        content="Remove Background Color"
+                        side="bottom"
+                        className="mt-1"
+                        hideArrow
+                        disabled={isColorRemoved(color)}
                     >
-                        Brand
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value={TabValue.CUSTOM}
-                        className="bg-transparent text-xs p-1 hover:text-foreground-primary"
-                    >
-                        Custom
-                    </TabsTrigger>
+                        <button
+                            className={`p-1 rounded transition-colors ${
+                                isColorRemoved(color) 
+                                    ? 'bg-background-secondary' 
+                                    : 'hover:bg-background-tertiary'
+                            }`}
+                            onClick={handleRemoveColor}
+                        >
+                            <Icons.SquareX 
+                                className={`h-4 w-4 ${
+                                    isColorRemoved(color) 
+                                        ? 'text-foreground-primary' 
+                                        : 'text-foreground-tertiary'
+                                }`} 
+                            />
+                        </button>
+                    </HoverOnlyTooltip>
+
                 </TabsList>
 
                 <TabsContent value={TabValue.BRAND} className="p-0 m-0 text-xs">

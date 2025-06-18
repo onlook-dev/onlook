@@ -318,10 +318,6 @@ export class ThemeManager {
                 // Add to record instead of array
                 defaultColorsRecord[colorName] = colorItems;
             });
-        console.log('defaultColorsRecord', defaultColorsRecord);
-        console.log('lightModeColors', lightModeColors);
-        console.log('darkModeColors', darkModeColors);
-        console.log('config', config);
         return defaultColorsRecord;
     }
 
