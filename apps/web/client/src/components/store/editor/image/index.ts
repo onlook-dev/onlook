@@ -9,6 +9,7 @@ export class ImageManager {
 
     constructor(
         private editorEngine: EditorEngine,
+        private projectManager: ProjectManager,
     ) {
         // this.scanImages();
         makeAutoObservable(this);

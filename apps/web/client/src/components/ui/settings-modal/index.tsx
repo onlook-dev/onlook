@@ -9,6 +9,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { ComingSoonTab, SettingsTabValue, type SettingTab } from './helpers';
 import { ProjectSettingsTabs } from './with-project';
+import { PreferencesTab } from './preferences-tab';
 
 export const SettingsModal = observer(({ showProjectTabs = false }: { showProjectTabs: boolean }) => {
     const editorEngine = useEditorEngine();
@@ -18,7 +19,7 @@ export const SettingsModal = observer(({ showProjectTabs = false }: { showProjec
         {
             label: SettingsTabValue.PREFERENCES,
             icon: <Icons.Person className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
+            component: <PreferencesTab />,
         },
         {
             label: SettingsTabValue.ADVANCED,

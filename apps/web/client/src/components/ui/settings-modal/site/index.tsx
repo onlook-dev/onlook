@@ -1,23 +1,22 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useDomainsManager, useProjectManager } from '@/components/store/project';
-import { type PageMetadata } from '@onlook/models';
+import { type PageMetadata, type PageNode } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { DefaultSettings } from '@onlook/constants';
 import { useMetadataForm } from './use-metadata-form';
 import { toast } from '@onlook/ui/sonner';
 import { MetadataForm } from './metadata-form';
 
-export const SiteTab = observer(({
-    metadata,
-}: {
-    metadata: PageMetadata;
-}) => {
+export const SiteTab = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectManager();
     const domainsManager = useDomainsManager()
     const project = projectsManager.project;
     const baseUrl = domainsManager.domains.preview?.url ?? domainsManager.domains.custom?.url ?? project?.sandbox.url;
+    const homePage = useMemo(() => {
+        return editorEngine.pages.tree.find((page) => page.path === '/');
+    }, [editorEngine.pages.tree]);
 
     const {
         title,
@@ -30,7 +29,7 @@ export const SiteTab = observer(({
         handleDiscard,
         setIsDirty,
     } = useMetadataForm({
-        initialMetadata: metadata
+        initialMetadata: homePage?.metadata ?? {}
     });
 
     const [uploadedFavicon, setUploadedFavicon] = useState<File | null>(null);
@@ -46,12 +45,12 @@ export const SiteTab = observer(({
         }
         try {
             const updatedMetadata: PageMetadata = {
-                ...metadata,
+                ...homePage?.metadata ?? {},
                 title,
                 description,
             };
 
-            if (!metadata?.metadataBase) {
+            if (!homePage?.metadata?.metadataBase) {
                 const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
                 if (url) {
                     updatedMetadata.metadataBase = new URL(url);
@@ -116,7 +115,7 @@ export const SiteTab = observer(({
                 onDiscard={handleDiscard}
                 onSave={handleSave}
                 showFavicon={true}
-                currentMetadata={metadata}
+                currentMetadata={homePage?.metadata ?? {}}
             />
         </div>
     );
