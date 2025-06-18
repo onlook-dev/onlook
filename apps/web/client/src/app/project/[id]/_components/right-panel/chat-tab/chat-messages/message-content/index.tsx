@@ -1,7 +1,7 @@
 import type { Message } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { MarkdownRenderer } from '../markdown-renderer';
-import { ToolCallDisplay } from './tool-call-display';
+import { ToolCallSimple } from './tool-call-simple';
 
 export const MessageContent = observer(
     ({
@@ -18,7 +18,9 @@ export const MessageContent = observer(
         if (!parts) {
             return null;
         }
-        return parts.map((part) => {
+        // Find the index of the last tool-invocation part
+        const lastToolInvocationIdx = parts.map(p => p.type).lastIndexOf('tool-invocation');
+        return parts.map((part, idx) => {
             if (part.type === 'text') {
                 return (
                     <MarkdownRenderer
@@ -31,10 +33,11 @@ export const MessageContent = observer(
                 );
             } else if (part.type === 'tool-invocation') {
                 return (
-                    <ToolCallDisplay
+                    <ToolCallSimple
                         key={part.toolInvocation.toolCallId}
-                        toolInvocation={part.toolInvocation}
-                        isStream={isStream}
+                        toolName={part.toolInvocation.toolName}
+                        label={part.toolInvocation.toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                        loading={isStream && idx === lastToolInvocationIdx}
                     />
                 );
             } else if (part.type === 'reasoning') {

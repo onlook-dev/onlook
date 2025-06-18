@@ -20,7 +20,7 @@ export const TriggerButton = observer(() => {
         text = editorEngine.history.length > 0 ? 'Update' : 'Live';
         icon = <Icons.Globe className="mr-2 h-4 w-4" />;
     } else if (status === PublishStatus.LOADING) {
-        icon = <Icons.Shadow className="mr-2 h-4 w-4 animate-spin" />;
+        icon = <Icons.LoadingSpinner className="mr-2 h-4 w-4 animate-spin" />;
         text = 'Publishing';
     } else if (status === PublishStatus.UNPUBLISHED) {
         colorClasses = 'border-input bg-background hover:bg-background-onlook text-foreground';
