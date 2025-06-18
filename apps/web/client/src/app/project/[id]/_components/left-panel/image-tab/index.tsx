@@ -15,13 +15,11 @@ import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import imageData from './data.json';
 import DeleteImageModal from './delete-modal';
 import RenameImageModal from './rename-modal';
 
 export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
 
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [search, setSearch] = useState('');
@@ -34,14 +32,13 @@ export const ImagesTab = observer(() => {
     const [renameError, setRenameError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    // useEffect(() => {
-    //     scanImages();
-    // }, []);
+    useEffect(() => {
+        scanImages();
+    }, []);
 
     const imageAssets = useMemo(() => {
-        return imageData.images;
-        // return editorEngine.image.assets;
-    }, [imageData.images]);
+        return editorEngine.image.assets;
+    }, [editorEngine.image.assets]);
 
     const scanImages = async () => {
         await editorEngine.image.scanImages();
@@ -208,11 +205,6 @@ export const ImagesTab = observer(() => {
             }),
         );
 
-        // for (const frameView of editorEngine.frames.webviews.values()) {
-        //     frameView.frameView.style.pointerEvents = 'none';
-        // }
-
-        // editorEngine.mode = EditorMode.INSERT_IMAGE;
         sendAnalytics('image drag');
     };
 
@@ -375,6 +367,7 @@ export const ImagesTab = observer(() => {
                                     >
                                         <DropdownMenuTrigger asChild>
                                             <Button
+                                                size='icon'
                                                 variant={'ghost'}
                                                 className="bg-background p-1 inline-flex items-center justify-center h-auto w-auto rounded shadow-sm"
                                             >
@@ -410,7 +403,7 @@ export const ImagesTab = observer(() => {
                                                     </span>
                                                 </Button>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
+                                            {/* <DropdownMenuItem asChild>
                                                 <Button
                                                     variant={'ghost'}
                                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
@@ -429,7 +422,7 @@ export const ImagesTab = observer(() => {
                                                         <span>Open Folder</span>
                                                     </span>
                                                 </Button>
-                                            </DropdownMenuItem>
+                                            </DropdownMenuItem> */}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>

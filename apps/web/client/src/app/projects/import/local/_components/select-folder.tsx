@@ -1,7 +1,7 @@
 'use client';
 
 import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
-import { BINARY_EXTENSIONS, IGNORED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
+import { IGNORED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
@@ -10,6 +10,7 @@ import { motion } from 'motion/react';
 import { useCallback, useRef, useState } from 'react';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
 import { useProjectCreation } from '../_context/context';
+import { isBinaryFile } from '@onlook/utility';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -107,8 +108,7 @@ export const NewSelectFolder = () => {
             }
 
             // Determine if file is binary
-            const extension = '.' + file.name.split('.').pop()?.toLowerCase();
-            const isBinary = BINARY_EXTENSIONS.includes(extension);
+            const isBinary = isBinaryFile(file.name);
 
             try {
                 let content: string | ArrayBuffer;

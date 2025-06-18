@@ -79,7 +79,7 @@ export const getDirName = (filePath: string): string => {
 
 export const getBaseName = (filePath: string): string => {
     const parts = filePath.split('/');
-    return parts[parts.length - 1] || '';
+    return parts.pop() || '';
 };
 
 export const getMimeType = (fileName: string): string => {
@@ -96,4 +96,19 @@ export const getMimeType = (fileName: string): string => {
     const res = mime.getType(fileName);
     if (res) return res;
     return 'application/octet-stream';
+};
+
+export const isImageFile = (fileName: string): boolean => {
+    const mimeType = getMimeType(fileName);
+    return ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'].includes(
+        mimeType,
+    );
+};
+
+export const convertToBase64 = (file: Uint8Array): string => {
+    return btoa(
+        Array.from(file)
+            .map((byte: number) => String.fromCharCode(byte))
+            .join(''),
+    );
 };

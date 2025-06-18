@@ -39,6 +39,7 @@
         "is-subdir": "^1.2.0",
         "mime-lite": "^1.0.3",
         "normalize-url": "^8.0.1",
+        "sharp": "^0.33.5",
         "strip-ansi": "^7.1.0",
         "tldts": "^6.1.82",
         "uuid": "^11.1.0"

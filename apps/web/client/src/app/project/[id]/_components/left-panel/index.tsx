@@ -42,7 +42,6 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             value: LeftPanelTabValue.IMAGES,
             icon: <Icons.Image className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.images,
-            disabled: true,
         },
         {
             value: LeftPanelTabValue.APPS,

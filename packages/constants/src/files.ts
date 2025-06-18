@@ -4,7 +4,7 @@ export const IGNORED_DIRECTORIES = [
     'node_modules',
     'dist',
     'build',
-    'public',
+    // 'public',
     'static',
     '.git',
     '.next',

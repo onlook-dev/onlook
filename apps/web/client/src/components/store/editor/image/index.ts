@@ -2,39 +2,28 @@ import type { ProjectManager } from '@/components/store/project/manager';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
+import { DefaultSettings } from '@onlook/constants';
+import { convertToBase64, getBaseName, getMimeType, isImageFile } from '@onlook/utility/src/file';
 export class ImageManager {
     private images: ImageContentData[] = [];
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
     ) {
-        // this.scanImages();
+        this.scanImages();
         makeAutoObservable(this);
     }
 
     async upload(file: File): Promise<void> {
-        try {
-            // const projectFolder = this.projectManager.project?.folderPath;
-            // if (!projectFolder) {
-            //     throw new Error('Project folder not found');
-            // }
+        try {            
+            const buffer = await file.arrayBuffer();
+            const path = `${DefaultSettings.IMAGE_FOLDER}/${file.name}`;
 
-            // const buffer = await file.arrayBuffer();
-            // const base64String = btoa(
-            //     new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
-            // );
-
-            // await invokeMainChannel(MainChannels.SAVE_IMAGE_TO_PROJECT, {
-            //     projectFolder,
-            //     content: base64String,
-            //     fileName: file.name,
-            // });
-
-            // setTimeout(() => {
-            //     this.scanImages();
-            // }, 100);
-            // sendAnalytics('image upload');
+         await this.editorEngine.sandbox.writeBinaryFile(
+                path,
+                new Uint8Array(buffer),
+            );
+            this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;
@@ -43,37 +32,22 @@ export class ImageManager {
 
     async delete(imageName: string): Promise<void> {
         try {
-            // const projectFolder = this.projectManager.project?.folderPath;
-            // if (!projectFolder) {
-            //     throw new Error('Project folder not found');
-            // }
-            // await invokeMainChannel<string, string>(
-            //     MainChannels.DELETE_IMAGE_FROM_PROJECT,
-            //     projectFolder,
-            //     imageName,
-            // );
-            // this.scanImages();
-            // sendAnalytics('image delete');
+            const path = `${DefaultSettings.IMAGE_FOLDER}/${imageName}`;
+            await this.editorEngine.sandbox.delete(path);
+            this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
         }
     }
 
-    async rename(imageName: string, newName: string): Promise<void> {
+    async rename(oldName: string, newName: string): Promise<void> {
         try {
-            // const projectFolder = this.projectManager.project?.folderPath;
-            // if (!projectFolder) {
-            //     throw new Error('Project folder not found');
-            // }
-            // await invokeMainChannel<string, string>(
-            //     MainChannels.RENAME_IMAGE_IN_PROJECT,
-            //     projectFolder,
-            //     imageName,
-            //     newName,
-            // );
-            // this.scanImages();
-            // sendAnalytics('image rename');
+            const oldPath = `${DefaultSettings.IMAGE_FOLDER}/${oldName}`;
+            const newPath = `${DefaultSettings.IMAGE_FOLDER}/${newName}`;
+            await this.editorEngine.sandbox.copy(oldPath, newPath);
+            await this.editorEngine.sandbox.delete(oldPath);
+            this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;
@@ -147,21 +121,50 @@ export class ImageManager {
     }
 
     async scanImages() {
-        // const projectRoot = this.projectManager.project?.folderPath;
+        try {
+            const files = await this.editorEngine.sandbox.listBinaryFiles(DefaultSettings.IMAGE_FOLDER);
 
-        // if (!projectRoot) {
-        //     console.warn('No project root found');
-        //     return;
-        // }
-        // const images = await invokeMainChannel<string, ImageContentData[]>(
-        //     MainChannels.SCAN_IMAGES_IN_PROJECT,
-        //     projectRoot,
-        // );
-        // if (images?.length) {
-        //     this.images = images;
-        // } else {
-        //     this.images = [];
-        // }
+            if (!files) {
+                this.images = [];
+                return;
+            }
+
+            const imageFiles = files.filter((filePath: string) => isImageFile(filePath));
+
+            const imagePromises = imageFiles.map(async (filePath: string) => {
+                try {
+                    
+                    // Read the binary file
+                    const binaryData = await this.editorEngine.sandbox.readBinaryFile(filePath);
+                    if (!binaryData) {
+                        console.warn(`Failed to read binary data for ${filePath}`);
+                        return null;
+                    }
+
+                    // Determine MIME type based on file extension
+                    const mimeType = getMimeType(filePath);
+
+                    // Convert binary data to base64
+                    const base64Data = convertToBase64(binaryData);
+                    const content = `data:${mimeType};base64,${base64Data}`;
+
+                    return {
+                        content,
+                        fileName: getBaseName(filePath),
+                        mimeType,
+                    } as ImageContentData;
+                } catch (error) {
+                    console.error(`Error processing image ${filePath}:`, error);
+                    return null;
+                }
+            });
+
+            const results = await Promise.all(imagePromises);
+            this.images = results.filter((result): result is ImageContentData => result !== null);
+        } catch (error) {
+            console.error('Error scanning images:', error);
+            this.images = [];
+        }
     }
 
     clear() {
