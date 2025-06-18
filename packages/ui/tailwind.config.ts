@@ -261,9 +261,9 @@ const config = {
                     '100%': { transform: 'rotate(-0.5deg)' },
                 },
                 shine: {
-                    '0%': { 'background-position': '0% 0%' },
-                    '50%': { 'background-position': '100% 100%' },
-                    '100%': { 'background-position': '0% 0%' },
+                    '0%': { backgroundPosition: '0% 0%' },
+                    '50%': { backgroundPosition: '100% 100%' },
+                    '100%': { backgroundPosition: '0% 0%' },
                 },
                 shimmer: {
                     '0%': { backgroundPosition: '100% 0' },
