@@ -1,6 +1,5 @@
-import { CardDescription, CardTitle } from '@onlook/ui/card';
-
 import { Button } from '@onlook/ui/button';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
 import { motion } from 'motion/react';

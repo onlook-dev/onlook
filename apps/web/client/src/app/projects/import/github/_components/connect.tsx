@@ -1,15 +1,12 @@
 'use client';
 
-import { CardDescription } from '@onlook/ui/card';
-import { CardTitle } from '@onlook/ui/card';
-
 import { Button } from '@onlook/ui/button';
-import { motion } from 'motion/react';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
-import { useImportGithubProject } from '../_context/context';
 import { Separator } from '@onlook/ui/separator';
-import { StepContent, StepFooter } from '../../steps';
-import { StepHeader } from '../../steps';
+import { motion } from 'motion/react';
+import { StepContent, StepFooter, StepHeader } from '../../steps';
+import { useImportGithubProject } from '../_context/context';
 
 export const ConnectGithub = () => {
     const { prevStep, nextStep } = useImportGithubProject();
