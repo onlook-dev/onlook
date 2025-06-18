@@ -8,12 +8,15 @@ import { useMetadataForm } from './use-metadata-form';
 import { toast } from '@onlook/ui/sonner';
 import { MetadataForm } from './metadata-form';
 
-export const SiteTab = observer(() => {
+export const SiteTab = observer(({
+    metadata,
+}: {
+    metadata: PageMetadata;
+}) => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectManager();
     const domainsManager = useDomainsManager()
     const project = projectsManager.project;
-    const siteSetting = project?.metadata;
     const baseUrl = domainsManager.domains.preview?.url ?? domainsManager.domains.custom?.url ?? project?.sandbox.url;
 
     const {
@@ -27,7 +30,7 @@ export const SiteTab = observer(() => {
         handleDiscard,
         setIsDirty,
     } = useMetadataForm({
-        initialMetadata: siteSetting ?? undefined,
+        initialMetadata: metadata
     });
 
     const [uploadedFavicon, setUploadedFavicon] = useState<File | null>(null);
@@ -43,12 +46,12 @@ export const SiteTab = observer(() => {
         }
         try {
             const updatedMetadata: PageMetadata = {
-                ...siteSetting,
+                ...metadata,
                 title,
                 description,
             };
 
-            if (!siteSetting?.metadataBase) {
+            if (!metadata?.metadataBase) {
                 const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
                 if (url) {
                     updatedMetadata.metadataBase = new URL(url);
@@ -83,11 +86,6 @@ export const SiteTab = observer(() => {
                 };
             }
 
-            projectsManager.updatePartialProject({
-                ...project,
-                siteMetadata: updatedMetadata,
-            });
-
             await editorEngine.pages.updateMetadataPage('/', updatedMetadata);
             setUploadedFavicon(null);
             setIsDirty(false);
@@ -118,7 +116,7 @@ export const SiteTab = observer(() => {
                 onDiscard={handleDiscard}
                 onSave={handleSave}
                 showFavicon={true}
-                currentMetadata={siteSetting ?? undefined}
+                currentMetadata={metadata}
             />
         </div>
     );

@@ -8,10 +8,10 @@ export const DangerZone = observer(() => {
     const domainsManager = useDomainsManager();
 
     const baseDomain = domainsManager.domains.preview;
-    const isBaseDomainUnpublishing = baseDomain?.type === DomainType.PREVIEW;
+    const isBaseDomainUnpublishing = false;
 
     const customDomain = domainsManager.domains.custom;
-    const isCustomDomainUnpublishing = customDomain?.type === DomainType.CUSTOM;
+    const isCustomDomainUnpublishing = false;
 
 
     return (

@@ -34,7 +34,6 @@ export const SettingsModal = observer(() => {
         if (editorEngine.state.settingsOpen && project) {
             pagesManager.scanPages();
             editorEngine.image.scanImages();
-            // projectsManager.scanProjectMetadata();
         }
     }, [editorEngine.state.settingsOpen]);
 
@@ -56,7 +55,7 @@ export const SettingsModal = observer(() => {
         {
             label: SettingsTabValue.SITE,
             icon: <Icons.File className="mr-2 h-4 w-4" />,
-            component: <SiteTab />,
+            component: <SiteTab metadata={flattenPages.find((page) => page.path === '/')?.metadata ?? {}} />,
         },
         {
             label: SettingsTabValue.DOMAIN,

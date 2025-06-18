@@ -2,12 +2,13 @@ import type { ProjectManager } from '@/components/store/project/manager';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
+import { api } from '@/trpc/client';
+import { DefaultSettings } from '@onlook/constants';
 export class ImageManager {
     private images: ImageContentData[] = [];
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
     ) {
         // this.scanImages();
         makeAutoObservable(this);
@@ -15,26 +16,17 @@ export class ImageManager {
 
     async upload(file: File): Promise<void> {
         try {
-            // const projectFolder = this.projectManager.project?.folderPath;
-            // if (!projectFolder) {
-            //     throw new Error('Project folder not found');
-            // }
+            console.log('uploading image', file);
+            
+            const buffer = await file.arrayBuffer();
+            const path = `${DefaultSettings.IMAGE_FOLDER}/${file.name}`;
 
-            // const buffer = await file.arrayBuffer();
-            // const base64String = btoa(
-            //     new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
-            // );
+            const response = await this.editorEngine.sandbox.writeBinaryFile(
+                path,
+                new Uint8Array(buffer),
+            );
 
-            // await invokeMainChannel(MainChannels.SAVE_IMAGE_TO_PROJECT, {
-            //     projectFolder,
-            //     content: base64String,
-            //     fileName: file.name,
-            // });
-
-            // setTimeout(() => {
-            //     this.scanImages();
-            // }, 100);
-            // sendAnalytics('image upload');
+            console.log('response', response);
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;

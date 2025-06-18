@@ -14,10 +14,10 @@ export const DomainTab = observer(() => {
             <div className="p-6">
                 <CustomDomain />
             </div>
-            <Separator />
+            {/* <Separator />
             <div className="p-6">
                 <DangerZone />
-            </div>
+            </div> */}
         </div>
     );
 });
