@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useUserManager } from '@/components/store/user';
 import { useGetBackground } from '@/hooks/use-get-background';
+import { transKeys } from '@/i18n/keys';
 import { PlanType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
@@ -131,8 +132,8 @@ export const SubscriptionModal = observer(() => {
                                         <div className="flex flex-row gap-2 w-[46rem] justify-between">
                                             <h1 className="text-title2 text-foreground-primary">
                                                 {isPro
-                                                    ? t('pricing.titles.proMember')
-                                                    : t('pricing.titles.choosePlan')}
+                                                    ? t(transKeys.pricing.titles.proMember)
+                                                    : t(transKeys.pricing.titles.choosePlan)}
                                             </h1>
                                         </div>
                                     </motion.div>
@@ -143,17 +144,17 @@ export const SubscriptionModal = observer(() => {
                                                 { value: '10', label: '10 daily credits' },
                                             ]}
                                             disableSelect={true}
-                                            plan={t('pricing.plans.basic.name')}
-                                            price={t('pricing.plans.basic.price')}
-                                            description={t('pricing.plans.basic.description')}
+                                            plan={t(transKeys.pricing.plans.basic.name)}
+                                            price={t(transKeys.pricing.plans.basic.price)}
+                                            description={t(transKeys.pricing.plans.basic.description)}
                                             features={[
                                                 'Visual code editor access',
                                                 '5 projects',
                                             ]}
                                             buttonText={
                                                 isFree
-                                                    ? t('pricing.buttons.currentPlan')
-                                                    : t('pricing.buttons.manageSubscription')
+                                                    ? t(transKeys.pricing.buttons.currentPlan)
+                                                    : t(transKeys.pricing.buttons.manageSubscription)
                                             }
                                             buttonProps={{
                                                 onClick: () => {
@@ -172,17 +173,17 @@ export const SubscriptionModal = observer(() => {
                                                 { value: '1000', label: '1000 messages per Month' },
                                                 { value: '10000', label: '10000 messages per Month' },
                                             ]}
-                                            plan={t('pricing.plans.pro.name')}
-                                            price={t('pricing.plans.pro.price')}
-                                            description={t('pricing.plans.pro.description')}
+                                            plan={t(transKeys.pricing.plans.pro.name)}
+                                            price={t(transKeys.pricing.plans.pro.price)}
+                                            description={t(transKeys.pricing.plans.pro.description)}
                                             features={[
                                                 'Unlimited projects',
                                                 'Custom domain',
                                             ]}
                                             buttonText={
                                                 isPro
-                                                    ? t('pricing.buttons.currentPlan')
-                                                    : t('pricing.buttons.getPro')
+                                                    ? t(transKeys.pricing.buttons.currentPlan)
+                                                    : t(transKeys.pricing.buttons.getPro)
                                             }
                                             buttonProps={{
                                                 onClick: startProCheckout,
@@ -200,7 +201,7 @@ export const SubscriptionModal = observer(() => {
                                         transition={{ delay: 0.3 }}
                                     >
                                         <p className="text-foreground-secondary/60 text-small text-balance">
-                                            {t('pricing.footer.unusedMessages')}
+                                            {t(transKeys.pricing.footer.unusedMessages)}
                                         </p>
                                     </motion.div>
                                 </motion.div>
