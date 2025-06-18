@@ -5,13 +5,11 @@ import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
-import { useRef } from 'react';
 
 export const TopBar = observer(
     ({ frame }: { frame: WebFrame }) => {
         const editorEngine = useEditorEngine();
         const isSelected = editorEngine.frames.isSelected(frame.id);
-        const ref = useRef<HTMLDivElement>(null);
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault();
@@ -69,7 +67,6 @@ export const TopBar = observer(
 
         return (
             <div
-                ref={ref}
                 className={
                     cn(
                         'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
