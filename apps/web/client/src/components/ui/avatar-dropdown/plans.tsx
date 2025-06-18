@@ -1,7 +1,7 @@
 'use client';
 
 import { useUserManager } from '@/components/store/user';
-import { PLANS } from '@onlook/stripe';
+import { PlanType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Progress } from '@onlook/ui/progress';
@@ -9,12 +9,12 @@ import { observer } from 'mobx-react-lite';
 
 export const PlanSection = observer(() => {
     const userManager = useUserManager();
-    const plan = userManager.subscription.plan;
-    const planName = PLANS[plan].name;
+    const plan = userManager.subscription.subscription?.plan;
+    const planName = plan?.name;
     const planStatus = 'Trial';
-    const dailyUsed = userManager.subscription.usage.daily_requests_count;
-    const dailyLimit = userManager.subscription.usage.daily_requests_limit;
-    const usagePercent = dailyLimit > 0 ? (dailyUsed / dailyLimit) * 100 : 0;
+    const type = plan?.type;
+    const usage = type === PlanType.FREE ? userManager.subscription.usage.daily : userManager.subscription.usage.monthly;
+    const usagePercent = usage.limitCount > 0 ? usage.usageCount / usage.limitCount * 100 : 0;
 
     const handleGetMoreCredits = () => {
         console.log('Open checkout page');
@@ -28,8 +28,8 @@ export const PlanSection = observer(() => {
                     <div className="text-muted-foreground">{planStatus}</div>
                 </div>
                 <div className="text-right">
-                    <div>{dailyUsed} <span className="text-muted-foreground">of</span> {dailyLimit}</div>
-                    <div className="text-muted-foreground">daily chats used</div>
+                    <div>{usage.usageCount} <span className="text-muted-foreground">of</span> {usage.limitCount}</div>
+                    <div className="text-muted-foreground">{usage.period} chats used</div>
                 </div>
             </div>
             <Progress value={usagePercent} className="w-full" />

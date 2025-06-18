@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useUserManager } from '@/components/store/user';
 import { useGetBackground } from '@/hooks/use-get-background';
-import { PlanKey } from '@onlook/stripe';
+import { PlanType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
@@ -15,20 +15,20 @@ export const SubscriptionModal = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const backgroundUrl = useGetBackground('create');
-    const plan = userManager.subscription.plan;
+    const [isCheckingOut, setIsCheckingOut] = useState<PlanType | null>(null);
 
-    const [isCheckingOut, setIsCheckingOut] = useState<PlanKey | null>(null);
-    const isProCheckout = isCheckingOut === PlanKey.PRO;
-    const isFreeCheckout = isCheckingOut === PlanKey.FREE;
-    const isPro = plan === PlanKey.PRO;
-    const isFree = plan === PlanKey.FREE;
+    const plan = userManager.subscription.subscription?.plan;
+    const isProCheckout = isCheckingOut === PlanType.PRO;
+    const isFreeCheckout = isCheckingOut === PlanType.FREE;
+    const isPro = plan?.type === PlanType.PRO;
+    const isFree = plan?.type === PlanType.FREE;
 
     useEffect(() => {
         let pollInterval: Timer | null = null;
 
         const getPlan = async () => {
-            const plan = await userManager.subscription.getPlanFromServer();
-            if (plan === PlanKey.PRO) {
+            const plan = await userManager.subscription.getSubscriptionFromRemote();
+            if (plan?.plan.type === PlanType.PRO) {
                 editorEngine.error.clear();
             }
             setIsCheckingOut(null);
@@ -50,7 +50,7 @@ export const SubscriptionModal = observer(() => {
     const startProCheckout = async () => {
         // sendAnalytics('start pro checkout');
         // try {
-        //     setIsCheckingOut(PlanKey.PRO);
+        //     setIsCheckingOut(PlanType.PRO);
         //     const res:
         //         | {
         //             success: boolean;
@@ -72,7 +72,7 @@ export const SubscriptionModal = observer(() => {
 
     const manageSubscription = async () => {
         // try {
-        //     setIsCheckingOut(PlanKey.FREE);
+        //     setIsCheckingOut(PlanType.FREE);
         //     const res:
         //         | {
         //             success: boolean;

@@ -4,7 +4,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-const DEFAULT_STAR_COUNT = '17k';
+const DEFAULT_STAR_COUNT = '19k';
 
 const formatStarCount = (count: number): string => {
     if (count >= 1000) {

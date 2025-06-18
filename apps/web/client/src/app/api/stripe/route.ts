@@ -1,6 +1,7 @@
 import { env } from '@/env'
 import { createStripeClient } from '@onlook/stripe'
 import Stripe from 'stripe'
+import { handleCheckoutSessionCompleted, handleSubscriptionDeleted } from './stripe'
 
 export async function POST(request: Request) {
     const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
@@ -22,21 +23,16 @@ export async function POST(request: Request) {
     }
 
     switch (event.type) {
-        case 'payment_intent.succeeded': {
-            const paymentIntent = event.data.object as Stripe.PaymentIntent
-            console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`)
-            // handlePaymentIntentSucceeded(paymentIntent)
-            break
+        case 'checkout.session.completed': {
+            return await handleCheckoutSessionCompleted(event, stripe);
         }
-        case 'payment_method.attached': {
-            const paymentMethod = event.data.object as Stripe.PaymentMethod
-            // handlePaymentMethodAttached(paymentMethod)
-            break
+        // Handle cancellation
+        case 'customer.subscription.deleted': {
+            return await handleSubscriptionDeleted(event);
         }
-        default:
-            // Unexpected event type
-            console.log(`Unhandled event type ${event.type}.`)
+        default: {
+            return new Response(null, { status: 200 })
+        }
     }
 
-    return new Response(null, { status: 200 })
 }

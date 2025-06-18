@@ -2,8 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useDomainsManager, useProjectManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
 import { DefaultSettings } from '@onlook/constants';
-import { PublishStatus, SettingsTabValue } from '@onlook/models';
-import { PlanKey } from '@onlook/stripe';
+import { PlanType, PublishStatus, SettingsTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { cn } from '@onlook/ui/utils';
 import { getPublishUrls, timeAgo } from '@onlook/utility';
@@ -16,7 +15,7 @@ export const CustomDomainSection = observer(() => {
     const userManager = useUserManager();
     const projectManager = useProjectManager();
     const project = projectManager.project;
-    const plan = userManager.subscription.plan;
+    const plan = userManager.subscription.subscription?.plan;
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;
     const domain = domainsManager.domains.custom;
@@ -82,7 +81,7 @@ export const CustomDomainSection = observer(() => {
             return 'Something went wrong';
         }
 
-        if (plan !== PlanKey.PRO) {
+        if (plan?.type !== PlanType.PRO) {
             return renderNoDomain();
         }
 
