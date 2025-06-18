@@ -64,7 +64,7 @@ export class CreateManager {
         return newProject;
     }
 
-    async startGithubTemplate(userId: string, repoUrl: string){
+    async startGitHubTemplate(userId: string, repoUrl: string) {
         this.error = null;
         try {
             if (!userId) {
@@ -77,7 +77,7 @@ export class CreateManager {
                 repo: repo
             });
 
-            if(isPrivateRepo){
+            if (isPrivateRepo) {
                 this.error = "The repository you've provided is private. Only public repositories are supported";
                 return;
             }
@@ -109,7 +109,6 @@ export class CreateManager {
             branch
         });
     }
-
 
     async createSandbox() {
         return await api.sandbox.fork.mutate({

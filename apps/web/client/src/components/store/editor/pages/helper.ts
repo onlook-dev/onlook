@@ -743,7 +743,6 @@ export const updatePageMetadataInSandbox = async (session: WebSocketSession, pag
     throw new Error('Metadata update not yet implemented for sandbox');
 };
 
-
 export const injectPreloadScript = async (session: WebSocketSession) => {
     await addSetupTask(session);
     await updatePackageJson(session);

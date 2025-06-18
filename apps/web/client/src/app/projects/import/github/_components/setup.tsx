@@ -1,12 +1,11 @@
-import { CardDescription } from '@onlook/ui/card';
-import { CardTitle } from '@onlook/ui/card';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
 
 import { Button } from '@onlook/ui/button';
-import { motion } from 'motion/react';
 import { Icons } from '@onlook/ui/icons';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
-import { useImportGithubProject } from '../_context/context';
+import { motion } from 'motion/react';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
+import { useImportGithubProject } from '../_context/context';
 
 export const SetupGithub = () => {
     const {
