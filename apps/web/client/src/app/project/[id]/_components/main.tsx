@@ -178,7 +178,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             </div>
             <SettingsModal showProjectTabs={true} />
             <SubscriptionModal />
-
         </TooltipProvider>
     );
 });
