@@ -65,7 +65,7 @@ export class SessionManager {
 
             // Check if the session is still connected
             const isConnected = await this.ping();
-            if (!isConnected) {
+            if (isConnected) {
                 this.isConnecting = false;
                 return;
             }
@@ -75,13 +75,17 @@ export class SessionManager {
             await this.session.reconnect()
 
             const isConnected2 = await this.ping();
-            if (!isConnected2) {
-                // If the session failed to reconnect, we need to start a new session
-                await this.session.disconnect();
-                this.session = null;
-                await this.start(sandboxId, userId);
+            if (isConnected2) {
+                this.isConnecting = false;
+                return;
             }
+
+            // If the session failed to reconnect, we need to start a new session
+            await this.session.disconnect();
+            this.session = null;
+            await this.start(sandboxId, userId);
             this.isConnecting = false;
+            return;
         } catch (error) {
             console.error('Failed to reconnect to sandbox', error);
             this.isConnecting = false;
