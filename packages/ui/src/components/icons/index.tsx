@@ -57,7 +57,6 @@ import {
     EyeClosedIcon,
     EyeOpenIcon,
     FileIcon,
-    FilePlusIcon,
     FrameIcon,
     GearIcon,
     GitHubLogoIcon,
@@ -116,7 +115,7 @@ import {
     ViewHorizontalIcon,
     ViewVerticalIcon,
 } from '@radix-ui/react-icons';
-import { MailXIcon } from 'lucide-react';
+import { CreditCardIcon, MailXIcon } from 'lucide-react';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
 import H2Icon from './header-level-icons/h2Icon';
@@ -1291,6 +1290,7 @@ export const Icons = {
     Cube: CubeIcon,
     CursorArrow: CursorArrowIcon,
     Circle: CircleIcon,
+    CreditCard: CreditCardIcon,
 
     Desktop: DesktopIcon,
     DiscordLogo: DiscordLogoIcon,

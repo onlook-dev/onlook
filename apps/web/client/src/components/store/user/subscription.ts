@@ -36,7 +36,8 @@ export class SubscriptionManager {
         // await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
     }
 
-    async getPlanFromServer(): Promise<void> {
+    async getPlanFromServer(): Promise<PlanKey> {
         this.plan = PlanKey.FREE;
+        return this.plan;
     }
 }
