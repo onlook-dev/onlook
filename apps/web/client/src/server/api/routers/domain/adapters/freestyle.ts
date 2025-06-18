@@ -18,7 +18,7 @@ export class FreestyleAdapter implements HostingProviderAdapter {
             request.config
         );
         
-        const freestyleResponse = (await res) as {
+        const freestyleResponse = res as {
             message?: string;
             error?: {
                 message: string;
@@ -26,9 +26,9 @@ export class FreestyleAdapter implements HostingProviderAdapter {
             data?: FreestyleDeployWebSuccessResponseV2;
         };
         
-        if (!res) {
+        if (freestyleResponse.error) {
             throw new Error(
-                freestyleResponse.error?.message || 
+                freestyleResponse.error.message || 
                 freestyleResponse.message || 
                 'Unknown error'
             );

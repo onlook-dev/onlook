@@ -101,7 +101,7 @@ export const previewRouter = createTRPCRouter({
             for (const [path, file] of Object.entries(input.files)) {
                 deploymentFiles[path] = {
                     content: file.content,
-                    encoding: (file.encoding as 'utf-8' | 'base64') || 'utf-8'
+                    encoding: (file.encoding === 'base64' ? 'base64' : 'utf-8')
                 };
             }
             

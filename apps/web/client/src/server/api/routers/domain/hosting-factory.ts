@@ -7,7 +7,7 @@ export class HostingProviderFactory {
             case HostingProvider.FREESTYLE:
                 return new FreestyleAdapter();
             default:
-                return new FreestyleAdapter();
+                throw new Error(`Unsupported hosting provider: ${provider}`);
         }
     }
 } 
