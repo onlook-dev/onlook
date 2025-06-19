@@ -19,6 +19,7 @@ export const CustomDomainSection = observer(() => {
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;
     const domain = domainsManager.domains.custom;
+    const isPro = plan?.type === PlanType.PRO;
 
     if (!project) {
         return 'Something went wrong. Project not found.';
@@ -42,6 +43,7 @@ export const CustomDomainSection = observer(() => {
                 skipBadge: true,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
                 envVars: project.env || {},
+                skipBuild: true,
             },
         });
         console.log(res);
@@ -81,7 +83,7 @@ export const CustomDomainSection = observer(() => {
             return 'Something went wrong';
         }
 
-        if (plan?.type !== PlanType.PRO) {
+        if (!isPro) {
             return renderNoDomain();
         }
 

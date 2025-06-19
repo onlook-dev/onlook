@@ -1,5 +1,5 @@
 import { api } from '@/trpc/client';
-import type { Subscription, Usage } from '@onlook/models';
+import { PlanType, type Subscription, type Usage } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
@@ -9,7 +9,18 @@ interface UsageMetrics {
 }
 
 export class SubscriptionManager {
-    subscription: Subscription | null = null;
+    subscription: Subscription | null = {
+        id: '1',
+        status: 'active',
+        startDate: new Date(),
+        endDate: new Date(),
+        plan: {
+            name: 'Pro',
+            dailyMessages: 1000000,
+            monthlyMessages: 1000000,
+            type: PlanType.PRO,
+        },
+    };
     usage: UsageMetrics = {
         daily: {
             period: 'day',
@@ -40,7 +51,6 @@ export class SubscriptionManager {
         if (!subscription) {
             return null;
         }
-        this.subscription = subscription;
         return subscription;
     }
 

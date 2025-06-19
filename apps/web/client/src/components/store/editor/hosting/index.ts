@@ -67,8 +67,12 @@ export class HostingManager {
             }
 
             // Run the build script
-            this.updateState({ status: PublishStatus.LOADING, message: 'Creating optimized build...', progress: 20 });
-            await this.runBuildStep(buildScript, options);
+            if (!options?.skipBuild) {
+                this.updateState({ status: PublishStatus.LOADING, message: 'Creating optimized build...', progress: 20 });
+                await this.runBuildStep(buildScript, options);
+            } else {
+                console.log('Skipping build');
+            }
             timer.log('Build completed');
             this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project for deployment...', progress: 60 });
 
@@ -91,6 +95,10 @@ export class HostingManager {
             timer.log('Files serialized, sending to Freestyle...');
             const id = await this.deployWeb(projectId, files, urls, options?.envVars);
 
+            if (!id) {
+                throw new Error('Failed to deploy project, no deployment ID returned');
+            }
+
             if (!options?.skipBadge) {
                 await this.removeBadge('./');
                 timer.log('"Built with Onlook" badge removed');
@@ -106,6 +114,7 @@ export class HostingManager {
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
+            this.updateState({ status: PublishStatus.ERROR, message: 'Failed to deploy to preview environment', progress: 100 });
             return {
                 success: false,
                 message: error instanceof Error ? error.message : 'Unknown error',

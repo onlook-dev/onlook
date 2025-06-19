@@ -66,16 +66,7 @@ export const previewRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
-            // Check domain ownership permission
-            const preview = await ctx.db.query.previewDomains.findFirst({
-                where: eq(previewDomains.projectId, input.projectId),
-            });
-            if (!preview) {
-                throw new TRPCError({
-                    code: 'BAD_REQUEST',
-                    message: 'No preview domain found',
-                });
-            }
+            // TODO: Check domain ownership permission
 
             const sdk = initializeFreestyleSdk();
             const res = await sdk.deployWeb(
