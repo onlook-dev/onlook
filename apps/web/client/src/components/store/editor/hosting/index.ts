@@ -24,6 +24,12 @@ const DEFAULT_PUBLISH_STATE: PublishState = {
     progress: null,
 };
 
+enum PublishType {
+    CUSTOM = 'custom',
+    PREVIEW = 'preview',
+    UNPUBLISH = 'unpublish',
+}
+
 export class HostingManager {
     state: PublishState = DEFAULT_PUBLISH_STATE;
 
@@ -52,7 +58,15 @@ export class HostingManager {
         this.state = DEFAULT_PUBLISH_STATE
     }
 
-    async publish(projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
+    async publishPreview(projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
+        return this.publish(PublishType.PREVIEW, projectId, { buildScript, urls, options });
+    }
+
+    async publishCustom(projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
+        return this.publish(PublishType.CUSTOM, projectId, { buildScript, urls, options });
+    }
+
+    private async publish(type: PublishType, projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
         try {
             const timer = new LogTimer('Deployment');
 
@@ -93,7 +107,7 @@ export class HostingManager {
             this.updateState({ status: PublishStatus.LOADING, message: 'Deploying project...', progress: 80 });
 
             timer.log('Files serialized, sending to Freestyle...');
-            const id = await this.deployWeb(projectId, files, urls, options?.envVars);
+            const id = await this.deployWeb(type, projectId, files, urls, options?.envVars);
 
             if (!id) {
                 throw new Error('Failed to deploy project, no deployment ID returned');
@@ -124,7 +138,7 @@ export class HostingManager {
 
     async unpublish(projectId: string, urls: string[]): Promise<PublishResponse> {
         try {
-            const id = await this.deployWeb(projectId, {}, urls);
+            const id = await this.deployWeb(PublishType.CUSTOM, projectId, {}, urls);
             return {
                 success: true,
                 message: 'Deployment deleted with ID: ' + id,
@@ -149,6 +163,7 @@ export class HostingManager {
     }
 
     private async deployWeb(
+        type: PublishType,
         projectId: string,
         files: Record<string, FreestyleFile>,
         urls: string[],
@@ -157,6 +172,7 @@ export class HostingManager {
         const deploymentId = await api.domain.preview.publish.mutate({
             projectId,
             files: files,
+            type: type === PublishType.CUSTOM ? 'custom' : 'preview',
             config: {
                 domains: urls,
                 entrypoint: 'server.js',

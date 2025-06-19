@@ -36,7 +36,7 @@ export const CustomDomainSection = observer(() => {
             console.error(`No custom domain hosting manager found`);
             return;
         }
-        const res = await editorEngine.hosting.publish(project.id, {
+        const res = await editorEngine.hosting.publishCustom(project.id, {
             buildScript: DefaultSettings.COMMANDS.build,
             urls: getPublishUrls(domain.url),
             options: {

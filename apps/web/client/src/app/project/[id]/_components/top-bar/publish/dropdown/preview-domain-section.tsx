@@ -35,7 +35,7 @@ export const PreviewDomainSection = observer(() => {
             console.error(`No preview domain info found`);
             return;
         }
-        const res = await editorEngine.hosting.publish(project.id, {
+        const res = await editorEngine.hosting.publishPreview(project.id, {
             buildScript: DefaultSettings.COMMANDS.build,
             urls: [domain.url],
             options: {
