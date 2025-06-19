@@ -1,7 +1,6 @@
 import { api } from '@/trpc/client';
-import { fromProject, fromProjectSettings, toProjectSettings } from '@onlook/db';
+import { fromProject, fromProjectSettings, toProjectSettings, createDefaultProjectSettings } from '@onlook/db';
 import type { Project, ProjectSettings } from '@onlook/models';
-import { createDefaultProjectSettings } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import { VersionsManager } from './version';
 

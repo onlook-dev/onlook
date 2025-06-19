@@ -7,7 +7,6 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { EditAppButton } from './edit-app';
 import { Settings } from './settings';
-import { transKeys } from '@/i18n/keys';
 
 export const ProjectInfo = observer(
     ({ project, direction }: { project: Project; direction: number }) => {
