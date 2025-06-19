@@ -1,6 +1,6 @@
-import { previewDomains } from '@onlook/db';
+import { previewDomains, publishedDomains } from '@onlook/db';
 import { TRPCError } from '@trpc/server';
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, inArray, ne } from 'drizzle-orm';
 import type { FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -53,6 +53,7 @@ export const previewRouter = createTRPCRouter({
     publish: protectedProcedure
         .input(
             z.object({
+                type: z.enum(['preview', 'custom']),
                 projectId: z.string(),
                 files: z.record(z.string(), z.object({
                     content: z.string(),
@@ -66,15 +67,32 @@ export const previewRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
-            // Check domain ownership permission
-            const preview = await ctx.db.query.previewDomains.findFirst({
-                where: eq(previewDomains.projectId, input.projectId),
-            });
-            if (!preview) {
-                throw new TRPCError({
-                    code: 'BAD_REQUEST',
-                    message: 'No preview domain found',
+            if (input.type === 'preview') {
+                const preview = await ctx.db.query.previewDomains.findFirst({
+                    where: and(
+                        eq(previewDomains.projectId, input.projectId),
+                        inArray(previewDomains.fullDomain, input.config.domains),
+                    ),
                 });
+                if (!preview) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'No preview domain found',
+                    });
+                }
+            } else if (input.type === 'custom') {
+                const custom = await ctx.db.query.publishedDomains.findFirst({
+                    where: and(
+                        eq(publishedDomains.projectId, input.projectId),
+                        inArray(publishedDomains.fullDomain, input.config.domains),
+                    ),
+                });
+                if (!custom) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'No custom domain found',
+                    });
+                }
             }
 
             const sdk = initializeFreestyleSdk();
@@ -95,6 +113,6 @@ export const previewRouter = createTRPCRouter({
             if (!res) {
                 throw new Error(freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error');
             }
-            return freestyleResponse.data?.deploymentId ?? '';
+            return true;
         }),
 });

@@ -1,5 +1,5 @@
 import { api } from '@/trpc/client';
-import type { Subscription, Usage } from '@onlook/models';
+import { type Subscription, type Usage } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
@@ -38,6 +38,7 @@ export class SubscriptionManager {
     async getSubscriptionFromRemote(): Promise<Subscription | null> {
         const subscription = await api.subscription.get.query();
         if (!subscription) {
+            console.error('No subscription returned from remote');
             return null;
         }
         this.subscription = subscription;
