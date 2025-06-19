@@ -130,7 +130,10 @@ export class FileSyncManager {
     }
 
     listAllFiles() {
-        return Array.from(this.cache.keys());
+        return [
+            ...Array.from(this.cache.keys()),
+            ...Array.from(this.binaryCache.keys()),
+        ];
     }
 
     listBinaryFiles(dir: string) {

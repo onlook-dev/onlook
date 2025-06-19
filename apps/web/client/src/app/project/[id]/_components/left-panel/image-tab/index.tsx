@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { sendAnalytics } from '@/utils/analytics';
-import { EditorMode, type ImageContentData } from '@onlook/models';
+import { EditorMode, EditorTabValue, type ImageContentData } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -17,6 +17,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import DeleteImageModal from './delete-modal';
 import RenameImageModal from './rename-modal';
+import { DefaultSettings } from '@onlook/constants';
 
 export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -24,8 +25,8 @@ export const ImagesTab = observer(() => {
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
     const [search, setSearch] = useState('');
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const imageFolder: string | null = null;
     const [imageToDelete, setImageToDelete] = useState<string | null>(null);
     const [imageToRename, setImageToRename] = useState<string | null>(null);
     const [newImageName, setNewImageName] = useState<string>('');
@@ -46,9 +47,11 @@ export const ImagesTab = observer(() => {
 
     const uploadImage = async (file: File) => {
         setUploadError(null);
+        setIsUploading(true);
 
         if (!file.type.startsWith('image/')) {
             setUploadError('Please select a valid image file');
+            setIsUploading(false);
             return;
         }
         try {
@@ -56,6 +59,8 @@ export const ImagesTab = observer(() => {
         } catch (error) {
             setUploadError('Failed to upload image. Please try again.');
             console.error('Image upload error:', error);
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -215,6 +220,17 @@ export const ImagesTab = observer(() => {
         }
     };
 
+    const handleOpenFolder = async (fileName: string) => {
+        if (!fileName) {
+            return;
+        }
+
+        const fullPath = DefaultSettings.IMAGE_FOLDER + '/' + fileName;
+        editorEngine.state.rightPanelTab = EditorTabValue.DEV;
+
+        await editorEngine.ide.openFile(fullPath);
+    }
+
     return (
         <div className="w-full h-full flex flex-col gap-2 p-3 overflow-x-hidden">
             <input
@@ -228,6 +244,12 @@ export const ImagesTab = observer(() => {
             {uploadError && (
                 <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
                     {uploadError}
+                </div>
+            )}
+            {isUploading && (
+                <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">
+                    <Icons.Reload className="w-4 h-4 animate-spin" />
+                    Uploading image...
                 </div>
             )}
             {renameError && (
@@ -403,26 +425,18 @@ export const ImagesTab = observer(() => {
                                                     </span>
                                                 </Button>
                                             </DropdownMenuItem>
-                                            {/* <DropdownMenuItem asChild>
+                                            <DropdownMenuItem asChild>
                                                 <Button
                                                     variant={'ghost'}
                                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                                    onClick={() => {
-                                                        if (!imageFolder) {
-                                                            return;
-                                                        }
-                                                        // invokeMainChannel(
-                                                        //     MainChannels.OPEN_IN_EXPLORER,
-                                                        //     imageFolder,
-                                                        // );
-                                                    }}
+                                                    onClick={() => handleOpenFolder(image.fileName)}
                                                 >
                                                     <span className="flex w-full text-smallPlus items-center">
                                                         <Icons.DirectoryOpen className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
                                                         <span>Open Folder</span>
                                                     </span>
                                                 </Button>
-                                            </DropdownMenuItem> */}
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
