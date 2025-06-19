@@ -1,15 +1,14 @@
-import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { eq } from 'drizzle-orm';
 import {
     projectSettings,
     projectSettingsInsertSchema,
-    projectSettingsUpdateSchema,
-    toProjectSettings,
+    toProjectSettings
 } from '@onlook/db';
 import { TRPCError } from '@trpc/server';
+import { eq } from 'drizzle-orm';
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '../trpc';
 
-export const settingRouter = createTRPCRouter({
+export const settingsRouter = createTRPCRouter({
     get: protectedProcedure
         .input(
             z.object({
