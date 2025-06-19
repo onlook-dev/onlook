@@ -38,7 +38,7 @@ export const PlanSection = observer(() => {
                 </div>
                 <div className="text-right">
                     <div>{usage.usageCount} <span className="text-muted-foreground">of</span> {usage.limitCount}</div>
-                    <div className="text-muted-foreground">{usage.period} chats used</div>
+                    <div className="text-muted-foreground">{usage.period === 'day' ? 'daily' : 'monthly'} chats used</div>
                 </div>
             </div>
             <Progress value={usagePercent} className="w-full" />
