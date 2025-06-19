@@ -13,7 +13,16 @@ export const PlanSection = observer(() => {
     const planName = plan?.name;
     const planStatus = 'Trial';
     const type = plan?.type;
-    const usage = type === PlanType.FREE ? userManager.subscription.usage.daily : userManager.subscription.usage.monthly;
+    const usage = type === PlanType.FREE ? userManager.subscription.usage?.daily : userManager.subscription.usage?.monthly;
+
+    if (!usage) {
+        return (
+            <div className="p-4 w-full text-sm flex flex-col gap-4">
+                <div className="text-sm">Usage data not available</div>
+            </div>
+        );
+    }
+
     const usagePercent = usage.limitCount > 0 ? usage.usageCount / usage.limitCount * 100 : 0;
 
     const handleGetMoreCredits = () => {

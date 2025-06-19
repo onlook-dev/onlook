@@ -11,7 +11,7 @@ interface UsageMetrics {
 export class SubscriptionManager {
     isModalOpen = false;
     subscription: Subscription | null = null;
-    usage: UsageMetrics = {
+    usage: UsageMetrics | null = {
         daily: {
             period: 'day',
             usageCount: 0,
@@ -53,5 +53,11 @@ export class SubscriptionManager {
         }
         this.usage = usage;
         return usage;
+    }
+
+    clear() {
+        this.isModalOpen = false;
+        this.subscription = null;
+        this.usage = null;
     }
 }
