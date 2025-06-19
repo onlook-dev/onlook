@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { compressImageServer } from '@onlook/utility/src/image-server';
-import type { CompressionOptions, CompressionResult } from '@onlook/utility/src/image-types';
+import { compressImageServer } from '@onlook/image-server';
+import type { CompressionOptions, CompressionResult } from '@onlook/image-server';
 
 type TRPCCompressionResult = Omit<CompressionResult, 'buffer'> & {
     bufferData?: string; // base64 encoded buffer data

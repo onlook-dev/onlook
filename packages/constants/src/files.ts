@@ -77,3 +77,44 @@ export const IGNORED_UPLOAD_FILES = [
     '.env.production.local',
     '.env.test.local',
 ];
+
+export const IMAGE_EXTENSIONS = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/svg+xml',
+    'image/bmp',
+    'image/ico',
+    'image/avif',
+];
+
+/**
+ * Compression presets for common use cases
+ */
+export const COMPRESSION_IMAGE_PRESETS = {
+    web: {
+        quality: 80,
+        format: 'webp' as const,
+        progressive: true,
+        effort: 4,
+    },
+    thumbnail: {
+        quality: 70,
+        width: 300,
+        height: 300,
+        format: 'webp' as const,
+        keepAspectRatio: true,
+    },
+    highQuality: {
+        quality: 95,
+        format: 'jpeg' as const,
+        progressive: true,
+        mozjpeg: true,
+    },
+    lowFileSize: {
+        quality: 60,
+        format: 'webp' as const,
+        effort: 6,
+    },
+} as const;

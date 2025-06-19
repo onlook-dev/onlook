@@ -1,10 +1,8 @@
-import type { ProjectManager } from '@/components/store/project/manager';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-import { DefaultSettings } from '@onlook/constants';
+import { COMPRESSION_IMAGE_PRESETS, DefaultSettings } from '@onlook/constants';
 import { convertToBase64, getBaseName, getDirName, getMimeType, isImageFile } from '@onlook/utility/src/file';
-import { compressionPresets } from '@onlook/utility/src/image-types';
 import { api } from '@/trpc/client';
 
 export class ImageManager {
@@ -29,7 +27,7 @@ export class ImageManager {
 
             const compressionResult = await api.image.compress.mutate({
                 imageData: base64Data,
-                options: compressionPresets.highQuality,
+                options: COMPRESSION_IMAGE_PRESETS.highQuality,
             });
 
             let finalBuffer: Uint8Array;

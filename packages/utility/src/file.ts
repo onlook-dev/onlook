@@ -1,4 +1,4 @@
-import { BINARY_EXTENSIONS } from '@onlook/constants';
+import { BINARY_EXTENSIONS, IMAGE_EXTENSIONS } from '@onlook/constants';
 import mime from 'mime-lite';
 
 /**
@@ -99,10 +99,8 @@ export const getMimeType = (fileName: string): string => {
 };
 
 export const isImageFile = (fileName: string): boolean => {
-    const mimeType = getMimeType(fileName);
-    return ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'].includes(
-        mimeType,
-    );
+    const mimeType = mime.getType(fileName);
+    return IMAGE_EXTENSIONS.includes(mimeType);
 };
 
 export const convertToBase64 = (file: Uint8Array): string => {

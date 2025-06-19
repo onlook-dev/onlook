@@ -1,6 +1,6 @@
 {
-    "name": "@onlook/utility",
-    "description": "A utility library for Onlook",
+    "name": "@onlook/image-server",
+    "description": "Server-side image processing utilities for Onlook",
     "main": "./src/index.ts",
     "type": "module",
     "module": "src/index.ts",
@@ -19,7 +19,9 @@
     },
     "keywords": [
         "onlook",
-        "utility"
+        "image",
+        "server",
+        "compression"
     ],
     "author": {
         "name": "Onlook",
@@ -28,19 +30,12 @@
     "license": "Apache-2.0",
     "homepage": "https://onlook.com",
     "devDependencies": {
-        "@onlook/typescript": "*",
-        "@types/culori": "^2.0.4"
+        "@onlook/typescript": "*"
     },
     "dependencies": {
-        "@onlook/fonts": "*",
-        "browser-image-compression": "^2.0.2",
-        "culori": "^4.0.1",
-        "free-email-domains": "^1.2.16",
-        "is-subdir": "^1.2.0",
-        "mime-lite": "^1.0.3",
-        "normalize-url": "^8.0.1",
-        "strip-ansi": "^7.1.0",
-        "tldts": "^6.1.82",
-        "uuid": "^11.1.0"
+        "sharp": "^0.33.5"
+    },
+    "engines": {
+        "node": ">=18.0.0"
     }
 }

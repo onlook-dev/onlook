@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { batchCompressImagesServer, compressImageServer } from 'src/image-server';
+import { batchCompressImagesServer, compressImageServer } from '../src/compress';
 
 // Test directories
 const TEST_INPUT_DIR = path.join(__dirname, 'images', 'input');
@@ -183,6 +183,233 @@ describe('Image Compression Server-Side', () => {
         });
     });
 
+    describe('ICO File Compression Tests', () => {
+        let icoImages: string[] = [];
+
+        beforeAll(async () => {
+            try {
+                const files = await fs.readdir(TEST_INPUT_DIR);
+                icoImages = files.filter((file) => /\.ico$/i.test(file));
+
+                if (icoImages.length === 0) {
+                    console.log('No ICO test images found in:', TEST_INPUT_DIR);
+                }
+            } catch (error) {
+                console.log('Test input directory not accessible for ICO tests');
+            }
+        });
+
+        it('should skip ICO files with appropriate message', async () => {
+            if (icoImages.length === 0) {
+                console.log('Skipping ICO skip test - no ICO files found');
+                return;
+            }
+
+            const inputPath = path.join(TEST_INPUT_DIR, icoImages[0]!);
+            const outputPath = path.join(TEST_OUTPUT_DIR, `ico-should-skip-${icoImages[0]}.webp`);
+
+            const result = await compressImageServer(inputPath, outputPath, {
+                format: 'webp',
+                quality: 80,
+            });
+
+            expect(result.success).toBe(false);
+            expect(result.error).toContain('Skipping .ICO file');
+            expect(result.error).toContain('format not supported for compression');
+
+            // Verify output file was NOT created
+            const outputExists = await fs
+                .access(outputPath)
+                .then(() => true)
+                .catch(() => false);
+            expect(outputExists).toBe(false);
+
+            console.log(`✅ ICO properly skipped: ${result.error}`);
+        });
+
+        it('should skip ICO files in batch processing', async () => {
+            if (icoImages.length === 0) {
+                console.log('Skipping ICO batch skip test - no ICO files found');
+                return;
+            }
+
+            const inputPaths = [path.join(TEST_INPUT_DIR, icoImages[0]!)];
+            const batchOutputDir = path.join(TEST_OUTPUT_DIR, 'ico-batch-skip');
+
+            const results = await batchCompressImagesServer(inputPaths, batchOutputDir, {
+                format: 'webp',
+                quality: 80,
+            });
+
+            expect(results).toHaveLength(1);
+            expect(results[0]!.success).toBe(false);
+            expect(results[0]!.error).toContain(
+                'Skipped .ICO file: favicon.ico - format not supported for compression',
+            );
+        });
+    });
+
+    describe('SVG File Compression Tests', () => {
+        let svgImages: string[] = [];
+
+        beforeAll(async () => {
+            try {
+                const files = await fs.readdir(TEST_INPUT_DIR);
+                svgImages = files.filter((file) => /\.svg$/i.test(file));
+
+                if (svgImages.length === 0) {
+                    console.log('No SVG test images found in:', TEST_INPUT_DIR);
+                }
+            } catch (error) {
+                console.log('Test input directory not accessible for SVG tests');
+            }
+        });
+
+        it('should skip SVG files with appropriate message', async () => {
+            if (svgImages.length === 0) {
+                console.log('Skipping SVG skip test - no SVG files found');
+                return;
+            }
+
+            const inputPath = path.join(TEST_INPUT_DIR, svgImages[0]!);
+            const outputPath = path.join(TEST_OUTPUT_DIR, `svg-should-skip-${svgImages[0]}.webp`);
+
+            const result = await compressImageServer(inputPath, outputPath, {
+                format: 'webp',
+                quality: 90,
+                width: 512,
+                height: 512,
+            });
+
+            expect(result.success).toBe(false);
+            expect(result.error).toContain('Skipping .SVG file');
+            expect(result.error).toContain('format not supported for compression');
+
+            // Verify output file was NOT created
+            const outputExists = await fs
+                .access(outputPath)
+                .then(() => true)
+                .catch(() => false);
+            expect(outputExists).toBe(false);
+        });
+
+        it('should skip SVG files in batch processing', async () => {
+            if (svgImages.length === 0) {
+                console.log('Skipping SVG batch skip test - no SVG files found');
+                return;
+            }
+
+            const inputPaths = [path.join(TEST_INPUT_DIR, svgImages[0]!)];
+            const batchOutputDir = path.join(TEST_OUTPUT_DIR, 'svg-batch-skip');
+
+            const results = await batchCompressImagesServer(inputPaths, batchOutputDir, {
+                format: 'webp',
+                quality: 85,
+                width: 512,
+                height: 512,
+            });
+
+            expect(results).toHaveLength(1);
+            expect(results[0]!.success).toBe(false);
+            expect(results[0]!.error).toContain(
+                'Skipped .SVG file: logo.svg - format not supported for compression',
+            );
+        });
+
+        it('should handle SVG buffer input by skipping', async () => {
+            if (svgImages.length === 0) {
+                console.log('Skipping SVG buffer skip test - no SVG files found');
+                return;
+            }
+
+            const inputPath = path.join(TEST_INPUT_DIR, svgImages[0]!);
+            const svgBuffer = await fs.readFile(inputPath);
+
+            const result = await compressImageServer(svgBuffer, undefined, {
+                format: 'webp',
+                quality: 85,
+            });
+
+            expect(result.success).toBe(false);
+            expect(result.error).toContain('Skipping SVG format');
+        });
+    });
+
+    describe('Batch Compression with Mixed Formats', () => {
+        it('should handle mixed formats by skipping ICO and SVG', async () => {
+            let allImages: string[] = [];
+
+            try {
+                const files = await fs.readdir(TEST_INPUT_DIR);
+                allImages = files
+                    .filter((file) => /\.(jpg|jpeg|png|webp|tiff|tif|ico|svg)$/i.test(file))
+                    .slice(0, 5); // Limit to first 5 for testing
+            } catch (error) {
+                // Directory doesn't exist
+            }
+
+            if (allImages.length === 0) {
+                console.log('Skipping mixed batch test - no test images available');
+                return;
+            }
+
+            const inputPaths = allImages.map((img) => path.join(TEST_INPUT_DIR, img));
+            const batchOutputDir = path.join(TEST_OUTPUT_DIR, 'mixed-batch-with-skips');
+
+            const results = await batchCompressImagesServer(inputPaths, batchOutputDir, {
+                quality: 85,
+                format: 'webp',
+                width: 512,
+                height: 512,
+                keepAspectRatio: true,
+            });
+
+            expect(results.length).toBe(allImages.length);
+
+            // Separate successful and skipped results
+            const successfulResults = results.filter((r) => r.success);
+            const skippedResults = results.filter((r) => !r.success);
+
+            // Log results for each format
+            results.forEach((result, index) => {
+                const fileName = allImages[index];
+                const extension = path.extname(fileName).toLowerCase();
+
+                if (result.success) {
+                    console.log(
+                        `✅ ${extension.toUpperCase()} processed: ${fileName} - ${result.originalSize}B → ${result.compressedSize}B`,
+                    );
+                } else {
+                    console.log(
+                        `⏭️ ${extension.toUpperCase()} skipped: ${fileName} - ${result.error}`,
+                    );
+                }
+            });
+
+            // Verify that ICO and SVG files were skipped
+            skippedResults.forEach((result, index) => {
+                const skippedIndex = results.findIndex((r) => r === result);
+                const fileName = allImages[skippedIndex];
+                const extension = path.extname(fileName).toLowerCase();
+
+                if (extension === '.ico' || extension === '.svg') {
+                    expect(result.error).toContain(`Skipped ${extension.toUpperCase()} file`);
+                }
+            });
+
+            // Verify output files exist only for successful compressions
+            for (const result of successfulResults) {
+                if (result.outputPath) {
+                    const exists = await fs
+                        .access(result.outputPath)
+                        .then(() => true)
+                        .catch(() => false);
+                    expect(exists).toBe(true);
+                }
+            }
+        });
+    });
+
     describe('Batch Compression Tests', () => {
         it('should batch compress multiple images when available', async () => {
             let testImages: string[] = [];
@@ -298,6 +525,32 @@ describe('Image Compression Server-Side', () => {
             const result = await compressImageServer('/', '/root/impossible-path.jpg');
             expect(result.success).toBe(false);
             expect(result.error).toBeDefined();
+        });
+
+        it('should handle malformed ICO files gracefully', async () => {
+            // Create a fake ICO file
+            const fakeIcoPath = path.join(TEST_OUTPUT_DIR, 'fake.ico');
+            await fs.writeFile(fakeIcoPath, 'This is not a real ICO file');
+
+            const result = await compressImageServer(fakeIcoPath);
+            expect(result.success).toBe(false);
+            expect(result.error).toBeDefined();
+
+            // Clean up
+            await fs.unlink(fakeIcoPath);
+        });
+
+        it('should handle malformed SVG files gracefully', async () => {
+            // Create a fake SVG file
+            const fakeSvgPath = path.join(TEST_OUTPUT_DIR, 'fake.svg');
+            await fs.writeFile(fakeSvgPath, '<svg>This is not valid SVG');
+
+            const result = await compressImageServer(fakeSvgPath);
+            expect(result.success).toBe(false);
+            expect(result.error).toBeDefined();
+
+            // Clean up
+            await fs.unlink(fakeSvgPath);
         });
     });
 });

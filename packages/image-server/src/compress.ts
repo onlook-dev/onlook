@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'node:fs/promises';
 import sharp, { type Sharp } from 'sharp';
-import type { CompressionOptions, CompressionResult, SupportedFormat } from './image-types';
+import type { CompressionOptions, CompressionResult, SupportedFormat } from './types';
 
 export async function compressImageServer(
     input: string | Buffer,
@@ -22,6 +22,17 @@ export async function compressImageServer(
             withoutEnlargement = true,
         } = options;
 
+        // Check if input is a file path and determine if we should skip certain formats
+        if (typeof input === 'string') {
+            const fileExtension = path.extname(input).toLowerCase();
+            if (fileExtension === '.ico' || fileExtension === '.svg') {
+                return {
+                    success: false,
+                    error: `Skipping ${fileExtension.toUpperCase()} file - format not supported for compression. Use original file instead.`,
+                };
+            }
+        }
+
         // Initialize Sharp instance
         let sharpInstance = sharp(input);
         let originalSize: number | undefined;
@@ -38,6 +49,14 @@ export async function compressImageServer(
         // Get metadata to determine output format if auto
         const metadata = await sharpInstance.metadata();
         let outputFormat: SupportedFormat = format as SupportedFormat;
+
+        // Additional check for SVG from metadata (in case they come as buffers)
+        if (metadata.format === 'svg') {
+            return {
+                success: false,
+                error: `Skipping SVG format - not supported for compression. Use original file instead.`,
+            };
+        }
 
         if (format === 'auto') {
             outputFormat = determineOptimalFormat(metadata.format);
@@ -116,7 +135,28 @@ export async function batchCompressImagesServer(
         // Ensure output directory exists
         await fs.mkdir(outputDir, { recursive: true });
 
-        const compressionPromises = inputPaths.map(async (inputPath) => {
+        // Filter out ICO and SVG files before processing
+        const supportedPaths = inputPaths.filter((inputPath) => {
+            const fileExtension = path.extname(inputPath).toLowerCase();
+            return fileExtension !== '.ico' && fileExtension !== '.svg';
+        });
+
+        // Create results array with skipped files
+        const results: CompressionResult[] = [];
+
+        for (const inputPath of inputPaths) {
+            const fileExtension = path.extname(inputPath).toLowerCase();
+
+            if (fileExtension === '.ico' || fileExtension === '.svg') {
+                // Add skip result for unsupported formats
+                results.push({
+                    success: false,
+                    error: `Skipped ${fileExtension.toUpperCase()} file: ${path.basename(inputPath)} - format not supported for compression`,
+                });
+            }
+        }
+
+        const compressionPromises = supportedPaths.map(async (inputPath) => {
             const fileName = path.basename(inputPath);
             const nameWithoutExt = path.parse(fileName).name;
             const outputFormat = options.format === 'auto' ? 'webp' : options.format || 'webp';
@@ -125,7 +165,10 @@ export async function batchCompressImagesServer(
             return compressImageServer(inputPath, outputPath, options);
         });
 
-        return await Promise.all(compressionPromises);
+        const compressionResults = await Promise.all(compressionPromises);
+        results.push(...compressionResults);
+
+        return results;
     } catch (error) {
         return [
             {
