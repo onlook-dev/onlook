@@ -1,21 +1,18 @@
 'use client';
 
-import { CardDescription } from '@onlook/ui/card';
-import { CardTitle } from '@onlook/ui/card';
-import { Button } from '@onlook/ui/button';
-import { motion } from 'motion/react';
-import { Icons } from '@onlook/ui/icons';
-import { useEffect, useState } from 'react';
-import { useProjectCreation } from '../_context/project-creation-context';
-import { StepFooter } from './steps';
-import { StepContent } from './steps';
-import { StepHeader } from './steps';
 import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
+import { Button } from '@onlook/ui/button';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
+import { Icons } from '@onlook/ui/icons';
+import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import { StepContent, StepFooter, StepHeader } from '../../steps';
+import { useProjectCreation } from '../_context/context';
 
 export const VerifyProject = () => {
     const { projectData, prevStep, nextStep, isFinalizing } = useProjectCreation();
     const [validation, setValidation] = useState<NextJsProjectValidation | null>(null);
-    
+
     useEffect(() => {
         validateProject();
     }, [projectData]);

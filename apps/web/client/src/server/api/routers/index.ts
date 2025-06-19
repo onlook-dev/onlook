@@ -4,6 +4,7 @@ export * from './code';
 export * from './domain';
 export * from './forward';
 export * from './frame';
+export * from './github';
 export * from './invitation';
 export * from './member';
 export * from './project';

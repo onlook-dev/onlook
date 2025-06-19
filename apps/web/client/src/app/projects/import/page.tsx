@@ -3,7 +3,6 @@
 import { useGetBackground } from '@/hooks/use-get-background';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons/index';
-import { toast } from '@onlook/ui/sonner';
 import { useRouter } from 'next/navigation';
 import { TopBar } from '../_components/top-bar';
 
@@ -49,34 +48,32 @@ const Page = () => {
                         </p>
                     </CardContent>
                 </Card>
-
-                <Card
-                    className={`opacity-70 cursor-none transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
-                    onClick={() => {
-                        toast.error('Coming soon: Import from GitHub');
-                        // handleCardClick('github')
-                    }}
-                    tabIndex={0}
-                    role="button"
-                    aria-label="Connect to GitHub"
-                >
-                    <CardHeader className="space-y-4">
-                        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                            <Icons.GitHubLogo className="w-6 h-6 text-primary" />
-                        </div>
-                        <div className="space-y-2">
-                            <CardTitle className="text-xl">Coming soon: Import from GitHub</CardTitle>
-                            <CardDescription className="text-base">
-                                Import your project directly from GitHub
-                            </CardDescription>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground">
-                            Connect your GitHub account to access and work with your repositories
-                        </p>
-                    </CardContent>
-                </Card>
+                <div className="opacity-70 cursor-not-allowed pointer-events-none">
+                    <Card
+                        className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02]`}
+                        onClick={() => handleCardClick('github')}
+                        tabIndex={0}
+                        role="button"
+                        aria-label="Connect to GitHub"
+                    >
+                        <CardHeader className="space-y-4">
+                            <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                                <Icons.GitHubLogo className="w-6 h-6 text-primary" />
+                            </div>
+                            <div className="space-y-2">
+                                <CardTitle className="text-xl">Import from GitHub (Coming Soon)</CardTitle>
+                                <CardDescription className="text-base">
+                                    Import your project directly from GitHub
+                                </CardDescription>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground">
+                                Connect your GitHub account to access and work with your repositories
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
             </div>
         </div>
     );
