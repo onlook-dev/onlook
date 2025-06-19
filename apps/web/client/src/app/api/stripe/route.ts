@@ -1,7 +1,13 @@
 import { env } from '@/env'
 import { createStripeClient } from '@onlook/stripe'
 import Stripe from 'stripe'
-import { handleCheckoutSessionCompleted, handleSubscriptionDeleted } from './stripe'
+import { 
+    handleCheckoutSessionCompleted, 
+    handleSubscriptionDeleted,
+    handleSubscriptionUpdated,
+    handleInvoicePaymentFailed,
+    handleInvoicePaymentSucceeded 
+} from './stripe'
 
 export async function POST(request: Request) {
     const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
@@ -26,13 +32,21 @@ export async function POST(request: Request) {
         case 'checkout.session.completed': {
             return await handleCheckoutSessionCompleted(event, stripe);
         }
-        // Handle cancellation
+        case 'customer.subscription.updated': {
+            return await handleSubscriptionUpdated(event, stripe);
+        }
         case 'customer.subscription.deleted': {
             return await handleSubscriptionDeleted(event);
         }
+        case 'invoice.payment_failed': {
+            return await handleInvoicePaymentFailed(event);
+        }
+        case 'invoice.payment_succeeded': {
+            return await handleInvoicePaymentSucceeded(event);
+        }
         default: {
+            console.log(`Unhandled event type: ${event.type}`)
             return new Response(null, { status: 200 })
         }
     }
-
 }
