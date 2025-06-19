@@ -6,6 +6,7 @@ import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { NoVersions } from './empty-state/version';
+import { VersionRow, VersionRowType } from './version-row';
 // import { NoVersions } from './EmptyState/Version';
 // import { VersionRow, VersionRowType } from './VersionRow';
 
@@ -39,7 +40,7 @@ export const Versions = observer(() => {
             if (!acc[dateKey]) {
                 acc[dateKey] = [];
             }
-            acc[dateKey].push(commit);
+            acc[dateKey]?.push(commit);
             return acc;
         },
         {} as Record<string, typeof commits>,

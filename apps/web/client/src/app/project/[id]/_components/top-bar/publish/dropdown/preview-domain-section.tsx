@@ -41,7 +41,6 @@ export const PreviewDomainSection = observer(() => {
             options: {
                 skipBadge: false,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-                envVars: project.env || {},
             },
         });
         console.log(res);

@@ -19,8 +19,8 @@ export const ReinstallButton = observer(() => {
     const projectManager = useProjectManager();
 
     const projectSettings = projectManager.projectSettings;
-    // const isTerminalRunning = projectManager.runner?.state === RunState.RUNNING;
-    const installCommand = projectSettings?.commands?.install ?? DefaultSettings.COMMANDS.install;
+    const isTerminalRunning = false; // TODO: Implement
+    // const installCommand = projectSettings?.commands?.install ?? DefaultSettings.COMMANDS.install;
 
     const [isReinstalling, setIsReinstalling] = useState(false);
     const [showReinstallDialog, setShowReinstallDialog] = useState(false);

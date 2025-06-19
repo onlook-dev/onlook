@@ -1,13 +1,8 @@
 import { useProjectManager } from '@/components/store/project';
 import { DefaultSettings } from '@onlook/constants';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { debounce } from 'lodash';
-import { ReinstallButton } from './reinstall-button';
 import { useDebouncedInput } from '@/hooks/use-debounce-input';
 
 export const ProjectTab = observer(() => {
@@ -112,7 +107,7 @@ export const ProjectTab = observer(() => {
                     </div>
                 </div>
             </div>
-            <Separator />
+            {/* <Separator />
 
             <div className="flex justify-between items-center p-6">
                 <div className="flex flex-col gap-2">
@@ -122,7 +117,7 @@ export const ProjectTab = observer(() => {
                     </p>
                 </div>
                 <ReinstallButton />
-            </div>
+            </div> */}
         </div>
     );
 });

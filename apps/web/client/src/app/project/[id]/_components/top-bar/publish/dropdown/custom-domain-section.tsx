@@ -41,7 +41,6 @@ export const CustomDomainSection = observer(() => {
             options: {
                 skipBadge: true,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-                envVars: project.env || {},
             },
         });
         console.log(res);

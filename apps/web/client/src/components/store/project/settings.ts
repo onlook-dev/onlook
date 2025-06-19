@@ -41,8 +41,8 @@ export class ProjectSettingsManager {
             ...newSettings,
         };
 
-        await api.settings.update.mutate({
-            ...fromProjectSettings(this.settings),
+        await api.settings.upsert.mutate({
+            settings: fromProjectSettings(project.id, this.settings),
             projectId: project.id,
         });
     }

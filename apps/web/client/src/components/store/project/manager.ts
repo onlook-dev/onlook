@@ -3,10 +3,8 @@ import { fromProject, fromProjectSettings, toProjectSettings } from '@onlook/db'
 import type { Project, ProjectSettings } from '@onlook/models';
 import { createDefaultProjectSettings } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
+import { VersionsManager } from './version';
 
-export class VersionsManager {
-    constructor(private projectManager: ProjectManager) { }
-}
 
 export class ProjectManager {
     private _project: Project | null = null;

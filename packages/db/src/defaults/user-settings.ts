@@ -10,5 +10,6 @@ export const createDefaultUserSettings = (userId: string): DbUserSettings => {
         expandCodeBlocks: DefaultSettings.CHAT_SETTINGS.expandCodeBlocks,
         showSuggestions: DefaultSettings.CHAT_SETTINGS.showSuggestions,
         showMiniChat: DefaultSettings.CHAT_SETTINGS.showMiniChat,
+        shouldWarnDelete: true,
     };
 };
