@@ -1,9 +1,9 @@
 import { useProjectManager } from '@/components/store/project';
+import { useDebouncedInput } from '@/hooks/use-debounce-input';
 import { DefaultSettings } from '@onlook/constants';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { useDebouncedInput } from '@/hooks/use-debounce-input';
 
 export const ProjectTab = observer(() => {
     const projectsManager = useProjectManager();
@@ -58,7 +58,7 @@ export const ProjectTab = observer(() => {
                 <h2 className="text-lg">Metadata</h2>
                 <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                        <p className=" text-muted-foreground">Name</p>
+                        <p className="text-muted-foreground">Name</p>
                         <Input
                             id="name"
                             value={nameInput.localValue}
@@ -88,7 +88,7 @@ export const ProjectTab = observer(() => {
                         />
                     </div>
                     <div className="flex justify-between items-center">
-                        <p className=" text-muted-foreground">Run</p>
+                        <p className="text-muted-foreground">Run</p>
                         <Input
                             id="run"
                             value={runInput.localValue}
@@ -97,7 +97,7 @@ export const ProjectTab = observer(() => {
                         />
                     </div>
                     <div className="flex justify-between items-center">
-                        <p className=" text-muted-foreground">Build</p>
+                        <p className="text-muted-foreground">Build</p>
                         <Input
                             id="build"
                             value={buildInput.localValue}
