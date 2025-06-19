@@ -138,7 +138,7 @@ export class HostingManager {
 
     async unpublish(projectId: string, urls: string[]): Promise<PublishResponse> {
         try {
-            const id = await this.deployWeb(PublishType.CUSTOM, projectId, {}, urls);
+            const id = await this.deployWeb(PublishType.UNPUBLISH, projectId, {}, urls);
             return {
                 success: true,
                 message: 'Deployment deleted with ID: ' + id,
