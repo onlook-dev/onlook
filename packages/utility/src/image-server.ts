@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'node:fs/promises';
-import sharp from 'sharp';
+import sharp, { type Sharp } from 'sharp';
 import type { CompressionOptions, CompressionResult, SupportedFormat } from './image-types';
 
 export async function compressImageServer(
@@ -23,18 +23,16 @@ export async function compressImageServer(
         } = options;
 
         // Initialize Sharp instance
-        let sharpInstance: any;
+        let sharpInstance = sharp(input);
         let originalSize: number | undefined;
 
         if (typeof input === 'string') {
             // Input is a file path
             const stats = await fs.stat(input);
             originalSize = stats.size;
-            sharpInstance = sharp(input);
         } else {
             // Input is a buffer
             originalSize = input.length;
-            sharpInstance = sharp(input);
         }
 
         // Get metadata to determine output format if auto
@@ -50,7 +48,7 @@ export async function compressImageServer(
             const resizeOptions = {
                 width,
                 height,
-                fit: keepAspectRatio ? 'inside' : 'fill',
+                fit: keepAspectRatio ? sharp.fit.inside : sharp.fit.fill,
                 withoutEnlargement,
             };
             sharpInstance = sharpInstance.resize(resizeOptions);
@@ -164,7 +162,7 @@ const determineOptimalFormat = (inputFormat?: string): SupportedFormat => {
  * Apply format-specific compression settings
  */
 const applyFormatCompression = (
-    sharpInstance: any,
+    sharpInstance: Sharp,
     format: SupportedFormat,
     options: {
         quality: number;
