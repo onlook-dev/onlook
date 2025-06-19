@@ -1,18 +1,18 @@
 'use client';
 
+import { useGetBackground } from '@/hooks/use-get-background';
 import { MotionCard } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import useResizeObserver from 'use-resize-observer';
 import { ConnectGithub } from './_components/connect';
+import { FinalizingGithubProject } from './_components/finalizing';
 import { SetupGithub } from './_components/setup';
 import { useImportGithubProject } from './_context/context';
-import { useGetBackground } from '@/hooks/use-get-background';
-import { FinalizingGithubProject } from './_components/finalizing';
 
 const steps = [
-   <ConnectGithub />,
-   <SetupGithub />,
-   <FinalizingGithubProject />
+    <ConnectGithub />,
+    <SetupGithub />,
+    <FinalizingGithubProject />
 ];
 
 const Page = () => {
@@ -29,8 +29,6 @@ const Page = () => {
             return { x: `${-120 * direction}%`, opacity: 0 };
         },
     };
-
-
 
     return (
         <div className="fixed inset-0">
@@ -55,7 +53,7 @@ const Page = () => {
                                 <AnimatePresence
                                     mode="popLayout"
                                     initial={false}
-                                    // custom={direction}
+                                // custom={direction}
                                 >
                                     <motion.div
                                         key={currentStep}

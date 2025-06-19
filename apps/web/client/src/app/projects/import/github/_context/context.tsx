@@ -1,15 +1,14 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { api } from '@/trpc/react';
-import { api as clientApi } from '@/trpc/client';
-import { useCreateManager } from '@/components/store/create';
-import { useRouter } from 'next/navigation';
-import { redirect } from 'next/navigation';
 import { login } from '@/app/login/actions';
-import { SignInMethod } from '@onlook/models/auth';
-import { Routes } from '@/utils/constants';
+import { useCreateManager } from '@/components/store/create';
 import { useUserManager } from '@/components/store/user';
+import { api as clientApi } from '@/trpc/client';
+import { api } from '@/trpc/react';
+import { Routes } from '@/utils/constants';
+import { SignInMethod } from '@onlook/models/auth';
+import { useRouter } from 'next/navigation';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 const FAKE_ORGANIZATIONS = [
     {
@@ -167,6 +166,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
 
     const prevStep = () => {
         if (currentStep === 0) {
+            router.push(Routes.IMPORT_PROJECT);
             return;
         }
         setCurrentStep((prev) => prev - 1);
@@ -382,19 +382,19 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
 const ImportGithubProjectContext = createContext<ImportGithubContextType>({
     // Step management
     currentStep: 0,
-    setCurrentStep: () => {},
-    nextStep: () => {},
-    prevStep: () => {},
+    setCurrentStep: () => { },
+    nextStep: () => { },
+    prevStep: () => { },
 
     // Repository data
     repoUrl: '',
-    setRepoUrl: () => {},
+    setRepoUrl: () => { },
     branch: '',
-    setBranch: () => {},
+    setBranch: () => { },
     selectedRepo: null,
-    setSelectedRepo: () => {},
+    setSelectedRepo: () => { },
     selectedOrg: null,
-    setSelectedOrg: () => {},
+    setSelectedOrg: () => { },
 
     // GitHub data
     organizations: [],
@@ -416,16 +416,16 @@ const ImportGithubProjectContext = createContext<ImportGithubContextType>({
     connectionError: null,
 
     // Functions
-    fetchOrganizations: () => {},
-    fetchRepositories: () => {},
-    fetchUserRepositories: () => {},
-    fetchOrgRepositories: () => {},
-    importRepo: () => {},
+    fetchOrganizations: () => { },
+    fetchRepositories: () => { },
+    fetchUserRepositories: () => { },
+    fetchOrgRepositories: () => { },
+    importRepo: () => { },
     validateRepository: async () => null,
-    checkGitHubConnection: () => {},
-    clearErrors: () => {},
-    retry: () => {},
-    cancel: () => {},
+    checkGitHubConnection: () => { },
+    clearErrors: () => { },
+    retry: () => { },
+    cancel: () => { },
 });
 
 export const useImportGithubProject = () => {
