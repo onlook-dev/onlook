@@ -6,6 +6,10 @@ import { capitalizeFirstLetter } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
 import { ComingSoonTab, SettingsTabValue, type SettingTab } from './helpers';
+import { SiteTab } from './site';
+import DomainTab from './domain';
+import { ProjectTab } from './project';
+import { VersionsTab } from './versions';
 
 export const ProjectSettingsTabs = observer(({ appendTabs }: { appendTabs: (tabs: SettingTab[]) => void }) => {
     const editorEngine = useEditorEngine();
@@ -13,22 +17,22 @@ export const ProjectSettingsTabs = observer(({ appendTabs }: { appendTabs: (tabs
         {
             label: SettingsTabValue.SITE,
             icon: <Icons.File className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
+            component: <SiteTab />,
         },
         {
             label: SettingsTabValue.DOMAIN,
             icon: <Icons.Globe className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
+            component: <DomainTab />,
         },
         {
             label: SettingsTabValue.PROJECT,
             icon: <Icons.Gear className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
+            component: <ProjectTab />,
         },
         {
             label: SettingsTabValue.VERSIONS,
             icon: <Icons.Code className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
+            component: <VersionsTab />,
         },
     ];
 

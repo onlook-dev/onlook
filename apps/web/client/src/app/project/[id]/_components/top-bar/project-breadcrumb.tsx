@@ -201,6 +201,12 @@ export const ProjectBreadcrumb = observer(() => {
                             {isDownloading ? t(transKeys.projects.actions.downloadingCode) : t(transKeys.projects.actions.downloadCode)}
                         </div>
                     </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => editorEngine.state.settingsOpen = true}>
+                        <div className="flex row center items-center group">
+                            <Icons.Gear className="mr-2 group-hover:rotate-12 transition-transform" />
+                            {t(transKeys.help.menu.openSettings)}
+                        </div>
+                    </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
