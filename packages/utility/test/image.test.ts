@@ -1,7 +1,7 @@
 import { describe, expect, it, beforeAll, afterAll } from 'bun:test';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { compressImageServer, batchCompressImagesServer } from '../src/image';
+import { batchCompressImagesServer, compressImageServer } from 'src/image-server';
 
 // Test directories
 const TEST_INPUT_DIR = path.join(__dirname, 'images', 'input');

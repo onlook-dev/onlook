@@ -20,6 +20,7 @@ export const appRouter = createTRPCRouter({
     domain: domainRouter,
     github: githubRouter,
     subscription: subscriptionRouter,
+    image: imageRouter,
 });
 
 // export type definition of API

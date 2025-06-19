@@ -12,3 +12,4 @@ export * from './sandbox';
 export * from './subscription';
 export * from './user';
 export * from './user-canvas';
+export * from './image';

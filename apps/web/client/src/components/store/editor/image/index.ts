@@ -4,25 +4,52 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { DefaultSettings } from '@onlook/constants';
 import { convertToBase64, getBaseName, getMimeType, isImageFile } from '@onlook/utility/src/file';
+import { compressionPresets } from '@onlook/utility/src/image-types';
+import { api } from '@/trpc/client';
+
 export class ImageManager {
     private images: ImageContentData[] = [];
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         this.scanImages();
         makeAutoObservable(this);
     }
 
     async upload(file: File): Promise<void> {
-        try {            
-            const buffer = await file.arrayBuffer();
+        try {
             const path = `${DefaultSettings.IMAGE_FOLDER}/${file.name}`;
-
-         await this.editorEngine.sandbox.writeBinaryFile(
-                path,
-                new Uint8Array(buffer),
+            
+            // Convert file to base64 for tRPC transmission
+            const arrayBuffer = await file.arrayBuffer();
+            const base64Data = btoa(
+                Array.from(new Uint8Array(arrayBuffer))
+                    .map((byte: number) => String.fromCharCode(byte))
+                    .join('')
             );
+
+            const compressionResult = await api.image.compress.mutate({
+                imageData: base64Data,
+                options: compressionPresets.highQuality,
+            });
+
+            let finalBuffer: Uint8Array;
+
+            if (compressionResult.success && compressionResult.bufferData) {
+                // Convert base64 buffer data back to Uint8Array
+                const compressedBuffer = atob(compressionResult.bufferData);
+                finalBuffer = new Uint8Array(compressedBuffer.length);
+                for (let i = 0; i < compressedBuffer.length; i++) {
+                    finalBuffer[i] = compressedBuffer.charCodeAt(i);
+                }
+            } else {
+                // Fall back to original if compression failed
+                console.warn('Image compression failed, using original:', compressionResult.error);
+                finalBuffer = new Uint8Array(arrayBuffer);
+            }
+
+            console.log('finalBuffer', finalBuffer);
+
+            await this.editorEngine.sandbox.writeBinaryFile(path, finalBuffer);
             this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
@@ -122,7 +149,9 @@ export class ImageManager {
 
     async scanImages() {
         try {
-            const files = await this.editorEngine.sandbox.listBinaryFiles(DefaultSettings.IMAGE_FOLDER);
+            const files = await this.editorEngine.sandbox.listBinaryFiles(
+                DefaultSettings.IMAGE_FOLDER,
+            );
 
             if (!files) {
                 this.images = [];
@@ -133,7 +162,6 @@ export class ImageManager {
 
             const imagePromises = imageFiles.map(async (filePath: string) => {
                 try {
-                    
                     // Read the binary file
                     const binaryData = await this.editorEngine.sandbox.readBinaryFile(filePath);
                     if (!binaryData) {

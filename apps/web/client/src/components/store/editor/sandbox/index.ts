@@ -299,7 +299,6 @@ export class SandboxManager {
     }
 
     async handleFileChange(event: WatchEvent) {
-        console.log('handleFileChange', event);
         for (const path of event.paths) {
             if (isSubdirectory(path, IGNORED_DIRECTORIES)) {
                 continue;
