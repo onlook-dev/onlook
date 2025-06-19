@@ -43,7 +43,7 @@ export const CustomDomainSection = observer(() => {
                 skipBadge: true,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
                 envVars: project.env || {},
-                skipBuild: true,
+                skipBuild: false,
             },
         });
         console.log(res);
