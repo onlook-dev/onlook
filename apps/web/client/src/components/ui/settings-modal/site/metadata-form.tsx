@@ -117,8 +117,8 @@ export const MetadataForm = ({
                     </div>
                 </div>
                 <Separator />
-
-                <div className="flex flex-col gap-4">
+                {/* TODO: Implement */}
+                {/* <div className="flex flex-col gap-4">
                     <h2 className="text-title3">Imagery</h2>
                     <div className="grid grid-cols-2 text-foreground-onlook">
                         <div className="flex flex-col max-w-52">
@@ -149,29 +149,28 @@ export const MetadataForm = ({
                             />
                         </div>
                     )}
-                    <div className="flex justify-end gap-4">
-                        <Button
-                            variant="ghost"
-                            className="flex items-center gap-2 px-4 py-0"
-                            type="button"
-                            onClick={handleDiscard}
-                            disabled={!isDirty}
-                        >
-                            <span>Discard changes</span>
-                        </Button>
-                        <Button
-                            variant="secondary"
-                            className="flex items-center gap-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20"
-                            type="button"
-                            onClick={onSave}
-                            disabled={!isDirty}
-                        >
-                            <span>Save changes</span>
-                        </Button>
-                    </div>
+                </div> */}
+                <div className="flex justify-end gap-4">
+                    <Button
+                        variant="ghost"
+                        className="flex items-center gap-2 px-4 py-0"
+                        type="button"
+                        onClick={handleDiscard}
+                        disabled={!isDirty}
+                    >
+                        <span>Discard changes</span>
+                    </Button>
+                    <Button
+                        variant="secondary"
+                        className="flex items-center gap-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20"
+                        type="button"
+                        onClick={onSave}
+                        disabled={!isDirty}
+                    >
+                        <span>Save changes</span>
+                    </Button>
                 </div>
             </div>
-            <Separator />
         </div>
     );
 };
