@@ -26,6 +26,7 @@ export const prices = pgTable('prices', {
     // Stripe
     stripePriceId: text('stripe_price_id').notNull(),
 })
+export type Price = typeof prices.$inferSelect;
 
 export const subscriptions = pgTable('subscriptions', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -39,6 +40,19 @@ export const subscriptions = pgTable('subscriptions', {
     // Stripe
     stripeSubscriptionId: text('stripe_subscription_id').notNull(),
 })
+
+export const planRelations = relations(plans, ({ many }) => ({
+    prices: many(prices),
+    subscriptions: many(subscriptions),
+}));
+
+export const priceRelations = relations(prices, ({ one, many }) => ({
+    plan: one(plans, {
+        fields: [prices.planId],
+        references: [plans.id],
+    }),
+    subscriptions: many(subscriptions),
+}));
 
 export const subscriptionRelations = relations(subscriptions, ({ one, many }) => ({
     plan: one(plans, {

@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { subscriptions } from '../subscription/subscription';
 import { authUsers } from '../supabase';
@@ -11,6 +11,7 @@ export const users = pgTable('users', {
     id: uuid('id')
         .primaryKey()
         .references(() => authUsers.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    stripeCustomerId: text('stripe_customer_id'),
 }).enableRLS();
 
 export const usersRelations = relations(users, ({ many, one }) => ({
