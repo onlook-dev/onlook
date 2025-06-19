@@ -24,6 +24,12 @@ const DEFAULT_PUBLISH_STATE: PublishState = {
     progress: null,
 };
 
+enum PublishType {
+    CUSTOM = 'custom',
+    PREVIEW = 'preview',
+    UNPUBLISH = 'unpublish',
+}
+
 export class HostingManager {
     state: PublishState = DEFAULT_PUBLISH_STATE;
 
@@ -52,7 +58,15 @@ export class HostingManager {
         this.state = DEFAULT_PUBLISH_STATE
     }
 
-    async publish(projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
+    async publishPreview(projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
+        return this.publish(PublishType.PREVIEW, projectId, { buildScript, urls, options });
+    }
+
+    async publishCustom(projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
+        return this.publish(PublishType.CUSTOM, projectId, { buildScript, urls, options });
+    }
+
+    private async publish(type: PublishType, projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
         try {
             const timer = new LogTimer('Deployment');
 
@@ -67,8 +81,12 @@ export class HostingManager {
             }
 
             // Run the build script
-            this.updateState({ status: PublishStatus.LOADING, message: 'Creating optimized build...', progress: 20 });
-            await this.runBuildStep(buildScript, options);
+            if (!options?.skipBuild) {
+                this.updateState({ status: PublishStatus.LOADING, message: 'Creating optimized build...', progress: 20 });
+                await this.runBuildStep(buildScript, options);
+            } else {
+                console.log('Skipping build');
+            }
             timer.log('Build completed');
             this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project for deployment...', progress: 60 });
 
@@ -89,7 +107,11 @@ export class HostingManager {
             this.updateState({ status: PublishStatus.LOADING, message: 'Deploying project...', progress: 80 });
 
             timer.log('Files serialized, sending to Freestyle...');
-            const id = await this.deployWeb(projectId, files, urls, options?.envVars);
+            const success = await this.deployWeb(type, projectId, files, urls, options?.envVars);
+
+            if (!success) {
+                throw new Error('Failed to deploy project');
+            }
 
             if (!options?.skipBadge) {
                 await this.removeBadge('./');
@@ -98,14 +120,15 @@ export class HostingManager {
             }
 
             timer.log('Deployment completed');
-            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful, deployment ID: ' + id, progress: 100 });
+            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful', progress: 100 });
 
             return {
                 success: true,
-                message: 'Deployment successful, deployment ID: ' + id,
+                message: 'Deployment successful',
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
+            this.updateState({ status: PublishStatus.ERROR, message: 'Failed to deploy to preview environment', progress: 100 });
             return {
                 success: false,
                 message: error instanceof Error ? error.message : 'Unknown error',
@@ -115,10 +138,15 @@ export class HostingManager {
 
     async unpublish(projectId: string, urls: string[]): Promise<PublishResponse> {
         try {
-            const id = await this.deployWeb(projectId, {}, urls);
+            const success = await this.deployWeb(PublishType.UNPUBLISH, projectId, {}, urls);
+
+            if (!success) {
+                throw new Error('Failed to delete deployment');
+            }
+
             return {
                 success: true,
-                message: 'Deployment deleted with ID: ' + id,
+                message: 'Deployment deleted',
             };
         } catch (error) {
             console.error('Failed to delete deployment', error);
@@ -140,22 +168,28 @@ export class HostingManager {
     }
 
     private async deployWeb(
+        type: PublishType,
         projectId: string,
         files: Record<string, FreestyleFile>,
         urls: string[],
         envVars?: Record<string, string>,
-    ): Promise<string> {
-        const deploymentId = await api.domain.preview.publish.mutate({
-            projectId,
-            files: files,
-            config: {
-                domains: urls,
-                entrypoint: 'server.js',
-                envVars,
-            },
-        });
-
-        return deploymentId;
+    ): Promise<boolean> {
+        try {
+            const success = await api.domain.preview.publish.mutate({
+                projectId,
+                files: files,
+                type: type === PublishType.CUSTOM ? 'custom' : 'preview',
+                config: {
+                    domains: urls,
+                    entrypoint: 'server.js',
+                    envVars,
+                },
+            });
+            return success;
+        } catch (error) {
+            console.error('Failed to deploy project', error);
+            return false;
+        }
     }
 
     private async runPrepareStep() {

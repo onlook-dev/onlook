@@ -19,6 +19,7 @@ export const CustomDomainSection = observer(() => {
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;
     const domain = domainsManager.domains.custom;
+    const isPro = plan?.type === PlanType.PRO;
 
     if (!project) {
         return 'Something went wrong. Project not found.';
@@ -35,13 +36,14 @@ export const CustomDomainSection = observer(() => {
             console.error(`No custom domain hosting manager found`);
             return;
         }
-        const res = await editorEngine.hosting.publish(project.id, {
+        const res = await editorEngine.hosting.publishCustom(project.id, {
             buildScript: DefaultSettings.COMMANDS.build,
             urls: getPublishUrls(domain.url),
             options: {
                 skipBadge: true,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
                 envVars: project.env || {},
+                skipBuild: false,
             },
         });
         console.log(res);
@@ -81,7 +83,7 @@ export const CustomDomainSection = observer(() => {
             return 'Something went wrong';
         }
 
-        if (plan?.type !== PlanType.PRO) {
+        if (!isPro) {
             return renderNoDomain();
         }
 
