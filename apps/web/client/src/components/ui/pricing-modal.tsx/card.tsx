@@ -1,40 +1,95 @@
 import { transKeys } from '@/i18n/keys';
+import { PRO_TIERS } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
+import { useState } from 'react';
+
+// Mock free tier configuration
+const FREE_TIER = {
+    name: 'Free',
+    price: '$0/month',
+    description: 'Prototype and experiment in code with ease.',
+    features: [
+        'Visual code editor access',
+        '5 projects',
+        '10 AI chat messages a day',
+        '50 AI messages a month',
+        'Limited to 1 screenshot per chat'
+    ]
+};
+
+// Price formatting helper
+const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month`;
 
 export const PricingCard = ({
-    plan,
-    price,
-    description,
-    features,
+    planType,
     buttonText,
     buttonProps,
     delay,
     isLoading,
-    defaultSelectValue,
-    selectValues,
-    disableSelect,
 }: {
-    plan: string;
-    price: string;
-    description: string;
-    features: string[];
+    planType: 'free' | 'pro';
     buttonText: string;
     buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
     delay: number;
     isLoading?: boolean;
-    defaultSelectValue?: string;
-    disableSelect?: boolean;
-    selectValues: {
-        value: string;
-        label: string;
-    }[];
 }) => {
     const t = useTranslations();
+    const [selectedTier, setSelectedTier] = useState<string>('');
+
+    // Safety check for proTiers
+    if (planType === 'pro' && !PRO_TIERS.length) {
+        return null;
+    }
+
+    const defaultProTier = PRO_TIERS[0]!; // Non-null assertion since we checked length
+
+    const getPlanData = () => {
+        if (planType === 'free') {
+            return {
+                plan: FREE_TIER.name,
+                price: FREE_TIER.price,
+                description: FREE_TIER.description,
+                features: FREE_TIER.features,
+                defaultSelectValue: '10',
+                selectValues: [
+                    { value: '10', label: '10 Daily Messages' },
+                ],
+                disableSelect: true,
+            };
+        } else {
+            // Find the selected tier or use default
+            const currentTier = selectedTier
+                ? PRO_TIERS.find(tier => tier.name === selectedTier) || defaultProTier
+                : defaultProTier;
+
+            return {
+                plan: t('pricing.plans.pro.name'),
+                price: formatPrice(currentTier.monthly),
+                description: t('pricing.plans.pro.description'),
+                features: [
+                    'Unlimited projects',
+                    'Custom domain',
+                ],
+                defaultSelectValue: selectedTier || defaultProTier.name,
+                selectValues: PRO_TIERS.map(tier => ({
+                    value: tier.name,
+                    label: tier.name
+                })),
+                disableSelect: false,
+            };
+        }
+    };
+
+    const planData = getPlanData();
+
+    const handleTierChange = (value: string) => {
+        setSelectedTier(value);
+    };
 
     return (
         <MotionCard
@@ -45,20 +100,24 @@ export const PricingCard = ({
         >
             <motion.div className="p-6 flex flex-col h-full">
                 <div className="space-y-1">
-                    <h2 className="text-title2">{plan}</h2>
-                    <p className="text-foreground-onlook text-largePlus">{price}</p>
+                    <h2 className="text-title2">{planData.plan}</h2>
+                    <p className="text-foreground-onlook text-largePlus">{planData.price}</p>
                 </div>
                 <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
-                <p className="text-foreground-primary text-title3 text-balance">{description}</p>
+                <p className="text-foreground-primary text-title3 text-balance">{planData.description}</p>
                 <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
                 <div className="flex flex-col gap-2 mb-6">
-                    <Select value={defaultSelectValue} disabled={disableSelect}>
+                    <Select
+                        value={planData.defaultSelectValue}
+                        disabled={planData.disableSelect}
+                        onValueChange={handleTierChange}
+                    >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a plan" />
                         </SelectTrigger>
                         <SelectContent className="z-99">
                             <SelectGroup>
-                                {selectValues.map((value) => (
+                                {planData.selectValues.map((value) => (
                                     <SelectItem key={value.value} value={value.value}>
                                         {value.label}
                                     </SelectItem>
@@ -82,7 +141,7 @@ export const PricingCard = ({
                     </Button>
                 </div>
                 <div className="flex flex-col gap-2 h-42">
-                    {features.map((feature, i) => (
+                    {planData.features.map((feature, i) => (
                         <div
                             key={feature}
                             className="flex items-center gap-3 text-sm text-foreground-secondary/80"

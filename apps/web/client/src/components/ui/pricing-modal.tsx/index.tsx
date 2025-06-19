@@ -138,18 +138,7 @@ export const SubscriptionModal = observer(() => {
                                     </motion.div>
                                     <div className="flex gap-4">
                                         <PricingCard
-                                            defaultSelectValue="10"
-                                            selectValues={[
-                                                { value: '10', label: '10 daily credits' },
-                                            ]}
-                                            disableSelect={true}
-                                            plan={t('pricing.plans.basic.name')}
-                                            price={t('pricing.plans.basic.price')}
-                                            description={t('pricing.plans.basic.description')}
-                                            features={[
-                                                'Visual code editor access',
-                                                '5 projects',
-                                            ]}
+                                            planType="free"
                                             buttonText={
                                                 isFree
                                                     ? t('pricing.buttons.currentPlan')
@@ -166,19 +155,7 @@ export const SubscriptionModal = observer(() => {
                                             isLoading={isFreeCheckout}
                                         />
                                         <PricingCard
-                                            defaultSelectValue="100"
-                                            selectValues={[
-                                                { value: '100', label: '100 messages per Month' },
-                                                { value: '1000', label: '1000 messages per Month' },
-                                                { value: '10000', label: '10000 messages per Month' },
-                                            ]}
-                                            plan={t('pricing.plans.pro.name')}
-                                            price={t('pricing.plans.pro.price')}
-                                            description={t('pricing.plans.pro.description')}
-                                            features={[
-                                                'Unlimited projects',
-                                                'Custom domain',
-                                            ]}
+                                            planType="pro"
                                             buttonText={
                                                 isPro
                                                     ? t('pricing.buttons.currentPlan')

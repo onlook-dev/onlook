@@ -1,15 +1,15 @@
 export enum ProTier {
-    TIER_1 = '100 monthly messages',
-    TIER_2 = '200 monthly messages',
-    TIER_3 = '400 monthly messages',
-    TIER_4 = '800 monthly messages',
-    TIER_5 = '1200 monthly messages',
-    TIER_6 = '2000 monthly messages',
-    TIER_7 = '3000 monthly messages',
-    TIER_8 = '4000 monthly messages',
-    TIER_9 = '5000 monthly messages',
-    TIER_10 = '7500 monthly messages',
-    TIER_11 = '10000+ monthly messages',
+    TIER_1 = '100 Messages per Month',
+    TIER_2 = '200 Messages per Month',
+    TIER_3 = '400 Messages per Month',
+    TIER_4 = '800 Messages per Month',
+    TIER_5 = '1,200 Messages per Month',
+    TIER_6 = '2,000 Messages per Month',
+    TIER_7 = '3,000 Messages per Month',
+    TIER_8 = '4,000 Messages per Month',
+    TIER_9 = '5,000 Messages per Month',
+    TIER_10 = '7,500 Messages per Month',
+    TIER_11 = 'Unlimited Messages per Month',
 }
 
 export interface TierConfig {
