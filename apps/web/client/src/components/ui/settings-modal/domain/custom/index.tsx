@@ -21,7 +21,7 @@ export const CustomDomain = observer(() => {
                 <UpgradePrompt
                     onClick={() => {
                         editorEngine.state.settingsOpen = false;
-                        editorEngine.state.plansOpen = true;
+                        userManager.subscription.isModalOpen = true;
                     }}
                 />
             );

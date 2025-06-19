@@ -9,6 +9,7 @@ interface UsageMetrics {
 }
 
 export class SubscriptionManager {
+    isModalOpen = false;
     subscription: Subscription | null = null;
     usage: UsageMetrics = {
         daily: {

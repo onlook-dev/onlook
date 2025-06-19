@@ -17,7 +17,7 @@ export const PlanSection = observer(() => {
     const usagePercent = usage.limitCount > 0 ? usage.usageCount / usage.limitCount * 100 : 0;
 
     const handleGetMoreCredits = () => {
-        console.log('Open checkout page');
+        userManager.subscription.isModalOpen = true;
     };
 
     return (

@@ -34,7 +34,7 @@ export const SubscriptionModal = observer(() => {
             setIsCheckingOut(null);
         };
 
-        if (editorEngine.state.plansOpen) {
+        if (userManager.subscription.isModalOpen) {
             getPlan();
             pollInterval = setInterval(getPlan, 3000);
         }
@@ -45,7 +45,7 @@ export const SubscriptionModal = observer(() => {
                 clearInterval(pollInterval);
             }
         };
-    }, [editorEngine.state.plansOpen]);
+    }, [userManager.subscription.isModalOpen]);
 
     const startProCheckout = async () => {
         // sendAnalytics('start pro checkout');
@@ -95,7 +95,7 @@ export const SubscriptionModal = observer(() => {
 
     return (
         <AnimatePresence>
-            {editorEngine.state.plansOpen && (
+            {userManager.subscription.isModalOpen && (
                 <motion.div
                     className="fixed inset-0 z-99"
                     initial={{ opacity: 0 }}
@@ -114,7 +114,7 @@ export const SubscriptionModal = observer(() => {
                         <div className="absolute inset-0 bg-background/50" />
                         <Button
                             variant="ghost"
-                            onClick={() => editorEngine.state.plansOpen = false}
+                            onClick={() => userManager.subscription.isModalOpen = false}
                             className="fixed top-8 right-10 text-foreground-secondary"
                         >
                             <Icons.CrossL className="h-4 w-4" />
