@@ -107,10 +107,10 @@ export class HostingManager {
             this.updateState({ status: PublishStatus.LOADING, message: 'Deploying project...', progress: 80 });
 
             timer.log('Files serialized, sending to Freestyle...');
-            const id = await this.deployWeb(type, projectId, files, urls, options?.envVars);
+            const success = await this.deployWeb(type, projectId, files, urls, options?.envVars);
 
-            if (!id) {
-                throw new Error('Failed to deploy project, no deployment ID returned');
+            if (!success) {
+                throw new Error('Failed to deploy project');
             }
 
             if (!options?.skipBadge) {
@@ -120,11 +120,11 @@ export class HostingManager {
             }
 
             timer.log('Deployment completed');
-            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful, deployment ID: ' + id, progress: 100 });
+            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful', progress: 100 });
 
             return {
                 success: true,
-                message: 'Deployment successful, deployment ID: ' + id,
+                message: 'Deployment successful',
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
@@ -168,19 +168,23 @@ export class HostingManager {
         files: Record<string, FreestyleFile>,
         urls: string[],
         envVars?: Record<string, string>,
-    ): Promise<string> {
-        const deploymentId = await api.domain.preview.publish.mutate({
-            projectId,
-            files: files,
-            type: type === PublishType.CUSTOM ? 'custom' : 'preview',
-            config: {
-                domains: urls,
-                entrypoint: 'server.js',
-                envVars,
-            },
-        });
-
-        return deploymentId;
+    ): Promise<boolean> {
+        try {
+            const success = await api.domain.preview.publish.mutate({
+                projectId,
+                files: files,
+                type: type === PublishType.CUSTOM ? 'custom' : 'preview',
+                config: {
+                    domains: urls,
+                    entrypoint: 'server.js',
+                    envVars,
+                },
+            });
+            return success;
+        } catch (error) {
+            console.error('Failed to deploy project', error);
+            return false;
+        }
     }
 
     private async runPrepareStep() {

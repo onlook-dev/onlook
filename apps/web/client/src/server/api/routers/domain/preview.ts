@@ -113,6 +113,6 @@ export const previewRouter = createTRPCRouter({
             if (!res) {
                 throw new Error(freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error');
             }
-            return freestyleResponse.data?.deploymentId ?? '';
+            return true;
         }),
 });
