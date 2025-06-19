@@ -138,10 +138,15 @@ export class HostingManager {
 
     async unpublish(projectId: string, urls: string[]): Promise<PublishResponse> {
         try {
-            const id = await this.deployWeb(PublishType.UNPUBLISH, projectId, {}, urls);
+            const success = await this.deployWeb(PublishType.UNPUBLISH, projectId, {}, urls);
+
+            if (!success) {
+                throw new Error('Failed to delete deployment');
+            }
+
             return {
                 success: true,
-                message: 'Deployment deleted with ID: ' + id,
+                message: 'Deployment deleted',
             };
         } catch (error) {
             console.error('Failed to delete deployment', error);
