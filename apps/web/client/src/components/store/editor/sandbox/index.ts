@@ -461,6 +461,10 @@ export class SandboxManager {
         }
     }
 
+    get isIndexingFiles() {
+        return this.isIndexing;
+    }
+
     clear() {
         this.fileWatcher?.dispose();
         this.fileWatcher = null;
