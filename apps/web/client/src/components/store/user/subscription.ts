@@ -38,8 +38,10 @@ export class SubscriptionManager {
     async getSubscriptionFromRemote(): Promise<Subscription | null> {
         const subscription = await api.subscription.get.query();
         if (!subscription) {
+            console.error('No subscription returned from remote');
             return null;
         }
+        this.subscription = subscription;
         return subscription;
     }
 
