@@ -1,7 +1,6 @@
-import { PlanType } from '@onlook/models';
+import { PRO_PRODUCT_CONFIG, ProTier, type TierConfig } from 'src/plans';
 import Stripe from 'stripe';
 import { createStripeClient } from '../client';
-import { PLANS } from '../plans';
 
 /**
  * Clean up existing product and related resources
@@ -23,55 +22,52 @@ const cleanupExistingProduct = async (stripe: Stripe, productName: string) => {
                 }
             }
 
-            // Find and delete associated meters
-            const meters = await stripe.billing.meters.list();
-            for (const meter of meters.data) {
-                if (meter.display_name === productName) {
-                    console.log('Deactivating meter', meter.id);
-                    await stripe.billing.meters.deactivate(meter.id);
-                }
-            }
-
             // Delete the product
-            console.log('Deleting product', existingProduct.id);
-            await stripe.products.del(existingProduct.id);
+            console.log('Archiving product', existingProduct.id);
+            await stripe.products.update(existingProduct.id, { active: false });
         }
     } catch (error) {
         console.error('Error cleaning up existing product', error);
     }
 };
 
-const createFullTestProduct = async (stripe: Stripe, productName: string) => {
-    console.log('Creating product...');
-    const product = await stripe.products.create({ name: productName });
-    console.log('Created product', product);
-
-    console.log('Creating meter...');
-    const meter = await stripe.billing.meters.create({
-        display_name: productName,
-        event_name: 'onlook_pro',
-        default_aggregation: {
-            formula: 'sum',
-        },
-    });
-    console.log('Created meter', meter);
-
-    console.log('Creating price...');
-    const price = await stripe.prices.create({
-        product: product.id,
+async function createTierPrices(
+    stripe: Stripe,
+    productId: string,
+    tier: TierConfig
+): Promise<{ tier: ProTier; monthly: Stripe.Price; yearly: Stripe.Price }> {
+    const base = {
+        product: productId,
         currency: 'usd',
-        billing_scheme: 'tiered',
-        tiers_mode: 'volume',
-        recurring: {
-            interval: 'month',
-            usage_type: 'metered',
-            meter: meter.id,
-        },
-        tiers: PLANS[PlanType.PRO].tiers,
-    });
-    console.log('Created price', price);
+        recurring: { usage_type: 'licensed' as const },
+    }
 
-    return { product, price, meter };
+    const month = stripe.prices.create({
+        ...base,
+        unit_amount: tier.monthly,
+        recurring: { ...base.recurring, interval: 'month' },
+        nickname: `${tier.name} – monthly`,
+    })
+
+    const year = stripe.prices.create({
+        ...base,
+        unit_amount: tier.yearly,
+        recurring: { ...base.recurring, interval: 'year' },
+        nickname: `${tier.name} – yearly`,
+    })
+
+    const [monthly, yearly] = await Promise.all([month, year])
+    return { tier: tier.name, monthly, yearly }
+}
+
+const createFullTestProduct = async (stripe: Stripe) => {
+    const product = await stripe.products.create({ name: PRO_PRODUCT_CONFIG.name });
+    const priceMap = new Map<ProTier, { monthly: Stripe.Price; yearly: Stripe.Price }>();
+    for (const tier of PRO_PRODUCT_CONFIG.tiers) {
+        const { tier: tierName, monthly, yearly } = await createTierPrices(stripe, product.id, tier);
+        priceMap.set(tierName, { monthly, yearly });
+    }
+    return { product, priceMap };
 };
 
 const createTestCustomerAndSubscribe = async (stripe: Stripe, price: Stripe.Price) => {
@@ -80,24 +76,28 @@ const createTestCustomerAndSubscribe = async (stripe: Stripe, price: Stripe.Pric
         email: 'test@test.com',
         name: 'Test Customer',
     });
-    console.log('Created customer', customer);
 
     console.log('Creating payment method...');
     const paymentMethod = await stripe.paymentMethods.create({
         type: 'card',
         card: { token: 'tok_visa' },
     });
-    console.log('Created payment method', paymentMethod);
 
     console.log('Attaching payment method to customer...');
     const attachedPaymentMethod = await stripe.paymentMethods.attach(paymentMethod.id, {
         customer: customer.id,
     });
-    console.log('Attached payment method to customer', attachedPaymentMethod);
+
+    console.log('Setting payment method as default...');
+    await stripe.customers.update(customer.id, {
+        invoice_settings: {
+            default_payment_method: paymentMethod.id,
+        },
+    });
 
     console.log('Creating payment intent...');
     const paymentIntent = await stripe.paymentIntents.create({
-        amount: 2000,
+        amount: price.unit_amount!,
         currency: 'usd',
         customer: customer.id,
         payment_method: paymentMethod.id,
@@ -107,21 +107,13 @@ const createTestCustomerAndSubscribe = async (stripe: Stripe, price: Stripe.Pric
             allow_redirects: 'never',
         },
     });
-    console.log('Created payment intent', paymentIntent);
 
     console.log('Creating subscription...');
     const subscription = await stripe.subscriptions.create({
         customer: customer.id,
         items: [{ price: price.id }],
+        default_payment_method: paymentMethod.id,
     });
-    console.log('Created subscription', subscription);
-
-    console.log('Creating meter event...');
-    const meterEvent = await stripe.billing.meterEvents.create({
-        event_name: 'onlook_pro',
-        payload: { value: '1', stripe_customer_id: customer.id },
-    });
-    console.log('Created meter event', meterEvent);
 
     return { customer, subscription };
 };
@@ -131,16 +123,21 @@ const createTestCustomerAndSubscribe = async (stripe: Stripe, price: Stripe.Pric
  */
 export const setupProduct = async () => {
     const stripe = createStripeClient();
-    const productName = PLANS[PlanType.PRO].name;
+    const productName = PRO_PRODUCT_CONFIG.name;
 
     console.log('Cleaning up existing product and related resources');
     // Clean up any existing product and related resources
     await cleanupExistingProduct(stripe, productName);
 
-    const { product, price, meter } = await createFullTestProduct(stripe, productName);
-    const { customer, subscription } = await createTestCustomerAndSubscribe(stripe, price);
+    const { product, priceMap } = await createFullTestProduct(stripe);
+    const { customer, subscription } = await createTestCustomerAndSubscribe(stripe, priceMap.get(ProTier.TIER_1)!.monthly);
 
-    return { product, price, meter, customer, subscription };
+    // Upgrade the customer to the next tier
+    await stripe.subscriptions.update(subscription.id, {
+        items: [{ price: priceMap.get(ProTier.TIER_2)!.monthly.id }],
+    });
+
+    return { product, priceMap, customer, subscription };
 };
 
 if (import.meta.main) {
