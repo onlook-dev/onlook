@@ -3,7 +3,7 @@ import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { DefaultSettings } from '@onlook/constants';
-import { convertToBase64, getBaseName, getMimeType, isImageFile } from '@onlook/utility/src/file';
+import { convertToBase64, getBaseName, getDirName, getMimeType, isImageFile } from '@onlook/utility/src/file';
 import { compressionPresets } from '@onlook/utility/src/image-types';
 import { api } from '@/trpc/client';
 
@@ -47,8 +47,6 @@ export class ImageManager {
                 finalBuffer = new Uint8Array(arrayBuffer);
             }
 
-            console.log('finalBuffer', finalBuffer);
-
             await this.editorEngine.sandbox.writeBinaryFile(path, finalBuffer);
             this.scanImages();
         } catch (error) {
@@ -57,10 +55,9 @@ export class ImageManager {
         }
     }
 
-    async delete(imageName: string): Promise<void> {
+    async delete(originPath: string): Promise<void> {
         try {
-            const path = `${DefaultSettings.IMAGE_FOLDER}/${imageName}`;
-            await this.editorEngine.sandbox.delete(path);
+            await this.editorEngine.sandbox.delete(originPath);
             this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
@@ -68,12 +65,12 @@ export class ImageManager {
         }
     }
 
-    async rename(oldName: string, newName: string): Promise<void> {
+    async rename(originPath: string, newName: string): Promise<void> {
         try {
-            const oldPath = `${DefaultSettings.IMAGE_FOLDER}/${oldName}`;
-            const newPath = `${DefaultSettings.IMAGE_FOLDER}/${newName}`;
-            await this.editorEngine.sandbox.copy(oldPath, newPath);
-            await this.editorEngine.sandbox.delete(oldPath);
+            const basePath = getDirName(originPath);
+            const newPath = `${basePath}/${newName}`;
+            await this.editorEngine.sandbox.copy(originPath, newPath);
+            await this.editorEngine.sandbox.delete(originPath);
             this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
@@ -177,6 +174,7 @@ export class ImageManager {
                     const content = `data:${mimeType};base64,${base64Data}`;
 
                     return {
+                        originPath: filePath,
                         content,
                         fileName: getBaseName(filePath),
                         mimeType,

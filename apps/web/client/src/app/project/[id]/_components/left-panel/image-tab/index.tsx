@@ -17,7 +17,6 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import DeleteImageModal from './delete-modal';
 import RenameImageModal from './rename-modal';
-import { DefaultSettings } from '@onlook/constants';
 
 export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -29,6 +28,7 @@ export const ImagesTab = observer(() => {
     const [isDragging, setIsDragging] = useState(false);
     const [imageToDelete, setImageToDelete] = useState<string | null>(null);
     const [imageToRename, setImageToRename] = useState<string | null>(null);
+    const [originImagePath, setOriginImagePath] = useState<string | null>(null);
     const [newImageName, setNewImageName] = useState<string>('');
     const [renameError, setRenameError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -137,7 +137,7 @@ export const ImagesTab = observer(() => {
     };
 
     const handleDeleteImage = (image: ImageContentData) => {
-        setImageToDelete(image.fileName);
+        setImageToDelete(image.originPath);
     };
 
     const onDeleteImage = async () => {
@@ -150,6 +150,7 @@ export const ImagesTab = observer(() => {
     const handleRenameImage = (image: ImageContentData) => {
         setImageToRename(image.fileName);
         setNewImageName(image.fileName);
+        setOriginImagePath(image.originPath);
     };
 
     const handleRenameInputBlur = (value: string) => {
@@ -172,8 +173,8 @@ export const ImagesTab = observer(() => {
 
     const onRenameImage = async (newName: string) => {
         try {
-            if (imageToRename && newName && newName !== imageToRename) {
-                await editorEngine.image.rename(imageToRename, newName);
+            if (originImagePath && newName && newName !== imageToRename) {
+                await editorEngine.image.rename(originImagePath, newName);
             }
         } catch (error) {
             setRenameError(
@@ -186,6 +187,7 @@ export const ImagesTab = observer(() => {
         } finally {
             setImageToRename(null);
             setNewImageName('');
+            setOriginImagePath(null);
         }
     };
 
@@ -220,16 +222,14 @@ export const ImagesTab = observer(() => {
         }
     };
 
-    const handleOpenFolder = async (fileName: string) => {
-        if (!fileName) {
+    const handleOpenFolder = async (filePath: string) => {
+        if (!filePath) {
             return;
         }
-
-        const fullPath = DefaultSettings.IMAGE_FOLDER + '/' + fileName;
         editorEngine.state.rightPanelTab = EditorTabValue.DEV;
 
-        await editorEngine.ide.openFile(fullPath);
-    }
+        await editorEngine.ide.openFile(filePath);
+    };
 
     return (
         <div className="w-full h-full flex flex-col gap-2 p-3 overflow-x-hidden">
@@ -331,7 +331,7 @@ export const ImagesTab = observer(() => {
                     <div className="w-full grid grid-cols-2 gap-3 p-0">
                         {filteredImages.map((image) => (
                             <div
-                                key={image.fileName}
+                                key={image.originPath}
                                 className="relative group w-full"
                                 draggable
                                 onDragStart={(e) => handleImageDragStart(e, image)}
@@ -377,10 +377,11 @@ export const ImagesTab = observer(() => {
                                     )}
                                 </span>
                                 <div
-                                    className={`absolute right-2 top-2 ${activeDropdown === image.fileName
-                                        ? 'opacity-100'
-                                        : 'opacity-0'
-                                        } group-hover:opacity-100 transition-opacity duration-300`}
+                                    className={`absolute right-2 top-2 ${
+                                        activeDropdown === image.fileName
+                                            ? 'opacity-100'
+                                            : 'opacity-0'
+                                    } group-hover:opacity-100 transition-opacity duration-300`}
                                 >
                                     <DropdownMenu
                                         onOpenChange={(isOpen) =>
@@ -389,7 +390,7 @@ export const ImagesTab = observer(() => {
                                     >
                                         <DropdownMenuTrigger asChild>
                                             <Button
-                                                size='icon'
+                                                size="icon"
                                                 variant={'ghost'}
                                                 className="bg-background p-1 inline-flex items-center justify-center h-auto w-auto rounded shadow-sm"
                                             >
@@ -429,7 +430,7 @@ export const ImagesTab = observer(() => {
                                                 <Button
                                                     variant={'ghost'}
                                                     className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                                    onClick={() => handleOpenFolder(image.fileName)}
+                                                    onClick={() => handleOpenFolder(image.originPath)}
                                                 >
                                                     <span className="flex w-full text-smallPlus items-center">
                                                         <Icons.DirectoryOpen className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
