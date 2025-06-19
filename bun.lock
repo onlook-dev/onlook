@@ -379,6 +379,7 @@
       "name": "@onlook/stripe",
       "version": "0.0.0",
       "dependencies": {
+        "@onlook/models": "workspace:*",
         "dotenv": "^16.5.0",
         "stripe": "^18.2.1",
       },

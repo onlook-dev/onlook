@@ -1,6 +1,7 @@
+import { PlanType } from '@onlook/models';
 import Stripe from 'stripe';
 import { createStripeClient } from '../client';
-import { PLANS, PlanType } from '../plans';
+import { PLANS } from '../plans';
 
 /**
  * Clean up existing product and related resources
