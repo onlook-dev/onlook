@@ -1,9 +1,9 @@
 import { previewDomains, publishedDomains } from '@onlook/db';
+import { HostingProvider } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { and, eq, inArray, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { HostingProvider } from '@onlook/models';
 import { HostingProviderFactory } from './hosting-factory';
 
 export const previewRouter = createTRPCRouter({
@@ -96,7 +96,7 @@ export const previewRouter = createTRPCRouter({
             }
 
             const adapter = HostingProviderFactory.create(HostingProvider.FREESTYLE);
-            
+
             const deploymentFiles: Record<string, { content: string; encoding?: 'utf-8' | 'base64' }> = {};
             for (const [path, file] of Object.entries(input.files)) {
                 deploymentFiles[path] = {
@@ -104,12 +104,12 @@ export const previewRouter = createTRPCRouter({
                     encoding: (file.encoding === 'base64' ? 'base64' : 'utf-8')
                 };
             }
-            
+
             const result = await adapter.deploy({
                 files: deploymentFiles,
                 config: input.config
             });
-            
-            return result.deploymentId;
+
+            return result;
         }),
 });
