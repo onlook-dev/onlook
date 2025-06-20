@@ -12,7 +12,7 @@ import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { compressImage } from '@onlook/utility';
+import { compressImageInBrowser } from '@onlook/utility';
 import { AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
@@ -159,7 +159,7 @@ export function Create({ cardKey }: { cardKey: number }) {
 
     const createImageMessageContext = async (file: File): Promise<ImageMessageContext | null> => {
         try {
-            const compressedImage = await compressImage(file);
+            const compressedImage = await compressImageInBrowser(file);
 
             // If compression failed, fall back to original file
             const base64 =

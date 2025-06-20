@@ -90,6 +90,7 @@ export interface WriteCodeAction {
 }
 
 export interface ImageContentData {
+    originPath: string;
     content: string;
     fileName: string;
     mimeType: string;
