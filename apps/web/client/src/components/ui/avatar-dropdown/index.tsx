@@ -15,7 +15,7 @@ import { Separator } from '@onlook/ui/separator';
 import { getInitials } from '@onlook/utility';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { PlanSection } from './plans';
+import { UsageSection } from './plans';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const router = useRouter();
@@ -58,7 +58,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                     </div>
                 </div>
                 <Separator />
-                <PlanSection />
+                <UsageSection />
                 <Separator />
                 <div className="p-2">
                     <Button

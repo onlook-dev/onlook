@@ -83,7 +83,7 @@ export const PricingCard = ({
                 defaultSelectValue: selectedTier || defaultProTier.key,
                 selectValues: PRO_TIERS.map(tier => ({
                     value: tier.key,
-                    label: tier.key
+                    label: tier.description
                 })),
                 disableSelect: false,
             };

@@ -1,4 +1,4 @@
-import { PRO_PRODUCT_CONFIG, ProTier, type TierConfig } from 'src/plans';
+import { PRO_PRODUCT_CONFIG, ProPrice, type PriceConfig } from 'src/constants';
 import Stripe from 'stripe';
 import { createStripeClient } from '../client';
 
@@ -34,8 +34,8 @@ const cleanupExistingProduct = async (stripe: Stripe, productName: string) => {
 async function createTierPrices(
     stripe: Stripe,
     productId: string,
-    tier: TierConfig
-): Promise<{ tier: ProTier; monthly: Stripe.Price; yearly: Stripe.Price }> {
+    tier: PriceConfig
+): Promise<{ tier: ProPrice; monthly: Stripe.Price; yearly: Stripe.Price }> {
     const base = {
         product: productId,
         currency: 'usd',
@@ -62,7 +62,7 @@ async function createTierPrices(
 
 const createFullTestProduct = async (stripe: Stripe) => {
     const product = await stripe.products.create({ name: PRO_PRODUCT_CONFIG.name });
-    const priceMap = new Map<ProTier, { monthly: Stripe.Price; yearly: Stripe.Price }>();
+    const priceMap = new Map<ProPrice, { monthly: Stripe.Price; yearly: Stripe.Price }>();
     for (const tier of PRO_PRODUCT_CONFIG.tiers) {
         const { tier: tierName, monthly, yearly } = await createTierPrices(stripe, product.id, tier);
         priceMap.set(tierName, { monthly, yearly });
@@ -130,11 +130,11 @@ export const setupProduct = async () => {
     await cleanupExistingProduct(stripe, productName);
 
     const { product, priceMap } = await createFullTestProduct(stripe);
-    const { customer, subscription } = await createTestCustomerAndSubscribe(stripe, priceMap.get(ProTier.TIER_1)!.monthly);
+    const { customer, subscription } = await createTestCustomerAndSubscribe(stripe, priceMap.get(ProPrice.TIER_1)!.monthly);
 
     // Upgrade the customer to the next tier
     await stripe.subscriptions.update(subscription.id, {
-        items: [{ price: priceMap.get(ProTier.TIER_2)!.monthly.id }],
+        items: [{ price: priceMap.get(ProPrice.TIER_2)!.monthly.id }],
     });
 
     return { product, priceMap, customer, subscription };

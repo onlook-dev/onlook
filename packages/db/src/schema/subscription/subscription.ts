@@ -1,49 +1,32 @@
-import { PlanType } from '@onlook/models';
 import { relations } from 'drizzle-orm';
-import { integer, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { users } from '../user/user';
+import { prices } from './price';
+import { products } from './product';
 import { usageRecords } from './usage';
-
-export const subscriptionPlanType = pgEnum('subscription_plan_type', PlanType)
-
-export const plans = pgTable('plans', {
-    id: uuid('id').primaryKey().defaultRandom(),
-    name: text('name').notNull(),
-    dailyMessages: integer('daily_messages').notNull(),
-    monthlyMessages: integer('monthly_messages').notNull(),
-    type: subscriptionPlanType('type').notNull(),
-
-    // Stripe
-    stripeProductId: text('stripe_product_id').notNull(),
-})
-export type Plan = typeof plans.$inferSelect;
-
-export const prices = pgTable('prices', {
-    id: uuid('id').primaryKey().defaultRandom(),
-    planId: uuid('plan_id').notNull().references(() => plans.id),
-    pricePerMonth: integer('price_per_month').notNull(),
-
-    // Stripe
-    stripePriceId: text('stripe_price_id').notNull(),
-})
 
 export const subscriptions = pgTable('subscriptions', {
     id: uuid('id').primaryKey().defaultRandom(),
+
+    // Relationships
     userId: uuid('user_id').notNull().references(() => users.id),
-    planId: uuid('plan_id').notNull().references(() => plans.id),
+    productId: uuid('product_id').notNull().references(() => products.id),
     priceId: uuid('price_id').notNull().references(() => prices.id),
-    startDate: timestamp('start_date', { withTimezone: true }).notNull(),
-    endDate: timestamp('end_date', { withTimezone: true }),
-    status: text('status', { enum: ['active', 'canceled', 'past_due', 'incomplete'] }).notNull(),
+
+    // Metadata
+    startedAt: timestamp('started_at', { withTimezone: true }).notNull(),
+    endedAt: timestamp('ended_at', { withTimezone: true }),
+    status: text('status', { enum: ['active', 'canceled'] }).notNull(),
 
     // Stripe
+    stripeCustomerId: text('stripe_customer_id').notNull(),
     stripeSubscriptionId: text('stripe_subscription_id').notNull(),
 })
 
 export const subscriptionRelations = relations(subscriptions, ({ one, many }) => ({
-    plan: one(plans, {
-        fields: [subscriptions.planId],
-        references: [plans.id],
+    product: one(products, {
+        fields: [subscriptions.productId],
+        references: [products.id],
     }),
     price: one(prices, {
         fields: [subscriptions.priceId],

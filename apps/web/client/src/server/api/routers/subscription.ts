@@ -10,7 +10,8 @@ export const subscriptionRouter = createTRPCRouter({
         const subscription = await db.query.subscriptions.findFirst({
             where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
             with: {
-                plan: true
+                product: true,
+                price: true,
             },
         });
 
@@ -26,7 +27,8 @@ export const subscriptionRouter = createTRPCRouter({
         const subscription = await db.query.subscriptions.findFirst({
             where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
             with: {
-                plan: true,
+                product: true,
+                price: true,
             },
         });
 
@@ -66,12 +68,12 @@ export const subscriptionRouter = createTRPCRouter({
             daily: {
                 period: 'day',
                 usageCount: lastDayCount[0]?.count || 0,
-                limitCount: subscription.plan.dailyMessages,
+                limitCount: subscription.price.monthlyMessageLimit,
             } satisfies Usage,
             monthly: {
                 period: 'month',
                 usageCount: lastMonthCount[0]?.count || 0,
-                limitCount: subscription.plan.monthlyMessages,
+                limitCount: subscription.price.monthlyMessageLimit,
             } satisfies Usage,
         };
     }),

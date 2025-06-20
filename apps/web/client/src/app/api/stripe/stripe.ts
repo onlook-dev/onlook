@@ -4,10 +4,7 @@ import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
 export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.CheckoutSessionCompletedEvent, stripe: Stripe) => {
-    // Create Supabase client
     const session = receivedEvent.data.object
-
-    // Retrieve the session with line items expanded
     const expandedSession = await stripe.checkout.sessions.retrieve(
         session.id,
         {
@@ -15,7 +12,7 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         }
     );
 
-    const subscriptionId = expandedSession.subscription as string
+    const subscriptionId = expandedSession.subscription?.toString()
     if (!subscriptionId) {
         throw new Error('No subscription ID found')
     }
@@ -31,26 +28,32 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
     }
 
     const price = await db.query.prices.findFirst({
-        where: eq(prices.stripePriceId, priceId),
+        where: eq(prices.id, priceId),
     })
     if (!price) {
         throw new Error(`No price found for price ID: ${priceId}`)
+    }
+
+    const customerId = session.customer?.toString()
+    if (!customerId) {
+        throw new Error('No customer ID found')
     }
 
     // Update or create subscription
     const [data] = await db.insert(subscriptions).values({
         userId: userId,
         priceId: price.id,
-        planId: price.planId,
-        stripeSubscriptionId: subscriptionId,
+        productId: price.productId,
         status: 'active',
-        startDate: new Date(),
+        startedAt: new Date(),
+        stripeSubscriptionId: subscriptionId,
+        stripeCustomerId: customerId,
     }).onConflictDoUpdate({
         target: [subscriptions.userId],
         set: {
             stripeSubscriptionId: subscriptionId,
             status: 'active',
-            startDate: new Date(),
+            startedAt: new Date(),
         }
     }).returning()
     console.log("Checkout session completed: ", data)
@@ -58,13 +61,11 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
 }
 
 export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSubscriptionDeletedEvent) => {
-    // Create Supabase client
     const session = receivedEvent.data.object
 
-    // Update user_usage to remove subscription info
     const res = await db.update(subscriptions).set({
         status: 'canceled',
-        endDate: new Date(),
+        endedAt: new Date(),
     }).where(eq(subscriptions.stripeSubscriptionId, session.id))
 
     console.log("Subscription cancelled: ", res)

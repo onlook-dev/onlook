@@ -1,5 +1,6 @@
 import { api } from '@/trpc/client';
-import { type Subscription, type Usage } from '@onlook/models';
+import { type Usage } from '@onlook/models';
+import type { Subscription } from '@onlook/stripe';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
@@ -10,8 +11,8 @@ interface UsageMetrics {
 
 export class SubscriptionManager {
     isModalOpen = false;
-    subscription: Subscription | null = null;
-    usage: UsageMetrics | null = null
+    _subscription: Subscription | null = null;
+    _usage: UsageMetrics | null = null
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
@@ -25,13 +26,27 @@ export class SubscriptionManager {
         );
     }
 
+    get subscription() {
+        if (!this._subscription) {
+            this.getSubscriptionFromRemote();
+        }
+        return this._subscription;
+    }
+
+    get usage() {
+        if (!this._usage) {
+            this.getUsageFromRemote();
+        }
+        return this._usage;
+    }
+
     async getSubscriptionFromRemote(): Promise<Subscription | null> {
         const subscription = await api.subscription.get.query();
         if (!subscription) {
             console.error('No subscription returned from remote');
             return null;
         }
-        this.subscription = subscription;
+        this._subscription = subscription;
         return subscription;
     }
 
@@ -40,13 +55,13 @@ export class SubscriptionManager {
         if (!usage) {
             return null;
         }
-        this.usage = usage;
+        this._usage = usage;
         return usage;
     }
 
     clear() {
         this.isModalOpen = false;
-        this.subscription = null;
-        this.usage = null;
+        this._subscription = null;
+        this._usage = null;
     }
 }

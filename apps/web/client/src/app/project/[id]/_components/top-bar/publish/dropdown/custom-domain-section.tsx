@@ -2,7 +2,8 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useDomainsManager, useProjectManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
 import { DefaultSettings } from '@onlook/constants';
-import { PlanType, PublishStatus, SettingsTabValue } from '@onlook/models';
+import { PublishStatus, SettingsTabValue } from '@onlook/models';
+import { ProductType } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { cn } from '@onlook/ui/utils';
 import { getPublishUrls, timeAgo } from '@onlook/utility';
@@ -14,12 +15,13 @@ export const CustomDomainSection = observer(() => {
     const domainsManager = useDomainsManager();
     const userManager = useUserManager();
     const projectManager = useProjectManager();
+
     const project = projectManager.project;
-    const plan = userManager.subscription.subscription?.plan;
+    const product = userManager.subscription.subscription?.product;
+    const domain = domainsManager.domains.custom;
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;
-    const domain = domainsManager.domains.custom;
-    const isPro = plan?.type === PlanType.PRO;
+    const isPro = product?.type === ProductType.PRO;
 
     if (!project) {
         return 'Something went wrong. Project not found.';

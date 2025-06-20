@@ -1,24 +1,24 @@
 'use client';
 
 import { useUserManager } from '@/components/store/user';
-import { PlanType } from '@onlook/models';
+import { ProductType } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Progress } from '@onlook/ui/progress';
 import { observer } from 'mobx-react-lite';
 
-export const PlanSection = observer(() => {
+export const UsageSection = observer(() => {
     const userManager = useUserManager();
-    const plan = userManager.subscription.subscription?.plan;
-    const planName = plan?.name;
-    const planStatus = 'Trial';
-    const type = plan?.type;
-    const usage = type === PlanType.FREE ? userManager.subscription.usage?.daily : userManager.subscription.usage?.monthly;
+    const subscription = userManager.subscription.subscription;
+    const usageData = userManager.subscription.usage;
+    const product = subscription?.product;
+    const price = product?.type === ProductType.FREE ? 'Trial' : 'Active';
+    const usage = product?.type === ProductType.FREE ? usageData?.daily : usageData?.monthly;
 
-    if (!usage) {
+    if (!usage || !product) {
         return (
-            <div className="p-4 w-full text-sm flex flex-col gap-4">
-                <div className="text-sm">Usage data not available</div>
+            <div className="p-4 w-full text-sm flex gap-4 items-center">
+                <Icons.LoadingSpinner className="w-4 h-4 animate-spin" /> Calculating usage...
             </div>
         );
     }
@@ -33,8 +33,8 @@ export const PlanSection = observer(() => {
         <div className="p-4 w-full text-sm flex flex-col gap-4">
             <div className="flex justify-between items-center">
                 <div>
-                    <div className="text-sm">{planName}</div>
-                    <div className="text-muted-foreground">{planStatus}</div>
+                    <div className="text-sm">{product.name}</div>
+                    <div className="text-muted-foreground">{price}</div>
                 </div>
                 <div className="text-right">
                     <div>{usage.usageCount} <span className="text-muted-foreground">of</span> {usage.limitCount}</div>

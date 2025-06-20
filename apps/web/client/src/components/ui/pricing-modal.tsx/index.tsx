@@ -1,96 +1,64 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { useUserManager } from '@/components/store/user';
 import { useGetBackground } from '@/hooks/use-get-background';
-import { PlanType } from '@onlook/models';
+import { api } from '@/trpc/react';
+import { sendAnalytics } from '@/utils/analytics';
+import { ProductType } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
+import { toast } from '@onlook/ui/sonner';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { PricingCard } from './card';
 
 export const SubscriptionModal = observer(() => {
     const userManager = useUserManager();
-    const editorEngine = useEditorEngine();
     const t = useTranslations();
     const backgroundUrl = useGetBackground('create');
-    const [isCheckingOut, setIsCheckingOut] = useState<PlanType | null>(null);
+    const [isCheckingOut, setIsCheckingOut] = useState<ProductType | null>(null);
+    const { data: subscription } = api.subscription.get.useQuery();
 
-    const plan = userManager.subscription.subscription?.plan;
-    const isProCheckout = isCheckingOut === PlanType.PRO;
-    const isFreeCheckout = isCheckingOut === PlanType.FREE;
-    const isPro = plan?.type === PlanType.PRO;
-    const isFree = plan?.type === PlanType.FREE;
-
-    useEffect(() => {
-        let pollInterval: Timer | null = null;
-
-        const getPlan = async () => {
-            const plan = await userManager.subscription.getSubscriptionFromRemote();
-            if (plan?.plan.type === PlanType.PRO) {
-                editorEngine.error.clear();
-            }
-            setIsCheckingOut(null);
-        };
-
-        if (userManager.subscription.isModalOpen) {
-            getPlan();
-            pollInterval = setInterval(getPlan, 3000);
-        }
-
-        // Cleanup function to clear interval when component unmounts or isPlansOpen changes
-        return () => {
-            if (pollInterval) {
-                clearInterval(pollInterval);
-            }
-        };
-    }, [userManager.subscription.isModalOpen]);
+    const plan = subscription?.product;
+    const isProCheckout = isCheckingOut === ProductType.PRO;
+    const isFreeCheckout = isCheckingOut === ProductType.FREE;
+    const isPro = plan?.type === ProductType.PRO;
+    const isFree = plan?.type === ProductType.FREE;
 
     const startProCheckout = async () => {
-        // sendAnalytics('start pro checkout');
-        // try {
-        //     setIsCheckingOut(PlanType.PRO);
-        //     const res:
-        //         | {
-        //             success: boolean;
-        //             error?: string;
-        //         }
-        //         | undefined = await invokeMainChannel(MainChannels.CREATE_STRIPE_CHECKOUT);
-        //     if (res?.success) {
-        //         toast.success(t('pricing.toasts.checkingOut.title'));
-        //     } else {
-        //         throw new Error('No checkout URL received');
-        //     }
-        //     setIsCheckingOut(null);
-        // } catch (error) {
-        //     toast.error(t('pricing.toasts.error.title'));
-        //     console.error('Payment error:', error);
-        //     setIsCheckingOut(null);
-        // }
+        sendAnalytics('start pro checkout');
+        try {
+            setIsCheckingOut(ProductType.PRO);
+            const res: { success: boolean; error?: string } = { success: false };
+            if (res?.success) {
+                toast.success(t('pricing.toasts.checkingOut.title'));
+            } else {
+                throw new Error('No checkout URL received');
+            }
+            setIsCheckingOut(null);
+        } catch (error) {
+            toast.error(t('pricing.toasts.error.title'));
+            console.error('Payment error:', error);
+            setIsCheckingOut(null);
+        }
     };
 
     const manageSubscription = async () => {
-        // try {
-        //     setIsCheckingOut(PlanType.FREE);
-        //     const res:
-        //         | {
-        //             success: boolean;
-        //             error?: string;
-        //         }
-        //         | undefined = await invokeMainChannel(MainChannels.MANAGE_SUBSCRIPTION);
-        //     if (res?.success) {
-        //         toast.success(t('pricing.toasts.redirectingToStripe.title'));
-        //     }
-        //     if (res?.error) {
-        //         throw new Error(res.error);
-        //     }
-        //     setIsCheckingOut(null);
-        // } catch (error) {
-        //     console.error('Error managing subscription:', error);
-        //     toast.error(`Error managing subscription: ${error}`);
-        //     setIsCheckingOut(null);
-        // }
+        try {
+            setIsCheckingOut(ProductType.FREE);
+            const res: { success: boolean; error?: string } = { success: false };
+            if (res?.success) {
+                toast.success(t('pricing.toasts.redirectingToStripe.title'));
+            }
+            if (res?.error) {
+                throw new Error(res.error);
+            }
+            setIsCheckingOut(null);
+        } catch (error) {
+            console.error('Error managing subscription:', error);
+            toast.error(`Error managing subscription: ${error}`);
+            setIsCheckingOut(null);
+        }
     };
 
     return (
