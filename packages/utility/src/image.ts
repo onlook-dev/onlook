@@ -26,3 +26,11 @@ export function base64ToBlob(base64: string, mimeType: string): Blob {
     }
     return new Blob([ab], { type: mimeType });
 }
+
+export function addBase64Prefix(mimeType: string, base64: string): string {
+    if (base64.startsWith('data:')) {
+        // If the base64 already has a prefix, return it
+        return base64;
+    }
+    return `data:${mimeType};base64,${base64}`;
+}

@@ -181,8 +181,6 @@ export class ImageManager {
             if (imageFiles.length === 0) {
                 return;
             }
-
-            console.log('imageFiles', imageFiles);
             
             const imagePromises = imageFiles.map(async (filePath: string) => {
                 try {
@@ -213,7 +211,6 @@ export class ImageManager {
             });
 
             const results = await Promise.all(imagePromises);
-            console.log('results', results);
             
             this.images = results.filter((result): result is ImageContentData => result !== null)
             
