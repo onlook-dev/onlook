@@ -1,5 +1,5 @@
 import { api } from '@/trpc/client';
-import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
+import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES, STORAGE_BUCKETS } from '@onlook/constants';
 import { addBuiltWithScript, injectBuiltWithScript, removeBuiltWithScript, removeBuiltWithScriptFromLayout } from '@onlook/growth';
 import {
     PublishStatus,
@@ -13,6 +13,7 @@ import { isBinaryFile, isEmptyString, isNullOrUndefined, LogTimer, updateGitigno
 import {
     type FreestyleFile,
 } from 'freestyle-sandboxes';
+import { uploadBlobToStorage } from '@/utils/supabase/client';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 
@@ -101,14 +102,36 @@ export class HostingManager {
                 );
             }
 
-            // Serialize the files for deployment
-            const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
-            const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
+            // Generate a zip archive of the project from the sandbox
+            const archive = await this.editorEngine.sandbox.downloadFiles(projectId);
+            if (!archive) {
+                throw new Error('Failed to generate project archive');
+            }
+
+            const response = await fetch(archive.downloadUrl);
+            const blob = await response.blob();
+
+            const uploadData = await uploadBlobToStorage(
+                STORAGE_BUCKETS.API_FILES,
+                `deployments/${projectId}/${Date.now()}.zip`,
+                blob,
+                { contentType: 'application/zip' }
+            );
+
+            if (!uploadData) {
+                throw new Error('Failed to upload project archive');
+            }
 
             this.updateState({ status: PublishStatus.LOADING, message: 'Deploying project...', progress: 80 });
 
-            timer.log('Files serialized, sending to Freestyle...');
-            const success = await this.deployWeb(type, projectId, files, urls, options?.envVars);
+            timer.log('Archive uploaded, sending to Freestyle...');
+            const success = await this.deployWeb(
+                type,
+                projectId,
+                { bucket: STORAGE_BUCKETS.API_FILES, path: uploadData.path },
+                urls,
+                options?.envVars
+            );
 
             if (!success) {
                 throw new Error('Failed to deploy project');
@@ -139,7 +162,12 @@ export class HostingManager {
 
     async unpublish(projectId: string, urls: string[]): Promise<PublishResponse> {
         try {
-            const success = await this.deployWeb(PublishType.UNPUBLISH, projectId, {}, urls);
+            const success = await this.deployWeb(
+                PublishType.UNPUBLISH,
+                projectId,
+                { bucket: STORAGE_BUCKETS.API_FILES, path: '' },
+                urls,
+            );
 
             if (!success) {
                 throw new Error('Failed to delete deployment');
@@ -171,14 +199,14 @@ export class HostingManager {
     private async deployWeb(
         type: PublishType,
         projectId: string,
-        files: Record<string, FreestyleFile>,
+        archive: { bucket: string; path: string },
         urls: string[],
         envVars?: Record<string, string>,
     ): Promise<boolean> {
         try {
             const success = await api.domain.preview.publish.mutate({
                 projectId,
-                files: files,
+                storagePath: archive,
                 type: type === PublishType.CUSTOM ? 'custom' : 'preview',
                 config: {
                     domains: urls,

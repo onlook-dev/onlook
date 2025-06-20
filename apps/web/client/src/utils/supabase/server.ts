@@ -30,3 +30,15 @@ export async function createClient() {
         },
     );
 }
+
+export async function downloadFileFromStorage(bucket: string, path: string) {
+    const supabase = await createClient();
+    const { data, error } = await supabase.storage.from(bucket).download(path);
+
+    if (error || !data) {
+        console.error('Error downloading file from storage:', error);
+        return null;
+    }
+
+    return data;
+}

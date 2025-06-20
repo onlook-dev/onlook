@@ -2,9 +2,15 @@ import { previewDomains, publishedDomains } from '@onlook/db';
 import { TRPCError } from '@trpc/server';
 import { and, eq, inArray, ne } from 'drizzle-orm';
 import type { FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
+import { prepareDirForDeployment } from 'freestyle-sandboxes/utils';
+import extract from 'extract-zip';
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { initializeFreestyleSdk } from './freestyle';
+import { downloadFileFromStorage } from '@/utils/supabase/server';
 
 export const previewRouter = createTRPCRouter({
     get: protectedProcedure.input(z.object({
@@ -55,15 +61,18 @@ export const previewRouter = createTRPCRouter({
             z.object({
                 type: z.enum(['preview', 'custom']),
                 projectId: z.string(),
+                storagePath: z.object({ bucket: z.string(), path: z.string() }).optional(),
                 files: z.record(z.string(), z.object({
                     content: z.string(),
                     encoding: z.string().optional(),
-                })),
+                })).optional(),
                 config: z.object({
                     domains: z.array(z.string()),
                     entrypoint: z.string().optional(),
                     envVars: z.record(z.string(), z.string()).optional(),
                 }),
+            }).refine(data => data.storagePath || data.files, {
+                message: 'Either storagePath or files must be provided',
             }),
         )
         .mutation(async ({ ctx, input }) => {
@@ -96,11 +105,24 @@ export const previewRouter = createTRPCRouter({
             }
 
             const sdk = initializeFreestyleSdk();
+            let source;
+            if (input.storagePath) {
+                const file = await downloadFileFromStorage(input.storagePath.bucket, input.storagePath.path);
+                if (!file) {
+                    throw new TRPCError({ code: 'BAD_REQUEST', message: 'Failed to download archive' });
+                }
+
+                const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploy-'));
+                const zipPath = path.join(tmpDir, 'archive.zip');
+                await fs.writeFile(zipPath, Buffer.from(await file.arrayBuffer()));
+                await extract(zipPath, { dir: tmpDir });
+                source = await prepareDirForDeployment(tmpDir);
+            } else {
+                source = { kind: 'files', files: input.files ?? {} };
+            }
+
             const res = await sdk.deployWeb(
-                {
-                    files: input.files,
-                    kind: 'files',
-                },
+                source,
                 input.config,
             );
             const freestyleResponse = (await res) as {
