@@ -1,10 +1,9 @@
 import { CUSTOM_OUTPUT_DIR } from './editor';
 
-export const IGNORED_DIRECTORIES = [
+export const EXCLUDED_SYNC_DIRECTORIES = [
     'node_modules',
     'dist',
     'build',
-    // 'public',
     'static',
     '.git',
     '.next',

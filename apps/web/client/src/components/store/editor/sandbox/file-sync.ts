@@ -22,12 +22,41 @@ export class FileSyncManager {
         return this.binaryCache.has(filePath);
     }
 
+    // Track binary file path without reading content (using empty placeholder)
+    trackBinaryFile(filePath: string) {        
+        if (!this.hasBinary(filePath)) {
+            this.binaryCache.set(filePath, new Uint8Array(0)); 
+            this.saveToLocalStorage();
+        }
+    }
+
+    // Check if binary file has actual content loaded
+    hasBinaryContent(filePath: string) {
+        const content = this.binaryCache.get(filePath);
+        return content && content.length > 0;
+    }
+
     async readOrFetchBinaryFile(
         filePath: string,
         readFile: (path: string) => Promise<Uint8Array | null>,
     ): Promise<Uint8Array | null> {        
         if (this.hasBinary(filePath)) {
-            return this.binaryCache.get(filePath) ?? null;
+            const cachedContent = this.binaryCache.get(filePath);
+            // If content is empty (placeholder), fetch the actual content
+            if (cachedContent && cachedContent.length === 0) {
+                try {
+                    const content = await readFile(filePath);
+                    if (content === null) {
+                        throw new Error(`File content for ${filePath} not found`);
+                    }
+                    this.updateBinaryCache(filePath, content);
+                    return content;
+                } catch (error) {
+                    console.error(`Error reading binary file ${filePath}:`, error);
+                    return null;
+                }
+            }
+            return cachedContent ?? null;
         }
 
         try {

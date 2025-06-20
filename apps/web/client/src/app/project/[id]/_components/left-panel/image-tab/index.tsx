@@ -17,7 +17,6 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import DeleteImageModal from './delete-modal';
 import RenameImageModal from './rename-modal';
 
-
 interface UploadState {
     isUploading: boolean;
     error: string | null;
@@ -38,7 +37,6 @@ interface DeleteState {
 
 export const ImagesTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const [isLoading, setIsLoading] = useState(false);
 
     const [search, setSearch] = useState('');
     const [uploadState, setUploadState] = useState<UploadState>({
@@ -70,18 +68,6 @@ export const ImagesTab = observer(() => {
         const searchLower = search.toLowerCase();
         return imageAssets.filter((image) => image.fileName?.toLowerCase()?.includes(searchLower));
     }, [search, imageAssets]);
-
-    const scanImages = useCallback(async () => {
-        await editorEngine.image.scanImages();
-    }, [editorEngine.image]);
-
-    useEffect(() => {
-        scanImages();
-    }, [scanImages]);
-
-    useEffect(() => {
-        setIsLoading(editorEngine.sandbox.isIndexingFiles);
-    }, [editorEngine.sandbox.isIndexingFiles]);
 
     const uploadImage = useCallback(
         async (file: File) => {
@@ -367,7 +353,12 @@ export const ImagesTab = observer(() => {
 
     // Check if any operation is loading
     const isAnyOperationLoading =
-        uploadState.isUploading || deleteState.isLoading || renameState.isLoading;
+        uploadState.isUploading ||
+        deleteState.isLoading ||
+        renameState.isLoading ||
+        editorEngine.image.isScanning ||
+        editorEngine.sandbox.isIndexingFiles;
+
 
     return (
         <div className="w-full h-full flex flex-col gap-2 p-3 overflow-x-hidden">
@@ -391,24 +382,12 @@ export const ImagesTab = observer(() => {
                     Uploading image...
                 </div>
             )}
-            {deleteState.isLoading && (
-                <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">
-                    <Icons.Reload className="w-4 h-4 animate-spin" />
-                    Deleting image...
-                </div>
-            )}
-            {renameState.isLoading && (
-                <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">
-                    <Icons.Reload className="w-4 h-4 animate-spin" />
-                    Renaming image...
-                </div>
-            )}
             {renameState.error && (
                 <div className="mb-2 px-3 py-2 text-sm text-red-500 bg-red-50 dark:bg-red-950/50 rounded-md">
                     {renameState.error}
                 </div>
             )}
-            {isLoading && (
+            {isAnyOperationLoading && (
                 <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">
                     <Icons.Reload className="w-4 h-4 animate-spin" />
                     Indexing images...
@@ -456,7 +435,7 @@ export const ImagesTab = observer(() => {
                     </Tooltip>
                 </div>
             )}
-            {!isLoading && (
+            {!isAnyOperationLoading && (
                 <div
                     className={cn(
                         'flex-1 overflow-y-auto',

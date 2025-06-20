@@ -1,5 +1,8 @@
 import type { WatchEvent } from '@codesandbox/sdk';
-import { BINARY_EXTENSIONS, IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import {
+    EXCLUDED_SYNC_DIRECTORIES,
+    JSX_FILE_EXTENSIONS,
+} from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isSubdirectory } from '@onlook/utility';
@@ -51,20 +54,20 @@ export class SandboxManager {
 
         this.isIndexing = true;
         try {
-            const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES);
+            const files = await this.listFilesRecursively('./', EXCLUDED_SYNC_DIRECTORIES);
             for (const file of files) {
-                const extension = path.extname(file);
-                if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
-                    // Skip non-JSX files from indexing
-                    continue;
-                }
-
                 const normalizedPath = normalizePath(file);
-                const isBinary = BINARY_EXTENSIONS.includes(path.extname(normalizedPath));
+                const isImage = isImageFile(normalizedPath);
 
-                if (isBinary) {
-                    await this.readBinaryFile(normalizedPath);
+                if (isImage) {
+                    // Only track image file path during indexing, don't read content
+                    this.fileSync.trackBinaryFile(normalizedPath);
                 } else {
+                    const extension = path.extname(file);
+                    if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
+                        // Skip non-JSX files from indexing
+                        continue;
+                    }
                     const content = await this.readFile(normalizedPath);
                     if (content === null) {
                         console.error(`Failed to read file ${normalizedPath}`);
@@ -196,7 +199,7 @@ export class SandboxManager {
         return this.session.session?.fs.readdir(dir);
     }
 
-    async listBinaryFiles(dir: string) {
+    listBinaryFiles(dir: string) {
         return this.fileSync.listBinaryFiles(dir);
     }
 
@@ -284,7 +287,7 @@ export class SandboxManager {
         }
 
         // Convert ignored directories to glob patterns with ** wildcard
-        const excludePatterns = IGNORED_DIRECTORIES.map((dir) => `${dir}/**`);
+        const excludePatterns = EXCLUDED_SYNC_DIRECTORIES.map((dir) => `${dir}/**`);
 
         this.fileWatcher = new FileWatcher({
             session: this.session.session,
@@ -300,7 +303,7 @@ export class SandboxManager {
 
     async handleFileChange(event: WatchEvent) {
         for (const path of event.paths) {
-            if (isSubdirectory(path, IGNORED_DIRECTORIES)) {
+            if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
                 continue;
             }
             const normalizedPath = normalizePath(path);
@@ -309,7 +312,7 @@ export class SandboxManager {
                 await this.fileSync.delete(normalizedPath);
             } else if (eventType === 'change' || eventType === 'add') {
                 if (isImageFile(normalizedPath)) {
-                    await this.readBinaryFile(normalizedPath);
+                    this.fileSync.trackBinaryFile(normalizedPath);
                 } else {
                     const content = await this.readRemoteFile(normalizedPath);
                     if (content === null) {

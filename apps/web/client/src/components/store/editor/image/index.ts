@@ -1,22 +1,36 @@
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { COMPRESSION_IMAGE_PRESETS, DefaultSettings } from '@onlook/constants';
-import { convertToBase64, getBaseName, getDirName, getMimeType, isImageFile } from '@onlook/utility/src/file';
+import {
+    convertToBase64,
+    getBaseName,
+    getDirName,
+    getMimeType,
+    isImageFile,
+} from '@onlook/utility/src/file';
 import { api } from '@/trpc/client';
 
 export class ImageManager {
     private images: ImageContentData[] = [];
+    private _isScanning = false;
 
     constructor(private editorEngine: EditorEngine) {
-        this.scanImages();
         makeAutoObservable(this);
+
+        reaction(
+            () => this.editorEngine.sandbox.isIndexingFiles,
+            (isIndexingFiles) => {
+                if (!isIndexingFiles) {
+                    this.scanImages();
+                }
+            }
+        );
     }
 
     async upload(file: File): Promise<void> {
         try {
             const path = `${DefaultSettings.IMAGE_FOLDER}/${file.name}`;
-            
             // Convert file to base64 for tRPC transmission
             const arrayBuffer = await file.arrayBuffer();
             const base64Data = btoa(
@@ -56,7 +70,6 @@ export class ImageManager {
     async delete(originPath: string): Promise<void> {
         try {
             await this.editorEngine.sandbox.delete(originPath);
-            this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
@@ -120,6 +133,10 @@ export class ImageManager {
         return this.images;
     }
 
+    get isScanning() {
+        return this._isScanning;
+    }
+
     remove() {
         // this.editorEngine.style.update('backgroundImage', 'none');
         // sendAnalytics('image-removed');
@@ -143,18 +160,30 @@ export class ImageManager {
     }
 
     async scanImages() {
+        if (this._isScanning) {
+            return;
+        }
+
+        this._isScanning = true;
+
         try {
             const files = await this.editorEngine.sandbox.listBinaryFiles(
                 DefaultSettings.IMAGE_FOLDER,
             );
 
-            if (!files) {
+            if (files.length === 0) {
                 this.images = [];
                 return;
             }
 
             const imageFiles = files.filter((filePath: string) => isImageFile(filePath));
 
+            if (imageFiles.length === 0) {
+                return;
+            }
+
+            console.log('imageFiles', imageFiles);
+            
             const imagePromises = imageFiles.map(async (filePath: string) => {
                 try {
                     // Read the binary file
@@ -184,11 +213,16 @@ export class ImageManager {
             });
 
             const results = await Promise.all(imagePromises);
-            this.images = results.filter((result): result is ImageContentData => result !== null);
+            console.log('results', results);
+            
+            this.images = results.filter((result): result is ImageContentData => result !== null)
+            
         } catch (error) {
             console.error('Error scanning images:', error);
             this.images = [];
-        }
+        } finally {
+            this._isScanning = false;
+        } 
     }
 
     clear() {
