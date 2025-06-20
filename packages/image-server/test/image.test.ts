@@ -1,4 +1,4 @@
-import { describe, expect, it, beforeAll, afterAll } from 'bun:test';
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { batchCompressImagesServer, compressImageServer } from '../src/compress';
@@ -312,7 +312,7 @@ describe('Image Compression Server-Side', () => {
             expect(results).toHaveLength(1);
             expect(results[0]!.success).toBe(false);
             expect(results[0]!.error).toContain(
-                'Skipped .SVG file: logo.svg - format not supported for compression',
+                'Skipped .SVG file: svg.svg - format not supported for compression',
             );
         });
 
