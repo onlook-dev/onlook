@@ -18,6 +18,7 @@ import { HostingManager } from './hosting';
 import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
+import { NetworkStore } from './network';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
 import { SandboxManager } from './sandbox';
@@ -34,6 +35,7 @@ export class EditorEngine {
     readonly pages: PagesManager;
     readonly canvas: CanvasManager;
     readonly frames: FramesManager;
+    readonly network: NetworkStore;
 
     readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
@@ -64,6 +66,7 @@ export class EditorEngine {
         this.font = new FontManager(this, this.projectManager);
         this.canvas = new CanvasManager(this.projectManager)
         this.frames = new FramesManager(this, this.projectManager);
+        this.network = new NetworkStore();
         makeAutoObservable(this);
     }
 
@@ -90,6 +93,7 @@ export class EditorEngine {
         this.ide.clear();
         this.error.clear();
         this.sandbox.clear();
+        this.network.destroy();
     }
 
     clearUI() {
