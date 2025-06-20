@@ -1,6 +1,4 @@
-// ⚠️ WARNING: This package contains Node.js-only dependencies (Sharp)
+// ⚠️ WARNING: This package contains Node.js-only dependencies (Sharp). Do not use in a browser environment.
 
-export * from './types';
 export * from './compress';
-
-export { compressImageServer, batchCompressImagesServer } from './compress';
+export * from './types';
