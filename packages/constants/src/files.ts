@@ -1,24 +1,16 @@
 import { CUSTOM_OUTPUT_DIR } from './editor';
 
+const BASE_EXCLUDED_DIRECTORIES = ['node_modules', 'dist', 'build', '.git', '.next'] as const;
+
 export const EXCLUDED_SYNC_DIRECTORIES = [
-    'node_modules',
-    'dist',
-    'build',
+    ...BASE_EXCLUDED_DIRECTORIES,
     'static',
-    '.git',
-    '.next',
     CUSTOM_OUTPUT_DIR,
 ];
 
-export const IGNORED_UPLOAD_DIRECTORIES = [
-    'node_modules',
-    'dist',
-    'build',
-    '.git',
-    '.next',
-    '.git',
-    CUSTOM_OUTPUT_DIR,
-];
+export const IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_OUTPUT_DIR];
+
+export const EXCLUDED_PUBLISH_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, 'coverage'];
 
 export const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
 
