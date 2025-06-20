@@ -33,12 +33,12 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                         <TooltipTrigger asChild>
                             <button
                                 onClick={() => setTerminalHidden(!terminalHidden)}
-                                className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-md"
+                                className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50 rounded-md border border-transparent"
                             >
                                 <Icons.Terminal />
                             </button>
                         </TooltipTrigger>
-                        <TooltipContent>Toggle Terminal</TooltipContent>
+                        <TooltipContent sideOffset={5} hideArrow>Toggle Terminal</TooltipContent>
                     </Tooltip>
                 </motion.div>
             ) : (
@@ -61,12 +61,12 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                             <TooltipTrigger asChild>
                                 <button
                                     onClick={() => setTerminalHidden(!terminalHidden)}
-                                    className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-lg"
+                                    className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50 rounded-md border border-transparent"
                                 >
                                     <Icons.ChevronDown />
                                 </button>
                             </TooltipTrigger>
-                            <TooltipContent>Toggle Terminal</TooltipContent>
+                            <TooltipContent sideOffset={5} hideArrow>Toggle Terminal</TooltipContent>
                         </Tooltip>
                     </div>
                 </motion.div>
