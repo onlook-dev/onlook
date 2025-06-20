@@ -1,7 +1,6 @@
+import { compressImageServer, type CompressionOptions, type CompressionResult } from '@onlook/image-server';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { compressImageServer } from '@onlook/image-server';
-import type { CompressionOptions, CompressionResult } from '@onlook/image-server';
 
 type TRPCCompressionResult = Omit<CompressionResult, 'buffer'> & {
     bufferData?: string; // base64 encoded buffer data
@@ -29,7 +28,7 @@ export const imageRouter = createTRPCRouter({
         .mutation(async ({ input }): Promise<TRPCCompressionResult> => {
             try {
                 const buffer = Buffer.from(input.imageData, 'base64');
-                
+
                 const result = await compressImageServer(
                     buffer,
                     undefined, // No output path - return buffer
@@ -41,7 +40,7 @@ export const imageRouter = createTRPCRouter({
                     const { buffer: resultBuffer, ...restResult } = result;
                     return {
                         ...restResult,
-                        bufferData: resultBuffer.toString('base64'), 
+                        bufferData: resultBuffer.toString('base64'),
                     };
                 }
 

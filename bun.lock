@@ -486,7 +486,6 @@
         "free-email-domains": "^1.2.16",
         "is-subdir": "^1.2.0",
         "mime-lite": "^1.0.3",
-        "mime-types": "^3.0.1",
         "normalize-url": "^8.0.1",
         "strip-ansi": "^7.1.0",
         "tldts": "^6.1.82",
@@ -495,7 +494,6 @@
       "devDependencies": {
         "@onlook/typescript": "*",
         "@types/culori": "^2.0.4",
-        "@types/mime-types": "^3.0.1",
       },
     },
     "tooling/typescript": {
@@ -1923,8 +1921,6 @@
     "@types/mdx": ["@types/mdx@2.0.13", "", {}, "sha512-+OWZQfAYyio6YkJb3HLxDrvnx6SWWDbC0zVPfBRzUk0/nqoDyf6dNxQi3eArPe8rJ473nobTMQ/8Zk+LxJ+Yuw=="],
 
     "@types/memcached": ["@types/memcached@2.2.10", "", { "dependencies": { "@types/node": "*" } }, "sha512-AM9smvZN55Gzs2wRrqeMHVP7KE8KWgCJO/XL5yCly2xF6EKa4YlbpK+cLSAH4NG/Ah64HrlegmGqW8kYws7Vxg=="],
-
-    "@types/mime-types": ["@types/mime-types@3.0.1", "", {}, "sha512-xRMsfuQbnRq1Ef+C+RKaENOxXX87Ygl38W1vDfPHRku02TgQr+Qd8iivLtAMcR0KF5/29xlnFihkTlbqFrGOVQ=="],
 
     "@types/ms": ["@types/ms@2.1.0", "", {}, "sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA=="],
 
