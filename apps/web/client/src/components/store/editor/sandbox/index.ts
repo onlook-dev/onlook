@@ -5,7 +5,7 @@ import {
 } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
-import { getBaseName, getDirName, isImageFile, isSubdirectory } from '@onlook/utility';
+import { getBaseName, getDirName, isSubdirectory } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
@@ -35,8 +35,9 @@ export class SandboxManager {
             (session) => {
                 this.isIndexed = false;
                 if (session) {
-                    this.fileSync.clear(); // Clear cache when switching projects
                     this.index();
+                } else {
+                    this.fileSync.clear(); // Clear cache when switching projects
                 }
             },
         );
@@ -57,25 +58,12 @@ export class SandboxManager {
             const files = await this.listFilesRecursively('./', EXCLUDED_SYNC_DIRECTORIES);
             for (const file of files) {
                 const normalizedPath = normalizePath(file);
-                const isImage = isImageFile(normalizedPath);
-
-                if (isImage) {
-                    // Only track image file path during indexing, don't read content
-                    this.fileSync.trackBinaryFile(normalizedPath);
-                } else {
-                    const extension = path.extname(file);
-                    if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
-                        // Skip non-JSX files from indexing
-                        continue;
-                    }
-                    const content = await this.readFile(normalizedPath);
-                    if (content === null) {
-                        console.error(`Failed to read file ${normalizedPath}`);
-                        continue;
-                    }
-
-                    await this.processFileForMapping(normalizedPath);
+                const content = await this.readFile(normalizedPath);
+                if (content === null) {
+                    console.error(`Failed to read file ${normalizedPath}`);
+                    continue;
                 }
+                await this.processFileForMapping(normalizedPath);
             }
 
             await this.watchFiles();
@@ -311,21 +299,17 @@ export class SandboxManager {
             if (event.type === 'remove') {
                 await this.fileSync.delete(normalizedPath);
             } else if (eventType === 'change' || eventType === 'add') {
-                if (isImageFile(normalizedPath)) {
-                    this.fileSync.trackBinaryFile(normalizedPath);
-                } else {
-                    const content = await this.readRemoteFile(normalizedPath);
-                    if (content === null) {
-                        console.error(`File content for ${normalizedPath} not found`);
-                        continue;
-                    }
-                    const contentChanged = await this.fileSync.syncFromRemote(
-                        normalizedPath,
-                        content,
-                    );
-                    if (contentChanged) {
-                        await this.processFileForMapping(normalizedPath);
-                    }
+                const content = await this.readRemoteFile(normalizedPath);
+                if (content === null) {
+                    console.error(`File content for ${normalizedPath} not found`);
+                    continue;
+                }
+                const contentChanged = await this.fileSync.syncFromRemote(
+                    normalizedPath,
+                    content,
+                );
+                if (contentChanged) {
+                    await this.processFileForMapping(normalizedPath);
                 }
             }
             this.fileEventBus.publish({
