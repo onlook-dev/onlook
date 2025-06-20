@@ -103,7 +103,7 @@ export class HostingManager {
 
             // Serialize the files for deployment
             const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
-            const files = await this.serializeFilesOptimized(NEXT_BUILD_OUTPUT_PATH);
+            const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
 
             this.updateState({ status: PublishStatus.LOADING, message: 'Deploying project...', progress: 80 });
 
@@ -262,8 +262,6 @@ export class HostingManager {
 
         for (const lockFile of SUPPORTED_LOCK_FILES) {
             const lockFileExists = await this.fileOps.fileExists(`./${lockFile}`);
-            console.log('lockFileExists', lockFileExists);
-            
             if (lockFileExists) {
                 await this.fileOps.copy(
                     `./${lockFile}`,
@@ -286,108 +284,12 @@ export class HostingManager {
     }
 
     /**
-     * Serializes all files in a directory for deployment
-     * @param currentDir - The directory path to serialize
-     * @param basePath - The base path for relative file paths (used for recursion)
-     * @returns Record of file paths to their content (base64 for binary, utf-8 for text)
-     */
-    private async serializeFiles(
-        currentDir: string,
-        basePath: string = '',
-    ): Promise<Record<string, FreestyleFile>> {
-        console.log(`[serializeFiles] Starting serialization of directory: ${currentDir}, basePath: ${basePath}`);
-        const files: Record<string, FreestyleFile> = {};
-
-        if (!this.editorEngine.sandbox.session.session) {
-            console.error('[serializeFiles] No sandbox session available');
-            throw new Error('No sandbox session available');
-        }
-
-        try {
-            console.log(`[serializeFiles] Reading directory entries from: ${currentDir}`);
-            const entries = await this.editorEngine.sandbox.session.session.fs.readdir(currentDir);
-            console.log(`[serializeFiles] Found ${entries.length} entries in ${currentDir}:`, entries.map(e => `${e.name} (${e.type})`));
-
-            for (const entry of entries) {
-                const entryPath = `${currentDir}/${entry.name}`;
-                console.log(`[serializeFiles] Processing entry: ${entry.name} (type: ${entry.type}) at path: ${entryPath}`);
-
-                // Skip node_modules directory
-                if (entryPath.includes('node_modules')) {
-                    console.log(`[serializeFiles] Skipping node_modules directory: ${entryPath}`);
-                    continue;
-                }
-
-                if (entry.type === 'directory') {
-                    console.log(`[serializeFiles] Recursively processing subdirectory: ${entryPath}`);
-                    // Recursively process subdirectories
-                    const subFiles = await this.serializeFiles(
-                        entryPath,
-                        `${basePath}${entry.name}/`,
-                    );
-                    console.log(`[serializeFiles] Subdirectory ${entryPath} yielded ${Object.keys(subFiles).length} files`);
-                    Object.assign(files, subFiles);
-                } else if (entry.type === 'file') {
-                    const filePath = `${basePath}${entry.name}`;
-                    console.log(`[serializeFiles] Processing file: ${filePath}`);
-
-                    if (isBinaryFile(entry.name)) {
-                        console.log(`[serializeFiles] Treating ${filePath} as binary file`);
-                        // Read binary file and encode as base64
-                        const binaryContent =
-                            await this.editorEngine.sandbox.readBinaryFile(entryPath);
-                        if (binaryContent) {
-                            console.log(`[serializeFiles] Successfully read binary content for ${filePath}, size: ${binaryContent.length} bytes`);
-                            // Convert Uint8Array to base64 string
-                            const base64String = btoa(
-                                Array.from(binaryContent)
-                                    .map((byte: number) => String.fromCharCode(byte))
-                                    .join(''),
-                            );
-                            files[filePath] = {
-                                content: base64String,
-                                encoding: 'base64',
-                            };
-                            console.log(`[serializeFiles] Added binary file ${filePath} with base64 encoding (${base64String.length} chars)`);
-                        } else {
-                            console.warn(`[serializeFiles] Failed to read binary content for ${filePath}`);
-                        }
-                    } else {
-                        console.log(`[serializeFiles] Treating ${filePath} as text file`);
-                        // Read text file
-                        const textContent = await this.editorEngine.sandbox.readFile(entryPath);
-                        if (textContent !== null) {
-                            console.log(`[serializeFiles] Successfully read text content for ${filePath}, length: ${textContent.length} characters`);
-                            files[filePath] = {
-                                content: textContent,
-                                encoding: 'utf-8',
-                            };
-                            console.log(`[serializeFiles] Added text file ${filePath} with utf-8 encoding`);
-                        } else {
-                            console.warn(`[serializeFiles] Failed to read text content for ${filePath}`);
-                        }
-                    }
-                } else {
-                    console.warn(`[serializeFiles] Unknown entry type: ${entry.type} for ${entryPath}`);
-                }
-            }
-        } catch (error) {
-            console.error(`[serializeFiles] Error serializing files in directory ${currentDir}:`, error);
-            throw error;
-        }
-
-        console.log(`[serializeFiles] Completed serialization of ${currentDir}. Total files processed: ${Object.keys(files).length}`);
-        console.log(`[serializeFiles] Files list:`, Object.keys(files));
-        return files;
-    }
-
-    /**
-     * OPTIMIZED: Serializes all files in a directory for deployment using parallel processing
+     * Serializes all files in a directory for deployment using parallel processing
      * @param currentDir - The directory path to serialize
      * @returns Record of file paths to their content (base64 for binary, utf-8 for text)
      */
-    private async serializeFilesOptimized(currentDir: string): Promise<Record<string, FreestyleFile>> {
-        const timer = new LogTimer('File Serialization (Optimized)');
+    private async serializeFiles(currentDir: string): Promise<Record<string, FreestyleFile>> {
+        const timer = new LogTimer('File Serialization');
 
         if (!this.editorEngine.sandbox.session.session) {
             throw new Error('No sandbox session available');
@@ -403,7 +305,6 @@ export class HostingManager {
 
             const BATCH_SIZE = 50;
             const files: Record<string, FreestyleFile> = {};
-
 
             if (textFiles.length > 0) {
                 timer.log(`Processing ${textFiles.length} text files in batches of ${BATCH_SIZE}`);
@@ -427,9 +328,8 @@ export class HostingManager {
 
             timer.log(`Serialization completed - ${Object.keys(files).length} files processed`);
             return files;
-            
         } catch (error) {
-            console.error(`[serializeFilesOptimized] Error during optimized serialization:`, error);
+            console.error(`[serializeFiles] Error during serialization:`, error);
             throw error;
         }
     }
@@ -442,10 +342,10 @@ export class HostingManager {
             const currentDir = dirsToProcess.shift()!;
             try {
                 const entries = await this.editorEngine.sandbox.session.session!.fs.readdir(currentDir);
-                
+
                 for (const entry of entries) {
                     const fullPath = `${currentDir}/${entry.name}`;
-                    
+
                     if (entry.type === 'directory') {
                         // Skip node_modules and other heavy directories early
                         if (!EXCLUDED_PUBLISH_DIRECTORIES.includes(entry.name)) {
@@ -466,12 +366,12 @@ export class HostingManager {
      * Check if a file should be skipped
      */
     private shouldSkipFile(filePath: string): boolean {
-        return filePath.includes('node_modules') || 
-               filePath.includes('.git/') ||
-               filePath.includes('/.next/') ||
-               filePath.includes('/dist/') ||
-               filePath.includes('/build/') ||
-               filePath.includes('/coverage/');
+        return filePath.includes('node_modules') ||
+            filePath.includes('.git/') ||
+            filePath.includes('/.next/') ||
+            filePath.includes('/dist/') ||
+            filePath.includes('/build/') ||
+            filePath.includes('/coverage/');
     }
 
     private categorizeFiles(filePaths: string[]): { binaryFiles: string[], textFiles: string[] } {
@@ -494,10 +394,10 @@ export class HostingManager {
     private async processTextFilesBatch(filePaths: string[], baseDir: string): Promise<Record<string, FreestyleFile>> {
         const promises = filePaths.map(async (fullPath) => {
             const relativePath = fullPath.replace(baseDir + '/', '');
-            
+
             try {
                 const textContent = await this.editorEngine.sandbox.readFile(fullPath);
-                
+
                 if (textContent !== null) {
                     return {
                         path: relativePath,
@@ -518,7 +418,7 @@ export class HostingManager {
 
         const results = await Promise.all(promises);
         const files: Record<string, FreestyleFile> = {};
-        
+
         for (const result of results) {
             if (result) {
                 files[result.path] = result.file;
@@ -531,17 +431,17 @@ export class HostingManager {
     private async processBinaryFilesBatch(filePaths: string[], baseDir: string): Promise<Record<string, FreestyleFile>> {
         const promises = filePaths.map(async (fullPath) => {
             const relativePath = fullPath.replace(baseDir + '/', '');
-            
+
             try {
                 const binaryContent = await this.editorEngine.sandbox.readBinaryFile(fullPath);
-                
+
                 if (binaryContent) {
                     const base64String = btoa(
                         Array.from(binaryContent)
                             .map((byte: number) => String.fromCharCode(byte))
                             .join(''),
                     );
-                    
+
                     return {
                         path: relativePath,
                         file: {
@@ -561,7 +461,7 @@ export class HostingManager {
 
         const results = await Promise.all(promises);
         const files: Record<string, FreestyleFile> = {};
-        
+
         for (const result of results) {
             if (result) {
                 files[result.path] = result.file;
