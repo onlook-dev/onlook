@@ -12,22 +12,22 @@ export const ProjectSettingsTabs = observer(({ appendTabs }: { appendTabs: (tabs
     const tabs: SettingTab[] = [
         {
             label: SettingsTabValue.SITE,
-            icon: <Icons.File className="mr-2 h-4 w-4" />,
+            icon: <Icons.File className="mr-1 h-4 w-4" />,
             component: <ComingSoonTab />,
         },
         {
             label: SettingsTabValue.DOMAIN,
-            icon: <Icons.Globe className="mr-2 h-4 w-4" />,
+            icon: <Icons.Globe className="mr-1 h-4 w-4" />,
             component: <ComingSoonTab />,
         },
         {
             label: SettingsTabValue.PROJECT,
-            icon: <Icons.Gear className="mr-2 h-4 w-4" />,
+            icon: <Icons.Gear className="mr-1 h-4 w-4" />,
             component: <ComingSoonTab />,
         },
         {
             label: SettingsTabValue.VERSIONS,
-            icon: <Icons.Code className="mr-2 h-4 w-4" />,
+            icon: <Icons.Code className="mr-1 h-4 w-4" />,
             component: <ComingSoonTab />,
         },
     ];

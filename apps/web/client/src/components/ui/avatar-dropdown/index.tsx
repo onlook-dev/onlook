@@ -50,10 +50,10 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                 </button>
             </PopoverTrigger>
             <PopoverContent className="w-72 p-0">
-                <div className="flex items-center gap-2 p-4">
+                <div className="flex items-center gap-2 p-3 select-none">
                     <div className="flex flex-col">
-                        <span className="text-sm font-medium">{user?.name}</span>
-                        <span className="text-xs text-muted-foreground">{user?.email}</span>
+                        <span className="text-smallPlus">{user?.name}</span>
+                        <span className="text-mini text-foreground-secondary">{user?.email}</span>
                     </div>
                 </div>
                 {/* <Separator />
@@ -69,10 +69,10 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                     </Button> */}
                     <Button
                         variant="ghost"
-                        className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                        className="flex w-full justify-start items-center rounded-sm px-2 py-2 text-smallPlus text-foreground-secondary hover:bg-accent hover:text-accent-foreground group"
                         onClick={handleOpenSettings}
                     >
-                        <Icons.Gear className="mr-2 h-4 w-4" /> Settings
+                        <Icons.Gear className="mr-1 h-4 w-4 text-foreground-secondary text-sm group-hover:text-foreground-primary" /> Settings
                     </Button>
                     {/* <Button
                         variant="ghost"
@@ -80,13 +80,12 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                     >
                         <Icons.QuestionMarkCircled className="mr-2 h-4 w-4" /> Help Center
                     </Button> */}
-                    <Separator />
                     <Button
                         variant="ghost"
                         onClick={handleSignOut}
-                        className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                        className="flex w-full justify-start items-center rounded-sm px-2 py-2 text-smallPlus text-foreground-secondary hover:bg-accent hover:text-accent-foreground group"
                     >
-                        <Icons.Exit className="mr-2 h-4 w-4" /> Sign Out
+                        <Icons.Exit className="mr-1 h-4 w-4 text-foreground-secondary text-sm group-hover:text-foreground-primary" /> Sign Out
                     </Button>
                 </div>
             </PopoverContent>
