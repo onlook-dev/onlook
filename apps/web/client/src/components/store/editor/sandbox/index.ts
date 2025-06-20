@@ -35,8 +35,9 @@ export class SandboxManager {
             (session) => {
                 this.isIndexed = false;
                 if (session) {
-                    this.fileSync.clear(); // Clear cache when switching projects
                     this.index();
+                } else {
+                    this.fileSync.clear();
                 }
             },
         );
@@ -64,10 +65,6 @@ export class SandboxManager {
                     this.fileSync.trackBinaryFile(normalizedPath);
                 } else {
                     const extension = path.extname(file);
-                    if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
-                        // Skip non-JSX files from indexing
-                        continue;
-                    }
                     const content = await this.readFile(normalizedPath);
                     if (content === null) {
                         console.error(`Failed to read file ${normalizedPath}`);
