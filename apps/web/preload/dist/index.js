@@ -1733,6 +1733,7 @@ var INLINE_ONLY_CONTAINERS = new Set([
   "wbr"
 ]);
 // ../../../packages/constants/src/editor.ts
+var CUSTOM_OUTPUT_DIR = ".next-prod";
 var DefaultSettings = {
   SCALE: 0.7,
   PAN_POSITION: { x: 175, y: 100 },
@@ -1766,6 +1767,15 @@ var DefaultSettings = {
     buildFlags: "--no-lint"
   }
 };
+// ../../../packages/constants/src/files.ts
+var BASE_EXCLUDED_DIRECTORIES = ["node_modules", "dist", "build", ".git", ".next"];
+var EXCLUDED_SYNC_DIRECTORIES = [
+  ...BASE_EXCLUDED_DIRECTORIES,
+  "static",
+  CUSTOM_OUTPUT_DIR
+];
+var IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_OUTPUT_DIR];
+var EXCLUDED_PUBLISH_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, "coverage"];
 // ../../../packages/constants/src/language.ts
 var LANGUAGE_DISPLAY_NAMES = {
   ["en" /* English */]: "English",
@@ -17378,5 +17388,5 @@ export {
   penpalParent
 };
 
-//# debugId=AE34D31578F26E9564756E2164756E21
+//# debugId=1AB6CAD0F6D87DB364756E2164756E21
 //# sourceMappingURL=index.js.map
