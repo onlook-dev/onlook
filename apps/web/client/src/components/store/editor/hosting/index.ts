@@ -175,7 +175,7 @@ export class HostingManager {
         envVars?: Record<string, string>,
     ): Promise<boolean> {
         try {
-            const success = await api.domain.preview.publish.mutate({
+            const deploymentId = await api.domain.preview.publish.mutate({
                 projectId,
                 files: files,
                 type: type === PublishType.CUSTOM ? 'custom' : 'preview',
@@ -185,7 +185,8 @@ export class HostingManager {
                     envVars,
                 },
             });
-            return success;
+            // Return true if we got a valid deployment ID, false otherwise
+            return Boolean(deploymentId);
         } catch (error) {
             console.error('Failed to deploy project', error);
             return false;

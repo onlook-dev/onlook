@@ -33,14 +33,17 @@ export interface VerifyDomainResponse {
     message?: string;
 }
 
+export interface PublishOptions {
+    skipBadge?: boolean;
+    skipBuild?: boolean;
+    buildFlags?: string;
+    envVars?: Record<string, string>;
+}
+
 export interface PublishRequest {
     buildScript: string;
     urls: string[];
-    options?: {
-        skipBadge?: boolean;
-        buildFlags?: string[];
-        envVars?: Record<string, string>;
-    };
+    options?: PublishOptions;
 }
 
 export interface PublishResponse {
