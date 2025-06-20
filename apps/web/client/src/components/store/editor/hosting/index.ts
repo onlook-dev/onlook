@@ -3,6 +3,7 @@ import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPO
 import { addBuiltWithScript, injectBuiltWithScript, removeBuiltWithScript, removeBuiltWithScriptFromLayout } from '@onlook/growth';
 import {
     PublishStatus,
+    type DeploymentResponse,
     type PublishOptions,
     type PublishRequest,
     type PublishResponse,
@@ -176,7 +177,7 @@ export class HostingManager {
         envVars?: Record<string, string>,
     ): Promise<boolean> {
         try {
-            const success = await api.domain.preview.publish.mutate({
+            const res: DeploymentResponse = await api.domain.preview.publish.mutate({
                 projectId,
                 files: files,
                 type: type === PublishType.CUSTOM ? 'custom' : 'preview',
@@ -186,7 +187,7 @@ export class HostingManager {
                     envVars,
                 },
             });
-            return success;
+            return res.success;
         } catch (error) {
             console.error('Failed to deploy project', error);
             return false;
