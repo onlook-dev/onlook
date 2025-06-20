@@ -271,7 +271,7 @@ export class HostingManager {
                 );
                 return { success: true };
             } else {
-                console.log('lockFile not found', lockFile);
+                console.error(`lockFile not found: ${lockFile}`);
             }
         }
 
