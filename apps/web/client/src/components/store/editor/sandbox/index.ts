@@ -53,6 +53,12 @@ export class SandboxManager {
         try {
             const files = await this.listFilesRecursively('./', IGNORED_DIRECTORIES);
             for (const file of files) {
+                const extension = path.extname(file);
+                if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
+                    // Skip non-JSX files from indexing
+                    continue;
+                }
+
                 const normalizedPath = normalizePath(file);
                 const content = await this.readFile(normalizedPath);
                 if (content === null) {
