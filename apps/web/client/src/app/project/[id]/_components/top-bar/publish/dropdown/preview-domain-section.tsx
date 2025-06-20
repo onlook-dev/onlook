@@ -42,7 +42,7 @@ export const PreviewDomainSection = observer(() => {
                 skipBadge: false,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
                 envVars: project.env || {},
-                skipBuild: true,
+                skipBuild: false,
             },
         });
         console.log(res);
