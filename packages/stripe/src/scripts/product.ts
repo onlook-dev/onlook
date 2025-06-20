@@ -44,20 +44,20 @@ async function createTierPrices(
 
     const month = stripe.prices.create({
         ...base,
-        unit_amount: tier.monthly,
+        unit_amount: tier.monthlyPrice,
         recurring: { ...base.recurring, interval: 'month' },
-        nickname: `${tier.name} – monthly`,
+        nickname: `${tier.key} – monthly`,
     })
 
     const year = stripe.prices.create({
         ...base,
-        unit_amount: tier.yearly,
+        unit_amount: tier.yearlyPrice,
         recurring: { ...base.recurring, interval: 'year' },
-        nickname: `${tier.name} – yearly`,
+        nickname: `${tier.key} – yearly`,
     })
 
     const [monthly, yearly] = await Promise.all([month, year])
-    return { tier: tier.name, monthly, yearly }
+    return { tier: tier.key, monthly, yearly }
 }
 
 const createFullTestProduct = async (stripe: Stripe) => {

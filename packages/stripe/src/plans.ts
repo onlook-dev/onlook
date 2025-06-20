@@ -1,38 +1,46 @@
+import { PlanType } from "@onlook/models";
+
 export enum ProTier {
-    TIER_1 = '100 Messages per Month',
-    TIER_2 = '200 Messages per Month',
-    TIER_3 = '400 Messages per Month',
-    TIER_4 = '800 Messages per Month',
-    TIER_5 = '1,200 Messages per Month',
-    TIER_6 = '2,000 Messages per Month',
-    TIER_7 = '3,000 Messages per Month',
-    TIER_8 = '4,000 Messages per Month',
-    TIER_9 = '5,000 Messages per Month',
-    TIER_10 = '7,500 Messages per Month',
-    TIER_11 = 'Unlimited Messages per Month',
+    TIER_1 = 'TIER_1',
+    TIER_2 = 'TIER_2',
+    TIER_3 = 'TIER_3',
+    TIER_4 = 'TIER_4',
+    TIER_5 = 'TIER_5',
+    TIER_6 = 'TIER_6',
+    TIER_7 = 'TIER_7',
+    TIER_8 = 'TIER_8',
+    TIER_9 = 'TIER_9',
+    TIER_10 = 'TIER_10',
+    TIER_11 = 'TIER_11',
 }
 
 export interface TierConfig {
-    name: ProTier
+    key: ProTier,
+    type: PlanType,
+    description: string,
     limit: number | 'inf'
-    monthly: number        // in cents
-    yearly: number         // in cents
+    monthlyPrice: number
+    yearlyPrice: number
 }
 
 const ANNUAL_DISCOUNT = 0.9;
 
+const calculateYearlyPrice = (monthlyPrice: number) => {
+    return Math.round(monthlyPrice * 12 * ANNUAL_DISCOUNT);
+}
+
 export const PRO_TIERS: TierConfig[] = [
-    { name: ProTier.TIER_1, limit: 100, monthly: 2500, yearly: Math.round(2500 * 12 * ANNUAL_DISCOUNT) },
-    { name: ProTier.TIER_2, limit: 200, monthly: 5000, yearly: Math.round(5000 * 12 * ANNUAL_DISCOUNT) },
-    { name: ProTier.TIER_3, limit: 400, monthly: 10000, yearly: Math.round(10000 * 12 * ANNUAL_DISCOUNT) },
-    { name: ProTier.TIER_4, limit: 800, monthly: 20000, yearly: Math.round(20000 * 12 * ANNUAL_DISCOUNT) },
-    { name: ProTier.TIER_5, limit: 1200, monthly: 29400, yearly: Math.round(29400 * 12 * ANNUAL_DISCOUNT) },
-    { name: ProTier.TIER_6, limit: 2000, monthly: 48000, yearly: Math.round(48000 * 12 * ANNUAL_DISCOUNT) },
-    { name: ProTier.TIER_7, limit: 3000, monthly: 70500, yearly: Math.round(70500 * 12 * ANNUAL_DISCOUNT) },
-    { name: ProTier.TIER_8, limit: 4000, monthly: 92000, yearly: Math.round(92000 * 12 * ANNUAL_DISCOUNT) },
-    { name: ProTier.TIER_9, limit: 5000, monthly: 112500, yearly: Math.round(112500 * 12 * ANNUAL_DISCOUNT) },
-    { name: ProTier.TIER_10, limit: 7500, monthly: 187500, yearly: Math.round(187500 * 12 * ANNUAL_DISCOUNT) },
-    { name: ProTier.TIER_11, limit: 'inf', monthly: 375000, yearly: Math.round(375000 * 12 * ANNUAL_DISCOUNT) },
+    { description: '100 Messages per Month', key: ProTier.TIER_1, type: PlanType.PRO, limit: 100, monthlyPrice: 2500, yearlyPrice: calculateYearlyPrice(2500) },
+    { description: '200 Messages per Month', key: ProTier.TIER_2, type: PlanType.PRO, limit: 200, monthlyPrice: 5000, yearlyPrice: calculateYearlyPrice(5000) },
+    { description: '400 Messages per Month', key: ProTier.TIER_3, type: PlanType.PRO, limit: 400, monthlyPrice: 10000, yearlyPrice: calculateYearlyPrice(10000) },
+    { description: '800 Messages per Month', key: ProTier.TIER_4, type: PlanType.PRO, limit: 800, monthlyPrice: 20000, yearlyPrice: calculateYearlyPrice(20000) },
+    { description: '1,200 Messages per Month', key: ProTier.TIER_5, type: PlanType.PRO, limit: 1200, monthlyPrice: 29400, yearlyPrice: calculateYearlyPrice(29400) },
+    { description: '2,000 Messages per Month', key: ProTier.TIER_6, type: PlanType.PRO, limit: 2000, monthlyPrice: 48000, yearlyPrice: calculateYearlyPrice(48000) },
+    { description: '3,000 Messages per Month', key: ProTier.TIER_7, type: PlanType.PRO, limit: 3000, monthlyPrice: 70500, yearlyPrice: calculateYearlyPrice(70500) },
+    { description: '4,000 Messages per Month', key: ProTier.TIER_8, type: PlanType.PRO, limit: 4000, monthlyPrice: 92000, yearlyPrice: calculateYearlyPrice(92000) },
+    { description: '5,000 Messages per Month', key: ProTier.TIER_9, type: PlanType.PRO, limit: 5000, monthlyPrice: 112500, yearlyPrice: calculateYearlyPrice(112500) },
+    { description: '7,500 Messages per Month', key: ProTier.TIER_10, type: PlanType.PRO, limit: 7500, monthlyPrice: 187500, yearlyPrice: calculateYearlyPrice(187500) },
+    { description: 'Unlimited Messages per Month', key: ProTier.TIER_11, type: PlanType.PRO, limit: 'inf', monthlyPrice: 375000, yearlyPrice: calculateYearlyPrice(375000) },
 ]
 
 export const PRO_PRODUCT_CONFIG = {

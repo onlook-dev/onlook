@@ -10,6 +10,13 @@ export interface Plan {
     monthlyMessages: number;
 }
 
+export interface Price {
+    id: string;
+    planId: string;
+    pricePerMonth: number;
+    stripePriceId: string;
+}
+
 export interface Subscription {
     id: string;
     status: string;

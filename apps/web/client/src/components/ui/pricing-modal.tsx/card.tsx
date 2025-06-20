@@ -8,8 +8,19 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-// Mock free tier configuration
-const FREE_TIER = {
+const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month`;
+
+interface PlanConfig {
+    name: string;
+    price: string;
+    description: string;
+    features: string[];
+    defaultSelectValue: string;
+    selectValues: { value: string; label: string }[];
+    disableSelect: boolean;
+}
+
+const FREE_TIER: PlanConfig = {
     name: 'Free',
     price: '$0/month',
     description: 'Prototype and experiment in code with ease.',
@@ -19,11 +30,13 @@ const FREE_TIER = {
         '10 AI chat messages a day',
         '50 AI messages a month',
         'Limited to 1 screenshot per chat'
-    ]
+    ],
+    defaultSelectValue: '10',
+    selectValues: [
+        { value: '10', label: '10 Daily Messages' },
+    ],
+    disableSelect: true,
 };
-
-// Price formatting helper
-const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month`;
 
 export const PricingCard = ({
     planType,
@@ -41,44 +54,36 @@ export const PricingCard = ({
     const t = useTranslations();
     const [selectedTier, setSelectedTier] = useState<string>('');
 
-    // Safety check for proTiers
     if (planType === 'pro' && !PRO_TIERS.length) {
-        return null;
+        throw new Error('No pro tiers found');
     }
 
-    const defaultProTier = PRO_TIERS[0]!; // Non-null assertion since we checked length
+    const defaultProTier = PRO_TIERS[0];
+    if (!defaultProTier) {
+        throw new Error('No default pro tier found');
+    }
 
-    const getPlanData = () => {
+    const getPlanData = (): PlanConfig => {
         if (planType === 'free') {
-            return {
-                plan: FREE_TIER.name,
-                price: FREE_TIER.price,
-                description: FREE_TIER.description,
-                features: FREE_TIER.features,
-                defaultSelectValue: '10',
-                selectValues: [
-                    { value: '10', label: '10 Daily Messages' },
-                ],
-                disableSelect: true,
-            };
+            return FREE_TIER;
         } else {
             // Find the selected tier or use default
             const currentTier = selectedTier
-                ? PRO_TIERS.find(tier => tier.name === selectedTier) || defaultProTier
+                ? PRO_TIERS.find(tier => tier.key === selectedTier) || defaultProTier
                 : defaultProTier;
 
             return {
-                plan: t('pricing.plans.pro.name'),
-                price: formatPrice(currentTier.monthly),
+                name: t('pricing.plans.pro.name'),
+                price: formatPrice(currentTier.monthlyPrice),
                 description: t('pricing.plans.pro.description'),
                 features: [
                     'Unlimited projects',
                     'Custom domain',
                 ],
-                defaultSelectValue: selectedTier || defaultProTier.name,
+                defaultSelectValue: selectedTier || defaultProTier.key,
                 selectValues: PRO_TIERS.map(tier => ({
-                    value: tier.name,
-                    label: tier.name
+                    value: tier.key,
+                    label: tier.key
                 })),
                 disableSelect: false,
             };
@@ -86,10 +91,6 @@ export const PricingCard = ({
     };
 
     const planData = getPlanData();
-
-    const handleTierChange = (value: string) => {
-        setSelectedTier(value);
-    };
 
     return (
         <MotionCard
@@ -100,7 +101,7 @@ export const PricingCard = ({
         >
             <motion.div className="p-6 flex flex-col h-full">
                 <div className="space-y-1">
-                    <h2 className="text-title2">{planData.plan}</h2>
+                    <h2 className="text-title2">{planData.name}</h2>
                     <p className="text-foreground-onlook text-largePlus">{planData.price}</p>
                 </div>
                 <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
@@ -110,7 +111,7 @@ export const PricingCard = ({
                     <Select
                         value={planData.defaultSelectValue}
                         disabled={planData.disableSelect}
-                        onValueChange={handleTierChange}
+                        onValueChange={setSelectedTier}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a plan" />
@@ -151,7 +152,6 @@ export const PricingCard = ({
                         </div>
                     ))}
                 </div>
-
             </motion.div>
         </MotionCard>
     );

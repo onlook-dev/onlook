@@ -11,18 +11,7 @@ interface UsageMetrics {
 export class SubscriptionManager {
     isModalOpen = false;
     subscription: Subscription | null = null;
-    usage: UsageMetrics | null = {
-        daily: {
-            period: 'day',
-            usageCount: 0,
-            limitCount: 0,
-        },
-        monthly: {
-            period: 'month',
-            usageCount: 0,
-            limitCount: 0,
-        },
-    }
+    usage: UsageMetrics | null = null
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
