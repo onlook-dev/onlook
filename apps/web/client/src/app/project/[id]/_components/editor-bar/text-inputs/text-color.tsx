@@ -40,7 +40,7 @@ export const TextColor = observer(
                         >
                             <Icons.TextColorSymbol className="h-3.5 w-3.5" />
                             <div
-                                className="h-[2.5px] w-5.5 rounded-full bg-current"
+                                className="h-[4px] w-6 rounded-full bg-current"
                                 style={{ backgroundColor: textState.textColor || '#000000' }}
                             />
                         </Button>

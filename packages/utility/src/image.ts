@@ -1,6 +1,7 @@
 import imageCompression from 'browser-image-compression';
 
-export async function compressImage(file: File): Promise<string | undefined> {
+// Browser-side image compression
+export async function compressImageInBrowser(file: File): Promise<string | undefined> {
     const options = {
         maxSizeMB: 2,
         maxWidthOrHeight: 2048,
@@ -24,4 +25,12 @@ export function base64ToBlob(base64: string, mimeType: string): Blob {
         ia[i] = byteString.charCodeAt(i);
     }
     return new Blob([ab], { type: mimeType });
+}
+
+export function addBase64Prefix(mimeType: string, base64: string): string {
+    if (base64.startsWith('data:')) {
+        // If the base64 already has a prefix, return it
+        return base64;
+    }
+    return `data:${mimeType};base64,${base64}`;
 }

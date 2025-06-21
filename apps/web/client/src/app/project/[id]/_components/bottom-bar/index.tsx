@@ -8,9 +8,11 @@ import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
 import { TerminalArea } from './terminal-area';
 
 const TOOLBAR_ITEMS = ({ t }: { t: ReturnType<typeof useTranslations> }) => [
@@ -57,6 +59,13 @@ export const BottomBar = observer(() => {
     const editorEngine = useEditorEngine();
     const toolbarItems = TOOLBAR_ITEMS({ t });
 
+    // Ensure default state is set
+    useEffect(() => {
+        if (!editorEngine.state.editorMode) {
+            editorEngine.state.editorMode = EditorMode.DESIGN;
+        }
+    }, [editorEngine.state.editorMode]);
+
     return (
         <AnimatePresence mode="wait">
             {editorEngine.state.editorMode !== EditorMode.PREVIEW && (
@@ -64,7 +73,7 @@ export const BottomBar = observer(() => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
-                    className="flex flex-col border p-1 px-1.5 bg-background-secondary/85 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl"
+                    className="flex flex-col border-[0.5px] border-border p-1 px-1 bg-background rounded-lg backdrop-blur drop-shadow-xl overflow-hidden"
                     transition={{
                         type: 'spring',
                         bounce: 0.1,
@@ -82,20 +91,27 @@ export const BottomBar = observer(() => {
                                     editorEngine.state.editorMode = value as EditorMode;
                                 }
                             }}
+                            className="gap-0.5"
                         >
                             {toolbarItems.map((item) => (
                                 <Tooltip key={item.mode}>
                                     <TooltipTrigger asChild>
                                         <ToggleGroupItem
                                             value={item.mode}
+                                            variant="default"
                                             aria-label={item.hotkey.description}
                                             disabled={item.disabled}
-                                            className="hover:text-foreground-hover text-foreground-tertiary"
+                                            className={cn(
+                                                "h-9 w-9 flex items-center justify-center rounded-md border border-transparent transition-all duration-150 ease-in-out",
+                                                editorEngine.state.editorMode === item.mode
+                                                    ? "bg-background-tertiary/50 text-foreground-primary hover:text-foreground-primary"
+                                                    : "text-foreground-tertiary hover:text-foreground-hover hover:bg-background-tertiary/50"
+                                            )}
                                         >
                                             <item.icon />
                                         </ToggleGroupItem>
                                     </TooltipTrigger>
-                                    <TooltipContent>
+                                    <TooltipContent sideOffset={5} hideArrow>
                                         <HotkeyLabel hotkey={item.hotkey} />
                                     </TooltipContent>
                                 </Tooltip>
