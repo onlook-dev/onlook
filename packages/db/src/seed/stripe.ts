@@ -1,5 +1,5 @@
 import { db } from '@onlook/db/src/client';
-import { PriceKey, ProductType } from "@onlook/stripe";
+import { PriceKey, PRO_PRODUCT_CONFIG, ProductType } from "@onlook/stripe";
 import { getProProductAndPrices } from "@onlook/stripe/src/scripts/product";
 import { config } from 'dotenv';
 import Stripe from "stripe";
@@ -33,7 +33,13 @@ export const seedStripe = async () => {
 
     console.log('Inserting prices...');
     await db.insert(prices).values(stripePrices.data.map((price: Stripe.Price) => {
-        const monthlyMessageLimit = price.recurring?.interval_count ?? 0;
+        const key = price.nickname as PriceKey;
+
+        const priceConfig = PRO_PRODUCT_CONFIG.prices.find(p => p.key === key);
+        if (!priceConfig) throw new Error(`Price config not found for ${key}`);
+
+        const monthlyMessageLimit = priceConfig.monthlyMessageLimit;
+
         return {
             productId: product.id,
             key: price.nickname as PriceKey,

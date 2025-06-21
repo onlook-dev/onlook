@@ -19,7 +19,7 @@ export interface PriceConfig {
     name: string,
     product: ProductType,
     description: string,
-    monthlyMessageLimit: number | 'inf'
+    monthlyMessageLimit: number
     cost: number
     paymentInterval: 'month' | 'year'
 }
@@ -35,7 +35,7 @@ export const PRO_PRICES: PriceConfig[] = [
     { description: '4,000 Messages per Month', key: PriceKey.PRO_MONTHLY_TIER_8, name: 'Tier 8', product: ProductType.PRO, monthlyMessageLimit: 4000, cost: 92000, paymentInterval: 'month' },
     { description: '5,000 Messages per Month', key: PriceKey.PRO_MONTHLY_TIER_9, name: 'Tier 9', product: ProductType.PRO, monthlyMessageLimit: 5000, cost: 112500, paymentInterval: 'month' },
     { description: '7,500 Messages per Month', key: PriceKey.PRO_MONTHLY_TIER_10, name: 'Tier 10', product: ProductType.PRO, monthlyMessageLimit: 7500, cost: 187500, paymentInterval: 'month' },
-    { description: 'Unlimited Messages per Month', key: PriceKey.PRO_MONTHLY_TIER_11, name: 'Tier 11', product: ProductType.PRO, monthlyMessageLimit: 'inf', cost: 375000, paymentInterval: 'month' },
+    { description: 'Unlimited Messages per Month', key: PriceKey.PRO_MONTHLY_TIER_11, name: 'Tier 11', product: ProductType.PRO, monthlyMessageLimit: 99999, cost: 375000, paymentInterval: 'month' },
 ]
 
 export const PRO_PRODUCT_CONFIG = {
