@@ -28,6 +28,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         onFinish: (message, config) => {
             if (config.finishReason === 'stop' || config.finishReason === 'error') {
                 editorEngine.chat.conversation.addAssistantMessage(message);
+                if (config.finishReason === 'stop') {
+                    editorEngine.chat.context.clearHighlightAndImageContext();
+                }
             }
         },
         onError: (error) => {
