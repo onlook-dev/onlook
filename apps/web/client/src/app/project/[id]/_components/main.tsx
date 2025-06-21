@@ -140,7 +140,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 {/* Left Panel */}
                 <div
                     ref={leftPanelRef}
-                    className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-50"
+                    className="absolute top-10 left-0 h-[calc(100%-40px)] z-50"
                 >
                     <LeftPanel />
                 </div>
@@ -167,7 +167,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 {/* Right Panel */}
                 <div
                     ref={rightPanelRef}
-                    className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-50"
+                    className="absolute top-10 right-0 h-[calc(100%-40px)] z-50"
                 >
                     <RightPanel />
                 </div>
