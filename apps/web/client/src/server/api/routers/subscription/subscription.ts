@@ -1,6 +1,8 @@
-import { subscriptions, toSubscription } from '@onlook/db';
+import { prices, subscriptions, toSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
+import { createCheckoutSession, PriceKey } from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
+import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const subscriptionRouter = createTRPCRouter({
@@ -19,6 +21,30 @@ export const subscriptionRouter = createTRPCRouter({
             return null;
         }
         return toSubscription(subscription);
+    }),
+    getPriceId: protectedProcedure.input(z.object({
+        priceKey: z.nativeEnum(PriceKey),
+    })).mutation(async ({ input }) => {
+        const price = await db.query.prices.findFirst({
+            where: eq(prices.key, input.priceKey),
+        });
+
+        if (!price) {
+            throw new Error(`Price not found for key: ${input.priceKey}`);
+        }
+
+        return price.stripePriceId;
+    }),
+    checkout: protectedProcedure.input(z.object({
+        priceId: z.string(),
+    })).mutation(async ({ ctx, input }) => {
+        const user = ctx.user;
+        const session = await createCheckoutSession({
+            priceId: input.priceId,
+            userId: user.id,
+        });
+
+        return session;
     }),
 });
 

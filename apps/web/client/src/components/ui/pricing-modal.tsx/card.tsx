@@ -41,13 +41,15 @@ const FREE_TIER: PlanConfig = {
 export const PricingCard = ({
     planType,
     buttonText,
-    buttonProps,
+    onCheckout,
+    disabled,
     delay,
     isLoading,
 }: {
     planType: 'free' | 'pro';
     buttonText: string;
-    buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
+    onCheckout: (priceKey: string) => void;
+    disabled: boolean;
     delay: number;
     isLoading?: boolean;
 }) => {
@@ -58,19 +60,23 @@ export const PricingCard = ({
         throw new Error('No pro tiers found');
     }
 
-    const defaultProTier = PRO_PRODUCT_CONFIG.prices[0];
-    if (!defaultProTier) {
-        throw new Error('No default pro tier found');
-    }
-
     const getPlanData = (): PlanConfig => {
         if (planType === 'free') {
             return FREE_TIER;
         } else {
+            const defaultProTier = PRO_PRODUCT_CONFIG.prices[0];
+
+            if (!defaultProTier) {
+                throw new Error('No default pro tier found');
+            }
             // Find the selected tier or use default
             const currentTier = selectedTier
                 ? PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier) || defaultProTier
                 : defaultProTier;
+
+            if (!currentTier) {
+                throw new Error('No tier selected for pro plan');
+            }
 
             return {
                 name: t('pricing.plans.pro.name'),
@@ -91,6 +97,22 @@ export const PricingCard = ({
     };
 
     const planData = getPlanData();
+
+    const handleCheckout = () => {
+        const defaultProTier = PRO_PRODUCT_CONFIG.prices[0];
+
+        if (planType === 'pro' && !defaultProTier) {
+            throw new Error('No default pro tier found');
+        }
+
+        if (planType === 'pro') {
+            if (!defaultProTier) {
+                throw new Error('No default pro tier found');
+            }
+            const currentTier = selectedTier || defaultProTier.key;
+            onCheckout(currentTier);
+        }
+    };
 
     return (
         <MotionCard
@@ -128,8 +150,8 @@ export const PricingCard = ({
                     </Select>
                     <Button
                         className="w-full"
-                        {...buttonProps}
-                        disabled={isLoading || buttonProps.disabled}
+                        onClick={handleCheckout}
+                        disabled={isLoading || disabled}
                     >
                         {isLoading ? (
                             <div className="flex items-center gap-2">

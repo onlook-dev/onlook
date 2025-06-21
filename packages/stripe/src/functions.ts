@@ -62,3 +62,26 @@ export const createSubscription = async ({
         expand: ['pending_setup_intent'],
     });
 };
+
+export const createCheckoutSession = async ({
+    priceId,
+    userId,
+}: {
+    priceId: string;
+    userId: string;
+}) => {
+    const stripe = createStripeClient();
+    const session = await stripe.checkout.sessions.create({
+        mode: 'subscription',
+        line_items: [{
+            price: priceId,
+            quantity: 1,
+        }],
+        payment_method_types: ['card'],
+        metadata: {
+            user_id: userId,
+        },
+        allow_promotion_codes: true,
+    });
+    return session;
+};

@@ -1,3 +1,5 @@
+'use client';
+
 import { useUserManager } from '@/components/store/user';
 import { useGetBackground } from '@/hooks/use-get-background';
 import { api } from '@/trpc/react';
@@ -9,40 +11,56 @@ import { toast } from '@onlook/ui/sonner';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { PricingCard } from './card';
 
 export const SubscriptionModal = observer(() => {
     const userManager = useUserManager();
     const t = useTranslations();
+    const router = useRouter();
+
     const backgroundUrl = useGetBackground('create');
     const [isCheckingOut, setIsCheckingOut] = useState<ProductType | null>(null);
     const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
+    const { mutateAsync: checkout } = api.subscription.checkout.useMutation();
+    const { mutateAsync: getPriceId } = api.subscription.getPriceId.useMutation();
+
     const plan = subscription?.product;
     const isProCheckout = isCheckingOut === ProductType.PRO;
     const isFreeCheckout = isCheckingOut === ProductType.FREE;
     const isPro = plan?.type === ProductType.PRO;
     const isFree = plan?.type === ProductType.FREE;
 
-    const startProCheckout = async () => {
+    const handleProCheckout = async (priceKey: string) => {
         sendAnalytics('start pro checkout');
         try {
             setIsCheckingOut(ProductType.PRO);
-            const res: { success: boolean; error?: string } = { success: false };
-            if (res?.success) {
-                toast.success(t('pricing.toasts.checkingOut.title'));
+
+            // Get the actual Stripe price ID from the database
+            const stripePriceId = await getPriceId({ priceKey: priceKey as any });
+
+            const session = await checkout({
+                priceId: stripePriceId,
+            });
+
+            if (session?.url) {
+                router.push(session.url);
             } else {
                 throw new Error('No checkout URL received');
             }
+
             setIsCheckingOut(null);
         } catch (error) {
-            toast.error(t('pricing.toasts.error.title'));
+            toast.error(t('pricing.toasts.error.title'), {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
             console.error('Payment error:', error);
             setIsCheckingOut(null);
         }
     };
 
-    const manageSubscription = async () => {
+    const handleFreeCheckout = async () => {
         try {
             setIsCheckingOut(ProductType.FREE);
             const res: { success: boolean; error?: string } = { success: false };
@@ -57,6 +75,14 @@ export const SubscriptionModal = observer(() => {
             console.error('Error managing subscription:', error);
             toast.error(`Error managing subscription: ${error}`);
             setIsCheckingOut(null);
+        }
+    };
+
+    const handleCheckout = (planType: 'free' | 'pro') => (priceKey?: string) => {
+        if (planType === 'pro' && priceKey) {
+            handleProCheckout(priceKey);
+        } else {
+            handleFreeCheckout();
         }
     };
 
@@ -111,13 +137,8 @@ export const SubscriptionModal = observer(() => {
                                                     ? t('pricing.buttons.currentPlan')
                                                     : t('pricing.buttons.manageSubscription')
                                             }
-                                            buttonProps={{
-                                                onClick: () => {
-                                                    manageSubscription();
-                                                },
-                                                disabled:
-                                                    isFree || isFreeCheckout,
-                                            }}
+                                            onCheckout={handleCheckout('free')}
+                                            disabled={isFree || isFreeCheckout}
                                             delay={0.1}
                                             isLoading={isFreeCheckout}
                                         />
@@ -128,11 +149,8 @@ export const SubscriptionModal = observer(() => {
                                                     ? t('pricing.buttons.currentPlan')
                                                     : t('pricing.buttons.getPro')
                                             }
-                                            buttonProps={{
-                                                onClick: startProCheckout,
-                                                disabled:
-                                                    isPro || isProCheckout,
-                                            }}
+                                            onCheckout={handleCheckout('pro')}
+                                            disabled={isPro || isProCheckout}
                                             delay={0.2}
                                             isLoading={isProCheckout}
                                         />
