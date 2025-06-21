@@ -219,15 +219,15 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
     return (
         <div
             ref={containerRef}
-            className="w-64 h-full border-r-[0.5px] flex-shrink-0 overflow-hidden flex flex-col"
+            className="w-56 h-full border-r-[0.5px] flex-shrink-0 overflow-hidden flex flex-col"
         >
             <div className="flex flex-col h-full overflow-hidden">
-                <div className="p-3 flex-shrink-0">
-                    <div className="flex flex-row justify-between items-center gap-2 mb-2">
+                <div className="p-1.5 flex-shrink-0">
+                    <div className="flex flex-row justify-between items-center gap-1 mb-2 pb-1.5 border-b-[0.5px] border-border-primary">
                         <div className="relative flex-grow">
                             <Input
                                 ref={inputRef}
-                                className="h-8 text-xs pr-8"
+                                className="h-8 text-small pr-8 focus-visible:ring-1 focus-visible:ring-border-secondary/50 focus-visible:ring-offset-0"
                                 placeholder="Search files"
                                 value={searchQuery}
                                 disabled={isLoading}
@@ -248,7 +248,7 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
                                 <Button
                                     variant={'default'}
                                     size={'icon'}
-                                    className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                                    className="p-2 w-fit h-8 text-foreground-tertiary hover:text-foreground-hover hover:border-border-onlook bg-background-none hover:bg-background-onlook"
                                     disabled={isLoading}
                                     onClick={handleRefresh}
                                 >
@@ -268,51 +268,55 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
                     </div>
                 </div>
 
+                <div className="px-2">
                 <div
-                    className="flex-1 overflow-auto px-3 text-xs"
+                    className="flex-1 overflow-x-auto text-xs w-full"
                     style={{ height: 'calc(100% - 56px)' }}
                 >
-                    {isLoading ? (
-                        <div className="flex flex-col justify-center items-center h-full text-sm text-foreground/50">
-                            <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>
-                            <span>Loading files...</span>
+                    <div className="min-w-full h-full">
+                        {isLoading ? (
+                            <div className="flex flex-col justify-center items-center h-full text-sm text-foreground/50">
+                                <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>
+                                <span>Loading files...</span>
+                            </div>
+                        ) : filteredFiles.length === 0 ? (
+                            <div className="flex justify-center items-center h-full text-sm text-foreground/50">
+                                {files.length === 0 ? 'No files found' : 'No files match your search'}
+                            </div>
+                        ) : (
+                            <div className="h-full">
+                                <Tree
+                                    ref={treeRef}
+                                    data={filteredFiles}
+                                    idAccessor={(node: FileNode) => node.id}
+                                    childrenAccessor={(node: FileNode) =>
+                                        node.children && node.children.length > 0
+                                            ? node.children
+                                            : null
+                                    }
+                                    onSelect={handleFileTreeSelect}
+                                    height={filesTreeDimensions.height}
+                                    width={filesTreeDimensions.width}
+                                    indent={8}
+                                    rowHeight={24}
+                                    openByDefault={false}
+                                    renderRow={(props: any) => (
+                                        <FileTreeRow
+                                            {...props}
+                                            isHighlighted={
+                                                highlightedIndex !== null &&
+                                                treeRef.current?.visibleNodes[highlightedIndex]?.id ===
+                                                props.node.id
+                                            }
+                                        />
+                                    )}
+                                >
+                                    {(props) => <FileTreeNode {...props} files={files} />}
+                                </Tree>
+                            </div>
+                        )}
                         </div>
-                    ) : filteredFiles.length === 0 ? (
-                        <div className="flex justify-center items-center h-full text-sm text-foreground/50">
-                            {files.length === 0 ? 'No files found' : 'No files match your search'}
-                        </div>
-                    ) : (
-                        <div className="h-full">
-                            <Tree
-                                ref={treeRef}
-                                data={filteredFiles}
-                                idAccessor={(node: FileNode) => node.id}
-                                childrenAccessor={(node: FileNode) =>
-                                    node.children && node.children.length > 0
-                                        ? node.children
-                                        : null
-                                }
-                                onSelect={handleFileTreeSelect}
-                                height={filesTreeDimensions.height}
-                                width={filesTreeDimensions.width}
-                                indent={8}
-                                rowHeight={24}
-                                openByDefault={false}
-                                renderRow={(props: any) => (
-                                    <FileTreeRow
-                                        {...props}
-                                        isHighlighted={
-                                            highlightedIndex !== null &&
-                                            treeRef.current?.visibleNodes[highlightedIndex]?.id ===
-                                            props.node.id
-                                        }
-                                    />
-                                )}
-                            >
-                                {(props) => <FileTreeNode {...props} files={files} />}
-                            </Tree>
-                        </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>

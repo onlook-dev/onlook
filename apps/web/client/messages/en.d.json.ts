@@ -36,7 +36,7 @@ declare const messages: {
             "lastEdited": "Last edited {time} ago"
         },
         "actions": {
-            "import": "Import",
+            "import": "Import Project",
             "close": "Close",
             "about": "About Onlook",
             "signOut": "Sign out",

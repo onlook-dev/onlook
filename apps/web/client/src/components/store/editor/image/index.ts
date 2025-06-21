@@ -1,79 +1,88 @@
-import type { ProjectManager } from '@/components/store/project/manager';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
+import { COMPRESSION_IMAGE_PRESETS, DefaultSettings } from '@onlook/constants';
+import {
+    convertToBase64,
+    getBaseName,
+    getDirName,
+    getMimeType,
+    isImageFile,
+} from '@onlook/utility/src/file';
+import { api } from '@/trpc/client';
+
 export class ImageManager {
     private images: ImageContentData[] = [];
+    private _isScanning = false;
 
-    constructor(
-        private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
-    ) {
-        // this.scanImages();
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+
+        reaction(
+            () => this.editorEngine.sandbox.isIndexingFiles,
+            (isIndexingFiles) => {
+                if (!isIndexingFiles) {
+                    this.scanImages();
+                }
+            }
+        );
     }
 
     async upload(file: File): Promise<void> {
         try {
-            // const projectFolder = this.projectManager.project?.folderPath;
-            // if (!projectFolder) {
-            //     throw new Error('Project folder not found');
-            // }
+            const path = `${DefaultSettings.IMAGE_FOLDER}/${file.name}`;
+            // Convert file to base64 for tRPC transmission
+            const arrayBuffer = await file.arrayBuffer();
+            const base64Data = btoa(
+                Array.from(new Uint8Array(arrayBuffer))
+                    .map((byte: number) => String.fromCharCode(byte))
+                    .join('')
+            );
 
-            // const buffer = await file.arrayBuffer();
-            // const base64String = btoa(
-            //     new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
-            // );
+            const compressionResult = await api.image.compress.mutate({
+                imageData: base64Data,
+                options: COMPRESSION_IMAGE_PRESETS.highQuality,
+            });
 
-            // await invokeMainChannel(MainChannels.SAVE_IMAGE_TO_PROJECT, {
-            //     projectFolder,
-            //     content: base64String,
-            //     fileName: file.name,
-            // });
+            let finalBuffer: Uint8Array;
 
-            // setTimeout(() => {
-            //     this.scanImages();
-            // }, 100);
-            // sendAnalytics('image upload');
+            if (compressionResult.success && compressionResult.bufferData) {
+                // Convert base64 buffer data back to Uint8Array
+                const compressedBuffer = atob(compressionResult.bufferData);
+                finalBuffer = new Uint8Array(compressedBuffer.length);
+                for (let i = 0; i < compressedBuffer.length; i++) {
+                    finalBuffer[i] = compressedBuffer.charCodeAt(i);
+                }
+            } else {
+                // Fall back to original if compression failed
+                console.warn('Image compression failed, using original:', compressionResult.error);
+                finalBuffer = new Uint8Array(arrayBuffer);
+            }
+
+            await this.editorEngine.sandbox.writeBinaryFile(path, finalBuffer);
+            this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;
         }
     }
 
-    async delete(imageName: string): Promise<void> {
+    async delete(originPath: string): Promise<void> {
         try {
-            // const projectFolder = this.projectManager.project?.folderPath;
-            // if (!projectFolder) {
-            //     throw new Error('Project folder not found');
-            // }
-            // await invokeMainChannel<string, string>(
-            //     MainChannels.DELETE_IMAGE_FROM_PROJECT,
-            //     projectFolder,
-            //     imageName,
-            // );
-            // this.scanImages();
-            // sendAnalytics('image delete');
+            await this.editorEngine.sandbox.delete(originPath);
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
         }
     }
 
-    async rename(imageName: string, newName: string): Promise<void> {
+    async rename(originPath: string, newName: string): Promise<void> {
         try {
-            // const projectFolder = this.projectManager.project?.folderPath;
-            // if (!projectFolder) {
-            //     throw new Error('Project folder not found');
-            // }
-            // await invokeMainChannel<string, string>(
-            //     MainChannels.RENAME_IMAGE_IN_PROJECT,
-            //     projectFolder,
-            //     imageName,
-            //     newName,
-            // );
-            // this.scanImages();
-            // sendAnalytics('image rename');
+            const basePath = getDirName(originPath);
+            const newPath = `${basePath}/${newName}`;
+            await this.editorEngine.sandbox.copy(originPath, newPath);
+            await this.editorEngine.sandbox.delete(originPath);
+            this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;
@@ -124,6 +133,10 @@ export class ImageManager {
         return this.images;
     }
 
+    get isScanning() {
+        return this._isScanning;
+    }
+
     remove() {
         // this.editorEngine.style.update('backgroundImage', 'none');
         // sendAnalytics('image-removed');
@@ -147,21 +160,66 @@ export class ImageManager {
     }
 
     async scanImages() {
-        // const projectRoot = this.projectManager.project?.folderPath;
+        if (this._isScanning) {
+            return;
+        }
 
-        // if (!projectRoot) {
-        //     console.warn('No project root found');
-        //     return;
-        // }
-        // const images = await invokeMainChannel<string, ImageContentData[]>(
-        //     MainChannels.SCAN_IMAGES_IN_PROJECT,
-        //     projectRoot,
-        // );
-        // if (images?.length) {
-        //     this.images = images;
-        // } else {
-        //     this.images = [];
-        // }
+        this._isScanning = true;
+
+        try {
+            const files = await this.editorEngine.sandbox.listBinaryFiles(
+                DefaultSettings.IMAGE_FOLDER,
+            );
+
+            if (files.length === 0) {
+                this.images = [];
+                return;
+            }
+
+            const imageFiles = files.filter((filePath: string) => isImageFile(filePath));
+
+            if (imageFiles.length === 0) {
+                return;
+            }
+            
+            const imagePromises = imageFiles.map(async (filePath: string) => {
+                try {
+                    // Read the binary file
+                    const binaryData = await this.editorEngine.sandbox.readBinaryFile(filePath);
+                    if (!binaryData) {
+                        console.warn(`Failed to read binary data for ${filePath}`);
+                        return null;
+                    }
+
+                    // Determine MIME type based on file extension
+                    const mimeType = getMimeType(filePath);
+
+                    // Convert binary data to base64
+                    const base64Data = convertToBase64(binaryData);
+                    const content = `data:${mimeType};base64,${base64Data}`;
+
+                    return {
+                        originPath: filePath,
+                        content,
+                        fileName: getBaseName(filePath),
+                        mimeType,
+                    } as ImageContentData;
+                } catch (error) {
+                    console.error(`Error processing image ${filePath}:`, error);
+                    return null;
+                }
+            });
+
+            const results = await Promise.all(imagePromises);
+            
+            this.images = results.filter((result): result is ImageContentData => result !== null)
+            
+        } catch (error) {
+            console.error('Error scanning images:', error);
+            this.images = [];
+        } finally {
+            this._isScanning = false;
+        } 
     }
 
     clear() {

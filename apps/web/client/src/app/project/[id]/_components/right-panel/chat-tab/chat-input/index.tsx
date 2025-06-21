@@ -11,7 +11,7 @@ import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { compressImage } from '@onlook/utility';
+import { compressImageInBrowser } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
@@ -168,7 +168,7 @@ export const ChatInput = observer(() => {
     const handleImageEvent = async (file: File, displayName?: string) => {
         const reader = new FileReader();
         reader.onload = async (event) => {
-            const compressedImage = await compressImage(file);
+            const compressedImage = await compressImageInBrowser(file);
             const base64URL = compressedImage || (event.target?.result as string);
             const contextImage: ImageMessageContext = {
                 type: MessageContextType.IMAGE,

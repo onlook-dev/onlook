@@ -66,5 +66,46 @@ export class DomainsManager {
         return this.domains.preview;
     }
 
+    async addCustomDomain(url: string) {
+        if (!this._project) {
+            console.error('No project found');
+            throw new Error('No project found');
+        }
+        // TODO: Implement
+    }
+
+    async verifyCustomDomain(url: string) {
+        if (!this._project) {
+            console.error('No project found');
+            throw new Error('No project found');
+        }
+        // TODO: Implement
+        return {
+            success: true,
+            message: 'Domain verified',
+        };
+    }
+
+    async createDomainVerification(url: string) {
+        if (!this._project) {
+            console.error('No project found');
+            throw new Error('No project found');
+        }
+        // TODO: Implement
+        return {
+            success: true,
+            message: 'Domain verification created',
+            verificationCode: '123456',
+        };
+    }
+
+    async removeCustomDomain(url: string) {
+        if (!this._project) {
+            console.error('No project found');
+            throw new Error('No project found');
+        }
+        // TODO: Implement
+    }
+
     dispose() { }
 }

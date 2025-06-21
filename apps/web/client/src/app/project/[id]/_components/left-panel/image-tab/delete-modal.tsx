@@ -8,31 +8,37 @@ import {
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 
 export default function DeleteImageModal({
     onDelete,
     isOpen,
     toggleOpen,
+    isLoading = false,
 }: {
     onDelete: () => void;
     isOpen: boolean;
     toggleOpen: () => void;
+    isLoading?: boolean;
 }) {
     const editorEngine = useEditorEngine();
 
     const handleDelete = () => {
-        onDelete();
-        toggleOpen();
+        if (!isLoading) {
+            onDelete();
+        }
     };
 
     const handleClose = () => {
-        // Reset pointer-events and editor mode when modal is closed
-        // for (const frame of editorEngine.frames.getAll()) {
-        //     frame.frame.pointerEvents = 'auto';
-        // }
-        // editorEngine.mode = EditorMode.DESIGN;
-        editorEngine.overlay.clear();
-        toggleOpen();
+        if (!isLoading) {
+            // Reset pointer-events and editor mode when modal is closed
+            // for (const frame of editorEngine.frames.getAll()) {
+            //     frame.frame.pointerEvents = 'auto';
+            // }
+            // editorEngine.mode = EditorMode.DESIGN;
+            editorEngine.overlay.clear();
+            toggleOpen();
+        }
     };
 
     return (
@@ -45,15 +51,23 @@ export default function DeleteImageModal({
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <Button variant={'ghost'} onClick={handleClose}>
+                    <Button variant={'ghost'} onClick={handleClose} disabled={isLoading}>
                         Cancel
                     </Button>
                     <Button
                         variant={'destructive'}
                         className="rounded-md text-sm"
                         onClick={handleDelete}
+                        disabled={isLoading}
                     >
-                        Delete
+                        {isLoading ? (
+                            <>
+                                <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
+                                Deleting...
+                            </>
+                        ) : (
+                            'Delete'
+                        )}
                     </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>

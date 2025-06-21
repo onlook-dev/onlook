@@ -33,30 +33,50 @@ export interface VerifyDomainResponse {
     message?: string;
 }
 
+export interface PublishOptions {
+    skipBadge?: boolean;
+    skipBuild?: boolean;
+    buildFlags?: string;
+    envVars?: Record<string, string>;
+}
+
 export interface PublishRequest {
     buildScript: string;
     urls: string[];
     options?: PublishOptions;
 }
 
-export interface PublishOptions {
-    skipBuild?: boolean;
-    skipBadge?: boolean;
-    buildFlags?: string;
+export interface PublishResponse {
+    success: boolean;
+    message: string;
+}
+
+export enum HostingProvider {
+    FREESTYLE = 'freestyle',
+}
+
+export interface DeploymentFile {
+    content: string;
+    encoding?: 'utf-8' | 'base64';
+}
+
+export interface DeploymentConfig {
+    domains: string[];
+    entrypoint?: string;
     envVars?: Record<string, string>;
 }
 
-export interface UnpublishRequest {
-    urls: string[];
+export interface DeploymentRequest {
+    files: Record<string, DeploymentFile>;
+    config: DeploymentConfig;
 }
 
-export interface PublishResponse {
+export interface DeploymentResponse {
+    deploymentId: string;
     success: boolean;
     message?: string;
 }
 
-export interface GetOwnedDomainsResponse {
-    success: boolean;
-    message?: string;
-    domains?: string[];
+export interface HostingProviderAdapter {
+    deploy(request: DeploymentRequest): Promise<DeploymentResponse>;
 }

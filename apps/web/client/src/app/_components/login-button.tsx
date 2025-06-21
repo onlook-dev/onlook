@@ -24,7 +24,7 @@ export const GithubLoginButton = ({
                 disabled={isPending}
             >
                 {isPending ? (
-                    <Icons.Shadow className="w-4 h-4 mr-2 animate-spin" />
+                    <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
                     <Icons.GitHubLogo className="w-4 h-4 mr-2" />
                 )}
@@ -55,7 +55,7 @@ export const GoogleLoginButton = ({
                 disabled={isPending}
             >
                 {isPending ? (
-                    <Icons.Shadow className="w-4 h-4 mr-2 animate-spin" />
+                    <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
                     <Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />
                 )}

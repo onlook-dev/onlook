@@ -26,6 +26,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         maxSteps: 10,
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, config) => {
+            console.log('config', config);
             if (config.finishReason === 'stop' || config.finishReason === 'error') {
                 editorEngine.chat.conversation.addAssistantMessage(message);
                 if (config.finishReason === 'stop') {
@@ -35,10 +36,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         },
         onError: (error) => {
             console.error('Error in chat', error);
+            editorEngine.chat.error.handleChatError(error);
         },
     });
 
     const sendMessages = async (messages: Message[], type: ChatType = ChatType.EDIT) => {
+        editorEngine.chat.error.clear();
         chat.setMessages(messages);
         return chat.reload({
             body: {
