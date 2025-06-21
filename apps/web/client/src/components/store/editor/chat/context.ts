@@ -135,4 +135,12 @@ export class ChatContext {
     async clearAttachments() {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
     }
+
+    async clearHighlightAndImageContext() {
+        this.context = this.context.filter(
+            (context) =>
+                context.type !== MessageContextType.HIGHLIGHT &&
+                context.type !== MessageContextType.IMAGE,
+        );
+    }
 }
