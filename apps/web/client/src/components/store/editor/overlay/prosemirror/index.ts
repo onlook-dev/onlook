@@ -7,6 +7,39 @@ import { Plugin, EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { adaptValueToCanvas } from '../utils';
 
+const injectedFonts = new Set<string>();
+
+function mapInternalToGoogleName(name: string): string {
+    let clean = name;
+    clean = clean.replace(/^_+/, '');
+    clean = clean.replace(/_Fallback_[A-Za-z0-9]+$/, '');
+    clean = clean.replace(/_[A-Za-z0-9]+$/, '');
+    clean = clean.replace(/_/g, ' ');
+  return clean.trim();
+}
+
+export function ensureGoogleFontLoaded(rawFamily?: string): string | null {
+    console.log('rawFamily', rawFamily);
+  if (!rawFamily || typeof document === 'undefined') return null;
+  const primaryToken = rawFamily.split(',')[0]?.trim().replace(/^['"]|['"]$/g, '') ?? '';
+  if (!primaryToken) return null;
+  const prettyFamily = mapInternalToGoogleName(primaryToken);
+  console.log('prettyFamily', prettyFamily);
+  if (injectedFonts.has(prettyFamily)) return prettyFamily;
+  const apiName = prettyFamily.replace(/\s+/g, '+');
+  const weights = '100;200;300;400;500;600;700;800;900';
+  const href = `https://fonts.googleapis.com/css2?family=${apiName}:wght@${weights}&display=swap`;
+
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = href;
+  document.head.appendChild(link);
+  console.log('injectedFonts', injectedFonts);
+  injectedFonts.add(prettyFamily);
+    console.log('injectedFonts after add', injectedFonts);
+  return prettyFamily;
+}
+
 export const schema = new Schema({
     nodes: {
         doc: { content: 'paragraph+' },
@@ -49,6 +82,7 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
     const tr = state.tr.addMark(0, state.doc.content.size, styleMark.create({ style: styles }));
     const fontSize = adaptValueToCanvas(parseFloat(styles.fontSize ?? ''));
     const lineHeight = adaptValueToCanvas(parseFloat(styles.lineHeight ?? ''));
+    const prettyFamily = ensureGoogleFontLoaded(styles.fontFamily ?? '') ?? (styles.fontFamily ?? styles['font-family']);
 
     Object.assign(editorView.dom.style, {
         fontSize: `${fontSize}px`,
@@ -60,16 +94,17 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
         textDecoration: styles.textDecoration,
         letterSpacing: styles.letterSpacing,
         wordSpacing: styles.wordSpacing,
-        alignItems: styles.alignItems,
-        justifyContent: styles.justifyContent,
+        alignItems: styles.alignItems ?? styles['align-items'],
+        justifyContent: styles.justifyContent ?? styles['justify-content'],
         layout: styles.layout,
         display: styles.display,
         backgroundColor: styles.backgroundColor,
         wordBreak: 'break-word',
         overflow: 'visible',
         height: '100%',
-        fontFamily: styles.fontFamily,
+        fontFamily: prettyFamily,
         padding: styles.padding,
+        spacing: styles.spacing,
     });
     dispatch(tr);
 }
