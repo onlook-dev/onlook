@@ -3,6 +3,7 @@ import { db } from '@onlook/db/src/client';
 import type { Usage } from '@onlook/models';
 import { FREE_PRODUCT_CONFIG } from '@onlook/stripe';
 import { and, eq, gte, sql } from 'drizzle-orm';
+import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const usageRouter = createTRPCRouter({
@@ -63,5 +64,16 @@ export const usageRouter = createTRPCRouter({
                 limitCount: monthlyLimitCount,
             } satisfies Usage,
         };
+    }),
+
+    increment: protectedProcedure.input(z.object({
+        type: z.enum(['message']),
+    })).mutation(async ({ ctx, input }) => {
+        const user = ctx.user;
+        await db.insert(usageRecords).values({
+            userId: user.id,
+            type: input.type,
+            timestamp: new Date(),
+        });
     }),
 });

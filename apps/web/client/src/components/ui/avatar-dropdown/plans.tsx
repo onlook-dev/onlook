@@ -1,6 +1,7 @@
 'use client';
 
 import { useUserManager } from '@/components/store/user';
+import { api } from '@/trpc/react';
 import { FREE_PRODUCT_CONFIG, ProductType } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
@@ -10,11 +11,11 @@ import { observer } from 'mobx-react-lite';
 
 export const UsageSection = observer(() => {
     const userManager = useUserManager();
-    const subscription = userManager.subscription.subscription;
-    const usageData = userManager.subscription.usage;
+    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
+    const { data: usageData, isLoading: isLoadingUsage } = api.usage.get.useQuery();
     const product = subscription?.product ?? FREE_PRODUCT_CONFIG;
     const price = product?.type === ProductType.FREE ? 'Trial' : 'Active';
-    const usage = product?.type === ProductType.FREE ? usageData?.daily : usageData?.monthly;
+    let usage = product?.type === ProductType.FREE ? usageData?.daily : usageData?.monthly;
 
     if (!usage) {
         return (

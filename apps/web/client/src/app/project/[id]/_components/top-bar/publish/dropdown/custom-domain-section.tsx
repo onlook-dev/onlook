@@ -1,6 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useDomainsManager, useProjectManager } from '@/components/store/project';
-import { useUserManager } from '@/components/store/user';
 import { DefaultSettings } from '@onlook/constants';
 import { PublishStatus, SettingsTabValue } from '@onlook/models';
 import { ProductType } from '@onlook/stripe';
@@ -13,11 +12,11 @@ import { UrlSection } from './url';
 export const CustomDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
     const domainsManager = useDomainsManager();
-    const userManager = useUserManager();
     const projectManager = useProjectManager();
+    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
 
     const project = projectManager.project;
-    const product = userManager.subscription.subscription?.product;
+    const product = subscription?.product;
     const domain = domainsManager.domains.custom;
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;

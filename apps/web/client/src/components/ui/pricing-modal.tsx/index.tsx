@@ -17,7 +17,7 @@ export const SubscriptionModal = observer(() => {
     const t = useTranslations();
     const backgroundUrl = useGetBackground('create');
     const [isCheckingOut, setIsCheckingOut] = useState<ProductType | null>(null);
-    const subscription = userManager.subscription.subscription;
+    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
     const plan = subscription?.product;
     const isProCheckout = isCheckingOut === ProductType.PRO;
     const isFreeCheckout = isCheckingOut === ProductType.FREE;

@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useDomainsManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
+import { api } from '@/trpc/react';
 import { ProductType } from '@onlook/stripe';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
@@ -12,7 +13,8 @@ export const CustomDomain = observer(() => {
     const editorEngine = useEditorEngine();
     const domains = useDomainsManager();
     const userManager = useUserManager();
-    const product = userManager.subscription.subscription?.product;
+    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
+    const product = subscription?.product;
     const customDomain = domains.domains.custom;
 
     const renderContent = () => {

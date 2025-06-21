@@ -1,2 +1,2 @@
 export * from './subscription';
-export * from './usage';
+export * from '../usage';
