@@ -1,5 +1,5 @@
 import { transKeys } from '@/i18n/keys';
-import { PRO_TIERS } from '@onlook/stripe';
+import { PRO_PRODUCT_CONFIG } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
@@ -54,11 +54,11 @@ export const PricingCard = ({
     const t = useTranslations();
     const [selectedTier, setSelectedTier] = useState<string>('');
 
-    if (planType === 'pro' && !PRO_TIERS.length) {
+    if (planType === 'pro' && !PRO_PRODUCT_CONFIG.prices.length) {
         throw new Error('No pro tiers found');
     }
 
-    const defaultProTier = PRO_TIERS[0];
+    const defaultProTier = PRO_PRODUCT_CONFIG.prices[0];
     if (!defaultProTier) {
         throw new Error('No default pro tier found');
     }
@@ -69,21 +69,21 @@ export const PricingCard = ({
         } else {
             // Find the selected tier or use default
             const currentTier = selectedTier
-                ? PRO_TIERS.find(tier => tier.key === selectedTier) || defaultProTier
+                ? PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier) || defaultProTier
                 : defaultProTier;
 
             return {
                 name: t('pricing.plans.pro.name'),
-                price: formatPrice(currentTier.monthlyPrice),
+                price: formatPrice(currentTier.cost),
                 description: t('pricing.plans.pro.description'),
                 features: [
                     'Unlimited projects',
                     'Custom domain',
                 ],
                 defaultSelectValue: selectedTier || defaultProTier.key,
-                selectValues: PRO_TIERS.map(tier => ({
-                    value: tier.key,
-                    label: tier.description
+                selectValues: PRO_PRODUCT_CONFIG.prices.map(price => ({
+                    value: price.key,
+                    label: price.description
                 })),
                 disableSelect: false,
             };

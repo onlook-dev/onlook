@@ -9,7 +9,7 @@
     "scripts": {
         "clean": "rm -rf node_modules",
         "typecheck": "tsc --noEmit",
-        "setup:product": "bun src/scripts/product.ts"
+        "setup": "bun src/scripts/setup.ts"
     },
     "keywords": [
         "onlook",

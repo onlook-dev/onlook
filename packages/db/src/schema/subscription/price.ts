@@ -1,6 +1,9 @@
+import { PriceKey } from '@onlook/stripe';
 import { relations } from 'drizzle-orm';
-import { integer, pgTable, text, uuid } from 'drizzle-orm/pg-core';
+import { integer, pgEnum, pgTable, text, uuid } from 'drizzle-orm/pg-core';
 import { products } from './product';
+
+export const priceKeys = pgEnum('price_keys', PriceKey);
 
 export const prices = pgTable('prices', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -11,6 +14,7 @@ export const prices = pgTable('prices', {
         .references(() => products.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
 
     // Metadata
+    key: priceKeys('price_key').notNull(),
     monthlyMessageLimit: integer('monthly_message_limit').notNull(),
 
     // Stripe
