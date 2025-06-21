@@ -42,3 +42,11 @@ export const PRO_PRODUCT_CONFIG = {
     name: 'Onlook Pro',
     prices: PRO_PRICES,
 }
+
+export const FREE_PRODUCT_CONFIG = {
+    name: 'Free',
+    type: ProductType.FREE,
+    stripeProductId: '',
+    dailyLimit: 10,
+    monthlyLimit: 50,
+};

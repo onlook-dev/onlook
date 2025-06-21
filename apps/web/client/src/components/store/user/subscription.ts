@@ -51,7 +51,7 @@ export class SubscriptionManager {
     }
 
     async getUsageFromRemote(): Promise<UsageMetrics | null> {
-        const usage = await api.subscription.getUsage.query();
+        const usage = await api.usage.get.query();
         if (!usage) {
             return null;
         }

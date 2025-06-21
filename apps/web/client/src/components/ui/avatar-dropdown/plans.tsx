@@ -1,21 +1,22 @@
 'use client';
 
 import { useUserManager } from '@/components/store/user';
-import { ProductType } from '@onlook/stripe';
+import { FREE_PRODUCT_CONFIG, ProductType } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Progress } from '@onlook/ui/progress';
 import { observer } from 'mobx-react-lite';
 
+
 export const UsageSection = observer(() => {
     const userManager = useUserManager();
     const subscription = userManager.subscription.subscription;
     const usageData = userManager.subscription.usage;
-    const product = subscription?.product;
+    const product = subscription?.product ?? FREE_PRODUCT_CONFIG;
     const price = product?.type === ProductType.FREE ? 'Trial' : 'Active';
     const usage = product?.type === ProductType.FREE ? usageData?.daily : usageData?.monthly;
 
-    if (!usage || !product) {
+    if (!usage) {
         return (
             <div className="p-4 w-full text-sm flex gap-4 items-center">
                 <Icons.LoadingSpinner className="w-4 h-4 animate-spin" /> Calculating usage...
