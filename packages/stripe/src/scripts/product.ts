@@ -16,7 +16,7 @@ export const getProProductAndPrices = async () => {
         throw new Error('Product not found');
     }
 
-    const prices = await stripe.prices.list({ product: product.id });
+    const prices = await stripe.prices.list({ product: product.id, limit: 100 });
 
     if (!prices.data.length) {
         throw new Error('Prices not found');

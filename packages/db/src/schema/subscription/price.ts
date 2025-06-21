@@ -18,7 +18,7 @@ export const prices = pgTable('prices', {
     monthlyMessageLimit: integer('monthly_message_limit').notNull(),
 
     // Stripe
-    stripePriceId: text('stripe_price_id').notNull(),
+    stripePriceId: text('stripe_price_id').notNull().unique(),
 }).enableRLS();
 
 export const priceRelations = relations(prices, ({ one }) => ({

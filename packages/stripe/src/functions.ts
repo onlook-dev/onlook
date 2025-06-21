@@ -66,9 +66,13 @@ export const createSubscription = async ({
 export const createCheckoutSession = async ({
     priceId,
     userId,
+    successUrl,
+    cancelUrl,
 }: {
     priceId: string;
     userId: string;
+    successUrl: string;
+    cancelUrl: string;
 }) => {
     const stripe = createStripeClient();
     const session = await stripe.checkout.sessions.create({
@@ -82,6 +86,8 @@ export const createCheckoutSession = async ({
             user_id: userId,
         },
         allow_promotion_codes: true,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
     });
     return session;
 };

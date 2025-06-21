@@ -2,6 +2,7 @@ import { prices, subscriptions, toSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { createCheckoutSession, PriceKey } from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
+import { headers } from 'next/headers';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
@@ -38,10 +39,14 @@ export const subscriptionRouter = createTRPCRouter({
     checkout: protectedProcedure.input(z.object({
         priceId: z.string(),
     })).mutation(async ({ ctx, input }) => {
+        // TODO: Origin URL
+        const originUrl = (await headers()).get('origin');
         const user = ctx.user;
         const session = await createCheckoutSession({
             priceId: input.priceId,
             userId: user.id,
+            successUrl: `${originUrl}/subscription/success`,
+            cancelUrl: `${originUrl}/subscription/cancel`,
         });
 
         return session;
