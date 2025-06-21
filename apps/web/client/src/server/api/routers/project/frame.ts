@@ -2,7 +2,7 @@ import { frameInsertSchema, frames, frameUpdateSchema, toFrame } from '@onlook/d
 import { FrameType } from '@onlook/models';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const frameRouter = createTRPCRouter({
     get: protectedProcedure

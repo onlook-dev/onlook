@@ -2,7 +2,7 @@ import { subscriptions, toSubscription, usageRecords } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import type { Usage } from '@onlook/models';
 import { and, eq, gte, sql } from 'drizzle-orm';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const subscriptionRouter = createTRPCRouter({
     get: protectedProcedure.query(async ({ ctx }) => {
