@@ -10,6 +10,6 @@ export const products = pgTable('products', {
 
     // Stripe
     stripeProductId: text('stripe_product_id').notNull(),
-})
+}).enableRLS();
 
 export type Product = typeof products.$inferSelect;

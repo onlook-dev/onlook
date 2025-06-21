@@ -19,7 +19,7 @@ export const prices = pgTable('prices', {
 
     // Stripe
     stripePriceId: text('stripe_price_id').notNull(),
-})
+}).enableRLS();
 
 export const priceRelations = relations(prices, ({ one }) => ({
     product: one(products, {
