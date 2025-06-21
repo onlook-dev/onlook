@@ -14,8 +14,8 @@ export const TopBar = observer(() => {
     const user = userManager.user;
 
     return (
-        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 h-12 text-small text-foreground-secondary">
-            <div className="flex items-center gap-10">
+        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 h-12 text-small text-foreground-secondary select-none">
+            <div className="flex items-center gap-10 mt-0">
                 <Link href={Routes.HOME}>
                     <Icons.OnlookTextLogo className="h-3" />
                 </Link>
@@ -27,7 +27,7 @@ export const TopBar = observer(() => {
                 </Link> */}
                 <GitHubButton />
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 mt-0">
                 {user ? (
                     <>
                         <Button variant="secondary" asChild className="rounded cursor-pointer">
