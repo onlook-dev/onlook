@@ -6,6 +6,7 @@ import { Schema } from 'prosemirror-model';
 import { Plugin, EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { adaptValueToCanvas } from '../utils';
+import { ensureFontLoaded } from '@/hooks/use-font-loader';
 
 export const schema = new Schema({
     nodes: {
@@ -49,6 +50,7 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
     const tr = state.tr.addMark(0, state.doc.content.size, styleMark.create({ style: styles }));
     const fontSize = adaptValueToCanvas(parseFloat(styles.fontSize ?? ''));
     const lineHeight = adaptValueToCanvas(parseFloat(styles.lineHeight ?? ''));
+    const fontFamily = ensureFontLoaded(styles.fontFamily ?? '');
 
     Object.assign(editorView.dom.style, {
         fontSize: `${fontSize}px`,
@@ -68,7 +70,7 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
         wordBreak: 'break-word',
         overflow: 'visible',
         height: '100%',
-        fontFamily: styles.fontFamily,
+        fontFamily,
         padding: styles.padding,
     });
     dispatch(tr);
