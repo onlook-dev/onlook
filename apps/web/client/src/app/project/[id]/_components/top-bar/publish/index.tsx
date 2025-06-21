@@ -9,6 +9,7 @@ export const PublishButton = observer(() => {
 
     return (
         <DropdownMenu
+            modal={false}
             open={editorEngine.state.publishOpen}
             onOpenChange={(open: boolean) => {
                 editorEngine.state.publishOpen = open;
