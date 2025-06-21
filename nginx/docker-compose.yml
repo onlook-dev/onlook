@@ -1,6 +1,6 @@
 networks:
     network1:
-        name: deployment_network
+        name: deployment-onlook_network
         external: true
 services:
     nginx:

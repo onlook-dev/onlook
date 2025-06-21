@@ -8,9 +8,9 @@ if [ ! -f ./apps/web/client/.env ]; then
   exit 1
 fi
 
-docker network create deployment_network || true
+docker network create deployment-onlook_network || true
 # Start the services using the docker-compose file in the nginx directory
 echo "Starting Client Service..."
 docker rm -f client || true
 docker build -f apps/web/client/Dockerfile -t client .
-docker run --name client --network deployment_network client
+docker run --name client --network deployment-onlook_network client
