@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
 import { PublishStatus, SettingsTabValue } from '@onlook/models';
 import { ProductType } from '@onlook/stripe';
