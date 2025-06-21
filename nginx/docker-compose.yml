@@ -1,0 +1,16 @@
+networks:
+    network1:
+        name: deployment_network
+        external: true
+services:
+    nginx:
+        image: nginx:alpine
+        restart: unless-stopped
+        container_name: nginx
+        networks:
+            - network1
+        ports:
+            - '80:80'
+        volumes:
+            - ./nginx.conf:/etc/nginx/nginx.conf
+            - ./conf.d:/etc/nginx/conf.d
