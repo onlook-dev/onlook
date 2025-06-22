@@ -1,5 +1,6 @@
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
+import type { Subscription } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
@@ -9,16 +10,7 @@ import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-interface PlanConfig {
-    name: string;
-    price: string;
-    description: string;
-    features: string[];
-    defaultSelectValue: string;
-    selectValues: { value: string; label: string }[];
-}
-
-const FREE_TIER: PlanConfig = {
+const FREE_TIER = {
     name: 'Free',
     price: '$0/month',
     description: 'Prototype and experiment in code with ease.',
@@ -36,15 +28,16 @@ const FREE_TIER: PlanConfig = {
 };
 
 export const FreeCard = ({
-    isActivePlan,
+    subscription,
     delay,
 }: {
-    isActivePlan: boolean;
+    subscription: Subscription | null;
     delay: number;
 }) => {
     const t = useTranslations();
     const { mutateAsync: manageSubscription } = api.subscription.manageSubscription.useMutation();
     const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const isFree = !subscription;
 
     const handleManageSubscription = async () => {
         try {
@@ -66,7 +59,23 @@ export const FreeCard = ({
         }
     };
 
-    const planData = FREE_TIER;
+    const buttonContent = () => {
+        console.log('subscription', subscription);
+        if (isCheckingOut) {
+            return (
+                <div className="flex items-center gap-2">
+                    <Icons.Shadow className="w-4 h-4 animate-spin" />
+                    <span>{t(transKeys.pricing.loading.checkingPayment)}</span>
+                </div>
+            )
+        }
+
+        if (isFree) {
+            return t(transKeys.pricing.buttons.currentPlan);
+        }
+
+        return t(transKeys.pricing.buttons.manageSubscription);
+    }
 
     return (
         <MotionCard
@@ -77,15 +86,15 @@ export const FreeCard = ({
         >
             <motion.div className="p-6 flex flex-col h-full">
                 <div className="space-y-1">
-                    <h2 className="text-title2">{planData.name}</h2>
-                    <p className="text-foreground-onlook text-largePlus">{planData.price}</p>
+                    <h2 className="text-title2">{FREE_TIER.name}</h2>
+                    <p className="text-foreground-onlook text-largePlus">{FREE_TIER.price}</p>
                 </div>
                 <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
-                <p className="text-foreground-primary text-title3 text-balance">{planData.description}</p>
+                <p className="text-foreground-primary text-title3 text-balance">{FREE_TIER.description}</p>
                 <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
                 <div className="flex flex-col gap-2 mb-6">
                     <Select
-                        value={planData.defaultSelectValue}
+                        value={FREE_TIER.defaultSelectValue}
                         disabled={true}
                     >
                         <SelectTrigger className="w-full">
@@ -93,7 +102,7 @@ export const FreeCard = ({
                         </SelectTrigger>
                         <SelectContent className="z-99">
                             <SelectGroup>
-                                {planData.selectValues.map((value) => (
+                                {FREE_TIER.selectValues.map((value) => (
                                     <SelectItem key={value.value} value={value.value}>
                                         {value.label}
                                     </SelectItem>
@@ -104,22 +113,13 @@ export const FreeCard = ({
                     <Button
                         className="w-full"
                         onClick={handleManageSubscription}
-                        disabled={isCheckingOut || isActivePlan}
+                        disabled={isCheckingOut || isFree}
                     >
-                        {isCheckingOut ? (
-                            <div className="flex items-center gap-2">
-                                <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
-                                <span>{t(transKeys.pricing.loading.checkingPayment)}</span>
-                            </div>
-                        ) : (
-                            isActivePlan
-                                ? t(transKeys.pricing.buttons.currentPlan)
-                                : t(transKeys.pricing.buttons.manageSubscription)
-                        )}
+                        {buttonContent()}
                     </Button>
                 </div>
                 <div className="flex flex-col gap-2 h-42">
-                    {planData.features.map((feature) => (
+                    {FREE_TIER.features.map((feature) => (
                         <div
                             key={feature}
                             className="flex items-center gap-3 text-sm text-foreground-secondary/80"

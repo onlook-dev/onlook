@@ -28,5 +28,6 @@ export function toPrice(price: DbPrice): Price {
         productId: price.productId,
         monthlyMessageLimit: price.monthlyMessageLimit,
         stripePriceId: price.stripePriceId,
+        key: price.key,
     };
 }

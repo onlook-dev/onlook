@@ -1,3 +1,5 @@
+import type { PriceKey } from "./constants";
+
 export enum ProductType {
     FREE = 'free',
     PRO = 'pro',
@@ -14,6 +16,7 @@ export interface Price {
     productId: string;
     monthlyMessageLimit: number;
     stripePriceId: string;
+    key: PriceKey;
 }
 
 export interface Subscription {

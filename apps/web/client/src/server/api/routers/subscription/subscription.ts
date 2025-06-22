@@ -1,6 +1,6 @@
 import { prices, subscriptions, toSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { createBillingPortalSession, createCheckoutSession, PriceKey } from '@onlook/stripe';
+import { createBillingPortalSession, createCheckoutSession, PriceKey, updateSubscription } from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -68,6 +68,26 @@ export const subscriptionRouter = createTRPCRouter({
         });
 
         return session;
+    }),
+    update: protectedProcedure.input(z.object({
+        subscriptionId: z.string(),
+        priceId: z.string(),
+    })).mutation(async ({ input }) => {
+        const { subscriptionId, priceId } = input;
+        const subscription = await db.query.subscriptions.findFirst({
+            where: eq(subscriptions.stripeSubscriptionId, subscriptionId),
+        });
+
+        if (!subscription) {
+            throw new Error('Subscription not found');
+        }
+
+        const updatedSubscription = await updateSubscription({
+            subscriptionId,
+            priceId,
+        });
+
+        return updatedSubscription;
     }),
 });
 

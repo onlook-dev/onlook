@@ -1,6 +1,6 @@
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
-import { PriceKey, PRO_PRODUCT_CONFIG } from '@onlook/stripe';
+import { PriceKey, PRO_PRODUCT_CONFIG, ProductType, type Subscription } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
@@ -23,10 +23,10 @@ interface PlanConfig {
 }
 
 export const ProCard = ({
-    isActivePlan,
+    subscription,
     delay,
 }: {
-    isActivePlan: boolean;
+    subscription: Subscription | null;
     delay: number;
 }) => {
     const t = useTranslations();
@@ -34,12 +34,23 @@ export const ProCard = ({
     const [selectedTier, setSelectedTier] = useState<PriceKey>(PriceKey.PRO_MONTHLY_TIER_1);
     const { mutateAsync: checkout } = api.subscription.checkout.useMutation();
     const { mutateAsync: getPriceId } = api.subscription.getPriceId.useMutation();
+    const { mutateAsync: updateSubscription } = api.subscription.update.useMutation();
+    const isPro = subscription?.product.type === ProductType.PRO;
+    const isNewTierSelected = selectedTier !== subscription?.price.key;
 
     if (!PRO_PRODUCT_CONFIG.prices.length) {
         throw new Error('No pro tiers found');
     }
 
     const handleCheckout = async () => {
+        if (isPro) {
+            await updateExistingSubscription();
+        } else {
+            await createCheckoutSession();
+        }
+    };
+
+    const updateExistingSubscription = async () => {
         try {
             setIsCheckingOut(true);
             const stripePriceId = await getPriceId({ priceKey: selectedTier as PriceKey });
@@ -60,6 +71,27 @@ export const ProCard = ({
         }
     };
 
+
+    const createCheckoutSession = async () => {
+        try {
+            setIsCheckingOut(true);
+            const stripePriceId = await getPriceId({ priceKey: selectedTier as PriceKey });
+            const session = await checkout({ priceId: stripePriceId });
+
+            if (session?.url) {
+                window.open(session.url, '_blank');
+            } else {
+                throw new Error('No checkout URL received');
+            }
+        } catch (error) {
+            toast.error(t('pricing.toasts.error.title'), {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+            console.error('Payment error:', error);
+        } finally {
+            setIsCheckingOut(false);
+        }
+    };
 
     const getPlanData = (): PlanConfig => {
         const defaultProTier = PRO_PRODUCT_CONFIG.prices[0];
@@ -94,7 +126,26 @@ export const ProCard = ({
 
     const planData = getPlanData();
 
+    const buttonContent = () => {
+        if (isCheckingOut) {
+            return (
+                <div className="flex items-center gap-2">
+                    <Icons.Shadow className="w-4 h-4 animate-spin" />
+                    <span>{t(transKeys.pricing.loading.checkingPayment)}</span>
+                </div>
+            )
+        }
 
+        if (!isPro) {
+            return t(transKeys.pricing.buttons.getPro);
+        }
+
+        if (!isNewTierSelected) {
+            return "Current plan";
+        }
+
+        return "Update plan";
+    };
 
     return (
         <MotionCard
@@ -135,16 +186,7 @@ export const ProCard = ({
                         onClick={handleCheckout}
                         disabled={isCheckingOut}
                     >
-                        {isCheckingOut ? (
-                            <div className="flex items-center gap-2">
-                                <Icons.Shadow className="w-4 h-4 animate-spin" />
-                                <span>{t(transKeys.pricing.loading.checkingPayment)}</span>
-                            </div>
-                        ) : (
-                            isActivePlan
-                                ? t(transKeys.pricing.buttons.currentPlan)
-                                : t(transKeys.pricing.buttons.getPro)
-                        )}
+                        {buttonContent()}
                     </Button>
                 </div>
                 <div className="flex flex-col gap-2 h-42">

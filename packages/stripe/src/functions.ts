@@ -1,3 +1,4 @@
+import Stripe from 'stripe';
 import { createStripeClient } from './client';
 
 export const createCustomer = async ({ name, email }: { name: string; email: string }) => {
@@ -68,27 +69,54 @@ export const createCheckoutSession = async ({
     userId,
     successUrl,
     cancelUrl,
+    existing,
 }: {
     priceId: string;
     userId: string;
+    existing?: {
+        subscriptionId: string;
+        customerId: string;
+    }
     successUrl: string;
     cancelUrl: string;
 }) => {
     const stripe = createStripeClient();
-    const session = await stripe.checkout.sessions.create({
-        mode: 'subscription',
-        line_items: [{
-            price: priceId,
-            quantity: 1,
-        }],
-        payment_method_types: ['card'],
-        metadata: {
-            user_id: userId,
-        },
-        allow_promotion_codes: true,
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-    });
+    let session: Stripe.Checkout.Session;
+    if (existing) {
+        session = await stripe.checkout.sessions.create({
+            mode: 'subscription',
+            customer: existing.customerId,
+            line_items: [{
+                price: priceId,
+                quantity: 1,
+            }],
+            payment_method_types: ['card'],
+            metadata: {
+                user_id: userId,
+            },
+            allow_promotion_codes: true,
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+            subscription_data: {
+                proration_behavior: 'create_prorations',
+            }
+        });
+    } else {
+        session = await stripe.checkout.sessions.create({
+            mode: 'subscription',
+            line_items: [{
+                price: priceId,
+                quantity: 1,
+            }],
+            payment_method_types: ['card'],
+            metadata: {
+                user_id: userId,
+            },
+            allow_promotion_codes: true,
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+        });
+    }
     return session;
 };
 
@@ -103,5 +131,18 @@ export const createBillingPortalSession = async ({
     return await stripe.billingPortal.sessions.create({
         customer: customerId,
         return_url: returnUrl,
+    });
+}
+
+export const updateSubscription = async ({
+    subscriptionId,
+    priceId,
+}: {
+    subscriptionId: string;
+    priceId: string;
+}) => {
+    const stripe = createStripeClient();
+    return await stripe.subscriptions.update(subscriptionId, {
+        items: [{ price: priceId }],
     });
 }

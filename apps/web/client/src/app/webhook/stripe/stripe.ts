@@ -5,14 +5,9 @@ import Stripe from "stripe";
 
 export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.CheckoutSessionCompletedEvent, stripe: Stripe) => {
     const session = receivedEvent.data.object
-    const expandedSession = await stripe.checkout.sessions.retrieve(
-        session.id,
-        {
-            expand: ['line_items'],
-        }
-    );
 
-    const subscriptionId = expandedSession.subscription?.toString()
+    console.log('Checkout session completed: ', session)
+    const subscriptionId = session.subscription?.toString()
     if (!subscriptionId) {
         throw new Error('No subscription ID found')
     }
@@ -22,13 +17,20 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         throw new Error('No user ID found')
     }
 
+    const expandedSession = await stripe.checkout.sessions.retrieve(
+        session.id,
+        {
+            expand: ['line_items'],
+        }
+    );
+
     const priceId = expandedSession.line_items?.data[0]?.price?.id
     if (!priceId) {
         throw new Error('No price ID found')
     }
 
     const price = await db.query.prices.findFirst({
-        where: eq(prices.id, priceId),
+        where: eq(prices.stripePriceId, priceId),
     })
     if (!price) {
         throw new Error(`No price found for price ID: ${priceId}`)
@@ -45,15 +47,16 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         priceId: price.id,
         productId: price.productId,
         status: 'active',
-        startedAt: new Date(),
         stripeSubscriptionId: subscriptionId,
         stripeCustomerId: customerId,
     }).onConflictDoUpdate({
-        target: [subscriptions.userId],
+        target: [subscriptions.stripeSubscriptionId],
         set: {
             stripeSubscriptionId: subscriptionId,
+            priceId: price.id,
+            productId: price.productId,
             status: 'active',
-            startedAt: new Date(),
+            updatedAt: new Date(),
         }
     }).returning()
     console.log("Checkout session completed: ", data)

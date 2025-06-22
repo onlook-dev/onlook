@@ -15,13 +15,8 @@ import { ProCard } from './pro-card';
 export const SubscriptionModal = observer(() => {
     const userManager = useUserManager();
     const t = useTranslations();
-
+    const { data: subscription } = api.subscription.get.useQuery();
     const backgroundUrl = useGetBackground('create');
-    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
-
-    const plan = subscription?.product;
-    const isPro = plan?.type === ProductType.PRO;
-    const isFree = !subscription;
 
     return (
         <AnimatePresence>
@@ -60,7 +55,7 @@ export const SubscriptionModal = observer(() => {
                                     >
                                         <div className="flex flex-row gap-2 w-[46rem] justify-between">
                                             <h1 className="text-title2 text-foreground-primary">
-                                                {isPro
+                                                {subscription?.product.type === ProductType.PRO
                                                     ? t('pricing.titles.proMember')
                                                     : t('pricing.titles.choosePlan')}
                                             </h1>
@@ -68,11 +63,11 @@ export const SubscriptionModal = observer(() => {
                                     </motion.div>
                                     <div className="flex gap-4">
                                         <FreeCard
-                                            isActivePlan={isFree}
+                                            subscription={subscription ?? null}
                                             delay={0.1}
                                         />
                                         <ProCard
-                                            isActivePlan={isPro}
+                                            subscription={subscription ?? null}
                                             delay={0.2}
                                         />
                                     </div>

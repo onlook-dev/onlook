@@ -9,7 +9,8 @@
     "scripts": {
         "clean": "rm -rf node_modules",
         "typecheck": "tsc --noEmit",
-        "setup": "bun src/scripts/setup.ts"
+        "setup": "bun src/scripts/setup.ts",
+        "dev:webhook": "stripe listen --forward-to localhost:3000/webhook/stripe"
     },
     "keywords": [
         "onlook",
