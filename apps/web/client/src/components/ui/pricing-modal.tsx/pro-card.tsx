@@ -220,7 +220,10 @@ export const ProCard = ({
                             <SelectGroup>
                                 {PRO_PRODUCT_CONFIG.prices.map((value) => (
                                     <SelectItem key={value.key} value={value.key}>
-                                        {value.description}
+                                        <div className="flex items-center gap-2">
+                                            {value.description}
+                                            {value.key === subscription?.price.key && <Icons.CheckCircled className="w-5 h-5 text-foreground-secondary/80" />}
+                                        </div>
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
