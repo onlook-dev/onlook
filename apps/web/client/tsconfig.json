@@ -1,0 +1,28 @@
+{
+    "extends": "@onlook/typescript/next-react.json",
+    "compilerOptions": {
+        "baseUrl": ".",
+        "allowArbitraryExtensions": true,
+        "paths": {
+            "@/*": [
+                "./src/*"
+            ],
+            "/*": [
+                "./*"
+            ],
+            "~/*": [
+                "./src/*"
+            ]
+        }
+    },
+    "include": [
+        "src",
+        "tests",
+        ".next/types/**/*.ts",
+        "messages/en.d.json.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        ".next"
+    ]
+}
