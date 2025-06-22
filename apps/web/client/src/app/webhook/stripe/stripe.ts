@@ -59,6 +59,7 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
             updatedAt: new Date(),
         }
     }).returning()
+
     console.log("Checkout session completed: ", data)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
@@ -69,6 +70,7 @@ export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSu
         status: 'canceled',
         endedAt: new Date(),
     }).where(eq(subscriptions.stripeSubscriptionId, subscriptionId))
+
     console.log("Subscription cancelled: ", res)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
