@@ -43,14 +43,14 @@ export const ProCard = ({
     }
 
     const handleCheckout = async () => {
-        if (isPro) {
+        if (isPro && isNewTierSelected) {
             await updateExistingSubscription();
         } else {
             await createCheckoutSession();
         }
     };
 
-    const updateExistingSubscription = async () => {
+    const createCheckoutSession = async () => {
         try {
             setIsCheckingOut(true);
             const stripePriceId = await getPriceId({ priceKey: selectedTier as PriceKey });
@@ -71,18 +71,21 @@ export const ProCard = ({
         }
     };
 
-
-    const createCheckoutSession = async () => {
+    const updateExistingSubscription = async () => {
         try {
+            if (!subscription?.stripeSubscriptionId) {
+                throw new Error('No subscription ID found');
+            }
+
             setIsCheckingOut(true);
             const stripePriceId = await getPriceId({ priceKey: selectedTier as PriceKey });
-            const session = await checkout({ priceId: stripePriceId });
+            const res = await updateSubscription({ priceId: stripePriceId, subscriptionId: subscription?.stripeSubscriptionId });
 
-            if (session?.url) {
-                window.open(session.url, '_blank');
-            } else {
-                throw new Error('No checkout URL received');
+            if (!res) {
+                throw new Error('No response from update subscription');
             }
+
+            toast.success('Subscription updated!');
         } catch (error) {
             toast.error(t('pricing.toasts.error.title'), {
                 description: error instanceof Error ? error.message : 'Unknown error',
