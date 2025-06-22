@@ -12,7 +12,7 @@ export const publishedDomains = pgTable('published_domains', {
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
     fullDomain: text('full_domain').notNull().unique(),
-});
+}).enableRLS();
 
 export const publishedDomainRelations = relations(publishedDomains, ({ one }) => ({
     customDomain: one(customDomains, {

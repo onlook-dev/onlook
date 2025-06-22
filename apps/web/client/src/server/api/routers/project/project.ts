@@ -1,5 +1,6 @@
 import {
     canvases,
+    createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
     frames,
     projectInsertSchema,
     projects,
@@ -12,10 +13,9 @@ import {
     type UserCanvas
 } from '@onlook/db';
 import { ProjectRole } from '@onlook/models';
-import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const projectRouter = createTRPCRouter({
     getFullProject: protectedProcedure

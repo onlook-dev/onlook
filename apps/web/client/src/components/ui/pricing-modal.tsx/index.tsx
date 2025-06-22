@@ -1,101 +1,91 @@
-import { useEditorEngine } from '@/components/store/editor';
+'use client';
+
 import { useUserManager } from '@/components/store/user';
 import { useGetBackground } from '@/hooks/use-get-background';
-import { PlanType } from '@onlook/models';
+import { api } from '@/trpc/react';
+import { sendAnalytics } from '@/utils/analytics';
+import { ProductType } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
+import { toast } from '@onlook/ui/sonner';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { PricingCard } from './card';
 
 export const SubscriptionModal = observer(() => {
     const userManager = useUserManager();
-    const editorEngine = useEditorEngine();
     const t = useTranslations();
+    const router = useRouter();
+
     const backgroundUrl = useGetBackground('create');
-    const [isCheckingOut, setIsCheckingOut] = useState<PlanType | null>(null);
+    const [isCheckingOut, setIsCheckingOut] = useState<ProductType | null>(null);
+    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
+    const { mutateAsync: checkout } = api.subscription.checkout.useMutation();
+    const { mutateAsync: getPriceId } = api.subscription.getPriceId.useMutation();
+    const { mutateAsync: manageSubscription } = api.subscription.manageSubscription.useMutation();
 
-    const plan = userManager.subscription.subscription?.plan;
-    const isProCheckout = isCheckingOut === PlanType.PRO;
-    const isFreeCheckout = isCheckingOut === PlanType.FREE;
-    const isPro = plan?.type === PlanType.PRO;
-    const isFree = plan?.type === PlanType.FREE;
+    const plan = subscription?.product;
+    const isProCheckout = isCheckingOut === ProductType.PRO;
+    const isFreeCheckout = isCheckingOut === ProductType.FREE;
+    const isPro = plan?.type === ProductType.PRO;
+    const isFree = plan?.type === ProductType.FREE;
 
-    useEffect(() => {
-        let pollInterval: Timer | null = null;
+    const handleProCheckout = async (priceKey: string) => {
+        sendAnalytics('start pro checkout');
+        try {
+            setIsCheckingOut(ProductType.PRO);
 
-        const getPlan = async () => {
-            const plan = await userManager.subscription.getSubscriptionFromRemote();
-            if (plan?.plan.type === PlanType.PRO) {
-                editorEngine.error.clear();
+            // Get the actual Stripe price ID from the database
+            const stripePriceId = await getPriceId({ priceKey: priceKey as any });
+
+            const session = await checkout({
+                priceId: stripePriceId,
+            });
+
+            if (session?.url) {
+                window.open(session.url, '_blank');
+            } else {
+                throw new Error('No checkout URL received');
             }
+
             setIsCheckingOut(null);
-        };
-
-        if (editorEngine.state.plansOpen) {
-            getPlan();
-            pollInterval = setInterval(getPlan, 3000);
+        } catch (error) {
+            toast.error(t('pricing.toasts.error.title'), {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+            console.error('Payment error:', error);
+            setIsCheckingOut(null);
         }
-
-        // Cleanup function to clear interval when component unmounts or isPlansOpen changes
-        return () => {
-            if (pollInterval) {
-                clearInterval(pollInterval);
-            }
-        };
-    }, [editorEngine.state.plansOpen]);
-
-    const startProCheckout = async () => {
-        // sendAnalytics('start pro checkout');
-        // try {
-        //     setIsCheckingOut(PlanType.PRO);
-        //     const res:
-        //         | {
-        //             success: boolean;
-        //             error?: string;
-        //         }
-        //         | undefined = await invokeMainChannel(MainChannels.CREATE_STRIPE_CHECKOUT);
-        //     if (res?.success) {
-        //         toast.success(t('pricing.toasts.checkingOut.title'));
-        //     } else {
-        //         throw new Error('No checkout URL received');
-        //     }
-        //     setIsCheckingOut(null);
-        // } catch (error) {
-        //     toast.error(t('pricing.toasts.error.title'));
-        //     console.error('Payment error:', error);
-        //     setIsCheckingOut(null);
-        // }
     };
 
-    const manageSubscription = async () => {
-        // try {
-        //     setIsCheckingOut(PlanType.FREE);
-        //     const res:
-        //         | {
-        //             success: boolean;
-        //             error?: string;
-        //         }
-        //         | undefined = await invokeMainChannel(MainChannels.MANAGE_SUBSCRIPTION);
-        //     if (res?.success) {
-        //         toast.success(t('pricing.toasts.redirectingToStripe.title'));
-        //     }
-        //     if (res?.error) {
-        //         throw new Error(res.error);
-        //     }
-        //     setIsCheckingOut(null);
-        // } catch (error) {
-        //     console.error('Error managing subscription:', error);
-        //     toast.error(`Error managing subscription: ${error}`);
-        //     setIsCheckingOut(null);
-        // }
+    const handleFreeCheckout = async () => {
+        console.log('handleFreeCheckout');
+        try {
+            setIsCheckingOut(ProductType.FREE);
+            const session = await manageSubscription();
+
+            if (session?.url) {
+                window.open(session.url, '_blank');
+            } else {
+                throw new Error('No checkout URL received');
+            }
+
+            setIsCheckingOut(null);
+        } catch (error) {
+            console.error('Error managing subscription:', error);
+            toast.error('Error managing subscription', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+            setIsCheckingOut(null);
+        }
     };
 
     return (
         <AnimatePresence>
-            {editorEngine.state.plansOpen && (
+            {userManager.subscription.isModalOpen && (
                 <motion.div
                     className="fixed inset-0 z-99"
                     initial={{ opacity: 0 }}
@@ -114,7 +104,7 @@ export const SubscriptionModal = observer(() => {
                         <div className="absolute inset-0 bg-background/50" />
                         <Button
                             variant="ghost"
-                            onClick={() => editorEngine.state.plansOpen = false}
+                            onClick={() => userManager.subscription.isModalOpen = false}
                             className="fixed top-8 right-10 text-foreground-secondary"
                         >
                             <Icons.CrossL className="h-4 w-4" />
@@ -138,57 +128,26 @@ export const SubscriptionModal = observer(() => {
                                     </motion.div>
                                     <div className="flex gap-4">
                                         <PricingCard
-                                            defaultSelectValue="10"
-                                            selectValues={[
-                                                { value: '10', label: '10 daily credits' },
-                                            ]}
-                                            disableSelect={true}
-                                            plan={t('pricing.plans.basic.name')}
-                                            price={t('pricing.plans.basic.price')}
-                                            description={t('pricing.plans.basic.description')}
-                                            features={[
-                                                'Visual code editor access',
-                                                '5 projects',
-                                            ]}
+                                            planType="free"
                                             buttonText={
                                                 isFree
                                                     ? t('pricing.buttons.currentPlan')
                                                     : t('pricing.buttons.manageSubscription')
                                             }
-                                            buttonProps={{
-                                                onClick: () => {
-                                                    manageSubscription();
-                                                },
-                                                disabled:
-                                                    isFree || isFreeCheckout,
-                                            }}
+                                            onCheckout={handleFreeCheckout}
+                                            disabled={isFree || isFreeCheckout}
                                             delay={0.1}
                                             isLoading={isFreeCheckout}
                                         />
                                         <PricingCard
-                                            defaultSelectValue="100"
-                                            selectValues={[
-                                                { value: '100', label: '100 messages per Month' },
-                                                { value: '1000', label: '1000 messages per Month' },
-                                                { value: '10000', label: '10000 messages per Month' },
-                                            ]}
-                                            plan={t('pricing.plans.pro.name')}
-                                            price={t('pricing.plans.pro.price')}
-                                            description={t('pricing.plans.pro.description')}
-                                            features={[
-                                                'Unlimited projects',
-                                                'Custom domain',
-                                            ]}
+                                            planType="pro"
                                             buttonText={
                                                 isPro
                                                     ? t('pricing.buttons.currentPlan')
                                                     : t('pricing.buttons.getPro')
                                             }
-                                            buttonProps={{
-                                                onClick: startProCheckout,
-                                                disabled:
-                                                    isPro || isProCheckout,
-                                            }}
+                                            onCheckout={handleProCheckout}
+                                            disabled={isPro || isProCheckout}
                                             delay={0.2}
                                             isLoading={isProCheckout}
                                         />

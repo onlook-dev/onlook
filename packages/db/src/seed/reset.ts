@@ -1,6 +1,5 @@
 import { config } from 'dotenv';
-import { resetDb, seedDb } from './db';
-import { seedSupabaseUser } from './supabase';
+import { resetDb } from './db';
 
 // Load .env file
 config({ path: '../../.env' });
@@ -15,12 +14,10 @@ config({ path: '../../.env' });
             throw new Error(`Missing environment variables: ${missingVars.join(', ')}`);
         }
 
-        await seedSupabaseUser();
         await resetDb();
-        await seedDb();
         process.exit(0);
     } catch (error) {
-        console.error('Error seeding database:', error);
+        console.error('Error clearing database:', error);
         process.exit(1);
     }
 })();

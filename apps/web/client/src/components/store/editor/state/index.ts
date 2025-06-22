@@ -15,7 +15,6 @@ export class StateManager {
     publishOpen = false;
     leftPanelLocked = false;
     canvasPanning = false;
-    plansOpen = false;
 
     editorMode: EditorMode = EditorMode.DESIGN;
     settingsTab: SettingsTabValue | string = SettingsTabValue.PREFERENCES;
@@ -46,7 +45,6 @@ export class StateManager {
     }, 150);
 
     clear() {
-        this.plansOpen = false;
         this.settingsOpen = false;
         this.hotkeysOpen = false;
         this.publishOpen = false;

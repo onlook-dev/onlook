@@ -15,7 +15,7 @@ export const customDomainVerification = pgTable('custom_domain_verification', {
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
     status: verificationRequestStatus('status').default(VerificationRequestStatus.ACTIVE).notNull(),
-});
+}).enableRLS();
 
 export const customDomainVerificationRelations = relations(customDomainVerification, ({ one }) => ({
     customDomain: one(customDomains, {

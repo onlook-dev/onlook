@@ -15,6 +15,7 @@ import { Separator } from '@onlook/ui/separator';
 import { getInitials } from '@onlook/utility';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { UsageSection } from './plans';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const router = useRouter();
@@ -30,7 +31,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     };
 
     const handleOpenSubscription = () => {
-        editorEngine.state.plansOpen = true;
+        userManager.subscription.isModalOpen = true;
         setOpen(false);
     };
 
@@ -56,17 +57,17 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                         <span className="text-mini text-foreground-secondary">{user?.email}</span>
                     </div>
                 </div>
-                {/* <Separator />
-                <PlanSection /> */}
+                <Separator />
+                <UsageSection />
                 <Separator />
                 <div className="p-2">
-                    {/* <Button
+                    <Button
                         variant="ghost"
                         className="flex w-full justify-start items-start rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
                         onClick={handleOpenSubscription}
                     >
                         <Icons.CreditCard className="mr-2 h-4 w-4" /> Subscription
-                    </Button> */}
+                    </Button>
                     <Button
                         variant="ghost"
                         className="flex w-full justify-start items-center rounded-sm px-2 py-2 text-smallPlus text-foreground-secondary hover:bg-accent hover:text-accent-foreground group"

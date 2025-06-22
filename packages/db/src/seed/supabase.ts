@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { SEED_USER } from "./constants";
 
-export const seedUser = async () => {
+export const seedSupabaseUser = async () => {
     console.log('Seeding Supabase user...');
 
     if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {

@@ -1,21 +1,32 @@
-import type { Plan, Subscription } from '@onlook/models';
-import type { Plan as DbPlan, Subscription as DbSubscription } from '../schema';
+import type { Price, Product, Subscription } from '@onlook/stripe';
+import type { Price as DbPrice, Product as DbProduct, Subscription as DbSubscription } from '../schema';
 
-export function toSubscription(subscription: DbSubscription & { plan: DbPlan }): Subscription {
+export function toSubscription(subscription: DbSubscription & { product: DbProduct; price: DbPrice }): Subscription {
     return {
         id: subscription.id,
         status: subscription.status,
-        startDate: subscription.startDate,
-        endDate: subscription.endDate,
-        plan: toPlan(subscription.plan),
+        startedAt: subscription.startedAt,
+        endedAt: subscription.endedAt,
+        product: toProduct(subscription.product),
+        price: toPrice(subscription.price),
+        stripeSubscriptionId: subscription.stripeSubscriptionId,
+        stripeCustomerId: subscription.stripeCustomerId,
     };
 }
 
-export function toPlan(plan: DbPlan): Plan {
+export function toProduct(product: DbProduct): Product {
     return {
-        name: plan.name,
-        type: plan.type,
-        dailyMessages: plan.dailyMessages,
-        monthlyMessages: plan.monthlyMessages,
+        name: product.name,
+        type: product.type,
+        stripeProductId: product.stripeProductId,
+    };
+}
+
+export function toPrice(price: DbPrice): Price {
+    return {
+        id: price.id,
+        productId: price.productId,
+        monthlyMessageLimit: price.monthlyMessageLimit,
+        stripePriceId: price.stripePriceId,
     };
 }

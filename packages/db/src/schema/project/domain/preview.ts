@@ -10,7 +10,7 @@ export const previewDomains = pgTable('preview_domains', {
     projectId: uuid('project_id').references(() => projects.id),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
+}).enableRLS();
 
 export const previewDomainRelations = relations(previewDomains, ({ one }) => ({
     project: one(projects, {

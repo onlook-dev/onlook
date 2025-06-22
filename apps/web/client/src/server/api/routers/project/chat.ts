@@ -10,7 +10,7 @@ import {
 import type { ChatMessageRole } from '@onlook/models';
 import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 const conversationRouter = createTRPCRouter({
     get: protectedProcedure

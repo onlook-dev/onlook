@@ -5,7 +5,12 @@ import {
     frames,
     messages,
     previewDomains,
+    prices,
+    products,
     projects,
+    publishedDomains,
+    subscriptions,
+    usageRecords,
     userCanvases,
     userProjects,
     users,
@@ -186,6 +191,13 @@ export const resetDb = async () => {
     console.log('Resetting the database...');
     await db.transaction(async (tx) => {
         await tx.delete(previewDomains);
+        await tx.delete(publishedDomains);
+        await tx.delete(userCanvases);
+        await tx.delete(userProjects);
+        await tx.delete(usageRecords);
+        await tx.delete(subscriptions);
+        await tx.delete(prices);
+        await tx.delete(products);
         await tx.delete(messages);
         await tx.delete(conversations);
         await tx.delete(frames);

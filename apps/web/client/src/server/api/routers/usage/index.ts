@@ -1,39 +1,14 @@
-import { subscriptions, toSubscription, usageRecords } from '@onlook/db';
+import { subscriptions, usageRecords } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import type { Usage } from '@onlook/models';
+import { FREE_PRODUCT_CONFIG } from '@onlook/stripe';
 import { and, eq, gte, sql } from 'drizzle-orm';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
-export const subscriptionRouter = createTRPCRouter({
+export const usageRouter = createTRPCRouter({
     get: protectedProcedure.query(async ({ ctx }) => {
         const user = ctx.user;
-        const subscription = await db.query.subscriptions.findFirst({
-            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
-            with: {
-                plan: true
-            },
-        });
-
-        if (!subscription) {
-            console.error('No active subscription found for user', user.id);
-            return null;
-        }
-        return toSubscription(subscription);
-    }),
-
-    getUsage: protectedProcedure.query(async ({ ctx }) => {
-        const user = ctx.user;
-        const subscription = await db.query.subscriptions.findFirst({
-            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
-            with: {
-                plan: true,
-            },
-        });
-
-        if (!subscription) {
-            console.error('No subscription found');
-            return null;
-        }
 
         // Calculate date ranges
         const now = new Date();
@@ -46,7 +21,7 @@ export const subscriptionRouter = createTRPCRouter({
             .from(usageRecords)
             .where(
                 and(
-                    eq(usageRecords.subscriptionId, subscription.id),
+                    eq(usageRecords.userId, user.id),
                     gte(usageRecords.timestamp, lastDay)
                 )
             );
@@ -57,22 +32,48 @@ export const subscriptionRouter = createTRPCRouter({
             .from(usageRecords)
             .where(
                 and(
-                    eq(usageRecords.subscriptionId, subscription.id),
+                    eq(usageRecords.userId, user.id),
                     gte(usageRecords.timestamp, lastMonth)
                 )
             );
+
+        let dailyLimitCount = FREE_PRODUCT_CONFIG.dailyLimit;
+        let monthlyLimitCount = FREE_PRODUCT_CONFIG.monthlyLimit;
+
+        const subscription = await db.query.subscriptions.findFirst({
+            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
+            with: {
+                price: true,
+            },
+        });
+
+        if (subscription) {
+            dailyLimitCount = subscription.price.monthlyMessageLimit;
+            monthlyLimitCount = subscription.price.monthlyMessageLimit;
+        }
 
         return {
             daily: {
                 period: 'day',
                 usageCount: lastDayCount[0]?.count || 0,
-                limitCount: subscription.plan.dailyMessages,
+                limitCount: dailyLimitCount,
             } satisfies Usage,
             monthly: {
                 period: 'month',
                 usageCount: lastMonthCount[0]?.count || 0,
-                limitCount: subscription.plan.monthlyMessages,
+                limitCount: monthlyLimitCount,
             } satisfies Usage,
         };
+    }),
+
+    increment: protectedProcedure.input(z.object({
+        type: z.enum(['message']),
+    })).mutation(async ({ ctx, input }) => {
+        const user = ctx.user;
+        await db.insert(usageRecords).values({
+            userId: user.id,
+            type: input.type,
+            timestamp: new Date(),
+        });
     }),
 });

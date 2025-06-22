@@ -1,8 +1,7 @@
-import { authUsers, fromAuthUser, userProjects, type AuthUser } from '@onlook/db';
-
+import { authUsers, fromAuthUser, userProjects } from '@onlook/db';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const memberRouter = createTRPCRouter({
     list: protectedProcedure

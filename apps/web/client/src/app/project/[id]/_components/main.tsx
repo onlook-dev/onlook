@@ -1,6 +1,5 @@
 'use client';
 
-import { ChatType } from '@/app/api/chat/route';
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
@@ -10,6 +9,7 @@ import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
 import { SettingsModal } from '@/components/ui/settings-modal';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
+import { ChatType } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';

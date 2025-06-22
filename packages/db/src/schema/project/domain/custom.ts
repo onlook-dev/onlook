@@ -9,7 +9,7 @@ export const customDomains = pgTable('custom_domains', {
     verified: boolean('verified').default(false).notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
+}).enableRLS();
 
 export const customDomainRelations = relations(customDomains, ({ many }) => ({
     publishedDomains: many(publishedDomains),

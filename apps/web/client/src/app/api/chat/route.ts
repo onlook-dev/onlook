@@ -1,16 +1,10 @@
-import { createClient } from '@/utils/supabase/request-server';
+import { createClient as createTRPCClient } from '@/trpc/request-server';
+import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { chatToolSet, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
+import { ChatType, CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import type { MessageLimitCheckResult } from '@onlook/models/usage';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
-
-export enum ChatType {
-    ASK = 'ask',
-    CREATE = 'create',
-    EDIT = 'edit',
-    FIX = 'fix',
-}
 
 export async function POST(req: NextRequest) {
     try {
@@ -51,7 +45,7 @@ export async function POST(req: NextRequest) {
     }
 }
 
-const checkMessageLimit = async (): Promise<MessageLimitCheckResult> => {
+export const checkMessageLimit = async (): Promise<MessageLimitCheckResult> => {
     const count = 0;
     const limit = 10;
     const exceeded = count >= limit;
@@ -64,17 +58,16 @@ const checkMessageLimit = async (): Promise<MessageLimitCheckResult> => {
     }
 }
 
-const getSupabaseUser = async (request: NextRequest) => {
-    const supabase = await createClient(request);
+export const getSupabaseUser = async (request: NextRequest) => {
+    const supabase = await createSupabaseClient(request);
     const { data: { user } } = await supabase.auth.getUser();
     return user;
 }
 
-const streamResponse = async (req: NextRequest) => {
+export const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType } = await req.json();
     const { model, providerOptions } = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET_4);
     const systemPrompt = chatType === ChatType.CREATE ? getCreatePageSystemPrompt() : getSystemPrompt();
-
     const result = streamText({
         model,
         messages: [
@@ -120,6 +113,21 @@ const streamResponse = async (req: NextRequest) => {
             console.error('Error in chat', error);
         },
     });
+
+    try {
+        if (chatType === ChatType.EDIT) {
+            const user = await getSupabaseUser(req);
+            if (!user) {
+                throw new Error('User not found');
+            }
+            const { api } = await createTRPCClient(req);
+            await api.usage.increment({
+                type: 'message',
+            });
+        }
+    } catch (error) {
+        console.error('Error in chat usage increment', error);
+    }
 
     return result.toDataStreamResponse();
 }
