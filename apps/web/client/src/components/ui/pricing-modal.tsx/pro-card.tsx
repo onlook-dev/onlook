@@ -1,14 +1,16 @@
 import { transKeys } from '@/i18n/keys';
-import { PRO_PRODUCT_CONFIG } from '@onlook/stripe';
+import { api } from '@/trpc/react';
+import { PriceKey, PRO_PRODUCT_CONFIG } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
+import { toast } from '@onlook/ui/sonner';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
-const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month`;
+export const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month`;
 
 interface PlanConfig {
     name: string;
@@ -20,101 +22,79 @@ interface PlanConfig {
     disableSelect: boolean;
 }
 
-const FREE_TIER: PlanConfig = {
-    name: 'Free',
-    price: '$0/month',
-    description: 'Prototype and experiment in code with ease.',
-    features: [
-        'Visual code editor access',
-        '5 projects',
-        '10 AI chat messages a day',
-        '50 AI messages a month',
-        'Limited to 1 screenshot per chat'
-    ],
-    defaultSelectValue: '10',
-    selectValues: [
-        { value: '10', label: '10 Daily Messages' },
-    ],
-    disableSelect: true,
-};
-
-export const PricingCard = ({
-    planType,
-    buttonText,
-    onCheckout,
-    disabled,
+export const ProCard = ({
+    isActivePlan,
     delay,
-    isLoading,
 }: {
-    planType: 'free' | 'pro';
-    buttonText: string;
-    onCheckout: (priceKey?: string) => void;
-    disabled: boolean;
+    isActivePlan: boolean;
     delay: number;
-    isLoading?: boolean;
 }) => {
     const t = useTranslations();
-    const [selectedTier, setSelectedTier] = useState<string>('');
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [selectedTier, setSelectedTier] = useState<PriceKey>(PriceKey.PRO_MONTHLY_TIER_1);
+    const { mutateAsync: checkout } = api.subscription.checkout.useMutation();
+    const { mutateAsync: getPriceId } = api.subscription.getPriceId.useMutation();
 
-    if (planType === 'pro' && !PRO_PRODUCT_CONFIG.prices.length) {
+    if (!PRO_PRODUCT_CONFIG.prices.length) {
         throw new Error('No pro tiers found');
     }
 
-    const getPlanData = (): PlanConfig => {
-        if (planType === 'free') {
-            return FREE_TIER;
-        } else {
-            const defaultProTier = PRO_PRODUCT_CONFIG.prices[0];
+    const handleCheckout = async () => {
+        try {
+            setIsCheckingOut(true);
+            const stripePriceId = await getPriceId({ priceKey: selectedTier as PriceKey });
+            const session = await checkout({ priceId: stripePriceId });
 
-            if (!defaultProTier) {
-                throw new Error('No default pro tier found');
+            if (session?.url) {
+                window.open(session.url, '_blank');
+            } else {
+                throw new Error('No checkout URL received');
             }
-            // Find the selected tier or use default
-            const currentTier = selectedTier
-                ? PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier) || defaultProTier
-                : defaultProTier;
-
-            if (!currentTier) {
-                throw new Error('No tier selected for pro plan');
-            }
-
-            return {
-                name: t('pricing.plans.pro.name'),
-                price: formatPrice(currentTier.cost),
-                description: t('pricing.plans.pro.description'),
-                features: [
-                    'Unlimited projects',
-                    'Custom domain',
-                ],
-                defaultSelectValue: selectedTier || defaultProTier.key,
-                selectValues: PRO_PRODUCT_CONFIG.prices.map(price => ({
-                    value: price.key,
-                    label: price.description
-                })),
-                disableSelect: false,
-            };
+        } catch (error) {
+            toast.error(t('pricing.toasts.error.title'), {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+            console.error('Payment error:', error);
+        } finally {
+            setIsCheckingOut(false);
         }
+    };
+
+
+    const getPlanData = (): PlanConfig => {
+        const defaultProTier = PRO_PRODUCT_CONFIG.prices[0];
+        if (!defaultProTier) {
+            throw new Error('No default pro tier found');
+        }
+        // Find the selected tier or use default
+        const currentTier = selectedTier
+            ? PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier) || defaultProTier
+            : defaultProTier;
+
+        if (!currentTier) {
+            throw new Error('No tier selected for pro plan');
+        }
+
+        return {
+            name: t('pricing.plans.pro.name'),
+            price: formatPrice(currentTier.cost),
+            description: t('pricing.plans.pro.description'),
+            features: [
+                'Unlimited projects',
+                'Custom domain',
+            ],
+            defaultSelectValue: selectedTier || defaultProTier.key,
+            selectValues: PRO_PRODUCT_CONFIG.prices.map(price => ({
+                value: price.key,
+                label: price.description
+            })),
+            disableSelect: false,
+        };
     };
 
     const planData = getPlanData();
 
-    const handleCheckout = () => {
-        const defaultProTier = PRO_PRODUCT_CONFIG.prices[0];
 
-        if (planType === 'pro' && !defaultProTier) {
-            throw new Error('No default pro tier found');
-        }
-
-        if (planType === 'pro') {
-            if (!defaultProTier) {
-                throw new Error('No default pro tier found');
-            }
-            const currentTier = selectedTier || defaultProTier.key;
-            onCheckout(currentTier);
-        } else {
-            onCheckout();
-        }
-    };
 
     return (
         <MotionCard
@@ -135,7 +115,7 @@ export const PricingCard = ({
                     <Select
                         value={planData.defaultSelectValue}
                         disabled={planData.disableSelect}
-                        onValueChange={setSelectedTier}
+                        onValueChange={(value) => setSelectedTier(value as PriceKey)}
                     >
                         <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select a plan" />
@@ -153,15 +133,17 @@ export const PricingCard = ({
                     <Button
                         className="w-full"
                         onClick={handleCheckout}
-                        disabled={isLoading || disabled}
+                        disabled={isCheckingOut}
                     >
-                        {isLoading ? (
+                        {isCheckingOut ? (
                             <div className="flex items-center gap-2">
                                 <Icons.Shadow className="w-4 h-4 animate-spin" />
                                 <span>{t(transKeys.pricing.loading.checkingPayment)}</span>
                             </div>
                         ) : (
-                            buttonText
+                            isActivePlan
+                                ? t(transKeys.pricing.buttons.currentPlan)
+                                : t(transKeys.pricing.buttons.getPro)
                         )}
                     </Button>
                 </div>

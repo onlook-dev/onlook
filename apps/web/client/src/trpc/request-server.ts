@@ -28,9 +28,6 @@ export const createTRPCContext = async (req: NextRequest, opts: { headers: Heade
     };
 };
 
-/**
- * Used for server routes without using next headers
- */
 const createContext = async (req: NextRequest) => {
     return createTRPCContext(
         req,
@@ -41,8 +38,10 @@ const createContext = async (req: NextRequest) => {
 
 const getQueryClient = cache(createQueryClient);
 
+/**
+ * Used for API routes without using next headers lib
+ */
 export const createClient = async (req: NextRequest) => {
-
     const context = await createContext(req);
     const caller = createCaller(context);
 

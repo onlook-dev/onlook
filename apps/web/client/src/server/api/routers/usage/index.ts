@@ -48,6 +48,7 @@ export const usageRouter = createTRPCRouter({
         });
 
         if (subscription) {
+            // Monthly and daily limits are the same for PRO subscription
             dailyLimitCount = subscription.price.monthlyMessageLimit;
             monthlyLimitCount = subscription.price.monthlyMessageLimit;
         }
