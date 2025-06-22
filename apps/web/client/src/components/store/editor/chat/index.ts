@@ -8,6 +8,7 @@ import type { EditorEngine } from '../engine';
 import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
+import { ChatErrorManager } from './error';
 import { SuggestionManager } from './suggestions';
 
 export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
@@ -17,6 +18,7 @@ export class ChatManager {
     code: ChatCodeManager;
     context: ChatContext;
     suggestions: SuggestionManager;
+    error: ChatErrorManager;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -27,6 +29,7 @@ export class ChatManager {
         this.conversation = new ConversationManager(this, this.projectManager);
         this.code = new ChatCodeManager(this, this.editorEngine);
         this.suggestions = new SuggestionManager(this.projectManager);
+        this.error = new ChatErrorManager();
         makeAutoObservable(this);
     }
 

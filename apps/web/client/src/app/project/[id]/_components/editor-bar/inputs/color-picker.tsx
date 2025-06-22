@@ -8,6 +8,7 @@ import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Color, toNormalCase, type Palette } from '@onlook/utility';
 import { useEffect, useRef, useState } from 'react';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 
 
 const ColorGroup = ({
@@ -16,24 +17,35 @@ const ColorGroup = ({
     onColorSelect,
     isDefault = false,
     isExpanded = true,
+    selectedColor,
 }: {
     name: string;
     colors: TailwindColor[];
     onColorSelect: (color: TailwindColor) => void;
     isDefault?: boolean;
     isExpanded?: boolean;
+    selectedColor?: Color;
 }) => {
     const [expanded, setExpanded] = useState(true);
+    const selectedRef = useRef<HTMLDivElement | null>(null);
 
     useEffect(() => {
         setExpanded(isExpanded);
     }, [isExpanded]);
 
+    useEffect(() => {
+        setTimeout(() => {
+            if (selectedRef.current) {
+                selectedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }, 100);
+    }, [selectedColor, expanded]);
+
     return (
         <div className="w-full group">
             <button
                 aria-label={`Toggle ${expanded ? 'closed' : 'open'}`}
-                className="rounded flex items-center p-1 w-full"
+                className="sticky top-0 z-10 bg-background rounded flex items-center p-1 w-full"
                 onClick={() => setExpanded(!expanded)}
             >
                 <div className="flex items-center gap-1 flex-1">
@@ -46,21 +58,30 @@ const ColorGroup = ({
             </button>
 
             {expanded &&
-                colors.map((color) => (
-                    <div
-                        key={color.name}
-                        className="flex items-center gap-1.5 hover:bg-background-secondary rounded-md p-1 hover:cursor-pointer"
-                        onClick={() => onColorSelect(color)}
-                    >
+                colors.map((color) => {
+                    const isSelected = selectedColor && Color.from(color.lightColor).isEqual(selectedColor);
+
+                    return (
                         <div
-                            className="w-5 h-5 rounded-sm"
-                            style={{ backgroundColor: color.lightColor }}
-                        />
-                        <span className="text-xs font-normal truncate max-w-32">
-                            {toNormalCase(color.name)}
-                        </span>
-                    </div>
-                ))}
+                            key={color.name}
+                            ref={isSelected ? selectedRef : undefined}
+                            className={`flex items-center gap-1.5 rounded-md p-1 hover:bg-background-secondary hover:cursor-pointer 
+                                ${isSelected ? 'bg-background-tertiary' : ''}`}
+                            onClick={() => onColorSelect(color)}
+                        >
+                            <div
+                                className="w-5 h-5 rounded-sm"
+                                style={{ backgroundColor: color.lightColor }}
+                            />
+                            <span className="text-xs font-normal truncate max-w-32">
+                                {toNormalCase(color.name)}
+                            </span>
+                            {isSelected && (
+                                <Icons.CheckCircled className="ml-auto text-primary w-4 h-4" />
+                            )}
+                        </div>
+                    );
+                })}
         </div>
     );
 };
@@ -141,6 +162,18 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         onChangeEnd(colorItem);
     };
 
+    const handleRemoveColor = () => {
+        const removeColorAction: TailwindColor = {
+            name: 'remove',
+            originalKey: '',
+            lightColor: '',
+            darkColor: '',
+        };
+        onChangeEnd(removeColorAction);
+    };
+    
+    const isColorRemoved = (colorToCheck: Color) => colorToCheck.isEqual(Color.from('transparent'));
+
     function renderPalette() {
         const colors = Object.keys(palette.colors);
         return (
@@ -199,19 +232,48 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     return (
         <div className="flex flex-col justify-between items-center">
             <Tabs defaultValue={TabValue.BRAND} className="w-full">
-                <TabsList className="bg-transparent px-2 m-0 gap-2">
-                    <TabsTrigger
-                        value={TabValue.BRAND}
-                        className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                <TabsList className="bg-transparent px-2 m-0 gap-2 justify-between w-full">
+                    <div className="flex gap-2">
+                        <TabsTrigger
+                            value={TabValue.BRAND}
+                            className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                        >
+                            Brand
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value={TabValue.CUSTOM}
+                            className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                        >
+                            Custom
+                        </TabsTrigger>
+                    </div>
+
+
+                    <HoverOnlyTooltip
+                        content="Remove Background Color"
+                        side="bottom"
+                        className="mt-1"
+                        hideArrow
+                        disabled={isColorRemoved(color)}
                     >
-                        Brand
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value={TabValue.CUSTOM}
-                        className="bg-transparent text-xs p-1 hover:text-foreground-primary"
-                    >
-                        Custom
-                    </TabsTrigger>
+                        <button
+                            className={`p-1 rounded transition-colors ${
+                                isColorRemoved(color) 
+                                    ? 'bg-background-secondary' 
+                                    : 'hover:bg-background-tertiary'
+                            }`}
+                            onClick={handleRemoveColor}
+                        >
+                            <Icons.SquareX 
+                                className={`h-4 w-4 ${
+                                    isColorRemoved(color) 
+                                        ? 'text-foreground-primary' 
+                                        : 'text-foreground-tertiary'
+                                }`} 
+                            />
+                        </button>
+                    </HoverOnlyTooltip>
+
                 </TabsList>
 
                 <TabsContent value={TabValue.BRAND} className="p-0 m-0 text-xs">
@@ -237,13 +299,14 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                             )}
                         </div>
                     </div>
-                    <div className="flex flex-col gap-1 overflow-y-auto max-h-96 p-2">
+                    <div className="flex flex-col gap-1 overflow-y-auto max-h-96 px-2 mt-2">
                         {filteredColorGroups.map(([name, colors]) => (
                             <ColorGroup
                                 key={name}
                                 name={name}
                                 colors={colors}
                                 onColorSelect={handleColorSelect}
+                                selectedColor={color}
                             />
                         ))}
                         {filteredColorDefaults.map(([name, colors]) => (
@@ -253,6 +316,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                 colors={colors}
                                 onColorSelect={handleColorSelect}
                                 isDefault
+                                selectedColor={color}
                             />
                         ))}
                     </div>

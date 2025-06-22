@@ -1,4 +1,4 @@
-import { BINARY_EXTENSIONS } from '@onlook/constants';
+import { BINARY_EXTENSIONS, IMAGE_EXTENSIONS } from '@onlook/constants';
 import mime from 'mime-lite';
 
 /**
@@ -79,7 +79,7 @@ export const getDirName = (filePath: string): string => {
 
 export const getBaseName = (filePath: string): string => {
     const parts = filePath.split('/');
-    return parts[parts.length - 1] || '';
+    return parts.pop() || '';
 };
 
 export const getMimeType = (fileName: string): string => {
@@ -96,4 +96,17 @@ export const getMimeType = (fileName: string): string => {
     const res = mime.getType(fileName);
     if (res) return res;
     return 'application/octet-stream';
+};
+
+export const isImageFile = (fileName: string): boolean => {
+    const mimeType = mime.getType(fileName);
+    return IMAGE_EXTENSIONS.includes(mimeType);
+};
+
+export const convertToBase64 = (file: Uint8Array): string => {
+    return btoa(
+        Array.from(file)
+            .map((byte: number) => String.fromCharCode(byte))
+            .join(''),
+    );
 };

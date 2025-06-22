@@ -12,6 +12,9 @@ When contributing to this repository, please first discuss the change you wish t
 
 Please note we have a [code of conduct](https://github.com/onlook-dev/onlook/blob/main/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
+## Running the project locally
+You can build the project from source using instructions [here](/docs/developer/running-locally).
+
 ## Pull Request Process
 
 1. To create a Pull Request (PR), [create a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) of the project. 
@@ -36,10 +39,6 @@ We try to follow guidelines from [Clean Code](https://gist.github.com/wojteklu/7
 
 "Leave the code cleaner, not messier, than how you found it". 
 
-
-## Building and running
-You can build the project from source using instructions [here](/docs/developer/running-locally).
-
 ## Testing
 We use [Bun](https://bun.sh/) for testing.
 
@@ -54,4 +53,13 @@ We use [ESLint](https://eslint.org/) for linting and [Prettier](https://prettier
 ```bash
 bun lint
 bun format
+```
+
+## Type safety
+
+We use [TypeScript](https://www.typescriptlang.org/) for type safety.
+
+To check types of the web client, run:
+```bash
+cd apps/web/client && bun run typecheck
 ```

@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from "react";
 import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
@@ -18,9 +19,9 @@ import { SpacingInputs } from "../inputs/spacing-inputs";
 export const Radius = observer(() => {
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('radius');
-    
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'radius-dropdown' 
+
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'radius-dropdown'
     });
     const getRadiusIcon = () => {
     const topLeft = boxState.borderTopLeftRadius.num ?? 0;
@@ -143,8 +144,8 @@ export const Radius = observer(() => {
                     <button
                         onClick={() => setActiveTab('all')}
                         className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === 'all'
-                            ? 'text-white bg-background-tertiary/20'
-                            : 'text-muted-foreground hover:bg-background-tertiary/10'
+                            ? 'text-foreground-primary bg-background-active/50'
+                            : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
                             }`}
                     >
                         All sides
@@ -152,8 +153,8 @@ export const Radius = observer(() => {
                     <button
                         onClick={() => setActiveTab('individual')}
                         className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === 'individual'
-                            ? 'text-white bg-background-tertiary/20'
-                            : 'text-muted-foreground hover:bg-background-tertiary/10'
+                            ? 'text-foreground-primary bg-background-active/50'
+                            : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
                             }`}
                     >
                         Individual

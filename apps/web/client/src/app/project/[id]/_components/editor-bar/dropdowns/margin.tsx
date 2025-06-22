@@ -117,8 +117,8 @@ export const Margin = observer(() => {
                     <button
                         onClick={() => setActiveTab("all")}
                         className={`flex-1 cursor-pointer rounded-md px-4 py-1.5 text-sm transition-colors ${activeTab === "all"
-                            ? "bg-background-tertiary/20 text-white"
-                            : "text-muted-foreground hover:bg-background-tertiary/10"
+                            ? "bg-background-active/50 text-foreground-primary"
+                            : "text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover"
                             }`}
                     >
                         All sides
@@ -126,8 +126,8 @@ export const Margin = observer(() => {
                     <button
                         onClick={() => setActiveTab("individual")}
                         className={`flex-1 cursor-pointer rounded-md px-4 py-1.5 text-sm transition-colors ${activeTab === "individual"
-                            ? "bg-background-tertiary/20 text-white"
-                            : "text-muted-foreground hover:bg-background-tertiary/10"
+                            ? "bg-background-active/50 text-foreground-primary"
+                            : "text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover"
                             }`}
                     >
                         Individual

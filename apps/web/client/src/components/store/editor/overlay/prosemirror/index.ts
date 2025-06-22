@@ -68,6 +68,8 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
         wordBreak: 'break-word',
         overflow: 'visible',
         height: '100%',
+        fontFamily: styles.fontFamily,
+        padding: styles.padding,
     });
     dispatch(tr);
 }

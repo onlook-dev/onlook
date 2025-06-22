@@ -15,7 +15,7 @@ export class SessionManager {
         makeAutoObservable(this);
     }
 
-    async start(sandboxId: string, userId: string) {
+    async start(sandboxId: string, userId?: string) {
         this.isConnecting = true;
         this.session = await connectToSandbox({
             session: await api.sandbox.start.mutate({ sandboxId, userId }),
@@ -56,22 +56,51 @@ export class SessionManager {
         await api.sandbox.hibernate.mutate({ sandboxId });
     }
 
-    async reconnect(sandboxId: string, userId: string | undefined) {
-        if (!this.session) {
-            console.error('No session found');
-            return;
-        }
-        this.isConnecting = true;
-        await this.session.reconnect().catch(async (err) => {
-            console.error('Failed to reconnect session:', err);
-            if (!userId) {
-                console.error('No user id found');
+    async reconnect(sandboxId: string, userId?: string) {
+        try {
+            if (!this.session) {
+                console.error('No session found');
                 return;
             }
+
+            // Check if the session is still connected
+            const isConnected = await this.ping();
+            if (isConnected) {
+                this.isConnecting = false;
+                return;
+            }
+
+            // Attempt soft reconnect
+            this.isConnecting = true;
+            await this.session.reconnect()
+
+            const isConnected2 = await this.ping();
+            if (isConnected2) {
+                this.isConnecting = false;
+                return;
+            }
+
+            // If the session failed to reconnect, we need to start a new session
+            await this.session.disconnect();
+            this.session = null;
             await this.start(sandboxId, userId);
-        }).finally(() => {
             this.isConnecting = false;
-        });
+            return;
+        } catch (error) {
+            console.error('Failed to reconnect to sandbox', error);
+            this.isConnecting = false;
+        }
+    }
+
+    async ping() {
+        if (!this.session) return false;
+        try {
+            await this.session.commands.run('echo "ping"');
+            return true;
+        } catch (error) {
+            console.error('Failed to connect to sandbox', error);
+            return false;
+        }
     }
 
     async disconnect() {

@@ -70,7 +70,7 @@ const useUnicornStudio = () => {
     return { isLoaded, UnicornStudio: unicornStudio };
 };
 
-export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: boolean) => void }) {
+export function UnicornBackground() {
     const [isBackgroundVisible, setIsBackgroundVisible] = useState(false);
     const sceneRef = useRef<UnicornStudioScene | null>(null);
     const { isLoaded, UnicornStudio } = useUnicornStudio();
@@ -103,7 +103,6 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
                     );
                     if (ourScene) {
                         sceneRef.current = ourScene;
-                        setIsMounted(true);
                         setTimeout(() => {
                             setIsBackgroundVisible(true);
                         }, 1000);
@@ -111,7 +110,6 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
                 }
             } catch (err) {
                 console.error('Failed to initialize UnicornStudio scene:', err);
-                setIsMounted(true);
                 setTimeout(() => {
                     setIsBackgroundVisible(true);
                 }, 1000);
@@ -126,7 +124,7 @@ export function UnicornBackground({ setIsMounted }: { setIsMounted: (isMounted: 
                 sceneRef.current = null;
             }
         };
-    }, [isLoaded, setIsMounted]);
+    }, [isLoaded]);
 
     return (
         <div className="absolute inset-0 w-full h-screen overflow-hidden">

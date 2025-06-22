@@ -57,7 +57,6 @@ import {
     EyeClosedIcon,
     EyeOpenIcon,
     FileIcon,
-    FilePlusIcon,
     FrameIcon,
     GearIcon,
     GitHubLogoIcon,
@@ -116,7 +115,7 @@ import {
     ViewHorizontalIcon,
     ViewVerticalIcon,
 } from '@radix-ui/react-icons';
-import { MailXIcon } from 'lucide-react';
+import { CreditCardIcon, MailXIcon, SquareXIcon } from 'lucide-react';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
 import H2Icon from './header-level-icons/h2Icon';
@@ -1244,7 +1243,31 @@ export const Icons = {
             />
         </svg>
     ),
-
+    Key: ({ className, ...props }: IconProps) => (
+        <svg
+            width="21"
+            height="22"
+            viewBox="0 0 21 22"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M13.5625 12.9688C16.3412 12.9688 18.5938 10.7162 18.5938 7.9375C18.5938 5.15881 16.3412 2.90625 13.5625 2.90625C10.7838 2.90625 8.53125 5.15881 8.53125 7.9375C8.53125 8.35917 8.58312 8.76871 8.68083 9.16012L3.53753 14.3034C3.37344 14.4675 3.28125 14.6901 3.28125 14.9222V17.3438C3.28125 17.827 3.673 18.2188 4.15625 18.2188H6.5779C6.80997 18.2188 7.03252 18.1266 7.19662 17.9625L8.09375 17.0654V14.7188H10.4403L12.34 12.8192C12.7313 12.9169 13.1408 12.9688 13.5625 12.9688Z"
+                stroke="currentColor"
+                strokeWidth="1.3125"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M15.0938 7.9375C15.0938 8.78319 14.4082 9.46875 13.5625 9.46875C12.7168 9.46875 12.0312 8.78319 12.0312 7.9375C12.0312 7.09181 12.7168 6.40625 13.5625 6.40625C14.4082 6.40625 15.0938 7.09181 15.0938 7.9375Z"
+                stroke="currentColor"
+                strokeWidth="1.3125"
+                strokeLinecap="square"
+            />
+        </svg>
+    ),
     ArrowDown: ArrowDownIcon,
     ArrowLeft: ArrowLeftIcon,
     ArrowRight: ArrowRightIcon,
@@ -1291,6 +1314,7 @@ export const Icons = {
     Cube: CubeIcon,
     CursorArrow: CursorArrowIcon,
     Circle: CircleIcon,
+    CreditCard: CreditCardIcon,
 
     Desktop: DesktopIcon,
     DiscordLogo: DiscordLogoIcon,
@@ -1308,7 +1332,6 @@ export const Icons = {
     EnvelopeClosed: EnvelopeClosedIcon,
 
     File: FileIcon,
-    FilePlus: FilePlusIcon,
     Frame: FrameIcon,
 
     Gear: GearIcon,
@@ -1363,6 +1386,7 @@ export const Icons = {
     SpaceBetweenHorizontally: SpaceBetweenHorizontallyIcon,
     SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
     Square: SquareIcon,
+    SquareX: SquareXIcon,
     SketchLogo: SketchLogoIcon,
 
     MailX: MailXIcon,
@@ -2800,6 +2824,29 @@ export const Icons = {
             />
         </svg>
     ),
+    LoadingSpinner: ({ className, ...props }: IconProps) => (
+        <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M14.1693 8.0026C14.1693 11.4083 11.4083 14.1693 8.0026 14.1693C4.59685 14.1693 1.83594 11.4083 1.83594 8.0026C1.83594 4.59685 4.59685 1.83594 8.0026 1.83594C11.4083 1.83594 14.1693 4.59685 14.1693 8.0026Z"
+                stroke="currentColor"
+                strokeOpacity="0.3"
+            />
+            <path
+                d="M14.1667 8C14.1667 11.4057 11.4057 14.1667 8 14.1667"
+                stroke="currentColor"
+                strokeOpacity="1"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
     BorderEdit: ({ className, ...props }: IconProps) => (
         <svg
             width="16"
@@ -3139,25 +3186,104 @@ export const Icons = {
             />
         </svg>
     ),
-    FloppyDisk: ({ className, ...props }: IconProps) => (
+
+    SidebarLeftCollapse: ({ className, ...props }: IconProps) => (
         <svg
-            viewBox="0 0 16 16"
-            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
             fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="1.3"
+            xmlns="http://www.w3.org/2000/svg"
             className={cn(className)}
             {...props}
         >
-            <polygon points="2.75 2.75,2.75 13.25,13.25 13.25,13.25 5.75,10.25 2.75" />
-            <polyline points="5.75 13.25,5.75 9.75,10.25 9.75,10.25 13.25" />
+            <path
+                d="M11.4375 7.3125L9.75 9L11.4375 10.6875"
+                stroke="currentColor"
+                strokeWidth="1.125"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M2.8125 4.3125C2.8125 3.48407 3.48407 2.8125 4.3125 2.8125H13.6875C14.5159 2.8125 15.1875 3.48407 15.1875 4.3125V13.6875C15.1875 14.5159 14.5159 15.1875 13.6875 15.1875H4.3125C3.48407 15.1875 2.8125 14.5159 2.8125 13.6875V4.3125Z"
+                stroke="currentColor"
+                strokeWidth="1.125"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M6.1875 2.8125V15.1875" stroke="currentColor" strokeWidth="1.125" />
+        </svg>
+    ),
+
+    SidebarLeftExpand: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={cn(className)}
+            {...props}
+        >
+            <path
+                d="M9.75 7.3125L11.4375 9L9.75 10.6875"
+                stroke="currentColor"
+                strokeWidth="1.125"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M2.8125 4.3125C2.8125 3.48407 3.48407 2.8125 4.3125 2.8125H13.6875C14.5159 2.8125 15.1875 3.48407 15.1875 4.3125V13.6875C15.1875 14.5159 14.5159 15.1875 13.6875 15.1875H4.3125C3.48407 15.1875 2.8125 14.5159 2.8125 13.6875V4.3125Z"
+                stroke="currentColor"
+                strokeWidth="1.125"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M6.1875 2.8125V15.1875" stroke="currentColor" strokeWidth="1.125" />
+        </svg>
+    ),
+
+    Save: ({ className, ...props }: IconProps) => (
+        <svg
+            width="15"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M5.8125 2.8125V5.4375C5.8125 5.85171 6.14829 6.1875 6.5625 6.1875H11.4375C11.8517 6.1875 12.1875 5.85171 12.1875 5.4375V2.8125M15.1875 5.68382V13.6875C15.1875 14.5159 14.5159 15.1875 13.6875 15.1875H4.3125C3.48407 15.1875 2.8125 14.5159 2.8125 13.6875V4.3125C2.8125 3.48407 3.48407 2.8125 4.3125 2.8125H12.3162C12.714 2.8125 13.0955 2.97053 13.3769 3.25184L14.7481 4.62316C15.0295 4.90447 15.1875 5.28599 15.1875 5.68382ZM5.8125 10.3125V14.4375C5.8125 14.8517 6.14829 15.1875 6.5625 15.1875H11.4375C11.8517 15.1875 12.1875 14.8517 12.1875 14.4375V10.3125C12.1875 9.89828 11.8517 9.5625 11.4375 9.5625H6.5625C6.14829 9.5625 5.8125 9.89828 5.8125 10.3125Z"
+                stroke="currentColor"
+                strokeWidth="1.125"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
         </svg>
     ),
     DirectoryPlus: ({ className, ...props }: IconProps) => (
         <svg
-            viewBox="0 0 23 23"
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            className={cn(className)}
+            {...props}
+        >
+            <path
+                d="M8.0625 14.4375H14.4375C15.2659 14.4375 15.9375 13.7659 15.9375 12.9375V6.5625C15.9375 5.73407 15.2659 5.0625 14.4375 5.0625H9.8028C9.30128 5.0625 8.8329 4.81185 8.55472 4.39455L7.94528 3.48045C7.6671 3.06315 7.19876 2.8125 6.69722 2.8125H3.5625C2.73407 2.8125 2.0625 3.48407 2.0625 4.3125V8.4375M3.5625 10.6875V12.9375M3.5625 12.9375V15.1875M3.5625 12.9375H1.3125M3.5625 12.9375H5.8125"
+                stroke="currentColor"
+                strokeWidth="1.125"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    FilePlus: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             stroke="currentColor"
@@ -3167,9 +3293,7 @@ export const Icons = {
             className={cn(className)}
             {...props}
         >
-            <path d="M3 5a2 2 0 012-2h5.5a2 2 0 011.5 1.5l1.5 1.5a2 2 0 001.5.5H19a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V5z" />
-            <path d="M12 10v4" />
-            <path d="M10 12h4" />
+            <path d="M10.2486 2.375V5.375C10.2486 6.20343 10.9201 6.875 11.7486 6.875H14.7486M4.24609 7.4375L4.24859 3.5C4.24859 2.67157 4.92017 2 5.74859 2H9.62729C10.0251 2 10.4066 2.15803 10.6879 2.43934L14.6842 6.43566C14.9656 6.71697 15.1236 7.09849 15.1236 7.4963V14.375C15.1236 15.2034 14.452 15.875 13.6236 15.875H10.6548H8.7475M4.25 10.625V12.875M4.25 12.875V15.125M4.25 12.875H2M4.25 12.875H6.5" />
         </svg>
     ),
 } satisfies { [key: string]: React.FC<IconProps> };

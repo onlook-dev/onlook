@@ -1,61 +1,56 @@
-import { UsagePlanType } from '@onlook/models/usage';
+import { api } from '@/trpc/client';
+import { type Subscription, type Usage } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
+interface UsageMetrics {
+    daily: Usage;
+    monthly: Usage;
+}
+
 export class SubscriptionManager {
-    plan: UsagePlanType = UsagePlanType.BASIC;
+    subscription: Subscription | null = null;
+    usage: UsageMetrics = {
+        daily: {
+            period: 'day',
+            usageCount: 0,
+            limitCount: 0,
+        },
+        monthly: {
+            period: 'month',
+            usageCount: 0,
+            limitCount: 0,
+        },
+    }
 
     constructor(private userManager: UserManager) {
         makeAutoObservable(this);
-        this.restoreCachedPlan();
         reaction(
             () => this.userManager.user,
             (user) => {
                 if (user) {
-                    this.getPlanFromServer();
+                    this.getSubscriptionFromRemote();
                 }
             }
         );
     }
 
-    private restoreCachedPlan() {
-        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-            console.error('window or localStorage is undefined');
-            return;
+    async getSubscriptionFromRemote(): Promise<Subscription | null> {
+        const subscription = await api.subscription.get.query();
+        if (!subscription) {
+            console.error('No subscription returned from remote');
+            return null;
         }
-        const cachedPlan = window.localStorage?.getItem('currentPlan');
-        this.plan = (cachedPlan as UsagePlanType) || UsagePlanType.BASIC;
+        this.subscription = subscription;
+        return subscription;
     }
 
-    async updatePlan(plan: UsagePlanType) {
-        if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
-            console.error('window or localStorage is undefined');
-            return;
+    async getUsageFromRemote(): Promise<UsageMetrics | null> {
+        const usage = await api.subscription.getUsage.query();
+        if (!usage) {
+            return null;
         }
-        this.plan = plan;
-        window.localStorage.setItem('currentPlan', plan);
-        // await invokeMainChannel(MainChannels.UPDATE_USER_METADATA, { plan });
-    }
-
-    async getPlanFromServer(): Promise<UsagePlanType> {
-        return UsagePlanType.BASIC;
-        // try {
-        //     const res:
-        //         | {
-        //               success: boolean;
-        //               error?: string;
-        //               data?: any;
-        //           }
-        //         | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
-        //     if (!res?.success) {
-        //         throw new Error(res?.error || 'Error checking premium status');
-        //     }
-        //     const newPlan = res.data.name === 'pro' ? UsagePlanType.PRO : UsagePlanType.BASIC;
-        //     await this.updatePlan(newPlan);
-        //     return newPlan;
-        // } catch (error) {
-        //     console.error('Error checking premium status:', error);
-        //     return UsagePlanType.BASIC;
-        // }
+        this.usage = usage;
+        return usage;
     }
 }

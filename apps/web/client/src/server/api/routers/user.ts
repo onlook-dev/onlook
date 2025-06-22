@@ -1,5 +1,4 @@
-import { toUserSettings, userInsertSchema, users, userSettings, userSettingsInsertSchema } from '@onlook/db';
-import { createDefaultUserSettings } from '@onlook/utility';
+import { createDefaultUserSettings, toUserSettings, userInsertSchema, users, userSettings, userSettingsInsertSchema } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
