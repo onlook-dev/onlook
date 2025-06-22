@@ -65,10 +65,10 @@ export const ProCard = ({
             clearTimeout(pollingTimeoutRef.current);
         }
 
-        // Start polling every 3 seconds
+        // Start polling every 5 seconds
         pollingIntervalRef.current = setInterval(() => {
             refetchSubscription();
-        }, 3000);
+        }, 5000);
 
         // Stop polling after 5 minutes (300 seconds) as a safety timeout
         pollingTimeoutRef.current = setTimeout(() => {
