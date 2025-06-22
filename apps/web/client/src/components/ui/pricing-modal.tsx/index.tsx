@@ -62,7 +62,6 @@ export const SubscriptionModal = observer(() => {
     };
 
     const handleFreeCheckout = async () => {
-        console.log('handleFreeCheckout');
         try {
             setIsCheckingOut(ProductType.FREE);
             const session = await manageSubscription();
