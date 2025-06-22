@@ -15,7 +15,7 @@ import { ProCard } from './pro-card';
 export const SubscriptionModal = observer(() => {
     const userManager = useUserManager();
     const t = useTranslations();
-    const { data: subscription } = api.subscription.get.useQuery();
+    const { data: subscription, refetch: refetchSubscription } = api.subscription.get.useQuery();
     const backgroundUrl = useGetBackground('create');
 
     return (
@@ -67,6 +67,7 @@ export const SubscriptionModal = observer(() => {
                                             delay={0.1}
                                         />
                                         <ProCard
+                                            refetchSubscription={refetchSubscription}
                                             subscription={subscription ?? null}
                                             delay={0.2}
                                         />

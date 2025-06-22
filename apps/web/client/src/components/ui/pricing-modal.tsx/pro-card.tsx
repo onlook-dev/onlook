@@ -8,33 +8,33 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { toast } from '@onlook/ui/sonner';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month`;
 
-interface PlanConfig {
-    name: string;
-    price: string;
-    description: string;
-    features: string[];
-    defaultSelectValue: string;
-    selectValues: { value: string; label: string }[];
-    disableSelect: boolean;
-}
+const PRO_FEATURES = [
+    'Unlimited projects',
+    'Custom domain',
+];
 
 export const ProCard = ({
     subscription,
     delay,
+    refetchSubscription,
 }: {
     subscription: Subscription | null;
     delay: number;
+    refetchSubscription: () => void;
 }) => {
     const t = useTranslations();
-    const [isCheckingOut, setIsCheckingOut] = useState(false);
-    const [selectedTier, setSelectedTier] = useState<PriceKey>(PriceKey.PRO_MONTHLY_TIER_1);
     const { mutateAsync: checkout } = api.subscription.checkout.useMutation();
     const { mutateAsync: getPriceId } = api.subscription.getPriceId.useMutation();
     const { mutateAsync: updateSubscription } = api.subscription.update.useMutation();
+
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [selectedTier, setSelectedTier] = useState<PriceKey>(PriceKey.PRO_MONTHLY_TIER_1);
+    const selectedTierData = PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier);
+
     const isPro = subscription?.product.type === ProductType.PRO;
     const isNewTierSelected = selectedTier !== subscription?.price.key;
 
@@ -79,12 +79,12 @@ export const ProCard = ({
 
             setIsCheckingOut(true);
             const stripePriceId = await getPriceId({ priceKey: selectedTier as PriceKey });
-            const res = await updateSubscription({ priceId: stripePriceId, subscriptionId: subscription?.stripeSubscriptionId });
+            const res = await updateSubscription({ stripePriceId, stripeSubscriptionId: subscription.stripeSubscriptionId });
 
             if (!res) {
                 throw new Error('No response from update subscription');
             }
-
+            refetchSubscription();
             toast.success('Subscription updated!');
         } catch (error) {
             toast.error(t('pricing.toasts.error.title'), {
@@ -96,38 +96,11 @@ export const ProCard = ({
         }
     };
 
-    const getPlanData = (): PlanConfig => {
-        const defaultProTier = PRO_PRODUCT_CONFIG.prices[0];
-        if (!defaultProTier) {
-            throw new Error('No default pro tier found');
+    useEffect(() => {
+        if (subscription?.price.key) {
+            setSelectedTier(subscription.price.key);
         }
-        // Find the selected tier or use default
-        const currentTier = selectedTier
-            ? PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier) || defaultProTier
-            : defaultProTier;
-
-        if (!currentTier) {
-            throw new Error('No tier selected for pro plan');
-        }
-
-        return {
-            name: t('pricing.plans.pro.name'),
-            price: formatPrice(currentTier.cost),
-            description: t('pricing.plans.pro.description'),
-            features: [
-                'Unlimited projects',
-                'Custom domain',
-            ],
-            defaultSelectValue: selectedTier || defaultProTier.key,
-            selectValues: PRO_PRODUCT_CONFIG.prices.map(price => ({
-                value: price.key,
-                label: price.description
-            })),
-            disableSelect: false,
-        };
-    };
-
-    const planData = getPlanData();
+    }, [subscription?.price.key]);
 
     const buttonContent = () => {
         if (isCheckingOut) {
@@ -159,16 +132,15 @@ export const ProCard = ({
         >
             <motion.div className="p-6 flex flex-col h-full">
                 <div className="space-y-1">
-                    <h2 className="text-title2">{planData.name}</h2>
-                    <p className="text-foreground-onlook text-largePlus">{planData.price}</p>
+                    <h2 className="text-title2">{t(transKeys.pricing.plans.pro.name)}</h2>
+                    <p className="text-foreground-onlook text-largePlus">{formatPrice(selectedTierData?.cost ?? 0)}</p>
                 </div>
                 <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
-                <p className="text-foreground-primary text-title3 text-balance">{planData.description}</p>
+                <p className="text-foreground-primary text-title3 text-balance">{t(transKeys.pricing.plans.pro.description)}</p>
                 <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
                 <div className="flex flex-col gap-2 mb-6">
                     <Select
-                        value={planData.defaultSelectValue}
-                        disabled={planData.disableSelect}
+                        value={selectedTier}
                         onValueChange={(value) => setSelectedTier(value as PriceKey)}
                     >
                         <SelectTrigger className="w-full">
@@ -176,9 +148,9 @@ export const ProCard = ({
                         </SelectTrigger>
                         <SelectContent className="z-99">
                             <SelectGroup>
-                                {planData.selectValues.map((value) => (
-                                    <SelectItem key={value.value} value={value.value}>
-                                        {value.label}
+                                {PRO_PRODUCT_CONFIG.prices.map((value) => (
+                                    <SelectItem key={value.key} value={value.key}>
+                                        {value.description}
                                     </SelectItem>
                                 ))}
                             </SelectGroup>
@@ -187,13 +159,13 @@ export const ProCard = ({
                     <Button
                         className="w-full"
                         onClick={handleCheckout}
-                        disabled={isCheckingOut}
+                        disabled={isCheckingOut || !isNewTierSelected}
                     >
                         {buttonContent()}
                     </Button>
                 </div>
                 <div className="flex flex-col gap-2 h-42">
-                    {planData.features.map((feature, i) => (
+                    {PRO_FEATURES.map((feature) => (
                         <div
                             key={feature}
                             className="flex items-center gap-3 text-sm text-foreground-secondary/80"

@@ -70,12 +70,12 @@ export const subscriptionRouter = createTRPCRouter({
         return session;
     }),
     update: protectedProcedure.input(z.object({
-        subscriptionId: z.string(),
-        priceId: z.string(),
+        stripeSubscriptionId: z.string(),
+        stripePriceId: z.string(),
     })).mutation(async ({ input }) => {
-        const { subscriptionId, priceId } = input;
+        const { stripeSubscriptionId, stripePriceId } = input;
         const subscription = await db.query.subscriptions.findFirst({
-            where: eq(subscriptions.stripeSubscriptionId, subscriptionId),
+            where: eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId),
         });
 
         if (!subscription) {
@@ -83,9 +83,23 @@ export const subscriptionRouter = createTRPCRouter({
         }
 
         const updatedSubscription = await updateSubscription({
-            subscriptionId,
-            priceId,
+            subscriptionId: stripeSubscriptionId,
+            priceId: stripePriceId,
         });
+
+        const price = await db.query.prices.findFirst({
+            where: eq(prices.stripePriceId, stripePriceId),
+        });
+
+        if (!price) {
+            throw new Error(`Price not found for priceId: ${stripePriceId}`);
+        }
+
+        await db.update(subscriptions).set({
+            priceId: price.id,
+            status: 'active',
+            updatedAt: new Date(),
+        }).where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId)).returning();
 
         return updatedSubscription;
     }),

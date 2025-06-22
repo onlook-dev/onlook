@@ -143,6 +143,9 @@ export const updateSubscription = async ({
 }) => {
     const stripe = createStripeClient();
     return await stripe.subscriptions.update(subscriptionId, {
-        items: [{ price: priceId }],
+        items: [{
+            id: subscriptionId,
+            price: priceId,
+        }],
     });
 }

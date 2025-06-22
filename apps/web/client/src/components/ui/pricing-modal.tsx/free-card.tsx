@@ -60,7 +60,6 @@ export const FreeCard = ({
     };
 
     const buttonContent = () => {
-        console.log('subscription', subscription);
         if (isCheckingOut) {
             return (
                 <div className="flex items-center gap-2">

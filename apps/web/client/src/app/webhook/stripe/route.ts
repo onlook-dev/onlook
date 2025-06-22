@@ -26,7 +26,7 @@ export async function POST(request: Request) {
         case 'checkout.session.completed': {
             return await handleCheckoutSessionCompleted(event, stripe);
         }
-        // Handle cancellation
+        // Fires when the subscription expires, not when the user cancels it
         case 'customer.subscription.deleted': {
             return await handleSubscriptionDeleted(event);
         }

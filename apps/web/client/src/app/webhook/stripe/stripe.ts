@@ -64,13 +64,11 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
 }
 
 export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSubscriptionDeletedEvent) => {
-    const session = receivedEvent.data.object
-
+    const subscriptionId = receivedEvent.data.object.id
     const res = await db.update(subscriptions).set({
         status: 'canceled',
         endedAt: new Date(),
-    }).where(eq(subscriptions.stripeSubscriptionId, session.id))
-
+    }).where(eq(subscriptions.stripeSubscriptionId, subscriptionId))
     console.log("Subscription cancelled: ", res)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
