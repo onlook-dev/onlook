@@ -1,3 +1,4 @@
+import { Routes } from '@/utils/constants';
 import { prices, subscriptions, toSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { createBillingPortalSession, createCheckoutSession, PriceKey, updateSubscription } from '@onlook/stripe';
@@ -44,8 +45,8 @@ export const subscriptionRouter = createTRPCRouter({
         const session = await createCheckoutSession({
             priceId: input.priceId,
             userId: user.id,
-            successUrl: `${originUrl}/subscription/success`,
-            cancelUrl: `${originUrl}/subscription/cancel`,
+            successUrl: `${originUrl}${Routes.CALLBACK_STRIPE_SUCCESS}`,
+            cancelUrl: `${originUrl}${Routes.CALLBACK_STRIPE_CANCEL}`,
         });
 
         return session;

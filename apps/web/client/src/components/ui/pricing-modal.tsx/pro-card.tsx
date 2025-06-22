@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { toast } from '@onlook/ui/sonner';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month`;
 
@@ -33,6 +33,10 @@ export const ProCard = ({
 
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [selectedTier, setSelectedTier] = useState<PriceKey>(PriceKey.PRO_MONTHLY_TIER_1);
+    const [isPollingForSubscription, setIsPollingForSubscription] = useState(false);
+    const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const pollingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
     const selectedTierData = PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier);
 
     const isPro = subscription?.product.type === ProductType.PRO;
@@ -50,17 +54,58 @@ export const ProCard = ({
         }
     };
 
+    const startPollingForSubscription = () => {
+        setIsPollingForSubscription(true);
+
+        // Clear any existing intervals
+        if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+        }
+        if (pollingTimeoutRef.current) {
+            clearTimeout(pollingTimeoutRef.current);
+        }
+
+        // Start polling every 3 seconds
+        pollingIntervalRef.current = setInterval(() => {
+            refetchSubscription();
+        }, 3000);
+
+        // Stop polling after 5 minutes (300 seconds) as a safety timeout
+        pollingTimeoutRef.current = setTimeout(() => {
+            stopPollingForSubscription();
+            toast.info('Subscription check timed out', {
+                description: 'Please refresh the page to see your updated subscription status.',
+            });
+        }, 300000);
+    };
+
+    const stopPollingForSubscription = () => {
+        setIsPollingForSubscription(false);
+
+        if (pollingIntervalRef.current) {
+            clearInterval(pollingIntervalRef.current);
+            pollingIntervalRef.current = null;
+        }
+        if (pollingTimeoutRef.current) {
+            clearTimeout(pollingTimeoutRef.current);
+            pollingTimeoutRef.current = null;
+        }
+    };
+
     const createCheckoutSession = async () => {
         try {
             setIsCheckingOut(true);
             const stripePriceId = await getPriceId({ priceKey: selectedTier as PriceKey });
             const session = await checkout({ priceId: stripePriceId });
 
-            if (session?.url) {
-                window.open(session.url, '_blank');
-            } else {
+            if (!session?.url) {
                 throw new Error('No checkout URL received');
             }
+
+            window.open(session.url, '_blank');
+            // Start polling for the subscription to be updated every 3 seconds
+            startPollingForSubscription();
+
         } catch (error) {
             toast.error(t('pricing.toasts.error.title'), {
                 description: error instanceof Error ? error.message : 'Unknown error',
@@ -100,18 +145,39 @@ export const ProCard = ({
         }
     };
 
+    // Stop polling when subscription becomes pro (payment successful)
+    useEffect(() => {
+        if (isPro && isPollingForSubscription) {
+            stopPollingForSubscription();
+            toast.success('Subscription activated successfully!');
+        }
+    }, [isPro, isPollingForSubscription]);
+
+    // Set selected tier based on current subscription
     useEffect(() => {
         if (subscription?.price.key) {
             setSelectedTier(subscription.price.key);
         }
     }, [subscription?.price.key]);
 
+    // Cleanup polling on component unmount
+    useEffect(() => {
+        return () => {
+            stopPollingForSubscription();
+        };
+    }, []);
+
     const buttonContent = () => {
-        if (isCheckingOut) {
+        if (isCheckingOut || isPollingForSubscription) {
             return (
                 <div className="flex items-center gap-2">
                     <Icons.Shadow className="w-4 h-4 animate-spin" />
-                    <span>{t(transKeys.pricing.loading.checkingPayment)}</span>
+                    <span>
+                        {isPollingForSubscription
+                            ? 'Waiting for payment...'
+                            : t(transKeys.pricing.loading.checkingPayment)
+                        }
+                    </span>
                 </div>
             )
         }

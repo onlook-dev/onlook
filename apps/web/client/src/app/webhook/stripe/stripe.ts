@@ -16,7 +16,7 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
     const expandedSession = await stripe.checkout.sessions.retrieve(
         session.id,
         {
-            expand: ['line_items'],
+            expand: ['line_items', 'subscription'],
         }
     );
 
@@ -37,12 +37,14 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         throw new Error('No customer ID found')
     }
 
-    const subscriptionId = session.subscription?.toString()
+    const expandedSubscription = await stripe.subscriptions.retrieve(session.subscription as string, {
+        expand: ['items'],
+    })
+    const subscriptionId = expandedSubscription.id
     if (!subscriptionId) {
         throw new Error('No subscription ID found')
     }
-
-    const subscriptionItemId = expandedSession.line_items?.data[0]?.id
+    const subscriptionItemId = expandedSubscription.items.data[0]?.id
     if (!subscriptionItemId) {
         throw new Error('No subscription item ID found')
     }
