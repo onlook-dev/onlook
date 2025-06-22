@@ -79,7 +79,11 @@ export const ProCard = ({
 
             setIsCheckingOut(true);
             const stripePriceId = await getPriceId({ priceKey: selectedTier as PriceKey });
-            const res = await updateSubscription({ stripePriceId, stripeSubscriptionId: subscription.stripeSubscriptionId });
+            const res = await updateSubscription({
+                stripePriceId,
+                stripeSubscriptionId: subscription.stripeSubscriptionId,
+                stripeSubscriptionItemId: subscription.stripeSubscriptionItemId,
+            });
 
             if (!res) {
                 throw new Error('No response from update subscription');

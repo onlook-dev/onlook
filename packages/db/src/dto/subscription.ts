@@ -11,6 +11,7 @@ export function toSubscription(subscription: DbSubscription & { product: DbProdu
         price: toPrice(subscription.price),
         stripeSubscriptionId: subscription.stripeSubscriptionId,
         stripeCustomerId: subscription.stripeCustomerId,
+        stripeSubscriptionItemId: subscription.stripeSubscriptionItemId,
     };
 }
 

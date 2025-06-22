@@ -27,5 +27,6 @@ export interface Subscription {
     product: Product;
     price: Price;
     stripeSubscriptionId: string;
+    stripeSubscriptionItemId: string;
     stripeCustomerId: string;
 }

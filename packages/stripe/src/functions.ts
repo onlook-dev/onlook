@@ -136,16 +136,19 @@ export const createBillingPortalSession = async ({
 
 export const updateSubscription = async ({
     subscriptionId,
+    subscriptionItemId,
     priceId,
 }: {
     subscriptionId: string;
+    subscriptionItemId: string;
     priceId: string;
 }) => {
     const stripe = createStripeClient();
     return await stripe.subscriptions.update(subscriptionId, {
         items: [{
-            id: subscriptionId,
+            id: subscriptionItemId,
             price: priceId,
         }],
+        proration_behavior: 'create_prorations',
     });
 }

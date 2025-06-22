@@ -21,7 +21,8 @@ export const subscriptions = pgTable('subscriptions', {
 
     // Stripe
     stripeCustomerId: text('stripe_customer_id').notNull(),
-    stripeSubscriptionId: text('stripe_subscription_id').notNull().unique(),
+    stripeSubscriptionId: text('stripe_subscription_id').notNull(),
+    stripeSubscriptionItemId: text('stripe_subscription_item_id').notNull().unique(),
 }).enableRLS();
 
 export const subscriptionRelations = relations(subscriptions, ({ one, many }) => ({

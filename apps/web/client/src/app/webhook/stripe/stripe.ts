@@ -7,10 +7,6 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
     const session = receivedEvent.data.object
 
     console.log('Checkout session completed: ', session)
-    const subscriptionId = session.subscription?.toString()
-    if (!subscriptionId) {
-        throw new Error('No subscription ID found')
-    }
 
     const userId = session.metadata?.user_id
     if (!userId) {
@@ -41,22 +37,34 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         throw new Error('No customer ID found')
     }
 
+    const subscriptionId = session.subscription?.toString()
+    if (!subscriptionId) {
+        throw new Error('No subscription ID found')
+    }
+
+    const subscriptionItemId = expandedSession.line_items?.data[0]?.id
+    if (!subscriptionItemId) {
+        throw new Error('No subscription item ID found')
+    }
+
     // Update or create subscription
     const [data] = await db.insert(subscriptions).values({
         userId: userId,
         priceId: price.id,
         productId: price.productId,
         status: 'active',
-        stripeSubscriptionId: subscriptionId,
         stripeCustomerId: customerId,
+        stripeSubscriptionId: subscriptionId,
+        stripeSubscriptionItemId: subscriptionItemId,
     }).onConflictDoUpdate({
-        target: [subscriptions.stripeSubscriptionId],
+        target: [subscriptions.stripeSubscriptionItemId],
         set: {
-            stripeSubscriptionId: subscriptionId,
             priceId: price.id,
             productId: price.productId,
             status: 'active',
             updatedAt: new Date(),
+            stripeSubscriptionId: subscriptionId,
+            stripeSubscriptionItemId: subscriptionItemId,
         }
     }).returning()
 
@@ -66,10 +74,19 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
 
 export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSubscriptionDeletedEvent) => {
     const subscriptionId = receivedEvent.data.object.id
+    if (!subscriptionId) {
+        throw new Error('No subscription ID found')
+    }
+
+    const subscriptionItemId = receivedEvent.data.object.items.data[0]?.id
+    if (!subscriptionItemId) {
+        throw new Error('No subscription item ID found')
+    }
+
     const res = await db.update(subscriptions).set({
         status: 'canceled',
         endedAt: new Date(),
-    }).where(eq(subscriptions.stripeSubscriptionId, subscriptionId))
+    }).where(eq(subscriptions.stripeSubscriptionItemId, subscriptionItemId))
 
     console.log("Subscription cancelled: ", res)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
