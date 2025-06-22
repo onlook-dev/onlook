@@ -91,3 +91,17 @@ export const createCheckoutSession = async ({
     });
     return session;
 };
+
+export const createBillingPortalSession = async ({
+    customerId,
+    returnUrl,
+}: {
+    customerId: string;
+    returnUrl: string;
+}) => {
+    const stripe = createStripeClient();
+    return await stripe.billingPortal.sessions.create({
+        customer: customerId,
+        return_url: returnUrl,
+    });
+}

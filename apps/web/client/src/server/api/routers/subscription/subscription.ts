@@ -1,6 +1,6 @@
 import { prices, subscriptions, toSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { createCheckoutSession, PriceKey } from '@onlook/stripe';
+import { createBillingPortalSession, createCheckoutSession, PriceKey } from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -39,7 +39,6 @@ export const subscriptionRouter = createTRPCRouter({
     checkout: protectedProcedure.input(z.object({
         priceId: z.string(),
     })).mutation(async ({ ctx, input }) => {
-        // TODO: Origin URL
         const originUrl = (await headers()).get('origin');
         const user = ctx.user;
         const session = await createCheckoutSession({
@@ -47,6 +46,25 @@ export const subscriptionRouter = createTRPCRouter({
             userId: user.id,
             successUrl: `${originUrl}/subscription/success`,
             cancelUrl: `${originUrl}/subscription/cancel`,
+        });
+
+        return session;
+    }),
+    manageSubscription: protectedProcedure.mutation(async ({ ctx }) => {
+        const user = ctx.user;
+        const subscription = await db.query.subscriptions.findFirst({
+            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
+        });
+
+        if (!subscription) {
+            throw new Error('No active subscription found for user');
+        }
+
+        const originUrl = (await headers()).get('origin');
+
+        const session = await createBillingPortalSession({
+            customerId: subscription.stripeCustomerId,
+            returnUrl: `${originUrl}/subscription/manage`,
         });
 
         return session;

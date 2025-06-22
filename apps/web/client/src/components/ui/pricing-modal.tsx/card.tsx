@@ -48,7 +48,7 @@ export const PricingCard = ({
 }: {
     planType: 'free' | 'pro';
     buttonText: string;
-    onCheckout: (priceKey: string) => void;
+    onCheckout: (priceKey?: string) => void;
     disabled: boolean;
     delay: number;
     isLoading?: boolean;
@@ -111,6 +111,8 @@ export const PricingCard = ({
             }
             const currentTier = selectedTier || defaultProTier.key;
             onCheckout(currentTier);
+        } else {
+            onCheckout();
         }
     };
 
