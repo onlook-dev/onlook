@@ -1,7 +1,7 @@
-import { env } from '@/env'
-import { createStripeClient } from '@onlook/stripe'
-import Stripe from 'stripe'
-import { handleCheckoutSessionCompleted, handleSubscriptionDeleted } from './stripe'
+import { env } from '@/env';
+import { createStripeClient } from '@onlook/stripe';
+import Stripe from 'stripe';
+import { handleCheckoutSessionCompleted, handleSubscriptionDeleted } from './stripe';
 
 export async function POST(request: Request) {
     const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
