@@ -18,6 +18,13 @@ export class UserManager {
         this.settings = new UserSettingsManager(this);
         this.subscription = new SubscriptionManager(this);
         this.fetchUser();
+        this.supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                this.user = this.fromAuthUser(session.user);
+            } else {
+                this.user = null;
+            }
+        });
     }
 
     async fetchUser() {
