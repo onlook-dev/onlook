@@ -93,3 +93,37 @@ export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSu
     console.log("Subscription cancelled: ", res)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
+
+export const handleInvoicePaid = async (receivedEvent: Stripe.InvoicePaidEvent) => {
+    const invoice = receivedEvent.data.object
+    if (invoice.parent?.type !== 'subscription_details') {
+        throw new Error('Invoice is not a subscription details')
+    }
+
+    const stripeSubscriptionId = invoice.parent.subscription_details?.subscription.toString()
+    if (!stripeSubscriptionId) {
+        throw new Error('No subscription ID found')
+    }
+
+    const sub = await db.query.subscriptions.findFirst({
+        where: eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId),
+    });
+
+    if (!sub) {
+        throw new Error('Subscription not found')
+    }
+
+    const newPrice = await db.query.prices.findFirst({
+        where: eq(prices.id, sub.scheduledPriceId!),
+    });
+
+    if (!newPrice) throw new Error('Scheduled price not found');
+
+    // Update the subscription to the new price
+    await db.update(subscriptions).set({
+        priceId: newPrice.id,
+        scheduledPriceId: null,
+        scheduledChangeAt: null,
+        updatedAt: new Date(),
+    }).where(eq(subscriptions.id, sub.id));
+}

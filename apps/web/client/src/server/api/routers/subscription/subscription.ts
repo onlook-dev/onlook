@@ -81,31 +81,41 @@ export const subscriptionRouter = createTRPCRouter({
                 eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId),
                 eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId),
             ),
+            with: {
+                price: true,
+            },
         });
 
         if (!subscription) {
             throw new Error('Subscription not found');
         }
 
+        const currentPrice = subscription.price;
+        const newPrice = await db.query.prices.findFirst({
+            where: eq(prices.stripePriceId, stripePriceId),
+        });
+
+        if (!newPrice) {
+            throw new Error(`Price not found for priceId: ${stripePriceId}`);
+        }
+
+        // If the new price is higher, we invoice the customer immediately.
+        // If the new price is lower, we create prorations.
+        const isUpgrade = newPrice?.monthlyMessageLimit > currentPrice.monthlyMessageLimit;
+
         const updatedSubscription = await updateSubscription({
             subscriptionId: stripeSubscriptionId,
             subscriptionItemId: stripeSubscriptionItemId,
             priceId: stripePriceId,
+            invoiceNow: isUpgrade,
         });
-
-        const price = await db.query.prices.findFirst({
-            where: eq(prices.stripePriceId, stripePriceId),
-        });
-
-        if (!price) {
-            throw new Error(`Price not found for priceId: ${stripePriceId}`);
-        }
 
         await db.update(subscriptions).set({
-            priceId: price.id,
+            priceId: newPrice.id,
             status: 'active',
             updatedAt: new Date(),
         }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
+
 
         return updatedSubscription;
     }),

@@ -23,6 +23,11 @@ export const subscriptions = pgTable('subscriptions', {
     stripeCustomerId: text('stripe_customer_id').notNull(),
     stripeSubscriptionId: text('stripe_subscription_id').notNull(),
     stripeSubscriptionItemId: text('stripe_subscription_item_id').notNull().unique(),
+
+    // Scheduled price change
+    scheduledPriceId: uuid('scheduled_price_id').references(() => prices.id),
+    scheduledChangeAt: timestamp('scheduled_change_at', { withTimezone: true }),
+    scheduledChangeStatus: text('scheduled_change_status', { enum: ['active', 'canceled'] }).notNull().default('active'),
 }).enableRLS();
 
 export const subscriptionRelations = relations(subscriptions, ({ one, many }) => ({

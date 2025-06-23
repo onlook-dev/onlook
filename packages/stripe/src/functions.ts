@@ -138,10 +138,12 @@ export const updateSubscription = async ({
     subscriptionId,
     subscriptionItemId,
     priceId,
+    invoiceNow = false,
 }: {
     subscriptionId: string;
     subscriptionItemId: string;
     priceId: string;
+    invoiceNow?: boolean;
 }) => {
     const stripe = createStripeClient();
     return await stripe.subscriptions.update(subscriptionId, {
@@ -149,7 +151,6 @@ export const updateSubscription = async ({
             id: subscriptionItemId,
             price: priceId,
         }],
-        proration_behavior: 'always_invoice',
-        proration_date: Math.floor(Date.now() / 1000),
+        proration_behavior: invoiceNow ? 'always_invoice' : 'create_prorations',
     });
 }
