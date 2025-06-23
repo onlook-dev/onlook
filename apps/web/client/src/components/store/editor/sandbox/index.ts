@@ -69,9 +69,9 @@ export class SandboxManager {
             // Track image files first
             if (imageFiles.length > 0) {
                 timer.log(`Tracking ${imageFiles.length} image files`);
-                for (const imagePath of imageFiles) {
-                    const normalizedPath = normalizePath(imagePath);
-                    this.fileSync.trackBinaryFile(normalizedPath);
+                for (let i = 0; i < imageFiles.length; i += BATCH_SIZE) {
+                    const batch = imageFiles.slice(i, i + BATCH_SIZE);
+                    await this.fileSync.trackBinaryFilesBatch(batch);
                 }
             }
             
@@ -425,7 +425,7 @@ export class SandboxManager {
                 await this.fileSync.delete(normalizedPath);
             } else if (eventType === 'change' || eventType === 'add') {
                 if (isImageFile(normalizedPath)) {
-                    this.fileSync.trackBinaryFile(normalizedPath);
+                    await this.fileSync.trackBinaryFile(normalizedPath);
                 } else {
                     const content = await this.readRemoteFile(normalizedPath);
                     if (content === null) {

@@ -23,10 +23,10 @@ export class FileSyncManager {
     }
 
     // Track binary file path without reading content (using empty placeholder)
-    trackBinaryFile(filePath: string) {        
+    async trackBinaryFile(filePath: string) {        
         if (!this.hasBinary(filePath)) {
             this.binaryCache.set(filePath, new Uint8Array(0)); 
-            this.saveToLocalStorage();
+            await this.saveToLocalStorage();
         }
     }
 
@@ -298,7 +298,7 @@ export class FileSyncManager {
     /**
      * Track multiple binary files at once
      */
-    trackBinaryFilesBatch(filePaths: string[]): void {
+    async trackBinaryFilesBatch(filePaths: string[]): Promise<void> {
         let hasChanges = false;
         
         for (const filePath of filePaths) {
@@ -309,7 +309,7 @@ export class FileSyncManager {
         }
         
         if (hasChanges) {
-            this.saveToLocalStorage();
+            await this.saveToLocalStorage();
         }
     }
 }
