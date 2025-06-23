@@ -7,21 +7,21 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
+import { cn } from "@onlook/ui/utils";
+import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
-import { observer } from "mobx-react-lite";
-import { cn } from "@onlook/utils/cn";
 
 export const Margin = observer(() => {
     const [activeTab, setActiveTab] = useState("all");
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('margin');
-    
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'margin-dropdown' 
+
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'margin-dropdown'
     });
     const getMarginIcon = () => {
         const top = boxState.marginTop.num ?? 0;
@@ -70,7 +70,7 @@ export const Margin = observer(() => {
 
         // Get all non-zero values
         const nonZeroValues = [top, right, bottom, left].filter(val => val !== 0);
-        
+
         // If all non-zero values are the same
         if (nonZeroValues.length > 0 && nonZeroValues.every(val => val === nonZeroValues[0])) {
             return boxState.margin.unit === 'px' ? `${nonZeroValues[0]}` : `${boxState.margin.value}`;
@@ -93,8 +93,8 @@ export const Margin = observer(() => {
                         size="toolbar"
                         className={cn(
                             "gap-1 flex cursor-pointer items-center border hover:border focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0",
-                            hasMargin 
-                                ? "bg-background-tertiary/20 text-white border-border" 
+                            hasMargin
+                                ? "bg-background-tertiary/20 text-white border-border"
                                 : "text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border hover:text-white",
                             "data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border data-[state=open]:text-white"
                         )}
