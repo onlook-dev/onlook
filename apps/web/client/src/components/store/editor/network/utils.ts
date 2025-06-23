@@ -6,38 +6,47 @@ export async function pingServer(config:NetworkConfig):Promise<PingResult>{
 
     try{
         const controller = new AbortController();
-        const timeoutId = setTimeout(()=>controller.abort(),config.timeoutDuration);
-        
-        const resp = await fetch(config.pingUrl,{
-            method:'GET',
-            signal:controller.signal,
-            mode: 'no-cors',
-            cache: 'no-store', 
-            headers: {
-                'Cache-Control': 'no-cache, no-store, must-revalidate',
-                'Pragma': 'no-cache'
+        const timeoutId = setTimeout(() => controller.abort(), config.timeoutDuration);
+
+        let resp: Response | undefined;
+
+        try {
+            resp = await fetch(config.pingUrl, {
+                method: 'GET',
+                signal: controller.signal,
+                mode: 'cors',
+                cache: 'no-store',
+                headers: {
+                    'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    'Pragma': 'no-cache',
+                },
+            });
+
+            if (!resp.ok) {
+                throw new Error(`Network response was not ok: ${resp.status}`);
             }
-        });
 
-        clearTimeout(timeoutId);
-        const endTime = performance.now();
-        const latency = endTime - startTime;
+            const endTime = performance.now();
+            const latency = endTime - startTime;
 
-        return {
-            success: true, 
-            latency,
-            timestamp:new Date(),
-        };
+            return {
+                success: true,
+                latency,
+                timestamp: new Date(),
+            };
+        } finally {
+            clearTimeout(timeoutId);
+        }
     }
     catch(error){
         const endTime = performance.now();
         const latency = endTime - startTime;
 
         return {
-            success:false,
+            success: false,
             latency,
-            error:error instanceof Error ? error.message : 'Error Pinging Server',
-            timestamp:new Date(),
+            error: error instanceof Error ? error.message : 'Error Pinging Server',
+            timestamp: new Date(),
         };
     }
 }

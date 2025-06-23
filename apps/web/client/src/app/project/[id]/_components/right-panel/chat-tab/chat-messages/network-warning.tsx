@@ -25,11 +25,16 @@ export const NetworkWarning = observer(() => {
     useEffect(() => {
         if (shouldShowWarning) {
             setIsVisible(true);
-            
-            if (maxAttemptsReached) {
-                const timer = setTimeout(() => setShowRetryButton(true), 500);
-                return () => clearTimeout(timer);
-            }
+
+            const timer = maxAttemptsReached
+                ? setTimeout(() => setShowRetryButton(true), 500)
+                : null;
+
+            // Always provide a cleanup so the timeout is cleared if the
+            // component unmounts while the banner is still visible.
+            return () => {
+                if (timer) clearTimeout(timer);
+            };
         } else {
             setIsVisible(false);
             setShowRetryButton(false);
