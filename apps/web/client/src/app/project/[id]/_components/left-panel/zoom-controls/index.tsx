@@ -123,7 +123,7 @@ export const ZoomControls = observer(() => {
                         className="w-full h-full flex items-center justify-center"
                         asChild
                     >
-                        <button className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-foreground hover:text-muted-foreground">
+                        <button className="w-16 h-10 rounded-xl text-small flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground">
                             <span>{Math.round(scale * 100)}%</span>
                         </button>
                     </PopoverTrigger>
