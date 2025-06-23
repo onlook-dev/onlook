@@ -181,39 +181,11 @@ export class ImageManager {
             if (imageFiles.length === 0) {
                 return;
             }
-
-            const imagePromises = imageFiles.map(async (filePath: string) => {
-                try {
-                    // Read the binary file
-                    const binaryData = await this.editorEngine.sandbox.readBinaryFile(filePath);
-                    if (!binaryData) {
-                        console.warn(`Failed to read binary data for ${filePath}`);
-                        return null;
-                    }
-
-                    // Determine MIME type based on file extension
-                    const mimeType = getMimeType(filePath);
-
-                    // Convert binary data to base64
-                    const base64Data = convertToBase64(binaryData);
-                    const content = `data:${mimeType};base64,${base64Data}`;
-
-                    return {
-                        originPath: filePath,
-                        content,
-                        fileName: getBaseName(filePath),
-                        mimeType,
-                    } as ImageContentData;
-                } catch (error) {
-                    console.error(`Error processing image ${filePath}:`, error);
-                    return null;
-                }
-            });
-
-            const results = await Promise.all(imagePromises);
-
-            this.images = results.filter((result): result is ImageContentData => result !== null)
-
+            
+            const imageContents = await this.readImagesContent(imageFiles);
+            
+            this.images = imageContents.filter((result): result is ImageContentData => result !== null)
+            
         } catch (error) {
             console.error('Error scanning images:', error);
             this.images = [];
@@ -224,5 +196,67 @@ export class ImageManager {
 
     clear() {
         this.images = [];
+    }
+
+    /**
+     * Read content of a single image file
+     */
+    async readImageContent(imagePath: string): Promise<ImageContentData | null> {
+        try {
+            // Validate if the file is an image
+            if (!isImageFile(imagePath)) {
+                console.warn(`File ${imagePath} is not a valid image file`);
+                return null;
+            }
+
+            // Read the binary file using the sandbox
+            const binaryData = await this.editorEngine.sandbox.readBinaryFile(imagePath);
+            if (!binaryData) {
+                console.warn(`Failed to read binary data for ${imagePath}`);
+                return null;
+            }
+
+            // Determine MIME type based on file extension
+            const mimeType = getMimeType(imagePath);
+
+            // Convert binary data to base64
+            const base64Data = convertToBase64(binaryData);
+            const content = `data:${mimeType};base64,${base64Data}`;
+
+            return {
+                originPath: imagePath,
+                content,
+                fileName: getBaseName(imagePath),
+                mimeType,
+            } as ImageContentData;
+        } catch (error) {
+            console.error(`Error reading image content for ${imagePath}:`, error);
+            return null;
+        }
+    }
+
+    /**
+     * Read content of multiple image files in parallel
+     */
+    async readImagesContent(imagePaths: string[]): Promise<ImageContentData[]> {
+        if (!imagePaths.length) {
+            return [];
+        }
+
+        try {
+            console.log('Reading content for images:', imagePaths);
+
+            // Process all images in parallel
+            const imagePromises = imagePaths.map(path => this.readImageContent(path));
+            const results = await Promise.all(imagePromises);
+
+            // Filter out null results
+            const validImages = results.filter((result): result is ImageContentData => result !== null);
+
+            return validImages;
+        } catch (error) {
+            console.error('Error reading images content:', error);
+            return [];
+        }
     }
 }
