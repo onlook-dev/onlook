@@ -1,3 +1,5 @@
+'use client';
+
 import { Icons } from '@onlook/ui/icons/index';
 import { useRouter } from 'next/navigation';
 
@@ -19,7 +21,7 @@ export function Footer() {
                     <div>
                         <h4 className="text-regularPlus mb-4 text-foreground-primary">Company</h4>
                         <ul className="flex flex-col gap-4 text-regular text-foreground-secondary">
-                            {/* <li><a href="#" className="hover:underline">About</a></li> */}
+                            <li><a href="/about" className="hover:underline">About</a></li>
                             <li><a href="https://docs.onlook.com" target="_blank" className="hover:underline">Docs</a></li>
                             {/* <li><a href="/faq" className="hover:underline">FAQ</a></li> */}
                             <li><a href="https://onlook.substack.com" target="_blank" className="hover:underline">Blog</a></li>
@@ -37,10 +39,10 @@ export function Footer() {
                     <div>
                         <h4 className="text-regularPlus mb-4 text-foreground-primary">Follow Us</h4>
                         <div className="flex gap-6 mt-2">
-                            <a href="https://github.com" target="_blank" rel="noopener noreferrer">
+                            <a href="https://github.com/onlook-dev/onlook" target="_blank" rel="noopener noreferrer">
                                 <Icons.GitHubLogo className="w-6 h-6 text-white hover:text-white/70 transition-colors" />
                             </a>
-                            <a href="https://discord.com" target="_blank" rel="noopener noreferrer">
+                            <a href="https://discord.gg/ZZzadNQtns" target="_blank" rel="noopener noreferrer">
                                 <Icons.DiscordLogo className="w-6 h-6 text-white hover:text-white/70 transition-colors" />
                             </a>
                         </div>

@@ -2,12 +2,14 @@ import { Icons } from '@onlook/ui/icons';
 import { MockLayersTab } from './mock-layers-tab';
 import { ColorSwatchGroup } from './color-swatch-group';
 import { DirectEditingBlock } from './feature-blocks/direct-editing';
+import { RevisionHistory } from './feature-blocks/revision-history';
+import { ResponsiveWebsiteBlock } from './feature-blocks/responsive-website';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 function VersionRow({ title, subtitle, children, selected, onClick }: { title: string, subtitle: string, children?: React.ReactNode, selected?: boolean, onClick?: () => void }) {
     return (
         <div
-            className={`flex flex-row items-center justify-between px-4 py-3 cursor-pointer transition-colors rounded ${selected ? 'bg-background-onlook/90' : 'bg-transparent'} hover:bg-background-onlook/90`}
+            className={`flex flex-row items-center justify-between px-4 py-3 cursor-pointer transition-colors ${selected ? 'bg-background-onlook/90' : 'bg-transparent'} hover:bg-background-onlook/90`}
             onClick={onClick}
         >
             <div>
@@ -76,6 +78,7 @@ function ParallaxContainer({ children, speed = 0.1 }: { children: React.ReactNod
 export function WhatCanOnlookDoSection() {
     // Carousel state for Demo Sites
     const [selectedVersionIdx, setSelectedVersionIdx] = useState(0);
+    const [displayedImageIdx, setDisplayedImageIdx] = useState(0); // New state for delayed image display
     const [isAnimating, setIsAnimating] = useState(false);
     const [isFading, setIsFading] = useState(false);
     const [selectedElement, setSelectedElement] = useState<string | null>('text2');
@@ -92,8 +95,8 @@ export function WhatCanOnlookDoSection() {
     const demoImages = [
         '/assets/site-version-1.png',
         '/assets/site-version-2.png',
-        null,
-        null,
+        '/assets/site-version-3.png',
+        '/assets/site-version-4.png',
     ];
     // Version data for Today section
     const todayVersions = [
@@ -110,6 +113,15 @@ export function WhatCanOnlookDoSection() {
             setIsAnimating(false);
             setIsFading(false);
         }, 200);
+        return () => clearTimeout(timer);
+    }, [selectedVersionIdx]);
+
+    // Delayed image update effect
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDisplayedImageIdx(selectedVersionIdx);
+        }, 230); // 0.23 second delay
+        
         return () => clearTimeout(timer);
     }, [selectedVersionIdx]);
 
@@ -451,95 +463,8 @@ export function WhatCanOnlookDoSection() {
                         <p className="text-foreground-secondary text-regular text-balance w-1/2">Make your fonts, colors, and styles all speak the same language.</p>
                     </div>
                 </div>
-                {/* Instantly responsive */}
-                <div className="flex flex-col gap-4">
-                    <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 overflow-hidden">
-                        
-                        <div className="w-100 h-80 bg-background-secondary left-[1/2] right-[1/2] top-12 rounded-lg border-[0.5px] border-foreground-secondary/30">
-                            <div className="w-100% h-6 bg-white mx-4 mt-1 rounded-full shadow-lg shadow-white text-[10px] flex flex-row justify-between p-1 px-3.5">
-                                    <p className="text-blue-300">UltraAssistant</p>
-                                    <p className="text-blue-300">Learn</p>
-                                    <p className="text-blue-300">Get started</p>
-                            </div>
-                            <div className="w-full h-32 bg-red-500">
-                                <div className="w-1/2 h-24 bg-white relative top-24 p-5 text-[12px] text-red-500">
-                                    <p>Your AI code assistant</p>
-                                </div>
-                            </div>
-                            <div className="w-full h-50 bg-gray-200/20 pt-20 flex flex-col gap-4 text-center justify-center">
-                                <p className="text-[10px]">Never worry about the code again</p>
-                                <div className="w-100% h-32 mx-12 flex flex-row gap-2">
-                                    <div className="w-full bg-gray-200 h-20 p-2" />
-                                    <div className="w-full bg-gray-200 h-20 p-2" />
-                                    <div className="w-full bg-gray-200 h-20 p-2" />
-                                </div>
-                            </div>
-                                <div className="w-1.5 h-20 bg-foreground-secondary absolute left-[-16] top-1/3 bottom-1/4 rounded" />
-                                <div className="w-1.5 h-20 bg-foreground-secondary absolute right-[-16] top-1/3 bottom-1/4 rounded" />
-                        </div>
-                    </div>
-                    <div className="flex flex-row items-start gap-8 w-full">
-                        {/* Icon + Title */}
-                        <div className="flex flex-col items-start w-1/2">
-                            <div className="mb-2"><Icons.Laptop className="w-6 h-6 text-foreground-primary" /></div>
-                            <span className="text-foreground-primary text-largePlus font-light">Instantly responsive</span>
-                        </div>
-                        {/* Description */}
-                        <p className="text-foreground-secondary text-regular text-balance w-1/2">Craft sites that look great on laptops, tablets, and phones with minimal adjustments.</p>
-                    </div>
-                </div>
-                {/* Revision history */}
-                <div className="flex flex-col gap-4">
-                <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
-                    {/* Versions mockup */}
-                    <div className="w-100 h-100 rounded-xl overflow-hidden absolute right-[-150px] top-10 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20 shadow-lg z-50">
-                        <p className="text-foreground-primary text-regular font-light w-full text-left px-4 py-3 border-b-[0.5px] border-foreground-primary/20">Versions</p>
-                        <div className="w-full h-full overflow-y-auto px-0 py-2 flex flex-col gap-2">
-                            {/* Today */}
-                            <div className="text-foreground-secondary text-xs mt-1 px-4">Today</div>
-                            <div className="flex flex-col gap-0 mb-2 border-b-[0.5px] border-foreground-primary/20 pb-2">
-                                {todayVersions.map((v, idx) => (
-                                    <VersionRow
-                                        key={v.title}
-                                        title={v.title}
-                                        subtitle={v.subtitle}
-                                        selected={selectedVersionIdx === idx}
-                                        onClick={() => handleVersionSelect(idx)}
-                                    />
-                                ))}
-                            </div>
-                            {/* Yesterday */}
-                            <div className="text-foreground-secondary text-xs mt-2 px-4">Yesterday</div>
-                            <div className="flex flex-col gap-1 mb-2">
-                                <VersionRow title="Save before publishing to kerbz.co.uk" subtitle="Onlook · 12:09 PM" />
-                            </div>
-                        </div>
-                    </div>
-                    {/* Demo Sites with image and color background */}
-                    <div 
-                        key={selectedVersionIdx}
-                        className={`w-100 h-100 rounded-sm overflow-hidden absolute left-7 top-20 flex flex-col items-center justify-start border-[0.5px] border-foreground-primary/20 shadow-lg z-10 transition-all duration-200 ease-in-out relative ${demoColors[selectedVersionIdx]} transform ${isAnimating ? 'scale-95' : 'scale-100'} ${isFading ? 'opacity-50' : 'opacity-100'}`}
-                    >
-                        {demoImages[selectedVersionIdx] && (
-                            <img
-                                src={demoImages[selectedVersionIdx]}
-                                alt="Site version preview"
-                                className={`absolute inset-0 w-full h-full object-cover transition-all duration-200 ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'}`}
-                                style={{ zIndex: 2 }}
-                            />
-                        )}
-                    </div>
-                </div>
-                    <div className="flex flex-row items-start gap-8 w-full">
-                        {/* Icon + Title */}
-                        <div className="flex flex-col items-start w-1/2">
-                            <div className="mb-2"><Icons.CounterClockwiseClock className="w-6 h-6 text-foreground-primary" /></div>
-                            <span className="text-foreground-primary text-largePlus font-light">Revision history</span>
-                        </div>
-                        {/* Description */}
-                        <p className="text-foreground-secondary text-regular text-balance w-1/2">Never lose your progress – revert when you need to</p>
-                    </div>
-                </div>
+                <ResponsiveWebsiteBlock />
+                <RevisionHistory />
             </div>
         </div>
     );
