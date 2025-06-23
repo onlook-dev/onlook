@@ -10,6 +10,7 @@ import {
     isImageFile,
 } from '@onlook/utility/src/file';
 import { api } from '@/trpc/client';
+import { LeftPanelTabValue } from '@onlook/models/editor';
 
 export class ImageManager {
     private images: ImageContentData[] = [];
@@ -21,7 +22,7 @@ export class ImageManager {
         reaction(
             () => this.editorEngine.sandbox.isIndexingFiles,
             (isIndexingFiles) => {
-                if (!isIndexingFiles) {
+                if (!isIndexingFiles && this.editorEngine.state.leftPanelTab === LeftPanelTabValue.IMAGES) {
                     this.scanImages();
                 }
             }
@@ -82,7 +83,6 @@ export class ImageManager {
             const newPath = `${basePath}/${newName}`;
             await this.editorEngine.sandbox.copy(originPath, newPath);
             await this.editorEngine.sandbox.delete(originPath);
-            this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;
