@@ -1,6 +1,6 @@
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
-import type { Subscription } from '@onlook/stripe';
+import { ScheduledSubscriptionAction, type Subscription } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
@@ -38,6 +38,7 @@ export const FreeCard = ({
     const { mutateAsync: manageSubscription } = api.subscription.manageSubscription.useMutation();
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const isFree = !subscription;
+    const isScheduledCancellation = subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION;
 
     const handleManageSubscription = async () => {
         try {
@@ -67,6 +68,10 @@ export const FreeCard = ({
                     <span>{t(transKeys.pricing.loading.checkingPayment)}</span>
                 </div>
             )
+        }
+
+        if (isScheduledCancellation) {
+            return `Pro plan ends on ${subscription?.scheduledChange?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
         }
 
         if (isFree) {
@@ -113,7 +118,7 @@ export const FreeCard = ({
                         className="w-full"
                         variant="outline"
                         onClick={handleManageSubscription}
-                        disabled={isCheckingOut || isFree}
+                        disabled={isCheckingOut || isFree || isScheduledCancellation}
                     >
                         {buttonContent()}
                     </Button>

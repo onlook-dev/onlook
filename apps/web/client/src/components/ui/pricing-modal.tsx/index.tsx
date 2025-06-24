@@ -72,7 +72,6 @@ export const SubscriptionModal = observer(() => {
                                                     Your {subscription.scheduledChange.price.monthlyMessageLimit} messages a month plan starts on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                                 </div>
                                             )}
-                                            {JSON.stringify(subscription?.scheduledChange)}
                                             {subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION && (
                                                 <div className="text-foreground-secondary/80 text-balance">
                                                     Your subscription will be cancelled on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
