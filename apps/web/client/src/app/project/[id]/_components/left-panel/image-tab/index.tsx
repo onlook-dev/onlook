@@ -23,14 +23,6 @@ const ImagesTabContent = observer(() => {
     const {
         renameState
     } = renameOperations;
-
-    const {
-        isDragging,
-        handleDrop,
-        handleDragOver,
-        handleDragEnter,
-        handleDragLeave,
-    } = useImageDragDrop();
     
 
     if (isIndexing) {
@@ -72,15 +64,9 @@ const ImagesTabContent = observer(() => {
                 {!isOperating && (
                     <div
                         className={cn(
-                            'flex-1 overflow-y-auto',
-                            '[&[data-dragging-image=true]]:bg-teal-500/40',
-                            isDragging && 'cursor-copy',
+                            'flex-1',
                             isOperating && 'pointer-events-none opacity-75',
                         )}
-                        onDrop={handleDrop}
-                        onDragOver={handleDragOver}
-                        onDragEnter={handleDragEnter}
-                        onDragLeave={handleDragLeave}
                     >
                         <Folder />
                     </div>

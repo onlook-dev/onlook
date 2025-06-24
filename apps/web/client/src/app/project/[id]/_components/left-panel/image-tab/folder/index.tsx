@@ -19,7 +19,7 @@ import FolderDeleteModal from '../folder-delete-modal';
 import FolderMoveModal from '../folder-move-modal';
 import FolderCreateModal from '../folder-create-modal';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
-
+import { isEqual } from 'lodash';
 
 interface FolderPathItem {
     folder: FolderNode;
@@ -95,10 +95,33 @@ export default function Folder() {
         }
     };
 
+    const findFolderInStructure = (folder: FolderNode, target: FolderNode): FolderNode | null => {
+        if (folder.fullPath === target.fullPath) {
+            return folder;
+        }
+        for (const child of folder.children.values()) {
+            const found = findFolderInStructure(child, target);
+            if (found) return found;
+        }
+        return null;
+    };
+
     useEffect(() => {
-        setCurrentFolder(folderStructure);
-        setFolderPath([]);
-    }, [folderStructure]);
+        if (currentFolder && currentFolder !== folderStructure) {
+            const updatedCurrentFolder = findFolderInStructure(folderStructure, currentFolder);
+
+            if (!updatedCurrentFolder) {
+                setCurrentFolder(folderStructure);
+                setFolderPath([]);
+            } else if (!isEqual(updatedCurrentFolder, currentFolder)) {
+                setCurrentFolder(updatedCurrentFolder);
+                loadFolderImages(updatedCurrentFolder);
+            }
+        } else {
+            setCurrentFolder(folderStructure);
+            setFolderPath([]);
+        }
+    }, [folderStructure, currentFolder, loadFolderImages]);
 
     useEffect(() => {
         if (currentFolder) {
@@ -123,10 +146,8 @@ export default function Folder() {
     const canGoBack = folderPath.length > 0 || currentFolder !== folderStructure;
     const isAnyOperationLoading = isOperating || isFolderOperating;
     const showCreateButton = currentFolder === folderStructure && currentFolder.children.size === 0;
-    console.log(currentFolder);
-    console.log(folderStructure);
-    
-    
+
+
     return (
         <div className="flex flex-col gap-2">
             {/* Navigation Header */}
@@ -261,7 +282,7 @@ export default function Folder() {
                     </div>
                 </div>
             ) : (
-                <ImageList images={filteredImages} />
+                <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath || ''} />
             )}
 
             {/* Folder Operation Modals */}

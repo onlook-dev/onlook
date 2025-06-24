@@ -11,7 +11,7 @@ export const useImageUpload = () => {
     });
 
     const uploadImage = useCallback(
-        async (file: File) => {
+        async (file: File, destinationFolder: string) => {
             setUploadState({ isUploading: true, error: null });
 
             if (!file.type.startsWith('image/')) {
@@ -19,7 +19,7 @@ export const useImageUpload = () => {
                 return;
             }
             try {
-                await editorEngine.image.upload(file);
+                await editorEngine.image.upload(file, destinationFolder);
                 setUploadState({ isUploading: false, error: null });
             } catch (error) {
                 setUploadState({
@@ -33,12 +33,12 @@ export const useImageUpload = () => {
     );
 
     const handleUploadFile = useCallback(
-        async (e: React.ChangeEvent<HTMLInputElement>) => {
+        async (e: React.ChangeEvent<HTMLInputElement>, destinationFolder: string) => {
             const files = Array.from(e.target.files ?? []);
             const imageFiles = files.filter((file) => file.type.startsWith('image/'));
 
             for (const imageFile of imageFiles) {
-                await uploadImage(imageFile);
+                await uploadImage(imageFile, destinationFolder);
             }
         },
         [uploadImage],

@@ -152,8 +152,8 @@ export const useFolder = () => {
             const folderPath = `public/${deleteState.folderToDelete.fullPath}`;
             
             for (const image of deleteState.folderToDelete.images) {
-                if (image.originPath) {
-                    await editorEngine.sandbox.delete(image.originPath);
+                if (image) {
+                    await editorEngine.sandbox.delete(image);
                 }
             }
 
@@ -261,11 +261,11 @@ export const useFolder = () => {
         await session.fs.writeTextFile(gitkeepPath, gitkeepContent);
 
         for (const image of folder.images) {
-            if (image.originPath) {
-                const fileName = image.originPath.split('/').pop();
+            if (image) {
+                const fileName = image.split('/').pop();
                 const newImagePath = `public/${newPath}/${fileName}`;
-                await editorEngine.sandbox.copy(image.originPath, newImagePath);
-                await editorEngine.sandbox.delete(image.originPath);
+                await editorEngine.sandbox.copy(image, newImagePath);
+                await editorEngine.sandbox.delete(image);
             }
         }
 

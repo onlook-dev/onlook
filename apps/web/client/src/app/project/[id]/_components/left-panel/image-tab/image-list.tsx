@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import type { ImageContentData } from '@onlook/models';
 import { ImageItem } from './image-item';
 import { Button } from '@onlook/ui/button';
@@ -6,20 +6,31 @@ import { Icons } from '@onlook/ui/icons';
 import { useImagesContext } from './providers/images-provider';
 import DeleteImageModal from './delete-modal';
 import RenameImageModal from './rename-modal';
+import { useImageDragDrop } from './hooks/use-image-drag-drop';
+import { cn } from '@onlook/ui/utils';
 
 interface ImageListProps {
     images: ImageContentData[];
+    currentFolder: string;
 }
 
-export const ImageList = memo(({ images }: ImageListProps) => {
+export const ImageList = memo(({ images, currentFolder }: ImageListProps) => {
     const { uploadOperations, deleteOperations, renameOperations } = useImagesContext();
-    const { handleClickAddButton, handleUploadFile } = uploadOperations;
+    const { handleClickAddButton, handleUploadFile, uploadState } = uploadOperations;
     const { deleteState, onDeleteImage, handleDeleteModalToggle } = deleteOperations;
     const { renameState, onRenameImage, handleRenameModalToggle } = renameOperations;
+    const { handleDragEnter, handleDragLeave, handleDragOver, handleDrop, isDragging } = useImageDragDrop(currentFolder);
+
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 flex-1">
             <p className="text-sm text-gray-200 font-medium">Images</p>
+            {uploadState.isUploading && (
+                <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">
+                    <Icons.Reload className="w-4 h-4 animate-spin" />
+                    Uploading image...
+                </div>
+            )}
             {images.length === 0 && (
                 <div className="h-full w-full flex items-center justify-center text-center opacity-70">
                     <Button
@@ -32,15 +43,25 @@ export const ImageList = memo(({ images }: ImageListProps) => {
                     </Button>
                 </div>
             )}
-            <div className="w-full grid grid-cols-2 gap-3 p-0">
+            <div
+                className={cn(
+                    'w-full grid grid-cols-2 gap-3 p-0 overflow-y-auto',
+                    '[&[data-dragging-image=true]]:bg-teal-500/40',
+                    isDragging && 'cursor-copy',
+                )}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
+            >
                 <input
                     type="file"
                     accept="image/*"
                     className="hidden"
                     id="images-upload"
-                    onChange={handleUploadFile}
+                    onChange={(e) => handleUploadFile(e, currentFolder)}
                     multiple
-                    // disabled={isAnyOperationLoading}
+                    disabled={uploadState.isUploading}
                 />
                 {images.map((image) => (
                     <ImageItem key={image.originPath} image={image} />

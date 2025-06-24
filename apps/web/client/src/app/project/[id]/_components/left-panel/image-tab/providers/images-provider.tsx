@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useImageUpload } from '../hooks/use-image-upload';
 import { useImageDelete } from '../hooks/use-image-delete';
 import { useImageRename } from '../hooks/use-image-rename';
+import { useImageMove } from '../hooks/use-image-move';
 import type { FolderNode } from './types';
 
 interface ImagesContextValue {
@@ -15,6 +16,7 @@ interface ImagesContextValue {
     deleteOperations: ReturnType<typeof useImageDelete>;
     renameOperations: ReturnType<typeof useImageRename>;
     uploadOperations: ReturnType<typeof useImageUpload>;
+    moveOperations: ReturnType<typeof useImageMove>;
 }
 
 const ImagesContext = createContext<ImagesContextValue | null>(null);
@@ -30,7 +32,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
     const deleteOperations = useImageDelete();
     const renameOperations = useImageRename();
     const uploadOperations = useImageUpload();
-    console.log(editorEngine.image.assets);
+    const moveOperations = useImageMove();
     
 
     const folderStructure = useMemo(() => {
@@ -47,16 +49,9 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         editorEngine.image.assets.forEach((image) => {
             if (!image) return;
 
-            // Extract directory path from originPath
             let pathParts = image.split('/');
-            pathParts.pop(); // Remove filename
+            pathParts.pop();
 
-            // Remove 'public' from the beginning if it exists (NextJS project structure)
-            if (pathParts[0] === 'public') {
-                pathParts = pathParts.slice(1);
-            }
-
-            // If no path parts remain after removing 'public', image is in root
             if (pathParts.length === 0) {
                 root.images.push(image);
                 return;
@@ -66,7 +61,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
             let currentPath = '';
 
             pathParts.forEach((part: string) => {
-                if (!part) return; // Skip empty parts
+                if (!part) return;
 
                 currentPath = currentPath ? `${currentPath}/${part}` : part;
 
@@ -80,22 +75,25 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
                 currentNode = currentNode.children.get(part)!;
             });
 
-            // Add image to the final folder
             currentNode.images.push(image);
         });
 
         return root;
     }, [editorEngine.image.assets]);
 
+    const isOperating = 
+        deleteOperations.deleteState.isLoading ||
+        renameOperations.renameState.isLoading ||
+        uploadOperations.uploadState.isUploading ||
+        moveOperations.moveState.isLoading;
 
     const value: ImagesContextValue = {
-        folderStructure,
-        // Provide default no-op functions if operations not provided
-        isOperating: deleteOperations.deleteState.isLoading || renameOperations.renameState.isLoading,
-        uploadOperations,
-
+        folderStructure: folderStructure.children.get('public')!,
+        isOperating,
         deleteOperations,
         renameOperations,
+        uploadOperations,
+        moveOperations,
     };
 
     return <ImagesContext.Provider value={value}>{children}</ImagesContext.Provider>;

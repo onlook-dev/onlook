@@ -5,11 +5,12 @@ import { ImageDropdownMenu } from './image-dropdown-menu';
 import { useImagesContext } from './providers/images-provider';
 import { useEditorEngine } from '@/components/store/editor';
 import { useImageDragDrop } from './hooks/use-image-drag-drop';
+import type { FolderNode } from './providers/types';
 
 export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
     const editorEngine = useEditorEngine();
     const { onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp } = useImageDragDrop();
-    const { renameOperations, deleteOperations, isOperating } = useImagesContext();
+    const { renameOperations, deleteOperations, moveOperations, isOperating, folderStructure } = useImagesContext();
 
     const {
         renameState,
@@ -23,8 +24,21 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
         onDeleteImage
     } = deleteOperations;
 
+    const {
+        moveState,
+        handleSelectTargetFolder,
+        moveImageToFolder,
+        clearError,
+    } = moveOperations;
+
     const isImageRenaming = renameState.imageToRename === image.fileName;
     const isDisabled = isOperating;
+
+    const handleMoveToFolder = useCallback((targetFolder: FolderNode) => {
+        if (!isDisabled) {
+            moveImageToFolder(image, targetFolder);
+        }
+    }, [moveImageToFolder, image, isDisabled]);
 
     const handleOpenFolder = useCallback(
         async () => {
@@ -132,8 +146,25 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
                 handleRenameImage={handleRename}
                 handleDeleteImage={handleDelete}
                 handleOpenFolder={handleOpenFolder}
+                handleMoveToFolder={handleMoveToFolder}
                 isDisabled={isDisabled}
+                folderStructure={folderStructure}
+                selectedTargetFolder={moveState.targetFolder}
+                onSelectTargetFolder={handleSelectTargetFolder}
             />
+            
+            {moveState.error && (
+                <div className="absolute top-0 left-0 right-0 bg-red-100 border border-red-400 text-red-700 px-2 py-1 rounded text-xs z-10">
+                    {moveState.error}
+                    <button
+                        onClick={clearError}
+                        className="ml-2 font-bold"
+                        type="button"
+                    >
+                        ×
+                    </button>
+                </div>
+            )}
         </div>
     );
 });

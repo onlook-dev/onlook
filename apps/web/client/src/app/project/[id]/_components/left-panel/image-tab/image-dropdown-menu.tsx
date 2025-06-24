@@ -4,7 +4,9 @@ import type { ImageContentData } from "@onlook/models";
 import { memo, useCallback, useMemo, useState } from "react";
 import { Button } from "@onlook/ui/button";
 import { Icons } from "@onlook/ui/icons";
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
+import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@onlook/ui/dropdown-menu";
+import { FolderDropdown } from "./components/folder-dropdown";
+import type { FolderNode } from "./providers/types";
 
 export const ImageDropdownMenu = memo(
     ({
@@ -12,13 +14,21 @@ export const ImageDropdownMenu = memo(
         handleRenameImage,
         handleDeleteImage,
         handleOpenFolder,
+        handleMoveToFolder,
         isDisabled,
+        folderStructure,
+        selectedTargetFolder,
+        onSelectTargetFolder,
     }: {
         image: ImageContentData;
         handleRenameImage: () => void;
         handleDeleteImage: () => void;
         handleOpenFolder: () => void;
+        handleMoveToFolder: (targetFolder: FolderNode) => void;
         isDisabled: boolean;
+        folderStructure: FolderNode;
+        selectedTargetFolder: FolderNode | null;
+        onSelectTargetFolder: (folder: FolderNode) => void;
     }) => {
         const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -29,6 +39,14 @@ export const ImageDropdownMenu = memo(
                 }
             },
             [image.fileName, isDisabled],
+        );
+
+        const handleFolderSelect = useCallback(
+            (folder: FolderNode) => {
+                onSelectTargetFolder(folder);
+                handleMoveToFolder(folder);
+            },
+            [onSelectTargetFolder, handleMoveToFolder],
         );
 
         const isVisible = useMemo(() => {
@@ -96,6 +114,25 @@ export const ImageDropdownMenu = memo(
                                 </span>
                             </Button>
                         </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger 
+                                disabled={isDisabled}
+                                className="hover:bg-background-secondary focus:bg-background-secondary rounded-sm"
+                            >
+                                <span className="flex w-full text-smallPlus items-center">
+                                    <Icons.MoveToFolder className="mr-2 h-4 w-4 text-foreground-secondary" />
+                                    <span>Move to Folder</span>
+                                </span>
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent className="w-64 p-0" sideOffset={8}>
+                                <FolderDropdown
+                                    rootFolder={folderStructure}
+                                    selectedFolder={selectedTargetFolder}
+                                    onSelectFolder={handleFolderSelect}
+                                />
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

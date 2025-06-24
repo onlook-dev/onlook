@@ -22,16 +22,25 @@ export class ImageManager {
         reaction(
             () => this.editorEngine.sandbox.isIndexingFiles,
             (isIndexingFiles) => {
-                if (!isIndexingFiles && this.editorEngine.state.leftPanelTab === LeftPanelTabValue.IMAGES) {
+                if (!isIndexingFiles) {
                     this.scanImages();
                 }
             }
         );
+
+        reaction(
+            () => this.editorEngine.sandbox.listBinaryFiles(DefaultSettings.IMAGE_FOLDER),
+            (files) => {
+                console.log('files', files);
+                this.scanImages();
+            }
+        );
+
     }
 
-    async upload(file: File): Promise<void> {
+    async upload(file: File, destinationFolder: string): Promise<void> {
         try {
-            const path = `${DefaultSettings.IMAGE_FOLDER}/${file.name}`;
+            const path = `${destinationFolder}/${file.name}`;
             // Convert file to base64 for tRPC transmission
             const arrayBuffer = await file.arrayBuffer();
             const base64Data = btoa(
@@ -60,6 +69,8 @@ export class ImageManager {
                 finalBuffer = new Uint8Array(arrayBuffer);
             }
 
+            console.log('path', path);
+
             await this.editorEngine.sandbox.writeBinaryFile(path, finalBuffer);
             this.scanImages();
         } catch (error) {
@@ -71,6 +82,7 @@ export class ImageManager {
     async delete(originPath: string): Promise<void> {
         try {
             await this.editorEngine.sandbox.delete(originPath);
+            this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
@@ -83,6 +95,7 @@ export class ImageManager {
             const newPath = `${basePath}/${newName}`;
             await this.editorEngine.sandbox.copy(originPath, newPath);
             await this.editorEngine.sandbox.delete(originPath);
+            this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;
@@ -158,8 +171,7 @@ export class ImageManager {
 
         return targets;
     }
-
-    async scanImages() {
+    scanImages() {
         if (this._isScanning) {
             return;
         }
@@ -167,7 +179,7 @@ export class ImageManager {
         this._isScanning = true;
 
         try {
-            const files = await this.editorEngine.sandbox.listBinaryFiles(
+            const files = this.editorEngine.sandbox.listBinaryFiles(
                 DefaultSettings.IMAGE_FOLDER,
             );
 
@@ -175,9 +187,9 @@ export class ImageManager {
                 this.images = [];
                 return;
             }
-            console.log(files);
 
             const imageFiles = files.filter((filePath: string) => isImageFile(filePath));
+
 
             if (imageFiles.length === 0) {
                 return;

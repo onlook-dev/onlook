@@ -4,7 +4,7 @@ import { EditorMode, type ImageContentData } from '@onlook/models';
 import { useEditorEngine } from '@/components/store/editor';
 import { useImagesContext } from '../providers/images-provider';
 
-export const useImageDragDrop = () => {
+export const useImageDragDrop = (currentFolder?: string) => {
     const editorEngine = useEditorEngine();
     const { uploadOperations } = useImagesContext();
 
@@ -17,14 +17,22 @@ export const useImageDragDrop = () => {
             setIsDragging(false);
             e.currentTarget.removeAttribute('data-dragging-image');
 
-            const items = Array.from(e.dataTransfer.items);
-            const imageFiles = items
-                .filter((item) => item.type.startsWith('image/'))
-                .map((item) => item.getAsFile())
-                .filter((file): file is File => file !== null);
-
-            for (const file of imageFiles) {
-                await uploadOperations.uploadImage(file);
+            try {
+                const items = Array.from(e.dataTransfer.items);
+                const imageFiles = items
+                    .filter((item) => item.type.startsWith('image/'))
+                    .map((item) => item.getAsFile())
+                    .filter((file): file is File => file !== null);
+    
+                if (!currentFolder) {
+                    throw new Error('No current folder');
+                }
+    
+                for (const file of imageFiles) {
+                    await uploadOperations.uploadImage(file, currentFolder);
+                }
+            } catch (error) {
+                console.error(error);
             }
         },
         [uploadOperations],
