@@ -80,15 +80,13 @@ export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSu
         throw new Error('No subscription ID found')
     }
 
-    const subscriptionItemId = receivedEvent.data.object.items.data[0]?.id
-    if (!subscriptionItemId) {
-        throw new Error('No subscription item ID found')
-    }
-
     const res = await db.update(subscriptions).set({
         status: 'canceled',
         endedAt: new Date(),
-    }).where(eq(subscriptions.stripeSubscriptionItemId, subscriptionItemId))
+        scheduledPriceId: null,
+        scheduledChangeAt: null,
+        stripeSubscriptionScheduleId: null,
+    }).where(eq(subscriptions.stripeSubscriptionId, subscriptionId))
 
     console.log("Subscription cancelled: ", res)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })

@@ -21,7 +21,7 @@ export const subscriptions = pgTable('subscriptions', {
 
     // Stripe
     stripeCustomerId: text('stripe_customer_id').notNull(),
-    stripeSubscriptionId: text('stripe_subscription_id').notNull(),
+    stripeSubscriptionId: text('stripe_subscription_id').notNull().unique(),
     stripeSubscriptionItemId: text('stripe_subscription_item_id').notNull().unique(),
 
     // Scheduled price change
