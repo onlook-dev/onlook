@@ -1,4 +1,4 @@
-import { subscriptions, usageRecords } from '@onlook/db';
+import { subscriptions, usageRecords, UsageType } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import type { Usage } from '@onlook/models';
 import { FREE_PRODUCT_CONFIG } from '@onlook/stripe';
@@ -69,7 +69,7 @@ export const usageRouter = createTRPCRouter({
     }),
 
     increment: protectedProcedure.input(z.object({
-        type: z.enum(['message']),
+        type: z.nativeEnum(UsageType),
     })).mutation(async ({ ctx, input }) => {
         const user = ctx.user;
         await db.insert(usageRecords).values({

@@ -1,6 +1,13 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { users } from '../user';
+
+export enum UsageType {
+    MESSAGE = 'message',
+    DEPLOYMENT = 'deployment',
+}
+
+export const usageTypes = pgEnum('usage_types', UsageType);
 
 export const usageRecords = pgTable('usage_records', {
     id: uuid('id').defaultRandom().primaryKey(),
@@ -9,7 +16,7 @@ export const usageRecords = pgTable('usage_records', {
     userId: uuid('user_id').notNull().references(() => users.id),
 
     // Metadata
-    type: text('type', { enum: ['message'] }).notNull(),
+    type: usageTypes('type').notNull(),
     timestamp: timestamp('timestamp', { withTimezone: true }).notNull(),
 }).enableRLS();
 
