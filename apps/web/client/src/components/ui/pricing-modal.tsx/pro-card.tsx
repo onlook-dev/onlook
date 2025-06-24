@@ -41,6 +41,7 @@ export const ProCard = ({
     const selectedTierData = PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier);
     const isPro = subscription?.product.type === ProductType.PRO;
     const isNewTierSelected = selectedTier !== subscription?.price.key;
+    const isPendingTierSelected = selectedTier !== subscription?.price.key && selectedTier === subscription?.scheduledPrice?.key;
 
     if (!PRO_PRODUCT_CONFIG.prices.length) {
         throw new Error('No pro tiers found');
@@ -190,6 +191,10 @@ export const ProCard = ({
             return "Current plan";
         }
 
+        if (isPendingTierSelected) {
+            return "Will be active on " + subscription?.scheduledPrice?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        }
+
         return "Update plan";
     };
 
@@ -233,7 +238,7 @@ export const ProCard = ({
                     <Button
                         className="w-full"
                         onClick={handleCheckout}
-                        disabled={isCheckingOut || !isNewTierSelected}
+                        disabled={isCheckingOut || !isNewTierSelected || isPendingTierSelected}
                     >
                         {buttonContent()}
                     </Button>
