@@ -4,7 +4,6 @@ import { pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { users } from '../user/user';
 import { prices } from './price';
 import { products } from './product';
-import { usageRecords } from './usage';
 
 export const scheduledSubscriptionAction = pgEnum('scheduled_subscription_action', ScheduledSubscriptionAction);
 
@@ -43,7 +42,6 @@ export const subscriptionRelations = relations(subscriptions, ({ one, many }) =>
         fields: [subscriptions.priceId],
         references: [prices.id],
     }),
-    usageRecords: many(usageRecords),
 }));
 
 export type NewSubscription = typeof subscriptions.$inferInsert;

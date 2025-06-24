@@ -7,8 +7,6 @@ import Stripe from "stripe";
 export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.CheckoutSessionCompletedEvent, stripe: Stripe) => {
     const session = receivedEvent.data.object
 
-    console.log('Checkout session completed: ', session)
-
     const userId = session.metadata?.user_id
     if (!userId) {
         throw new Error('No user ID found')

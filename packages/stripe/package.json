@@ -28,6 +28,6 @@
     "dependencies": {
         "stripe": "^18.2.1",
         "dotenv": "^16.5.0",
-        "@onlook/models": "workspace:*"
+        "@onlook/models": "*"
     }
 }
