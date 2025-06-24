@@ -127,7 +127,7 @@ export const handleInvoicePaid = async (receivedEvent: Stripe.InvoicePaidEvent) 
     }).where(eq(subscriptions.id, sub.id));
 }
 
-export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSubscriptionUpdatedEvent, stripe: Stripe) => {
+export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSubscriptionUpdatedEvent) => {
     const stripeSubscription = receivedEvent.data.object
     const stripeSubscriptionId = stripeSubscription.id
 
