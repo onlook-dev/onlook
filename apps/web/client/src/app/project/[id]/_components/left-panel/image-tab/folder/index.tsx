@@ -149,7 +149,7 @@ export default function Folder() {
 
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 h-full">
             {/* Navigation Header */}
             {canGoBack && (
                 <>

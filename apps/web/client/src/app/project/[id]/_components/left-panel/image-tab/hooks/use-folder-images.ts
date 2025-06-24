@@ -66,7 +66,7 @@ export const useFolderImages = () => {
             return;
         }
 
-        const allImagePaths = folder.images.map(img => img).filter(Boolean);
+        const allImagePaths = folder.images.filter(Boolean);
 
         if (allImagePaths.length > 0) {
             await readImagesContent(allImagePaths);

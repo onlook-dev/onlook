@@ -27,7 +27,7 @@ export const FolderList = memo(
         }
 
         return (
-            <div className="flex flex-col space-y-1 flex-1">
+            <div className="flex flex-col gap-2 max-h-[30vh]">
                 <p className="text-sm text-gray-200 font-medium">Folders</p>
                 <div className="flex flex-col space-y-1 flex-1 overflow-y-auto">
                     {items.map((item, index) => (

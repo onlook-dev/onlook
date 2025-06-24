@@ -5,6 +5,7 @@ import type { FolderNode } from '../providers/types';
 
 interface MoveImageState {
     targetFolder: FolderNode | null;
+    imageToMove: ImageContentData | null;
     isLoading: boolean;
     error: string | null;
 }
@@ -14,6 +15,7 @@ export const useImageMove = () => {
     
     const [moveState, setMoveState] = useState<MoveImageState>({
         targetFolder: null,
+        imageToMove: null,
         isLoading: false,
         error: null,
     });
@@ -26,17 +28,32 @@ export const useImageMove = () => {
         }));
     }, []);
 
-    const moveImageToFolder = useCallback(async (image: ImageContentData, targetFolder: FolderNode) => {
-        setMoveState((prev) => ({ ...prev, isLoading: true, error: null }));
+    const handleMoveImage = useCallback((image: ImageContentData, targetFolder: FolderNode) => {
+        setMoveState({
+            targetFolder,
+            imageToMove: image,
+            isLoading: false,
+            error: null,
+        });
+    }, []);
 
+    const moveImageToFolder = useCallback(async () => {
+        if (!moveState.imageToMove || !moveState.targetFolder) {
+            return;
+        }
+
+        const image = moveState.imageToMove;
+        const targetFolder = moveState.targetFolder;
+
+        setMoveState((prev) => ({ ...prev, isLoading: true, error: null }));
         try {
             const fileName = image.fileName;
             const currentPath = image.originPath;
             
             // Construct new path based on target folder
             const newPath = targetFolder.fullPath 
-                ? `public/${targetFolder.fullPath}/${fileName}`
-                : `public/${fileName}`;
+                ? `${targetFolder.fullPath}/${fileName}`
+                : `${fileName}`;
 
             // Don't move if it's already in the same location
             if (currentPath === newPath) {
@@ -61,11 +78,12 @@ export const useImageMove = () => {
 
             editorEngine.image.scanImages();
 
-            setMoveState((prev) => ({
-                ...prev,
+            setMoveState({
+                targetFolder: null,
+                imageToMove: null,
                 isLoading: false,
                 error: null,
-            }));
+            });
         } catch (error) {
             setMoveState((prev) => ({
                 ...prev,
@@ -74,7 +92,16 @@ export const useImageMove = () => {
             }));
             console.error('Image move error:', error);
         }
-    }, [editorEngine]);
+    }, [editorEngine, moveState.imageToMove, moveState.targetFolder]);
+
+    const handleMoveModalToggle = useCallback(() => {
+        setMoveState({
+            targetFolder: null,
+            imageToMove: null,
+            isLoading: false,
+            error: null,
+        });
+    }, []);
 
     const clearError = useCallback(() => {
         setMoveState((prev) => ({ ...prev, error: null }));
@@ -83,7 +110,9 @@ export const useImageMove = () => {
     return {
         moveState,
         handleSelectTargetFolder,
+        handleMoveImage,
         moveImageToFolder,
+        handleMoveModalToggle,
         clearError,
     };
 }; 

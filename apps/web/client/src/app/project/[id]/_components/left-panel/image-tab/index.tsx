@@ -15,15 +15,11 @@ export const ImagesTab = observer(() => {
 });
 
 const ImagesTabContent = observer(() => {
-    
     const { renameOperations, uploadOperations, isOperating } = useImagesContext();
     const editorEngine = useEditorEngine();
     const isIndexing = editorEngine.sandbox.isIndexingFiles;
 
-    const {
-        renameState
-    } = renameOperations;
-    
+    const { renameState } = renameOperations;
 
     if (isIndexing) {
         return (
@@ -33,7 +29,6 @@ const ImagesTabContent = observer(() => {
             </div>
         );
     }
-
 
     return (
         <ImagesProvider>
@@ -61,16 +56,7 @@ const ImagesTabContent = observer(() => {
                     </div>
                 )}
 
-                {!isOperating && (
-                    <div
-                        className={cn(
-                            'flex-1',
-                            isOperating && 'pointer-events-none opacity-75',
-                        )}
-                    >
-                        <Folder />
-                    </div>
-                )}
+                {!isOperating && <Folder />}
             </div>
         </ImagesProvider>
     );

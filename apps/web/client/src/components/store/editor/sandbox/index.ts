@@ -318,7 +318,6 @@ export class SandboxManager {
 
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-        console.log('normalizedPath', normalizedPath);
         
         try {
             return this.fileSync.writeBinary(

@@ -27,7 +27,9 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
     const {
         moveState,
         handleSelectTargetFolder,
+        handleMoveImage,
         moveImageToFolder,
+        handleMoveModalToggle,
         clearError,
     } = moveOperations;
 
@@ -36,9 +38,9 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
 
     const handleMoveToFolder = useCallback((targetFolder: FolderNode) => {
         if (!isDisabled) {
-            moveImageToFolder(image, targetFolder);
+            handleMoveImage(image, targetFolder);
         }
-    }, [moveImageToFolder, image, isDisabled]);
+    }, [handleMoveImage, image, isDisabled]);
 
     const handleOpenFolder = useCallback(
         async () => {

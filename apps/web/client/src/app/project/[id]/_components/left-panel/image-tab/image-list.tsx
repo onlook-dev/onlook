@@ -6,6 +6,7 @@ import { Icons } from '@onlook/ui/icons';
 import { useImagesContext } from './providers/images-provider';
 import DeleteImageModal from './delete-modal';
 import RenameImageModal from './rename-modal';
+import MoveImageModal from './move-modal';
 import { useImageDragDrop } from './hooks/use-image-drag-drop';
 import { cn } from '@onlook/ui/utils';
 
@@ -15,15 +16,16 @@ interface ImageListProps {
 }
 
 export const ImageList = memo(({ images, currentFolder }: ImageListProps) => {
-    const { uploadOperations, deleteOperations, renameOperations } = useImagesContext();
+    const { uploadOperations, deleteOperations, renameOperations, moveOperations } = useImagesContext();
     const { handleClickAddButton, handleUploadFile, uploadState } = uploadOperations;
     const { deleteState, onDeleteImage, handleDeleteModalToggle } = deleteOperations;
     const { renameState, onRenameImage, handleRenameModalToggle } = renameOperations;
+    const { moveState, moveImageToFolder, handleMoveModalToggle } = moveOperations;
     const { handleDragEnter, handleDragLeave, handleDragOver, handleDrop, isDragging } = useImageDragDrop(currentFolder);
 
 
     return (
-        <div className="flex flex-col gap-2 flex-1">
+        <div className="flex flex-col gap-2 max-h-[50vh]">
             <p className="text-sm text-gray-200 font-medium">Images</p>
             {uploadState.isUploading && (
                 <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">
@@ -83,6 +85,14 @@ export const ImageList = memo(({ images, currentFolder }: ImageListProps) => {
                 toggleOpen={handleRenameModalToggle}
                 newName={renameState.newImageName}
                 isLoading={renameState.isLoading}
+            />
+            <MoveImageModal
+                onMove={moveImageToFolder}
+                isOpen={!!moveState.imageToMove && !!moveState.targetFolder}
+                toggleOpen={handleMoveModalToggle}
+                isLoading={moveState.isLoading}
+                image={moveState.imageToMove}
+                targetFolder={moveState.targetFolder}
             />
         </div>
     );
