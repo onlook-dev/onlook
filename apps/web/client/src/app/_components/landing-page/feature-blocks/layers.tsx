@@ -1,6 +1,7 @@
+import { Icons } from '@onlook/ui/icons';
 import React from 'react';
 import { cn } from '@onlook/ui/utils';
-import { NodeIcon } from '../../project/[id]/_components/left-panel/layers-tab/tree/node-icon';
+import { NodeIcon } from '../../../project/[id]/_components/left-panel/layers-tab/tree/node-icon';
 
 // Mock data for layers with nested structure
 const mockLayers = [
@@ -23,7 +24,7 @@ const mockLayers = [
     { id: '17', name: 'Project Title', tagName: 'H3', selected: false, level: 3, isInstance: false },
 ];
 
-export function MockLayersTab() {
+function MockLayersTab() {
     const [hoveredId, setHoveredId] = React.useState<string | null>(null);
     const [selectedId, setSelectedId] = React.useState<string>('7');
 
@@ -67,6 +68,37 @@ export function MockLayersTab() {
                         </div>
                     );
                 })}
+            </div>
+        </div>
+    );
+}
+
+export function LayersBlock() {
+    return (
+        <div className="flex flex-col gap-4">
+            <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
+                <div className="w-54 h-100 rounded-xl overflow-hidden absolute left-1/30 top-12 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20 z-20">
+                    <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Layers</p>
+                    <div className="flex flex-row items-start gap-8 w-full">
+                        <MockLayersTab />
+                    </div>
+                </div>
+                <div className="w-100 h-100 bg-blue-400 absolute top-20 left-1/4 z-10 rounded-lg overflow-hidden">
+                    <div className="w-full h-10 bg-white/50 flex flex-row gap-4 justify-center p-2">
+                        <p className='text-white'>Hello</p>
+                        <p className='text-white'>Hello</p>
+                    </div>
+                    <p>Hey</p>
+                </div>
+            </div>
+            <div className="flex flex-row items-start gap-8 w-full">
+                {/* Icon + Title */}
+                <div className="flex flex-col items-start w-1/2">
+                    <div className="mb-2"><Icons.Layers className="w-6 h-6 text-foreground-primary" /></div>
+                    <span className="text-foreground-primary text-largePlus font-light">Layers</span>
+                </div>
+                {/* Description */}
+                <p className="text-foreground-secondary text-regular text-balance w-1/2">Select elements with precision and control.</p>
             </div>
         </div>
     );

@@ -1,9 +1,11 @@
 import { Icons } from '@onlook/ui/icons';
-import { MockLayersTab } from './mock-layers-tab';
 import { ColorSwatchGroup } from './color-swatch-group';
 import { DirectEditingBlock } from './feature-blocks/direct-editing';
 import { RevisionHistory } from './feature-blocks/revision-history';
 import { ResponsiveWebsiteBlock } from './feature-blocks/responsive-website';
+import { BrandComplianceBlock } from './feature-blocks/brand-compliance';
+import { LayersBlock } from './feature-blocks/layers';
+import { ComponentsBlock } from './feature-blocks/components';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 function VersionRow({ title, subtitle, children, selected, onClick }: { title: string, subtitle: string, children?: React.ReactNode, selected?: boolean, onClick?: () => void }) {
@@ -231,138 +233,9 @@ export function WhatCanOnlookDoSection() {
                 {/* Direct editing */}
                 <DirectEditingBlock />
                 {/* Components */}
-                <div className="flex flex-col gap-4">
-                    {/* Custom Components Menu + Calendar Preview */}
-                    <div className="flex flex-row gap-8 relative min-h-[400px] overflow-hidden bg-background-onlook/80 rounded-lg">
-                        {/* Left menu container with grey background and overflow hidden */}
-                        <div className="w-56 h-100 rounded-xl overflow-hidden absolute lg:left-1/20 md:left-1/30 left-1/8 top-12 flex flex-col items-center justify-start bg-black border-[0.5px] border-foreground-primary/20">
-                            <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Components</p>
-                            <div className="grid grid-cols-2 grid-rows-3 gap-6 w-full h-full p-4">
-                                {[
-                                    { label: 'Calendar', selected: true },
-                                    { label: 'Card', selected: false },
-                                    { label: 'Carousel', selected: false },
-                                    { label: 'Chart', selected: false },
-                                    { label: 'Table', selected: false },
-                                    { label: 'Map', selected: false },
-                                ].map((item, idx) => (
-                                    <div key={item.label} className="flex flex-col items-center w-full">
-                                        <div
-                                            className={
-                                                `w-24 h-24 rounded-xs mb-1.5 flex items-start bg-background-secondary justify-start transition-all ` +
-                                                (item.selected
-                                                    ? 'outline outline-1 outline-purple-400 outline-offset-2'
-                                                    : '')
-                                            }
-                                        >
-                                            {/* Placeholder for component preview */}
-                                            <div className="w-24 h-24 rounded"> 
-                                                <div className="w-14 h-14 rounded-xs bg-black relative flex items-center p-1.5 left-1/5 right-1/5 top-1/5">
-                                                 <p className='text-foreground-secondary text-[5px]'>{item.label}</p>
-                                                </div>
-                                            </div>
-                                            
-                                        </div>
-                                        <span className="text-foreground-secondary text-mini text-left w-full ml-[-12px]">{item.label}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                        {/* Floating calendar preview */}
-                        <div className="absolute md:right-1/30 right-1/10 top-30 z-10">
-                            <div className="rounded-xl border-1 border-purple-400 bg-black p-4 min-w-[240px]" style={{ fontSize: '0.6rem' }}>
-                                {/* Calendar header */}
-                                <div className="flex items-center justify-between mb-3">
-                                    <div className="flex gap-1">
-                                        <button className="px-2 py-0.5 rounded bg-zinc-900 text-foreground-primary text-xs flex items-center">
-                                            {new Date().toLocaleString('default', { month: 'short' })} 
-                                            <svg width='8' height='8' className='ml-1'><path d='M2 3l2 2 2-2' stroke='white' strokeWidth='1' fill='none'/></svg>
-                                        </button>
-                                        <button className="px-2 py-0.5 rounded bg-zinc-900 text-foreground-primary text-xs flex items-center">
-                                            {new Date().getFullYear()} 
-                                            <svg width='8' height='8' className='ml-1'><path d='M2 3l2 2 2-2' stroke='white' strokeWidth='1' fill='none'/></svg>
-                                        </button>
-                                    </div>
-                                    <div className="flex gap-1">
-                                        <button className="text-foreground-primary hover:text-foreground-primary text-xs">&#60;</button>
-                                        <button className="text-foreground-primary hover:text-foreground-primary text-xs">&#62;</button>
-                                    </div>
-                                </div>
-                                {/* Calendar grid */}
-                                <div className="grid grid-cols-7 gap-[2px] text-center text-zinc-400 text-xs mb-2 cursor-pointer">
-                                    {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => <div key={d}>{d}</div>)}
-                                </div>
-                                <div className="grid grid-cols-7 gap-[2px] text-center cursor-pointer">
-                                    {(() => {
-                                        const today = new Date();
-                                        const currentMonth = today.getMonth();
-                                        const currentYear = today.getFullYear();
-                                        const firstDay = new Date(currentYear, currentMonth, 1);
-                                        const lastDay = new Date(currentYear, currentMonth + 1, 0);
-                                        const daysInMonth = lastDay.getDate();
-                                        const startingDay = firstDay.getDay();
-                                        
-                                        return Array.from({length: 42}, (_,i) => {
-                                            const day = i - startingDay + 1;
-                                            const isToday = day === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear();
-                                            
-                                            if (day < 1 || day > daysInMonth) return <div key={i}></div>;
-                                            
-                                            return (
-                                                <div
-                                                    key={i}
-                                                    className={
-                                                        `py-[2px] rounded-full text-xs ` +
-                                                        (isToday ? 'bg-white text-black font-bold' : 'hover:bg-zinc-800 text-zinc-200')
-                                                    }
-                                                >
-                                                    {day}
-                                                </div>
-                                            );
-                                        });
-                                    })()}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="flex flex-row items-start gap-8 w-full">
-                        {/* Icon + Title */}
-                        <div className="flex flex-col items-start w-1/2">
-                            <div className="mb-2"><Icons.Component className="w-6 h-6 text-foreground-primary" /></div>
-                            <span className="text-foreground-primary text-largePlus font-light">Components</span>
-                        </div>
-                        {/* Description */}
-                        <p className="text-foreground-secondary text-regular text-balance w-1/2">Customize reusable components that you can swap-out across websites.</p>
-                    </div>
-                </div>
+                <ComponentsBlock />
                 {/* Layers */}
-                <div className="flex flex-col gap-4">
-                    <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
-                    <div className="w-54 h-100 rounded-xl overflow-hidden absolute left-1/30 top-12 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20 z-20">
-                        <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Layers</p>
-                        <div className="flex flex-row items-start gap-8 w-full">
-                             <MockLayersTab />
-                        </div>
-                    </div>
-                    <div className="w-100 h-100 bg-blue-400 absolute top-20 left-1/4 z-10 rounded-lg overflow-hidden">
-                        <div className="w-full h-10 bg-white/50 flex flex-row gap-4 justify-center p-2">
-                            <p className='text-white'>Hello</p>
-                            <p className='text-white'>Hello</p>
-                        </div>
-
-                        <p>Hey</p>
-                    </div>
-                    </div>
-                    <div className="flex flex-row items-start gap-8 w-full">
-                        {/* Icon + Title */}
-                        <div className="flex flex-col items-start w-1/2">
-                            <div className="mb-2"><Icons.Layers className="w-6 h-6 text-foreground-primary" /></div>
-                            <span className="text-foreground-primary text-largePlus font-light">Layers</span>
-                        </div>
-                        {/* Description */}
-                        <p className="text-foreground-secondary text-regular text-balance w-1/2">Select elements with precision and control.</p>
-                    </div>
-                </div>
+                <LayersBlock />
             </div>
             {/* Right Column */}
             <div className="flex-1 flex flex-col gap-18 mt-16 md:mt-32">
@@ -378,91 +251,7 @@ export function WhatCanOnlookDoSection() {
                         <p className="text-foreground-secondary text-regular text-balance w-1/2">Work an entirely new dimension – experience your designs come to life</p>
                     </div>
                 </div> */}
-                {/* Brand compliance */}
-                <div className="flex flex-col gap-4">
-                <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
-                    <ParallaxContainer speed={0.04}>
-                        <div className="w-60 h-100 rounded-xl overflow-hidden absolute left-1/14 top-7 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20">
-                            <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Brand Colors</p>
-                            <div className="w-full h-full overflow-y-auto px-3 py-2 flex flex-col gap-2">
-                                <ColorSwatchGroup label="Slate" colorClasses={[
-                                    "bg-slate-50","bg-slate-100","bg-slate-200","bg-slate-300","bg-slate-400","bg-slate-500",
-                                    "bg-slate-500","bg-slate-600","bg-slate-700","bg-slate-800","bg-slate-900","bg-slate-900"
-                                ]} />
-                                <ColorSwatchGroup label="Gray" colorClasses={[
-                                    "bg-gray-50","bg-gray-100","bg-gray-200","bg-gray-300","bg-gray-400","bg-gray-500",
-                                    "bg-gray-500","bg-gray-600","bg-gray-700","bg-gray-800","bg-gray-900","bg-gray-900"
-                                ]} />
-                                <ColorSwatchGroup label="Zinc" colorClasses={[
-                                    "bg-zinc-50","bg-zinc-100","bg-zinc-200","bg-zinc-300","bg-zinc-400","bg-zinc-500",
-                                    "bg-zinc-500","bg-zinc-600","bg-zinc-700","bg-zinc-800","bg-zinc-900","bg-zinc-900"
-                                ]} />
-                                <ColorSwatchGroup label="Orange" colorClasses={[
-                                    "bg-orange-50","bg-orange-100","bg-orange-200","bg-orange-300","bg-orange-400","bg-orange-500",
-                                    "bg-orange-500","bg-orange-600","bg-orange-700","bg-orange-800","bg-orange-900","bg-orange-900"
-                                ]} />
-                                <ColorSwatchGroup label="Amber" colorClasses={[
-                                    "bg-amber-50","bg-amber-100","bg-amber-200","bg-amber-300","bg-amber-400","bg-amber-500",
-                                    "bg-amber-500","bg-amber-600","bg-amber-700","bg-amber-800","bg-amber-900","bg-amber-900"
-                                ]} />
-
-                                <ColorSwatchGroup label="Lime" colorClasses={[
-                                    "bg-lime-50","bg-lime-100","bg-lime-200","bg-lime-300","bg-lime-400","bg-lime-500",
-                                    "bg-lime-500","bg-lime-600","bg-lime-700","bg-lime-800","bg-lime-900","bg-lime-900"
-                                ]} />
-                                <ColorSwatchGroup label="Green" colorClasses={[
-                                    "bg-green-50","bg-green-100","bg-green-200","bg-green-300","bg-green-400","bg-green-500",
-                                    "bg-green-500","bg-green-600","bg-green-700","bg-green-800","bg-green-900","bg-green-900"
-                                ]} />
-                            </div>
-                        </div>
-                    </ParallaxContainer>
-                    <ParallaxContainer speed={-0.04}>
-                        <div className="w-60 h-100 rounded-xl overflow-hidden absolute right-1/14 top-20 flex flex-col items-center justify-start bg-black/50 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20">
-                            <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Brand Colors</p>
-                            <div className="w-full h-full overflow-y-auto px-3 py-2 flex flex-col gap-2">
-                                <ColorSwatchGroup label="Cyan" colorClasses={[
-                                    "bg-cyan-50","bg-cyan-100","bg-cyan-200","bg-cyan-300","bg-cyan-400","bg-cyan-500",
-                                    "bg-cyan-500","bg-cyan-600","bg-cyan-700","bg-cyan-800","bg-cyan-900","bg-cyan-900"
-                                ]} />
-                                <ColorSwatchGroup label="Blue" colorClasses={[
-                                    "bg-blue-50","bg-blue-100","bg-blue-200","bg-blue-300","bg-blue-400","bg-blue-500",
-                                    "bg-blue-500","bg-blue-600","bg-blue-700","bg-blue-800","bg-blue-900","bg-blue-900"
-                                ]} />
-                                <ColorSwatchGroup label="Indigo" colorClasses={[
-                                    "bg-indigo-50","bg-indigo-100","bg-indigo-200","bg-indigo-300","bg-indigo-400","bg-indigo-500",
-                                    "bg-indigo-500","bg-indigo-600","bg-indigo-700","bg-indigo-800","bg-indigo-900","bg-indigo-900"
-                                ]} />
-                                <ColorSwatchGroup label="Violet" colorClasses={[
-                                    "bg-violet-50","bg-violet-100","bg-violet-200","bg-violet-300","bg-violet-400","bg-violet-500",
-                                    "bg-violet-500","bg-violet-600","bg-violet-700","bg-violet-800","bg-violet-900","bg-violet-900"
-                                ]} />
-                                <ColorSwatchGroup label="Purple" colorClasses={[
-                                    "bg-purple-50","bg-purple-100","bg-purple-200","bg-purple-300","bg-purple-400","bg-purple-500",
-                                    "bg-purple-500","bg-purple-600","bg-purple-700","bg-purple-800","bg-purple-900","bg-purple-900"
-                                ]} />
-                                <ColorSwatchGroup label="Pink" colorClasses={[
-                                    "bg-pink-50","bg-pink-100","bg-pink-200","bg-pink-300","bg-pink-400","bg-pink-500",
-                                    "bg-pink-500","bg-pink-600","bg-pink-700","bg-pink-800","bg-pink-900","bg-pink-900"
-                                ]} />
-                                <ColorSwatchGroup label="Rose" colorClasses={[
-                                    "bg-rose-50","bg-rose-100","bg-rose-200","bg-rose-300","bg-rose-400","bg-rose-500",
-                                    "bg-rose-500","bg-rose-600","bg-rose-700","bg-rose-800","bg-rose-900","bg-rose-900"
-                                ]} />
-                            </div>
-                        </div>
-                    </ParallaxContainer>
-                    </div>
-                    <div className="flex flex-row items-start gap-8 w-full">
-                        {/* Icon + Title */}
-                        <div className="flex flex-col items-start w-1/2">
-                            <div className="mb-2"><Icons.Brand className="w-6 h-6 text-foreground-primary" /></div>
-                            <span className="text-foreground-primary text-largePlus font-light">Brand compliance</span>
-                        </div>
-                        {/* Description */}
-                        <p className="text-foreground-secondary text-regular text-balance w-1/2">Make your fonts, colors, and styles all speak the same language.</p>
-                    </div>
-                </div>
+                <BrandComplianceBlock />
                 <ResponsiveWebsiteBlock />
                 <RevisionHistory />
             </div>
