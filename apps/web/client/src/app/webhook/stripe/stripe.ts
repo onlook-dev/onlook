@@ -127,3 +127,43 @@ export const handleInvoicePaid = async (receivedEvent: Stripe.InvoicePaidEvent) 
         updatedAt: new Date(),
     }).where(eq(subscriptions.id, sub.id));
 }
+
+export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSubscriptionUpdatedEvent) => {
+    const subscriptionId = receivedEvent.data.object.id
+    if (!subscriptionId) {
+        throw new Error('No subscription ID found')
+    }
+
+    const subscriptionItemId = receivedEvent.data.object.items.data[0]?.id
+    if (!subscriptionItemId) {
+        throw new Error('No subscription item ID found')
+    }
+
+    const sub = await db.query.subscriptions.findFirst({
+        where: eq(subscriptions.stripeSubscriptionItemId, subscriptionItemId),
+    });
+
+    if (!sub) {
+        throw new Error('Subscription not found')
+    }
+
+    const priceId = receivedEvent.data.object.items.data[0]?.price?.id
+
+    if (!priceId) {
+        throw new Error('No price ID found')
+    }
+
+    if (priceId !== sub.priceId) {
+        // Check for schedule on event
+        const subscriptionScheduleId = receivedEvent.data.object.schedule?.toString()
+
+        // Update subscription if price changed
+        await db.update(subscriptions).set({
+            priceId: priceId,
+            updatedAt: new Date(),
+            scheduledPriceId: null,
+            scheduledChangeAt: null,
+            stripeSubscriptionScheduleId: subscriptionScheduleId,
+        }).where(eq(subscriptions.id, sub.id));
+    }
+}
