@@ -31,7 +31,6 @@ export const ProCard = ({
     const { mutateAsync: checkout } = api.subscription.checkout.useMutation();
     const { mutateAsync: getPriceId } = api.subscription.getPriceId.useMutation();
     const { mutateAsync: updateSubscription } = api.subscription.update.useMutation();
-    const { mutateAsync: manageSubscription } = api.subscription.manageSubscription.useMutation();
     const { mutateAsync: releaseSubscriptionSchedule } = api.subscription.releaseSubscriptionSchedule.useMutation();
 
     const [isCheckingOut, setIsCheckingOut] = useState(false);
@@ -79,6 +78,8 @@ export const ProCard = ({
             }
             setIsCheckingOut(true);
             await releaseSubscriptionSchedule({ subsciptionScheduleId: subscription.scheduledPrice.stripeSubscriptionScheduleId });
+            refetchSubscription();
+            toast.success('Scheduled downgrade canceled!');
         } catch (error) {
             console.error('Error canceling scheduled downgrade:', error);
             toast.error('Error canceling scheduled downgrade', {
@@ -277,7 +278,7 @@ export const ProCard = ({
                         {buttonContent()}
                     </Button>
 
-                    {isPendingTierSelected && isPro && <div className="text-foreground-secondary/80 text-small text-balance">
+                    {isPendingTierSelected && isPro && <div className="text-amber-500 text-small text-balance">
                         {`This plan will start on ${subscription?.scheduledPrice?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
                     </div>}
                 </div>

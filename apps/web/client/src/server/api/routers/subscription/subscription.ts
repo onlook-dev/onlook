@@ -161,6 +161,13 @@ export const subscriptionRouter = createTRPCRouter({
         subsciptionScheduleId: z.string(),
     })).mutation(async ({ input }) => {
         await releaseSubscriptionSchedule({ subsciptionScheduleId: input.subsciptionScheduleId });
+        await db.update(subscriptions).set({
+            status: 'active',
+            updatedAt: new Date(),
+            scheduledPriceId: null,
+            stripeSubscriptionScheduleId: null,
+            scheduledChangeAt: null,
+        }).where(eq(subscriptions.stripeSubscriptionScheduleId, input.subsciptionScheduleId)).returning();
     }),
 });
 
