@@ -1,7 +1,7 @@
 import { Routes } from '@/utils/constants';
 import { prices, subscriptions, toSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { createBillingPortalSession, createCheckoutSession, PriceKey, updateSubscription } from '@onlook/stripe';
+import { createBillingPortalSession, createCheckoutSession, PriceKey, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -101,34 +101,60 @@ export const subscriptionRouter = createTRPCRouter({
 
         // If the new price is higher, we invoice the customer immediately.
         const isUpgrade = newPrice?.monthlyMessageLimit > currentPrice.monthlyMessageLimit;
-        const updatedSubscription = await updateSubscription({
-            subscriptionId: stripeSubscriptionId,
-            subscriptionItemId: stripeSubscriptionItemId,
-            priceId: stripePriceId,
-        });
+        if (isUpgrade) {
+            await updateSubscription({
+                subscriptionId: stripeSubscriptionId,
+                subscriptionItemId: stripeSubscriptionItemId,
+                priceId: stripePriceId,
+            });
+            await db.update(subscriptions).set({
+                priceId: newPrice.id,
+                status: 'active',
+                updatedAt: new Date(),
+            }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
+        } else {
+            const schedule = await updateSubscriptionNextPeriod({
+                subscriptionId: stripeSubscriptionId,
+                priceId: stripePriceId,
+            });
+            const startDate = schedule.phases[0]?.start_date ?? Date.now();
+            const scheduledChangeAt = new Date(startDate * 1000);
 
-        let appliedPriceId = newPrice.id
-        let scheduledPriceId = null;
-        let scheduledChangeAt = null;
-
-        // If the new price is lower, we schedule the change for the end of the current period on our side.
-        if (!isUpgrade) {
-            const currentPeriodEnd = updatedSubscription.items.data[0]?.current_period_end;
-
-            appliedPriceId = currentPrice.id;
-            scheduledPriceId = newPrice.id;
-            scheduledChangeAt = currentPeriodEnd ?
-                new Date(currentPeriodEnd * 1000) : null;
+            await db.update(subscriptions).set({
+                priceId: currentPrice.id,
+                updatedAt: new Date(),
+                scheduledPriceId: newPrice.id,
+                stripeSubscriptionScheduleId: schedule.id,
+                scheduledChangeAt,
+            }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
         }
-        await db.update(subscriptions).set({
-            priceId: appliedPriceId,
-            status: 'active',
-            scheduledPriceId,
-            scheduledChangeAt,
-            updatedAt: new Date(),
-        }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
+        // const updatedSubscription = await updateSubscription({
+        //     subscriptionId: stripeSubscriptionId,
+        //     subscriptionItemId: stripeSubscriptionItemId,
+        //     priceId: stripePriceId,
+        // });
 
-        return updatedSubscription;
+        // let appliedPriceId = newPrice.id
+        // let scheduledPriceId = null;
+        // let scheduledChangeAt = null;
+
+        // // If the new price is lower, we schedule the change for the end of the current period on our side.
+        // if (!isUpgrade) {
+        //     const currentPeriodEnd = updatedSubscription.items.data[0]?.current_period_end;
+
+        //     appliedPriceId = currentPrice.id;
+        //     scheduledPriceId = newPrice.id;
+        //     scheduledChangeAt = currentPeriodEnd ?
+        //         new Date(currentPeriodEnd * 1000) : null;
+        // }
+        // await db.update(subscriptions).set({
+        //     priceId: appliedPriceId,
+        //     status: 'active',
+        //     scheduledPriceId,
+        //     scheduledChangeAt,
+        //     updatedAt: new Date(),
+        // }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
+
     }),
 });
 

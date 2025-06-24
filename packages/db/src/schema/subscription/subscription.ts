@@ -27,6 +27,7 @@ export const subscriptions = pgTable('subscriptions', {
     // Scheduled price change
     scheduledPriceId: uuid('scheduled_price_id').references(() => prices.id),
     scheduledChangeAt: timestamp('scheduled_change_at', { withTimezone: true }),
+    stripeSubscriptionScheduleId: text('stripe_subscription_schedule_id'),
 }).enableRLS();
 
 export const subscriptionRelations = relations(subscriptions, ({ one, many }) => ({
