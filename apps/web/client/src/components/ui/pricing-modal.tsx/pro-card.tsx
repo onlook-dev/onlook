@@ -1,6 +1,7 @@
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
 import { PriceKey, PRO_PRODUCT_CONFIG, ProductType, type Subscription } from '@onlook/stripe';
+import { Badge } from "@onlook/ui/badge";
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
@@ -38,7 +39,6 @@ export const ProCard = ({
     const pollingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const selectedTierData = PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier);
-
     const isPro = subscription?.product.type === ProductType.PRO;
     const isNewTierSelected = selectedTier !== subscription?.price.key;
 
@@ -222,7 +222,8 @@ export const ProCard = ({
                                     <SelectItem key={value.key} value={value.key}>
                                         <div className="flex items-center gap-2">
                                             {value.description}
-                                            {value.key === subscription?.price.key && <Icons.CheckCircled className="w-5 h-5 text-foreground-secondary/80" />}
+                                            {value.key === subscription?.price.key && <Badge variant="secondary">Current Plan</Badge>}
+                                            {value.key === subscription?.scheduledPrice?.key && <Badge variant="secondary">Pending</Badge>}
                                         </div>
                                     </SelectItem>
                                 ))}

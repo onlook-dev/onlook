@@ -19,6 +19,10 @@ export interface Price {
     key: PriceKey;
 }
 
+export interface ScheduledPrice extends Price {
+    scheduledChangeAt: Date;
+}
+
 export interface Subscription {
     id: string;
     status: string;
@@ -26,6 +30,7 @@ export interface Subscription {
     endedAt: Date | null;
     product: Product;
     price: Price;
+    scheduledPrice: ScheduledPrice | null;
     stripeSubscriptionId: string;
     stripeSubscriptionItemId: string;
     stripeCustomerId: string;

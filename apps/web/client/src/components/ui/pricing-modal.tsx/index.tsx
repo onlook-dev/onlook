@@ -2,6 +2,7 @@
 
 import { useUserManager } from '@/components/store/user';
 import { useGetBackground } from '@/hooks/use-get-background';
+import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
 import { ProductType } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
@@ -53,12 +54,17 @@ export const SubscriptionModal = observer(() => {
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: 0.05 }}
                                     >
-                                        <div className="flex flex-row gap-2 w-[46rem] justify-between">
+                                        <div className="flex flex-col gap-2 w-[46rem] items-start">
                                             <h1 className="text-title2 text-foreground-primary">
                                                 {subscription?.product.type === ProductType.PRO
-                                                    ? t('pricing.titles.proMember')
-                                                    : t('pricing.titles.choosePlan')}
+                                                    ? t(transKeys.pricing.titles.proMember)
+                                                    : t(transKeys.pricing.titles.choosePlan)}
                                             </h1>
+                                            {subscription?.scheduledPrice && (
+                                                <div className="text-foreground-secondary/80 text-balance">
+                                                    Your {subscription.scheduledPrice.monthlyMessageLimit} messages a month plan starts on {subscription.scheduledPrice.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                                </div>
+                                            )}
                                         </div>
                                     </motion.div>
                                     <div className="flex gap-4">

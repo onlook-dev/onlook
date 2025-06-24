@@ -11,8 +11,8 @@ import { observer } from 'mobx-react-lite';
 
 export const UsageSection = observer(() => {
     const userManager = useUserManager();
-    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
-    const { data: usageData, isLoading: isLoadingUsage } = api.usage.get.useQuery();
+    const { data: subscription } = api.subscription.get.useQuery();
+    const { data: usageData } = api.usage.get.useQuery();
     const product = subscription?.product ?? FREE_PRODUCT_CONFIG;
     const price = product?.type === ProductType.FREE ? 'Trial' : 'Active';
     let usage = product?.type === ProductType.FREE ? usageData?.daily : usageData?.monthly;
@@ -43,6 +43,11 @@ export const UsageSection = observer(() => {
                     <div className="text-muted-foreground">{usage.period === 'day' ? 'daily' : 'monthly'} chats used</div>
                 </div>
             </div>
+            {subscription?.scheduledPrice && (
+                <div className="text-amber text-mini text-balance">
+                    Your {subscription.scheduledPrice.monthlyMessageLimit} messages a month plan starts on {subscription.scheduledPrice.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </div>
+            )}
             <Progress value={usagePercent} className="w-full" />
             <Button className="w-full flex items-center justify-center gap-2 bg-blue-400 text-white hover:bg-blue-500" onClick={handleGetMoreCredits}>
                 <Icons.Sparkles className="mr-1 h-4 w-4" /> Get more Credits

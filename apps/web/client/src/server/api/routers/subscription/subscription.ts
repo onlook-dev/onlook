@@ -22,7 +22,23 @@ export const subscriptionRouter = createTRPCRouter({
             console.error('No active subscription found for user', user.id);
             return null;
         }
-        return toSubscription(subscription);
+
+        // If there is a scheduled price, we need to fetch it from the database.
+        let scheduledPrice = null;
+        if (subscription.scheduledPriceId && subscription.scheduledChangeAt) {
+            const foundPrice = await db.query.prices.findFirst({
+                where: eq(prices.id, subscription.scheduledPriceId),
+            });
+
+            if (foundPrice) {
+                scheduledPrice = {
+                    ...foundPrice,
+                    scheduledChangeAt: subscription.scheduledChangeAt,
+                }
+            }
+        }
+
+        return toSubscription({ ...subscription, scheduledPrice });
     }),
     getPriceId: protectedProcedure.input(z.object({
         priceKey: z.nativeEnum(PriceKey),
