@@ -15,6 +15,7 @@ export const usageRouter = createTRPCRouter({
         const lastDay = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
         const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
 
+
         // Count records from last day
         const lastDayCount = await db
             .select({ count: sql<number>`count(*)` })
