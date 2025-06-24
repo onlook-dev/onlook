@@ -13,7 +13,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 export class ImageManager {
-    private images: ImageContentData[] = [];
+    private images: string[] = [];
     private _isScanning = false;
 
     constructor(private editorEngine: EditorEngine) {
@@ -175,16 +175,15 @@ export class ImageManager {
                 this.images = [];
                 return;
             }
+            console.log(files);
 
             const imageFiles = files.filter((filePath: string) => isImageFile(filePath));
 
             if (imageFiles.length === 0) {
                 return;
             }
-            
-            const imageContents = await this.readImagesContent(imageFiles);
-            
-            this.images = imageContents.filter((result): result is ImageContentData => result !== null)
+
+            this.images = imageFiles;
             
         } catch (error) {
             console.error('Error scanning images:', error);
@@ -244,8 +243,6 @@ export class ImageManager {
         }
 
         try {
-            console.log('Reading content for images:', imagePaths);
-
             // Process all images in parallel
             const imagePromises = imagePaths.map(path => this.readImageContent(path));
             const results = await Promise.all(imagePromises);

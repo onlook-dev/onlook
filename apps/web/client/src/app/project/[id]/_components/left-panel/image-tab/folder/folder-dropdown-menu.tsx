@@ -9,6 +9,7 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import type { FolderNode } from '../providers/types';
+import { cn } from '@onlook/ui/utils';
 
 export const FolderDropdownMenu = memo(
     ({
@@ -17,12 +18,16 @@ export const FolderDropdownMenu = memo(
         handleDeleteFolder,
         handleMoveToFolder,
         isDisabled,
+        alwaysVisible,
+        className,
     }: {
         folder: FolderNode;
-        handleRenameFolder: () => void;
-        handleDeleteFolder: () => void;
-        handleMoveToFolder: () => void;
-        isDisabled: boolean;
+        handleRenameFolder?: () => void;
+        handleDeleteFolder?: () => void;
+        handleMoveToFolder?: () => void;
+        isDisabled?: boolean;
+        alwaysVisible?: boolean;
+        className?: string;
     }) => {
         const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -36,14 +41,15 @@ export const FolderDropdownMenu = memo(
         );
 
         const isVisible = useMemo(() => {
-            return activeDropdown === folder.name;
-        }, [activeDropdown, folder.name]);
+            return alwaysVisible || activeDropdown === folder.name;
+        }, [activeDropdown, folder.name, alwaysVisible]);
 
         return (
             <div
-                className={`absolute right-2 top-2 ${
-                    isVisible ? 'opacity-100' : 'opacity-0'
-                } group-hover:opacity-100 transition-opacity duration-300`}
+                className={cn(
+                    ' group-hover:opacity-100 transition-opacity duration-300',
+                    isVisible ? 'opacity-100' : 'opacity-0',
+                )}
                 onClick={(e) => e.stopPropagation()}
             >
                 <DropdownMenu onOpenChange={handleOpenChange}>
@@ -51,7 +57,10 @@ export const FolderDropdownMenu = memo(
                         <Button
                             size="icon"
                             variant={'ghost'}
-                            className="bg-background p-1 inline-flex items-center justify-center h-auto w-auto rounded shadow-sm"
+                            className={cn(
+                                'bg-background p-1 inline-flex items-center justify-center h-auto w-auto rounded shadow-sm',
+                                className,
+                            )}
                             disabled={isDisabled}
                         >
                             <Icons.DotsHorizontal className="text-foreground dark:text-white w-4 h-4" />
@@ -67,7 +76,7 @@ export const FolderDropdownMenu = memo(
                             <Button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleRenameFolder();
+                                    handleRenameFolder?.();
                                 }}
                                 variant={'ghost'}
                                 className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
@@ -85,7 +94,7 @@ export const FolderDropdownMenu = memo(
                                 className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMoveToFolder();
+                                    handleMoveToFolder?.();
                                 }}
                                 disabled={isDisabled}
                             >
@@ -101,7 +110,7 @@ export const FolderDropdownMenu = memo(
                                 className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleDeleteFolder();
+                                    handleDeleteFolder?.();
                                 }}
                                 disabled={isDisabled}
                             >

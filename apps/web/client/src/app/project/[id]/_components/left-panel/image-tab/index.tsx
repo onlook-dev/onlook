@@ -1,11 +1,10 @@
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import DeleteImageModal from './delete-modal';
-import RenameImageModal from './rename-modal';
 import Folder from './folder';
 import { ImagesProvider, useImagesContext } from './providers/images-provider';
 import { useImageDragDrop } from './hooks/use-image-drag-drop';
+import { useEditorEngine } from '@/components/store/editor';
 
 export const ImagesTab = observer(() => {
     return (
@@ -17,13 +16,12 @@ export const ImagesTab = observer(() => {
 
 const ImagesTabContent = observer(() => {
     
-    const { deleteOperations, renameOperations, uploadOperations, folderStructure, isOperating } = useImagesContext();
-    const { deleteState, onDeleteImage, handleDeleteModalToggle } = deleteOperations;
+    const { renameOperations, uploadOperations, isOperating } = useImagesContext();
+    const editorEngine = useEditorEngine();
+    const isIndexing = editorEngine.sandbox.isIndexingFiles;
 
     const {
-        renameState,
-        onRenameImage,
-        handleRenameModalToggle
+        renameState
     } = renameOperations;
 
     const {
@@ -33,6 +31,16 @@ const ImagesTabContent = observer(() => {
         handleDragEnter,
         handleDragLeave,
     } = useImageDragDrop();
+    
+
+    if (isIndexing) {
+        return (
+            <div className="w-full h-full flex items-center justify-center gap-2">
+                <Icons.Reload className="w-4 h-4 animate-spin" />
+                Indexing images...
+            </div>
+        );
+    }
 
 
     return (
@@ -74,26 +82,9 @@ const ImagesTabContent = observer(() => {
                         onDragEnter={handleDragEnter}
                         onDragLeave={handleDragLeave}
                     >
-                        <Folder folderStructure={folderStructure} />
+                        <Folder />
                     </div>
                 )}
-                <DeleteImageModal
-                    onDelete={onDeleteImage}
-                    isOpen={!!deleteState.imageToDelete}
-                    toggleOpen={handleDeleteModalToggle}
-                    isLoading={deleteState.isLoading}
-                />
-                <RenameImageModal
-                    onRename={onRenameImage}
-                    isOpen={
-                        !!renameState.imageToRename &&
-                        !!renameState.newImageName &&
-                        renameState.newImageName !== renameState.imageToRename
-                    }
-                    toggleOpen={handleRenameModalToggle}
-                    newName={renameState.newImageName}
-                    isLoading={renameState.isLoading}
-                />
             </div>
         </ImagesProvider>
     );

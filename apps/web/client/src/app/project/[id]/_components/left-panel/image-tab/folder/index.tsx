@@ -18,19 +18,18 @@ import FolderRenameModal from '../folder-rename-modal';
 import FolderDeleteModal from '../folder-delete-modal';
 import FolderMoveModal from '../folder-move-modal';
 import FolderCreateModal from '../folder-create-modal';
+import { FolderDropdownMenu } from './folder-dropdown-menu';
 
-interface FolderProps {
-    folderStructure: FolderNode;
-}
 
 interface FolderPathItem {
     folder: FolderNode;
     name: string;
 }
 
-export default function Folder({ folderStructure }: FolderProps) {
+export default function Folder() {
     const inputRef = useRef<HTMLInputElement>(null);
-    const { uploadOperations, isOperating } = useImagesContext();
+    const breadcrumbsRef = useRef<HTMLDivElement>(null);
+    const { uploadOperations, isOperating, folderStructure } = useImagesContext();
     const [currentFolder, setCurrentFolder] = useState<FolderNode | null>(null);
     const [folderPath, setFolderPath] = useState<FolderPathItem[]>([]);
 
@@ -58,6 +57,9 @@ export default function Folder({ folderStructure }: FolderProps) {
         handleCreateFolderInputChange,
         onCreateFolder,
         handleCreateModalToggle,
+        handleRenameFolder,
+        handleDeleteFolder,
+        handleMoveToFolder,
         isOperating: isFolderOperating,
     } = useFolder();
 
@@ -104,6 +106,13 @@ export default function Folder({ folderStructure }: FolderProps) {
         }
     }, [currentFolder, loadFolderImages]);
 
+    // Auto-scroll breadcrumbs to the right when folder path changes
+    useEffect(() => {
+        if (breadcrumbsRef.current) {
+            breadcrumbsRef.current.scrollLeft = breadcrumbsRef.current.scrollWidth;
+        }
+    }, [folderPath]);
+
     const handleKeyDownWithRef = (e: React.KeyboardEvent) => {
         handleKeyDown(e);
         if (e.key === 'Escape') {
@@ -113,7 +122,11 @@ export default function Folder({ folderStructure }: FolderProps) {
 
     const canGoBack = folderPath.length > 0 || currentFolder !== folderStructure;
     const isAnyOperationLoading = isOperating || isFolderOperating;
-
+    const showCreateButton = currentFolder === folderStructure && currentFolder.children.size === 0;
+    console.log(currentFolder);
+    console.log(folderStructure);
+    
+    
     return (
         <div className="flex flex-col gap-2">
             {/* Navigation Header */}
@@ -125,34 +138,58 @@ export default function Folder({ folderStructure }: FolderProps) {
                             size="icon"
                             onClick={handleGoBack}
                             disabled={!canGoBack}
-                            className="h-8 w-8"
+                            className="h-8 w-8 relative z-10"
                         >
                             <Icons.ArrowLeft className="h-4 w-4" />
                         </Button>
 
-                        {/* Breadcrumbs */}
-                        <div className="flex items-center gap-1 text-sm text-gray-200 overflow-x-auto">
-                            {folderPath.map((pathItem, index) => (
-                                <div key={index} className="flex items-center gap-1">
-                                    <Icons.ChevronRight className="h-3 w-3 text-gray-400" />
-                                    <button
-                                        onClick={() => handleBreadcrumbClick(index)}
-                                        className="hover:text-white transition-colors whitespace-nowrap"
-                                    >
-                                        {pathItem.name}
-                                    </button>
-                                </div>
-                            ))}
+                        {/* Breadcrumbs Container with Fade Gradient */}
+                        <div className="relative flex-1 min-w-0">
+                            {/* Fade Gradient Overlay */}
+                            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-background-primary to-transparent z-10 pointer-events-none" />
 
-                            {currentFolder && currentFolder !== folderStructure && (
-                                <div className="flex items-center gap-1">
-                                    <Icons.ChevronRight className="h-3 w-3 text-gray-400" />
-                                    <span className="font-medium text-white whitespace-nowrap">
-                                        {currentFolder.name}
-                                    </span>
-                                </div>
-                            )}
+                            {/* Breadcrumbs */}
+                            <div
+                                ref={breadcrumbsRef}
+                                className="flex items-center gap-1 text-sm text-gray-200 overflow-x-auto scrollbar-hide scroll-smooth"
+                            >
+                                {folderPath.map((pathItem, index) => (
+                                    <div key={index} className="flex items-center gap-1">
+                                        <Icons.ChevronRight className="h-3 w-3 text-gray-400" />
+                                        <button
+                                            onClick={() => handleBreadcrumbClick(index)}
+                                            className="hover:text-white transition-colors whitespace-nowrap"
+                                        >
+                                            {pathItem.name}
+                                        </button>
+                                    </div>
+                                ))}
+
+                                {currentFolder && currentFolder !== folderStructure && (
+                                    <div className="flex items-center gap-1">
+                                        <Icons.ChevronRight className="h-3 w-3 text-gray-400" />
+                                        <span className="font-medium text-white whitespace-nowrap">
+                                            {currentFolder.name}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
+                        <FolderDropdownMenu
+                            folder={currentFolder || folderStructure}
+                            handleRenameFolder={() =>
+                                handleRenameFolder(currentFolder || folderStructure)
+                            }
+                            handleDeleteFolder={() =>
+                                handleDeleteFolder(currentFolder || folderStructure)
+                            }
+                            handleMoveToFolder={() =>
+                                handleMoveToFolder(currentFolder || folderStructure)
+                            }
+                            className="bg-gray-700"
+                            alwaysVisible={true}
+                        />
                     </div>
                     <Separator />
                 </>
@@ -210,6 +247,8 @@ export default function Folder({ folderStructure }: FolderProps) {
             {/* Folder Content */}
             <FolderList
                 items={Array.from(currentFolder?.children.values() || [])}
+                folder={currentFolder}
+                showCreateButton={showCreateButton}
                 onSelectFolder={handleSelectFolder}
             />
 
@@ -221,16 +260,8 @@ export default function Folder({ folderStructure }: FolderProps) {
                         Loading images...
                     </div>
                 </div>
-            ) : filteredImages && filteredImages.length > 0 ? (
-                <ImageList images={filteredImages} />
-            ) : currentFolder?.images && currentFolder.images.length > 0 ? (
-                <div className="flex items-center justify-center h-32 text-xs text-foreground-primary/50">
-                    {search ? 'No images match your search' : 'Images loading...'}
-                </div>
             ) : (
-                <div className="flex items-center justify-center h-32 text-xs text-foreground-primary/50">
-                    No images in this folder
-                </div>
+                <ImageList images={filteredImages} />
             )}
 
             {/* Folder Operation Modals */}

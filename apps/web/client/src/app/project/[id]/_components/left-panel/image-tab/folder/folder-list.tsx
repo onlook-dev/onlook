@@ -2,23 +2,24 @@ import { memo } from 'react';
 import FolderTab from './folder-tab';
 import type { FolderNode } from '../providers/types';
 import { useFolder } from '../hooks/use-folder';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 
 interface FolderListProps {
     items: FolderNode[];
     onSelectFolder: (folder: FolderNode) => void;
+    folder: FolderNode | null;
+    showCreateButton: boolean;
 }
 
-export const FolderList = memo(({ items, onSelectFolder }: FolderListProps) => {
+export const FolderList = memo(({ items, onSelectFolder, folder, showCreateButton }: FolderListProps) => {
     const {
+        handleCreateFolder,
         handleRenameFolder,
         handleDeleteFolder,
         handleMoveToFolder,
         isOperating,
     } = useFolder();
-
-    if (!items.length) {
-        return null;
-    }
 
     return (
         <div className="flex flex-col space-y-1">
@@ -35,6 +36,18 @@ export const FolderList = memo(({ items, onSelectFolder }: FolderListProps) => {
                     isDisabled={isOperating}
                 />
             ))}
+            {showCreateButton && (
+            <Button
+                variant="default"
+                size="icon"
+                className="h-8 w-8 text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
+                onClick={() => handleCreateFolder(folder || undefined)}
+                disabled={isOperating}
+            >
+                <Icons.DirectoryPlus className="h-4 w-4" />
+                    Create a Folder
+                </Button>
+            )}
         </div>
     );
 });

@@ -1,14 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { type ImageContentData } from '@onlook/models';
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useImageUpload } from '../hooks/use-image-upload';
 import { useImageDelete } from '../hooks/use-image-delete';
 import { useImageRename } from '../hooks/use-image-rename';
 import type { FolderNode } from './types';
 
 interface ImagesContextValue {
-    editorEngine: ReturnType<typeof useEditorEngine>;
-    imageAssets: ImageContentData[];
     folderStructure: FolderNode;
 
     // Image operations
@@ -25,15 +23,15 @@ interface ImagesProviderProps {
     children: ReactNode
 }
 
-export const ImagesProvider = ({ children }: ImagesProviderProps) => {
+export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
     const editorEngine = useEditorEngine();
-    const imageAssets = editorEngine.image.assets;
-
     
 
     const deleteOperations = useImageDelete();
     const renameOperations = useImageRename();
     const uploadOperations = useImageUpload();
+    console.log(editorEngine.image.assets);
+    
 
     const folderStructure = useMemo(() => {
         const createFolderNode = (name: string, path: string, fullPath: string): FolderNode => ({
@@ -46,11 +44,11 @@ export const ImagesProvider = ({ children }: ImagesProviderProps) => {
 
         const root = createFolderNode('public', '', '');
 
-        imageAssets.forEach((image) => {
-            if (!image.originPath) return;
+        editorEngine.image.assets.forEach((image) => {
+            if (!image) return;
 
             // Extract directory path from originPath
-            let pathParts = image.originPath.split('/');
+            let pathParts = image.split('/');
             pathParts.pop(); // Remove filename
 
             // Remove 'public' from the beginning if it exists (NextJS project structure)
@@ -87,12 +85,10 @@ export const ImagesProvider = ({ children }: ImagesProviderProps) => {
         });
 
         return root;
-    }, [imageAssets]);
+    }, [editorEngine.image.assets]);
 
 
     const value: ImagesContextValue = {
-        editorEngine,
-        imageAssets,
         folderStructure,
         // Provide default no-op functions if operations not provided
         isOperating: deleteOperations.deleteState.isLoading || renameOperations.renameState.isLoading,
@@ -103,7 +99,7 @@ export const ImagesProvider = ({ children }: ImagesProviderProps) => {
     };
 
     return <ImagesContext.Provider value={value}>{children}</ImagesContext.Provider>;
-};
+});
 
 export const useImagesContext = () => {
     const context = useContext(ImagesContext);
