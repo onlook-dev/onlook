@@ -21,6 +21,7 @@ export interface Price {
 
 export interface ScheduledPrice extends Price {
     scheduledChangeAt: Date;
+    stripeSubscriptionScheduleId: string;
 }
 
 export interface Subscription {

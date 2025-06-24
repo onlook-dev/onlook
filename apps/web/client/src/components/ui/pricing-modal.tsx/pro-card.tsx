@@ -31,6 +31,8 @@ export const ProCard = ({
     const { mutateAsync: checkout } = api.subscription.checkout.useMutation();
     const { mutateAsync: getPriceId } = api.subscription.getPriceId.useMutation();
     const { mutateAsync: updateSubscription } = api.subscription.update.useMutation();
+    const { mutateAsync: manageSubscription } = api.subscription.manageSubscription.useMutation();
+    const { mutateAsync: releaseSubscriptionSchedule } = api.subscription.releaseSubscriptionSchedule.useMutation();
 
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [selectedTier, setSelectedTier] = useState<PriceKey>(PriceKey.PRO_MONTHLY_TIER_1);
@@ -48,10 +50,42 @@ export const ProCard = ({
     }
 
     const handleCheckout = async () => {
-        if (isPro && isNewTierSelected) {
-            await updateExistingSubscription();
-        } else {
-            await createCheckoutSession();
+        try {
+            if (isPro) {
+                if (isPendingTierSelected) {
+                    await handleCancelScheduledDowngrade();
+                } else if (isNewTierSelected) {
+                    await updateExistingSubscription();
+                } else {
+                    throw new Error('No action to perform');
+                }
+            } else {
+                await createCheckoutSession();
+            }
+        } catch (error) {
+            toast.error(t(transKeys.pricing.toasts.error.title), {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+            console.error('Payment error:', error);
+        } finally {
+            setIsCheckingOut(false);
+        }
+    };
+
+    const handleCancelScheduledDowngrade = async () => {
+        try {
+            if (!subscription?.scheduledPrice?.scheduledChangeAt) {
+                throw new Error('No scheduled downgrade found');
+            }
+            setIsCheckingOut(true);
+            await releaseSubscriptionSchedule({ subsciptionScheduleId: subscription.scheduledPrice.stripeSubscriptionScheduleId });
+        } catch (error) {
+            console.error('Error canceling scheduled downgrade:', error);
+            toast.error('Error canceling scheduled downgrade', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+        } finally {
+            setIsCheckingOut(false);
         }
     };
 
@@ -184,7 +218,7 @@ export const ProCard = ({
         }
 
         if (!isPro) {
-            return t(transKeys.pricing.buttons.getPro);
+            return "Upgrade to Pro Plan";
         }
 
         if (!isNewTierSelected) {
@@ -192,7 +226,7 @@ export const ProCard = ({
         }
 
         if (isPendingTierSelected) {
-            return "Will be active on " + subscription?.scheduledPrice?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            return "Cancel Scheduled Downgrade"
         }
 
         return "Update plan";
@@ -238,10 +272,14 @@ export const ProCard = ({
                     <Button
                         className="w-full"
                         onClick={handleCheckout}
-                        disabled={isCheckingOut || !isNewTierSelected || isPendingTierSelected}
+                        disabled={isCheckingOut || !isNewTierSelected}
                     >
                         {buttonContent()}
                     </Button>
+
+                    {isPendingTierSelected && isPro && <div className="text-foreground-secondary/80 text-small text-balance">
+                        {`This plan will start on ${subscription?.scheduledPrice?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
+                    </div>}
                 </div>
                 <div className="flex flex-col gap-2 h-42">
                     {PRO_FEATURES.map((feature) => (

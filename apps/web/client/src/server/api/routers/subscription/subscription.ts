@@ -1,7 +1,7 @@
 import { Routes } from '@/utils/constants';
 import { prices, subscriptions, toSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { cancelSubscriptionSchedule, createBillingPortalSession, createCheckoutSession, PriceKey, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
+import { createBillingPortalSession, createCheckoutSession, PriceKey, releaseSubscriptionSchedule, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -25,7 +25,7 @@ export const subscriptionRouter = createTRPCRouter({
 
         // If there is a scheduled price, we need to fetch it from the database.
         let scheduledPrice = null;
-        if (subscription.scheduledPriceId && subscription.scheduledChangeAt) {
+        if (subscription.scheduledPriceId && subscription.scheduledChangeAt && subscription.stripeSubscriptionScheduleId) {
             const foundPrice = await db.query.prices.findFirst({
                 where: eq(prices.id, subscription.scheduledPriceId),
             });
@@ -34,11 +34,12 @@ export const subscriptionRouter = createTRPCRouter({
                 scheduledPrice = {
                     ...foundPrice,
                     scheduledChangeAt: subscription.scheduledChangeAt,
+                    stripeSubscriptionScheduleId: subscription.stripeSubscriptionScheduleId,
                 }
             }
         }
 
-        return toSubscription({ ...subscription, scheduledPrice });
+        return toSubscription(subscription, scheduledPrice);
     }),
     getPriceId: protectedProcedure.input(z.object({
         priceKey: z.nativeEnum(PriceKey),
@@ -115,10 +116,10 @@ export const subscriptionRouter = createTRPCRouter({
             throw new Error(`Price not found for priceId: ${stripePriceId}`);
         }
 
-        // If there is a future scheduled change, we cancel it.
+        // If there is a future scheduled change, we release it.
         if (subscription.stripeSubscriptionScheduleId) {
-            await cancelSubscriptionSchedule({
-                scheduleId: subscription.stripeSubscriptionScheduleId,
+            await releaseSubscriptionSchedule({
+                subsciptionScheduleId: subscription.stripeSubscriptionScheduleId,
             });
         }
 
@@ -142,8 +143,8 @@ export const subscriptionRouter = createTRPCRouter({
                 subscriptionId: stripeSubscriptionId,
                 priceId: stripePriceId,
             });
-            const startDate = schedule.phases[0]?.start_date ?? Date.now();
-            const scheduledChangeAt = new Date(startDate * 1000);
+            const endDate = schedule.phases[0]?.end_date;
+            const scheduledChangeAt = endDate ? new Date(endDate * 1000) : null;
 
             const [updatedSubscription] = await db.update(subscriptions).set({
                 priceId: currentPrice.id,
@@ -154,6 +155,12 @@ export const subscriptionRouter = createTRPCRouter({
             }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
             return updatedSubscription;
         }
+    }),
+
+    releaseSubscriptionSchedule: protectedProcedure.input(z.object({
+        subsciptionScheduleId: z.string(),
+    })).mutation(async ({ input }) => {
+        await releaseSubscriptionSchedule({ subsciptionScheduleId: input.subsciptionScheduleId });
     }),
 });
 

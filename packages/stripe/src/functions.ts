@@ -209,11 +209,11 @@ export const updateSubscriptionNextPeriod = async ({
     return updatedSchedule;
 };
 
-export const cancelSubscriptionSchedule = async ({
-    scheduleId,
+export const releaseSubscriptionSchedule = async ({
+    subsciptionScheduleId,
 }: {
-    scheduleId: string;
+    subsciptionScheduleId: string;
 }) => {
     const stripe = createStripeClient();
-    return await stripe.subscriptionSchedules.cancel(scheduleId);
+    return await stripe.subscriptionSchedules.release(subsciptionScheduleId);
 }

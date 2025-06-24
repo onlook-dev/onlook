@@ -73,7 +73,7 @@ export const FreeCard = ({
             return t(transKeys.pricing.buttons.currentPlan);
         }
 
-        return t(transKeys.pricing.buttons.manageSubscription);
+        return "Downgrade to Free Plan";
     }
 
     return (
@@ -111,6 +111,7 @@ export const FreeCard = ({
                     </Select>
                     <Button
                         className="w-full"
+                        variant="outline"
                         onClick={handleManageSubscription}
                         disabled={isCheckingOut || isFree}
                     >
