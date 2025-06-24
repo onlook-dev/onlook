@@ -138,12 +138,10 @@ export const updateSubscription = async ({
     subscriptionId,
     subscriptionItemId,
     priceId,
-    invoiceNow,
 }: {
     subscriptionId: string;
     subscriptionItemId: string;
     priceId: string;
-    invoiceNow: boolean;
 }) => {
     const stripe = createStripeClient();
     return await stripe.subscriptions.update(subscriptionId, {
@@ -151,6 +149,62 @@ export const updateSubscription = async ({
             id: subscriptionItemId,
             price: priceId,
         }],
-        proration_behavior: invoiceNow ? 'always_invoice' : 'create_prorations',
+        proration_behavior: 'always_invoice'
     });
 }
+
+export const updateSubscriptionNextPeriod = async ({
+    subscriptionId,
+    priceId,
+}: {
+    subscriptionId: string;
+    priceId: string;
+}) => {
+    const stripe = createStripeClient();
+
+    // Step 1: Create a subscription schedule from the current subscription
+    const schedule = await stripe.subscriptionSchedules.create({
+        from_subscription: subscriptionId,
+    });
+
+    const currentPhase = schedule.phases[0];
+    if (!currentPhase) {
+        throw new Error('No current phase found');
+    }
+    const currentItem = currentPhase.items[0];
+    if (!currentItem) {
+        throw new Error('No current item found');
+    }
+
+    const currentPrice = currentItem.price.toString();
+    if (!currentPrice) {
+        throw new Error('No current price found');
+    }
+
+    // Step 2: Add a new phase that updates the price starting next billing period
+    const updatedSchedule = await stripe.subscriptionSchedules.update(schedule.id, {
+        phases: [
+            {
+                items: [
+                    {
+                        price: currentPrice,
+                        quantity: currentItem.quantity,
+                    },
+                ],
+                start_date: currentPhase.start_date,
+                end_date: currentPhase.end_date,
+            },
+            {
+                items: [
+                    {
+                        price: priceId,
+                        quantity: 1,
+                    },
+                ],
+                iterations: 1,
+            },
+        ],
+    });
+
+    return updatedSchedule;
+};

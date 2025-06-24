@@ -105,7 +105,6 @@ export const subscriptionRouter = createTRPCRouter({
             subscriptionId: stripeSubscriptionId,
             subscriptionItemId: stripeSubscriptionItemId,
             priceId: stripePriceId,
-            invoiceNow: isUpgrade,
         });
 
         let appliedPriceId = newPrice.id
