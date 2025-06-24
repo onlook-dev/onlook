@@ -12,7 +12,7 @@ export const usageRecords = pgTable('usage_records', {
     userId: uuid('user_id').notNull().references(() => users.id),
 
     // Metadata
-    type: usageTypes('type').notNull(),
+    type: usageTypes('type').default(UsageType.MESSAGE).notNull(),
     timestamp: timestamp('timestamp', { withTimezone: true }).notNull(),
 }).enableRLS();
 
