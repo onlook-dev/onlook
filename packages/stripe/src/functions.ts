@@ -208,3 +208,12 @@ export const updateSubscriptionNextPeriod = async ({
 
     return updatedSchedule;
 };
+
+export const cancelSubscriptionSchedule = async ({
+    scheduleId,
+}: {
+    scheduleId: string;
+}) => {
+    const stripe = createStripeClient();
+    return await stripe.subscriptionSchedules.cancel(scheduleId);
+}
