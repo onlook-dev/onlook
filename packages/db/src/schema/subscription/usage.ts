@@ -1,11 +1,7 @@
+import { UsageType } from '@onlook/models';
 import { relations } from 'drizzle-orm';
 import { pgEnum, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { users } from '../user';
-
-export enum UsageType {
-    MESSAGE = 'message',
-    DEPLOYMENT = 'deployment',
-}
 
 export const usageTypes = pgEnum('usage_types', UsageType);
 

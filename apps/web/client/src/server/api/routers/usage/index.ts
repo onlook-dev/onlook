@@ -1,6 +1,6 @@
-import { subscriptions, usageRecords, UsageType } from '@onlook/db';
+import { subscriptions, usageRecords } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import type { Usage } from '@onlook/models';
+import { UsageType, type Usage } from '@onlook/models';
 import { FREE_PRODUCT_CONFIG } from '@onlook/stripe';
 import { and, eq, gte, sql } from 'drizzle-orm';
 import { z } from 'zod';
