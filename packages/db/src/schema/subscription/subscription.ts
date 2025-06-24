@@ -1,9 +1,12 @@
+import { ScheduledSubscriptionAction } from '@onlook/stripe';
 import { relations } from 'drizzle-orm';
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { users } from '../user/user';
 import { prices } from './price';
 import { products } from './product';
 import { usageRecords } from './usage';
+
+export const scheduledSubscriptionAction = pgEnum('scheduled_subscription_action', ScheduledSubscriptionAction);
 
 export const subscriptions = pgTable('subscriptions', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -25,6 +28,7 @@ export const subscriptions = pgTable('subscriptions', {
     stripeSubscriptionItemId: text('stripe_subscription_item_id').notNull().unique(),
 
     // Scheduled price change
+    scheduledAction: scheduledSubscriptionAction('scheduled_action'),
     scheduledPriceId: uuid('scheduled_price_id').references(() => prices.id),
     scheduledChangeAt: timestamp('scheduled_change_at', { withTimezone: true }),
     stripeSubscriptionScheduleId: text('stripe_subscription_schedule_id'),
@@ -42,4 +46,5 @@ export const subscriptionRelations = relations(subscriptions, ({ one, many }) =>
     usageRecords: many(usageRecords),
 }));
 
+export type NewSubscription = typeof subscriptions.$inferInsert;
 export type Subscription = typeof subscriptions.$inferSelect;

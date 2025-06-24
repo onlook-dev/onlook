@@ -1,9 +1,9 @@
-import type { MessageLimitCheckResult } from "@onlook/models/usage";
+import type { Usage } from "@onlook/models";
 import { makeAutoObservable } from "mobx";
 
 export class ChatErrorManager {
     message: string | null = null;
-    limitInfo: MessageLimitCheckResult | null = null;
+    usage: Usage | null = null;
 
     constructor() {
         makeAutoObservable(this);
@@ -12,10 +12,14 @@ export class ChatErrorManager {
     handleChatError(error: Error) {
         // Try to parse error message as JSON
         try {
-            const parsed = JSON.parse(error.message);
+            const parsed = JSON.parse(error.message) as {
+                code: number;
+                error: string;
+                usage: Usage;
+            };
             if (parsed && typeof parsed === 'object') {
-                if (parsed.code === 402 && parsed.limitInfo) {
-                    this.limitInfo = parsed.limitInfo as MessageLimitCheckResult;
+                if (parsed.code === 402 && parsed.usage) {
+                    this.usage = parsed.usage as Usage;
                     this.message = parsed.error || 'Message limit exceeded.';
                 } else {
                     this.message = parsed.error || error.toString();
@@ -30,6 +34,6 @@ export class ChatErrorManager {
 
     clear() {
         this.message = null;
-        this.limitInfo = null;
+        this.usage = null;
     }
 }

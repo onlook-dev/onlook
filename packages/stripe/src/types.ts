@@ -14,14 +14,9 @@ export interface Product {
 export interface Price {
     id: string;
     productId: string;
+    key: PriceKey;
     monthlyMessageLimit: number;
     stripePriceId: string;
-    key: PriceKey;
-}
-
-export interface ScheduledPrice extends Price {
-    scheduledChangeAt: Date;
-    stripeSubscriptionScheduleId: string;
 }
 
 export interface Subscription {
@@ -31,8 +26,24 @@ export interface Subscription {
     endedAt: Date | null;
     product: Product;
     price: Price;
-    scheduledPrice: ScheduledPrice | null;
+    scheduledChange: ScheduledChange | null;
+
+    // Stripe
     stripeSubscriptionId: string;
     stripeSubscriptionItemId: string;
     stripeCustomerId: string;
+}
+
+export enum ScheduledSubscriptionAction {
+    PRICE_CHANGE = 'price_change',
+    CANCELLATION = 'cancellation',
+}
+
+export interface ScheduledChange {
+    scheduledAction: ScheduledSubscriptionAction;
+    scheduledChangeAt: Date;
+
+    // Only present for price changes
+    price: Price | null;
+    stripeSubscriptionScheduleId: string | null;
 }

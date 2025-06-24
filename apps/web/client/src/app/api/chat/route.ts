@@ -1,8 +1,7 @@
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { chatToolSet, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { ChatType, CLAUDE_MODELS, LLMProvider } from '@onlook/models';
-import type { MessageLimitCheckResult } from '@onlook/models/usage';
+import { ChatType, CLAUDE_MODELS, LLMProvider, type Usage } from '@onlook/models';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 
@@ -19,12 +18,12 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        const messageLimitCheckResult = await checkMessageLimit();
-        if (messageLimitCheckResult.exceeded) {
+        const usageCheckResult = await checkMessageLimit(req);
+        if (usageCheckResult.exceeded) {
             return new Response(JSON.stringify({
                 error: 'Message limit exceeded. Please upgrade to a paid plan.',
                 code: 402,
-                limitInfo: messageLimitCheckResult
+                usage: usageCheckResult.usage,
             }), {
                 status: 402,
                 headers: { 'Content-Type': 'application/json' }
@@ -45,17 +44,35 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export const checkMessageLimit = async (): Promise<MessageLimitCheckResult> => {
-    const count = 0;
-    const limit = 10;
-    const exceeded = count >= limit;
+export const checkMessageLimit = async (req: NextRequest): Promise<{
+    exceeded: boolean;
+    usage: Usage;
+}> => {
+    const { api } = await createTRPCClient(req);
+    const usage = await api.usage.get();
+
+    const dailyUsage = usage.daily;
+    const dailyExceeded = dailyUsage.usageCount >= dailyUsage.limitCount;
+    if (dailyExceeded) {
+        return {
+            exceeded: true,
+            usage: dailyUsage,
+        };
+    }
+
+    const monthlyUsage = usage.monthly;
+    const monthlyExceeded = monthlyUsage.usageCount >= monthlyUsage.limitCount;
+    if (monthlyExceeded) {
+        return {
+            exceeded: true,
+            usage: monthlyUsage,
+        };
+    }
 
     return {
-        exceeded,
-        period: 'daily',
-        count,
-        limit,
-    }
+        exceeded: false,
+        usage: monthlyUsage,
+    };
 }
 
 export const getSupabaseUser = async (request: NextRequest) => {

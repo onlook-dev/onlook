@@ -35,14 +35,16 @@ export const ProCard = ({
 
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [selectedTier, setSelectedTier] = useState<PriceKey>(PriceKey.PRO_MONTHLY_TIER_1);
-    const [isPollingForSubscription, setIsPollingForSubscription] = useState(false);
-    const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const pollingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const selectedTierData = PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier);
     const isPro = subscription?.product.type === ProductType.PRO;
     const isNewTierSelected = selectedTier !== subscription?.price.key;
-    const isPendingTierSelected = selectedTier !== subscription?.price.key && selectedTier === subscription?.scheduledPrice?.key;
+    const isPendingTierSelected = selectedTier !== subscription?.price.key && selectedTier === subscription?.scheduledChange?.price?.key;
+
+    // Polling for subscription to be updated
+    const [isPollingForSubscription, setIsPollingForSubscription] = useState(false);
+    const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const pollingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     if (!PRO_PRODUCT_CONFIG.prices.length) {
         throw new Error('No pro tiers found');
@@ -73,11 +75,11 @@ export const ProCard = ({
 
     const handleCancelScheduledDowngrade = async () => {
         try {
-            if (!subscription?.scheduledPrice?.scheduledChangeAt) {
-                throw new Error('No scheduled downgrade found');
+            if (!subscription?.scheduledChange?.scheduledChangeAt || !subscription.scheduledChange.stripeSubscriptionScheduleId) {
+                throw new Error('No scheduled downgrade found.');
             }
             setIsCheckingOut(true);
-            await releaseSubscriptionSchedule({ subsciptionScheduleId: subscription.scheduledPrice.stripeSubscriptionScheduleId });
+            await releaseSubscriptionSchedule({ subsciptionScheduleId: subscription.scheduledChange.stripeSubscriptionScheduleId });
             refetchSubscription();
             toast.success('Scheduled downgrade canceled!');
         } catch (error) {
@@ -263,7 +265,7 @@ export const ProCard = ({
                                         <div className="flex items-center gap-2">
                                             {value.description}
                                             {value.key === subscription?.price.key && <Badge variant="secondary">Current Plan</Badge>}
-                                            {value.key === subscription?.scheduledPrice?.key && <Badge variant="secondary">Pending</Badge>}
+                                            {value.key === subscription?.scheduledChange?.price?.key && <Badge variant="secondary">Pending</Badge>}
                                         </div>
                                     </SelectItem>
                                 ))}
@@ -279,7 +281,7 @@ export const ProCard = ({
                     </Button>
 
                     {isPendingTierSelected && isPro && <div className="text-amber-500 text-small text-balance">
-                        {`This plan will start on ${subscription?.scheduledPrice?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
+                        {`This plan will start on ${subscription?.scheduledChange?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
                     </div>}
                 </div>
                 <div className="flex flex-col gap-2 h-42">

@@ -25,18 +25,10 @@ export const subscriptionRouter = createTRPCRouter({
 
         // If there is a scheduled price, we need to fetch it from the database.
         let scheduledPrice = null;
-        if (subscription.scheduledPriceId && subscription.scheduledChangeAt && subscription.stripeSubscriptionScheduleId) {
-            const foundPrice = await db.query.prices.findFirst({
+        if (subscription.scheduledPriceId) {
+            scheduledPrice = await db.query.prices.findFirst({
                 where: eq(prices.id, subscription.scheduledPriceId),
-            });
-
-            if (foundPrice) {
-                scheduledPrice = {
-                    ...foundPrice,
-                    scheduledChangeAt: subscription.scheduledChangeAt,
-                    stripeSubscriptionScheduleId: subscription.stripeSubscriptionScheduleId,
-                }
-            }
+            }) ?? null;
         }
 
         return toSubscription(subscription, scheduledPrice);

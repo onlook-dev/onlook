@@ -2,12 +2,11 @@
 
 import { useUserManager } from '@/components/store/user';
 import { api } from '@/trpc/react';
-import { FREE_PRODUCT_CONFIG, ProductType } from '@onlook/stripe';
+import { FREE_PRODUCT_CONFIG, ProductType, ScheduledSubscriptionAction } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Progress } from '@onlook/ui/progress';
 import { observer } from 'mobx-react-lite';
-
 
 export const UsageSection = observer(() => {
     const userManager = useUserManager();
@@ -43,9 +42,14 @@ export const UsageSection = observer(() => {
                     <div className="text-muted-foreground">{usage.period === 'day' ? 'daily' : 'monthly'} chats used</div>
                 </div>
             </div>
-            {subscription?.scheduledPrice && (
+            {subscription?.scheduledChange?.price && (
                 <div className="text-amber text-mini text-balance">
-                    Your {subscription.scheduledPrice.monthlyMessageLimit} messages a month plan starts on {subscription.scheduledPrice.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    Your {subscription.scheduledChange.price.monthlyMessageLimit} messages a month plan starts on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                </div>
+            )}
+            {subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION && (
+                <div className="text-amber text-mini text-balance">
+                    Your subscription will end on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                 </div>
             )}
             <Progress value={usagePercent} className="w-full" />

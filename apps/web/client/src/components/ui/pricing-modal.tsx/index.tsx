@@ -4,12 +4,13 @@ import { useUserManager } from '@/components/store/user';
 import { useGetBackground } from '@/hooks/use-get-background';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
-import { ProductType } from '@onlook/stripe';
+import { ProductType, ScheduledSubscriptionAction } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
+import { useEffect } from 'react';
 import { FreeCard } from './free-card';
 import { ProCard } from './pro-card';
 
@@ -18,6 +19,12 @@ export const SubscriptionModal = observer(() => {
     const t = useTranslations();
     const { data: subscription, refetch: refetchSubscription } = api.subscription.get.useQuery();
     const backgroundUrl = useGetBackground('create');
+
+    useEffect(() => {
+        if (userManager.subscription.isModalOpen) {
+            refetchSubscription();
+        }
+    }, [userManager.subscription.isModalOpen, refetchSubscription]);
 
     return (
         <AnimatePresence>
@@ -60,9 +67,15 @@ export const SubscriptionModal = observer(() => {
                                                     ? t(transKeys.pricing.titles.proMember)
                                                     : t(transKeys.pricing.titles.choosePlan)}
                                             </h1>
-                                            {subscription?.scheduledPrice && (
+                                            {subscription?.scheduledChange?.price && (
                                                 <div className="text-foreground-secondary/80 text-balance">
-                                                    Your {subscription.scheduledPrice.monthlyMessageLimit} messages a month plan starts on {subscription.scheduledPrice.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                                    Your {subscription.scheduledChange.price.monthlyMessageLimit} messages a month plan starts on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                                </div>
+                                            )}
+                                            {JSON.stringify(subscription?.scheduledChange)}
+                                            {subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION && (
+                                                <div className="text-foreground-secondary/80 text-balance">
+                                                    Your subscription will be cancelled on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                                 </div>
                                             )}
                                         </div>

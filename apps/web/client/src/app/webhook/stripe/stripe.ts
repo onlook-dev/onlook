@@ -1,5 +1,6 @@
-import { prices, subscriptions } from '@onlook/db';
+import { prices, subscriptions, type NewSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
+import { ScheduledSubscriptionAction } from '@onlook/stripe';
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
@@ -126,42 +127,58 @@ export const handleInvoicePaid = async (receivedEvent: Stripe.InvoicePaidEvent) 
     }).where(eq(subscriptions.id, sub.id));
 }
 
-export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSubscriptionUpdatedEvent) => {
-    const subscriptionId = receivedEvent.data.object.id
-    if (!subscriptionId) {
+export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSubscriptionUpdatedEvent, stripe: Stripe) => {
+    const stripeSubscription = receivedEvent.data.object
+    const stripeSubscriptionId = stripeSubscription.id
+
+    if (!stripeSubscriptionId) {
         throw new Error('No subscription ID found')
     }
 
-    const subscriptionItemId = receivedEvent.data.object.items.data[0]?.id
-    if (!subscriptionItemId) {
+    const stripeSubscriptionItemId = stripeSubscription.items.data[0]?.id
+    if (!stripeSubscriptionItemId) {
         throw new Error('No subscription item ID found')
     }
 
-    const sub = await db.query.subscriptions.findFirst({
-        where: eq(subscriptions.stripeSubscriptionItemId, subscriptionItemId),
+    const subscription = await db.query.subscriptions.findFirst({
+        where: eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId),
     });
 
-    if (!sub) {
+    if (!subscription) {
         throw new Error('Subscription not found')
     }
 
-    const priceId = receivedEvent.data.object.items.data[0]?.price?.id
+    const updates: Partial<NewSubscription> = {
+        updatedAt: new Date(),
+        stripeSubscriptionScheduleId: stripeSubscription.schedule?.toString(),
+    }
 
-    if (!priceId) {
+    const stripePriceId = receivedEvent.data.object.items.data[0]?.price?.id
+    if (!stripePriceId) {
         throw new Error('No price ID found')
     }
 
-    if (priceId !== sub.priceId) {
-        // Check for schedule on event
-        const subscriptionScheduleId = receivedEvent.data.object.schedule?.toString()
-
-        // Update subscription if price changed
-        await db.update(subscriptions).set({
-            priceId: priceId,
-            updatedAt: new Date(),
-            scheduledPriceId: null,
-            scheduledChangeAt: null,
-            stripeSubscriptionScheduleId: subscriptionScheduleId,
-        }).where(eq(subscriptions.id, sub.id));
+    const price = await db.query.prices.findFirst({
+        where: eq(prices.stripePriceId, stripePriceId),
+    })
+    if (!price) {
+        throw new Error('No price found for price ID: ${stripePriceId}')
     }
+
+    // Update subscription if price changed
+    if (price.id !== subscription.priceId) {
+        console.log('Price changed from ', subscription.priceId, ' to ', price.id)
+        updates.priceId = price.id
+        updates.scheduledPriceId = null
+        updates.scheduledChangeAt = null
+    }
+
+    // Handle scheduled cancellation
+    if (stripeSubscription.cancel_at) {
+        console.log('Subscription cancellation scheduled at ', stripeSubscription.cancel_at)
+        updates.scheduledAction = ScheduledSubscriptionAction.CANCELLATION
+        updates.scheduledChangeAt = new Date(stripeSubscription.cancel_at * 1000)
+    }
+
+    await db.update(subscriptions).set(updates).where(eq(subscriptions.id, subscription.id));
 }

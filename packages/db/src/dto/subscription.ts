@@ -1,4 +1,4 @@
-import type { Price, Product, ScheduledPrice, Subscription } from '@onlook/stripe';
+import type { Price, Product, ScheduledChange, ScheduledSubscriptionAction, Subscription } from '@onlook/stripe';
 import type { Price as DbPrice, Product as DbProduct, Subscription as DbSubscription } from '../schema';
 
 export function toSubscription(
@@ -6,10 +6,7 @@ export function toSubscription(
         product: DbProduct;
         price: DbPrice;
     },
-    scheduledPrice: DbPrice & {
-        scheduledChangeAt: Date;
-        stripeSubscriptionScheduleId: string;
-    } | null,
+    scheduledPrice: DbPrice | null,
 ): Subscription {
     return {
         id: subscription.id,
@@ -18,7 +15,7 @@ export function toSubscription(
         endedAt: subscription.endedAt,
         product: toProduct(subscription.product),
         price: toPrice(subscription.price),
-        scheduledPrice: scheduledPrice ? toScheduledPrice(scheduledPrice) : null,
+        scheduledChange: toScheduledChange(scheduledPrice, subscription.scheduledAction, subscription.scheduledChangeAt, subscription.stripeSubscriptionScheduleId),
 
         stripeSubscriptionId: subscription.stripeSubscriptionId,
         stripeCustomerId: subscription.stripeCustomerId,
@@ -44,10 +41,21 @@ export function toPrice(price: DbPrice): Price {
     };
 }
 
-export function toScheduledPrice(price: DbPrice & { scheduledChangeAt: Date; stripeSubscriptionScheduleId: string }): ScheduledPrice {
+export function toScheduledChange(
+    price: DbPrice | null,
+    scheduledAction: ScheduledSubscriptionAction | null,
+    scheduledChangeAt: Date | null,
+    stripeSubscriptionScheduleId: string | null,
+): ScheduledChange | null {
+
+    if (!scheduledAction || !scheduledChangeAt) {
+        return null;
+    }
+
     return {
-        ...toPrice(price),
-        scheduledChangeAt: price.scheduledChangeAt,
-        stripeSubscriptionScheduleId: price.stripeSubscriptionScheduleId,
+        price: price ? toPrice(price) : null,
+        scheduledAction,
+        scheduledChangeAt,
+        stripeSubscriptionScheduleId,
     };
 }
