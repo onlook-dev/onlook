@@ -11,7 +11,7 @@ import { Icons } from '@onlook/ui/icons';
 import { ScrollArea } from '@onlook/ui/scroll-area';
 import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
-import type { FolderNode } from './providers/types';
+import type { FolderNode } from '../../providers/types';
 
 interface FolderTreeItemProps {
     folder: FolderNode;

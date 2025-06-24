@@ -30,8 +30,7 @@ export class ImageManager {
 
         reaction(
             () => this.editorEngine.sandbox.listBinaryFiles(DefaultSettings.IMAGE_FOLDER),
-            (files) => {
-                console.log('files', files);
+            () => {
                 this.scanImages();
             }
         );

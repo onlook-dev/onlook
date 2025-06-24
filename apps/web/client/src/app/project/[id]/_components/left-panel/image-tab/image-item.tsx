@@ -28,8 +28,6 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
         moveState,
         handleSelectTargetFolder,
         handleMoveImage,
-        moveImageToFolder,
-        handleMoveModalToggle,
         clearError,
     } = moveOperations;
 

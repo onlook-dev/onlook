@@ -111,9 +111,9 @@ export const useFolder = () => {
 
             await moveFolderContents(folderToRename, newPath, session);
 
-            await editorEngine.sandbox.delete(`public/${oldPath}`, true);
+            await editorEngine.sandbox.delete(oldPath, true);
 
-            const gitkeepPath = `public/${newPath}/.gitkeep`.replace(/\\/g, '/');
+            const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
             const gitkeepContent = '# This folder was created by Onlook\n';
             await editorEngine.sandbox.updateFileCache(gitkeepPath, gitkeepContent);
 
@@ -229,10 +229,10 @@ export const useFolder = () => {
             await moveFolderContents(folderToMove, newPath, session);
 
             // Delete old folder
-            await editorEngine.sandbox.delete(`public/${oldPath}`, true);
+            await editorEngine.sandbox.delete(oldPath, true);
 
             // Update file cache
-            const gitkeepPath = `public/${newPath}/.gitkeep`.replace(/\\/g, '/');
+            const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
             const gitkeepContent = '# This folder was created by Onlook\n';
             await editorEngine.sandbox.updateFileCache(gitkeepPath, gitkeepContent);
 
@@ -256,22 +256,21 @@ export const useFolder = () => {
     }, [moveState, editorEngine]);
 
     const moveFolderContents = async (folder: FolderNode, newPath: string, session: any) => {
-        const gitkeepPath = `public/${newPath}/.gitkeep`.replace(/\\/g, '/');
+        const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
         const gitkeepContent = '# This folder was created by Onlook\n';
         await session.fs.writeTextFile(gitkeepPath, gitkeepContent);
 
         for (const image of folder.images) {
             if (image) {
                 const fileName = image.split('/').pop();
-                const newImagePath = `public/${newPath}/${fileName}`;
+                const newImagePath = `${newPath}/${fileName}`;
                 await editorEngine.sandbox.copy(image, newImagePath);
                 await editorEngine.sandbox.delete(image);
             }
         }
 
         for (const [, subfolder] of folder.children) {
-            const newSubfolderPath = `${newPath}/${subfolder.name}`;
-            await moveFolderContents(subfolder, newSubfolderPath, session);
+            moveSubfolder(subfolder, newPath, session);
         }
     };
 

@@ -8,7 +8,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import type { FolderNode } from './providers/types';
+import type { FolderNode } from '../../providers/types';
 
 export default function FolderDeleteModal({
     onDelete,

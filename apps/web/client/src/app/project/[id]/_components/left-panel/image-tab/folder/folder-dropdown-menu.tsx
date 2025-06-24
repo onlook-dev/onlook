@@ -7,9 +7,14 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuSeparator,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
 } from '@onlook/ui/dropdown-menu';
 import type { FolderNode } from '../providers/types';
 import { cn } from '@onlook/ui/utils';
+import { FolderDropdown } from '../components/folder-dropdown';
 
 export const FolderDropdownMenu = memo(
     ({
@@ -20,14 +25,20 @@ export const FolderDropdownMenu = memo(
         isDisabled,
         alwaysVisible,
         className,
+        folderStructure,
+        selectedTargetFolder,
+        onSelectTargetFolder,
     }: {
         folder: FolderNode;
         handleRenameFolder?: () => void;
         handleDeleteFolder?: () => void;
-        handleMoveToFolder?: () => void;
+        handleMoveToFolder?: (targetFolder: FolderNode) => void;
         isDisabled?: boolean;
         alwaysVisible?: boolean;
         className?: string;
+        folderStructure?: FolderNode;
+        selectedTargetFolder?: FolderNode | null;
+        onSelectTargetFolder?: (folder: FolderNode) => void;
     }) => {
         const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -38,6 +49,14 @@ export const FolderDropdownMenu = memo(
                 }
             },
             [folder.name, isDisabled],
+        );
+
+        const handleFolderSelect = useCallback(
+            (targetFolder: FolderNode) => {
+                onSelectTargetFolder?.(targetFolder);
+                handleMoveToFolder?.(targetFolder);
+            },
+            [onSelectTargetFolder, handleMoveToFolder],
         );
 
         const isVisible = useMemo(() => {
@@ -94,22 +113,6 @@ export const FolderDropdownMenu = memo(
                                 className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleMoveToFolder?.();
-                                }}
-                                disabled={isDisabled}
-                            >
-                                <span className="flex w-full text-smallPlus items-center">
-                                    <Icons.MoveToFolder className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
-                                    <span>Move to Folder</span>
-                                </span>
-                            </Button>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                            <Button
-                                variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
-                                onClick={(e) => {
-                                    e.stopPropagation();
                                     handleDeleteFolder?.();
                                 }}
                                 disabled={isDisabled}
@@ -120,6 +123,29 @@ export const FolderDropdownMenu = memo(
                                 </span>
                             </Button>
                         </DropdownMenuItem>
+                        {folderStructure && (
+                            <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger 
+                                        disabled={isDisabled}
+                                        className="hover:bg-background-secondary focus:bg-background-secondary rounded-sm"
+                                    >
+                                        <span className="flex w-full text-smallPlus items-center">
+                                            <Icons.MoveToFolder className="mr-2 h-4 w-4 text-foreground-secondary" />
+                                            <span>Move to Folder</span>
+                                        </span>
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent className="w-64 p-0" sideOffset={8}>
+                                        <FolderDropdown
+                                            rootFolder={folderStructure}
+                                            selectedFolder={selectedTargetFolder || null}
+                                            onSelectFolder={handleFolderSelect}
+                                        />
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
+                            </>
+                        )}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>

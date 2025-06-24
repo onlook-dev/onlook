@@ -4,6 +4,9 @@ import type { FolderNode } from '../providers/types';
 import { useFolder } from '../hooks/use-folder';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import FolderCreateModal from './modal/folder-create-modal';
+import FolderDeleteModal from './modal/folder-delete-modal';
+import FolderRenameModal from './modal/folder-rename-modal';
 
 interface FolderListProps {
     items: FolderNode[];
@@ -15,7 +18,18 @@ interface FolderListProps {
 export const FolderList = memo(
     ({ items, onSelectFolder, folder, showCreateButton }: FolderListProps) => {
         const {
+            renameState,
+            deleteState,
+            createState,
+            handleRenameInputChange,
+            onRenameFolder,
+            handleRenameModalToggle,
+            onDeleteFolder,
+            handleDeleteModalToggle,
             handleCreateFolder,
+            handleCreateFolderInputChange,
+            onCreateFolder,
+            handleCreateModalToggle,
             handleRenameFolder,
             handleDeleteFolder,
             handleMoveToFolder,
@@ -56,6 +70,36 @@ export const FolderList = memo(
                         Create a Folder
                     </Button>
                 )}
+
+                {/* Folder Operation Modals */}
+                <FolderCreateModal
+                    isOpen={createState.isCreating}
+                    toggleOpen={handleCreateModalToggle}
+                    onCreate={onCreateFolder}
+                    folderName={createState.newFolderName}
+                    onNameChange={handleCreateFolderInputChange}
+                    isLoading={createState.isLoading}
+                    error={createState.error}
+                    parentFolder={createState.parentFolder}
+                />
+
+                <FolderRenameModal
+                    isOpen={!!renameState.folderToRename}
+                    toggleOpen={handleRenameModalToggle}
+                    onRename={onRenameFolder}
+                    currentName={renameState.newFolderName}
+                    onNameChange={handleRenameInputChange}
+                    isLoading={renameState.isLoading}
+                    error={renameState.error}
+                />
+
+                <FolderDeleteModal
+                    isOpen={!!deleteState.folderToDelete}
+                    toggleOpen={handleDeleteModalToggle}
+                    onDelete={onDeleteFolder}
+                    isLoading={deleteState.isLoading}
+                    folder={deleteState.folderToDelete}
+                />
             </div>
         );
     },

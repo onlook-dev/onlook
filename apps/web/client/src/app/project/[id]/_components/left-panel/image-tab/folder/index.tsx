@@ -14,10 +14,6 @@ import { Separator } from '@onlook/ui/separator';
 import { useImagesContext } from '../providers/images-provider';
 import { useFolder } from '../hooks/use-folder';
 import { useFolderImages } from '../hooks/use-folder-images';
-import FolderRenameModal from '../folder-rename-modal';
-import FolderDeleteModal from '../folder-delete-modal';
-import FolderMoveModal from '../folder-move-modal';
-import FolderCreateModal from '../folder-create-modal';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import { isEqual } from 'lodash';
 
@@ -41,22 +37,7 @@ export default function Folder() {
         });
 
     const {
-        renameState,
-        deleteState,
-        moveState,
-        createState,
-        handleRenameInputChange,
-        onRenameFolder,
-        handleRenameModalToggle,
-        onDeleteFolder,
-        handleDeleteModalToggle,
-        onMoveFolder,
-        handleSelectTargetFolder,
-        handleMoveModalToggle,
         handleCreateFolder,
-        handleCreateFolderInputChange,
-        onCreateFolder,
-        handleCreateModalToggle,
         handleRenameFolder,
         handleDeleteFolder,
         handleMoveToFolder,
@@ -284,48 +265,6 @@ export default function Folder() {
             ) : (
                 <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath || ''} />
             )}
-
-            {/* Folder Operation Modals */}
-            <FolderCreateModal
-                isOpen={createState.isCreating}
-                toggleOpen={handleCreateModalToggle}
-                onCreate={onCreateFolder}
-                folderName={createState.newFolderName}
-                onNameChange={handleCreateFolderInputChange}
-                isLoading={createState.isLoading}
-                error={createState.error}
-                parentFolder={createState.parentFolder}
-            />
-
-            <FolderRenameModal
-                isOpen={!!renameState.folderToRename}
-                toggleOpen={handleRenameModalToggle}
-                onRename={onRenameFolder}
-                currentName={renameState.newFolderName}
-                onNameChange={handleRenameInputChange}
-                isLoading={renameState.isLoading}
-                error={renameState.error}
-            />
-
-            <FolderDeleteModal
-                isOpen={!!deleteState.folderToDelete}
-                toggleOpen={handleDeleteModalToggle}
-                onDelete={onDeleteFolder}
-                isLoading={deleteState.isLoading}
-                folder={deleteState.folderToDelete}
-            />
-
-            <FolderMoveModal
-                isOpen={!!moveState.folderToMove}
-                toggleOpen={handleMoveModalToggle}
-                onMove={onMoveFolder}
-                isLoading={moveState.isLoading}
-                folderToMove={moveState.folderToMove}
-                rootFolder={folderStructure}
-                selectedTargetFolder={moveState.targetFolder}
-                onSelectTargetFolder={handleSelectTargetFolder}
-                error={moveState.error}
-            />
         </div>
     );
 }
