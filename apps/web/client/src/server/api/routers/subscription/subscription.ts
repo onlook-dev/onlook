@@ -100,9 +100,7 @@ export const subscriptionRouter = createTRPCRouter({
         }
 
         // If the new price is higher, we invoice the customer immediately.
-        // If the new price is lower, we create prorations.
         const isUpgrade = newPrice?.monthlyMessageLimit > currentPrice.monthlyMessageLimit;
-
         const updatedSubscription = await updateSubscription({
             subscriptionId: stripeSubscriptionId,
             subscriptionItemId: stripeSubscriptionItemId,
@@ -110,12 +108,26 @@ export const subscriptionRouter = createTRPCRouter({
             invoiceNow: isUpgrade,
         });
 
+        let appliedPriceId = newPrice.id
+        let scheduledPriceId = null;
+        let scheduledChangeAt = null;
+
+        // If the new price is lower, we schedule the change for the end of the current period on our side.
+        if (!isUpgrade) {
+            const currentPeriodEnd = updatedSubscription.items.data[0]?.current_period_end;
+
+            appliedPriceId = currentPrice.id;
+            scheduledPriceId = newPrice.id;
+            scheduledChangeAt = currentPeriodEnd ?
+                new Date(currentPeriodEnd * 1000) : null;
+        }
         await db.update(subscriptions).set({
-            priceId: newPrice.id,
+            priceId: appliedPriceId,
             status: 'active',
+            scheduledPriceId,
+            scheduledChangeAt,
             updatedAt: new Date(),
         }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
-
 
         return updatedSubscription;
     }),

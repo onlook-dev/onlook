@@ -27,7 +27,6 @@ export const subscriptions = pgTable('subscriptions', {
     // Scheduled price change
     scheduledPriceId: uuid('scheduled_price_id').references(() => prices.id),
     scheduledChangeAt: timestamp('scheduled_change_at', { withTimezone: true }),
-    scheduledChangeStatus: text('scheduled_change_status', { enum: ['active', 'canceled'] }).notNull().default('active'),
 }).enableRLS();
 
 export const subscriptionRelations = relations(subscriptions, ({ one, many }) => ({
