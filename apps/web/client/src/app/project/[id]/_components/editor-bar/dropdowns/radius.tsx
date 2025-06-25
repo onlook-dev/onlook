@@ -101,6 +101,10 @@ export const Radius = observer(() => {
         const bottomRight = boxState.borderBottomRightRadius.num ?? 0;
         const bottomLeft = boxState.borderBottomLeftRadius.num ?? 0;
 
+        if(boxState.borderRadius.num === 9999){
+            return 'Full';
+        }
+        
         // If all are zero, return null
         if (topLeft === 0 && topRight === 0 && bottomRight === 0 && bottomLeft === 0) {
             return null;
