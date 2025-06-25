@@ -1,5 +1,235 @@
 import React, { useState, useEffect } from 'react';
 import { Icons } from '@onlook/ui/icons';
+import { Illustrations } from '../illustrations';
+
+// DraggableElement component for reusable drag/select logic
+function DraggableElement({
+    elementId,
+    selectedElement,
+    setSelectedElement,
+    draggedElement,
+    setDraggedElement,
+    dragOffset,
+    setDragOffset,
+    children,
+    style = {},
+    outlineColor = 'red',
+    initialSize = { width: 100, height: 100 },
+    ...rest
+}: {
+    elementId: string,
+    selectedElement: string | null,
+    setSelectedElement: (id: string) => void,
+    draggedElement: string | null,
+    setDraggedElement: (id: string | null) => void,
+    dragOffset: { x: number, y: number },
+    setDragOffset: (offset: { x: number, y: number }) => void,
+    children: React.ReactNode,
+    style?: React.CSSProperties,
+    outlineColor?: string,
+    initialSize?: { width: number, height: number },
+    [key: string]: any
+}) {
+    const isSelected = selectedElement === elementId;
+    const [size, setSize] = React.useState<{ width: number; height: number }>({ 
+        width: initialSize.width, 
+        height: initialSize.height 
+    });
+    const [isResizing, setIsResizing] = React.useState(false);
+    type Corner = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    type ResizeOrigin = {
+        mouseX: number;
+        mouseY: number;
+        width: number;
+        height: number;
+        left: number;
+        top: number;
+        corner: Corner;
+    } | null;
+    const [resizeOrigin, setResizeOrigin] = React.useState<ResizeOrigin>(null);
+    const elementRef = React.useRef<HTMLDivElement>(null);
+    const aspectRatioRef = React.useRef(1);
+
+    // On mount, set aspect ratio based on initial size
+    React.useEffect(() => {
+        if (elementRef.current) {
+            aspectRatioRef.current = initialSize.width / initialSize.height;
+        }
+    }, [initialSize.width, initialSize.height]);
+
+    // Handle proportional resize
+    const handleResizeMouseDown = (corner: Corner) => (e: React.MouseEvent<HTMLDivElement>) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (!elementRef.current) return;
+        const rect = elementRef.current.getBoundingClientRect();
+        setIsResizing(true);
+        setResizeOrigin({
+            mouseX: e.clientX,
+            mouseY: e.clientY,
+            width: rect.width,
+            height: rect.height,
+            left: rect.left,
+            top: rect.top,
+            corner,
+        });
+        document.body.style.cursor =
+            corner === 'top-left' || corner === 'bottom-right' ? 'nwse-resize' : 'nesw-resize';
+    };
+
+    React.useEffect(() => {
+        if (!isResizing || !resizeOrigin) return;
+        const handleMouseMove = (e: MouseEvent) => {
+            const dx = e.clientX - resizeOrigin.mouseX;
+            const dy = e.clientY - resizeOrigin.mouseY;
+            let scaleDelta;
+            // Use the largest delta for proportional scaling
+            if (
+                resizeOrigin.corner === 'top-left' || resizeOrigin.corner === 'bottom-right'
+            ) {
+                scaleDelta = Math.max(dx, dy);
+            } else {
+                scaleDelta = Math.max(-dx, dy);
+            }
+            let newWidth = Math.max(24, resizeOrigin.width + scaleDelta);
+            let newHeight = Math.max(24, newWidth / aspectRatioRef.current);
+            setSize({ width: newWidth, height: newHeight });
+        };
+        const handleMouseUp = () => {
+            setIsResizing(false);
+            setResizeOrigin(null);
+            document.body.style.cursor = '';
+        };
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isResizing, resizeOrigin]);
+
+    return (
+        <div
+            ref={elementRef}
+            className="absolute cursor-grab select-none draggable-text"
+            data-element-id={elementId}
+            style={{
+                zIndex: 1,
+                border: '1px solid transparent',
+                outline: isSelected ? `2px solid ${outlineColor}` : 'none',
+                outlineOffset: '0px',
+                borderRadius: '1px',
+                padding: 0,
+                minWidth: 0,
+                minHeight: 0,
+                width: size.width,
+                height: size.height,
+                ...style,
+            }}
+            onClick={() => setSelectedElement(elementId)}
+            onMouseDown={(e) => {
+                if ((e.target as HTMLElement).classList.contains('resize-handle')) return;
+                e.preventDefault();
+                setDraggedElement(elementId);
+                setSelectedElement(elementId);
+                const element = e.currentTarget as HTMLDivElement;
+                const rect = element.getBoundingClientRect();
+                const canvasRect = (element.closest('.canvas-container') as HTMLDivElement).getBoundingClientRect();
+                setDragOffset({
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                });
+                element.style.opacity = '0.8';
+                element.style.cursor = 'grabbing';
+            }}
+            onMouseEnter={(e) => {
+                if (isSelected) {
+                    e.currentTarget.style.border = '1px solid #ccc';
+                }
+            }}
+            onMouseLeave={(e) => {
+                e.currentTarget.style.border = '1px solid transparent';
+            }}
+            {...rest}
+        >
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {children}
+            </div>
+            {isSelected && (
+                <>
+                    {/* Top-left corner */}
+                    <div
+                        className="resize-handle"
+                        style={{
+                            position: 'absolute',
+                            top: '-7px',
+                            left: '-7px',
+                            width: '12px',
+                            height: '12px',
+                            background: 'white',
+                            border: '2px solid #ef4444',
+                            borderRadius: '50%',
+                            cursor: 'nwse-resize',
+                            zIndex: 2,
+                        }}
+                        onMouseDown={handleResizeMouseDown('top-left')}
+                    />
+                    {/* Top-right corner */}
+                    <div
+                        className="resize-handle"
+                        style={{
+                            position: 'absolute',
+                            top: '-7px',
+                            right: '-7px',
+                            width: '12px',
+                            height: '12px',
+                            background: 'white',
+                            border: '2px solid #ef4444',
+                            borderRadius: '50%',
+                            cursor: 'nesw-resize',
+                            zIndex: 2,
+                        }}
+                        onMouseDown={handleResizeMouseDown('top-right')}
+                    />
+                    {/* Bottom-left corner */}
+                    <div
+                        className="resize-handle"
+                        style={{
+                            position: 'absolute',
+                            bottom: '-7px',
+                            left: '-7px',
+                            width: '12px',
+                            height: '12px',
+                            background: 'white',
+                            border: '2px solid #ef4444',
+                            borderRadius: '50%',
+                            cursor: 'nesw-resize',
+                            zIndex: 2,
+                        }}
+                        onMouseDown={handleResizeMouseDown('bottom-left')}
+                    />
+                    {/* Bottom-right corner */}
+                    <div
+                        className="resize-handle"
+                        style={{
+                            position: 'absolute',
+                            bottom: '-7px',
+                            right: '-7px',
+                            width: '12px',
+                            height: '12px',
+                            background: 'white',
+                            border: '2px solid #ef4444',
+                            borderRadius: '50%',
+                            cursor: 'nwse-resize',
+                            zIndex: 2,
+                        }}
+                        onMouseDown={handleResizeMouseDown('bottom-right')}
+                    />
+                </>
+            )}
+        </div>
+    );
+}
 
 export function DirectEditingBlock() {
     const [selectedElement, setSelectedElement] = useState<string | null>('text2');
@@ -147,155 +377,195 @@ export function DirectEditingBlock() {
     return (
         <div className="flex flex-col gap-4">
             <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 overflow-hidden">
-                <div className="w-90 h-100 bg-gray-800 rounded relative left-1/2 top-56 transform -translate-x-1/2 -translate-y-1/2 canvas-container">
-                    <div 
-                        className="absolute cursor-grab select-none text-blue text-xl font-light draggable-text"
-                        data-element-id="text1"
-                        style={{ 
-                            top: '30%', 
-                            left: '50%', 
-                            transform: 'translate(-50%, -50%)',
-                            zIndex: 1,
-                            minWidth: '100px',
-                            minHeight: '30px',
-                            padding: '8px',
-                            border: '1px solid transparent',
-                            outline: selectedElement === 'text1' ? '2px solid #3b82f6' : 'none',
-                            outlineOffset: '-1px',
-                            borderRadius: '1px'
-                        }}
-                        onClick={() => handleClick('text1')}
-                        onMouseDown={(e) => handleMouseDown(e, 'text1')}
-                        onMouseEnter={(e) => {
-                            if (selectedElement === 'text1') {
-                                e.currentTarget.style.border = '1px solid #ccc';
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.border = '1px solid transparent';
-                        }}
-                    >
-                        Drag me anywhere
-                        {selectedElement === 'text1' && (
-                            <>
-                                <div 
-                                    className="absolute w-2 h-2 bg-white rounded-full cursor-nwse-resize resize-handle"
-                                    style={{ 
-                                        right: '-4px', 
-                                        bottom: '-4px',
-                                        border: '1px solid #3b82f6',
-                                        boxShadow: '0 0 0 1px white'
-                                    }}
-                                    onMouseDown={(e) => handleResize(e, 'bottom-right')}
-                                />
-                                <div 
-                                    className="absolute w-2 h-2 bg-white rounded-full cursor-nesw-resize resize-handle"
-                                    style={{ 
-                                        left: '-4px', 
-                                        bottom: '-4px',
-                                        border: '1px solid #3b82f6',
-                                        boxShadow: '0 0 0 1px white'
-                                    }}
-                                    onMouseDown={(e) => handleResize(e, 'bottom-left')}
-                                />
-                                <div 
-                                    className="absolute w-2 h-2 bg-white rounded-full cursor-nesw-resize resize-handle"
-                                    style={{ 
-                                        right: '-4px', 
-                                        top: '-4px',
-                                        border: '1px solid #3b82f6',
-                                        boxShadow: '0 0 0 1px white'
-                                    }}
-                                    onMouseDown={(e) => handleResize(e, 'top-right')}
-                                />
-                                <div 
-                                    className="absolute w-2 h-2 bg-white rounded-full cursor-nwse-resize resize-handle"
-                                    style={{ 
-                                        left: '-4px', 
-                                        top: '-4px',
-                                        border: '1px solid #3b82f6',
-                                        boxShadow: '0 0 0 1px white'
-                                    }}
-                                    onMouseDown={(e) => handleResize(e, 'top-left')}
-                                />
-                            </>
-                        )}
+                <div className="w-90 h-100 bg-[#F0EFE3] rounded-lg relative left-1/2 top-60 transform -translate-x-1/2 -translate-y-1/2 canvas-container">
+                    <div className="w-full h-8 border-b border-[#1100FF]/50 px-2 flex flex-row items-center justify-between">
+                        <div className="flex flex-row items-center gap-1 select-none">
+                            <Illustrations.VinoLogo className="w-4 h-4" />
+                            <Illustrations.VinoWordmark className="w-12 h-12" />
+                        </div>
+                        <div className="flex flex-row items-center gap-2">
+                            <Illustrations.VinoMenu className="w-4 h-4" />
+                            <Illustrations.VinoContact className="w-12 h-12" />
+                        </div>
                     </div>
-                    <div 
-                        className="absolute cursor-grab select-none text-red-500 text-xl font-light draggable-text"
-                        data-element-id="text2"
-                        style={{ 
-                            top: '70%', 
-                            left: '50%', 
-                            transform: 'translate(-50%, -50%)',
-                            zIndex: 2,
-                            minWidth: '100px',
-                            minHeight: '30px',
-                            padding: '8px',
-                            border: '1px solid transparent',
-                            outline: selectedElement === 'text2' ? '2px solid #ef4444' : 'none',
-                            outlineOffset: '-1px',
-                            borderRadius: '1px'
-                        }}
-                        onClick={() => handleClick('text2')}
-                        onMouseDown={(e) => handleMouseDown(e, 'text2')}
-                        onMouseEnter={(e) => {
-                            if (selectedElement === 'text2') {
-                                e.currentTarget.style.border = '1px solid #ccc';
-                            }
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.border = '1px solid transparent';
-                        }}
-                    >
-                        I can go on top
-                        {selectedElement === 'text2' && (
-                            <>
-                                <div 
-                                    className="absolute w-2 h-2 bg-white rounded-full cursor-nwse-resize resize-handle"
-                                    style={{ 
-                                        right: '-4px', 
-                                        bottom: '-4px',
-                                        border: '1px solid #ef4444',
-                                        boxShadow: '0 0 0 1px white'
-                                    }}
-                                    onMouseDown={(e) => handleResize(e, 'bottom-right')}
-                                />
-                                <div 
-                                    className="absolute w-2 h-2 bg-white rounded-full cursor-nesw-resize resize-handle"
-                                    style={{ 
-                                        left: '-4px', 
-                                        bottom: '-4px',
-                                        border: '1px solid #ef4444',
-                                        boxShadow: '0 0 0 1px white'
-                                    }}
-                                    onMouseDown={(e) => handleResize(e, 'bottom-left')}
-                                />
-                                <div 
-                                    className="absolute w-2 h-2 bg-white rounded-full cursor-nesw-resize resize-handle"
-                                    style={{ 
-                                        right: '-4px', 
-                                        top: '-4px',
-                                        border: '1px solid #ef4444',
-                                        boxShadow: '0 0 0 1px white'
-                                    }}
-                                    onMouseDown={(e) => handleResize(e, 'top-right')}
-                                />
-                                <div 
-                                    className="absolute w-2 h-2 bg-white rounded-full cursor-nwse-resize resize-handle"
-                                    style={{ 
-                                        left: '-4px', 
-                                        top: '-4px',
-                                        border: '1px solid #ef4444',
-                                        boxShadow: '0 0 0 1px white'
-                                    }}
-                                    onMouseDown={(e) => handleResize(e, 'top-left')}
-                                />
-                            </>
-                        )}
+                    <div className="w-full h-full flex flex-row items-top mt-12 justify-center">
+                        <div className="w-fit h-fit">
+                            <Illustrations.VinoHeadline className="w-24 h-12" />
+                        </div>
+                        <div className="grid gap-2">
+                            <DraggableElement
+                                elementId="svg1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '180px', right: '6px', width: 60, height: 50 }}
+                            >
+                                <Illustrations.VinoBaguette />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="bottle1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '260px', left: '20px', width: 60, height: 100  }}
+                            >
+                                <Illustrations.VinoBottle />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="plant1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '200px', left: '8px', width: 46, height: 60 }}
+                            >
+                                <Illustrations.VinoPlant />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="glass1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '180px', left: '60px', width: 40, height: 60 }}
+                            >
+                                <Illustrations.VinoGlass />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="grapes1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '300px', right: '18px', width: 80, height: 50 }}
+                            >
+                                <Illustrations.VinoGrapes />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="vase1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '280px', right: '100px', width: 60, height: 100 }}
+                            >
+                                <Illustrations.VinoVase />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="plant2"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '184px', left: '120px', width: 50, height: 80 }}
+                            >
+                                <Illustrations.VinoPlant2 />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="cheese1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '320px', left: '80px', width: 60, height: 40 }}
+                            >
+                                <Illustrations.VinoCheese />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="spoon1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '280px', right: '160px', width: 40, height: 70, transform: 'rotate(180deg)' }}
+                            >
+                                <Illustrations.VinoSpoon />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="fork1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '240px', right: '80px', width: 70, height: 70, transform: 'rotate(10deg)' }}
+                            >
+                                <Illustrations.VinoFork />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="plate1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '240px', left: '104px', width: 80, height: 80 }}
+                            >
+                                <Illustrations.VinoPlate />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="olives1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '240px', right: '0px', width: 50, height: 50 }}
+                            >
+                                <Illustrations.VinoOlives />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="face1"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '190px', right: '130px', width: 50, height: 50 }}
+                            >
+                                <Illustrations.VinoFace />
+                            </DraggableElement>
+                            <DraggableElement
+                                elementId="glass2"
+                                selectedElement={selectedElement}
+                                setSelectedElement={setSelectedElement}
+                                draggedElement={draggedElement}
+                                setDraggedElement={setDraggedElement}
+                                dragOffset={dragOffset}
+                                setDragOffset={setDragOffset}
+                                style={{ top: '180px', right: '70px', width: 50, height: 70, transform: 'rotate(-10deg)' }}
+                            >
+                                <Illustrations.VinoGlass2 />
+                            </DraggableElement>
+                        </div>
+
                     </div>
                 </div>
-            </div>
+                </div>
             <div className="flex flex-row items-start gap-8 w-full">
                 {/* Icon + Title */}
                 <div className="flex flex-col items-start w-1/2">
