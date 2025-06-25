@@ -26,6 +26,20 @@ export const sandboxRouter = createTRPCRouter({
             });
             return session;
         }),
+    get: protectedProcedure
+        .input(
+            z.object({
+                sandboxId: z.string(),
+                userId: z.string().optional(),
+            }),
+        )
+        .query(async ({ input }) => {
+            const startData = await sdk.sandboxes.resume(input.sandboxId);
+            const session = await startData.createBrowserSession({
+                id: shortenUuid(input.userId ?? uuidv4(), 20),
+            });
+            return session;
+        }),
     hibernate: protectedProcedure
         .input(
             z.object({
