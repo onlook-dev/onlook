@@ -1,4 +1,4 @@
-import { processDom } from './dom';
+import { processDom, type ProcessDomResult } from './dom';
 import {
     getChildrenCount,
     getElementAtLoc,
@@ -84,3 +84,4 @@ export const preloadMethods = {
 }
 
 export type PenpalChildMethods = typeof preloadMethods;
+export type { ProcessDomResult };
