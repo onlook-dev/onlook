@@ -138,7 +138,7 @@ export const useFolder = () => {
         setDeleteState((prev) => ({ ...prev, isLoading: true }));
 
         try {
-            const folderPath = `public/${deleteState.folderToDelete.fullPath}`;
+            const folderPath = `${deleteState.folderToDelete.fullPath}`;
             
             for (const image of deleteState.folderToDelete.images) {
                 if (image) {
