@@ -27,18 +27,16 @@ export const FolderDropdownMenu = memo(
         className,
         folderStructure,
         selectedTargetFolder,
-        onSelectTargetFolder,
     }: {
         folder: FolderNode;
         handleRenameFolder?: () => void;
         handleDeleteFolder?: () => void;
-        handleMoveToFolder?: (targetFolder: FolderNode) => void;
+        handleMoveToFolder?: (folder: FolderNode, targetFolder: FolderNode) => void;
         isDisabled?: boolean;
         alwaysVisible?: boolean;
         className?: string;
         folderStructure?: FolderNode;
         selectedTargetFolder?: FolderNode | null;
-        onSelectTargetFolder?: (folder: FolderNode) => void;
     }) => {
         const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
@@ -53,10 +51,9 @@ export const FolderDropdownMenu = memo(
 
         const handleFolderSelect = useCallback(
             (targetFolder: FolderNode) => {
-                onSelectTargetFolder?.(targetFolder);
-                handleMoveToFolder?.(targetFolder);
+                handleMoveToFolder?.(folder, targetFolder);
             },
-            [onSelectTargetFolder, handleMoveToFolder],
+            [handleMoveToFolder],
         );
 
         const isVisible = useMemo(() => {

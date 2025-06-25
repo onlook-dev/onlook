@@ -206,9 +206,7 @@ export default function Folder() {
                             handleDeleteFolder={() =>
                                 handleDeleteFolder(currentFolder || folderStructure)
                             }
-                            handleMoveToFolder={() =>
-                                handleMoveToFolder(currentFolder || folderStructure)
-                            }
+                            handleMoveToFolder={handleMoveToFolder}
                             className="bg-gray-700"
                             alwaysVisible={true}
                         />

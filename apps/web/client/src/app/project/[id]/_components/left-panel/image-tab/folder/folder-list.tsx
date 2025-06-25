@@ -6,6 +6,7 @@ import { Icons } from '@onlook/ui/icons';
 import FolderDeleteModal from './modal/folder-delete-modal';
 import FolderRenameModal from './modal/folder-rename-modal';
 import { useImagesContext } from '../providers/images-provider';
+import FolderMoveModal from './modal/folder-move-modal';
 
 interface FolderListProps {
     items: FolderNode[];
@@ -20,17 +21,16 @@ export const FolderList = memo(
         const {
             renameState,
             deleteState,
-
+            moveState,
             handleRenameInputChange,
             onRenameFolder,
             handleRenameModalToggle,
             onDeleteFolder,
             handleDeleteModalToggle,
             handleCreateFolder,
-            handleRenameFolder,
-            handleDeleteFolder,
-            handleMoveToFolder,
             isOperating,
+            handleMoveModalToggle,
+            onMoveFolder,
         } = folderOperations;
 
         if (!items.length) {
@@ -47,9 +47,6 @@ export const FolderList = memo(
                             folder={item}
                             totalItems={item.images.length}
                             onSelect={() => onSelectFolder(item)}
-                            handleRenameFolder={() => handleRenameFolder(item)}
-                            handleDeleteFolder={() => handleDeleteFolder(item)}
-                            handleMoveToFolder={() => handleMoveToFolder(item)}
                             isDisabled={isOperating}
                         />
                     ))}
@@ -85,6 +82,14 @@ export const FolderList = memo(
                     onDelete={onDeleteFolder}
                     isLoading={deleteState.isLoading}
                     folder={deleteState.folderToDelete}
+                />
+                <FolderMoveModal
+                    isOpen={!!moveState.folderToMove && !!moveState.targetFolder}
+                    toggleOpen={handleMoveModalToggle}
+                    onMove={onMoveFolder}
+                    isLoading={moveState.isLoading}
+                    folder={moveState.folderToMove}
+                    targetFolder={moveState.targetFolder}
                 />
             </div>
         );

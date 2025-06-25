@@ -166,20 +166,13 @@ export const useFolder = () => {
     }, [deleteState.folderToDelete, editorEngine]);
 
 
-    const handleMoveToFolder = useCallback((folder: FolderNode) => {
+    const handleMoveToFolder = useCallback((folder: FolderNode, targetFolder: FolderNode) => {
         setMoveState({
             folderToMove: folder,
-            targetFolder: null,
+            targetFolder: targetFolder,
             isLoading: false,
             error: null,
         });
-    }, []);
-
-    const handleSelectTargetFolder = useCallback((targetFolder: FolderNode) => {
-        setMoveState((prev) => ({
-            ...prev,
-            targetFolder,
-        }));
     }, []);
 
     const onMoveFolder = useCallback(async () => {
@@ -213,17 +206,7 @@ export const useFolder = () => {
             if (!session) {
                 throw new Error('No sandbox session available');
             }
-
-            // Move folder contents using helper function
-            await moveFolderContents(folderToMove, newPath, session);
-
-            // Delete old folder
-            await editorEngine.sandbox.delete(oldPath, true);
-
-            // Update file cache
-            const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
-            const gitkeepContent = '# This folder was created by Onlook\n';
-            await editorEngine.sandbox.updateFileCache(gitkeepPath, gitkeepContent);
+            await editorEngine.sandbox.rename(oldPath, newPath);
 
             // Refresh images
             editorEngine.image.scanImages();
@@ -259,7 +242,7 @@ export const useFolder = () => {
         }
 
         for (const [, subfolder] of folder.children) {
-            moveSubfolder(subfolder, newPath, session);
+            await moveSubfolder(subfolder, newPath, session);
         }
     };
 
@@ -423,7 +406,6 @@ export const useFolder = () => {
         // Move operations
         moveState,
         handleMoveToFolder,
-        handleSelectTargetFolder,
         onMoveFolder,
         handleMoveModalToggle,
 

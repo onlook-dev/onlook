@@ -3,15 +3,11 @@ import { cn } from '@onlook/ui/utils';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import type { FolderNode } from '../providers/types';
 import { useImagesContext } from '../providers/images-provider';
-import { useFolder } from '../hooks/use-folder';
 
 interface FolderTabProps {
     folder: FolderNode;
     totalItems: number;
     onSelect: () => void;
-    handleRenameFolder: () => void;
-    handleDeleteFolder: () => void;
-    handleMoveToFolder: () => void;
     isDisabled: boolean;
 }
 
@@ -19,14 +15,11 @@ export default function FolderTab({
     folder,
     totalItems,
     onSelect,
-    handleRenameFolder,
-    handleDeleteFolder,
-    handleMoveToFolder,
     isDisabled
 }: FolderTabProps) {
 
-    const { folderStructure } = useImagesContext();
-    const { moveState, handleSelectTargetFolder } = useFolder();    
+    const { folderStructure, folderOperations } = useImagesContext();  
+    const { moveState, handleRenameFolder, handleDeleteFolder, handleMoveToFolder } = folderOperations;
     return (
         <div 
             onClick={onSelect} 
@@ -45,13 +38,12 @@ export default function FolderTab({
             
             <FolderDropdownMenu
                 folder={folder}
-                handleRenameFolder={handleRenameFolder}
-                handleDeleteFolder={handleDeleteFolder}
+                handleRenameFolder={() => handleRenameFolder(folder)}
+                handleDeleteFolder={() => handleDeleteFolder(folder)}
                 handleMoveToFolder={handleMoveToFolder}
                 isDisabled={isDisabled}
                 folderStructure={folderStructure}
                 selectedTargetFolder={moveState.targetFolder}
-                onSelectTargetFolder={handleSelectTargetFolder}
             />
         </div>
     );
