@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { WebFrame } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';

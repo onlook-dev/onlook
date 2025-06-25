@@ -1,7 +1,7 @@
-import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
-import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '../engine';
+import { api } from '@/trpc/client';
 import { COMPRESSION_IMAGE_PRESETS, DefaultSettings } from '@onlook/constants';
+import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
+import { LeftPanelTabValue } from '@onlook/models/editor';
 import {
     convertToBase64,
     getBaseName,
@@ -9,7 +9,8 @@ import {
     getMimeType,
     isImageFile,
 } from '@onlook/utility/src/file';
-import { api } from '@/trpc/client';
+import { makeAutoObservable, reaction } from 'mobx';
+import type { EditorEngine } from '../engine';
 
 export class ImageManager {
     private images: ImageContentData[] = [];
@@ -21,7 +22,7 @@ export class ImageManager {
         reaction(
             () => this.editorEngine.sandbox.isIndexingFiles,
             (isIndexingFiles) => {
-                if (!isIndexingFiles) {
+                if (!isIndexingFiles && this.editorEngine.state.leftPanelTab === LeftPanelTabValue.IMAGES) {
                     this.scanImages();
                 }
             }
@@ -82,7 +83,6 @@ export class ImageManager {
             const newPath = `${basePath}/${newName}`;
             await this.editorEngine.sandbox.copy(originPath, newPath);
             await this.editorEngine.sandbox.delete(originPath);
-            this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;
@@ -181,7 +181,7 @@ export class ImageManager {
             if (imageFiles.length === 0) {
                 return;
             }
-            
+
             const imagePromises = imageFiles.map(async (filePath: string) => {
                 try {
                     // Read the binary file
@@ -211,15 +211,15 @@ export class ImageManager {
             });
 
             const results = await Promise.all(imagePromises);
-            
+
             this.images = results.filter((result): result is ImageContentData => result !== null)
-            
+
         } catch (error) {
             console.error('Error scanning images:', error);
             this.images = [];
         } finally {
             this._isScanning = false;
-        } 
+        }
     }
 
     clear() {

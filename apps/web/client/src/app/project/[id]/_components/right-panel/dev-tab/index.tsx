@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { CodeRange, EditorFile } from '@/components/store/editor/dev';
 import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
+import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
 import { EditorView } from '@codemirror/view';
 import { Button } from '@onlook/ui/button';
 import {
@@ -15,7 +16,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { getMimeType } from '@onlook/utility';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
-import { useTheme } from 'next-themes';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getBasicSetup, getExtensions } from './code-mirror-config';
 import { FileModal } from './file-modal';
@@ -25,14 +25,13 @@ import { FolderModal } from './folder-modal';
 
 export const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const { theme } = useTheme();
+    const { addSubscription } = useCleanupOnPageChange();
     const ide = editorEngine.ide;
     const [isFilesVisible, setIsFilesVisible] = useState(true);
     const [fileModalOpen, setFileModalOpen] = useState(false);
     const [folderModalOpen, setFolderModalOpen] = useState(false);
     const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
     const [pendingCloseAll, setPendingCloseAll] = useState(false);
-    const isDirty = ide.activeFile?.isDirty ?? false;
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const fileTabsContainerRef = useRef<HTMLDivElement>(null);
@@ -209,13 +208,13 @@ export const DevTab = observer(() => {
                 }
             }
         };
-        // Subscribe to all file events
+
         const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', handleFileEvent);
 
-        return () => {
-            unsubscribe();
-        };
-    }, [editorEngine.sandbox, ide.activeFile]);
+        // Use the subscription cleanup hook
+        addSubscription('dev-tab', unsubscribe);
+
+    }, [editorEngine.sandbox, ide.activeFile, addSubscription]);
 
     // Load files when sandbox becomes connected
     useEffect(() => {
@@ -424,14 +423,14 @@ export const DevTab = observer(() => {
 
     const scrollToActiveTab = useCallback(() => {
         if (!fileTabsContainerRef.current || !ide.activeFile) return;
-        
+
         const container = fileTabsContainerRef.current;
         const activeTab = container.querySelector('[data-active="true"]');
-        
+
         if (activeTab) {
             const containerRect = container.getBoundingClientRect();
             const tabRect = activeTab.getBoundingClientRect();
-            
+
             // Calculate if the tab is outside the visible area
             if (tabRect.left < containerRect.left) {
                 // Tab is to the left of the visible area
@@ -485,9 +484,9 @@ export const DevTab = observer(() => {
                             <div className="absolute left-0 top-0 bottom-0 z-20 border-r-[0.5px] h-full flex items-center p-1 bg-background">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <Button 
-                                            variant="ghost" 
-                                            size="icon" 
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
                                             onClick={() => setIsFilesVisible(!isFilesVisible)}
                                             className="text-muted-foreground hover:text-foreground"
                                         >

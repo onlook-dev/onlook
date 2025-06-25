@@ -55,8 +55,8 @@ export const Border = observer(() => {
                     <button
                         onClick={() => setActiveTab('all')}
                         className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === 'all'
-                            ? 'text-white bg-background-tertiary/20'
-                            : 'text-muted-foreground hover:bg-background-tertiary/10'
+                            ? 'text-foreground-primary bg-background-active/50'
+                            : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
                             }`}
                     >
                         All sides
@@ -64,8 +64,8 @@ export const Border = observer(() => {
                     <button
                         onClick={() => setActiveTab('individual')}
                         className={`flex-1 text-sm px-4 py-1.5 rounded-md transition-colors cursor-pointer ${activeTab === 'individual'
-                            ? 'text-white bg-background-tertiary/20'
-                            : 'text-muted-foreground hover:bg-background-tertiary/10'
+                            ? 'text-foreground-primary bg-background-active/50'
+                            : 'text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover'
                             }`}
                     >
                         Individual

@@ -5,7 +5,7 @@ import type { UserChatMessageImpl } from '@/components/store/editor/chat/message
 import { transKeys } from '@/i18n/keys';
 import { ChatMessageRole } from '@onlook/models/chat';
 import { ChatMessageList } from '@onlook/ui/chat/chat-message-list';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';

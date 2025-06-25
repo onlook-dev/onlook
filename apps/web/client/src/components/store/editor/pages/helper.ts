@@ -1,7 +1,16 @@
 import type { ReaddirEntry, WebSocketSession } from '@codesandbox/sdk';
 import type { PageMetadata, PageNode } from '@onlook/models';
-import { generate, parse, types as t, traverse } from '@onlook/parser';
+import { generate, parse, types as t, traverse, type NodePath, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
+import { formatContent } from '../sandbox/helpers';
+
+const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
+    children,
+}: {
+    children: React.ReactNode;
+}) {
+    return <>{children}</>;
+}`;
 
 export const normalizeRoute = (route: string): string => {
     return route
@@ -187,7 +196,7 @@ const extractMetadata = async (content: string): Promise<PageMetadata | undefine
 const scanAppDirectory = async (
     session: WebSocketSession,
     dir: string,
-    parentPath: string = ''
+    parentPath: string = '',
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
     let entries;
@@ -262,8 +271,8 @@ const scanAppDirectory = async (
             name: isDynamicRoute
                 ? currentDir
                 : parentPath
-                    ? getBaseName(parentPath)
-                    : ROOT_PAGE_NAME,
+                  ? getBaseName(parentPath)
+                  : ROOT_PAGE_NAME,
             path: cleanPath,
             children: [],
             isActive: false,
@@ -305,7 +314,7 @@ const scanAppDirectory = async (
 const scanPagesDirectory = async (
     session: WebSocketSession,
     dir: string,
-    parentPath: string = ''
+    parentPath: string = '',
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
     let entries: ReaddirEntry[];
@@ -458,17 +467,20 @@ export const scanPagesFromSandbox = async (session: WebSocketSession): Promise<P
     }
 };
 
-const detectRouterTypeInSandbox = async (session: WebSocketSession): Promise<{ type: 'app' | 'pages'; basePath: string } | null> => {
+const detectRouterTypeInSandbox = async (
+    session: WebSocketSession,
+): Promise<{ type: 'app' | 'pages'; basePath: string } | null> => {
     // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
         try {
             const entries = await session.fs.readdir(appPath);
             if (entries && entries.length > 0) {
                 // Check for layout file (required for App Router)
-                const hasLayout = entries.some((entry: any) =>
-                    entry.type === 'file' &&
-                    entry.name.startsWith('layout.') &&
-                    ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name))
+                const hasLayout = entries.some(
+                    (entry: any) =>
+                        entry.type === 'file' &&
+                        entry.name.startsWith('layout.') &&
+                        ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
                 );
 
                 if (hasLayout) {
@@ -487,10 +499,11 @@ const detectRouterTypeInSandbox = async (session: WebSocketSession): Promise<{ t
             const entries = await session.fs.readdir(pagesPath);
             if (entries && entries.length > 0) {
                 // Check for index file (common in Pages Router)
-                const hasIndex = entries.some((entry: any) =>
-                    entry.type === 'file' &&
-                    entry.name.startsWith('index.') &&
-                    ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name))
+                const hasIndex = entries.some(
+                    (entry: any) =>
+                        entry.type === 'file' &&
+                        entry.name.startsWith('index.') &&
+                        ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
                 );
 
                 if (hasIndex) {
@@ -518,7 +531,10 @@ const pathExists = async (session: WebSocketSession, filePath: string): Promise<
     }
 };
 
-const cleanupEmptyFolders = async (session: WebSocketSession, folderPath: string): Promise<void> => {
+const cleanupEmptyFolders = async (
+    session: WebSocketSession,
+    folderPath: string,
+): Promise<void> => {
     while (folderPath && folderPath !== getDirName(folderPath)) {
         try {
             const entries = await session.fs.readdir(folderPath);
@@ -566,7 +582,10 @@ const createDirectory = async (session: WebSocketSession, dirPath: string): Prom
     await session.fs.remove(tempFile);
 };
 
-export const createPageInSandbox = async (session: WebSocketSession, pagePath: string): Promise<void> => {
+export const createPageInSandbox = async (
+    session: WebSocketSession,
+    pagePath: string,
+): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -600,7 +619,11 @@ export const createPageInSandbox = async (session: WebSocketSession, pagePath: s
     }
 };
 
-export const deletePageInSandbox = async (session: WebSocketSession, pagePath: string, isDir: boolean): Promise<void> => {
+export const deletePageInSandbox = async (
+    session: WebSocketSession,
+    pagePath: string,
+    isDir: boolean,
+): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -642,7 +665,11 @@ export const deletePageInSandbox = async (session: WebSocketSession, pagePath: s
     }
 };
 
-export const renamePageInSandbox = async (session: WebSocketSession, oldPath: string, newName: string): Promise<void> => {
+export const renamePageInSandbox = async (
+    session: WebSocketSession,
+    oldPath: string,
+    newName: string,
+): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -681,7 +708,11 @@ export const renamePageInSandbox = async (session: WebSocketSession, oldPath: st
     }
 };
 
-export const duplicatePageInSandbox = async (session: WebSocketSession, sourcePath: string, targetPath: string): Promise<void> => {
+export const duplicatePageInSandbox = async (
+    session: WebSocketSession,
+    sourcePath: string,
+    targetPath: string,
+): Promise<void> => {
     try {
         const routerConfig = await detectRouterTypeInSandbox(session);
 
@@ -694,7 +725,11 @@ export const duplicatePageInSandbox = async (session: WebSocketSession, sourcePa
 
         if (isRootPath) {
             const sourcePageFile = joinPath(routerConfig.basePath, 'page.tsx');
-            const targetDir = await getUniqueDir(session, routerConfig.basePath, ROOT_PAGE_COPY_NAME);
+            const targetDir = await getUniqueDir(
+                session,
+                routerConfig.basePath,
+                ROOT_PAGE_COPY_NAME,
+            );
             const targetDirPath = joinPath(routerConfig.basePath, targetDir);
             const targetPageFile = joinPath(targetDirPath, 'page.tsx');
 
@@ -721,7 +756,9 @@ export const duplicatePageInSandbox = async (session: WebSocketSession, sourcePa
 
         // Check if source is a directory or file
         const sourceEntries = await session.fs.readdir(getDirName(sourceFull));
-        const sourceEntry = sourceEntries.find((entry: any) => entry.name === getBaseName(sourceFull));
+        const sourceEntry = sourceEntries.find(
+            (entry: any) => entry.name === getBaseName(sourceFull),
+        );
 
         if (!sourceEntry) {
             throw new Error('Source page not found');
@@ -736,12 +773,249 @@ export const duplicatePageInSandbox = async (session: WebSocketSession, sourcePa
     }
 };
 
+export const updatePageMetadataInSandbox = async (
+    session: WebSocketSession,
+    pagePath: string,
+    metadata: PageMetadata,
+): Promise<void> => {
+    const routerConfig = await detectRouterTypeInSandbox(session);
 
-export const updatePageMetadataInSandbox = async (session: WebSocketSession, pagePath: string, metadata: PageMetadata): Promise<void> => {
-    // TODO: Implement metadata update using sandbox session
-    console.log(`Updating metadata for page ${pagePath}`);
-    throw new Error('Metadata update not yet implemented for sandbox');
+    if (!routerConfig) {
+        throw new Error('Could not detect Next.js router type');
+    }
+
+    if (routerConfig.type !== 'app') {
+        throw new Error('Metadata update is only supported for App Router projects for now.');
+    }
+
+    const fullPath = joinPath(routerConfig.basePath, pagePath);
+    const pageFilePath = joinPath(fullPath, 'page.tsx');
+    // check if page.tsx exists
+    const pageExists = await pathExists(session, pageFilePath);
+
+    if (!pageExists) {
+        throw new Error('Page not found');
+    }
+
+    const pageContent = await session.fs.readTextFile(pageFilePath);
+    const hasUseClient =
+        pageContent.includes("'use client'") || pageContent.includes('"use client"');
+
+    if (hasUseClient) {
+        // check if layout.tsx exists
+        const layoutFilePath = joinPath(fullPath, 'layout.tsx');
+        const layoutExists = await pathExists(session, layoutFilePath);
+
+        if (layoutExists) {
+            await updateMetadataInFile(session, layoutFilePath, metadata);
+        } else {
+            // create layout.tsx
+            // Create new layout file with metadata
+            const layoutContent = `import type { Metadata } from 'next';\n\nexport const metadata: Metadata = ${JSON.stringify(metadata, null, 2)};\n\n${DEFAULT_LAYOUT_CONTENT}`;
+            await session.fs.writeTextFile(layoutFilePath, layoutContent);
+        }
+    } else {
+        await updateMetadataInFile(session, pageFilePath, metadata);
+    }
 };
+
+async function updateMetadataInFile(
+    session: WebSocketSession,
+    filePath: string,
+    metadata: PageMetadata,
+) {
+    // Read the current file content
+    const content = await session.fs.readTextFile(filePath);
+
+    // Parse the file content using Babel
+    const ast = parse(content, {
+        sourceType: 'module',
+        plugins: ['typescript', 'jsx'],
+    });
+
+    let hasMetadataImport = false;
+    let metadataNode: T.ExportNamedDeclaration | null = null;
+
+    // Traverse the AST to find metadata import and export
+    traverse(ast, {
+        ImportDeclaration(path) {
+            if (
+                path.node.source.value === 'next' &&
+                path.node.specifiers.some(
+                    (spec) =>
+                        t.isImportSpecifier(spec) &&
+                        t.isIdentifier(spec.imported) &&
+                        spec.imported.name === 'Metadata',
+                )
+            ) {
+                hasMetadataImport = true;
+            }
+        },
+        ExportNamedDeclaration(path) {
+            const declaration = path.node.declaration;
+            if (t.isVariableDeclaration(declaration)) {
+                const declarator = declaration.declarations[0];
+                if (
+                    declarator &&
+                    t.isIdentifier(declarator.id) &&
+                    declarator.id.name === 'metadata'
+                ) {
+                    metadataNode = path.node;
+                }
+            }
+        },
+    });
+
+    // Add Metadata import if not present
+    if (!hasMetadataImport) {
+        const metadataImport = t.importDeclaration(
+            [t.importSpecifier(t.identifier('Metadata'), t.identifier('Metadata'))],
+            t.stringLiteral('next'),
+        );
+        ast.program.body.unshift(metadataImport);
+    }
+    // Create metadata object expression
+    const metadataObject = t.objectExpression(
+        Object.entries(metadata).map(([key, value]) => {
+            if (typeof value === 'string') {
+                if (key === 'metadataBase') {
+                    return t.objectProperty(
+                        t.identifier(key),
+                        t.newExpression(t.identifier('URL'), [t.stringLiteral(value)]),
+                    );
+                }
+                return t.objectProperty(t.identifier(key), t.stringLiteral(value));
+            } else if (value === null) {
+                return t.objectProperty(t.identifier(key), t.nullLiteral());
+            } else if (Array.isArray(value)) {
+                return t.objectProperty(
+                    t.identifier(key),
+                    t.arrayExpression(
+                        value.map((v) => {
+                            if (typeof v === 'string') {
+                                return t.stringLiteral(v);
+                            } else if (typeof v === 'object' && v !== null) {
+                                return t.objectExpression(
+                                    Object.entries(v).map(([k, val]) => {
+                                        if (typeof val === 'string') {
+                                            return t.objectProperty(
+                                                t.identifier(k),
+                                                t.stringLiteral(val),
+                                            );
+                                        } else if (typeof val === 'number') {
+                                            return t.objectProperty(
+                                                t.identifier(k),
+                                                t.numericLiteral(val),
+                                            );
+                                        }
+                                        return t.objectProperty(
+                                            t.identifier(k),
+                                            t.stringLiteral(String(val)),
+                                        );
+                                    }),
+                                );
+                            }
+                            return t.stringLiteral(String(v));
+                        }),
+                    ),
+                );
+            } else if (typeof value === 'object' && value !== null) {
+                return t.objectProperty(
+                    t.identifier(key),
+                    t.objectExpression(
+                        Object.entries(value).map(([k, v]) => {
+                            if (typeof v === 'string') {
+                                return t.objectProperty(t.identifier(k), t.stringLiteral(v));
+                            } else if (typeof v === 'number') {
+                                return t.objectProperty(t.identifier(k), t.numericLiteral(v));
+                            } else if (Array.isArray(v)) {
+                                return t.objectProperty(
+                                    t.identifier(k),
+                                    t.arrayExpression(
+                                        v.map((item) => {
+                                            if (typeof item === 'string') {
+                                                return t.stringLiteral(item);
+                                            } else if (typeof item === 'object' && item !== null) {
+                                                return t.objectExpression(
+                                                    Object.entries(item).map(([ik, iv]) => {
+                                                        if (typeof iv === 'string') {
+                                                            return t.objectProperty(
+                                                                t.identifier(ik),
+                                                                t.stringLiteral(iv),
+                                                            );
+                                                        } else if (typeof iv === 'number') {
+                                                            return t.objectProperty(
+                                                                t.identifier(ik),
+                                                                t.numericLiteral(iv),
+                                                            );
+                                                        }
+                                                        return t.objectProperty(
+                                                            t.identifier(ik),
+                                                            t.stringLiteral(String(iv)),
+                                                        );
+                                                    }),
+                                                );
+                                            }
+                                            return t.stringLiteral(String(item));
+                                        }),
+                                    ),
+                                );
+                            }
+                            return t.objectProperty(t.identifier(k), t.stringLiteral(String(v)));
+                        }),
+                    ),
+                );
+            }
+            return t.objectProperty(t.identifier(key), t.stringLiteral(String(value)));
+        }),
+    );
+
+    // Create metadata variable declaration
+    const metadataVarDecl = t.variableDeclaration('const', [
+        t.variableDeclarator(t.identifier('metadata'), metadataObject),
+    ]);
+
+    // Add type annotation
+    const metadataTypeAnnotation = t.tsTypeAnnotation(t.tsTypeReference(t.identifier('Metadata')));
+    (metadataVarDecl.declarations[0]?.id as T.Identifier).typeAnnotation = metadataTypeAnnotation;
+
+    // Create metadata export
+    const metadataExport = t.exportNamedDeclaration(metadataVarDecl);
+
+    if (metadataNode) {
+        // Replace existing metadata export
+        const metadataExportIndex = ast.program.body.findIndex((node) => {
+            if (!t.isExportNamedDeclaration(node) || !t.isVariableDeclaration(node.declaration)) {
+                return false;
+            }
+            const declarator = node.declaration.declarations[0];
+            return t.isIdentifier(declarator?.id) && declarator.id.name === 'metadata';
+        });
+
+        if (metadataExportIndex !== -1) {
+            ast.program.body[metadataExportIndex] = metadataExport;
+        }
+    } else {
+        // Find the default export and add metadata before it
+        const defaultExportIndex = ast.program.body.findIndex((node) =>
+            t.isExportDefaultDeclaration(node),
+        );
+
+        if (defaultExportIndex === -1) {
+            throw new Error('Could not find default export in the file');
+        }
+
+        ast.program.body.splice(defaultExportIndex, 0, metadataExport);
+    }
+
+    // Generate the updated code
+    const { code } = generate(ast);
+
+    const formattedContent = await formatContent(filePath, code);
+
+    // Write the updated content back to the file
+    await session.fs.writeTextFile(filePath, formattedContent);
+}
 
 export const injectPreloadScript = async (session: WebSocketSession) => {
     await addSetupTask(session);

@@ -1,8 +1,8 @@
 import { api } from '@/trpc/react';
-import type { Invitation, ProjectRole } from '@onlook/models';
+import type { Invitation } from '@onlook/models';
 import { Avatar, AvatarFallback } from '@onlook/ui/avatar';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { getInitials } from '@onlook/utility';
 
 interface InvitationRowProps {

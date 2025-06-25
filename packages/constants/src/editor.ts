@@ -63,7 +63,7 @@ export const DefaultSettings = {
         showMiniChat: true,
     },
     EDITOR_SETTINGS: {
-        shouldWarnDelete: true,
+        shouldWarnDelete: false,
         enableBunReplace: true,
         buildFlags: '--no-lint',
     },
