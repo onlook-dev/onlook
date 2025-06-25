@@ -23,75 +23,76 @@ export const Radius = observer(() => {
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'radius-dropdown'
     });
+
     const getRadiusIcon = () => {
-    const topLeft = boxState.borderTopLeftRadius.num ?? 0;
-    const topRight = boxState.borderTopRightRadius.num ?? 0;
-    const bottomRight = boxState.borderBottomRightRadius.num ?? 0;
-    const bottomLeft = boxState.borderBottomLeftRadius.num ?? 0;
+        const topLeft = boxState.borderTopLeftRadius.num ?? 0;
+        const topRight = boxState.borderTopRightRadius.num ?? 0;
+        const bottomRight = boxState.borderBottomRightRadius.num ?? 0;
+        const bottomLeft = boxState.borderBottomLeftRadius.num ?? 0;
 
-    // All corners zero
-    if (topLeft === 0 && topRight === 0 && bottomRight === 0 && bottomLeft === 0) {
-        return Icons.RadiusEmpty;
-    }
+        // All corners zero
+        if (topLeft === 0 && topRight === 0 && bottomRight === 0 && bottomLeft === 0) {
+            return Icons.RadiusEmpty;
+        }
 
-    // All corners same non-zero
-    const allSame = topLeft === topRight && topRight === bottomRight && bottomRight === bottomLeft && topLeft !== 0;
-    if (allSame) {
+        // All corners same non-zero
+        const allSame = topLeft === topRight && topRight === bottomRight && bottomRight === bottomLeft && topLeft !== 0;
+        if (allSame) {
+            return Icons.RadiusFull;
+        }
+
+        // One corner only
+        if (topLeft !== 0 && topRight === 0 && bottomRight === 0 && bottomLeft === 0) {
+            return Icons.RadiusTL;
+        }
+        if (topRight !== 0 && topLeft === 0 && bottomRight === 0 && bottomLeft === 0) {
+            return Icons.RadiusTR;
+        }
+        if (bottomRight !== 0 && topLeft === 0 && topRight === 0 && bottomLeft === 0) {
+            return Icons.RadiusBR;
+        }
+        if (bottomLeft !== 0 && topLeft === 0 && topRight === 0 && bottomRight === 0) {
+            return Icons.RadiusBL;
+        }
+
+        // Two corners
+
+        if (topRight !== 0 && bottomRight !== 0 && topLeft === 0 && bottomLeft === 0) {
+            return Icons.RadiusTRBR;
+        }
+        if (topRight !== 0 && topLeft !== 0 && bottomRight === 0 && bottomLeft === 0) {
+            return Icons.RadiusTRTL;
+        }
+        if (topLeft !== 0 && bottomRight !== 0 && bottomLeft === 0 && topRight === 0) {
+            return Icons.RadiusBRTL;
+        }
+        if (bottomRight !== 0 && bottomLeft !== 0 && topLeft === 0 && topRight === 0) {
+            return Icons.RadiusBRBL;
+        }
+        if (bottomLeft !== 0 && topLeft !== 0 && topRight === 0 && bottomRight === 0) {
+            return Icons.RadiusBLTL;
+        }
+        if (topRight !== 0 && bottomLeft !== 0 && topLeft === 0 && bottomRight === 0) {
+            return Icons.RadiusTRBL;
+        }
+
+        // Three corners (infer which one is zero)
+        if (topLeft === 0 && topRight !== 0 && bottomRight !== 0 && bottomLeft !== 0) {
+            return Icons.RadiusTRBRBL;
+        }
+        if (topRight === 0 && topLeft !== 0 && bottomRight !== 0 && bottomLeft !== 0) {
+            return Icons.RadiusBRBLTL;
+        }
+        if (bottomRight === 0 && topLeft !== 0 && topRight !== 0 && bottomLeft !== 0) {
+            return Icons.RadiusTRBLTL;
+        }
+        if (bottomLeft === 0 && topLeft !== 0 && topRight !== 0 && bottomRight !== 0) {
+            return Icons.RadiusTRBRTL;
+        }
+
+
         return Icons.RadiusFull;
-    }
-
-    // One corner only
-    if (topLeft !== 0 && topRight === 0 && bottomRight === 0 && bottomLeft === 0) {
-        return Icons.RadiusTL;
-    }
-    if (topRight !== 0 && topLeft === 0 && bottomRight === 0 && bottomLeft === 0) {
-        return Icons.RadiusTR;
-    }
-    if (bottomRight !== 0 && topLeft === 0 && topRight === 0 && bottomLeft === 0) {
-        return Icons.RadiusBR;
-    }
-    if (bottomLeft !== 0 && topLeft === 0 && topRight === 0 && bottomRight === 0) {
-        return Icons.RadiusBL;
-    }
-
-    // Two corners
-
-    if (topRight !== 0 && bottomRight !== 0 && topLeft === 0 && bottomLeft === 0) {
-        return Icons.RadiusTRBR;
-    }
-     if (topRight !== 0 && topLeft !== 0 && bottomRight === 0 && bottomLeft === 0) {
-        return Icons.RadiusTRTL;
-    }
-     if (topLeft !== 0 && bottomRight !== 0 && bottomLeft === 0 && topRight === 0) {
-        return Icons.RadiusBRTL;
-    }
-    if (bottomRight !== 0 && bottomLeft !== 0 && topLeft === 0 && topRight === 0) {
-        return Icons.RadiusBRBL;
-    }
-    if (bottomLeft !== 0 && topLeft !== 0 && topRight === 0 && bottomRight === 0) {
-        return Icons.RadiusBLTL;
-    }
-    if (topRight !== 0 && bottomLeft !== 0 && topLeft === 0 && bottomRight === 0) {
-        return Icons.RadiusTRBL;
-    }
-
-    // Three corners (infer which one is zero)
-    if (topLeft === 0 && topRight !== 0 && bottomRight !== 0 && bottomLeft !== 0) {
-        return Icons.RadiusTRBRBL;
-    }
-    if (topRight === 0 && topLeft !== 0 && bottomRight !== 0 && bottomLeft !== 0) {
-        return Icons.RadiusBRBLTL;
-    }
-    if (bottomRight === 0 && topLeft !== 0 && topRight !== 0 && bottomLeft !== 0) {
-        return Icons.RadiusTRBLTL;
-    }
-    if (bottomLeft === 0 && topLeft !== 0 && topRight !== 0 && bottomRight !== 0) {
-        return Icons.RadiusTRBRTL;
-    }
- 
-
-    return Icons.RadiusFull;
-};
+    };
 
 
     const getRadiusDisplay = () => {
