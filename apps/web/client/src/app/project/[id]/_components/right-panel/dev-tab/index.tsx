@@ -200,7 +200,6 @@ export const DevTab = observer(() => {
                     console.error('Error loading files:', error);
                 }
             }
-
             if (event.type === 'change') {
                 if (ide.activeFile) {
                     if (event.paths.includes(ide.activeFile.path)) {
@@ -210,11 +209,8 @@ export const DevTab = observer(() => {
             }
         };
         // Subscribe to all file events
-        const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', handleFileEvent);
+       editorEngine.sandbox.fileEventBus.subscribe('*', handleFileEvent);
 
-        return () => {
-            unsubscribe();
-        };
     }, [editorEngine.sandbox, ide.activeFile]);
 
     // Load files when sandbox becomes connected
@@ -447,6 +443,9 @@ export const DevTab = observer(() => {
     useEffect(() => {
         scrollToActiveTab();
     }, [ide.activeFile, scrollToActiveTab]);
+
+    console.log('ide.files', ide.openedFiles);
+    
 
     return (
         <div className="size-full flex flex-col">
