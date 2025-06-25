@@ -3,28 +3,21 @@
 import { useUserManager } from '@/components/store/user';
 import { useGetBackground } from '@/hooks/use-get-background';
 import { transKeys } from '@/i18n/keys';
-import { api } from '@/trpc/react';
 import { ProductType, ScheduledSubscriptionAction } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useEffect } from 'react';
 import { FreeCard } from './free-card';
 import { ProCard } from './pro-card';
+import { useSubscription } from './use-subscription';
 
 export const SubscriptionModal = observer(() => {
     const userManager = useUserManager();
     const t = useTranslations();
-    const { data: subscription, refetch: refetchSubscription } = api.subscription.get.useQuery();
     const backgroundUrl = useGetBackground('create');
-
-    useEffect(() => {
-        if (userManager.subscription.isModalOpen) {
-            refetchSubscription();
-        }
-    }, [userManager.subscription.isModalOpen, refetchSubscription]);
+    const { subscription, refetchSubscription } = useSubscription();
 
     return (
         <AnimatePresence>
@@ -81,12 +74,9 @@ export const SubscriptionModal = observer(() => {
                                     </motion.div>
                                     <div className="flex gap-4">
                                         <FreeCard
-                                            subscription={subscription ?? null}
                                             delay={0.1}
                                         />
                                         <ProCard
-                                            refetchSubscription={refetchSubscription}
-                                            subscription={subscription ?? null}
                                             delay={0.2}
                                         />
                                     </div>

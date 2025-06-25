@@ -1,6 +1,6 @@
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
-import { ScheduledSubscriptionAction, type Subscription } from '@onlook/stripe';
+import { ScheduledSubscriptionAction } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
@@ -9,6 +9,7 @@ import { toast } from '@onlook/ui/sonner';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { useSubscription } from './use-subscription';
 
 const FREE_TIER = {
     name: 'Free',
@@ -28,19 +29,18 @@ const FREE_TIER = {
 };
 
 export const FreeCard = ({
-    subscription,
     delay,
 }: {
-    subscription: Subscription | null;
     delay: number;
 }) => {
     const t = useTranslations();
+    const { subscription, isPro } = useSubscription();
     const { mutateAsync: manageSubscription } = api.subscription.manageSubscription.useMutation();
     const [isCheckingOut, setIsCheckingOut] = useState(false);
-    const isFree = !subscription;
+    const isFree = !isPro;
     const isScheduledCancellation = subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION;
 
-    const handleManageSubscription = async () => {
+    const handleDowngradeToFree = async () => {
         try {
             setIsCheckingOut(true);
             const session = await manageSubscription();
@@ -117,7 +117,7 @@ export const FreeCard = ({
                     <Button
                         className="w-full"
                         variant="outline"
-                        onClick={handleManageSubscription}
+                        onClick={handleDowngradeToFree}
                         disabled={isCheckingOut || isFree || isScheduledCancellation}
                     >
                         {buttonContent()}
