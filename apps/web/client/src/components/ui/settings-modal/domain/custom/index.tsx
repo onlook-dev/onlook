@@ -3,7 +3,7 @@ import { useDomainsManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
 import { api } from '@/trpc/react';
 import { ProductType } from '@onlook/stripe';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { UpgradePrompt } from '../upgrade-prompt';
 import { Verification } from './verification';

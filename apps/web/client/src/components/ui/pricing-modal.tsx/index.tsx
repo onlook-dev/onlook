@@ -6,7 +6,7 @@ import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
 import { ProductType, ScheduledSubscriptionAction } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';

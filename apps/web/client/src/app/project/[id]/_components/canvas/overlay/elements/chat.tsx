@@ -5,7 +5,7 @@ import { useUserManager } from '@/components/store/user';
 import { transKeys } from '@/i18n/keys';
 import { ChatType, EditorMode, EditorTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';

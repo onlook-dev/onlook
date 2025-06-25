@@ -5,7 +5,7 @@ import { useUserManager } from '@/components/store/user';
 import { Routes } from '@/utils/constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import {
     Popover,
     PopoverContent,
