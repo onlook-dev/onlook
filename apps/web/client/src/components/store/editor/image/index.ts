@@ -68,8 +68,6 @@ export class ImageManager {
                 finalBuffer = new Uint8Array(arrayBuffer);
             }
 
-            console.log('path', path);
-
             await this.editorEngine.sandbox.writeBinaryFile(path, finalBuffer);
             this.scanImages();
         } catch (error) {
@@ -92,8 +90,7 @@ export class ImageManager {
         try {
             const basePath = getDirName(originPath);
             const newPath = `${basePath}/${newName}`;
-            await this.editorEngine.sandbox.copy(originPath, newPath);
-            await this.editorEngine.sandbox.delete(originPath);
+            await this.editorEngine.sandbox.rename(originPath, newPath);
             this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);

@@ -77,7 +77,7 @@ export default function Folder() {
     };
 
     const findFolderInStructure = (folder: FolderNode, target: FolderNode): FolderNode | null => {
-        if (folder.fullPath === target.fullPath) {
+        if (folder && target && folder.fullPath === target.fullPath) {
             return folder;
         }
         for (const child of folder.children.values()) {

@@ -104,18 +104,7 @@ export const useFolder = () => {
                 : '';
             const newPath = parentPath ? `${parentPath}/${newFolderName}` : newFolderName;
 
-            const session = editorEngine.sandbox.session?.session;
-            if (!session) {
-                throw new Error('No sandbox session available');
-            }
-
-            await moveFolderContents(folderToRename, newPath, session);
-
-            await editorEngine.sandbox.delete(oldPath, true);
-
-            const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
-            const gitkeepContent = '# This folder was created by Onlook\n';
-            await editorEngine.sandbox.updateFileCache(gitkeepPath, gitkeepContent);
+            await editorEngine.sandbox.rename(oldPath, newPath);
 
             editorEngine.image.scanImages();
 
