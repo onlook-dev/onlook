@@ -74,7 +74,7 @@ export const SubscriptionModal = observer(() => {
                                                 )
                                             }
                                         </div >
-                                    </motion.div >
+                                    </motion.div>
                                     <div className="flex gap-4">
                                         <FreeCard
                                             delay={0.1}
@@ -93,12 +93,12 @@ export const SubscriptionModal = observer(() => {
                                             {t(transKeys.pricing.footer.unusedMessages)}
                                         </p>
                                     </motion.div>
-                                </motion.div >
-                            </MotionConfig >
-                        </div >
-                    </div >
-                </motion.div >
+                                </motion.div>
+                            </MotionConfig>
+                        </div>
+                    </div>
+                </motion.div>
             )}
-        </AnimatePresence >
+        </AnimatePresence>
     );
 });

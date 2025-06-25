@@ -14,7 +14,6 @@ export const ProjectTab = observer(() => {
     const runCommand = projectSettings?.commands?.run ?? DefaultSettings.COMMANDS.run;
     const buildCommand = projectSettings?.commands?.build ?? DefaultSettings.COMMANDS.build;
     const name = project?.name ?? '';
-    const url = project?.sandbox.url ?? '';
 
     // Create debounced input handlers
     const nameInput = useDebouncedInput(
@@ -107,17 +106,6 @@ export const ProjectTab = observer(() => {
                     </div>
                 </div>
             </div>
-            {/* <Separator />
-
-            <div className="flex justify-between items-center p-6">
-                <div className="flex flex-col gap-2">
-                    <p className="text-largePlus">Reinstall Dependencies</p>
-                    <p className="text-foreground-onlook text-small">
-                        For when project failed to install dependencies
-                    </p>
-                </div>
-                <ReinstallButton />
-            </div> */}
         </div>
     );
 });

@@ -7,7 +7,7 @@ import { capitalizeFirstLetter } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { ComingSoonTab, SettingsTabValue, type SettingTab } from './helpers';
+import { SettingsTabValue, type SettingTab } from './helpers';
 import { PreferencesTab } from './preferences-tab';
 import { ProjectSettingsTabs } from './with-project';
 
@@ -20,11 +20,6 @@ export const SettingsModal = observer(({ showProjectTabs = false }: { showProjec
             label: SettingsTabValue.PREFERENCES,
             icon: <Icons.Person className="mr-2 h-4 w-4" />,
             component: <PreferencesTab />,
-        },
-        {
-            label: SettingsTabValue.ADVANCED,
-            icon: <Icons.MixerVertical className="mr-1 h-4 w-4" />,
-            component: <ComingSoonTab />,
         },
     ]
 

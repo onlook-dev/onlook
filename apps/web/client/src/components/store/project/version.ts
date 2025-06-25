@@ -1,9 +1,7 @@
 import { sendAnalytics } from "@/utils/analytics";
 import type { GitCommit } from "@onlook/git";
-import type { Project } from "@onlook/models";
 import { toast } from "@onlook/ui/sonner";
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from "../editor/engine";
 import type { ProjectManager } from "./manager";
 
 export enum CreateCommitFailureReason {
@@ -71,13 +69,9 @@ export class VersionsManager {
             this.isSaving = false;
         }
     };
-    listCommits = async () => {
-        const commits: GitCommit[] = [];
 
-        if (!commits) {
-            return (this.commits = []);
-        }
-        this.commits = commits;
+    listCommits = async () => {
+        return [];
     };
 
     checkoutCommit = async (commit: GitCommit): Promise<boolean> => {
@@ -152,5 +146,5 @@ export class VersionsManager {
         toast.success('Latest backup bookmarked!');
     };
 
-    dispose() {}
+    dispose() { }
 }

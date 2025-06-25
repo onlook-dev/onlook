@@ -191,7 +191,6 @@ export const ProjectBreadcrumb = observer(() => {
                             {t(transKeys.projects.actions.import)}
                         </div>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
                         disabled={isDownloading}
@@ -202,6 +201,7 @@ export const ProjectBreadcrumb = observer(() => {
                             {isDownloading ? t(transKeys.projects.actions.downloadingCode) : t(transKeys.projects.actions.downloadCode)}
                         </div>
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => editorEngine.state.settingsOpen = true}>
                         <div className="flex row center items-center group">
                             <Icons.Gear className="mr-2 group-hover:rotate-12 transition-transform" />
