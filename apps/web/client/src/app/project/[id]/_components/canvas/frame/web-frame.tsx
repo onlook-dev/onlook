@@ -2,6 +2,8 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import type { WebFrame } from '@onlook/models';
+import type { LayerNode } from '@onlook/models/element';
+import type { ProcessDomResult } from '@onlook/web-preload/script/api';
 import {
     PENPAL_PARENT_CHANNEL,
     promisifyMethod,
@@ -79,7 +81,7 @@ export const WebFrameComponent = observer(
             // Store the connection reference
             connectionRef.current = connection;
 
-            connection.promise.then((child) => {
+            connection.promise.then(async (child) => {
                 if (!child) {
                     console.error(
                         `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
@@ -90,7 +92,7 @@ export const WebFrameComponent = observer(
                 const remote = child as unknown as PenpalChildMethods;
                 setPenpalChild(remote);
                 remote.setFrameId(frame.id);
-                remote.processDom();
+                await remote.processDom();
                 console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
             });
 
@@ -137,7 +139,25 @@ export const WebFrameComponent = observer(
             }
 
             const remoteMethods = {
-                processDom: promisifyMethod(penpalChild?.processDom),
+                processDom: async (): Promise<ProcessDomResult | null> => {
+                    const res = await promisifyMethod(penpalChild?.processDom)();
+                    if (res) {
+                        const map = new Map<string, LayerNode>(res.layerMap);
+                        const rootNode = map.get(res.rootDomId);
+                        if (rootNode) {
+                            const doc =
+                                iframe.contentDocument ??
+                                document.implementation.createHTMLDocument('');
+                            editorEngine.ast.mappings.setMetadata(
+                                frame.id,
+                                doc,
+                                rootNode,
+                                map,
+                            );
+                        }
+                    }
+                    return res;
+                },
                 getElementAtLoc: promisifyMethod(penpalChild?.getElementAtLoc),
                 getElementByDomId: promisifyMethod(penpalChild?.getElementByDomId),
                 setFrameId: promisifyMethod(penpalChild?.setFrameId),
