@@ -1,5 +1,5 @@
 import { MessageContextType, type ChatMessageContext } from '@onlook/models/chat';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { getTruncatedFileName } from '@onlook/ui/utils';
 import { assertNever } from '@onlook/utility';
 import React from 'react';

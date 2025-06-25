@@ -118,7 +118,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
         {
             label: 'Delete',
             action: () => {
-                editorEngine.sandbox.delete(node.data.path);
+                editorEngine.sandbox.delete(node.data.path, true);
             },
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             separator: false,

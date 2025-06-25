@@ -1,3 +1,4 @@
+import { transKeys } from '@/i18n/keys';
 import type { Project } from '@onlook/models';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -72,7 +73,7 @@ export const ProjectInfo = observer(
                         </p>
                     </div>
                     <p className="text-foreground-tertiary text-mini mb-2">
-                        {t('projects.select.lastEdited', {
+                        {t(transKeys.projects.select.lastEdited, {
                             time: timeAgo(new Date(project.metadata.updatedAt).toISOString()),
                         })}
                     </p>
