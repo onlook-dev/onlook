@@ -1,7 +1,7 @@
 import { canvases, toCanvas, userCanvases, userCanvasUpdateSchema } from '@onlook/db';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const userCanvasRouter = createTRPCRouter({
     get: protectedProcedure

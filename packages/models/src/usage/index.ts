@@ -1,6 +1,4 @@
-export interface MessageLimitCheckResult {
-    exceeded: boolean;
-    period: 'daily' | 'monthly';
-    count: number;
-    limit: number;
+export enum UsageType {
+    MESSAGE = 'message',
+    DEPLOYMENT = 'deployment',
 }

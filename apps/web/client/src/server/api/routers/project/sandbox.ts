@@ -1,3 +1,4 @@
+import { injectPreloadScript } from '@/components/store/editor/pages/helper';
 import { env } from '@/env';
 import { CodeSandbox, Sandbox, WebSocketSession } from '@codesandbox/sdk';
 import { CSB_PREVIEW_TASK_NAME, getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
@@ -6,8 +7,7 @@ import { addScriptConfig } from '@onlook/parser/src/code-edit/config';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { injectPreloadScript } from '@/components/store/editor/pages/helper';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 const sdk = new CodeSandbox(env.CSB_API_KEY);
 

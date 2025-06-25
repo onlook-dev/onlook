@@ -1,5 +1,6 @@
 'use client';
 
+import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
 import { SettingsModal } from '@/components/ui/settings-modal';
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
@@ -28,6 +29,7 @@ export default function Main() {
             <Footer />
             <AuthModal />
             <SettingsModal showProjectTabs={false} />
+            <SubscriptionModal />
         </div>
     );
 }

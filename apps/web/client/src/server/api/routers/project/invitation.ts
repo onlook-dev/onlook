@@ -17,7 +17,7 @@ import { and, eq, ilike, isNull } from 'drizzle-orm';
 import urlJoin from 'url-join';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const invitationRouter = createTRPCRouter({
     get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {

@@ -1,7 +1,7 @@
 import { createDefaultUserSettings, toUserSettings, userInsertSchema, users, userSettings, userSettingsInsertSchema } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 const userSettingsRoute = createTRPCRouter({
     get: protectedProcedure.input(z.object({ userId: z.string() })).query(async ({ ctx, input }) => {
