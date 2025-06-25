@@ -3,6 +3,7 @@ import { useDomainsManager, useProjectManager } from '@/components/store/project
 import { DefaultSettings } from '@onlook/constants';
 import { PublishStatus } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
+import { toast } from '@onlook/ui/sonner';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { UrlSection } from './url';
@@ -41,11 +42,15 @@ export const PreviewDomainSection = observer(() => {
             options: {
                 skipBadge: false,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-                envVars: project.env || {},
                 skipBuild: false,
             },
         });
-        console.log(res);
+        if (!res.success) {
+            console.error(res.message);
+            toast.error(res.message);
+            return;
+        }
+        toast.success('Deployment successful');
     };
 
     const retry = () => {

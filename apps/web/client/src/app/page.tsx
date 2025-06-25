@@ -1,6 +1,9 @@
 'use client';
 
+import { useUserManager } from '@/components/store/user';
+import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
 import { SettingsModal } from '@/components/ui/settings-modal';
+import { useEffect } from 'react';
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
 import { ContributorSection } from './_components/landing-page/contributor-section';
@@ -8,6 +11,11 @@ import { Footer } from './_components/landing-page/page-footer';
 import { TopBar } from './_components/top-bar';
 
 export default function Main() {
+    const userManager = useUserManager();
+
+    useEffect(() => {
+        userManager.fetchUser();
+    }, []);
 
     return (
         <div className="flex min-h-screen flex-col items-center justify-center relative overflow-x-hidden">
@@ -28,6 +36,7 @@ export default function Main() {
             <Footer />
             <AuthModal />
             <SettingsModal showProjectTabs={false} />
+            <SubscriptionModal />
         </div>
     );
 }

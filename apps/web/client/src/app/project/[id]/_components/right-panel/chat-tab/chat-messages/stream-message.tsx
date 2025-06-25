@@ -1,6 +1,6 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { ChatMessageRole } from '@onlook/models/chat';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { MessageContent } from './message-content';
 
 export const StreamMessage = () => {

@@ -70,7 +70,7 @@ export const InputDropdown = ({
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"
-                        className="h-[36px] bg-background-tertiary/50 hover:bg-background-tertiary/70 hover:text-white rounded-l-none rounded-r-md ml-[1px] px-2.5 flex items-center justify-between w-[72px] cursor-pointer transition-colors"
+                        className="h-[36px] bg-background-tertiary/50 hover:bg-background-tertiary/70 hover:text-white rounded-l-none rounded-r-md ml-[1px] px-2.5 flex items-center justify-between w-[84px] cursor-pointer transition-colors"
                     >
                         <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground group-hover:text-white transition-colors">

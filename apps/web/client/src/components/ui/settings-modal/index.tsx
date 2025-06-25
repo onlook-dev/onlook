@@ -7,7 +7,8 @@ import { capitalizeFirstLetter } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { ComingSoonTab, SettingsTabValue, type SettingTab } from './helpers';
+import { SettingsTabValue, type SettingTab } from './helpers';
+import { PreferencesTab } from './preferences-tab';
 import { ProjectSettingsTabs } from './with-project';
 
 export const SettingsModal = observer(({ showProjectTabs = false }: { showProjectTabs: boolean }) => {
@@ -18,12 +19,7 @@ export const SettingsModal = observer(({ showProjectTabs = false }: { showProjec
         {
             label: SettingsTabValue.PREFERENCES,
             icon: <Icons.Person className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
-        },
-        {
-            label: SettingsTabValue.ADVANCED,
-            icon: <Icons.MixerVertical className="mr-2 h-4 w-4" />,
-            component: <ComingSoonTab />,
+            component: <PreferencesTab />,
         },
     ]
 
@@ -64,7 +60,7 @@ export const SettingsModal = observer(({ showProjectTabs = false }: { showProjec
                         <div className="bg-background border rounded-lg shadow-lg max-w-4xl max-h-screen h-[700px] w-[900px] p-0 pointer-events-auto">
                             <div className="flex flex-col h-full overflow-hidden">
                                 {/* Top bar - fixed height */}
-                                <div className="shrink-0 flex items-center p-6 pb-4">
+                                <div className="shrink-0 flex items-center p-5 pb-4 ml-1 select-none">
                                     <h1 className="text-title3">Settings</h1>
                                     <Button
                                         variant="ghost"
@@ -80,16 +76,16 @@ export const SettingsModal = observer(({ showProjectTabs = false }: { showProjec
                                 {/* Main content */}
                                 <div className="flex flex-1 min-h-0 overflow-hidden">
                                     {/* Left navigation - fixed width */}
-                                    <div className="flex flex-col overflow-y-scroll">
-                                        {showProjectTabs && <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
-                                            <p className="text-muted-foreground text-smallPlus">
+                                    <div className="flex flex-col overflow-y-scroll select-none">
+                                        {showProjectTabs && <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
+                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
                                                 Project
                                             </p>
                                             <ProjectSettingsTabs appendTabs={appendProjectTabs} />
                                         </div>}
-                                        <Separator />
-                                        <div className="shrink-0 w-48 space-y-2 p-6 text-regularPlus">
-                                            <p className="text-muted-foreground text-smallPlus">
+                                        {showProjectTabs && <Separator />}
+                                        <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
+                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
                                                 Global Settings
                                             </p>
                                             {globalTabs.map((tab) => (

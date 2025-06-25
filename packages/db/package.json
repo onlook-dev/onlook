@@ -13,6 +13,8 @@
         "db:studio": "drizzle-kit studio",
         "db:migrate": "drizzle-kit migrate",
         "db:seed": "bun src/seed/seed.ts",
+        "db:seed:stripe": "bun src/seed/stripe.ts",
+        "db:reset": "bun src/seed/reset.ts",
         "db:drop": "drizzle-kit drop"
     },
     "dependencies": {

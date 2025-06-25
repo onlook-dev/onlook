@@ -23,10 +23,10 @@ export class FileSyncManager {
     }
 
     // Track binary file path without reading content (using empty placeholder)
-    trackBinaryFile(filePath: string) {        
+    async trackBinaryFile(filePath: string) {        
         if (!this.hasBinary(filePath)) {
             this.binaryCache.set(filePath, new Uint8Array(0)); 
-            this.saveToLocalStorage();
+            await this.saveToLocalStorage();
         }
     }
 
@@ -239,5 +239,77 @@ export class FileSyncManager {
         this.cache = new Map();
         this.binaryCache = new Map();
         await this.clearLocalStorage();
+    }
+
+    /**
+     * Batch read multiple files in parallel
+     */
+    async readOrFetchBatch(
+        filePaths: string[],
+        readFile: (path: string) => Promise<string | null>,
+    ): Promise<Record<string, string>> {
+        const results: Record<string, string> = {};
+        
+        const promises = filePaths.map(async (filePath) => {
+            try {
+                const content = await this.readOrFetch(filePath, readFile);
+                if (content !== null) {
+                    return { path: filePath, content };
+                }
+            } catch (error) {
+                console.warn(`Error reading file ${filePath}:`, error);
+            }
+            return null;
+        });
+
+        const batchResults = await Promise.all(promises);
+        
+        for (const result of batchResults) {
+            if (result) {
+                results[result.path] = result.content;
+            }
+        }
+
+        return results;
+    }
+
+    /**
+     * Batch update cache entries
+     */
+    async updateCacheBatch(entries: Array<{ path: string; content: string }>): Promise<void> {
+        for (const { path, content } of entries) {
+            this.cache.set(path, content);
+        }
+
+        await this.saveToLocalStorage();
+    }
+
+    /**
+     * Batch update binary cache entries
+     */
+    async updateBinaryCacheBatch(entries: Array<{ path: string; content: Uint8Array }>): Promise<void> {
+        for (const { path, content } of entries) {
+            this.binaryCache.set(path, content);
+        }
+
+        await this.saveToLocalStorage();
+    }
+
+    /**
+     * Track multiple binary files at once
+     */
+    async trackBinaryFilesBatch(filePaths: string[]): Promise<void> {
+        let hasChanges = false;
+        
+        for (const filePath of filePaths) {
+            if (!this.hasBinary(filePath)) {
+                this.binaryCache.set(filePath, new Uint8Array(0));
+                hasChanges = true;
+            }
+        }
+        
+        if (hasChanges) {
+            await this.saveToLocalStorage();
+        }
     }
 }

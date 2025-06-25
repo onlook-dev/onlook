@@ -1762,7 +1762,7 @@ var DefaultSettings = {
     showMiniChat: true
   },
   EDITOR_SETTINGS: {
-    shouldWarnDelete: true,
+    shouldWarnDelete: false,
     enableBunReplace: true,
     buildFlags: "--no-lint"
   }
@@ -17388,5 +17388,5 @@ export {
   penpalParent
 };
 
-//# debugId=1AB6CAD0F6D87DB364756E2164756E21
+//# debugId=21BC711D516DAB2F64756E2164756E21
 //# sourceMappingURL=index.js.map

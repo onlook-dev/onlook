@@ -5,3 +5,4 @@ export * from './invitation';
 export * from './project';
 export * from './rect';
 export * from './role';
+export * from './settings';
