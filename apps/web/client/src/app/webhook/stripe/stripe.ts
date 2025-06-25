@@ -123,6 +123,8 @@ export const handleInvoicePaid = async (receivedEvent: Stripe.InvoicePaidEvent) 
         scheduledChangeAt: null,
         updatedAt: new Date(),
     }).where(eq(subscriptions.id, sub.id));
+
+    return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
 
 export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSubscriptionUpdatedEvent) => {
@@ -160,7 +162,7 @@ export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSu
         where: eq(prices.stripePriceId, stripePriceId),
     })
     if (!price) {
-        throw new Error('No price found for price ID: ${stripePriceId}')
+        throw new Error(`No price found for price ID: ${stripePriceId}`)
     }
 
     // Update subscription if price changed
@@ -179,4 +181,6 @@ export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSu
     }
 
     await db.update(subscriptions).set(updates).where(eq(subscriptions.id, subscription.id));
+
+    return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
