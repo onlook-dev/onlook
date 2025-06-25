@@ -72,7 +72,7 @@ export const CollapsibleCodeBlock = observer(({
                         <CollapsibleTrigger asChild>
                             <div className="flex-1 flex items-center gap-2 cursor-pointer pl-3 py-2">
                                 {isStream ? (
-                                    <Icons.Shadow className="h-4 w-4 animate-spin" />
+                                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
                                 ) : (
                                     <Icons.ChevronDown
                                         className={cn(
@@ -123,7 +123,7 @@ export const CollapsibleCodeBlock = observer(({
                                     >
                                         {editorEngine.chat.code.isApplying ? (
                                             <>
-                                                <Icons.Shadow className="h-4 w-4 mr-2 animate-spin" />
+                                                <Icons.LoadingSpinner className="h-4 w-4 mr-2 animate-spin" />
                                                 Applying...
                                             </>
                                         ) : (

@@ -45,12 +45,12 @@ export const BorderColor = observer(() => {
                     <Button
                         variant="ghost"
                         size="toolbar"
-                        className="flex h-9 w-9 cursor-pointer flex-col items-center justify-center gap-1 text-muted-foreground hover:text-foreground border border-border/0 rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        className="flex h-9 w-9 cursor-pointer flex-col items-center justify-center gap-0.5 text-muted-foreground hover:text-foreground border border-border/0 rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-foreground-primary"
                     >
                         <Icons.PencilIcon className="h-4 w-4 min-h-4 min-w-4" />
                         <div
-                            className="h-[4px] w-6 rounded-full bg-current"
-                            style={{ backgroundColor: colorHex }}
+                            className="w-6 rounded-full bg-current"
+                            style={{ backgroundColor: colorHex, height: '4px' }}
                         />
                     </Button>
                 </DropdownMenuTrigger>
@@ -58,7 +58,7 @@ export const BorderColor = observer(() => {
             <DropdownMenuContent
                 align="start"
                 side="bottom"
-                className="w-[220px] mt-1 p-0 rounded-lg overflow-hidden shadow-xl backdrop-blur-lg"
+                className="w-[224px] mt-1 p-0 rounded-lg overflow-hidden shadow-xl backdrop-blur-lg"
             >
                 <ColorPickerContent
                     color={tempColor}

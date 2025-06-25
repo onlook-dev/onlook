@@ -1,10 +1,10 @@
-import { previewDomains } from '@onlook/db';
+import { previewDomains, publishedDomains } from '@onlook/db';
+import { HostingProvider } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
-import { and, eq, ne } from 'drizzle-orm';
-import type { FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
+import { and, eq, inArray, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { initializeFreestyleSdk } from './freestyle';
+import { HostingProviderFactory } from './hosting-factory';
 
 export const previewRouter = createTRPCRouter({
     get: protectedProcedure.input(z.object({
@@ -53,6 +53,7 @@ export const previewRouter = createTRPCRouter({
     publish: protectedProcedure
         .input(
             z.object({
+                type: z.enum(['preview', 'custom']),
                 projectId: z.string(),
                 files: z.record(z.string(), z.object({
                     content: z.string(),
@@ -66,35 +67,49 @@ export const previewRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
-            // Check domain ownership permission
-            const preview = await ctx.db.query.previewDomains.findFirst({
-                where: eq(previewDomains.projectId, input.projectId),
-            });
-            if (!preview) {
-                throw new TRPCError({
-                    code: 'BAD_REQUEST',
-                    message: 'No preview domain found',
+            if (input.type === 'preview') {
+                const preview = await ctx.db.query.previewDomains.findFirst({
+                    where: and(
+                        eq(previewDomains.projectId, input.projectId),
+                        inArray(previewDomains.fullDomain, input.config.domains),
+                    ),
                 });
+                if (!preview) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'No preview domain found',
+                    });
+                }
+            } else if (input.type === 'custom') {
+                const custom = await ctx.db.query.publishedDomains.findFirst({
+                    where: and(
+                        eq(publishedDomains.projectId, input.projectId),
+                        inArray(publishedDomains.fullDomain, input.config.domains),
+                    ),
+                });
+                if (!custom) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'No custom domain found',
+                    });
+                }
             }
 
-            const sdk = initializeFreestyleSdk();
-            const res = await sdk.deployWeb(
-                {
-                    files: input.files,
-                    kind: 'files',
-                },
-                input.config,
-            );
-            const freestyleResponse = (await res) as {
-                message?: string;
-                error?: {
-                    message: string;
+            const adapter = HostingProviderFactory.create(HostingProvider.FREESTYLE);
+
+            const deploymentFiles: Record<string, { content: string; encoding?: 'utf-8' | 'base64' }> = {};
+            for (const [path, file] of Object.entries(input.files)) {
+                deploymentFiles[path] = {
+                    content: file.content,
+                    encoding: (file.encoding === 'base64' ? 'base64' : 'utf-8')
                 };
-                data?: FreestyleDeployWebSuccessResponseV2;
-            };
-            if (!res) {
-                throw new Error(freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error');
             }
-            return freestyleResponse.data?.deploymentId ?? '';
+
+            const result = await adapter.deploy({
+                files: deploymentFiles,
+                config: input.config
+            });
+
+            return result;
         }),
 });

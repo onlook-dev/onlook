@@ -57,7 +57,6 @@ import {
     EyeClosedIcon,
     EyeOpenIcon,
     FileIcon,
-    FilePlusIcon,
     FrameIcon,
     GearIcon,
     GitHubLogoIcon,
@@ -116,7 +115,7 @@ import {
     ViewHorizontalIcon,
     ViewVerticalIcon,
 } from '@radix-ui/react-icons';
-import { MailXIcon } from 'lucide-react';
+import { CreditCardIcon, MailXIcon, SquareXIcon } from 'lucide-react';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
 import H2Icon from './header-level-icons/h2Icon';
@@ -1244,7 +1243,31 @@ export const Icons = {
             />
         </svg>
     ),
-
+    Key: ({ className, ...props }: IconProps) => (
+        <svg
+            width="21"
+            height="22"
+            viewBox="0 0 21 22"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M13.5625 12.9688C16.3412 12.9688 18.5938 10.7162 18.5938 7.9375C18.5938 5.15881 16.3412 2.90625 13.5625 2.90625C10.7838 2.90625 8.53125 5.15881 8.53125 7.9375C8.53125 8.35917 8.58312 8.76871 8.68083 9.16012L3.53753 14.3034C3.37344 14.4675 3.28125 14.6901 3.28125 14.9222V17.3438C3.28125 17.827 3.673 18.2188 4.15625 18.2188H6.5779C6.80997 18.2188 7.03252 18.1266 7.19662 17.9625L8.09375 17.0654V14.7188H10.4403L12.34 12.8192C12.7313 12.9169 13.1408 12.9688 13.5625 12.9688Z"
+                stroke="currentColor"
+                strokeWidth="1.3125"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M15.0938 7.9375C15.0938 8.78319 14.4082 9.46875 13.5625 9.46875C12.7168 9.46875 12.0312 8.78319 12.0312 7.9375C12.0312 7.09181 12.7168 6.40625 13.5625 6.40625C14.4082 6.40625 15.0938 7.09181 15.0938 7.9375Z"
+                stroke="currentColor"
+                strokeWidth="1.3125"
+                strokeLinecap="square"
+            />
+        </svg>
+    ),
     ArrowDown: ArrowDownIcon,
     ArrowLeft: ArrowLeftIcon,
     ArrowRight: ArrowRightIcon,
@@ -1291,6 +1314,7 @@ export const Icons = {
     Cube: CubeIcon,
     CursorArrow: CursorArrowIcon,
     Circle: CircleIcon,
+    CreditCard: CreditCardIcon,
 
     Desktop: DesktopIcon,
     DiscordLogo: DiscordLogoIcon,
@@ -1362,6 +1386,7 @@ export const Icons = {
     SpaceBetweenHorizontally: SpaceBetweenHorizontallyIcon,
     SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
     Square: SquareIcon,
+    SquareX: SquareXIcon,
     SketchLogo: SketchLogoIcon,
 
     MailX: MailXIcon,
@@ -1397,6 +1422,7 @@ export const Icons = {
     ViewGrid: ViewGridIcon,
     ViewHorizontal: ViewHorizontalIcon,
     ViewVertical: ViewVerticalIcon,
+
     EmptyState: ({ className, ...props }: IconProps) => (
         <svg
             width="130"
@@ -1579,7 +1605,8 @@ export const Icons = {
             />
         </svg>
     ),
-    Padding: ({ className, ...props }: IconProps) => (
+    // Radius Icons
+    RadiusEmpty: ({ className, ...props }: IconProps) => (
         <svg
             width="24"
             height="24"
@@ -1590,19 +1617,509 @@ export const Icons = {
             {...props}
         >
             <path
-                d="M20.25 17.05V6.95C20.25 5.8299 20.25 5.26984 20.032 4.84202C19.8403 4.46569 19.5343 4.15973 19.158 3.96799C18.7302 3.75 18.1701 3.75 17.05 3.75H6.95C5.8299 3.75 5.26984 3.75 4.84202 3.96799C4.46569 4.15973 4.15973 4.46569 3.96799 4.84202C3.75 5.26984 3.75 5.8299 3.75 6.95V17.05C3.75 18.1701 3.75 18.7302 3.96799 19.158C4.15973 19.5343 4.46569 19.8403 4.84202 20.032C5.26984 20.25 5.8299 20.25 6.95 20.25H17.05C18.1701 20.25 18.7302 20.25 19.158 20.032C19.5343 19.8403 19.8403 19.5343 20.032 19.158C20.25 18.7302 20.25 18.1701 20.25 17.05Z"
+                d="M20.25 3.75H13.35C9.98969 3.75 8.30953 3.75 7.02606 4.40396C5.89708 4.9792 4.9792 5.89708 4.40396 7.02606C3.75 8.30953 3.75 9.98969 3.75 13.35V20.25"
                 stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
-            <path d="M9 6.75H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M9 17.25H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M17.25 9V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            <path d="M6.75 9V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
     ),
-    Margin: ({ className, ...props }: IconProps) => (
+    RadiusFull: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M14.6966 3.80469H13.4866C10.0983 3.80469 8.40416 3.80469 7.11 4.4641C5.97162 5.04413 5.04609 5.96966 4.46605 7.10804C3.80664 8.40221 3.80664 10.0964 3.80664 13.4847V14.6947"
+                stroke="white"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusTL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusTR: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusBR: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusBL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusTRBR: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusTRTL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusBRBL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusBLTL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusTRBL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusTRBRBL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusBRBLTL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusTRBLTL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusTRBRTL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+    RadiusBRTL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M15 7.5V7C15 5.59987 15 4.8998 14.7275 4.36502C14.4878 3.89462 14.1054 3.51217 13.635 3.27248C13.1002 3 12.4001 3 11 3H10.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 3H7C5.59987 3 4.8998 3 4.36502 3.27248C3.89462 3.51217 3.51217 3.89462 3.27248 4.36502C3 4.8998 3 5.59987 3 7V7.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M3 10.5V11C3 12.4001 3 13.1002 3.27248 13.635C3.51217 14.1054 3.89462 14.4878 4.36502 14.7275C4.8998 15 5.59987 15 7 15H7.5"
+                stroke="#494949"
+                strokeWidth="1.2"
+                strokeLinecap="round"
+            />
+            <path
+                d="M10.5 15H11C12.4001 15 13.1002 15 13.635 14.7275C14.1054 14.4878 14.4878 14.1054 14.7275 13.635C15 13.1002 15 12.4001 15 11V10.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
+
+    // Margin Icons
+    MarginEmpty: ({ className, ...props }: IconProps) => (
         <svg
             width="24"
             height="24"
@@ -1625,7 +2142,317 @@ export const Icons = {
             <path d="M3 7.5L3 16.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
     ),
-    CornerRadius: ({ className, ...props }: IconProps) => (
+    MarginFull: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M5.625 2.25H12.375" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.25 15.75H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.25 2.25H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M15.75 5.5V12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M2.25 5.5L2.25 12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginTRB: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path d="M2.5 5.5L2.5 12.5" stroke="#494949" strokeLinecap="round" />
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M5.25 15.75H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.25 2.25H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M15.75 5.5V12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginTRL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M5.25 2.25H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M15.75 5.5V12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M2.25 5.5L2.25 12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.5 15.25H12.5" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginBLT: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M15.5 5.5V12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.25 15.75H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.25 2.25H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M2.25 5.5L2.25 12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginRBL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M5.25 15.75H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.5 2.5H12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M15.75 5.5V12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M2.25 5.5L2.25 12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginTR: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.1057C5.347 5.19864 5.19866 5.34701 5.10569 5.52945C5 5.73687 5 6.00844 5 6.55152L5 11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8013 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8013 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485V6.55152C13 6.00844 13 5.73687 12.8943 5.52945C12.8014 5.34701 12.653 5.19864 12.4705 5.1057C12.2631 5 11.9916 5 11.4485 5Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M15.75 12.5V5.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.25 2.25H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.5 15.75H12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M2.5 12.75L2.5 5.75" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginTB: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path d="M2.5 5.5L2.5 12.5" stroke="#494949" strokeLinecap="round" />
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M15.5 5.5V12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.25 15.75H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.25 2.25H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginTL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M5 6.55152V11.4485C5 11.9916 5 12.2631 5.1057 12.4705C5.19864 12.653 5.34701 12.8013 5.52945 12.8943C5.73687 13 6.00844 13 6.55152 13L11.4485 13C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8013 12.8013 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485V6.55152C13 6.00844 13 5.73687 12.8943 5.52945C12.8013 5.34701 12.653 5.19864 12.4705 5.1057C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73687 5 5.52945 5.1057C5.34701 5.19864 5.19864 5.34701 5.1057 5.52945C5 5.73687 5 6.00844 5 6.55152Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M12.75 2.25L5.25 2.25" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M2.25 12.5L2.25 5.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M15.75 12.5V5.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M12.5 15.75L5.5 15.75" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginRB: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M5.25 15.75H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M15.75 5.5V12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M2.5 5.5L2.5 12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.5 2.5H12.5" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginRL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path d="M2.5 5.5L2.5 12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.5 2.5H12.5" stroke="#494949" strokeLinecap="round" />
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M15.5 5.5V12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M15.75 12.5V5.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M2.25 12.5L2.25 5.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.5 15.25H12.5" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginBL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M6.55152 13L11.4485 13C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8013 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485L13 6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8013 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5L6.55152 5C6.00844 5 5.73687 5 5.52945 5.10569C5.34701 5.19866 5.19864 5.347 5.1057 5.52946C5 5.73689 5 6.00844 5 6.55152L5 11.4485C5 11.9916 5 12.2631 5.1057 12.4705C5.19864 12.653 5.34701 12.8014 5.52945 12.8943C5.73687 13 6.00844 13 6.55152 13Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M2.25 5.5L2.25 12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path
+                d="M12.75 15.75L5.25 15.75"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+            />
+            <path d="M12.5 2.25L5.5 2.25" stroke="#494949" strokeLinecap="round" />
+            <path d="M15.75 5.5L15.75 12.5" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginT: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path d="M2.5 5.5L2.5 12.5" stroke="#494949" strokeLinecap="round" />
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M15.5 5.5V12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.25 2.25H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.5 15.25H12.5" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginR: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path d="M2.5 5.5L2.5 12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.5 2.5H12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.5 15.25H12.5" stroke="#494949" strokeLinecap="round" />
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M15.75 5.5V12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginB: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path d="M2.5 5.5L2.5 12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.5 2.5H12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.25 15.75H12.75" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M15.5 5.5V12.5" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    MarginL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M13 11.4485V6.55152C13 6.00844 13 5.73689 12.8943 5.52946C12.8014 5.347 12.653 5.19866 12.4705 5.10569C12.2631 5 11.9916 5 11.4485 5H6.55152C6.00844 5 5.73689 5 5.52946 5.10569C5.347 5.19866 5.19866 5.347 5.10569 5.52946C5 5.73689 5 6.00844 5 6.55152V11.4485C5 11.9916 5 12.2631 5.10569 12.4705C5.19866 12.653 5.347 12.8014 5.52946 12.8943C5.73689 13 6.00844 13 6.55152 13H11.4485C11.9916 13 12.2631 13 12.4705 12.8943C12.653 12.8014 12.8014 12.653 12.8943 12.4705C13 12.2631 13 11.9916 13 11.4485Z"
+                stroke="#494949"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M2.25 5.5L2.25 12.5" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            <path d="M5.5 2.5H12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M5.5 15.25H12.5" stroke="#494949" strokeLinecap="round" />
+            <path d="M15.5 5.5V12.5" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+
+    // Padding Icons
+    PaddingEmpty: ({ className, ...props }: IconProps) => (
         <svg
             width="24"
             height="24"
@@ -1636,9 +2463,311 @@ export const Icons = {
             {...props}
         >
             <path
-                d="M20.25 3.75H13.35C9.98969 3.75 8.30953 3.75 7.02606 4.40396C5.89708 4.9792 4.9792 5.89708 4.40396 7.02606C3.75 8.30953 3.75 9.98969 3.75 13.35V20.25"
+                d="M20.25 17.05V6.95C20.25 5.8299 20.25 5.26984 20.032 4.84202C19.8403 4.46569 19.5343 4.15973 19.158 3.96799C18.7302 3.75 18.1701 3.75 17.05 3.75H6.95C5.8299 3.75 5.26984 3.75 4.84202 3.96799C4.46569 4.15973 4.15973 4.46569 3.96799 4.84202C3.75 5.26984 3.75 5.8299 3.75 6.95V17.05C3.75 18.1701 3.75 18.7302 3.96799 19.158C4.15973 19.5343 4.46569 19.8403 4.84202 20.032C5.26984 20.25 5.8299 20.25 6.95 20.25H17.05C18.1701 20.25 18.7302 20.25 19.158 20.032C19.5343 19.8403 19.8403 19.5343 20.032 19.158C20.25 18.7302 20.25 18.1701 20.25 17.05Z"
                 stroke="currentColor"
                 strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M9 6.75H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M9 17.25H15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M17.25 9V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <path d="M6.75 9V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        </svg>
+    ),
+    PaddingFull: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <rect x="5.5" y="5.5" width="7" height="7" rx="0.1" stroke="white" strokeWidth="2" />
+        </svg>
+    ),
+    PaddingTRB: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M5.5 12.5H12.34C12.396 12.5 12.424 12.5 12.4454 12.4891C12.4642 12.4795 12.4795 12.4642 12.4891 12.4454C12.5 12.424 12.5 12.396 12.5 12.34V5.66C12.5 5.60399 12.5 5.57599 12.4891 5.5546C12.4795 5.53578 12.4642 5.52049 12.4454 5.5109C12.424 5.5 12.396 5.5 12.34 5.5H5.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M5.5 10V8" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    PaddingTRL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M12.5 12.5V5.66C12.5 5.60399 12.5 5.57599 12.4891 5.5546C12.4795 5.53578 12.4642 5.52049 12.4454 5.5109C12.424 5.5 12.396 5.5 12.34 5.5H5.66C5.60399 5.5 5.57599 5.5 5.5546 5.5109C5.53578 5.52049 5.52049 5.53578 5.5109 5.5546C5.5 5.57599 5.5 5.60399 5.5 5.66V12.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M10 12.5H8" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    PaddingTBL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M12.5 5.5L5.66 5.5C5.60399 5.5 5.57599 5.5 5.5546 5.5109C5.53578 5.52049 5.52049 5.53578 5.5109 5.5546C5.5 5.57599 5.5 5.60399 5.5 5.66L5.5 12.34C5.5 12.396 5.5 12.424 5.5109 12.4454C5.52049 12.4642 5.53578 12.4795 5.5546 12.4891C5.57599 12.5 5.60399 12.5 5.66 12.5H12.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M12.5 8V10" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    PaddingRBL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M5.5 5.5L5.5 12.34C5.5 12.396 5.5 12.424 5.5109 12.4454C5.52049 12.4642 5.53578 12.4795 5.5546 12.4891C5.57599 12.5 5.60399 12.5 5.66 12.5H12.34C12.396 12.5 12.424 12.5 12.4454 12.4891C12.4642 12.4795 12.4795 12.4642 12.4891 12.4454C12.5 12.424 12.5 12.396 12.5 12.34L12.5 5.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M8 5.5H10" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    PaddingTR: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M5.5 5.5H12.34C12.396 5.5 12.424 5.5 12.4454 5.5109C12.4642 5.52049 12.4795 5.53578 12.4891 5.5546C12.5 5.57599 12.5 5.60399 12.5 5.66V12.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M5.5 8V11M10 12.5H7" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    PaddingTB: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M12.5 5.5H5.5M12.5 12.5H5.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M5.5 10V8" stroke="#494949" strokeLinecap="round" />
+            <path d="M12.5 10V8" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    PaddingTL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M5.5 12.5L5.5 5.66C5.5 5.60399 5.5 5.57599 5.5109 5.5546C5.52049 5.53578 5.53578 5.52049 5.5546 5.5109C5.57599 5.5 5.60399 5.5 5.66 5.5L12.5 5.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M8 12.5H11M12.5 8V11" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    PaddingRB: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M12.5 5.5V12.34C12.5 12.396 12.5 12.424 12.4891 12.4454C12.4795 12.4642 12.4642 12.4795 12.4454 12.4891C12.424 12.5 12.396 12.5 12.34 12.5H5.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M10 5.5H7M5.5 10V7" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    PaddingRL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M12.5 12.5V5.5M5.5 12.5V5.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M7.5 12.5C7.5 12.2239 7.72386 12 8 12H10C10.2761 12 10.5 12.2239 10.5 12.5C10.5 12.7761 10.2761 13 10 13H8C7.72386 13 7.5 12.7761 7.5 12.5ZM7.5 5.5C7.5 5.22386 7.72386 5 8 5H10C10.2761 5 10.5 5.22386 10.5 5.5C10.5 5.77614 10.2761 6 10 6H8C7.72386 6 7.5 5.77614 7.5 5.5Z"
+                fill="#494949"
+            />
+        </svg>
+    ),
+    PaddingBL: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M12.5 12.5H5.66C5.60399 12.5 5.57599 12.5 5.5546 12.4891C5.53578 12.4795 5.52049 12.4642 5.5109 12.4454C5.5 12.424 5.5 12.396 5.5 12.34L5.5 5.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path d="M12.5 10V7M8 5.5L11 5.5" stroke="#494949" strokeLinecap="round" />
+        </svg>
+    ),
+    PaddingTop: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M11 12.5H9H7M12.5 11V9V8M10.75 5.5H9L7.25 5.5M5.5 8L5.5 9V11"
+                stroke="#494949"
+                strokeLinecap="round"
+            />
+            <path
+                d="M5.5 5.5L12.5 5.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    PaddingRight: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M5.5 11V9V7M7 12.5H9H10M12.5 10.75V9V7.25M10 5.5H9H7"
+                stroke="#494949"
+                strokeLinecap="round"
+            />
+            <path
+                d="M12.5 5.5V12.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    PaddingBottom: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M7 5.5H9H11M5.5 7V9V10M7.25 12.5H9H10.75M12.5 10V9V7"
+                stroke="#494949"
+                strokeLinecap="round"
+            />
+            <path
+                d="M12.5 12.5H5.5"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
+    PaddingLeft: ({ className, ...props }: IconProps) => (
+        <svg
+            width="18"
+            height="18"
+            viewBox="0 0 18 18"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <rect x="2.75" y="2.75" width="12.5" height="12.5" rx="2.5" stroke="#494949" />
+            <path
+                d="M12.5 7V9L12.5 11M11 5.5L9 5.5H8M5.5 7.25L5.5 9V10.75M8 12.5H9H11"
+                stroke="#494949"
+                strokeLinecap="round"
+            />
+            <path
+                d="M5.5 12.5L5.5 5.5"
+                stroke="white"
+                strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
             />
@@ -1692,6 +2821,29 @@ export const Icons = {
                 stroke="currentColor"
                 strokeWidth="1.5"
                 strokeLinecap="square"
+            />
+        </svg>
+    ),
+    LoadingSpinner: ({ className, ...props }: IconProps) => (
+        <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M14.1693 8.0026C14.1693 11.4083 11.4083 14.1693 8.0026 14.1693C4.59685 14.1693 1.83594 11.4083 1.83594 8.0026C1.83594 4.59685 4.59685 1.83594 8.0026 1.83594C11.4083 1.83594 14.1693 4.59685 14.1693 8.0026Z"
+                stroke="currentColor"
+                strokeOpacity="0.3"
+            />
+            <path
+                d="M14.1667 8C14.1667 11.4057 11.4057 14.1667 8 14.1667"
+                stroke="currentColor"
+                strokeOpacity="1"
+                strokeLinecap="round"
             />
         </svg>
     ),

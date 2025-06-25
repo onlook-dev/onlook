@@ -1,5 +1,5 @@
-import { ChatType } from '@/app/api/chat/route';
 import { useEditorEngine } from '@/components/store/editor';
+import { ChatType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';

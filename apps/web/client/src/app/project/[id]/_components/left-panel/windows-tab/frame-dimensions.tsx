@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings, DEVICE_OPTIONS, Orientation } from '@onlook/constants';
 import type { WindowMetadata } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from '@onlook/ui/select';
 import { computeWindowMetadata } from '@onlook/utility';
@@ -19,9 +19,6 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
             <p className="text-sm text-foreground-primary">Frame not found</p>
         );
     }
-
-    console.log('FrameDimensions', frameData.frame.dimension.width.toString(),
-        frameData.frame.dimension.height.toString());
 
     const [metadata, setMetadata] = useState<WindowMetadata>(() =>
         computeWindowMetadata(

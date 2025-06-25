@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { SystemTheme } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
