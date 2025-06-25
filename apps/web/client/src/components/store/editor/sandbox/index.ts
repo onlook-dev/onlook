@@ -11,7 +11,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
 import { FileEventBus } from './file-event-bus';
-import { FileSyncManager } from './file-sync';
+import { StateMachineFileSyncManager } from './file-sync-state-machine';
 import { FileWatcher } from './file-watcher';
 import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
@@ -20,7 +20,7 @@ import { SessionManager } from './session';
 export class SandboxManager {
     readonly session: SessionManager;
     private fileWatcher: FileWatcher | null = null;
-    private fileSync: FileSyncManager = new FileSyncManager();
+    private fileSync: StateMachineFileSyncManager = new StateMachineFileSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
     readonly fileEventBus: FileEventBus = new FileEventBus();
     private isIndexed = false;
@@ -293,10 +293,21 @@ export class SandboxManager {
     async writeFile(path: string, content: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
         const formattedContent = await formatContent(normalizedPath, content);
-        return this.fileSync.write(
+        
+        return this.fileSync.saveFile(
             normalizedPath,
             formattedContent,
-            this.writeRemoteFile.bind(this),
+            async (filePath: string, fileContent: string) => {
+                // This callback handles the actual remote write
+                const success = await this.writeRemoteFile(filePath, fileContent);
+                
+                // Process template mapping for successful writes
+                if (success) {
+                    await this.processFileForMapping(filePath);
+                }
+                
+                return success;
+            }
         );
     }
 
@@ -317,12 +328,12 @@ export class SandboxManager {
     }
 
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
-        const normalizedPath = normalizePath(path);
+        const normalizedPath = normalizePath(path); 
         try {
-            return this.fileSync.writeBinary(
+            return this.fileSync.saveBinaryFile(
                 normalizedPath,
-                content,
-                this.writeRemoteBinaryFile.bind(this),
+                content instanceof Buffer ? new Uint8Array(content) : content,
+                this.writeRemoteBinaryFile.bind(this)
             );
         } catch (error) {
             console.error(`Error writing binary file ${normalizedPath}:`, error);
@@ -421,26 +432,41 @@ export class SandboxManager {
             }
             const normalizedPath = normalizePath(path);
             const eventType = event.type;
+            
             if (event.type === 'remove') {
                 await this.fileSync.delete(normalizedPath);
             } else if (eventType === 'change' || eventType === 'add') {
                 if (isImageFile(normalizedPath)) {
-                    await this.fileSync.trackBinaryFile(normalizedPath);
+                    // For binary files, we track them but don't process mapping
+                    // TODO: Implement binary file state machine handling
+                    console.log(`[SandboxManager] Binary file change detected: ${normalizedPath}`);
                 } else {
                     const content = await this.readRemoteFile(normalizedPath);
                     if (content === null) {
                         console.error(`File content for ${normalizedPath} not found`);
                         continue;
                     }
-                    const contentChanged = await this.fileSync.syncFromRemote(
+                    
+                    // Use state machine to handle remote changes
+                    const { contentChanged, shouldProcess } = await this.fileSync.onRemoteChange(
                         normalizedPath,
-                        content,
+                        content
                     );
-                    if (contentChanged) {
+                    
+                    // Only process mapping if state machine says it's safe
+                    if (shouldProcess) {
                         await this.processFileForMapping(normalizedPath);
+                    }
+                    
+                    // Log conflict detection
+                    const fileState = this.fileSync.getFileState(normalizedPath);
+                    if (fileState === 'conflict') {
+                        console.warn(`[SandboxManager] Conflict detected for file: ${normalizedPath}`);
+                        // Could emit an event here for UI to show conflict resolution options
                     }
                 }
             }
+            
             this.fileEventBus.publish({
                 type: eventType,
                 paths: [normalizedPath],
@@ -589,5 +615,46 @@ export class SandboxManager {
         this.session.disconnect();
         this.isIndexed = false;
         this.isIndexing = false;
+    }
+
+    /**
+     * Get files currently in conflict state
+     */
+    getConflictFiles(): string[] {
+        return this.fileSync.getConflictFiles();
+    }
+
+    /**
+     * Resolve file conflict by accepting local changes
+     */
+    async resolveConflictWithLocal(filePath: string): Promise<boolean> {
+        return this.fileSync.resolveConflictWithLocal(
+            filePath,
+            async (path: string, content: string) => {
+                const success = await this.writeRemoteFile(path, content);
+                if (success) {
+                    await this.processFileForMapping(path);
+                }
+                return success;
+            }
+        );
+    }
+
+    /**
+     * Resolve file conflict by accepting remote changes
+     */
+    async resolveConflictWithRemote(filePath: string): Promise<boolean> {
+        const success = await this.fileSync.resolveConflictWithRemote(filePath);
+        if (success) {
+            await this.processFileForMapping(filePath);
+        }
+        return success;
+    }
+
+    /**
+     * Get current sync state of a file for debugging
+     */
+    getFileState(filePath: string): string {
+        return this.fileSync.getFileState(filePath);
     }
 }
