@@ -6,6 +6,17 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { ChatProvider } from './_hooks/use-chat';
 
+const isProjectRoute = (href: string | URL): boolean => {
+    try {
+        const url = typeof href === 'string' ? new URL(href, window.location.origin) : href;
+        return url.pathname.startsWith('/project/');
+    } catch {
+        // Fallback for relative paths
+        const path = typeof href === 'string' ? href : href.toString();
+        return path.startsWith('/project/');
+    }
+};
+
 export default function ProjectLayout({ children }: { children: React.ReactNode }) {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectManager();
@@ -31,7 +42,7 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
         const originalReplace = router.replace;
 
         router.push = (href, options) => {
-            if (!href.toString().includes('/project/')) {
+            if (!isProjectRoute(href)) {
                 projectManager.clear();
                 editorEngine.clear();
             }
@@ -39,7 +50,7 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
         };
 
         router.replace = (href, options) => {
-            if (!href.toString().includes('/project/')) {
+            if (!isProjectRoute(href)) {
                 projectManager.clear();
                 editorEngine.clear();
             }
@@ -50,7 +61,7 @@ export default function ProjectLayout({ children }: { children: React.ReactNode 
             router.push = originalPush;
             router.replace = originalReplace;
         };
-    }, [router, projectManager, editorEngine]);
+    }, [router, projectManager, editorEngine, isProjectRoute]);
 
     return <ChatProvider>{children}</ChatProvider>;
 }
