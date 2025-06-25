@@ -10,6 +10,7 @@
         "clean": "rm -rf node_modules",
         "typecheck": "tsc --noEmit",
         "setup": "bun src/scripts/setup.ts",
+        "setup:prod": "bun src/scripts/production.ts",
         "dev:webhook": "stripe listen --forward-to localhost:3000/webhook/stripe"
     },
     "keywords": [

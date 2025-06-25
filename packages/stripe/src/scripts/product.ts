@@ -43,7 +43,7 @@ async function createPrices(
     return { key: priceConfig.key, price }
 }
 
-const createFullTestProduct = async (stripe: Stripe) => {
+export const createProProductWithPrices = async (stripe: Stripe) => {
     console.log('Creating product...');
     const product = await stripe.products.create({ name: PRO_PRODUCT_CONFIG.name });
     const priceMap = new Map<PriceKey, Stripe.Price>();
@@ -66,7 +66,7 @@ export const setupProduct = async () => {
     // Clean up any existing product and related resources
     await cleanupExistingProduct(stripe, productName);
 
-    const { product, priceMap } = await createFullTestProduct(stripe);
+    const { product, priceMap } = await createProProductWithPrices(stripe);
     const { customer, subscription } = await createTestCustomerAndSubscribe(stripe, priceMap.get(PriceKey.PRO_MONTHLY_TIER_1)!);
 
     // Upgrade the customer to the next tier
