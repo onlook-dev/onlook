@@ -4,24 +4,21 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { useEffect } from 'react';
 import { ChatProvider } from './_hooks/use-chat';
+import { useSubscriptionCleanup } from '@/hooks/use-subscription-cleanup';
+
 
 export default function ProjectLayout({ children }: { children: React.ReactNode }) {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectManager();
+    const { addSubscription } = useSubscriptionCleanup();
 
+    // Register cleanup function that will be called on pathname changes and beforeunload
     useEffect(() => {
-        const handleBeforeUnload = () => {
+        addSubscription(() => {
             projectManager.clear();
             editorEngine.clear();
-        };
-
-        // Only cleanup on actual browser navigation/close
-        window.addEventListener('beforeunload', handleBeforeUnload);
-        
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
-    }, [projectManager, editorEngine]);
+        });
+    }, [projectManager, editorEngine, addSubscription]);
 
     return <ChatProvider>{children}</ChatProvider>;
 }
