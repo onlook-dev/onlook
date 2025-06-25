@@ -232,7 +232,7 @@ function DraggableElement({
 }
 
 export function DirectEditingBlock() {
-    const [selectedElement, setSelectedElement] = useState<string | null>('text2');
+    const [selectedElement, setSelectedElement] = useState<string | null>('face1');
     const [draggedElement, setDraggedElement] = useState<string | null>(null);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
@@ -401,7 +401,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '180px', right: '6px', width: 60, height: 50 }}
+                                style={{ top: '170px', right: '6px', width: 60, height: 100 }}
                             >
                                 <Illustrations.VinoBaguette />
                             </DraggableElement>
@@ -413,7 +413,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '260px', left: '20px', width: 60, height: 100  }}
+                                style={{ top: '190px', left: '50px', width: 60, height: 100, transform: 'rotate(-10deg)' }}
                             >
                                 <Illustrations.VinoBottle />
                             </DraggableElement>
@@ -425,7 +425,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '200px', left: '8px', width: 46, height: 60 }}
+                                style={{ top: '200px', left: '2px', width: 46, height: 70 }}
                             >
                                 <Illustrations.VinoPlant />
                             </DraggableElement>
@@ -437,7 +437,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '180px', left: '60px', width: 40, height: 60 }}
+                                style={{ top: '280px', left: '15px', width: 40, height: 80, transform: 'rotate(-20deg)' }}
                             >
                                 <Illustrations.VinoGlass />
                             </DraggableElement>
@@ -449,7 +449,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '300px', right: '18px', width: 80, height: 50 }}
+                                style={{ top: '310px', right: '18px', width: 80, height: 50 }}
                             >
                                 <Illustrations.VinoGrapes />
                             </DraggableElement>
@@ -461,7 +461,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '280px', right: '100px', width: 60, height: 100 }}
+                                style={{ top: '290px', right: '100px', width: 60, height: 80 }}
                             >
                                 <Illustrations.VinoVase />
                             </DraggableElement>
@@ -473,7 +473,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '184px', left: '120px', width: 50, height: 80 }}
+                                style={{ top: '184px', left: '120px', width: 50, height: 73 }}
                             >
                                 <Illustrations.VinoPlant2 />
                             </DraggableElement>
@@ -497,7 +497,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '280px', right: '160px', width: 40, height: 70, transform: 'rotate(180deg)' }}
+                                style={{ top: '290px', right: '165px', width: 40, height:60, transform: 'rotate(180deg)' }}
                             >
                                 <Illustrations.VinoSpoon />
                             </DraggableElement>
@@ -509,7 +509,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '240px', right: '80px', width: 70, height: 70, transform: 'rotate(10deg)' }}
+                                style={{ top: '260px', right: '60px', width: 70, height: 30, transform: 'rotate(-140deg)' }}
                             >
                                 <Illustrations.VinoFork />
                             </DraggableElement>
@@ -521,7 +521,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '240px', left: '104px', width: 80, height: 80 }}
+                                style={{ top: '266px', left: '104px', width: 80, height: 28 }}
                             >
                                 <Illustrations.VinoPlate />
                             </DraggableElement>
@@ -533,7 +533,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '240px', right: '0px', width: 50, height: 50 }}
+                                style={{ top: '260px', right: '0px', width: 50, height: 46 }}
                             >
                                 <Illustrations.VinoOlives />
                             </DraggableElement>
@@ -545,7 +545,7 @@ export function DirectEditingBlock() {
                                 setDraggedElement={setDraggedElement}
                                 dragOffset={dragOffset}
                                 setDragOffset={setDragOffset}
-                                style={{ top: '190px', right: '130px', width: 50, height: 50 }}
+                                style={{ top: '200px', right: '130px', width: 60, height: 60 }}
                             >
                                 <Illustrations.VinoFace />
                             </DraggableElement>
