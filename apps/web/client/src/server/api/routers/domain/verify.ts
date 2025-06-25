@@ -19,21 +19,35 @@ export const verificationRouter = createTRPCRouter({
         domain: z.string(),
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
-        // Create if not exists
-        const [customDomain] = await ctx.db.insert(customDomains).values({
-            apexDomain: input.domain,
-        }).onConflictDoNothing().returning();
+        // Use upsert to handle the unique constraint properly
+        const [customDomain] = await ctx.db
+            .insert(customDomains)
+            .values({
+                apexDomain: input.domain,
+            })
+            .onConflictDoUpdate({
+                target: customDomains.apexDomain,
+                set: {
+                    updatedAt: new Date(),
+                },
+            })
+            .returning();
+
         if (!customDomain) {
             throw new TRPCError({
-                code: 'BAD_REQUEST',
-                message: 'Domain already exists. Please verify it first.',
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Failed to create or update domain',
             });
         }
 
         // Check if verification request already exists
         const verification = await ctx.db.query.customDomainVerification.findFirst({
-            where: and(eq(customDomainVerification.domainId, input.domain), eq(customDomainVerification.projectId, input.projectId)),
+            where: and(
+                eq(customDomainVerification.domainId, customDomain.id),
+                eq(customDomainVerification.projectId, input.projectId)
+            ),
         });
+
         if (verification) {
             return verification;
         }
