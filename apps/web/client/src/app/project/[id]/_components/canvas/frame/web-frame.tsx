@@ -79,7 +79,7 @@ export const WebFrameComponent = observer(
             // Store the connection reference
             connectionRef.current = connection;
 
-            connection.promise.then(async (child) => {
+            connection.promise.then((child) => {
                 if (!child) {
                     console.error(
                         `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
