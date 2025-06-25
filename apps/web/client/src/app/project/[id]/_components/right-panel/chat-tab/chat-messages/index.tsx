@@ -5,7 +5,7 @@ import type { UserChatMessageImpl } from '@/components/store/editor/chat/message
 import { transKeys } from '@/i18n/keys';
 import { ChatMessageRole } from '@onlook/models/chat';
 import { ChatMessageList } from '@onlook/ui/chat/chat-message-list';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
@@ -39,7 +39,7 @@ export const ChatMessages = observer(() => {
     if (!conversation) {
         return (
             <div className="flex-1 flex flex-row items-center justify-center text-foreground-tertiary/80 h-full gap-2">
-                <Icons.Shadow className="animate-spin" />
+                <Icons.LoadingSpinner className="animate-spin" />
                 <p className="text-regularPlus">Loading conversation...</p>
             </div>
         );

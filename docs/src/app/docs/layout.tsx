@@ -5,10 +5,6 @@ import type { ReactNode } from 'react';
 
 const docsOptions = {
     ...baseOptions,
-    nav: {
-        ...baseOptions.nav,
-        component: null
-    }
 };
 
 export default function Layout({ children }: { children: ReactNode }) {

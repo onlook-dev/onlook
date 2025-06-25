@@ -5,6 +5,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from '../user/manager';
 
 export class ProjectsManager {
+
     private _projects: Project[] = [];
     isFetching = false;
 

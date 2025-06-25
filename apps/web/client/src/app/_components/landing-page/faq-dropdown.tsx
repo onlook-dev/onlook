@@ -1,5 +1,5 @@
+import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
-import { Icons } from '@onlook/ui/icons/index';
 
 interface FAQ {
     question: string;

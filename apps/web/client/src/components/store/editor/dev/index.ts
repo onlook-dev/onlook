@@ -13,6 +13,7 @@ export interface EditorFile {
     language: string;
     isDirty: boolean;
     isBinary: boolean;
+    savedContent: string;
 }
 
 export interface CodeRange {
@@ -98,6 +99,7 @@ export class IDEManager {
                 filename: fileName,
                 path: filePath,
                 content: content || '',
+                savedContent: content || '',
                 language,
                 isDirty: false,
                 isBinary
@@ -116,7 +118,7 @@ export class IDEManager {
     updateFileContent(id: string, content: string) {
         const file = this.openedFiles.find((f) => f.id === id);
         if (!file) return;
-        const hasChanged = content !== file.content;
+        const hasChanged = content !== file.savedContent;
         file.content = content;
         file.isDirty = hasChanged;
         if (this.activeFile && this.activeFile.id === id) {
@@ -149,8 +151,11 @@ export class IDEManager {
                 ],
             });
             const file = this.openedFiles.find((f) => f.id === this.activeFile!.id);
-            if (file) file.isDirty = false;
-            this.activeFile = { ...this.activeFile, isDirty: false };
+            if (file){
+                file.isDirty = false;
+                file.savedContent = file.content;
+            }
+            this.activeFile = { ...this.activeFile, isDirty: false, savedContent: file?.content || '' };
 
             this.refreshPreviewAfterSave();
         } catch (error) {

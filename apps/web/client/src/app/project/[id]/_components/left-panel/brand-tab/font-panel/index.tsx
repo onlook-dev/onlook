@@ -127,7 +127,7 @@ const FontPanel = observer(() => {
                     )}
                     {isLoading && searchQuery && (
                         <div className="absolute right-9 top-1/2 -translate-y-1/2">
-                            <Icons.Shadow className="h-4 w-4 animate-spin text-muted-foreground" />
+                            <Icons.LoadingSpinner className="h-4 w-4 animate-spin text-muted-foreground" />
                         </div>
                     )}
                 </div>
@@ -237,7 +237,7 @@ const FontPanel = observer(() => {
                             >
                                 {isLoading ? (
                                     <div className="flex items-center gap-2">
-                                        <Icons.Shadow className="h-4 w-4 animate-spin" />
+                                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
                                         <span>Loading...</span>
                                     </div>
                                 ) : (

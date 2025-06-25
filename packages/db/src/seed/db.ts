@@ -1,10 +1,16 @@
 import {
     canvases,
     conversations,
+    createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
     frames,
     messages,
     previewDomains,
+    prices,
+    products,
     projects,
+    publishedDomains,
+    subscriptions,
+    usageRecords,
     userCanvases,
     userProjects,
     users,
@@ -20,7 +26,6 @@ import {
     ProjectRole,
     type ChatMessageContext,
 } from '@onlook/models';
-import { createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas } from '@onlook/utility';
 import { v4 as uuidv4 } from 'uuid';
 
 const user0 = {
@@ -186,6 +191,13 @@ export const resetDb = async () => {
     console.log('Resetting the database...');
     await db.transaction(async (tx) => {
         await tx.delete(previewDomains);
+        await tx.delete(publishedDomains);
+        await tx.delete(userCanvases);
+        await tx.delete(userProjects);
+        await tx.delete(usageRecords);
+        await tx.delete(subscriptions);
+        await tx.delete(prices);
+        await tx.delete(products);
         await tx.delete(messages);
         await tx.delete(conversations);
         await tx.delete(frames);
