@@ -1,5 +1,6 @@
 import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { type FileOperations } from '@onlook/utility';
+import { getLayoutPath } from './helpers';
 
 /**
  * Removes the Built with Onlook script from a Next.js layout file
@@ -11,26 +12,9 @@ export async function removeBuiltWithScriptFromLayout(
     fileOps: FileOperations,
 ): Promise<boolean> {
     try {
-        // Find the layout file - check both app/ and src/app/ directories
-        const possibleLayoutPaths = [
-            `${projectPath}/src/app/layout.tsx`,
-            `${projectPath}/app/layout.tsx`,
-        ];
-
-        let layoutPath: string | null = null;
-        for (const path of possibleLayoutPaths) {
-            const exists = await fileOps.fileExists(path);
-            if (exists) {
-                layoutPath = path;
-                break;
-            }
-        }
-
+        const layoutPath = await getLayoutPath(projectPath, fileOps.fileExists);
         if (!layoutPath) {
-            console.error(
-                'Layout file not found at any of the expected paths:',
-                possibleLayoutPaths,
-            );
+            console.error('Layout file not found');
             return false;
         }
 
