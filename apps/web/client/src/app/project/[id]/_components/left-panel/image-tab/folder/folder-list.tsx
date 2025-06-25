@@ -1,12 +1,11 @@
 import { memo } from 'react';
 import FolderTab from './folder-tab';
 import type { FolderNode } from '../providers/types';
-import { useFolder } from '../hooks/use-folder';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import FolderCreateModal from './modal/folder-create-modal';
 import FolderDeleteModal from './modal/folder-delete-modal';
 import FolderRenameModal from './modal/folder-rename-modal';
+import { useImagesContext } from '../providers/images-provider';
 
 interface FolderListProps {
     items: FolderNode[];
@@ -17,24 +16,22 @@ interface FolderListProps {
 
 export const FolderList = memo(
     ({ items, onSelectFolder, folder, showCreateButton }: FolderListProps) => {
+        const { folderOperations } = useImagesContext();
         const {
             renameState,
             deleteState,
-            createState,
+
             handleRenameInputChange,
             onRenameFolder,
             handleRenameModalToggle,
             onDeleteFolder,
             handleDeleteModalToggle,
             handleCreateFolder,
-            handleCreateFolderInputChange,
-            onCreateFolder,
-            handleCreateModalToggle,
             handleRenameFolder,
             handleDeleteFolder,
             handleMoveToFolder,
             isOperating,
-        } = useFolder();
+        } = folderOperations;
 
         if (!items.length) {
             return null;
@@ -72,17 +69,6 @@ export const FolderList = memo(
                 )}
 
                 {/* Folder Operation Modals */}
-                <FolderCreateModal
-                    isOpen={createState.isCreating}
-                    toggleOpen={handleCreateModalToggle}
-                    onCreate={onCreateFolder}
-                    folderName={createState.newFolderName}
-                    onNameChange={handleCreateFolderInputChange}
-                    isLoading={createState.isLoading}
-                    error={createState.error}
-                    parentFolder={createState.parentFolder}
-                />
-
                 <FolderRenameModal
                     isOpen={!!renameState.folderToRename}
                     toggleOpen={handleRenameModalToggle}

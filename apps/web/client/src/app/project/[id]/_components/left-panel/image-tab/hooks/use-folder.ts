@@ -335,11 +335,14 @@ export const useFolder = () => {
             }
 
             // Create the folder with a .gitkeep file
-            const gitkeepPath = `public/${newFolderPath}/.gitkeep`.replace(/\\/g, '/');
+            const gitkeepPath = `${newFolderPath}/.gitkeep`.replace(/\\/g, '/');
             const gitkeepContent = '# This folder was created by Onlook\n';
             await session.fs.writeTextFile(gitkeepPath, gitkeepContent);
 
             await editorEngine.sandbox.updateFileCache(gitkeepPath, gitkeepContent);
+            if (createState.parentFolder) {
+                await scanFolderChildren(createState.parentFolder);
+            }
 
             setCreateState({
                 isCreating: false,
@@ -366,6 +369,39 @@ export const useFolder = () => {
             parentFolder: null,
         });
     }, []);
+
+    const scanFolderChildren = useCallback(async (folder: FolderNode): Promise<void> => {
+        if (!editorEngine.sandbox.session.session) {
+            console.warn('No session available for folder scanning');
+            return;
+        }
+
+        try {
+
+            const folderPathToScan = folder.fullPath
+            const entries = await editorEngine.sandbox.session.session.fs.readdir(folderPathToScan);
+            
+            const existingChildNames = new Set(folder.children.keys());
+            
+            for (const entry of entries) {
+                if (entry.type === 'directory' && !existingChildNames.has(entry.name)) {
+                    // Create new folder node for empty directory
+                    const childPath = folder.fullPath ? `${folder.fullPath}/${entry.name}` : entry.name;
+                    const newFolderNode: FolderNode = {
+                        name: entry.name,
+                        path: childPath,
+                        fullPath: childPath,
+                        images: [],
+                        children: new Map(),
+                    };
+                    
+                    folder.children.set(entry.name, newFolderNode);
+                }
+            }
+        } catch (error) {
+            console.error('Error scanning folder children:', error);
+        }
+    }, [editorEngine]);
 
     // Check if any operation is loading
     const isOperating = renameState.isLoading || deleteState.isLoading || moveState.isLoading || createState.isLoading;
@@ -397,6 +433,9 @@ export const useFolder = () => {
         handleCreateFolderInputChange,
         onCreateFolder,
         handleCreateModalToggle,
+
+        // Folder scanning
+        scanFolderChildren,
 
         // Global state
         isOperating,

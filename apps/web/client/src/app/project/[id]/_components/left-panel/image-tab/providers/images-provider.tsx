@@ -1,11 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, type ReactNode, useCallback, useState, useEffect } from 'react';
 import { observer } from 'mobx-react-lite';
 import { useImageUpload } from '../hooks/use-image-upload';
 import { useImageDelete } from '../hooks/use-image-delete';
 import { useImageRename } from '../hooks/use-image-rename';
 import { useImageMove } from '../hooks/use-image-move';
 import type { FolderNode } from './types';
+import { useFolder } from '../hooks/use-folder';
 
 interface ImagesContextValue {
     folderStructure: FolderNode;
@@ -17,6 +18,7 @@ interface ImagesContextValue {
     renameOperations: ReturnType<typeof useImageRename>;
     uploadOperations: ReturnType<typeof useImageUpload>;
     moveOperations: ReturnType<typeof useImageMove>;
+    folderOperations: ReturnType<typeof useFolder>;
 }
 
 const ImagesContext = createContext<ImagesContextValue | null>(null);
@@ -33,9 +35,10 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
     const renameOperations = useImageRename();
     const uploadOperations = useImageUpload();
     const moveOperations = useImageMove();
-    
+    const folderOperations = useFolder();
 
-    const folderStructure = useMemo(() => {
+    // Create initial folder structure from image assets
+    const baseFolderStructure = useMemo(() => {
         const createFolderNode = (name: string, path: string, fullPath: string): FolderNode => ({
             name,
             path,
@@ -81,11 +84,22 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         return root;
     }, [editorEngine.image.assets]);
 
+    const [folderStructure, setFolderStructure] = useState<FolderNode>(baseFolderStructure);
+
+    useEffect(() => {
+        setFolderStructure(baseFolderStructure);
+    }, [baseFolderStructure]);
+
+    const triggerFolderStructureUpdate = useCallback(() => {
+        setFolderStructure(prev => ({ ...prev }));
+    }, []);
+
     const isOperating = 
         deleteOperations.deleteState.isLoading ||
         renameOperations.renameState.isLoading ||
         uploadOperations.uploadState.isUploading ||
-        moveOperations.moveState.isLoading;
+        moveOperations.moveState.isLoading ||
+        folderOperations.isOperating;
 
     const value: ImagesContextValue = {
         folderStructure: folderStructure.children.get('public')!,
@@ -94,6 +108,13 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         renameOperations,
         uploadOperations,
         moveOperations,
+        folderOperations: {
+            ...folderOperations,
+            scanFolderChildren: useCallback(async (folder: FolderNode) => {
+                await folderOperations.scanFolderChildren(folder);
+                triggerFolderStructureUpdate();
+            }, [folderOperations.scanFolderChildren, triggerFolderStructureUpdate]),
+        },
     };
 
     return <ImagesContext.Provider value={value}>{children}</ImagesContext.Provider>;

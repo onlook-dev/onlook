@@ -12,10 +12,10 @@ import { Input } from '@onlook/ui/input';
 import { useImageSearch } from '../hooks/use-image-search';
 import { Separator } from '@onlook/ui/separator';
 import { useImagesContext } from '../providers/images-provider';
-import { useFolder } from '../hooks/use-folder';
 import { useFolderImages } from '../hooks/use-folder-images';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import { isEqual } from 'lodash';
+import FolderCreateModal from './modal/folder-create-modal';
 
 interface FolderPathItem {
     folder: FolderNode;
@@ -25,7 +25,7 @@ interface FolderPathItem {
 export default function Folder() {
     const inputRef = useRef<HTMLInputElement>(null);
     const breadcrumbsRef = useRef<HTMLDivElement>(null);
-    const { uploadOperations, isOperating, folderStructure } = useImagesContext();
+    const { uploadOperations, isOperating, folderStructure, folderOperations } = useImagesContext();
     const [currentFolder, setCurrentFolder] = useState<FolderNode | null>(null);
     const [folderPath, setFolderPath] = useState<FolderPathItem[]>([]);
 
@@ -37,18 +37,30 @@ export default function Folder() {
         });
 
     const {
+        createState,
         handleCreateFolder,
         handleRenameFolder,
         handleDeleteFolder,
         handleMoveToFolder,
         isOperating: isFolderOperating,
-    } = useFolder();
+        scanFolderChildren,
+        handleCreateFolderInputChange,
+        handleCreateModalToggle,
+        onCreateFolder,
+    } = folderOperations;
 
-    const handleSelectFolder = (folder: FolderNode) => {
+    const handleSelectFolder = async (folder: FolderNode) => {
         if (currentFolder) {
             setFolderPath((prev) => [...prev, { folder: currentFolder, name: currentFolder.name }]);
         }
         setCurrentFolder(folder);
+
+        // Scan for empty child folders when selecting a folder
+        try {
+            await scanFolderChildren(folder);
+        } catch (error) {
+            console.error('Error scanning folder children:', error);
+        }
     };
 
     const handleGoBack = () => {
@@ -110,6 +122,15 @@ export default function Folder() {
         }
     }, [currentFolder, loadFolderImages]);
 
+    // Scan root folder for empty directories on initial load
+    useEffect(() => {
+        if (folderStructure && (currentFolder === folderStructure || !currentFolder)) {
+            scanFolderChildren(folderStructure).catch((error) => {
+                console.error('Error scanning root folder children:', error);
+            });
+        }
+    }, [folderStructure, currentFolder, scanFolderChildren]);
+
     // Auto-scroll breadcrumbs to the right when folder path changes
     useEffect(() => {
         if (breadcrumbsRef.current) {
@@ -127,7 +148,6 @@ export default function Folder() {
     const canGoBack = folderPath.length > 0 || currentFolder !== folderStructure;
     const isAnyOperationLoading = isOperating || isFolderOperating;
     const showCreateButton = currentFolder === folderStructure && currentFolder.children.size === 0;
-
 
     return (
         <div className="flex flex-col gap-2 h-full">
@@ -265,6 +285,17 @@ export default function Folder() {
             ) : (
                 <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath || ''} />
             )}
+
+            <FolderCreateModal
+                isOpen={createState.isCreating}
+                toggleOpen={handleCreateModalToggle}
+                onCreate={onCreateFolder}
+                folderName={createState.newFolderName}
+                onNameChange={handleCreateFolderInputChange}
+                isLoading={createState.isLoading}
+                error={createState.error}
+                parentFolder={createState.parentFolder}
+            />
         </div>
     );
 }
