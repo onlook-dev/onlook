@@ -210,10 +210,10 @@ export const updateSubscriptionNextPeriod = async ({
 };
 
 export const releaseSubscriptionSchedule = async ({
-    subsciptionScheduleId,
+    subscriptionScheduleId,
 }: {
-    subsciptionScheduleId: string;
+    subscriptionScheduleId: string;
 }) => {
     const stripe = createStripeClient();
-    return await stripe.subscriptionSchedules.release(subsciptionScheduleId);
+    return await stripe.subscriptionSchedules.release(subscriptionScheduleId);
 }

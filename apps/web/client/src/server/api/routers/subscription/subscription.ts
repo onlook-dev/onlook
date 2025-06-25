@@ -111,7 +111,7 @@ export const subscriptionRouter = createTRPCRouter({
         // If there is a future scheduled change, we release it.
         if (subscription.stripeSubscriptionScheduleId) {
             await releaseSubscriptionSchedule({
-                subsciptionScheduleId: subscription.stripeSubscriptionScheduleId,
+                subscriptionScheduleId: subscription.stripeSubscriptionScheduleId,
             });
         }
 
@@ -150,16 +150,16 @@ export const subscriptionRouter = createTRPCRouter({
     }),
 
     releaseSubscriptionSchedule: protectedProcedure.input(z.object({
-        subsciptionScheduleId: z.string(),
+        subscriptionScheduleId: z.string(),
     })).mutation(async ({ input }) => {
-        await releaseSubscriptionSchedule({ subsciptionScheduleId: input.subsciptionScheduleId });
+        await releaseSubscriptionSchedule({ subscriptionScheduleId: input.subscriptionScheduleId });
         await db.update(subscriptions).set({
             status: 'active',
             updatedAt: new Date(),
             scheduledPriceId: null,
             stripeSubscriptionScheduleId: null,
             scheduledChangeAt: null,
-        }).where(eq(subscriptions.stripeSubscriptionScheduleId, input.subsciptionScheduleId)).returning();
+        }).where(eq(subscriptions.stripeSubscriptionScheduleId, input.subscriptionScheduleId)).returning();
     }),
 });
 

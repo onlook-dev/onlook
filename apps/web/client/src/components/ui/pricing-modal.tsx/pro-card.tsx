@@ -79,7 +79,7 @@ export const ProCard = ({
                 throw new Error('No scheduled downgrade found.');
             }
             setIsCheckingOut(true);
-            await releaseSubscriptionSchedule({ subsciptionScheduleId: subscription.scheduledChange.stripeSubscriptionScheduleId });
+            await releaseSubscriptionSchedule({ subscriptionScheduleId: subscription.scheduledChange.stripeSubscriptionScheduleId });
             refetchSubscription();
             toast.success('Scheduled downgrade canceled!');
         } catch (error) {
