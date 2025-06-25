@@ -1,6 +1,6 @@
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
-import { PriceKey, PRO_PRODUCT_CONFIG, ProductType, type Subscription } from '@onlook/stripe';
+import { PriceKey, PRO_PRODUCT_CONFIG } from '@onlook/stripe';
 import { Badge } from "@onlook/ui/badge";
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { toast } from '@onlook/ui/sonner';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSubscription } from './use-subscription';
 
 export const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month`;
 
@@ -19,15 +20,12 @@ const PRO_FEATURES = [
 ];
 
 export const ProCard = ({
-    subscription,
     delay,
-    refetchSubscription,
 }: {
-    subscription: Subscription | null;
     delay: number;
-    refetchSubscription: () => void;
 }) => {
     const t = useTranslations();
+    const { subscription, isPro, refetchSubscription, isPollingForSubscription, startPollingForSubscription } = useSubscription();
     const { mutateAsync: checkout } = api.subscription.checkout.useMutation();
     const { mutateAsync: getPriceId } = api.subscription.getPriceId.useMutation();
     const { mutateAsync: updateSubscription } = api.subscription.update.useMutation();
@@ -37,14 +35,8 @@ export const ProCard = ({
     const [selectedTier, setSelectedTier] = useState<PriceKey>(PriceKey.PRO_MONTHLY_TIER_1);
 
     const selectedTierData = PRO_PRODUCT_CONFIG.prices.find(tier => tier.key === selectedTier);
-    const isPro = subscription?.product.type === ProductType.PRO;
     const isNewTierSelected = selectedTier !== subscription?.price.key;
     const isPendingTierSelected = selectedTier !== subscription?.price.key && selectedTier === subscription?.scheduledChange?.price?.key;
-
-    // Polling for subscription to be updated
-    const [isPollingForSubscription, setIsPollingForSubscription] = useState(false);
-    const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const pollingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     if (!PRO_PRODUCT_CONFIG.prices.length) {
         throw new Error('No pro tiers found');
@@ -89,44 +81,6 @@ export const ProCard = ({
             });
         } finally {
             setIsCheckingOut(false);
-        }
-    };
-
-    const startPollingForSubscription = () => {
-        setIsPollingForSubscription(true);
-
-        // Clear any existing intervals
-        if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-        }
-        if (pollingTimeoutRef.current) {
-            clearTimeout(pollingTimeoutRef.current);
-        }
-
-        // Start polling every 5 seconds
-        pollingIntervalRef.current = setInterval(() => {
-            refetchSubscription();
-        }, 5000);
-
-        // Stop polling after 5 minutes (300 seconds) as a safety timeout
-        pollingTimeoutRef.current = setTimeout(() => {
-            stopPollingForSubscription();
-            toast.info('Subscription check timed out', {
-                description: 'Please refresh the page to see your updated subscription status.',
-            });
-        }, 300000);
-    };
-
-    const stopPollingForSubscription = () => {
-        setIsPollingForSubscription(false);
-
-        if (pollingIntervalRef.current) {
-            clearInterval(pollingIntervalRef.current);
-            pollingIntervalRef.current = null;
-        }
-        if (pollingTimeoutRef.current) {
-            clearTimeout(pollingTimeoutRef.current);
-            pollingTimeoutRef.current = null;
         }
     };
 
@@ -183,27 +137,12 @@ export const ProCard = ({
         }
     };
 
-    // Stop polling when subscription becomes pro (payment successful)
-    useEffect(() => {
-        if (isPro && isPollingForSubscription) {
-            stopPollingForSubscription();
-            toast.success('Subscription activated successfully!');
-        }
-    }, [isPro, isPollingForSubscription]);
-
     // Set selected tier based on current subscription
     useEffect(() => {
         if (subscription?.price.key) {
             setSelectedTier(subscription.price.key);
         }
     }, [subscription?.price.key]);
-
-    // Cleanup polling on component unmount
-    useEffect(() => {
-        return () => {
-            stopPollingForSubscription();
-        };
-    }, []);
 
     const buttonContent = () => {
         if (isCheckingOut || isPollingForSubscription) {
