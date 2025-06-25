@@ -7,14 +7,19 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Progress } from '@onlook/ui/progress';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 
 export const UsageSection = observer(() => {
     const userManager = useUserManager();
     const { data: subscription } = api.subscription.get.useQuery();
-    const { data: usageData } = api.usage.get.useQuery();
+    const { data: usageData, refetch: refetchUsage } = api.usage.get.useQuery();
     const product = subscription?.product ?? FREE_PRODUCT_CONFIG;
     const price = product?.type === ProductType.FREE ? 'Trial' : 'Active';
     let usage = product?.type === ProductType.FREE ? usageData?.daily : usageData?.monthly;
+
+    useEffect(() => {
+        refetchUsage();
+    }, [userManager.user, refetchUsage]);
 
     if (!usage) {
         return (
