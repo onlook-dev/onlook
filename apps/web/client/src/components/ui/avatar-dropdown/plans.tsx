@@ -4,7 +4,7 @@ import { useUserManager } from '@/components/store/user';
 import { api } from '@/trpc/react';
 import { FREE_PRODUCT_CONFIG, ProductType, ScheduledSubscriptionAction } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { Progress } from '@onlook/ui/progress';
 import { observer } from 'mobx-react-lite';
 

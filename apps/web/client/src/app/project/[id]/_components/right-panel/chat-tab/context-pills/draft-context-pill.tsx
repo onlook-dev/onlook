@@ -1,8 +1,8 @@
 import { type ChatMessageContext } from '@onlook/models/chat';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { motion } from 'motion/react';
 import React from 'react';
-import { getTruncatedName, getContextIcon } from './helpers';
+import { getContextIcon, getTruncatedName } from './helpers';
 
 export const DraftContextPill = React.forwardRef<
     HTMLDivElement,

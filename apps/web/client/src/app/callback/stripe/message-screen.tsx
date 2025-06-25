@@ -1,4 +1,3 @@
-import { Icons } from "@onlook/ui/icons/index";
 
 export default function MessageScreen({
     title,

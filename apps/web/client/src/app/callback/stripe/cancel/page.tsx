@@ -1,4 +1,4 @@
-import { Icons } from "@onlook/ui/icons/index";
+import { Icons } from "@onlook/ui/icons";
 import MessageScreen from "../message-screen";
 
 export default function Cancel() {
