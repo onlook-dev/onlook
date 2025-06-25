@@ -46,7 +46,7 @@ export function ComponentsBlock() {
                                             </div>
                                             {/* Mini calendar grid */}
                                             <div className="grid grid-cols-7 gap-[0.5px] text-center text-zinc-500 text-[3px] mb-0.5">
-                                                {["S","M","T","W","T","F","S"].map(d => <div key={d}>{d}</div>)}
+                                                {["S","M","T","W","T","F","S"].map((d, index) => <div key={`mini-${d}-${index}`}>{d}</div>)}
                                             </div>
                                             <div className="grid grid-cols-7 gap-[0.5px] text-center">
                                                 {(() => {
@@ -219,7 +219,7 @@ export function ComponentsBlock() {
                         </div>
                         {/* Calendar grid */}
                         <div className="grid grid-cols-7 gap-[2px] text-center text-zinc-400 text-xs mb-2 cursor-pointer">
-                            {["Su","Mo","Tu","We","Th","Fr","Sa"].map(d => <div key={d}>{d}</div>)}
+                            {["Su","Mo","Tu","We","Th","Fr","Sa"].map((d, index) => <div key={`main-${d}-${index}`}>{d}</div>)}
                         </div>
                         <div className="grid grid-cols-7 gap-[2px] text-center cursor-pointer">
                             {(() => {

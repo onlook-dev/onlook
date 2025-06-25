@@ -21,10 +21,10 @@ export function FAQSection() {
     return (
         <div className="w-full max-w-6xl mx-auto py-32 px-8 flex flex-col md:flex-row items-start gap-24 md:gap-12">
             <div className="flex-1 flex flex-col items-start">
-                <h2 className="text-foreground-primary text-[5vw] leading-[1.1] font-light mb-8 max-w-3xl">
-                    What did<br />we miss?
+                <h2 className="text-foreground-primary text-6xl leading-[1.1] font-light mb-8 mt-4 max-w-3xl">
+                    Frequently<br />asked questions
                 </h2>
-                <ButtonLink href="/faq" rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>Read our FAQs</ButtonLink>
+                <ButtonLink href="/faq" rightIcon={<Icons.ArrowRight className="w-5 h-5 text-small text-foreground-primary" />}>Read our FAQs</ButtonLink>
             </div>
             <div className="flex-1 flex flex-col gap-6">
                 <FAQDropdown faqs={faqs} />

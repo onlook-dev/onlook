@@ -3,8 +3,8 @@ import { TestimonialCard } from './testimonial-card';
 export function TestimonialsSection() {
     return (
         <div className="w-full max-w-6xl mx-auto py-48 px-8">
-            <h2 className="text-foreground-primary text-[4vw] leading-[1.1] font-light mb-16 max-w-4xl text-left text-balance">
-                Thousands of builders <br />love Onlook
+            <h2 className="text-foreground-primary text-6xl leading-[1.1] font-light mb-16 max-w-4xl text-left text-balance">
+                Tens of thousands of <br />builders love Onlook
             </h2>
             <div className="w-full flex flex-col md:flex-row gap-6 md:gap-8">
                 {/* Column 1 */}

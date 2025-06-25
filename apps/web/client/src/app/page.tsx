@@ -6,6 +6,9 @@ import { ContributorSection } from './_components/landing-page/contributor-secti
 import { WhatCanOnlookDoSection } from './_components/landing-page/what-can-onlook-do-section';
 import { Footer } from './_components/landing-page/page-footer';
 import { TopBar } from './_components/top-bar';
+import { FAQSection } from './_components/landing-page/faq-section';
+import { CTASection } from './_components/landing-page/cta-section';
+import { TestimonialsSection } from './_components/landing-page/testimonials-section';
 
 
 export default function Main() {
@@ -20,11 +23,11 @@ export default function Main() {
 
             {/* <FeaturesSection /> */}
             {/* <CodeOneToOneSection /> */}
-            {/* <TestimonialsSection /> */}
-            {/* <CTASection /> */}
             <ContributorSection />
-            {/* <FAQSection /> */}
+            {/* <CTASection /> */}
             <WhatCanOnlookDoSection />
+            <TestimonialsSection />
+            <FAQSection /> 
             <Footer />
             <AuthModal />
         </div>

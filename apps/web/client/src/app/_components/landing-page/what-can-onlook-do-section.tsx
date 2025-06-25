@@ -8,6 +8,27 @@ import { LayersBlock } from './feature-blocks/layers';
 import { ComponentsBlock } from './feature-blocks/components';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
+// Hook to detect operating system
+function useOperatingSystem() {
+    const [os, setOs] = useState<'mac' | 'windows' | 'linux' | 'unknown'>('unknown');
+
+    useEffect(() => {
+        const userAgent = navigator.userAgent.toLowerCase();
+        
+        if (userAgent.includes('mac')) {
+            setOs('mac');
+        } else if (userAgent.includes('win')) {
+            setOs('windows');
+        } else if (userAgent.includes('linux')) {
+            setOs('linux');
+        } else {
+            setOs('unknown');
+        }
+    }, []);
+
+    return os;
+}
+
 function VersionRow({ title, subtitle, children, selected, onClick }: { title: string, subtitle: string, children?: React.ReactNode, selected?: boolean, onClick?: () => void }) {
     return (
         <div
@@ -78,6 +99,9 @@ function ParallaxContainer({ children, speed = 0.1 }: { children: React.ReactNod
 }
 
 export function WhatCanOnlookDoSection() {
+    // Detect operating system for keyboard shortcuts
+    const os = useOperatingSystem();
+    
     // Carousel state for Demo Sites
     const [selectedVersionIdx, setSelectedVersionIdx] = useState(0);
     const [displayedImageIdx, setDisplayedImageIdx] = useState(0); // New state for delayed image display
@@ -86,6 +110,11 @@ export function WhatCanOnlookDoSection() {
     const [selectedElement, setSelectedElement] = useState<string | null>('text2');
     const [isUserSelected, setIsUserSelected] = useState(false);
     const [lastUserInteraction, setLastUserInteraction] = useState(Date.now());
+    
+    // Keyboard shortcut carousel state
+    const [shortcutLetterIdx, setShortcutLetterIdx] = useState(0);
+    const [isShortcutAnimating, setIsShortcutAnimating] = useState(false);
+    
     // Demo colors for carousel
     const demoColors = [
         'bg-gradient-to-br from-gray-400 to-gray-700',
@@ -107,6 +136,23 @@ export function WhatCanOnlookDoSection() {
         { title: 'Added new background image', subtitle: 'Sandra · 12h ago' },
         { title: 'Copy improvements and new branding', subtitle: 'Jonathan · 3d ago' },
     ];
+    
+    // Keyboard shortcut letters to cycle through
+    const shortcutLetters = ['Z', 'X', 'C', 'V', 'D', 'G', 'A', 'S'];
+    
+    // Get the appropriate keyboard shortcut text
+    const getKeyboardShortcut = () => {
+        const currentLetter = shortcutLetters[shortcutLetterIdx];
+        switch (os) {
+            case 'mac':
+                return `CMD+${currentLetter}`;
+            case 'windows':
+            case 'linux':
+                return `Ctrl+${currentLetter}`;
+            default:
+                return `CMD/CTRL+${currentLetter}`; // Fallback for unknown OS
+        }
+    };
 
     useEffect(() => {
         setIsAnimating(true);
@@ -139,6 +185,19 @@ export function WhatCanOnlookDoSection() {
 
         return () => clearInterval(rotationInterval);
     }, [lastUserInteraction]);
+
+    // Keyboard shortcut rotation effect
+    useEffect(() => {
+        const shortcutInterval = setInterval(() => {
+            setIsShortcutAnimating(true);
+            setTimeout(() => {
+                setShortcutLetterIdx((prev) => (prev + 1) % shortcutLetters.length);
+                setIsShortcutAnimating(false);
+            }, 150); // Blur out duration
+        }, 2000); // Change every 2 seconds
+
+        return () => clearInterval(shortcutInterval);
+    }, [shortcutLetters.length]);
 
     // Handle version selection
     const handleVersionSelect = (idx: number) => {
@@ -225,36 +284,57 @@ export function WhatCanOnlookDoSection() {
     }, []);
 
     return (
-        <div className="w-full max-w-6xl mx-auto py-32 px-8 flex flex-col md:flex-row gap-24 md:gap-24">
-            {/* Left Column */}
-            <div className="flex-1 flex flex-col gap-24">
-                {/* Section Title */}
-                <h2 className="text-foreground-primary text-[4vw] leading-[1.1] font-light mb-8 max-w-xl">What can<br />Onlook do?</h2>
-                {/* Direct editing */}
-                <DirectEditingBlock />
-                {/* Components */}
-                <ComponentsBlock />
-                {/* Layers */}
-                <LayersBlock />
+        <>
+            <div className="w-full max-w-6xl mx-auto py-32 px-8 flex flex-col md:flex-row gap-24 md:gap-24">
+                {/* Left Column */}
+                <div className="flex-1 flex flex-col gap-24">
+                    <h2 className="text-foreground-primary text-6xl leading-[1.1] font-light mb-8 max-w-xl">What can<br />Onlook do?</h2>
+                    <DirectEditingBlock />
+                    <ComponentsBlock />
+                    <RevisionHistory />
+                </div>
+                {/* Right Column */}
+                <div className="flex-1 flex flex-col gap-18 mt-16 md:mt-32">
+                    <BrandComplianceBlock />
+                    <LayersBlock />
+                    <ResponsiveWebsiteBlock />
+                </div>
             </div>
-            {/* Right Column */}
-            <div className="flex-1 flex flex-col gap-18 mt-16 md:mt-32">
-                {/* Work in the true product 
-                <div className="flex flex-col gap-4">
-                    <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6" />
-                    <div className="flex flex-row items-start gap-8 w-full">
-
-                        <div className="flex flex-col items-start w-1/2">
-                            <div className="mb-2"><Icons. className="w-6 h-6 text-foreground-primary" /></div>
-                            <span className="text-foreground-primary text-largePlus font-light">Work in the <span className='underline'>true</span> product</span>
-                        </div>
-                        <p className="text-foreground-secondary text-regular text-balance w-1/2">Work an entirely new dimension – experience your designs come to life</p>
+            {/* Grid extension section */}
+            <div className="w-full max-w-6xl mx-auto py-32 px-8">
+                <h2 className="text-foreground-primary text-6xl text-right leading-[1.1] font-light mb-20">...and so<br />much more</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-16 gap-y-20">
+                    <div>
+                        <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Import from GitHub or locally</div>
+                        <div className="text-foreground-secondary text-regular text-balance">Bring your existing codebase and start building</div>
                     </div>
-                </div> */}
-                <BrandComplianceBlock />
-                <ResponsiveWebsiteBlock />
-                <RevisionHistory />
+                    <div>
+                        <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Import from Figma</div>
+                        <div className="text-foreground-secondary text-regular text-balance">Make your designs come to life with a real working product</div>
+                    </div>
+                    <div>
+                        <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Publish your work</div>
+                        <div className="text-foreground-secondary text-regular text-balance">Attach a custom domain and share your work with the world</div>
+                    </div>
+                    <div>
+                        <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Draw-in Layers</div>
+                        <div className="text-foreground-secondary text-regular text-balance">Trace divs and text directly in your designs and create code in real-time</div>
+                    </div>
+                    <div>
+                        <div className="text-foreground-primary text-regularPlus mb-2 text-balance">All your favorite hotkeys</div>
+                        <div className="text-foreground-secondary text-regular text-balance">
+                            <span className={`transition-all duration-250 mr-1 inline-block ${isShortcutAnimating ? 'blur-sm opacity-50 -translate-x-1' : 'blur-0 opacity-100 translate-x-0'}`}>
+                                {getKeyboardShortcut()}
+                            </span>
+                            and design lightning fast with all your favorite shortcuts
+                        </div>
+                    </div>
+                    <div>
+                        <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Use Images and media assets</div>
+                        <div className="text-foreground-secondary text-regular text-balance">Manage your graphics and images all from one place</div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </>
     );
 } 

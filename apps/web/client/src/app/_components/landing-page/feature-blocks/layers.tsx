@@ -2,31 +2,30 @@ import { Icons } from '@onlook/ui/icons';
 import React from 'react';
 import { cn } from '@onlook/ui/utils';
 import { NodeIcon } from '../../../project/[id]/_components/left-panel/layers-tab/tree/node-icon';
+import { Illustrations } from '../illustrations';
 
 // Mock data for layers with nested structure
 const mockLayers = [
-    { id: '1', name: 'Navigation Bar', tagName: 'COMPONENT', selected: false, level: 0, isInstance: false },
-    { id: '2', name: 'Logo', tagName: 'IMG', selected: false, level: 1, isInstance: false },
-    { id: '3', name: 'Menu Items', tagName: 'DIV', selected: false, level: 1, isInstance: false },
-    { id: '4', name: 'Home', tagName: 'A', selected: false, level: 2, isInstance: false },
-    { id: '5', name: 'Projects', tagName: 'A', selected: false, level: 2, isInstance: false },
-    { id: '6', name: 'About', tagName: 'A', selected: false, level: 2, isInstance: false },
-    { id: '7', name: 'Overview', tagName: 'SECTION', selected: true, level: 0, isInstance: false },
-    { id: '8', name: 'Hero Section', tagName: 'DIV', selected: false, level: 1, isInstance: false },
-    { id: '9', name: 'Heading', tagName: 'H1', selected: false, level: 2, isInstance: false },
-    { id: '10', name: 'Description', tagName: 'P', selected: false, level: 2, isInstance: false },
-    { id: '11', name: 'Projects Section', tagName: 'SECTION', selected: false, level: 0, isInstance: false },
-    { id: '12', name: 'Filter Bar', tagName: 'DIV', selected: false, level: 1, isInstance: false },
-    { id: '13', name: 'Search', tagName: 'INPUT', selected: false, level: 2, isInstance: false },
-    { id: '14', name: 'Project Grid', tagName: 'DIV', selected: false, level: 1, isInstance: false },
-    { id: '15', name: 'Project Card', tagName: 'COMPONENT', selected: false, level: 2, isInstance: true },
-    { id: '16', name: 'Project Image', tagName: 'IMG', selected: false, level: 3, isInstance: false },
-    { id: '17', name: 'Project Title', tagName: 'H3', selected: false, level: 3, isInstance: false },
+    { id: '2', name: 'Navigation Bar', tagName: 'COMPONENT', selected: false, level: 0, isInstance: false },
+    { id: '2.1', name: 'Models', tagName: 'DIV', selected: false, level: 1, isInstance: false },
+    { id: '2.1.1', name: 'Exotic', tagName: 'SPAN', selected: false, level: 2, isInstance: false },
+    { id: '2.1.2', name: 'Roadster', tagName: 'SPAN', selected: false, level: 2, isInstance: false },
+    { id: '2.1.3', name: 'Terrestrial', tagName: 'SPAN', selected: false, level: 2, isInstance: false },    
+    { id: '2.2', name: 'Logo', tagName: 'IMG', selected: false, level: 1, isInstance: false },
+    { id: '2.3', name: 'Reserve', tagName: 'SPAN', selected: false, level: 1, isInstance: false },
+    { id: '3', name: 'Header', tagName: 'Section', selected: true, level: 0, isInstance: false },
+    { id: '4.1', name: 'Endorphins', tagName: 'H1', selected: false, level: 1, isInstance: false },
+    { id: '4.2', name: 'In Motion', tagName: 'H1', selected: false, level: 1, isInstance: false },
+    { id: '4.3', name: 'Order Now', tagName: 'BUTTON', selected: false, level: 1, isInstance: false },
+    { id: '4.4', name: 'Video', tagName: 'VIDEO', selected: false, level: 1, isInstance: false },
+    { id: '5', name: 'Section', tagName: 'Section', selected: false, level: 0, isInstance: false },
+    { id: '5.1', name: 'Experience excellence', tagName: 'H2', selected: false, level: 1, isInstance: false },
+    { id: '5.2', name: 'The feel of something more', tagName: 'P', selected: false, level: 1, isInstance: false },
 ];
 
 function MockLayersTab() {
     const [hoveredId, setHoveredId] = React.useState<string | null>(null);
-    const [selectedId, setSelectedId] = React.useState<string>('7');
+    const [selectedId, setSelectedId] = React.useState<string>('3');
 
     return (
         <div className="w-72 shadow-lg p-2 overflow-hidden max-h-96 flex flex-col gap-1">
@@ -77,18 +76,37 @@ export function LayersBlock() {
     return (
         <div className="flex flex-col gap-4">
             <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 relative overflow-hidden">
-                <div className="w-54 h-100 rounded-xl overflow-hidden absolute left-1/30 top-12 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20 z-20">
+                <div className="w-48 h-100 rounded-xl overflow-hidden absolute left-1/30 top-12 flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20 z-20">
                     <p className="text-foreground-primary text-regular font-light w-full text-left px-3 py-2 border-b-[0.5px] border-foreground-primary/20">Layers</p>
                     <div className="flex flex-row items-start gap-8 w-full">
                         <MockLayersTab />
                     </div>
                 </div>
-                <div className="w-100 h-100 bg-blue-400 absolute top-20 left-1/4 z-10 rounded-lg overflow-hidden">
-                    <div className="w-full h-10 bg-white/50 flex flex-row gap-4 justify-center p-2">
-                        <p className='text-white'>Hello</p>
-                        <p className='text-white'>Hello</p>
+                <div className="w-90 h-80 absolute top-20 left-1/4 z-10 rounded-lg overflow-hidden">
+                    <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover rounded-lg"
+                    >
+                        <source src="/assets/layers-car.mp4" type="video/mp4" />
+                        Your browser does not support the video tag.
+                    </video>
+                    <div className="w-full h-full absolute top-0 left-0 flex flex-col items-center justify-start">
+                        <div className="w-full h-6 bg-gray-800/80 flex flex-row gap-4 justify-between items-center px-2 absolute top-1.5 left-0">
+                            <Illustrations.LayersLogo className='h-2 ml-34' />
+                            <Illustrations.LayersReserve className='h-1' />
+                        </div>
+                        <div className='w-full h-12 absolute top-10 left-5 flex flex-row gap-4 items-center justify-center'>
+                            <Illustrations.LayersEndorphins className='w-56' />
+                            <Illustrations.LayersInMotion className='w-48 top-12 absolute' />
+                        </div>
+                        <div className='absolute bottom-3 w-fit h-fit flex flex-col items-center justify-start bg-[#872D2D] p-2 hover:bg-red-600 transition-colors duration-300 cursor-pointer'>
+                            <Illustrations.LayersOrderNow className='w-18' />
+                        </div>
                     </div>
-                    <p>Hey</p>
+                   
                 </div>
             </div>
             <div className="flex flex-row items-start gap-8 w-full">
