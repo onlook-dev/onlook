@@ -7,6 +7,7 @@ import { useProjectManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
 import { SettingsModal } from '@/components/ui/settings-modal';
+import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { ChatType } from '@onlook/models';
@@ -34,6 +35,14 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
     const { tabState } = useTabActive();
+    const { addSubscription } = useCleanupOnPageChange();
+
+    useEffect(() => {
+        addSubscription('project-main', () => {
+            projectManager.clear();
+            editorEngine.clear();
+        });
+    }, [projectManager, editorEngine, addSubscription]);
 
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,

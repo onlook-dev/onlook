@@ -8,9 +8,9 @@ type UnsubscribeFunction = () => void;
  * WARNING: This hook only cleans up subscriptions when the pathname changes.
  * @returns Object with addSubscription function and manual cleanup function
  */
-export const useSubscriptionCleanup = () => {
+export const useCleanupOnPageChange = () => {
     const pathname = usePathname();
-    const subscriptionsRef = useRef<Set<UnsubscribeFunction>>(new Set());
+    const subscriptionsRef = useRef<Map<string, UnsubscribeFunction>>(new Map());
 
     // Manual cleanup function
     const clearAllSubscriptions = useCallback(() => {
@@ -25,13 +25,17 @@ export const useSubscriptionCleanup = () => {
     }, []);
 
     // Add a subscription to be tracked
-    const addSubscription = useCallback((unsubscribe: UnsubscribeFunction): UnsubscribeFunction => {
-        subscriptionsRef.current.add(unsubscribe);
-        
+    const addSubscription = useCallback((key: string, unsubscribe: UnsubscribeFunction): UnsubscribeFunction => {
+        if (subscriptionsRef.current.has(key)) {
+            console.warn(`Subscription with key ${key} already exists. Clearing old subscription.`);
+            subscriptionsRef.current.get(key)?.();
+        }
+        subscriptionsRef.current.set(key, unsubscribe);
+
         // Return a function to manually remove this specific subscription
         return () => {
-            subscriptionsRef.current.delete(unsubscribe);
             unsubscribe();
+            subscriptionsRef.current.delete(key);
         };
     }, []);
 
@@ -42,7 +46,7 @@ export const useSubscriptionCleanup = () => {
         };
 
         window.addEventListener('beforeunload', handleBeforeUnload);
-        
+
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         };
