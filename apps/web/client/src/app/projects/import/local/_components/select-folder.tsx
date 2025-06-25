@@ -1,11 +1,16 @@
 'use client';
 
 import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
-import { BINARY_EXTENSIONS, IGNORED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
+import { api } from '@/trpc/client';
+import {
+    COMPRESSION_IMAGE_PRESETS,
+    IGNORED_UPLOAD_DIRECTORIES,
+    IGNORED_UPLOAD_FILES,
+} from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
-import { compressImage } from '@onlook/utility/src/image';
+import { addBase64Prefix, isBinaryFile } from '@onlook/utility';
 import { motion } from 'motion/react';
 import { useCallback, useRef, useState } from 'react';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
@@ -47,6 +52,20 @@ export const NewSelectFolder = () => {
         fileInputRef.current?.click();
     };
 
+    const compressImage = async (file: File): Promise<string | undefined> => {
+        const arrayBuffer = await file.arrayBuffer();
+        const base64Data = btoa(
+            Array.from(new Uint8Array(arrayBuffer))
+                .map((byte: number) => String.fromCharCode(byte))
+                .join(''),
+        );
+        const compressionResult = await api.image.compress.mutate({
+            imageData: base64Data,
+            options: COMPRESSION_IMAGE_PRESETS.highQuality,
+        });
+        return compressionResult.bufferData;
+    };
+
     const filterAndProcessFiles = async (files: File[]): Promise<ProcessedFile[]> => {
         const processedFiles: ProcessedFile[] = [];
         const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -79,13 +98,14 @@ export const NewSelectFolder = () => {
 
             // Compress large images files
             // But not svg
-            if (file.type.startsWith('image/') && file.type !== 'image/svg+xml') {
+            if (file.type.startsWith('image/')) {
                 const compressedFile = await compressImage(file);
 
                 if (compressedFile) {
+                    const content = addBase64Prefix(file.type, compressedFile);
                     processedFiles.push({
                         path: relativePath,
-                        content: compressedFile,
+                        content,
                         isBinary: true,
                     });
                 } else {
@@ -107,8 +127,7 @@ export const NewSelectFolder = () => {
             }
 
             // Determine if file is binary
-            const extension = '.' + file.name.split('.').pop()?.toLowerCase();
-            const isBinary = BINARY_EXTENSIONS.includes(extension);
+            const isBinary = isBinaryFile(file.name);
 
             try {
                 let content: string | ArrayBuffer;
@@ -417,9 +436,10 @@ export const NewSelectFolder = () => {
                             w-full h-20 rounded-lg bg-gray-900 border border-gray rounded-lg m-0
                             flex flex-col items-center justify-center gap-4
                             duration-200 cursor-pointer
-                            ${isDragging
-                                ? 'border-blue-400 bg-blue-50'
-                                : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
+                            ${
+                                isDragging
+                                    ? 'border-blue-400 bg-blue-50'
+                                    : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
                             }
                             ${isUploading ? 'pointer-events-none opacity-50' : ''}
                         `}

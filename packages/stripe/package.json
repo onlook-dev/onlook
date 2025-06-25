@@ -9,7 +9,9 @@
     "scripts": {
         "clean": "rm -rf node_modules",
         "typecheck": "tsc --noEmit",
-        "setup:product": "bun src/scripts/product.ts"
+        "setup": "bun src/scripts/setup.ts",
+        "setup:prod": "bun src/scripts/production.ts",
+        "dev:webhook": "stripe listen --forward-to localhost:3000/webhook/stripe"
     },
     "keywords": [
         "onlook",
@@ -26,6 +28,7 @@
     },
     "dependencies": {
         "stripe": "^18.2.1",
-        "dotenv": "^16.5.0"
+        "dotenv": "^16.5.0",
+        "@onlook/models": "*"
     }
 }

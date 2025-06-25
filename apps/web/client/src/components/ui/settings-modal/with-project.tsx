@@ -5,10 +5,10 @@ import { cn } from '@onlook/ui/utils';
 import { capitalizeFirstLetter } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect } from 'react';
-import { ComingSoonTab, SettingsTabValue, type SettingTab } from './helpers';
-import { SiteTab } from './site';
 import DomainTab from './domain';
+import { SettingsTabValue, type SettingTab } from './helpers';
 import { ProjectTab } from './project';
+import { SiteTab } from './site';
 import { VersionsTab } from './versions';
 
 export const ProjectSettingsTabs = observer(({ appendTabs }: { appendTabs: (tabs: SettingTab[]) => void }) => {

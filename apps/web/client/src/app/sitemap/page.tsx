@@ -1,6 +1,6 @@
 'use client';
 
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { Footer } from '../_components/landing-page/page-footer';
 import { TopBar } from '../_components/top-bar';
 

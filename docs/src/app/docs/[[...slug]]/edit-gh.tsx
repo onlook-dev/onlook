@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 
 export function EditGitHub({ filePath }: { filePath: string }) {
     return (

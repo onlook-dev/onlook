@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings, DEVICE_OPTIONS, Orientation } from '@onlook/constants';
 import type { WindowMetadata } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger, SelectValue } from '@onlook/ui/select';
 import { computeWindowMetadata } from '@onlook/utility';

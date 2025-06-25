@@ -144,18 +144,18 @@ export const ProjectBreadcrumb = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant={'ghost'}
-                        className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent cursor-pointer group transition-colors duration-200"
+                        className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent cursor-pointer group"
                     >
                         <Icons.OnlookLogo
                             className={cn(
-                                'w-9 h-9 hidden md:block transition-colors duration-200',
+                                'w-9 h-9 hidden md:block',
                                 isClosingProject && 'animate-pulse',
                             )}
                         />
-                        <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer group-hover:text-foreground-active transition-colors duration-200">
+                        <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer group-hover:text-foreground-active">
                             {isClosingProject ? 'Stopping project...' : project?.name}
                         </span>
-                        <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out text-foreground-onlook group-hover:text-foreground-active" />
+                        <Icons.ChevronDown className="text-foreground-onlook group-hover:text-foreground-active" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
@@ -172,16 +172,16 @@ export const ProjectBreadcrumb = observer(() => {
                         }, 300);
                     }}
                 >
-                    <DropdownMenuItem onClick={() => handleNavigateToProjects()}>
+                    <DropdownMenuItem onClick={() => handleNavigateToProjects()} className="cursor-pointer">
                         <div className="flex row center items-center group">
-                            <Icons.Tokens className="mr-2 group-hover:rotate-12 transition-transform" />
+                            <Icons.Tokens className="mr-2" />
                             {t(transKeys.projects.actions.goToAllProjects)}
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => router.push(Routes.HOME)}>
+                    <DropdownMenuItem onClick={() => router.push(Routes.HOME)} className="cursor-pointer">
                         <div className="flex row center items-center group">
-                            <Icons.Plus className="mr-2 group-hover:rotate-12 transition-transform" />
+                            <Icons.Plus className="mr-2" />
                             {t(transKeys.projects.actions.newProject)}
                         </div>
                     </DropdownMenuItem>
@@ -195,9 +195,10 @@ export const ProjectBreadcrumb = observer(() => {
                     <DropdownMenuItem
                         onClick={handleDownloadCode}
                         disabled={isDownloading}
+                        className="cursor-pointer"
                     >
                         <div className="flex row center items-center group">
-                            <Icons.Download className="mr-2 group-hover:scale-110 transition-transform" />
+                            <Icons.Download className="mr-2" />
                             {isDownloading ? t(transKeys.projects.actions.downloadingCode) : t(transKeys.projects.actions.downloadCode)}
                         </div>
                     </DropdownMenuItem>

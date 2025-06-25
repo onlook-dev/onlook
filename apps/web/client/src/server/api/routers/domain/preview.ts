@@ -1,10 +1,10 @@
 import { previewDomains, publishedDomains } from '@onlook/db';
+import { HostingProvider } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { and, eq, inArray, ne } from 'drizzle-orm';
-import type { FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { initializeFreestyleSdk } from './freestyle';
+import { HostingProviderFactory } from './hosting-factory';
 
 export const previewRouter = createTRPCRouter({
     get: protectedProcedure.input(z.object({
@@ -95,24 +95,21 @@ export const previewRouter = createTRPCRouter({
                 }
             }
 
-            const sdk = initializeFreestyleSdk();
-            const res = await sdk.deployWeb(
-                {
-                    files: input.files,
-                    kind: 'files',
-                },
-                input.config,
-            );
-            const freestyleResponse = (await res) as {
-                message?: string;
-                error?: {
-                    message: string;
+            const adapter = HostingProviderFactory.create(HostingProvider.FREESTYLE);
+
+            const deploymentFiles: Record<string, { content: string; encoding?: 'utf-8' | 'base64' }> = {};
+            for (const [path, file] of Object.entries(input.files)) {
+                deploymentFiles[path] = {
+                    content: file.content,
+                    encoding: (file.encoding === 'base64' ? 'base64' : 'utf-8')
                 };
-                data?: FreestyleDeployWebSuccessResponseV2;
-            };
-            if (!res) {
-                throw new Error(freestyleResponse.error?.message || freestyleResponse.message || 'Unknown error');
             }
-            return true;
+
+            const result = await adapter.deploy({
+                files: deploymentFiles,
+                config: input.config
+            });
+
+            return result;
         }),
 });

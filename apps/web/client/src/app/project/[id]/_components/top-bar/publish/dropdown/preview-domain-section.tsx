@@ -42,6 +42,7 @@ export const PreviewDomainSection = observer(() => {
             options: {
                 skipBadge: false,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
+                skipBuild: false,
             },
         });
         if (!res.success) {

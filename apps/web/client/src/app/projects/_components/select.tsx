@@ -1,7 +1,7 @@
 'use client';
 
 import { useProjectsManager } from '@/components/store/projects';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 import { useState } from 'react';

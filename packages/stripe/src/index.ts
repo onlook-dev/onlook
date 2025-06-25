@@ -1,3 +1,5 @@
 export * from './client';
+export * from './constants';
 export * from './functions';
-export * from './plans';
+export * from './types';
+
