@@ -1,8 +1,11 @@
-import { sendAnalytics } from "@/utils/analytics";
-import type { GitCommit } from "@onlook/git";
-import { toast } from "@onlook/ui/sonner";
+import { sendAnalytics } from '@/utils/analytics';
+import { type GitCommit } from '@onlook/git';
+import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
-import type { ProjectManager } from "./manager";
+import type { ProjectManager } from './manager';
+import type { EditorEngine } from '../editor/engine';
+import { CLISessionType } from '../editor/sandbox/terminal';
+import { GitManager } from './git-manager';
 
 export enum CreateCommitFailureReason {
     NOT_INITIALIZED = 'NOT_INITIALIZED',
@@ -15,14 +18,21 @@ export class VersionsManager {
     commits: GitCommit[] | null = null;
     savedCommits: GitCommit[] = [];
     isSaving = false;
+    private gitManager: GitManager;
 
-    constructor(
-        private projectManager: ProjectManager,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+        this.gitManager = new GitManager(editorEngine);
     }
 
     initializeRepo = async () => {
+        const isInitialized = await this.gitManager.isRepoInitialized();
+
+        if (!isInitialized) {
+            await this.gitManager.initRepo();
+            await this.createCommit('Initial commit');
+        }
+
         await this.listCommits();
     };
 
@@ -36,10 +46,13 @@ export class VersionsManager {
     createCommit = async (
         message: string = 'New Onlook backup',
         showToast = true,
-    ): Promise<{
-        success: boolean;
-        errorReason?: CreateCommitFailureReason;
-    } | undefined> => {
+    ): Promise<
+        | {
+              success: boolean;
+              errorReason?: CreateCommitFailureReason;
+          }
+        | undefined
+    > => {
         try {
             if (this.isSaving) {
                 if (showToast) {
@@ -57,10 +70,72 @@ export class VersionsManager {
                 message,
             });
 
+            const isInitialized = await this.gitManager.isRepoInitialized();
+            if (!isInitialized) {
+                await this.gitManager.initRepo();
+            }
 
+            const status = await this.gitManager.getStatus();
+            if (!status || status.isEmpty) {
+                if (showToast) {
+                    toast.error('No changes to commit');
+                }
+                return {
+                    success: false,
+                    errorReason: CreateCommitFailureReason.COMMIT_EMPTY,
+                };
+            }
+
+            // Stage all files
+            const addResult = await this.gitManager.stageAll();
+            if (!addResult.success) {
+                console.error('Failed to stage files:', addResult.error);
+                if (showToast) {
+                    toast.error('Failed to stage files for commit');
+                }
+                return {
+                    success: false,
+                    errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
+                };
+            }
+
+            // Create the commit
+            const commitResult = await this.gitManager.commit(message);
+            if (!commitResult.success) {
+                console.error('Failed to create commit:', commitResult.error);
+                if (showToast) {
+                    toast.error('Failed to create backup');
+                }
+                return {
+                    success: false,
+                    errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
+                };
+            }
+
+            // Refresh the commits list
+            await this.listCommits();
+
+            if (showToast) {
+                toast.success('Backup created successfully!', {
+                    description: `Created backup: "${message}"`,
+                });
+            }
+
+            sendAnalytics('versions create commit success', {
+                message,
+            });
+
+            return {
+                success: true,
+            };
         } catch (error) {
-            this.isSaving = false;
-            console.error('Failed to create commit', error);
+            if (showToast) {
+                toast.error('Failed to create backup');
+            }
+            sendAnalytics('versions create commit failed', {
+                message,
+                error: error instanceof Error ? error.message : 'Unknown error',
+            });
             return {
                 success: false,
                 errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
@@ -71,14 +146,37 @@ export class VersionsManager {
     };
 
     listCommits = async () => {
-        return [];
+        try {
+            this.commits = await this.gitManager.listCommits();
+
+            // Enhance commits with display names from notes
+            if (this.commits.length > 0) {
+                const enhancedCommits = await Promise.all(
+                    this.commits.map(async (commit) => {
+                        const displayName = await this.gitManager.getCommitNote(commit.oid);
+                        return {
+                            ...commit,
+                            displayName: displayName || commit.message,
+                        };
+                    }),
+                );
+                this.commits = enhancedCommits;
+            }
+
+            console.log('commits', this.commits);
+            return this.commits;
+        } catch (error) {
+            console.error('Failed to list commits', error);
+            this.commits = [];
+            return [];
+        }
     };
 
     checkoutCommit = async (commit: GitCommit): Promise<boolean> => {
-        // TODO: Implement
         sendAnalytics('versions checkout commit', {
             commit: commit.displayName || commit.message,
         });
+
         const res = await this.createCommit('Save before restoring backup', false);
 
         // If failed to create commit, don't continue backing up
@@ -91,7 +189,20 @@ export class VersionsManager {
             return false;
         }
 
-        toast.success(`Restored to backup!`);
+        const restoreResult = await this.gitManager.restoreToCommit(commit.oid);
+        if (!restoreResult.success) {
+
+            toast.error('Failed to restore backup');
+            sendAnalytics('versions checkout commit failed', {
+                commit: commit.displayName || commit.message,
+                error: restoreResult.error,
+            });
+            return false;
+        }
+
+        toast.success(`Restored to backup!`, {
+            description: `Your project has been restored to version "${commit.displayName || commit.message}"`,
+        });
         await this.listCommits();
 
         sendAnalytics('versions checkout commit success', {
@@ -100,13 +211,54 @@ export class VersionsManager {
         return true;
     };
 
-    renameCommit = async (commit: string, newName: string) => {
-        // TODO: Implement
-        await this.listCommits();
-        sendAnalytics('versions rename commit', {
-            commit: commit,
-            newName,
-        });
+    renameCommit = async (commitOid: string, newName: string): Promise<boolean> => {
+        try {
+            sendAnalytics('versions rename commit', {
+                commit: commitOid,
+                newName,
+            });
+
+            console.log('renameCommit', commitOid, newName);
+
+            const result = await this.gitManager.addCommitNote(commitOid, newName);
+            if (!result.success) {
+                toast.error('Failed to rename backup');
+                return false;
+            }
+
+            if (this.commits) {
+                const commitIndex = this.commits.findIndex((commit) => commit.oid === commitOid);
+                if (commitIndex !== -1) {
+                    this.commits[commitIndex]!.displayName = newName;
+                }
+            }
+
+            const savedCommitIndex = this.savedCommits.findIndex(
+                (commit) => commit.oid === commitOid,
+            );
+            if (savedCommitIndex !== -1) {
+                this.savedCommits[savedCommitIndex]!.displayName = newName;
+            }
+
+            toast.success('Backup renamed successfully!', {
+                description: `Renamed to: "${newName}"`,
+            });
+
+            sendAnalytics('versions rename commit success', {
+                commit: commitOid,
+                newName,
+            });
+
+            return true;
+        } catch (error) {
+            toast.error('Failed to rename backup');
+            sendAnalytics('versions rename commit failed', {
+                commit: commitOid,
+                newName,
+                error: error instanceof Error ? error.message : 'Unknown error',
+            });
+            return false;
+        }
     };
 
     saveCommit = async (commit: GitCommit) => {
@@ -146,5 +298,5 @@ export class VersionsManager {
         toast.success('Latest backup bookmarked!');
     };
 
-    dispose() { }
+    dispose() {}
 }

@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectManager } from '@/components/store/project';
 import type { GitCommit } from '@onlook/git';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -30,7 +29,6 @@ export const VersionRow = observer(
         autoRename?: boolean;
         onRename?: () => void;
     }) => {
-        const projectsManager = useProjectManager();
         const editorEngine = useEditorEngine();
         const inputRef = useRef<HTMLInputElement>(null);
         const [isRenaming, setIsRenaming] = useState(autoRename);
@@ -64,7 +62,7 @@ export const VersionRow = observer(
         };
 
         const updateCommitDisplayName = (name: string) => {
-            projectsManager.versions?.renameCommit(commit.oid, name);
+            editorEngine.versions.renameCommit(commit.oid, name);
         };
 
         const startRenaming = () => {
@@ -83,7 +81,7 @@ export const VersionRow = observer(
 
         const handleCheckout = async () => {
             setIsCheckingOut(true);
-            const success = await projectsManager.versions?.checkoutCommit(commit);
+            const success = await editorEngine.versions.checkoutCommit(commit);
             setIsCheckingOut(false);
             setIsCheckoutSuccess(success ?? false);
 
@@ -137,7 +135,7 @@ export const VersionRow = observer(
                             variant="outline"
                             size="sm"
                             className="gap-2 bg-background-secondary"
-                            onClick={() => projectsManager.versions?.removeSavedCommit(commit)}
+                            onClick={() => editorEngine.versions.removeSavedCommit(commit)}
                         >
                             <Icons.BookmarkFilled />
                             <span className="text-muted-foreground">Remove</span>
@@ -147,7 +145,7 @@ export const VersionRow = observer(
                             variant="outline"
                             size="sm"
                             className="gap-2 bg-background-secondary hidden"
-                            onClick={() => projectsManager.versions?.saveCommit(commit)}
+                            onClick={() => editorEngine.versions.saveCommit(commit)}
                         >
                             <Icons.Bookmark />
                             <span className="text-muted-foreground">Save</span>

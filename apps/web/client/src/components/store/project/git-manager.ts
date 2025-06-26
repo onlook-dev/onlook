@@ -1,0 +1,257 @@
+import { type GitCommit } from '@onlook/git';
+import type { EditorEngine } from '../editor/engine';
+
+export interface GitStatus {
+    files: string[];
+    isEmpty: boolean;
+}
+
+export interface GitCommandResult {
+    success: boolean;
+    output: string;
+    error: string | null;
+}
+
+export class GitManager {
+    constructor(private editorEngine: EditorEngine) {}
+
+    /**
+     * Check if git repository is initialized
+     */
+    async isRepoInitialized(): Promise<boolean> {
+        try {
+            return (await this.editorEngine?.sandbox.fileExists('.git')) || false;
+        } catch (error) {
+            console.error('Error checking if repository is initialized:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Initialize git repository
+     */
+    async initRepo(): Promise<boolean> {
+        try {
+            const isInitialized = await this.isRepoInitialized();
+            if (isInitialized) {
+                console.log('Repository already initialized');
+                return true;
+            }
+
+            if (!this.editorEngine?.sandbox?.session) {
+                console.error('No editor engine or session available');
+                return false;
+            }
+
+            console.log('Initializing git repository...');
+
+            // Initialize git repository
+            const initResult = await this.runCommand('git init');
+            if (!initResult.success) {
+                console.error('Failed to initialize git repository:', initResult.error);
+                return false;
+            }
+
+            // Configure git user (required for commits)
+            await this.runCommand('git config user.name "Onlook"');
+            await this.runCommand('git config user.email "git@onlook.com"');
+
+            // Set default branch to main
+            await this.runCommand('git branch -M main');
+
+            console.log('Git repository initialized successfully');
+            return true;
+        } catch (error) {
+            console.error('Failed to initialize git repository:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Get repository status
+     */
+    async getStatus(): Promise<GitStatus | null> {
+        try {
+            const isEmpty = await this.editorEngine?.sandbox.session.session?.git
+                .status()
+                .then((status) => {
+                    console.log('status', status);
+                    console.log('status.files', status.changedFiles);
+                    return status.changedFiles.length === 0;
+                });
+
+            return {
+                files: [], // We can expand this later if needed
+                isEmpty: isEmpty || false,
+            };
+        } catch (error) {
+            console.error('Failed to get git status:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Stage all files
+     */
+    async stageAll(): Promise<GitCommandResult> {
+        return this.runCommand('git add .');
+    }
+
+    /**
+     * Create a commit
+     */
+    async commit(message: string): Promise<GitCommandResult> {
+        return this.runCommand(`git commit -m "${message}"`);
+    }
+
+    /**
+     * List commits with formatted output
+     */
+    async listCommits(): Promise<GitCommit[]> {
+        try {
+            const result = await this.runCommand(
+                'git log --pretty=format:"%H|%an <%ae>|%ad|%s" --date=iso',
+            );
+
+            if (result.success && result.output) {
+                return this.parseGitLog(result.output);
+            }
+
+            return [];
+        } catch (error) {
+            console.error('Failed to list commits', error);
+            return [];
+        }
+    }
+
+    /**
+     * Checkout/restore to a specific commit
+     */
+    async restoreToCommit(commitOid: string): Promise<GitCommandResult> {
+        return this.runCommand(`git restore --source ${commitOid} .`);
+    }
+
+    /**
+     * Add a display name note to a commit
+     */
+    async addCommitNote(commitOid: string, displayName: string): Promise<GitCommandResult> {
+        return this.runCommand(
+            `git notes --ref=refs/notes/onlook-display-name add -f -m "${displayName}" ${commitOid}`,
+        );
+    }
+
+    /**
+     * Get display name from commit notes
+     */
+    async getCommitNote(commitOid: string): Promise<string | null> {
+        try {
+            const result = await this.runCommand(
+                `git notes --ref=refs/notes/onlook-display-name show ${commitOid}`,
+            );
+            return result.success ? result.output.trim() : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Run a git command through the sandbox session
+     */
+    private async runCommand(command: string): Promise<GitCommandResult> {
+        try {
+            if (!this.editorEngine?.sandbox?.session) {
+                return {
+                    success: false,
+                    output: '',
+                    error: 'No session available',
+                };
+            }
+
+            const result = await this.editorEngine.sandbox.session.runCommand(command, (output) => {
+                console.log(`${command} output:`, output);
+            });
+
+            return {
+                success: result?.success || false,
+                output: result?.output || '',
+                error: result?.error || null,
+            };
+        } catch (error) {
+            console.error(`Error running command: ${command}`, error);
+            return {
+                success: false,
+                output: '',
+                error: error instanceof Error ? error.message : 'Unknown error',
+            };
+        }
+    }
+
+    /**
+     * Parse git log output into GitCommit objects
+     */
+    private parseGitLog(rawOutput: string): GitCommit[] {
+        console.log('rawOutput', rawOutput.toString());
+
+        const ansiEscapePattern = /\x1b\[[0-9;?=]*[a-zA-Z]/g;
+        const controlChars = /[\x00-\x09\x0B-\x1F\x7F]/g;
+
+        const cleanOutput = rawOutput
+            .replace(ansiEscapePattern, '')
+            .replace(controlChars, '') // Remove things like \r, \n, \u001b
+            .trim();
+
+        console.log('cleanOutput', cleanOutput);
+
+        if (!cleanOutput) {
+            return [];
+        }
+
+        const commits: GitCommit[] = [];
+        const lines = cleanOutput.split('\n').filter((line) => line.trim());
+
+        for (const line of lines) {
+            if (!line.trim()) continue;
+
+            // Handle the new format: <hash>|<author>|<date>|<message>
+            // The hash might have a prefix that we need to handle
+            let cleanLine = line;
+
+            // If line starts with escape sequences followed by =, extract everything after =
+            const escapeMatch = cleanLine.match(/^[^\w]*=?(.+)$/);
+            if (escapeMatch) {
+                cleanLine = escapeMatch[1] || '';
+            }
+
+            const parts = cleanLine.split('|');
+            if (parts.length >= 4) {
+                const hash = parts[0]?.trim();
+                const authorLine = parts[1]?.trim();
+                const dateLine = parts[2]?.trim();
+                const message = parts.slice(3).join('|').trim();
+
+                if (!hash || !authorLine || !dateLine) continue;
+
+                // Parse author name and email
+                const authorMatch = authorLine.match(/^(.+?)\s*<(.+?)>$/);
+                const authorName = authorMatch?.[1]?.trim() || authorLine;
+                const authorEmail = authorMatch?.[2]?.trim() || '';
+
+                // Parse date to timestamp
+                const timestamp = Math.floor(new Date(dateLine).getTime() / 1000);
+
+                commits.push({
+                    oid: hash,
+                    message: message || 'No message',
+                    author: {
+                        name: authorName,
+                        email: authorEmail,
+                    },
+                    timestamp: timestamp,
+                    displayName: message || null,
+                });
+            }
+        }
+
+        return commits;
+    }
+}

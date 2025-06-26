@@ -145,11 +145,13 @@ export class SessionManager {
 
             await cmd.open();
             const disposer = cmd.onOutput((output) => {
+                console.log('output', output);
                 streamCallback(output);
                 terminalSession.xterm?.write(output);
             });
 
             const finalOutput = await cmd.waitUntilComplete();
+            console.log('finalOutput', finalOutput);
 
             disposer.dispose();
             return {
