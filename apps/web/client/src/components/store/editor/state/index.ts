@@ -15,6 +15,7 @@ export class StateManager {
     publishOpen = false;
     leftPanelLocked = false;
     canvasPanning = false;
+    plansOpen = false;
     iframeResizing = false;
 
     editorMode: EditorMode = EditorMode.DESIGN;
