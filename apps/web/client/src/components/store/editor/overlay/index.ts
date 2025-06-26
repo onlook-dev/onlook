@@ -7,8 +7,6 @@ import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
     state: OverlayState = new OverlayState();
-    private resizeObserver: ResizeObserver | null = null;
-    private resizeAnimationFrame: number | null = null;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -22,64 +20,9 @@ export class OverlayManager {
                 this.refresh();
             },
         );
-
-        this.setupIframeResizeObserver();
     }
 
-    private setupIframeResizeObserver() {
-        this.resizeObserver = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                if (entry.target.tagName === 'IFRAME') {
-                    if (this.resizeAnimationFrame) {
-                        cancelAnimationFrame(this.resizeAnimationFrame);
-                    }
-                    this.resizeAnimationFrame = requestAnimationFrame(() => {
-                        this.undebouncedRefresh();
-                        this.resizeAnimationFrame = null;
-                    });
-                    break;
-                }
-            }
-        });
 
-        this.observeCurrentIframes();
-        this.setupIframeMutationObserver();
-    }
-
-    private observeCurrentIframes() {
-        const iframes = document.querySelectorAll('iframe');
-        iframes.forEach(iframe => {
-            if (this.resizeObserver) {
-                this.resizeObserver.observe(iframe);
-            }
-        });
-    }
-
-    private setupIframeMutationObserver() {
-        const mutationObserver = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                mutation.addedNodes.forEach((node) => {
-                    if (node.nodeType === Node.ELEMENT_NODE) {
-                        const element = node as Element;
-                        if (element.tagName === 'IFRAME' && this.resizeObserver) {
-                            this.resizeObserver.observe(element);
-                        }
-                        const iframes = element.querySelectorAll('iframe');
-                        iframes.forEach(iframe => {
-                            if (this.resizeObserver) {
-                                this.resizeObserver.observe(iframe);
-                            }
-                        });
-                    }
-                });
-            });
-        });
-
-        mutationObserver.observe(document.body, {
-            childList: true,
-            subtree: true,
-        });
-    }
 
     undebouncedRefresh = async () => {
         this.state.removeHoverRect();
@@ -147,13 +90,5 @@ export class OverlayManager {
     clear = () => {
         this.removeMeasurement();
         this.state.clear();
-        if (this.resizeObserver) {
-            this.resizeObserver.disconnect();
-            this.resizeObserver = null;
-        }
-        if (this.resizeAnimationFrame) {
-            cancelAnimationFrame(this.resizeAnimationFrame);
-            this.resizeAnimationFrame = null;
-        }
     };
 }

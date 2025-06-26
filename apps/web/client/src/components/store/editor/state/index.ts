@@ -15,8 +15,6 @@ export class StateManager {
     publishOpen = false;
     leftPanelLocked = false;
     canvasPanning = false;
-    plansOpen = false;
-    iframeResizing = false;
 
     editorMode: EditorMode = EditorMode.DESIGN;
     settingsTab: SettingsTabValue | string = SettingsTabValue.SITE;
@@ -50,7 +48,6 @@ export class StateManager {
         this.settingsOpen = false;
         this.hotkeysOpen = false;
         this.publishOpen = false;
-        this.iframeResizing = false;
         this.resetCanvasScrollingDebounced.cancel();
     }
 }

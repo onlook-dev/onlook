@@ -26,8 +26,6 @@ export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
         const startHeight = frame.dimension.height;
         const aspectRatio = startWidth / startHeight;
 
-        editorEngine.state.iframeResizing = true;
-
         const resize = (e: MouseEvent) => {
             const scale = editorEngine.canvas.scale;
             let widthDelta = types.includes(HandleType.Right) ? (e.clientX - startX) / scale : 0;
@@ -76,8 +74,6 @@ export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
         const stopResize = (e: MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
-
-            editorEngine.state.iframeResizing = false;
 
             window.removeEventListener('mousemove', resize as unknown as EventListener);
             window.removeEventListener('mouseup', stopResize as unknown as EventListener);
