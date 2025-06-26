@@ -70,6 +70,7 @@
         "freestyle-sandboxes": "^0.0.78",
         "localforage": "^1.10.0",
         "lucide-react": "^0.486.0",
+        "memfs": "^4.17.2",
         "mobx-react-lite": "^4.1.0",
         "motion": "^12.6.3",
         "next": "^15.2.3",

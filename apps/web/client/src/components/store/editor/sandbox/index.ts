@@ -1,8 +1,5 @@
 import type { WatchEvent } from '@codesandbox/sdk';
-import {
-    EXCLUDED_SYNC_DIRECTORIES,
-    JSX_FILE_EXTENSIONS,
-} from '@onlook/constants';
+import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
@@ -11,7 +8,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
 import { FileEventBus } from './file-event-bus';
-import { FileSyncManager } from './file-sync';
+import { VFSSyncManager } from './vfs-sync-manager';
 import { FileWatcher } from './file-watcher';
 import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
@@ -20,7 +17,7 @@ import { SessionManager } from './session';
 export class SandboxManager {
     readonly session: SessionManager;
     private fileWatcher: FileWatcher | null = null;
-    private fileSync: FileSyncManager = new FileSyncManager();
+    private fileSync: VFSSyncManager = new VFSSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
     readonly fileEventBus: FileEventBus = new FileEventBus();
     private isIndexed = false;
@@ -55,17 +52,18 @@ export class SandboxManager {
 
         this.isIndexing = true;
         const timer = new LogTimer('Sandbox Indexing');
-        
+
         try {
             // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
-            
+
             // Categorize files for optimized processing
-            const { imageFiles, jsxFiles, otherFiles } = this.categorizeFilesForIndexing(allFilePaths);
-            
+            const { imageFiles, jsxFiles, otherFiles } =
+                this.categorizeFilesForIndexing(allFilePaths);
+
             const BATCH_SIZE = 50;
-            
+
             // Track image files first
             if (imageFiles.length > 0) {
                 timer.log(`Tracking ${imageFiles.length} image files`);
@@ -74,7 +72,7 @@ export class SandboxManager {
                     await this.fileSync.trackBinaryFilesBatch(batch);
                 }
             }
-            
+
             // Process JSX files
             if (jsxFiles.length > 0) {
                 timer.log(`Processing ${jsxFiles.length} JSX files in batches of ${BATCH_SIZE}`);
@@ -83,10 +81,12 @@ export class SandboxManager {
                     await this.processJsxFilesBatch(batch);
                 }
             }
-            
+
             // Process other files
             if (otherFiles.length > 0) {
-                timer.log(`Processing ${otherFiles.length} other files in batches of ${BATCH_SIZE}`);
+                timer.log(
+                    `Processing ${otherFiles.length} other files in batches of ${BATCH_SIZE}`,
+                );
                 for (let i = 0; i < otherFiles.length; i += BATCH_SIZE) {
                     const batch = otherFiles.slice(i, i + BATCH_SIZE);
                     await this.processTextFilesBatch(batch);
@@ -119,11 +119,11 @@ export class SandboxManager {
             const currentDir = dirsToProcess.shift()!;
             try {
                 const entries = await this.session.session.fs.readdir(currentDir);
-                
+
                 for (const entry of entries) {
                     const fullPath = `${currentDir}/${entry.name}`;
                     const normalizedPath = normalizePath(fullPath);
-                    
+
                     if (entry.type === 'directory') {
                         // Skip excluded directories
                         if (!excludeDirs.includes(entry.name)) {
@@ -155,7 +155,7 @@ export class SandboxManager {
 
         for (const filePath of filePaths) {
             const normalizedPath = normalizePath(filePath);
-            
+
             if (isImageFile(normalizedPath)) {
                 imageFiles.push(normalizedPath);
             } else {
@@ -173,8 +173,8 @@ export class SandboxManager {
 
     private async processJsxFilesBatch(filePaths: string[]): Promise<void> {
         const fileContents = await this.fileSync.readOrFetchBatch(
-            filePaths, 
-            this.readRemoteFile.bind(this)
+            filePaths,
+            this.readRemoteFile.bind(this),
         );
 
         const mappingPromises = Object.keys(fileContents).map(async (filePath) => {
@@ -189,13 +189,10 @@ export class SandboxManager {
     }
 
     /**
-     * Process text files in parallel batches  
+     * Process text files in parallel batches
      */
     private async processTextFilesBatch(filePaths: string[]): Promise<void> {
-        await this.fileSync.readOrFetchBatch(
-            filePaths, 
-            this.readRemoteFile.bind(this)
-        );
+        await this.fileSync.readOrFetchBatch(filePaths, this.readRemoteFile.bind(this));
     }
 
     private async readRemoteFile(filePath: string): Promise<string | null> {
