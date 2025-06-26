@@ -9,6 +9,7 @@ import { TopBar } from './_components/top-bar';
 import { FAQSection } from './_components/landing-page/faq-section';
 import { CTASection } from './_components/landing-page/cta-section';
 import { TestimonialsSection } from './_components/landing-page/testimonials-section';
+import { ObsessForHoursSection } from './_components/landing-page/obsess-for-hours-section';
 
 
 export default function Main() {
@@ -26,6 +27,7 @@ export default function Main() {
             <ContributorSection />
             {/* <CTASection /> */}
             <WhatCanOnlookDoSection />
+            {/* <ObsessForHoursSection /> */}
             <TestimonialsSection />
             <FAQSection /> 
             <Footer />

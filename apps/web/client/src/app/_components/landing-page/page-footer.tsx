@@ -38,12 +38,24 @@ export function Footer() {
                     </div>
                     <div>
                         <h4 className="text-regularPlus mb-4 text-foreground-primary">Follow Us</h4>
-                        <div className="flex gap-6 mt-2">
+                        <div className="flex gap-6 mt-2 items-center">
+                            <a href="https://x.com/onlook_dev" target="_blank" rel="noopener noreferrer">
+                                <Icons.SocialX className="w-6 h-6 text-foreground-secondary hover:text-foreground-primary transition-colors" />
+                            </a>
+                            <a href="https://www.linkedin.com/company/onlook-dev/" target="_blank" rel="noopener noreferrer">
+                                <Icons.SocialLinkedIn className="w-6 h-6 text-foreground-secondary hover:text-foreground-primary transition-colors" />
+                            </a>
+                            <a href="https://onlook.substack.com/" target="_blank" rel="noopener noreferrer">
+                                <Icons.SocialSubstack className="w-6 h-6 text-foreground-secondary hover:text-foreground-primary transition-colors" />
+                            </a>
+                            <a href="https://www.youtube.com/@onlookdev" target="_blank" rel="noopener noreferrer">
+                                <Icons.SocialYoutube className="w-6 h-6 text-foreground-secondary hover:text-foreground-primary transition-colors" />
+                            </a>
                             <a href="https://github.com/onlook-dev/onlook" target="_blank" rel="noopener noreferrer">
-                                <Icons.GitHubLogo className="w-6 h-6 text-white hover:text-white/70 transition-colors" />
+                                <Icons.GitHubLogo className="w-5.5 h-5.5 text-foreground-secondary hover:text-foreground-primary transition-colors" />
                             </a>
                             <a href="https://discord.gg/ZZzadNQtns" target="_blank" rel="noopener noreferrer">
-                                <Icons.DiscordLogo className="w-6 h-6 text-white hover:text-white/70 transition-colors" />
+                                <Icons.DiscordLogo className="w-6 h-6 text-foreground-secondary hover:text-foreground-primary transition-colors" />
                             </a>
                         </div>
                     </div>

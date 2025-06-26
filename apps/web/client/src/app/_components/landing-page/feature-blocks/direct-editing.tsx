@@ -377,8 +377,8 @@ export function DirectEditingBlock() {
     return (
         <div className="flex flex-col gap-4">
             <div className="w-full h-100 bg-background-onlook/80 rounded-lg mb-6 overflow-hidden">
-                <div className="w-90 h-100 bg-[#F0EFE3] rounded-lg relative left-1/2 top-60 transform -translate-x-1/2 -translate-y-1/2 canvas-container">
-                    <div className="w-full h-8 border-b border-[#1100FF]/50 px-2 flex flex-row items-center justify-between">
+                <div className="w-90 h-100 bg-[#0A484D] rounded-lg relative left-1/2 top-60 transform -translate-x-1/2 -translate-y-1/2 canvas-container text-[#F0EFE3]">
+                    <div className="w-full h-8 border-b border-[#F0EFE3]/50 px-2 flex flex-row items-center justify-between">
                         <div className="flex flex-row items-center gap-1 select-none">
                             <Illustrations.VinoLogo className="w-4 h-4" />
                             <Illustrations.VinoWordmark className="w-12 h-12" />
@@ -388,9 +388,9 @@ export function DirectEditingBlock() {
                             <Illustrations.VinoContact className="w-12 h-12" />
                         </div>
                     </div>
-                    <div className="w-full h-full flex flex-row items-top mt-12 justify-center">
+                    <div className="w-full h-full flex flex-row items-top mt-8 justify-center">
                         <div className="w-fit h-fit">
-                            <Illustrations.VinoHeadline className="w-24 h-12" />
+                            <Illustrations.VinoHeadline className="w-50 h-fit" />
                         </div>
                         <div className="grid gap-2">
                             <DraggableElement

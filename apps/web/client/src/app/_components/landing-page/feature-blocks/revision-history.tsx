@@ -43,7 +43,7 @@ export function RevisionHistory() {
     // Version data for Today section
     const todayVersions = [
         { title: 'New typography and layout', subtitle: 'Alessandro · 3h ago' },
-        { title: 'Save before publishing', subtitle: 'Onlook · 10h ago' },
+        { title: 'Update colors', subtitle: 'Jonathan · 10h ago' },
         { title: 'Added new background image', subtitle: 'Sandra · 12h ago' },
         { title: 'Copy improvements and new branding', subtitle: 'Jonathan · 3d ago' },
     ];

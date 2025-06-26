@@ -7,6 +7,7 @@ import { BrandComplianceBlock } from './feature-blocks/brand-compliance';
 import { LayersBlock } from './feature-blocks/layers';
 import { ComponentsBlock } from './feature-blocks/components';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { AiChatPreviewBlock } from './feature-blocks/ai-chat-preview-block';
 
 // Hook to detect operating system
 function useOperatingSystem() {
@@ -294,10 +295,10 @@ export function WhatCanOnlookDoSection() {
                     <RevisionHistory />
                 </div>
                 {/* Right Column */}
-                <div className="flex-1 flex flex-col gap-18 mt-16 md:mt-32">
+                <div className="flex-1 flex flex-col gap-24 mt-16">
+                    <AiChatPreviewBlock />
                     <BrandComplianceBlock />
                     <LayersBlock />
-                    <ResponsiveWebsiteBlock />
                 </div>
             </div>
             {/* Grid extension section */}
