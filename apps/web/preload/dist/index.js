@@ -857,7 +857,7 @@ var require_mapping_list = __commonJS((exports) => {
 // ../../../packages/penpal/src/child.ts
 var PENPAL_CHILD_CHANNEL = "PENPAL_CHILD";
 // script/index.ts
-var import_debounce2 = __toESM(require_debounce(), 1);
+var import_debounce = __toESM(require_debounce(), 1);
 
 // ../../../node_modules/penpal/dist/penpal.mjs
 var PenpalError = class extends Error {
@@ -1733,6 +1733,7 @@ var INLINE_ONLY_CONTAINERS = new Set([
   "wbr"
 ]);
 // ../../../packages/constants/src/editor.ts
+var CUSTOM_OUTPUT_DIR = ".next-prod";
 var DefaultSettings = {
   SCALE: 0.7,
   PAN_POSITION: { x: 175, y: 100 },
@@ -1749,7 +1750,7 @@ var DefaultSettings = {
     build: "bun run build",
     install: "bun install"
   },
-  IMAGE_FOLDER: "public/images",
+  IMAGE_FOLDER: "public",
   IMAGE_DIMENSION: { width: "100px", height: "100px" },
   FONT_FOLDER: "public/fonts",
   FONT_CONFIG: "app/fonts.ts",
@@ -1761,11 +1762,20 @@ var DefaultSettings = {
     showMiniChat: true
   },
   EDITOR_SETTINGS: {
-    shouldWarnDelete: true,
+    shouldWarnDelete: false,
     enableBunReplace: true,
     buildFlags: "--no-lint"
   }
 };
+// ../../../packages/constants/src/files.ts
+var BASE_EXCLUDED_DIRECTORIES = ["node_modules", "dist", "build", ".git", ".next"];
+var EXCLUDED_SYNC_DIRECTORIES = [
+  ...BASE_EXCLUDED_DIRECTORIES,
+  "static",
+  CUSTOM_OUTPUT_DIR
+];
+var IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_OUTPUT_DIR];
+var EXCLUDED_PUBLISH_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, "coverage"];
 // ../../../packages/constants/src/language.ts
 var LANGUAGE_DISPLAY_NAMES = {
   ["en" /* English */]: "English",
@@ -1773,9 +1783,6 @@ var LANGUAGE_DISPLAY_NAMES = {
   ["zh" /* Chinese */]: "中文",
   ["ko" /* Korean */]: "한국어"
 };
-// script/api/dom.ts
-var import_debounce = __toESM(require_debounce(), 1);
-
 // script/helpers/dom.ts
 function getHtmlElement(domId) {
   return document.querySelector(`[${"data-odid" /* DATA_ONLOOK_DOM_ID */}="${domId}"]`);
@@ -1838,36 +1845,28 @@ function getFrameId() {
 }
 
 // script/api/dom.ts
-var processDebounced = import_debounce.default(async (root) => {
-  const frameId = await getFrameId();
+function processDom(root = document.body) {
+  const frameId = getFrameId();
   if (!frameId) {
     console.warn("frameView id not found, skipping dom processing");
-    return false;
+    return null;
   }
   const layerMap = buildLayerTree(root);
   if (!layerMap) {
     console.warn("Error building layer tree, root element is null");
-    return false;
+    return null;
   }
   const rootDomId = root.getAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */);
   if (!rootDomId) {
     console.warn("Root dom id not found");
-    return false;
+    return null;
   }
   const rootNode = layerMap.get(rootDomId);
   if (!rootNode) {
     console.warn("Root node not found");
-    return false;
+    return null;
   }
-  return true;
-}, 500);
-function processDom(root = document.body) {
-  if (!getFrameId()) {
-    console.warn("frameView id not found, skipping dom processing");
-    return false;
-  }
-  processDebounced(root);
-  return true;
+  return { rootDomId, layerMap: Array.from(layerMap.entries()) };
 }
 function buildLayerTree(root) {
   if (!isValidHtmlElement(root)) {
@@ -13041,7 +13040,7 @@ function keepDomUpdated() {
   }
   const interval = setInterval(() => {
     try {
-      if (processDom()) {
+      if (processDom() !== null) {
         clearInterval(interval);
         domUpdateInterval = null;
       }
@@ -17263,6 +17262,11 @@ var BEDROCK_MODEL_MAP = {
   ["claude-3-7-sonnet-20250219" /* SONNET_3_7 */]: "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
   ["claude-3-5-haiku-20241022" /* HAIKU */]: "us.anthropic.claude-3-5-haiku-20241022-v1:0"
 };
+var VERTEX_MODEL_MAP = {
+  ["claude-sonnet-4-20250514" /* SONNET_4 */]: "claude-sonnet-4@20250514",
+  ["claude-3-7-sonnet-20250219" /* SONNET_3_7 */]: "claude-3-7-sonnet@20250219",
+  ["claude-3-5-haiku-20241022" /* HAIKU */]: "claude-3-5-haiku@20241022"
+};
 // script/api/theme/index.ts
 function getTheme() {
   try {
@@ -17366,7 +17370,7 @@ var createMessageConnection = async () => {
   });
   return penpalParent;
 };
-var reconnect = import_debounce2.default(() => {
+var reconnect = import_debounce.default(() => {
   if (isConnecting)
     return;
   console.log(`${PENPAL_CHILD_CHANNEL} - Reconnecting to penpal parent`);
@@ -17378,5 +17382,5 @@ export {
   penpalParent
 };
 
-//# debugId=820AA7B0FF5205F764756E2164756E21
+//# debugId=D60FAD13D304A75464756E2164756E21
 //# sourceMappingURL=index.js.map

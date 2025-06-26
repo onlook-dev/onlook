@@ -1,6 +1,4 @@
-'use client';
-
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { useRouter } from 'next/navigation';
 import { Illustrations } from './illustrations';
 
@@ -11,8 +9,8 @@ export function Footer() {
         <footer className="w-full text-foreground-primary border-t border-foreground-primary/10 mt-24 pb-24">
             <div className="max-w-6xl mx-auto px-8 pt-16 pb-24 flex flex-col md:flex-row md:items-start gap-24">
                 {/* Left: Slogan */}
-                <div 
-                    className="flex-1 flex flex-col gap-8 min-w-[250px] cursor-pointer" 
+                <div
+                    className="flex-1 flex flex-col gap-8 min-w-[250px] cursor-pointer"
                     onClick={() => router.push('/')}
                 >
                     <Icons.OnlookTextLogo className="w-24 h-5 text-foreground-primary" />

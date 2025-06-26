@@ -14,6 +14,9 @@ export const toUserSettings = (settings: DbUserSettings): UserSettings => {
                 settings.showSuggestions ?? DefaultSettings.CHAT_SETTINGS.showSuggestions,
             showMiniChat: settings.showMiniChat ?? DefaultSettings.CHAT_SETTINGS.showMiniChat,
         },
+        editor: {
+            shouldWarnDelete: settings.shouldWarnDelete ?? DefaultSettings.EDITOR_SETTINGS.shouldWarnDelete,
+        },
     };
 };
 
@@ -25,6 +28,7 @@ export const fromUserSettings = (userId: string, settings: UserSettings): DbUser
         expandCodeBlocks: settings.chat.expandCodeBlocks,
         showSuggestions: settings.chat.showSuggestions,
         showMiniChat: settings.chat.showMiniChat,
+        shouldWarnDelete: settings.editor.shouldWarnDelete,
     };
 };
 

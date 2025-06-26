@@ -1,6 +1,7 @@
 import { bedrock } from '@ai-sdk/amazon-bedrock';
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { BEDROCK_MODEL_MAP, CLAUDE_MODELS, LLMProvider } from '@onlook/models';
+import { createVertexAnthropic } from '@ai-sdk/google-vertex/anthropic/edge';
+import { BEDROCK_MODEL_MAP, CLAUDE_MODELS, LLMProvider, VERTEX_MODEL_MAP } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { type LanguageModelV1 } from 'ai';
 
@@ -18,6 +19,11 @@ export async function initModel(
             return {
                 model: await getBedrockProvider(model),
                 providerOptions: { bedrock: { cachePoint: { type: 'default' } } },
+            };
+        case LLMProvider.GOOGLE_VERTEX:
+            return {
+                model: await getVertexProvider(model),
+                providerOptions: {},
             };
         default:
             assertNever(provider);
@@ -42,4 +48,27 @@ async function getBedrockProvider(claudeModel: CLAUDE_MODELS) {
 
     const bedrockModel = BEDROCK_MODEL_MAP[claudeModel];
     return bedrock(bedrockModel);
+}
+
+async function getVertexProvider(model: CLAUDE_MODELS) {
+    if (
+        !process.env.GOOGLE_CLIENT_EMAIL ||
+        !process.env.GOOGLE_PRIVATE_KEY ||
+        !process.env.GOOGLE_PROJECT_ID ||
+        !process.env.GOOGLE_LOCATION
+    ) {
+        throw new Error(
+            'GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY, GOOGLE_PROJECT_ID, and GOOGLE_LOCATION must be set',
+        );
+    }
+
+    const vertexModel = VERTEX_MODEL_MAP[model];
+    return createVertexAnthropic({
+        project: process.env.GOOGLE_PROJECT_ID,
+        location: process.env.GOOGLE_LOCATION,
+        googleCredentials: {
+            clientEmail: process.env.GOOGLE_CLIENT_EMAIL,
+            privateKey: process.env.GOOGLE_PRIVATE_KEY,
+        },
+    })(vertexModel);
 }

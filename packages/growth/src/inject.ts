@@ -1,6 +1,6 @@
-import { types as t } from '@onlook/parser';
-import { generate, parse, traverse } from '@onlook/parser';
+import { generate, parse, types as t, traverse } from '@onlook/parser';
 import { type FileOperations } from '@onlook/utility';
+import { getLayoutPath } from './helpers';
 import { builtWithScript } from './script';
 
 /**
@@ -13,12 +13,11 @@ export async function injectBuiltWithScript(
     fileOps: FileOperations,
 ): Promise<boolean> {
     try {
-        // Find the layout file
-        const layoutPath = `${projectPath}/app/layout.tsx`;
-        const layoutExists = await fileOps.fileExists(layoutPath);
+        // Find the layout file - check both app/ and src/app/ directories
+        const layoutPath = await getLayoutPath(projectPath, fileOps.fileExists);
 
-        if (!layoutExists) {
-            console.error('Layout file not found at', layoutPath);
+        if (!layoutPath) {
+            console.error('Layout file not found');
             return false;
         }
 

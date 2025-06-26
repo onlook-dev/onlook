@@ -1,6 +1,6 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { ChatMessageRole } from '@onlook/models/chat';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { MessageContent } from './message-content';
 
 export const StreamMessage = () => {
@@ -24,7 +24,7 @@ export const StreamMessage = () => {
             )}
             {isWaiting && (
                 <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
-                    <Icons.Shadow className="animate-spin" />
+                    <Icons.LoadingSpinner className="animate-spin" />
                     <p>Thinking ...</p>
                 </div>
             )}

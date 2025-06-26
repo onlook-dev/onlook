@@ -1,7 +1,6 @@
 import { api } from '@/trpc/client';
-import { fromUserSettings, toUserSettings } from '@onlook/db';
-import type { ChatSettings, UserSettings } from '@onlook/models';
-import { createDefaultUserSettings } from '@onlook/utility';
+import { fromUserSettings, toUserSettings, createDefaultUserSettings } from '@onlook/db';
+import type { ChatSettings, EditorSettings, UserSettings } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from './manager';
 
@@ -50,5 +49,9 @@ export class UserSettingsManager {
 
     async updateChat(newSettings: Partial<ChatSettings>) {
         await this.update({ ...this.settings, chat: { ...this.settings.chat, ...newSettings } });
+    }
+
+    async updateEditor(newSettings: Partial<EditorSettings>) {
+        await this.update({ ...this.settings, editor: { ...this.settings.editor, ...newSettings } });
     }
 }

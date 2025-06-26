@@ -2,8 +2,6 @@
 
 import { CTASection } from '../_components/landing-page/cta-section';
 import { WebsiteLayout } from '../_components/website-layout';
-import { PricingCard } from './pricing-card';
-import { TierPricingTable } from './tier-pricing';
 
 enum PlanKey {
     FREE = 'free',
@@ -57,14 +55,14 @@ export default function PricingPage() {
 
     return (
         <WebsiteLayout showFooter={true}>
-            
-            
+
+
             <div className="w-full max-w-6xl mx-auto px-8 flex flex-col items-left">
                 <div className="text-left mb-12 mt-24">
                     <h1 className="text-foreground text-5xl font-light mb-4">Pricing</h1>
                     <p className="text-muted-foreground text-regular">This page is coming soon. Thanks for your patience!</p>
                 </div>
-                <CTASection href="/" /> 
+                <CTASection href="/" />
             </div>
             {/*
             <main className="flex-1 pt-28 w-full max-w-6xl mx-auto px-8 flex flex-col items-left">

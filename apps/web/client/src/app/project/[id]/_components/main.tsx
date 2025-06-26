@@ -1,13 +1,16 @@
 'use client';
 
-import { ChatType } from '@/app/api/chat/route';
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
+import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
+import { SettingsModal } from '@/components/ui/settings-modal';
+import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
+import { ChatType } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
@@ -32,6 +35,14 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
     const { tabState } = useTabActive();
+    const { addSubscription } = useCleanupOnPageChange();
+
+    useEffect(() => {
+        addSubscription('project-main', () => {
+            projectManager.clear();
+            editorEngine.clear();
+        });
+    }, [projectManager, editorEngine, addSubscription]);
 
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,
@@ -100,7 +111,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     if (isLoading) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2">
-                <Icons.Shadow className="h-6 w-6 animate-spin text-foreground-primary" />
+                <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
                 <div className="text-xl">Loading project...</div>
             </div>
         );
@@ -120,7 +131,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     if (editorEngine.sandbox.session.isConnecting) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2">
-                <Icons.Shadow className="h-6 w-6 animate-spin text-foreground-primary" />
+                <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
                 <div className="text-xl">Connecting to sandbox...</div>
             </div>
         );
@@ -138,7 +149,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 {/* Left Panel */}
                 <div
                     ref={leftPanelRef}
-                    className="absolute top-10 left-0 animate-layer-panel-in h-[calc(100%-40px)] z-50"
+                    className="absolute top-10 left-0 h-[calc(100%-40px)] z-50"
                 >
                     <LeftPanel />
                 </div>
@@ -165,15 +176,15 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 {/* Right Panel */}
                 <div
                     ref={rightPanelRef}
-                    className="absolute top-10 right-0 animate-edit-panel-in h-[calc(100%-40px)] z-50"
+                    className="absolute top-10 right-0 h-[calc(100%-40px)] z-50"
                 >
                     <RightPanel />
                 </div>
 
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up ">
-                    <BottomBar />
-                </div>
+                    <BottomBar />            
             </div>
+            <SettingsModal showProjectTabs={true} />
+            <SubscriptionModal />
         </TooltipProvider>
     );
 });

@@ -1,15 +1,16 @@
 import { CUSTOM_OUTPUT_DIR } from './editor';
 
-export const IGNORED_DIRECTORIES = [
-    'node_modules',
-    'dist',
-    'build',
-    'public',
+const BASE_EXCLUDED_DIRECTORIES = ['node_modules', 'dist', 'build', '.git', '.next'] as const;
+
+export const EXCLUDED_SYNC_DIRECTORIES = [
+    ...BASE_EXCLUDED_DIRECTORIES,
     'static',
-    '.git',
-    '.next',
     CUSTOM_OUTPUT_DIR,
 ];
+
+export const IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_OUTPUT_DIR];
+
+export const EXCLUDED_PUBLISH_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, 'coverage'];
 
 export const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
 
@@ -55,7 +56,7 @@ export const BINARY_EXTENSIONS = [
     '.otf',
 ];
 
-export const IGNORED_FILES = [
+export const IGNORED_UPLOAD_FILES = [
     '.DS_Store',
     'Thumbs.db',
     'yarn.lock',
@@ -67,3 +68,44 @@ export const IGNORED_FILES = [
     '.env.production.local',
     '.env.test.local',
 ];
+
+export const IMAGE_EXTENSIONS = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/svg+xml',
+    'image/bmp',
+    'image/ico',
+    'image/avif',
+];
+
+/**
+ * Compression presets for common use cases
+ */
+export const COMPRESSION_IMAGE_PRESETS = {
+    web: {
+        quality: 80,
+        format: 'webp' as const,
+        progressive: true,
+        effort: 4,
+    },
+    thumbnail: {
+        quality: 70,
+        width: 300,
+        height: 300,
+        format: 'webp' as const,
+        keepAspectRatio: true,
+    },
+    highQuality: {
+        quality: 95,
+        format: 'jpeg' as const,
+        progressive: true,
+        mozjpeg: true,
+    },
+    lowFileSize: {
+        quality: 60,
+        format: 'webp' as const,
+        effort: 6,
+    },
+} as const;

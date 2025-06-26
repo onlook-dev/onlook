@@ -7,7 +7,7 @@ const loginDark = '/assets/dunes-login-dark.png';
 const loginLight = '/assets/dunes-login-light.png';
 
 export const useGetBackground = (type: 'create' | 'login') => {
-    const [backgroundImage, setBackgroundImage] = useState<string>('');
+    const [backgroundImage, setBackgroundImage] = useState<string>(createDark);
     const { theme } = useTheme();
 
     useEffect(() => {

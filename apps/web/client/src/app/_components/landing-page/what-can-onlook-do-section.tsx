@@ -1,13 +1,10 @@
-import { Icons } from '@onlook/ui/icons';
-import { ColorSwatchGroup } from './color-swatch-group';
-import { DirectEditingBlock } from './feature-blocks/direct-editing';
-import { RevisionHistory } from './feature-blocks/revision-history';
-import { ResponsiveWebsiteBlock } from './feature-blocks/responsive-website';
-import { BrandComplianceBlock } from './feature-blocks/brand-compliance';
-import { LayersBlock } from './feature-blocks/layers';
-import { ComponentsBlock } from './feature-blocks/components';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { AiChatPreviewBlock } from './feature-blocks/ai-chat-preview-block';
+import { BrandComplianceBlock } from './feature-blocks/brand-compliance';
+import { ComponentsBlock } from './feature-blocks/components';
+import { DirectEditingBlock } from './feature-blocks/direct-editing';
+import { LayersBlock } from './feature-blocks/layers';
+import { RevisionHistory } from './feature-blocks/revision-history';
 
 // Hook to detect operating system
 function useOperatingSystem() {
@@ -15,7 +12,7 @@ function useOperatingSystem() {
 
     useEffect(() => {
         const userAgent = navigator.userAgent.toLowerCase();
-        
+
         if (userAgent.includes('mac')) {
             setOs('mac');
         } else if (userAgent.includes('win')) {
@@ -53,16 +50,16 @@ function ParallaxContainer({ children, speed = 0.1 }: { children: React.ReactNod
 
     const updateTransform = useCallback(() => {
         if (!containerRef.current) return;
-        
+
         const rect = containerRef.current.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
-        
+
         // Calculate how far the element is from the center of the viewport
         const distanceFromCenter = rect.top + rect.height / 2 - viewportHeight / 2;
-        
+
         // Apply transform based on distance from center
         setTransform(distanceFromCenter * speed);
-        
+
         ticking.current = false;
     }, [speed]);
 
@@ -84,9 +81,9 @@ function ParallaxContainer({ children, speed = 0.1 }: { children: React.ReactNod
     }, [updateTransform]);
 
     return (
-        <div 
+        <div
             ref={containerRef}
-            style={{ 
+            style={{
                 transform: `translate3d(0, ${transform}px, 0)`,
                 transition: 'transform 0.1s cubic-bezier(0.4, 0, 0.2, 1)',
                 willChange: 'transform',
@@ -102,7 +99,7 @@ function ParallaxContainer({ children, speed = 0.1 }: { children: React.ReactNod
 export function WhatCanOnlookDoSection() {
     // Detect operating system for keyboard shortcuts
     const os = useOperatingSystem();
-    
+
     // Carousel state for Demo Sites
     const [selectedVersionIdx, setSelectedVersionIdx] = useState(0);
     const [displayedImageIdx, setDisplayedImageIdx] = useState(0); // New state for delayed image display
@@ -111,11 +108,11 @@ export function WhatCanOnlookDoSection() {
     const [selectedElement, setSelectedElement] = useState<string | null>('text2');
     const [isUserSelected, setIsUserSelected] = useState(false);
     const [lastUserInteraction, setLastUserInteraction] = useState(Date.now());
-    
+
     // Keyboard shortcut carousel state
     const [shortcutLetterIdx, setShortcutLetterIdx] = useState(0);
     const [isShortcutAnimating, setIsShortcutAnimating] = useState(false);
-    
+
     // Demo colors for carousel
     const demoColors = [
         'bg-gradient-to-br from-gray-400 to-gray-700',
@@ -137,10 +134,10 @@ export function WhatCanOnlookDoSection() {
         { title: 'Added new background image', subtitle: 'Sandra · 12h ago' },
         { title: 'Copy improvements and new branding', subtitle: 'Jonathan · 3d ago' },
     ];
-    
+
     // Keyboard shortcut letters to cycle through
     const shortcutLetters = ['Z', 'X', 'C', 'V', 'D', 'G', 'A', 'S'];
-    
+
     // Get the appropriate keyboard shortcut text
     const getKeyboardShortcut = () => {
         const currentLetter = shortcutLetters[shortcutLetterIdx];
@@ -170,7 +167,7 @@ export function WhatCanOnlookDoSection() {
         const timer = setTimeout(() => {
             setDisplayedImageIdx(selectedVersionIdx);
         }, 230); // 0.23 second delay
-        
+
         return () => clearTimeout(timer);
     }, [selectedVersionIdx]);
 

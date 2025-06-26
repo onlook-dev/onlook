@@ -1,9 +1,8 @@
-import { ChatType } from '@/app/api/chat/route';
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
-import { EditorTabValue, type ImageMessageContext } from '@onlook/models';
+import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -11,7 +10,7 @@ import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { compressImage } from '@onlook/utility';
+import { compressImageInBrowser } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
@@ -168,7 +167,7 @@ export const ChatInput = observer(() => {
     const handleImageEvent = async (file: File, displayName?: string) => {
         const reader = new FileReader();
         reader.onload = async (event) => {
-            const compressedImage = await compressImage(file);
+            const compressedImage = await compressImageInBrowser(file);
             const base64URL = compressedImage || (event.target?.result as string);
             const contextImage: ImageMessageContext = {
                 type: MessageContextType.IMAGE,

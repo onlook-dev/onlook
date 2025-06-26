@@ -18,7 +18,7 @@ function keepDomUpdated() {
 
     const interval = setInterval(() => {
         try {
-            if (processDom()) {
+            if (processDom() !== null) {
                 clearInterval(interval);
                 domUpdateInterval = null;
             }

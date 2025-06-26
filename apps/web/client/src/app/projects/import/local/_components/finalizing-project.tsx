@@ -1,12 +1,11 @@
 'use client';
 
-import { CardDescription } from '@onlook/ui/card';
-import { CardTitle } from '@onlook/ui/card';
-import { motion } from 'motion/react';
-import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
-import { useProjectCreation } from '../_context/project-creation-context';
 import { Button } from '@onlook/ui/button';
-import { StepContent, StepFooter, StepHeader } from './steps';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
+import { ProgressWithInterval } from '@onlook/ui/progress-with-interval';
+import { motion } from 'motion/react';
+import { StepContent, StepFooter, StepHeader } from '../../steps';
+import { useProjectCreation } from '../_context/context';
 
 export const FinalizingProject = () => {
     const { isFinalizing, error, retry, cancel } = useProjectCreation();

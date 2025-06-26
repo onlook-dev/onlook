@@ -241,7 +241,7 @@ export class InsertManager {
     }
 
     insertImageElement(frame: FrameData, location: ActionLocation, imageData: ImageContentData) {
-        const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
+        const url = imageData.originPath.replace(new RegExp(`^${DefaultSettings.IMAGE_FOLDER}\/`), '');
         const domId = createDomId();
         const oid = createOid();
 
@@ -254,7 +254,7 @@ export class InsertManager {
                 [EditorAttributes.DATA_ONLOOK_ID]: oid,
                 [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
-                src: `/${prefix}/${imageData.fileName}`,
+                src: `/${url}`,
                 alt: imageData.fileName,
             },
             styles: {
@@ -281,7 +281,7 @@ export class InsertManager {
         targetElement: ActionElement,
         imageData: ImageContentData,
     ) {
-        const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
+        const url = imageData.originPath.replace(new RegExp(`^${DefaultSettings.IMAGE_FOLDER}\/`), '');
         const action: UpdateStyleAction = {
             type: 'update-style',
             targets: [
@@ -289,7 +289,7 @@ export class InsertManager {
                     change: {
                         updated: {
                             backgroundImage: {
-                                value: `url('/${prefix}/${imageData.fileName}')`,
+                                value: `url('/${url}')`,
                                 type: StyleChangeType.Value,
                             },
                             backgroundSize: {
