@@ -83,7 +83,7 @@ export const getSupabaseUser = async (request: NextRequest) => {
 
 export const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType } = await req.json();
-    const { model, providerOptions } = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET_4);
+    const { model, providerOptions } = await initModel(LLMProvider.GOOGLE_VERTEX, CLAUDE_MODELS.SONNET_4);
     const systemPrompt = chatType === ChatType.CREATE ? getCreatePageSystemPrompt() : getSystemPrompt();
     const result = streamText({
         model,
