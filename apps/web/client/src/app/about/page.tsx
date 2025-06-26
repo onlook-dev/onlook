@@ -1,11 +1,9 @@
 import { Icons } from '@onlook/ui/icons';
-import { TopBar } from '@/app/_components/top-bar';
-import { Footer } from '@/app/_components/landing-page/page-footer';
+import { WebsiteLayout } from '@/app/_components/website-layout';
 
 export default function AboutPage() {
     return (
-        <>
-            <TopBar />
+        <WebsiteLayout showFooter={true}>
             <main className="bg-background-primary text-foreground-primary">
                 {/* Hero Section */}
                 <section className="py-32">
@@ -96,7 +94,6 @@ export default function AboutPage() {
                 </section>
 
             </main>
-            <Footer />
-        </>
+        </WebsiteLayout>
     );
 } 

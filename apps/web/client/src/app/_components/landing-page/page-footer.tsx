@@ -2,6 +2,7 @@
 
 import { Icons } from '@onlook/ui/icons/index';
 import { useRouter } from 'next/navigation';
+import { Illustrations } from './illustrations';
 
 export function Footer() {
     const router = useRouter();
@@ -23,7 +24,7 @@ export function Footer() {
                         <ul className="flex flex-col gap-4 text-regular text-foreground-secondary">
                             <li><a href="/about" className="hover:underline">About</a></li>
                             <li><a href="https://docs.onlook.com" target="_blank" className="hover:underline">Docs</a></li>
-                            {/* <li><a href="/faq" className="hover:underline">FAQ</a></li> */}
+                            <li><a href="/faq" className="hover:underline">FAQ</a></li>
                             <li><a href="https://onlook.substack.com" target="_blank" className="hover:underline">Blog</a></li>
                             {/* <li><a href="#" className="hover:underline">Careers</a></li> */}
                             <li><a href="mailto:contact@onlook.com" className="hover:underline">Contact</a></li>
@@ -73,6 +74,9 @@ export function Footer() {
                     {/* Right: Copyright */}
                     <div className="text-foreground-tertiary text-small w-full md:w-auto flex justify-center md:justify-end">© {new Date().getFullYear()} On Off, Inc.</div>
                 </div>
+            </div>
+            <div className="max-w-5xl mx-auto px-8 pb-4 pt-24 flex justify-center">
+                <Illustrations.OnlookLogoSeal className="w-full h-full [mask-image:linear-gradient(to_bottom,black_0%,transparent_100%)] text-foreground-primary/20" />
             </div>
         </footer>
     );

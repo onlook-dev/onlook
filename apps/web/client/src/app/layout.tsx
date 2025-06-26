@@ -51,6 +51,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
     return (
         <html lang={locale} className={inter.variable} suppressHydrationWarning>
+            <head>
+                <style dangerouslySetInnerHTML={{
+                    __html: `
+                        @view-transition {
+                            navigation: auto;
+                        }
+                        
+                        /* Keep navbar persistent */
+                        .top-bar {
+                            view-transition-name: top-bar;
+                        }
+                    `
+                }} />
+            </head>
             <body>
                 <FeatureFlagsProvider>
                     <PostHogProvider>

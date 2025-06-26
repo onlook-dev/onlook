@@ -1,8 +1,6 @@
 'use client';
 
-
-import { Footer } from '../_components/landing-page/page-footer';
-import { TopBar } from '../_components/top-bar';
+import { WebsiteLayout } from '../_components/website-layout';
 import { PricingCard } from './pricing-card';
 import { TierPricingTable } from './tier-pricing';
 
@@ -66,10 +64,7 @@ export default function PricingPage() {
     return <div>Coming soon</div>;
 
     return (
-        <div className="flex flex-col min-h-screen justify-center items-center">
-            <div className="fixed top-0 left-0 w-full h-12 bg-background/80 backdrop-blur-sm z-50">
-                <TopBar />
-            </div>
+        <WebsiteLayout showFooter={true}>
             <main className="flex-1 pt-28 w-full max-w-7xl mx-auto px-8 flex flex-col items-center">
                 <div className="text-center mb-12">
                     <h1 className="text-foreground text-5xl font-medium mb-4">Pricing</h1>
@@ -101,7 +96,6 @@ export default function PricingPage() {
                 </div>
             </main>
             <TierPricingTable />
-            <Footer />
-        </div>
+        </WebsiteLayout>
     );
 }

@@ -307,7 +307,7 @@ export function WhatCanOnlookDoSection() {
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-x-16 gap-y-20">
                     <div>
                         <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Import from GitHub or locally</div>
-                        <div className="text-foreground-secondary text-regular text-balance">Bring your existing codebase and start building</div>
+                        <div className="text-foreground-secondary text-regular text-balance">Bring your existing React / Next.js / Tailwind codebase and start building</div>
                     </div>
                     <div>
                         <div className="text-foreground-primary text-regularPlus mb-2 text-balance">Import from Figma</div>
