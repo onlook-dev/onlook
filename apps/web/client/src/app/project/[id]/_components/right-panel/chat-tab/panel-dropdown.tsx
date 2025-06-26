@@ -34,7 +34,7 @@ export const ChatPanelDropdown = observer(({
     };
 
     return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild disabled={selectedTab !== EditorTabValue.CHAT}>
                 <div className="flex items-center">{children}</div>
             </DropdownMenuTrigger>
