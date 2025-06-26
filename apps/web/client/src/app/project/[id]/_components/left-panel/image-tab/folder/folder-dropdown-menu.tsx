@@ -1,20 +1,20 @@
 import { DropdownMenu } from '@onlook/ui/dropdown-menu';
 
-import { memo, useCallback, useMemo, useState } from 'react';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
 import {
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuTrigger,
     DropdownMenuSeparator,
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
-import type { FolderNode } from '../providers/types';
+import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { FolderDropdown } from '../components/folder-dropdown';
+import { memo, useCallback, useMemo, useState } from 'react';
+import type { FolderNode } from '../providers/types';
+import { FolderDropdown } from './folder-dropdown';
 
 export const FolderDropdownMenu = memo(
     ({
@@ -53,7 +53,7 @@ export const FolderDropdownMenu = memo(
             (targetFolder: FolderNode) => {
                 handleMoveToFolder?.(folder, targetFolder);
             },
-            [handleMoveToFolder],
+            [handleMoveToFolder, folder],
         );
 
         const isVisible = useMemo(() => {
@@ -124,7 +124,7 @@ export const FolderDropdownMenu = memo(
                             <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger 
+                                    <DropdownMenuSubTrigger
                                         disabled={isDisabled}
                                         className="hover:bg-background-secondary focus:bg-background-secondary rounded-sm"
                                     >

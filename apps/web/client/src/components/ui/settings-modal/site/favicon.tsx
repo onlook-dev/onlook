@@ -19,7 +19,7 @@ export const Favicon = forwardRef<
     useEffect(() => {
         const loadImage = async () => {
             if (url) {
-                const image = editorEngine.image.assets.find((image) => url?.includes(image));
+                const image = editorEngine.image.find(url);
                 if (image) {
                     const imageContent = await editorEngine.image.readImageContent(image);
                     if (imageContent) {
@@ -28,7 +28,7 @@ export const Favicon = forwardRef<
                 }
             }
         };
-        
+
         loadImage();
     }, [url]);
 
@@ -68,7 +68,7 @@ export const Favicon = forwardRef<
 
     const reset = useCallback(async () => {
         if (url) {
-            const image = editorEngine.image.assets.find((image) => url?.includes(image));
+            const image = editorEngine.image.find(url);
             if (image) {
                 const imageContent = await editorEngine.image.readImageContent(image);
                 if (imageContent) {

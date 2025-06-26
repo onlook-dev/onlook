@@ -1,7 +1,6 @@
 import { api } from '@/trpc/client';
 import { COMPRESSION_IMAGE_PRESETS, DefaultSettings } from '@onlook/constants';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
-import { LeftPanelTabValue } from '@onlook/models/editor';
 import {
     convertToBase64,
     getBaseName,
@@ -146,6 +145,10 @@ export class ImageManager {
         return this._isScanning;
     }
 
+    find(url: string) {
+        return this.images.find((img) => url.includes(img));
+    }
+
     remove() {
         // this.editorEngine.style.update('backgroundImage', 'none');
         // sendAnalytics('image-removed');
@@ -192,7 +195,7 @@ export class ImageManager {
             }
 
             this.images = imageFiles;
-            
+
         } catch (error) {
             console.error('Error scanning images:', error);
             this.images = [];

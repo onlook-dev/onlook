@@ -25,14 +25,14 @@ const ImagePicker = forwardRef<
 
     useEffect(() => {
         const loadImage = async () => {
-        if (url) {
-            const image = editorEngine.image.assets.find((image) => url?.includes(image));
-            if (image) {
-                const imageContent = await editorEngine.image.readImageContent(image);
-                if (imageContent) {
-                    setSelectedImage(imageContent.content);
+            if (url) {
+                const image = editorEngine.image.find(url);
+                if (image) {
+                    const imageContent = await editorEngine.image.readImageContent(image);
+                    if (imageContent) {
+                        setSelectedImage(imageContent.content);
+                    }
                 }
-            }
             } else {
                 setSelectedImage(null);
             }
@@ -77,7 +77,7 @@ const ImagePicker = forwardRef<
 
     const reset = useCallback(async () => {
         if (url) {
-            const image = editorEngine.image.assets.find((image) => url?.includes(image));
+            const image = editorEngine.image.find(url);
             if (image) {
                 const imageContent = await editorEngine.image.readImageContent(image);
                 if (imageContent) {

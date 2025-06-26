@@ -1,11 +1,11 @@
 import { DropdownMenu } from "@onlook/ui/dropdown-menu";
 
 import type { ImageContentData } from "@onlook/models";
-import { memo, useCallback, useMemo, useState } from "react";
 import { Button } from "@onlook/ui/button";
+import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger } from "@onlook/ui/dropdown-menu";
-import { FolderDropdown } from "./components/folder-dropdown";
+import { memo, useCallback, useMemo, useState } from "react";
+import { FolderDropdown } from "./folder/folder-dropdown";
 import type { FolderNode } from "./providers/types";
 
 export const ImageDropdownMenu = memo(
@@ -55,9 +55,8 @@ export const ImageDropdownMenu = memo(
 
         return (
             <div
-                className={`absolute right-2 top-2 ${
-                    isVisible ? 'opacity-100' : 'opacity-0'
-                } group-hover:opacity-100 transition-opacity duration-300`}
+                className={`absolute right-2 top-2 ${isVisible ? 'opacity-100' : 'opacity-0'
+                    } group-hover:opacity-100 transition-opacity duration-300`}
             >
                 <DropdownMenu onOpenChange={handleOpenChange}>
                     <DropdownMenuTrigger asChild>
@@ -116,7 +115,7 @@ export const ImageDropdownMenu = memo(
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuSub>
-                            <DropdownMenuSubTrigger 
+                            <DropdownMenuSubTrigger
                                 disabled={isDisabled}
                                 className="hover:bg-background-secondary focus:bg-background-secondary rounded-sm"
                             >
