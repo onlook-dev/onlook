@@ -7,6 +7,7 @@ import { useImageRename } from '../hooks/use-image-rename';
 import { useImageMove } from '../hooks/use-image-move';
 import type { FolderNode } from './types';
 import { useFolder } from '../hooks/use-folder';
+import { DefaultSettings } from '@onlook/constants';
 
 interface ImagesContextValue {
     folderStructure: FolderNode;
@@ -47,7 +48,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
             children: new Map(),
         });
 
-        const root = createFolderNode('public', '', '');
+        const root = createFolderNode(DefaultSettings.IMAGE_FOLDER, '', '');
 
         editorEngine.image.assets.forEach((image) => {
             if (!image) return;
@@ -102,7 +103,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         folderOperations.isOperating;
 
     const value: ImagesContextValue = {
-        folderStructure: folderStructure.children.get('public')!,
+        folderStructure: folderStructure.children.get(DefaultSettings.IMAGE_FOLDER)!,
         isOperating,
         deleteOperations,
         renameOperations,

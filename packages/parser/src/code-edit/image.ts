@@ -9,8 +9,8 @@ export function insertImageToNode(path: NodePath<T.JSXElement>, action: CodeInse
         console.error('Failed to write image to file');
         return;
     }
-    const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
-    const backgroundClass = `bg-[url(/${prefix}/${imageName})]`;
+    const url = imageName.replace(new RegExp(`^${DefaultSettings.IMAGE_FOLDER}\/`), '');
+    const backgroundClass = `bg-[url(/${url})]`;
     addClassToNode(path.node, backgroundClass);
 }
 

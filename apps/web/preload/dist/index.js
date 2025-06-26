@@ -1750,7 +1750,7 @@ var DefaultSettings = {
     build: "bun run build",
     install: "bun install"
   },
-  IMAGE_FOLDER: "public/images",
+  IMAGE_FOLDER: "public",
   IMAGE_DIMENSION: { width: "100px", height: "100px" },
   FONT_FOLDER: "public/fonts",
   FONT_CONFIG: "app/fonts.ts",
@@ -17377,5 +17377,5 @@ export {
   penpalParent
 };
 
-//# debugId=D921FBA8ABBC66F964756E2164756E21
+//# debugId=D5DA9EF9F206F1F764756E2164756E21
 //# sourceMappingURL=index.js.map

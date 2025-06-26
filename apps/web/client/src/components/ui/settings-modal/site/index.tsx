@@ -58,15 +58,15 @@ export const SiteTab = observer(() => {
             }
 
             if (uploadedFavicon) {
-                await editorEngine.image.upload(uploadedFavicon);
-                const faviconPath = `/${DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '')}/${uploadedFavicon.name}`;
+                await editorEngine.image.upload(uploadedFavicon, DefaultSettings.IMAGE_FOLDER);
+                const faviconPath = `/${uploadedFavicon.name}`;
                 updatedMetadata.icons = {
                     icon: faviconPath,
                 };
             }
             if (uploadedImage) {
-                await editorEngine.image.upload(uploadedImage);
-                const imagePath = `/${DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '')}/${uploadedImage.name}`;
+                await editorEngine.image.upload(uploadedImage, DefaultSettings.IMAGE_FOLDER);
+                const imagePath = `/${uploadedImage.name}`;
                 updatedMetadata.openGraph = {
                     ...updatedMetadata.openGraph,
                     title: title,

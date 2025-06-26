@@ -118,7 +118,7 @@ export const MetadataForm = ({
                 </div>
                 <Separator />
                 {/* TODO: Implement */}
-                {/* <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-4">
                     <h2 className="text-title3">Imagery</h2>
                     <div className="grid grid-cols-2 text-foreground-onlook">
                         <div className="flex flex-col max-w-52">
@@ -149,7 +149,7 @@ export const MetadataForm = ({
                             />
                         </div>
                     )}
-                </div> */}
+                </div>
                 <div className="flex justify-end gap-4">
                     <Button
                         variant="ghost"

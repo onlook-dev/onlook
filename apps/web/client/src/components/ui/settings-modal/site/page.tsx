@@ -56,8 +56,8 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
             if (uploadedImage) {
                 let imagePath;
                 try {
-                    await editorEngine.image.upload(uploadedImage);
-                    imagePath = `/${DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '')}/${uploadedImage.name}`;
+                    await editorEngine.image.upload(uploadedImage, DefaultSettings.IMAGE_FOLDER);
+                    imagePath = `/${uploadedImage.name}`;
                 } catch (error) {
                     console.log(error);
                     return;

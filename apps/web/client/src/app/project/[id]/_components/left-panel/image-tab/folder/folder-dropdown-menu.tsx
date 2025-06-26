@@ -43,10 +43,10 @@ export const FolderDropdownMenu = memo(
         const handleOpenChange = useCallback(
             (isOpen: boolean) => {
                 if (!isDisabled) {
-                    setActiveDropdown(isOpen ? folder.name : null);
+                    setActiveDropdown(isOpen ? folder?.name : null);
                 }
             },
-            [folder.name, isDisabled],
+            [folder?.name, isDisabled],
         );
 
         const handleFolderSelect = useCallback(
