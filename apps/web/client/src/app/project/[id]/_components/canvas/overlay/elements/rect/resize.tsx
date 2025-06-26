@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { adaptValueToCanvas, clipRectToIframeBounds } from '@/components/store/editor/overlay/utils';
+import { adaptValueToCanvas } from '@/components/store/editor/overlay/utils';
 import { colors } from '@onlook/ui/tokens';
 import React from 'react';
 
@@ -382,45 +382,6 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
 
             const widthChanged = newElementDimensions.width !== startDimensions.width;
             const heightChanged = newElementDimensions.height !== startDimensions.height;
-
-            // Get the current frame view for boundary clipping
-            const selectedElement = editorEngine.elements.selected[0];
-            if (selectedElement) {
-                const frameData = editorEngine.frames.get(selectedElement.frameId);
-                if (frameData?.view) {
-                    const currentRect = {
-                        left: editorEngine.overlay.state.clickRects[0]?.left || 0,
-                        top: editorEngine.overlay.state.clickRects[0]?.top || 0,
-                        width: newOverlayDimensions.width,
-                        height: newOverlayDimensions.height,
-                    };
-                    const clippedRect = clipRectToIframeBounds(currentRect, frameData.view);
-                    
-                    const finalOverlayDimensions = {
-                        width: clippedRect.width,
-                        height: clippedRect.height,
-                    };
-
-                    if (widthChanged && heightChanged) {
-                        updateWidthHeight(
-                            `${newElementDimensions.width}px`,
-                            `${newElementDimensions.height}px`,
-                        );
-                        editorEngine.overlay.state.updateClickedRects(finalOverlayDimensions);
-                    } else if (widthChanged) {
-                        updateWidth(`${newElementDimensions.width}px`);
-                        editorEngine.overlay.state.updateClickedRects({
-                            width: finalOverlayDimensions.width,
-                        });
-                    } else if (heightChanged) {
-                        updateHeight(`${newElementDimensions.height}px`);
-                        editorEngine.overlay.state.updateClickedRects({
-                            height: finalOverlayDimensions.height,
-                        });
-                    }
-                    return;
-                }
-            }
 
             if (widthChanged && heightChanged) {
                 updateWidthHeight(

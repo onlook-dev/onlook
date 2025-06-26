@@ -98,7 +98,7 @@ export class OverlayManager {
                 console.error('Element not found');
                 continue;
             }
-            const adaptedRect = adaptRectToCanvas(el.rect, view, false, true);
+            const adaptedRect = adaptRectToCanvas(el.rect, view, false);
             newClickRects.push({ rect: adaptedRect, styles: el.styles });
         }
 
