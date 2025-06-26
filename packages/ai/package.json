@@ -32,6 +32,7 @@
     },
     "dependencies": {
         "@ai-sdk/anthropic": "^1.2.10",
+        "@ai-sdk/google-vertex": "2.2.24",
         "ai": "^4.3.10",
         "diff-match-patch": "^1.0.5",
         "fg": "^0.0.3",
