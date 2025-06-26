@@ -1,10 +1,10 @@
-import { useCallback, useMemo, memo } from 'react';
-import { cn } from '@onlook/ui/utils';
+import { useEditorEngine } from '@/components/store/editor';
 import { EditorTabValue, type ImageContentData } from '@onlook/models';
+import { cn } from '@onlook/ui/utils';
+import { memo, useCallback, useMemo } from 'react';
+import { useImageDragDrop } from './hooks/use-image-drag-drop';
 import { ImageDropdownMenu } from './image-dropdown-menu';
 import { useImagesContext } from './providers/images-provider';
-import { useEditorEngine } from '@/components/store/editor';
-import { useImageDragDrop } from './hooks/use-image-drag-drop';
 import type { FolderNode } from './providers/types';
 
 export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
@@ -92,7 +92,7 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
         if (!isDisabled) {
             handleDeleteImage(image);
         }
-    }, [onDeleteImage, image, isDisabled]);
+    }, [handleDeleteImage, image, isDisabled]);
 
     const handleMouseDown = useCallback(() => {
         if (!isDisabled) {
@@ -152,7 +152,7 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
                 selectedTargetFolder={moveState.targetFolder}
                 onSelectTargetFolder={handleSelectTargetFolder}
             />
-            
+
             {moveState.error && (
                 <div className="absolute top-0 left-0 right-0 bg-red-100 border border-red-400 text-red-700 px-2 py-1 rounded text-xs z-10">
                     {moveState.error}
