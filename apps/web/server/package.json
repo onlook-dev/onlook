@@ -20,6 +20,10 @@
         "@trpc/server": "^11.0.0",
         "fastify": "^5.2.2",
         "zod": "^3.24.2",
-        "@onlook/rpc": "*"
+        "@onlook/rpc": "*",
+        "@daytonaio/sdk": "^0.21.4",
+        "@codesandbox/sdk": "^1.1.6",
+        "ws": "^8.16.0",
+        "node-fetch": "^3.3.2"
     }
 }

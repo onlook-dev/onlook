@@ -245,7 +245,11 @@
             "startFromScratch": "新規作成",
             "importProject": "プロジェクトをインポート",
             "subscriptions": "サブスクリプション",
-            "settings": "設定"
+            "settings": "設定",
+            "downloadCode": "コードをダウンロード",
+            "downloadingCode": "ダウンロードを準備中...",
+            "downloadSuccess": "ダウンロードが正常に開始されました",
+            "downloadError": "ダウンロードの準備に失敗しました"
         },
         "dialogs": {
             "delete": {

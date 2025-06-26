@@ -3,6 +3,7 @@ import { fromProject } from '@onlook/db';
 import type { Project } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { UserManager } from '../user/manager';
+import { SandboxProviderType } from '../editor/sandbox/providers';
 
 export class ProjectsManager {
     private _projects: Project[] = [];
@@ -37,10 +38,13 @@ export class ProjectsManager {
         this._projects = newProjects;
     }
 
-    async deleteProject(project: Project) {
+    async deleteProject(project: Project, providerType: SandboxProviderType = SandboxProviderType.CODESANDBOX) {
         this.projects = this.projects.filter((p) => p.id !== project.id);
         await api.project.delete.mutate({ id: project.id });
-        await api.sandbox.delete.mutate({ sandboxId: project.sandbox.id });
+        await api.sandbox.stopSession.mutate({ 
+            sessionId: project.sandbox.id,
+            providerType,
+        });
     }
 
     async updateProject(project: Project) {

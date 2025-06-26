@@ -10,8 +10,8 @@ import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
-    const terminalSessions = editorEngine.sandbox.session.terminalSessions;
-    const activeSessionId = editorEngine.sandbox.session.activeTerminalSessionId;
+    const terminalSessions = editorEngine.sandbox.terminalSessions;
+    const activeSessionId = editorEngine.sandbox.activeTerminalSessionId;
 
     const [terminalHidden, setTerminalHidden] = useState(true);
 
@@ -76,7 +76,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     terminalHidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
                 )}
             >
-                <Tabs defaultValue={'cli'} value={activeSessionId} onValueChange={(value) => editorEngine.sandbox.session.activeTerminalSessionId = value}
+                <Tabs defaultValue={'cli'} value={activeSessionId} onValueChange={(value) => editorEngine.sandbox.activeTerminalSessionId = value}
                     className="w-full h-full">
                     <TabsList className="w-full h-8 rounded-none border-b border-border">
                         {Array.from(terminalSessions).map(([id, terminal]) => (

@@ -1,4 +1,4 @@
-import type { Task, Terminal, WebSocketSession } from '@codesandbox/sdk';
+import type { SandboxSession, TerminalInterface, TaskInterface } from './providers/interface';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { v4 as uuidv4 } from 'uuid';
 import type { ErrorManager } from '../error';
@@ -12,32 +12,31 @@ export interface CLISession {
     id: string;
     name: string;
     type: CLISessionType;
-    terminal: Terminal | null;
-    // Task is readonly
-    task: Task | null;
+    terminal: TerminalInterface | null;
+    task: TaskInterface | null;
     xterm: XTerm;
 }
 
 export interface TaskSession extends CLISession {
     type: CLISessionType.TASK;
-    task: Task;
+    task: TaskInterface;
 }
 
 export interface TerminalSession extends CLISession {
     type: CLISessionType.TERMINAL;
-    terminal: Terminal;
+    terminal: TerminalInterface;
 }
 
 export class CLISessionImpl implements CLISession {
     id: string;
-    terminal: Terminal | null;
-    task: Task | null;
+    terminal: TerminalInterface | null;
+    task: TaskInterface | null;
     xterm: XTerm;
 
     constructor(
         public readonly name: string,
         public readonly type: CLISessionType,
-        private readonly session: WebSocketSession,
+        private readonly session: SandboxSession,
         private readonly errorManager: ErrorManager,
     ) {
         this.id = uuidv4();
@@ -53,36 +52,49 @@ export class CLISessionImpl implements CLISession {
     }
 
     async initTerminal() {
-        const terminal = await this.session?.terminals.create();
-        if (!terminal) {
-            console.error('Failed to create terminal');
-            return;
-        }
-        this.terminal = terminal;
-        terminal.onOutput((data: string) => {
-            this.xterm.write(data);
-        });
+        if (this.session.terminals) {
+            const terminal = await this.session.terminals.create();
+            if (!terminal) {
+                console.error('Failed to create terminal');
+                return;
+            }
+            this.terminal = terminal;
+            terminal.onOutput((data: string) => {
+                this.xterm.write(data);
+            });
 
+            this.xterm.onData((data: string) => {
+                terminal.write(data);
+            });
+            const output = await terminal.open();
+            if (output) {
+                this.xterm.write(output);
+            }
+        } 
+        // Set up xterm data handling
         this.xterm.onData((data: string) => {
-            terminal.write(data);
+            if (this.terminal) {
+                this.terminal.write(data);
+            }
         });
-        terminal.open();
     }
 
     async initTask() {
-        const task = await this.createDevTaskTerminal();
-        if (!task) {
-            console.error('Failed to create task');
-            return;
-        }
-        this.task = task;
-        const output = await task.open();
-        this.xterm.write(output);
-        this.errorManager.processMessage(output);
-        task.onOutput((data: string) => {
-            this.xterm.write(data);
-            this.errorManager.processMessage(data);
-        });
+        if (this.session.tasks) {
+            const task = await this.createDevTaskTerminal();
+            if (!task) {
+                console.error('Failed to create task');
+                return;
+            }
+            this.task = task;
+            const output = await task.open();
+            this.xterm.write(output);
+            this.errorManager.processMessage(output);
+            task.onOutput((data: string) => {
+                this.xterm.write(data);
+                this.errorManager.processMessage(data);
+            });
+        } 
     }
 
     createXTerm() {
@@ -98,17 +110,22 @@ export class CLISessionImpl implements CLISession {
         });
     }
 
-    async createDevTaskTerminal() {
-        const task = this.session?.tasks.get('dev');
-        if (!task) {
-            console.error('No dev task found');
-            return;
+    async createDevTaskTerminal(): Promise<TaskInterface | null> {
+        if (this.session.tasks) {
+            const task = this.session.tasks.get('dev');
+            if (!task) {
+                console.error('No dev task found');
+                return null;
+            }
+            return task;
         }
-        return task;
+        return this.task;
     }
 
     dispose() {
         this.xterm.dispose();
-        this.terminal?.kill();
+        if (this.terminal?.kill) {
+            this.terminal.kill();
+        }
     }
 }

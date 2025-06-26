@@ -4,6 +4,7 @@ import type { Project as DbProject } from '@onlook/db';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import { makeAutoObservable } from "mobx";
 import { v4 as uuidv4 } from 'uuid';
+import { SandboxProviderType } from '../editor/sandbox/providers';
 
 export class CreateManager {
     pendingCreationData: {
@@ -63,9 +64,10 @@ export class CreateManager {
         return newProject;
     }
 
-    async createSandbox() {
+    async createSandbox(providerType: SandboxProviderType = SandboxProviderType.CODESANDBOX) {
         return await api.sandbox.fork.mutate({
             sandboxId: CSB_BLANK_TEMPLATE_ID,
+            providerType,
         });
     }
 

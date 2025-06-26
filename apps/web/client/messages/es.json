@@ -50,7 +50,11 @@
       "startFromScratch": "Empezar desde cero",
       "importProject": "Importar un proyecto",
       "subscriptions": "Suscripciones",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "downloadCode": "Descargar Código",
+      "downloadingCode": "Preparando descarga...",
+      "downloadSuccess": "Descarga iniciada exitosamente",
+      "downloadError": "Error al preparar la descarga"
     },
     "dialogs": {
       "delete": {

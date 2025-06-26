@@ -1,37 +1,37 @@
 import { api } from '@/trpc/client';
-import type { WebSocketSession } from '@codesandbox/sdk';
-import { connectToSandbox } from '@codesandbox/sdk/browser';
+import type { SandboxSession } from './providers/interface';
+import { SandboxProviderFactory, SandboxProviderType } from './providers';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
 
 export class SessionManager {
-    session: WebSocketSession | null = null;
+    session: SandboxSession | null = null;
     isConnecting = false;
     terminalSessions: Map<string, CLISession> = new Map();
     activeTerminalSessionId: string = 'cli';
+    private providerFactory = SandboxProviderFactory.getInstance();
 
     constructor(private readonly editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
-    async start(sandboxId: string, userId: string) {
+    async start(sandboxId: string, userId: string, providerType: SandboxProviderType = SandboxProviderType.CODESANDBOX) {
         this.isConnecting = true;
-        this.session = await connectToSandbox({
-            session: await api.sandbox.start.mutate({ sandboxId, userId }),
-            getSession: async (id) => {
-                return await api.sandbox.start.mutate({ sandboxId: id, userId });
-            },
-        });
-        this.isConnecting = false;
-        await this.createTerminalSessions(this.session);
+        try {
+            const provider = this.providerFactory.getProvider(providerType);
+            this.session = await provider.start(sandboxId, userId);
+            await this.createTerminalSessions(this.session);
+        } finally {
+            this.isConnecting = false;
+        }
     }
 
     getTerminalSession(id: string) {
         return this.terminalSessions.get(id) as TerminalSession | undefined;
     }
 
-    async createTerminalSessions(session: WebSocketSession) {
+    async createTerminalSessions(session: SandboxSession) {
         const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session, this.editorEngine.error);
         this.terminalSessions.set(task.id, task);
         const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session, this.editorEngine.error);
@@ -50,8 +50,9 @@ export class SessionManager {
         }
     }
 
-    async hibernate(sandboxId: string) {
-        await api.sandbox.hibernate.mutate({ sandboxId });
+    async hibernate(sandboxId: string, providerType: SandboxProviderType = SandboxProviderType.CODESANDBOX) {
+        const provider = this.providerFactory.getProvider(providerType);
+        await provider.hibernate(sandboxId);
     }
 
     async reconnect() {

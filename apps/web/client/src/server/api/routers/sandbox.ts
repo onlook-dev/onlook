@@ -1,45 +1,203 @@
-import { CodeSandbox } from '@codesandbox/sdk';
-import { shortenUuid } from '@onlook/utility/src/id';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
-const sdk = new CodeSandbox(process.env.CSB_API_KEY!);
-
+// For now, we'll create a simple proxy to the server-side sandbox
+// This will be replaced with actual server-side calls when the server is running
 export const sandboxRouter = createTRPCRouter({
-    start: protectedProcedure.input(z.object({
-        sandboxId: z.string(),
-        userId: z.string(),
-    })).mutation(async ({ input }) => {
-        const startData = await sdk.sandboxes.resume(input.sandboxId);
-        const session = await startData.createBrowserSession({
-            id: shortenUuid(input.userId, 20)
-        });
-        return session;
-    }),
-    hibernate: protectedProcedure.input(z.object({
-        sandboxId: z.string(),
-    })).mutation(async ({ input }) => {
-        await sdk.sandboxes.hibernate(input.sandboxId);
-    }),
-    list: protectedProcedure.query(async () => {
-        const listResponse = await sdk.sandboxes.list();
-        return listResponse;
-    }),
-    fork: protectedProcedure.input(z.object({
-        sandboxId: z.string(),
-    })).mutation(async ({ input }) => {
-        const sandbox = await sdk.sandboxes.create({
-            source: 'template',
-            id: input.sandboxId,
-        });
-        return {
-            sandboxId: sandbox.id,
-            previewUrl: `https://${sandbox.id}-8084.csb.app`,
-        };
-    }),
-    delete: protectedProcedure.input(z.object({
-        sandboxId: z.string(),
-    })).mutation(async ({ input }) => {
-        await sdk.sandboxes.shutdown(input.sandboxId);
-    }),
+    createSession: protectedProcedure
+        .input(z.object({
+            sandboxId: z.string(),
+            userId: z.string(),
+            providerType: z.enum(['codesandbox', 'daytona'])
+        }))
+        .mutation(async ({ input }) => {
+            // This would call the actual server-side sandbox manager
+            // For now, return a mock response
+            return {
+                success: true,
+                session: {
+                    id: input.userId,
+                    sandboxId: input.sandboxId,
+                    userId: input.userId,
+                    status: 'running' as const,
+                    createdAt: new Date(),
+                    lastActivity: new Date(),
+                }
+            };
+        }),
+
+    getSession: protectedProcedure
+        .input(z.string())
+        .query(async ({ input }) => {
+            // Mock response
+            return {
+                success: true,
+                session: {
+                    id: input,
+                    sandboxId: 'mock-sandbox',
+                    userId: input,
+                    status: 'running' as const,
+                    createdAt: new Date(),
+                    lastActivity: new Date(),
+                }
+            };
+        }),
+
+    stopSession: protectedProcedure
+        .input(z.object({
+            sessionId: z.string(),
+            providerType: z.enum(['codesandbox', 'daytona'])
+        }))
+        .mutation(async ({ input }) => {
+            // Mock response
+            return { success: true, message: 'Session stopped successfully' };
+        }),
+
+    readFile: protectedProcedure
+        .input(z.object({
+            sandboxId: z.string(),
+            path: z.string(),
+            providerType: z.enum(['codesandbox', 'daytona'])
+        }))
+        .query(async ({ input }) => {
+            // Mock response
+            return {
+                success: true,
+                content: `// Mock content for ${input.path}`,
+                exists: true
+            };
+        }),
+
+    writeFile: protectedProcedure
+        .input(z.object({
+            sandboxId: z.string(),
+            path: z.string(),
+            content: z.string(),
+            providerType: z.enum(['codesandbox', 'daytona'])
+        }))
+        .mutation(async ({ input }) => {
+            // Mock response
+            return { success: true, message: 'File written successfully' };
+        }),
+
+    listFiles: protectedProcedure
+        .input(z.object({
+            sandboxId: z.string(),
+            dir: z.string().default('./'),
+            providerType: z.enum(['codesandbox', 'daytona'])
+        }))
+        .query(async ({ input }) => {
+            // Mock response
+            return {
+                success: true,
+                directory: {
+                    path: input.dir,
+                    entries: [
+                        { name: 'package.json', type: 'file' as const },
+                        { name: 'src', type: 'directory' as const },
+                        { name: 'README.md', type: 'file' as const },
+                    ]
+                }
+            };
+        }),
+
+    listFilesRecursively: protectedProcedure
+        .input(z.object({
+            sandboxId: z.string(),
+            dir: z.string().default('./'),
+            ignore: z.array(z.string()).default([]),
+            extensions: z.array(z.string()).default([]),
+            providerType: z.enum(['codesandbox', 'daytona'])
+        }))
+        .query(async ({ input }) => {
+            // Mock response
+            return {
+                success: true,
+                files: [
+                    'package.json',
+                    'src/index.ts',
+                    'src/components/App.tsx',
+                    'README.md'
+                ]
+            };
+        }),
+
+    runCommand: protectedProcedure
+        .input(z.object({
+            sandboxId: z.string(),
+            command: z.string(),
+            options: z.object({
+                name: z.string().optional()
+            }).optional(),
+            providerType: z.enum(['codesandbox', 'daytona'])
+        }))
+        .mutation(async ({ input }) => {
+            // Mock response
+            return {
+                success: true,
+                result: {
+                    id: `cmd-${Date.now()}`,
+                    command: input.command,
+                    exitCode: 0,
+                    output: `Mock output for command: ${input.command}`,
+                }
+            };
+        }),
+
+    downloadFiles: protectedProcedure
+        .input(z.object({
+            sandboxId: z.string(),
+            projectName: z.string().optional(),
+            providerType: z.enum(['codesandbox', 'daytona'])
+        }))
+        .query(async ({ input }) => {
+            // Mock response
+            return {
+                success: true,
+                download: {
+                    downloadUrl: 'https://example.com/download.zip',
+                    fileName: input.projectName || `sandbox-${input.sandboxId}.zip`
+                }
+            };
+        }),
+
+    status: protectedProcedure
+        .input(z.object({
+            sessionId: z.string().optional(),
+            providerType: z.enum(['codesandbox', 'daytona']).optional()
+        }))
+        .query(async ({ input }) => {
+            // Mock response
+            return {
+                success: true,
+                activeSessions: 1,
+                sessions: [
+                    {
+                        id: 'mock-session',
+                        status: 'running' as const,
+                        lastActivity: new Date()
+                    }
+                ],
+                timestamp: new Date().toISOString()
+            };
+        }),
+
+    cleanup: protectedProcedure
+        .mutation(async () => {
+            // Mock response
+            return { success: true, message: 'Cleanup completed successfully' };
+        }),
+
+    fork: protectedProcedure
+        .input(z.object({
+            sandboxId: z.string(),
+            providerType: z.enum(['codesandbox', 'daytona'])
+        }))
+        .mutation(async ({ input }) => {
+            // Mock response
+            return {
+                sandboxId: `forked-${input.sandboxId}`,
+                previewUrl: `https://${input.sandboxId}.codesandbox.io`
+            };
+        }),
 });

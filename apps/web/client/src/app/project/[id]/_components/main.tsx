@@ -20,6 +20,8 @@ import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
+import { getProviderType } from './utils';
+
 
 export const Main = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
@@ -46,10 +48,12 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
             if (project.sandbox?.id) {
                 if (userManager.user?.id) {
-                    if (!editorEngine.sandbox.session.session) {
-                        await editorEngine.sandbox.session.start(
+                    if (!editorEngine.sandbox.session) {
+                        const providerType = getProviderType();
+                        await editorEngine.sandbox.start(
                             project.sandbox.id,
                             userManager.user.id,
+                            providerType,
                         );
                     }
                 } else {
@@ -109,7 +113,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         );
     }
 
-    if (editorEngine.sandbox.session.isConnecting) {
+    if (editorEngine.sandbox.isConnecting) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2">
                 <Icons.Shadow className="h-6 w-6 animate-spin text-foreground-primary" />

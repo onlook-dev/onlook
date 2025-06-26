@@ -43,7 +43,7 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
 
 export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: TerminalProps) => {
     const editorEngine = useEditorEngine();
-    const terminalSession = editorEngine.sandbox.session.getTerminalSession(terminalSessionId);
+    const terminalSession = editorEngine.sandbox.getTerminalSession(terminalSessionId);
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
 

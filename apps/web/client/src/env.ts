@@ -9,7 +9,7 @@ export const env = createEnv({
     server: {
         NODE_ENV: z.enum(['development', 'test', 'production']),
         ANTHROPIC_API_KEY: z.string(),
-        CSB_API_KEY: z.string(),
+        CSB_API_KEY: z.string().optional(),
         SUPABASE_DATABASE_URL: z.string().url(),
         RESEND_API_KEY: z.string().optional(),
         MORPH_API_KEY: z.string().optional(),
@@ -27,6 +27,8 @@ export const env = createEnv({
         NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
         NEXT_PUBLIC_POSTHOG_HOST: z.string().optional(),
         NEXT_PUBLIC_FEATURE_COLLABORATION: z.boolean().default(false),
+        NEXT_PUBLIC_DAYTONA_API_KEY: z.string().optional(),
+        NEXT_PUBLIC_CSB_API_KEY: z.string().optional(),
     },
 
     /**
@@ -37,16 +39,18 @@ export const env = createEnv({
         NODE_ENV: process.env.NODE_ENV,
         ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
         CSB_API_KEY: process.env.CSB_API_KEY,
-        RESEND_API_KEY: process.env.RESEND_API_KEY,
         SUPABASE_DATABASE_URL: process.env.SUPABASE_DATABASE_URL,
+        RESEND_API_KEY: process.env.RESEND_API_KEY,
+        MORPH_API_KEY: process.env.MORPH_API_KEY,
+        RELACE_API_KEY: process.env.RELACE_API_KEY,
         NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
         NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
         NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
         NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-        MORPH_API_KEY: process.env.MORPH_API_KEY,
-        RELACE_API_KEY: process.env.RELACE_API_KEY,
         NEXT_PUBLIC_FEATURE_COLLABORATION: process.env.NEXT_PUBLIC_FEATURE_COLLABORATION,
+        NEXT_PUBLIC_DAYTONA_API_KEY: process.env.NEXT_PUBLIC_DAYTONA_API_KEY,
+        NEXT_PUBLIC_CSB_API_KEY: process.env.NEXT_PUBLIC_CSB_API_KEY,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
