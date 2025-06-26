@@ -7,6 +7,6 @@ export const authUsers = authSchema.table('users', {
     email: text('email').notNull(),
     emailConfirmedAt: timestamp('email_confirmed_at'),
     rawUserMetaData: jsonb('raw_user_meta_data'),
-});
+}).enableRLS();
 
 export type AuthUser = typeof authUsers.$inferSelect;

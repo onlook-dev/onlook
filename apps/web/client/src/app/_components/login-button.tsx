@@ -1,7 +1,7 @@
 import { transKeys } from '@/i18n/keys';
 import { SignInMethod } from '@onlook/models/auth';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { useTranslations } from 'next-intl';
 import { useAuthContext } from '../auth/auth-context';

@@ -103,10 +103,6 @@ export class ChatContext {
         return highlightedContext;
     }
 
-    clear() {
-        this.context = [];
-    }
-
     getProjectContext(): ProjectMessageContext[] {
         return [
             {
@@ -132,7 +128,11 @@ export class ChatContext {
         ];
     }
 
-    async clearAttachments() {
+    clearAttachments() {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
+    }
+
+    clear() {
+        this.context = [];
     }
 }

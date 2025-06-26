@@ -1,4 +1,4 @@
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { ButtonLink } from '../button-link';
 
 export function FeaturesSection() {

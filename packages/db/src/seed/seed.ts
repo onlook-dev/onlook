@@ -1,6 +1,6 @@
 import { config } from 'dotenv';
 import { resetDb, seedDb } from './db';
-import { seedUser } from './supabase';
+import { seedSupabaseUser } from './supabase';
 
 // Load .env file
 config({ path: '../../.env' });
@@ -15,7 +15,7 @@ config({ path: '../../.env' });
             throw new Error(`Missing environment variables: ${missingVars.join(', ')}`);
         }
 
-        await seedUser();
+        await seedSupabaseUser();
         await resetDb();
         await seedDb();
         process.exit(0);

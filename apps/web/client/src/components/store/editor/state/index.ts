@@ -15,11 +15,10 @@ export class StateManager {
     publishOpen = false;
     leftPanelLocked = false;
     canvasPanning = false;
-    plansOpen = false;
     iframeResizing = false;
 
     editorMode: EditorMode = EditorMode.DESIGN;
-    settingsTab: SettingsTabValue | string = SettingsTabValue.PREFERENCES;
+    settingsTab: SettingsTabValue | string = SettingsTabValue.SITE;
 
     leftPanelTab: LeftPanelTabValue | null = null;
     rightPanelTab: EditorTabValue = EditorTabValue.CHAT;
@@ -47,7 +46,6 @@ export class StateManager {
     }, 150);
 
     clear() {
-        this.plansOpen = false;
         this.settingsOpen = false;
         this.hotkeysOpen = false;
         this.publishOpen = false;

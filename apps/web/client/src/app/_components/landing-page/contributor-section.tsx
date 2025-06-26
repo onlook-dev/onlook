@@ -2,7 +2,7 @@
 
 import './contributor.css';
 
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { useState } from 'react';
 import { MembersContent } from './members-content';

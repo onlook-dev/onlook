@@ -1,10 +1,7 @@
-import { InvitationRow } from './invitation-row';
-
-import { MemberRow } from './member-row';
-
 import { api } from '@/trpc/react';
-
+import { InvitationRow } from './invitation-row';
 import { InviteMemberInput } from './invite-member-input';
+import { MemberRow } from './member-row';
 import { SuggestedTeammates } from './suggested-teammates';
 
 export const MembersContent = ({ projectId }: { projectId: string }) => {

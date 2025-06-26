@@ -1,5 +1,5 @@
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
+import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { getValidUrl } from '@onlook/utility';

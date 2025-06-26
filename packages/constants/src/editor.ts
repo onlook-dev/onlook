@@ -51,7 +51,7 @@ export const DefaultSettings = {
         build: 'bun run build',
         install: 'bun install',
     },
-    IMAGE_FOLDER: 'public/images',
+    IMAGE_FOLDER: 'public',
     IMAGE_DIMENSION: { width: '100px', height: '100px' },
     FONT_FOLDER: 'public/fonts',
     FONT_CONFIG: 'app/fonts.ts',
@@ -63,7 +63,7 @@ export const DefaultSettings = {
         showMiniChat: true,
     },
     EDITOR_SETTINGS: {
-        shouldWarnDelete: true,
+        shouldWarnDelete: false,
         enableBunReplace: true,
         buildFlags: '--no-lint',
     },

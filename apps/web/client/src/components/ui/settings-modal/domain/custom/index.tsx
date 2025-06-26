@@ -1,8 +1,9 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useDomainsManager } from '@/components/store/project';
 import { useUserManager } from '@/components/store/user';
-import { PlanType } from '@onlook/models';
-import { Icons } from '@onlook/ui/icons/index';
+import { api } from '@/trpc/react';
+import { ProductType } from '@onlook/stripe';
+import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { UpgradePrompt } from '../upgrade-prompt';
 import { Verification } from './verification';
@@ -12,16 +13,17 @@ export const CustomDomain = observer(() => {
     const editorEngine = useEditorEngine();
     const domains = useDomainsManager();
     const userManager = useUserManager();
-    const plan = userManager.subscription.subscription?.plan;
+    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
+    const product = subscription?.product;
     const customDomain = domains.domains.custom;
 
     const renderContent = () => {
-        if (plan?.type !== PlanType.PRO) {
+        if (product?.type !== ProductType.PRO) {
             return (
                 <UpgradePrompt
                     onClick={() => {
                         editorEngine.state.settingsOpen = false;
-                        editorEngine.state.plansOpen = true;
+                        userManager.subscription.isModalOpen = true;
                     }}
                 />
             );
@@ -36,7 +38,7 @@ export const CustomDomain = observer(() => {
         <div className="space-y-4">
             <div className="flex items-center justify-start gap-3">
                 <h2 className="text-lg">Custom Domain</h2>
-                {plan?.type === PlanType.PRO && (
+                {product?.type === ProductType.PRO && (
                     <div className="flex h-5 items-center space-x-1 bg-blue-500/20 dark:bg-blue-500 px-2 rounded-full">
                         <Icons.Sparkles className="h-4 w-4" />
                         <span className="text-xs">Pro</span>

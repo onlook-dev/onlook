@@ -1,7 +1,6 @@
-import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
-import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '../engine';
+import { api } from '@/trpc/client';
 import { COMPRESSION_IMAGE_PRESETS, DefaultSettings } from '@onlook/constants';
+import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import {
     convertToBase64,
     getBaseName,
@@ -9,10 +8,11 @@ import {
     getMimeType,
     isImageFile,
 } from '@onlook/utility/src/file';
-import { api } from '@/trpc/client';
+import { makeAutoObservable, reaction } from 'mobx';
+import type { EditorEngine } from '../engine';
 
 export class ImageManager {
-    private images: ImageContentData[] = [];
+    private images: string[] = [];
     private _isScanning = false;
 
     constructor(private editorEngine: EditorEngine) {
@@ -26,11 +26,19 @@ export class ImageManager {
                 }
             }
         );
+
+        reaction(
+            () => this.editorEngine.sandbox.listBinaryFiles(DefaultSettings.IMAGE_FOLDER),
+            () => {
+                this.scanImages();
+            }
+        );
+
     }
 
-    async upload(file: File): Promise<void> {
+    async upload(file: File, destinationFolder: string): Promise<void> {
         try {
-            const path = `${DefaultSettings.IMAGE_FOLDER}/${file.name}`;
+            const path = `${destinationFolder}/${file.name}`;
             // Convert file to base64 for tRPC transmission
             const arrayBuffer = await file.arrayBuffer();
             const base64Data = btoa(
@@ -70,6 +78,7 @@ export class ImageManager {
     async delete(originPath: string): Promise<void> {
         try {
             await this.editorEngine.sandbox.delete(originPath);
+            this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
@@ -80,8 +89,7 @@ export class ImageManager {
         try {
             const basePath = getDirName(originPath);
             const newPath = `${basePath}/${newName}`;
-            await this.editorEngine.sandbox.copy(originPath, newPath);
-            await this.editorEngine.sandbox.delete(originPath);
+            await this.editorEngine.sandbox.rename(originPath, newPath);
             this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
@@ -137,6 +145,10 @@ export class ImageManager {
         return this._isScanning;
     }
 
+    find(url: string) {
+        return this.images.find((img) => url.includes(img));
+    }
+
     remove() {
         // this.editorEngine.style.update('backgroundImage', 'none');
         // sendAnalytics('image-removed');
@@ -158,8 +170,7 @@ export class ImageManager {
 
         return targets;
     }
-
-    async scanImages() {
+    scanImages() {
         if (this._isScanning) {
             return;
         }
@@ -167,7 +178,7 @@ export class ImageManager {
         this._isScanning = true;
 
         try {
-            const files = await this.editorEngine.sandbox.listBinaryFiles(
+            const files = this.editorEngine.sandbox.listBinaryFiles(
                 DefaultSettings.IMAGE_FOLDER,
             );
 
@@ -178,51 +189,82 @@ export class ImageManager {
 
             const imageFiles = files.filter((filePath: string) => isImageFile(filePath));
 
+
             if (imageFiles.length === 0) {
                 return;
             }
-            
-            const imagePromises = imageFiles.map(async (filePath: string) => {
-                try {
-                    // Read the binary file
-                    const binaryData = await this.editorEngine.sandbox.readBinaryFile(filePath);
-                    if (!binaryData) {
-                        console.warn(`Failed to read binary data for ${filePath}`);
-                        return null;
-                    }
 
-                    // Determine MIME type based on file extension
-                    const mimeType = getMimeType(filePath);
+            this.images = imageFiles;
 
-                    // Convert binary data to base64
-                    const base64Data = convertToBase64(binaryData);
-                    const content = `data:${mimeType};base64,${base64Data}`;
-
-                    return {
-                        originPath: filePath,
-                        content,
-                        fileName: getBaseName(filePath),
-                        mimeType,
-                    } as ImageContentData;
-                } catch (error) {
-                    console.error(`Error processing image ${filePath}:`, error);
-                    return null;
-                }
-            });
-
-            const results = await Promise.all(imagePromises);
-            
-            this.images = results.filter((result): result is ImageContentData => result !== null)
-            
         } catch (error) {
             console.error('Error scanning images:', error);
             this.images = [];
         } finally {
             this._isScanning = false;
-        } 
+        }
     }
 
     clear() {
         this.images = [];
+    }
+
+    /**
+     * Read content of a single image file
+     */
+    async readImageContent(imagePath: string): Promise<ImageContentData | null> {
+        try {
+            // Validate if the file is an image
+            if (!isImageFile(imagePath)) {
+                console.warn(`File ${imagePath} is not a valid image file`);
+                return null;
+            }
+
+            // Read the binary file using the sandbox
+            const binaryData = await this.editorEngine.sandbox.readBinaryFile(imagePath);
+            if (!binaryData) {
+                console.warn(`Failed to read binary data for ${imagePath}`);
+                return null;
+            }
+
+            // Determine MIME type based on file extension
+            const mimeType = getMimeType(imagePath);
+
+            // Convert binary data to base64
+            const base64Data = convertToBase64(binaryData);
+            const content = `data:${mimeType};base64,${base64Data}`;
+
+            return {
+                originPath: imagePath,
+                content,
+                fileName: getBaseName(imagePath),
+                mimeType,
+            } as ImageContentData;
+        } catch (error) {
+            console.error(`Error reading image content for ${imagePath}:`, error);
+            return null;
+        }
+    }
+
+    /**
+     * Read content of multiple image files in parallel
+     */
+    async readImagesContent(imagePaths: string[]): Promise<ImageContentData[]> {
+        if (!imagePaths.length) {
+            return [];
+        }
+
+        try {
+            // Process all images in parallel
+            const imagePromises = imagePaths.map(path => this.readImageContent(path));
+            const results = await Promise.all(imagePromises);
+
+            // Filter out null results
+            const validImages = results.filter((result): result is ImageContentData => result !== null);
+
+            return validImages;
+        } catch (error) {
+            console.error('Error reading images content:', error);
+            return [];
+        }
     }
 }

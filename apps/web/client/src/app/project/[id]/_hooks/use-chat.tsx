@@ -1,4 +1,3 @@
-import { ChatType } from '@/app/api/chat/route';
 import { useEditorEngine } from '@/components/store/editor';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
@@ -11,6 +10,7 @@ import {
     READ_FILES_TOOL_PARAMETERS,
     READ_STYLE_GUIDE_TOOL_NAME,
 } from '@onlook/ai';
+import { ChatType } from '@onlook/models';
 import type { Message, ToolCall } from 'ai';
 import { createContext, useContext } from 'react';
 import { z } from 'zod';
@@ -26,9 +26,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         maxSteps: 10,
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, config) => {
-            console.log('config', config);
             if (config.finishReason === 'stop' || config.finishReason === 'error') {
                 editorEngine.chat.conversation.addAssistantMessage(message);
+                if (config.finishReason === 'stop') {
+                    editorEngine.chat.context.clearAttachments();
+                }
             }
         },
         onError: (error) => {
