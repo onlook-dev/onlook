@@ -36,6 +36,48 @@ export function getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
 }
 
 /**
+ * Clips a rectangle to stay within iframe boundaries.
+ * This ensures overlay elements don't extend beyond the iframe edges.
+ */
+export function clipRectToIframeBounds(
+    rect: RectDimensions,
+    frameView: WebFrameView,
+): RectDimensions {
+    const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
+    if (!canvasContainer) {
+        console.error('Canvas container not found');
+        return rect;
+    }
+
+    const canvasTransform = new DOMMatrix(getComputedStyle(canvasContainer).transform);
+    const scale = canvasTransform.a;
+    const sourceOffset = getRelativeOffset(frameView, canvasContainer);
+    
+    const iframeBounds = {
+        left: (sourceOffset.left + canvasTransform.e / scale) * scale,
+        top: (sourceOffset.top + canvasTransform.f / scale) * scale,
+        right: (sourceOffset.left + canvasTransform.e / scale + frameView.offsetWidth) * scale,
+        bottom: (sourceOffset.top + canvasTransform.f / scale + frameView.offsetHeight) * scale,
+    };
+
+    // Clip the rectangle to iframe bounds
+    const clippedLeft = Math.max(rect.left, iframeBounds.left);
+    const clippedTop = Math.max(rect.top, iframeBounds.top);
+    const clippedRight = Math.min(rect.left + rect.width, iframeBounds.right);
+    const clippedBottom = Math.min(rect.top + rect.height, iframeBounds.bottom);
+
+    const clippedWidth = Math.max(0, clippedRight - clippedLeft);
+    const clippedHeight = Math.max(0, clippedBottom - clippedTop);
+
+    return {
+        left: clippedLeft,
+        top: clippedTop,
+        width: clippedWidth,
+        height: clippedHeight,
+    };
+}
+
+/**
  * Adapts a rectangle from a frameView element to the overlay coordinate space.
  * This ensures that overlay rectangles perfectly match the source elements,
  * similar to design tools like Figma/Framer.
@@ -44,6 +86,7 @@ export function adaptRectToCanvas(
     rect: RectDimensions,
     frameView: WebFrameView,
     inverse = false,
+    clipToBounds = true,
 ): RectDimensions {
     const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
     if (!canvasContainer) {
@@ -61,12 +104,19 @@ export function adaptRectToCanvas(
     const sourceOffset = getRelativeOffset(frameView, canvasContainer);
 
     // Transform coordinates to fixed overlay space
-    return {
+    const adaptedRect = {
         width: rect.width * scale,
         height: rect.height * scale,
         top: (rect.top + sourceOffset.top + canvasTransform.f / scale) * scale,
         left: (rect.left + sourceOffset.left + canvasTransform.e / scale) * scale,
     };
+
+    // Clip to iframe bounds if requested
+    if (clipToBounds) {
+        return clipRectToIframeBounds(adaptedRect, frameView);
+    }
+
+    return adaptedRect;
 }
 
 export function adaptValueToCanvas(value: number, inverse = false): number {

@@ -24,6 +24,10 @@ export const BaseRect: React.FC<RectProps> = ({
         return null;
     }
 
+    if (width < 1 || height < 1) {
+        return null;
+    }
+
     return (
         <div
             style={{
