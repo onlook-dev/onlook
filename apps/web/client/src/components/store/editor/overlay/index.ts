@@ -22,8 +22,6 @@ export class OverlayManager {
         );
     }
 
-
-
     undebouncedRefresh = async () => {
         this.state.removeHoverRect();
 
@@ -41,7 +39,7 @@ export class OverlayManager {
                 console.error('Element not found');
                 continue;
             }
-            const adaptedRect = adaptRectToCanvas(el.rect, view, false);
+            const adaptedRect = adaptRectToCanvas(el.rect, view);
             newClickRects.push({ rect: adaptedRect, styles: el.styles });
         }
 
