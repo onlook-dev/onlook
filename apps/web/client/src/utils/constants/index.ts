@@ -2,6 +2,8 @@ export const Routes = {
     HOME: '/',
     LOGIN: '/login',
     PRICING: '/pricing',
+    FAQ: '/faq',
+    ABOUT: '/about',
     PROJECTS: '/projects',
     PROJECT: '/project',
     IMPORT_PROJECT: '/projects/import',
