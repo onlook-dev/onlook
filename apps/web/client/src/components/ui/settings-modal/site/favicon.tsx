@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
-import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 export interface FaviconRef {
     reset: () => void;
@@ -16,14 +16,21 @@ export const Favicon = forwardRef<
 
     const editorEngine = useEditorEngine();
 
-    // useEffect(() => {
-    //     if (url) {
-    //         const image = editorEngine.image.assets.find((image) => url?.includes(image.fileName));
-    //         if (image) {
-    //             setSelectedImage(image.content);
-    //         }
-    //     }
-    // }, [url]);
+    useEffect(() => {
+        const loadImage = async () => {
+            if (url) {
+                const image = editorEngine.image.find(url);
+                if (image) {
+                    const imageContent = await editorEngine.image.readImageContent(image);
+                    if (imageContent) {
+                        setSelectedImage(imageContent.content);
+                    }
+                }
+            }
+        };
+
+        loadImage();
+    }, [url]);
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -59,11 +66,14 @@ export const Favicon = forwardRef<
         fileInputRef.current?.click();
     }, []);
 
-    const reset = useCallback(() => {
+    const reset = useCallback(async () => {
         if (url) {
-            const image = editorEngine.image.assets.find((image) => url?.includes(image.fileName));
+            const image = editorEngine.image.find(url);
             if (image) {
-                setSelectedImage(image.content);
+                const imageContent = await editorEngine.image.readImageContent(image);
+                if (imageContent) {
+                    setSelectedImage(imageContent.content);
+                }
             } else {
                 setSelectedImage(url);
             }

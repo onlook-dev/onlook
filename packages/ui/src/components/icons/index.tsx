@@ -1268,6 +1268,25 @@ export const Icons = {
             />
         </svg>
     ),
+    MoveToFolder: ({ className, ...props }: IconProps) => (
+        <svg
+            width="14"
+            height="13"
+            viewBox="0 0 14 13"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M6.71875 11.0312H12.0312C12.7216 11.0312 13.2812 10.4716 13.2812 9.78125V4.46875C13.2812 3.77839 12.7216 3.21875 12.0312 3.21875H8.169C7.75106 3.21875 7.36075 3.00987 7.12894 2.66212L6.62106 1.90038C6.38925 1.55263 5.99896 1.34375 5.58102 1.34375H2.96875C2.27839 1.34375 1.71875 1.90339 1.71875 2.59375V6.03125M2.96875 7.90625L4.84375 9.78125M4.84375 9.78125L2.96875 11.6562M4.84375 9.78125H1.09375"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
     ArrowDown: ArrowDownIcon,
     ArrowLeft: ArrowLeftIcon,
     ArrowRight: ArrowRightIcon,
