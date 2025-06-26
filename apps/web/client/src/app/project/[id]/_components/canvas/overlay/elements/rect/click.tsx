@@ -112,6 +112,21 @@ export const ClickRect = ({
         const patternId = `margin-pattern-${nanoid()}`;
         const maskId = `margin-mask-${nanoid()}`;
 
+        const checkMarginAuto = (side: String) => {
+            const marginSide = styles?.defined?.[`margin-${side}`];
+            const margin = styles?.defined?.['margin'];
+            
+            // If margin-side is a number with unit, return false
+            if (marginSide && /^\d+/.test(marginSide)) {
+                return false;
+            }
+            
+            // Otherwise return true if margin is auto
+            return marginSide === 'auto' || margin === 'auto';
+        };
+        
+        console.log(styles?.defined);
+        
         return (
             <>
                 <defs>
@@ -157,7 +172,7 @@ export const ClickRect = ({
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {original.top}
+                       {checkMarginAuto('top') ? 'auto' : original.top}
                     </text>
                 )}
                 {original.bottom > 0 && (
@@ -169,7 +184,7 @@ export const ClickRect = ({
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {original.bottom}
+                        {checkMarginAuto('bottom') ? 'auto' : original.bottom}
                     </text>
                 )}
                 {original.left > 0 && (
@@ -181,7 +196,7 @@ export const ClickRect = ({
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {original.left}
+                       {checkMarginAuto('left') ? 'auto' : original.left}
                     </text>
                 )}
                 {original.right > 0 && (
@@ -193,7 +208,7 @@ export const ClickRect = ({
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {original.right}
+                       {checkMarginAuto('right') ? 'auto' : original.right}
                     </text>
                 )}
             </>
