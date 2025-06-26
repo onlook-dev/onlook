@@ -133,7 +133,7 @@ export default function FAQPage() {
     return (
         <WebsiteLayout showFooter={true}>
             <div className="w-full max-w-6xl mx-auto py-32 px-4 md:px-8">
-                <h1 className="text-foreground-primary text-[4vw] leading-[1.1] font-light mb-16 max-w-3xl text-balance">
+                <h1 className="text-foreground-primary text-6xl leading-[1.1] font-light mb-16 max-w-3xl text-balance">
                     Frequently Asked <br />Questions
                 </h1>
                 <div className="flex flex-col md:flex-row gap-8" ref={faqContainerRef} style={{ position: 'relative' }}>

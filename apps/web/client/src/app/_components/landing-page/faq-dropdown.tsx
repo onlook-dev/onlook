@@ -35,7 +35,7 @@ export function FAQDropdown({ faqs }: FAQDropdownProps) {
                         </span>
                     </button>
                     <div
-                        className={`overflow-hidden transition-all duration-300 ${openIndex === idx ? 'max-h-40 mt-4 opacity-100' : 'max-h-0 opacity-0'}`}
+                        className={`overflow-hidden transition-all duration-300 ${openIndex === idx ? 'mt-4 opacity-100' : 'max-h-0 opacity-0'}`}
                         style={{ pointerEvents: openIndex === idx ? 'auto' : 'none' }}
                     >
                         <p className="text-foreground-secondary text-regular leading-relaxed">{faq.answer}</p>

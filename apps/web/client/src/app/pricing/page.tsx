@@ -1,5 +1,6 @@
 'use client';
 
+import { CTASection } from '../_components/landing-page/cta-section';
 import { WebsiteLayout } from '../_components/website-layout';
 import { PricingCard } from './pricing-card';
 import { TierPricingTable } from './tier-pricing';
@@ -40,7 +41,7 @@ const plans: PlanData[] = [
         name: 'Free',
         basePrice: '$0',
         description: 'Explore core features at no cost — perfect for light, personal projects.',
-        features: ['1M tokens / month', '150K daily limit', 'Public and private projects'],
+        features: ['10 messages / month', '50 monthly limit', 'Public and private projects'],
     },
     {
         key: PlanKey.PRO,
@@ -50,38 +51,32 @@ const plans: PlanData[] = [
         features: ['10M tokens per month', 'Public and private projects', 'No daily token limit', 'Increased file upload limit'],
         tokenTiers: tokenTiers,
     },
-    {
-        key: PlanKey.TEAMS,
-        name: 'Teams',
-        basePrice: '$30',
-        description: 'Role based access with one consolidated management for your whole team.',
-        features: ['10M / month', 'Centralized billing'],
-        tokenTiers: tokenTiers,
-    },
 ];
 
 export default function PricingPage() {
-    return <div>Coming soon</div>;
 
     return (
         <WebsiteLayout showFooter={true}>
-            <main className="flex-1 pt-28 w-full max-w-7xl mx-auto px-8 flex flex-col items-center">
-                <div className="text-center mb-12">
-                    <h1 className="text-foreground text-5xl font-medium mb-4">Pricing</h1>
-                    <p className="text-muted-foreground text-lg">Start for free. Upgrade as you go.</p>
+            
+            
+            <div className="w-full max-w-6xl mx-auto px-8 flex flex-col items-left">
+                <div className="text-left mb-12 mt-24">
+                    <h1 className="text-foreground text-5xl font-light mb-4">Pricing</h1>
+                    <p className="text-muted-foreground text-regular">This page is coming soon. Thanks for your patience!</p>
+                </div>
+                <CTASection href="/" /> 
+            </div>
+            {/*
+            <main className="flex-1 pt-28 w-full max-w-6xl mx-auto px-8 flex flex-col items-left">
+                <div className="text-left mb-12 mt-24">
+                    <h1 className="text-foreground text-5xl font-light mb-4">Pricing</h1>
+                    <p className="text-muted-foreground text-title3">Start for free. Upgrade as you go.</p>
                     <div className="flex items-center justify-center gap-4 mt-6">
                         <span className="text-sm text-muted-foreground">Current workspace:</span>
                         <span className="text-sm font-medium">Free - Personal</span>
-                        <div className="flex items-center gap-2 ml-4">
-                            <span className="bg-green-600 text-white text-xs px-2 py-1 rounded-md">Save 10%</span>
-                            <span className="text-sm text-muted-foreground">Annual billing</span>
-                            <div className="w-8 h-4 bg-muted rounded-full relative">
-                                <div className="w-3 h-3 bg-white rounded-full absolute top-0.5 left-0.5"></div>
-                            </div>
-                        </div>
                     </div>
                 </div>
-                <div className="grid grid-cols-3 gap-6 w-full max-w-5xl">
+                <div className="grid grid-cols-2 gap-12 w-full max-w-6xl mx-auto">
                     {plans.map((plan) => (
                         <PricingCard
                             key={plan.key}
@@ -94,8 +89,9 @@ export default function PricingPage() {
                         />
                     ))}
                 </div>
-            </main>
-            <TierPricingTable />
+                <TierPricingTable />
+            </main> 
+            */}
         </WebsiteLayout>
     );
 }

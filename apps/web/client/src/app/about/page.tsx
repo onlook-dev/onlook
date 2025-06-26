@@ -1,5 +1,6 @@
 import { Icons } from '@onlook/ui/icons';
 import { WebsiteLayout } from '@/app/_components/website-layout';
+import { CTASection } from '../_components/landing-page/cta-section';
 
 export default function AboutPage() {
     return (
@@ -92,8 +93,8 @@ export default function AboutPage() {
                         </div>
                     </div>
                 </section>
-
             </main>
+            <CTASection href="/" />
         </WebsiteLayout>
     );
 } 

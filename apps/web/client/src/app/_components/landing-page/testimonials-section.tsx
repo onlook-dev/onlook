@@ -74,7 +74,7 @@ export function TestimonialsSection() {
                     />
                 </div>
                 {/* Column 2 */}
-                <div className="flex flex-col gap-8 flex-1 mt-12 md:mt-0">
+                <div className="flex flex-col gap-8 flex-1 mt-0 md:mt-12">
                     <TestimonialCard
                         text="lookin' rad!"
                         name="Adam Argyle"
@@ -97,7 +97,7 @@ export function TestimonialsSection() {
                     />
                 </div>
                 {/* Column 3 */}
-                <div className="flex flex-col gap-8 flex-1 mt-24 md:mt-0">
+                <div className="flex flex-col gap-8 flex-1 mt-0 md:mt-24">
                     <TestimonialCard
                         text="this is getting pretty ergonomically close to the synthesis of generative code & design. great product @onlookdev 🐣"
                         name="Tina He"
