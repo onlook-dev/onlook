@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { EditorEngine } from '@/components/store/editor/engine';
+import { api } from '@/trpc/client';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import {
     CREATE_FILE_TOOL_NAME,
@@ -14,7 +15,7 @@ import {
     READ_FILES_TOOL_PARAMETERS,
     READ_STYLE_GUIDE_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_NAME,
-    TERMINAL_COMMAND_TOOL_PARAMETERS,
+    TERMINAL_COMMAND_TOOL_PARAMETERS
 } from '@onlook/ai';
 import { ChatType } from '@onlook/models';
 import type { Message, ToolCall } from 'ai';
@@ -69,17 +70,15 @@ async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine:
     try {
         const toolName = toolCall.toolName;
         if (toolName === LIST_FILES_TOOL_NAME) {
-            const result = await handleListFilesTool(
+            return await handleListFilesTool(
                 toolCall.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
                 editorEngine,
             );
-            return result;
         } else if (toolName === READ_FILES_TOOL_NAME) {
-            const result = await handleReadFilesTool(
+            return await handleReadFilesTool(
                 toolCall.args as z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
                 editorEngine,
             );
-            return result;
         } else if (toolName === READ_STYLE_GUIDE_TOOL_NAME) {
             const result = await handleReadStyleGuideTool(editorEngine);
             return result;
@@ -87,23 +86,20 @@ async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine:
             const result = ONLOOK_INSTRUCTIONS;
             return result;
         } else if (toolName === EDIT_FILE_TOOL_NAME) {
-            const result = await handleEditFileTool(
+            return await handleEditFileTool(
                 toolCall.args as z.infer<typeof EDIT_FILE_TOOL_PARAMETERS>,
                 editorEngine,
             );
-            return result;
         } else if (toolName === CREATE_FILE_TOOL_NAME) {
-            const result = await handleCreateFileTool(
+            return await handleCreateFileTool(
                 toolCall.args as z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
                 editorEngine,
             );
-            return result;
         } else if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
-            const result = await handleTerminalCommandTool(
+            return await handleTerminalCommandTool(
                 toolCall.args as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
                 editorEngine,
             );
-            return result;
         } else {
             throw new Error(`Unknown tool call: ${toolCall.toolName}`);
         }
@@ -151,11 +147,23 @@ async function handleEditFileTool(
     if (!exists) {
         throw new Error('File does not exist');
     }
-    const result = await editorEngine.sandbox.writeFile(args.path, args.content);
+    const originalContent = await editorEngine.sandbox.readFile(args.path);
+
+    if (!originalContent) {
+        throw new Error('Error reading file');
+    }
+    const updatedContent = await api.code.applyDiff.mutate({
+        originalCode: originalContent,
+        updateSnippet: args.content,
+    });
+    if (!updatedContent.result) {
+        throw new Error('Error applying code change: ' + updatedContent.error);
+    }
+
+    const result = await editorEngine.sandbox.writeFile(args.path, updatedContent.result);
     if (!result) {
         throw new Error('Error editing file');
     }
-    // TODO: Implement file editing
     return 'File edited!';
 }
 
@@ -167,11 +175,10 @@ async function handleCreateFileTool(
     if (exists) {
         throw new Error('File already exists');
     }
-    // TODO: Implement file creation
-    // const result = await editorEngine.sandbox.writeFile(args.path, args.content);
-    // if (!result) {
-    //     throw new Error('Error creating file');
-    // }
+    const result = await editorEngine.sandbox.writeFile(args.path, args.content);
+    if (!result) {
+        throw new Error('Error creating file');
+    }
     return 'File created!';
 }
 

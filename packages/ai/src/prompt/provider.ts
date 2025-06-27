@@ -8,16 +8,16 @@ import type {
 import type { Attachment, Message, UserContent } from 'ai';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
-import { SYSTEM_PROMPT } from './edit';
 import { CODE_FENCE } from './format';
 import { wrapXml } from './helpers';
-import { PLATFORM_SIGNATURE } from './signatures';
+import { SHELL_PROMPT } from './shell';
 import { SUMMARY_PROMPTS } from './summary';
+import { SYSTEM_PROMPT } from './system';
 
 export function getSystemPrompt() {
     let prompt = '';
     prompt += wrapXml('role', SYSTEM_PROMPT);
-    prompt = prompt.replace(PLATFORM_SIGNATURE, 'linux');
+    prompt += wrapXml('shell', SHELL_PROMPT);
     return prompt;
 }
 

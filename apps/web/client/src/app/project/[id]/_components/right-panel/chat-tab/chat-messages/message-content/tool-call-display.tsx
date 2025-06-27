@@ -1,11 +1,10 @@
 import { CREATE_FILE_TOOL_NAME, EDIT_FILE_TOOL_NAME, TERMINAL_COMMAND_TOOL_NAME } from '@onlook/ai';
 import type { ToolInvocation } from 'ai';
-import { observer } from 'mobx-react-lite';
-import { BashCodeDisplay } from '../../code-change-display/bash-code-display';
-import { CollapsibleCodeBlock } from '../../code-change-display/collapsible-code-block';
+import { BashCodeDisplay } from '../../code-display/bash-code-display';
+import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block';
 import { ToolCallSimple } from './tool-call-simple';
 
-export const ToolCallDisplay = observer(({
+export const ToolCallDisplay = ({
     messageId,
     index,
     lastToolInvocationIdx,
@@ -56,6 +55,3 @@ export const ToolCallDisplay = observer(({
         />
     );
 }
-
-
-);

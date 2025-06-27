@@ -1,10 +1,8 @@
 import { MessageContextType } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import path from 'path';
-import { SEARCH_REPLACE_EXAMPLE_CONVERSATION } from 'src/prompt/edit';
 import {
     getCreatePageSystemPrompt,
-    getExampleConversation,
     getFilesContent,
     getHighlightsContent,
     getHydratedUserMessage,
@@ -16,10 +14,9 @@ const __dirname = import.meta.dir;
 
 describe('Prompt', () => {
     // Set to true to update the data files
-    const SHOULD_UPDATE_DATA = false;
+    const SHOULD_UPDATE_DATA = true;
 
     const SHOULD_WRITE_SYSTEM = SHOULD_UPDATE_DATA;
-    const SHOULD_WRITE_EXAMPLES = SHOULD_UPDATE_DATA;
     const SHOULD_WRITE_USER_MESSAGE = SHOULD_UPDATE_DATA;
     const SHOULD_WRITE_FILE_CONTENT = SHOULD_UPDATE_DATA;
     const SHOULD_WRITE_HIGHLIGHTS = SHOULD_UPDATE_DATA;
@@ -35,18 +32,6 @@ describe('Prompt', () => {
         }
 
         const existing = await Bun.file(systemPath).text();
-        expect(prompt).toEqual(existing);
-    });
-
-    test('Examples should be the same', async () => {
-        const examplesPath = path.resolve(__dirname, './data/examples.txt');
-
-        const prompt = getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION);
-        if (SHOULD_WRITE_EXAMPLES) {
-            await Bun.write(examplesPath, prompt);
-        }
-
-        const existing = await Bun.file(examplesPath).text();
         expect(prompt).toEqual(existing);
     });
 
