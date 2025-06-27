@@ -16,7 +16,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         maxSteps: 10,
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, config) => {
-            editorEngine.chat.conversation.addAssistantMessage(message);
+            if (config.finishReason !== 'tool-calls') {
+                editorEngine.chat.conversation.addAssistantMessage(message);
+            }
             if (config.finishReason === 'stop') {
                 editorEngine.chat.context.clearAttachments();
             }
