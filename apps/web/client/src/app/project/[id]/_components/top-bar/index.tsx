@@ -15,11 +15,15 @@ import { Members } from '../members';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 import { PublishButton } from './publish';
+import { SettingsTabValue } from '@/components/ui/settings-modal/helpers';
+import { transKeys } from '@/i18n/keys';
+import { useTranslations } from 'next-intl';
 
 export const TopBar = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
     const { isWaiting } = useChatContext();
     const { isEnabled } = useFeatureFlags();
+    const t = useTranslations();
 
     const UNDO_REDO_BUTTONS = [
         {
@@ -77,16 +81,15 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                         </Tooltip>
                     ))}
                 </motion.div>
-                {/* TODO: Enable */}
-                {/* <Tooltip>
+                <Tooltip>
                         <TooltipTrigger asChild>
                             <Button
                                 variant="ghost"
                                 size="icon"
                                 className="h-8"
                                 onClick={() => {
-                                    editorEngine.settingsTab = SettingsTabValue.VERSIONS;
-                                    editorEngine.isSettingsOpen = true;
+                                    editorEngine.state.settingsTab = SettingsTabValue.VERSIONS;
+                                    editorEngine.state.settingsOpen = true;
                                 }}
                             >
                                 <Icons.CounterClockwiseClock className="h-4 w-4" />
@@ -95,7 +98,7 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                         <TooltipContent side="bottom">
                             {t(transKeys.editor.toolbar.versionHistory)}
                         </TooltipContent>
-                    </Tooltip> */}
+                    </Tooltip>
                 <PublishButton />
                 <CurrentUserAvatar className="size-8 cursor-pointer hover:opacity-80" />
             </div>

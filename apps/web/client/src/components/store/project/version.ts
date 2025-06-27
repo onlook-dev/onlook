@@ -2,9 +2,7 @@ import { sendAnalytics } from '@/utils/analytics';
 import { type GitCommit } from '@onlook/git';
 import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
-import type { ProjectManager } from './manager';
 import type { EditorEngine } from '../editor/engine';
-import { CLISessionType } from '../editor/sandbox/terminal';
 import { GitManager } from './git-manager';
 
 export enum CreateCommitFailureReason {
@@ -18,6 +16,7 @@ export class VersionsManager {
     commits: GitCommit[] | null = null;
     savedCommits: GitCommit[] = [];
     isSaving = false;
+    isLoadingCommits = false;
     private gitManager: GitManager;
 
     constructor(private editorEngine: EditorEngine) {
@@ -76,10 +75,12 @@ export class VersionsManager {
             }
 
             const status = await this.gitManager.getStatus();
+
             if (!status || status.isEmpty) {
                 if (showToast) {
                     toast.error('No changes to commit');
                 }
+
                 return {
                     success: false,
                     errorReason: CreateCommitFailureReason.COMMIT_EMPTY,
@@ -89,7 +90,6 @@ export class VersionsManager {
             // Stage all files
             const addResult = await this.gitManager.stageAll();
             if (!addResult.success) {
-                console.error('Failed to stage files:', addResult.error);
                 if (showToast) {
                     toast.error('Failed to stage files for commit');
                 }
@@ -99,10 +99,12 @@ export class VersionsManager {
                 };
             }
 
+            //Check config is set
+            await this.gitManager.ensureGitConfig();
+
             // Create the commit
             const commitResult = await this.gitManager.commit(message);
             if (!commitResult.success) {
-                console.error('Failed to create commit:', commitResult.error);
                 if (showToast) {
                     toast.error('Failed to create backup');
                 }
@@ -146,6 +148,7 @@ export class VersionsManager {
     };
 
     listCommits = async () => {
+        this.isLoadingCommits = true;
         try {
             this.commits = await this.gitManager.listCommits();
 
@@ -162,13 +165,12 @@ export class VersionsManager {
                 );
                 this.commits = enhancedCommits;
             }
-
-            console.log('commits', this.commits);
             return this.commits;
         } catch (error) {
-            console.error('Failed to list commits', error);
             this.commits = [];
             return [];
+        } finally {
+            this.isLoadingCommits = false;
         }
     };
 
@@ -191,7 +193,6 @@ export class VersionsManager {
 
         const restoreResult = await this.gitManager.restoreToCommit(commit.oid);
         if (!restoreResult.success) {
-
             toast.error('Failed to restore backup');
             sendAnalytics('versions checkout commit failed', {
                 commit: commit.displayName || commit.message,
@@ -203,6 +204,7 @@ export class VersionsManager {
         toast.success(`Restored to backup!`, {
             description: `Your project has been restored to version "${commit.displayName || commit.message}"`,
         });
+
         await this.listCommits();
 
         sendAnalytics('versions checkout commit success', {

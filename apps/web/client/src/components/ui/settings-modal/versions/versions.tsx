@@ -8,10 +8,12 @@ import React, { useState } from 'react';
 import { NoVersions } from './empty-state/version';
 import { VersionRow, VersionRowType } from './version-row';
 import { useEditorEngine } from '@/components/store/editor';
+import { toast } from '@onlook/ui/sonner';
 
 export const Versions = observer(() => {
     const editorEngine = useEditorEngine();
     const commits = editorEngine.versions.commits;
+    const isLoadingCommits = editorEngine.versions.isLoadingCommits;
     const [commitToRename, setCommitToRename] = useState<string | null>(null);
 
     // Group commits by date
@@ -48,7 +50,9 @@ export const Versions = observer(() => {
     const handleNewBackup = async () => {
         const res = await editorEngine.versions.createCommit();
         if (!res?.success) {
-            console.error('Failed to create commit. Reason code:', res?.errorReason);
+            toast.error('Failed to create commit', {
+                description: res?.errorReason,
+            });
             return;
         }
         const latestCommit = editorEngine.versions.latestCommit;
@@ -82,7 +86,12 @@ export const Versions = observer(() => {
             </div>
             <Separator />
 
-            {commits && commits.length > 0 ? (
+            {isLoadingCommits ? (
+                <div className="flex flex-col items-center justify-center py-12 px-6 gap-3">
+                    <Icons.Shadow className="h-6 w-6 animate-spin text-muted-foreground" />
+                    <p className="text-muted-foreground text-sm">Loading versions...</p>
+                </div>
+            ) : commits && commits.length > 0 ? (
                 <div className="flex flex-col gap-2">
                     <Accordion type="multiple" defaultValue={Object.keys(groupedCommits || {})}>
                         {groupedCommits &&

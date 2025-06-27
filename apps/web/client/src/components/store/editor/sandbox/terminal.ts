@@ -52,22 +52,41 @@ export class CLISessionImpl implements CLISession {
         }
     }
 
+    async isTerminalActive(): Promise<boolean> {
+        if (!this.terminal) {
+            return false;
+        }
+        
+        try {
+            // Try to write an empty string to test if the terminal is responsive
+            await this.terminal.write('');
+            return true;
+        } catch (error) {
+            console.warn('Terminal is not active:', error);
+            return false;
+        }
+    }
 
     async initTerminal() {
-        const terminal = await this.session?.terminals.create();
-        if (!terminal) {
-            console.error('Failed to create terminal');
-            return;
-        }
-        this.terminal = terminal;
-        terminal.onOutput((data: string) => {
-            this.xterm.write(data);
-        });
+        try {
+            const terminal = await this.session?.terminals.create();
+            if (!terminal) {
+                console.error('Failed to create terminal');
+                return;
+            }
+            this.terminal = terminal;
+            terminal.onOutput((data: string) => {
+                this.xterm.write(data);
+            });
 
-        this.xterm.onData((data: string) => {
-            terminal.write(data);
-        });
-        terminal.open();
+            this.xterm.onData((data: string) => {
+                terminal.write(data);
+            });
+            await terminal.open();
+        } catch (error) {
+            console.error('Failed to initialize terminal:', error);
+            this.terminal = null;
+        }
     }
 
     async initTask() {
@@ -110,6 +129,12 @@ export class CLISessionImpl implements CLISession {
 
     dispose() {
         this.xterm.dispose();
-        this.terminal?.kill();
+        if (this.terminal) {
+            try {
+                this.terminal.kill();
+            } catch (error) {
+                console.warn('Failed to kill terminal during disposal:', error);
+            }
+        }
     }
 }

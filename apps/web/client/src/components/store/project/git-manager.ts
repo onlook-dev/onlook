@@ -28,6 +28,53 @@ export class GitManager {
     }
 
     /**
+     * Ensure git config is set with default values if not already configured
+     */
+    async ensureGitConfig(): Promise<boolean> {
+        try {
+            if (!this.editorEngine?.sandbox?.session) {
+                console.error('No editor engine or session available');
+                return false;
+            }
+
+            // Check if user.name is set
+            const nameResult = await this.runCommand('git config user.name');
+            const emailResult = await this.runCommand('git config user.email');
+
+            const hasName = nameResult.success && nameResult.output.trim();
+            const hasEmail = emailResult.success && emailResult.output.trim();
+
+            // If both are already set, no need to configure
+            if (hasName && hasEmail) {
+                return true;
+            }
+
+            // Set user.name if not configured
+            if (!hasName) {
+                const nameConfigResult = await this.runCommand('git config user.name "Onlook"');
+                if (!nameConfigResult.success) {
+                    console.error('Failed to set git user.name:', nameConfigResult.error);
+                }
+            }
+
+            // Set user.email if not configured
+            if (!hasEmail) {
+                const emailConfigResult = await this.runCommand(
+                    'git config user.email "git@onlook.com"',
+                );
+                if (!emailConfigResult.success) {
+                    console.error('Failed to set git user.email:', emailConfigResult.error);
+                }
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Failed to ensure git config:', error);
+            return false;
+        }
+    }
+
+    /**
      * Initialize git repository
      */
     async initRepo(): Promise<boolean> {
@@ -53,8 +100,7 @@ export class GitManager {
             }
 
             // Configure git user (required for commits)
-            await this.runCommand('git config user.name "Onlook"');
-            await this.runCommand('git config user.email "git@onlook.com"');
+            await this.ensureGitConfig();
 
             // Set default branch to main
             await this.runCommand('git branch -M main');
@@ -75,9 +121,7 @@ export class GitManager {
             const isEmpty = await this.editorEngine?.sandbox.session.session?.git
                 .status()
                 .then((status) => {
-                    console.log('status', status);
-                    console.log('status.files', status.changedFiles);
-                    return status.changedFiles.length === 0;
+                    return Object.keys(status.changedFiles || {}).length === 0;
                 });
 
             return {
@@ -148,7 +192,7 @@ export class GitManager {
             const result = await this.runCommand(
                 `git notes --ref=refs/notes/onlook-display-name show ${commitOid}`,
             );
-            return result.success ? result.output.trim() : null;
+            return result.success ? this.formatGitLogOutput(result.output) : null;
         } catch (error) {
             return null;
         }
@@ -167,9 +211,26 @@ export class GitManager {
                 };
             }
 
-            const result = await this.editorEngine.sandbox.session.runCommand(command, (output) => {
+            let result = await this.editorEngine.sandbox.session.runCommand(command, (output) => {
                 console.log(`${command} output:`, output);
             });
+
+            // If the command failed due to shell not being active, try to reconnect and retry once
+            if (!result.success && result.error?.includes('Shell with id') && result.error?.includes('is not active')) {
+                console.log('Shell not active, attempting to ensure session is ready and retry...');
+                
+                // Try to ensure session is ready
+                const sessionManager = this.editorEngine.sandbox.session;
+                if ('ensureSessionReady' in sessionManager && typeof sessionManager.ensureSessionReady === 'function') {
+                    const isReady = await (sessionManager as any).ensureSessionReady();
+                    if (isReady) {
+                        console.log('Session ready, retrying command...');
+                        result = await this.editorEngine.sandbox.session.runCommand(command, (output) => {
+                            console.log(`${command} retry output:`, output);
+                        });
+                    }
+                }
+            }
 
             return {
                 success: result?.success || false,
@@ -192,15 +253,7 @@ export class GitManager {
     private parseGitLog(rawOutput: string): GitCommit[] {
         console.log('rawOutput', rawOutput.toString());
 
-        const ansiEscapePattern = /\x1b\[[0-9;?=]*[a-zA-Z]/g;
-        const controlChars = /[\x00-\x09\x0B-\x1F\x7F]/g;
-
-        const cleanOutput = rawOutput
-            .replace(ansiEscapePattern, '')
-            .replace(controlChars, '') // Remove things like \r, \n, \u001b
-            .trim();
-
-        console.log('cleanOutput', cleanOutput);
+        const cleanOutput = this.formatGitLogOutput(rawOutput);
 
         if (!cleanOutput) {
             return [];
@@ -253,5 +306,25 @@ export class GitManager {
         }
 
         return commits;
+    }
+
+    private formatGitLogOutput(input: string): string {
+        // Handle sequences with ESC characters anywhere within them
+        // Pattern to match sequences like [?1h<ESC>= and [K<ESC>[?1l<ESC>>
+        const ansiWithEscPattern = /\[[0-9;?a-zA-Z\x1b]*[a-zA-Z=>/]*/g;
+        
+        // Handle standard ANSI escape sequences starting with ESC
+        const ansiEscapePattern = /\x1b\[[0-9;?a-zA-Z]*[a-zA-Z=>/]*/g;
+        
+        // Handle control characters
+        const controlChars = /[\x00-\x09\x0B-\x1F\x7F]/g;
+
+        const cleanOutput = input
+            .replace(ansiWithEscPattern, '') // Remove sequences with ESC chars in middle
+            .replace(ansiEscapePattern, '') // Remove standard ESC sequences
+            .replace(controlChars, '') // Remove control characters
+            .trim();
+
+        return cleanOutput;
     }
 }
