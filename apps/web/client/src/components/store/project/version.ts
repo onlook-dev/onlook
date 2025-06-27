@@ -7,7 +7,6 @@ import { GitManager } from './git-manager';
 
 export enum CreateCommitFailureReason {
     NOT_INITIALIZED = 'NOT_INITIALIZED',
-    COMMIT_EMPTY = 'COMMIT_EMPTY',
     FAILED_TO_SAVE = 'FAILED_TO_SAVE',
     COMMIT_IN_PROGRESS = 'COMMIT_IN_PROGRESS',
 }
@@ -47,9 +46,9 @@ export class VersionsManager {
         showToast = true,
     ): Promise<
         | {
-              success: boolean;
-              errorReason?: CreateCommitFailureReason;
-          }
+            success: boolean;
+            errorReason?: CreateCommitFailureReason;
+        }
         | undefined
     > => {
         try {
@@ -76,14 +75,14 @@ export class VersionsManager {
 
             const status = await this.gitManager.getStatus();
 
-            if (!status || status.isEmpty) {
+            if (!status) {
                 if (showToast) {
-                    toast.error('No changes to commit');
+                    toast.error('Could not create backup, please initialize a git repository');
                 }
 
                 return {
                     success: false,
-                    errorReason: CreateCommitFailureReason.COMMIT_EMPTY,
+                    errorReason: CreateCommitFailureReason.NOT_INITIALIZED,
                 };
             }
 
@@ -300,5 +299,5 @@ export class VersionsManager {
         toast.success('Latest backup bookmarked!');
     };
 
-    dispose() {}
+    dispose() { }
 }

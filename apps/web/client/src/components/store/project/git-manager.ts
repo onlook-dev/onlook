@@ -3,7 +3,6 @@ import type { EditorEngine } from '../editor/engine';
 
 export interface GitStatus {
     files: string[];
-    isEmpty: boolean;
 }
 
 export interface GitCommandResult {
@@ -13,7 +12,7 @@ export interface GitCommandResult {
 }
 
 export class GitManager {
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) { }
 
     /**
      * Check if git repository is initialized
@@ -118,16 +117,18 @@ export class GitManager {
      */
     async getStatus(): Promise<GitStatus | null> {
         try {
-            const isEmpty = await this.editorEngine?.sandbox.session.session?.git
+            const status = await this.editorEngine?.sandbox.session.session?.git
                 .status()
-                .then((status) => {
-                    return Object.keys(status.changedFiles || {}).length === 0;
-                });
+            if (!status) {
+                return null;
+            }
+
+            console.log('status', status);
 
             return {
-                files: [], // We can expand this later if needed
-                isEmpty: isEmpty || false,
+                files: Object.keys(status.changedFiles || {}),
             };
+
         } catch (error) {
             console.error('Failed to get git status:', error);
             return null;
@@ -145,7 +146,7 @@ export class GitManager {
      * Create a commit
      */
     async commit(message: string): Promise<GitCommandResult> {
-        return this.runCommand(`git commit -m "${message}"`);
+        return this.runCommand(`git commit --allow-empty --no-verify -m "${message}"`);
     }
 
     /**
@@ -194,6 +195,7 @@ export class GitManager {
             );
             return result.success ? this.formatGitLogOutput(result.output) : null;
         } catch (error) {
+            console.error('Failed to get commit note', error);
             return null;
         }
     }
@@ -211,14 +213,12 @@ export class GitManager {
                 };
             }
 
-            let result = await this.editorEngine.sandbox.session.runCommand(command, (output) => {
-                console.log(`${command} output:`, output);
-            });
+            let result = await this.editorEngine.sandbox.session.runCommand(command);
 
             // If the command failed due to shell not being active, try to reconnect and retry once
             if (!result.success && result.error?.includes('Shell with id') && result.error?.includes('is not active')) {
                 console.log('Shell not active, attempting to ensure session is ready and retry...');
-                
+
                 // Try to ensure session is ready
                 const sessionManager = this.editorEngine.sandbox.session;
                 if ('ensureSessionReady' in sessionManager && typeof sessionManager.ensureSessionReady === 'function') {
@@ -312,10 +312,10 @@ export class GitManager {
         // Handle sequences with ESC characters anywhere within them
         // Pattern to match sequences like [?1h<ESC>= and [K<ESC>[?1l<ESC>>
         const ansiWithEscPattern = /\[[0-9;?a-zA-Z\x1b]*[a-zA-Z=>/]*/g;
-        
+
         // Handle standard ANSI escape sequences starting with ESC
         const ansiEscapePattern = /\x1b\[[0-9;?a-zA-Z]*[a-zA-Z=>/]*/g;
-        
+
         // Handle control characters
         const controlChars = /[\x00-\x09\x0B-\x1F\x7F]/g;
 
