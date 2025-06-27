@@ -1,7 +1,7 @@
 import type { ProjectManager } from '@/components/store/project/manager';
 import type { UserManager } from '@/components/store/user/manager';
 import { sendAnalytics } from '@/utils/analytics';
-import { ChatMessageRole, StreamRequestType, type AssistantChatMessage, type ChatMessageContext } from '@onlook/models/chat';
+import { ChatMessageRole, StreamRequestType, type ChatMessageContext } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -117,19 +117,10 @@ export class ChatManager {
     }
 
     createCommit(userPrompt?: string) {
-        // TODO: Reenable this
-        // this.projectManager.versions?.createCommit(
-        //     "Save before chat",
-        //     false,
-        // );
-    }
-
-    autoApplyCode(assistantMessage: AssistantChatMessage) {
-        if (this.userManager.settings.settings?.chat?.autoApplyCode) {
-            setTimeout(() => {
-                this.code.applyCode(assistantMessage.id);
-            }, 100);
-        }
+        this.editorEngine.versions?.createCommit(
+            userPrompt ?? "Save before chat",
+            false,
+        );
     }
 
     clear() {
