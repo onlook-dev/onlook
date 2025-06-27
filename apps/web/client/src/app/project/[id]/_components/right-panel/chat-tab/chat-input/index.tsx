@@ -121,12 +121,12 @@ export const ChatInput = observer(() => {
             console.warn('Already waiting for response');
             return;
         }
-        const input = inputValue.trim();
+        const savedInput = inputValue.trim();
         setInputValue('');
-        const streamMessages = await editorEngine.chat.getEditMessages(input);
+        const streamMessages = await editorEngine.chat.getEditMessages(savedInput);
         if (!streamMessages) {
             toast.error('Failed to send message. Please try again.');
-            setInputValue(input);
+            setInputValue(savedInput);
             return;
         }
 
