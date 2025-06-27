@@ -6,7 +6,7 @@ import { useState } from 'react';
 import stripAnsi from 'strip-ansi';
 
 const formatCommandOutput = (output: string | null) => {
-    if (!output) {
+    if (output === null) {
         return null;
     }
     const lines = output.split('\n');

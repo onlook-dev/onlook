@@ -131,14 +131,12 @@ async function handleCreateFileTool(
     if (!result) {
         throw new Error('Error creating file');
     }
-    return 'File created!';
+    return 'File created';
 }
 
 async function handleTerminalCommandTool(
     args: z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ) {
-    return await editorEngine.sandbox.session.runCommand(args.command, (output) => {
-        console.log('output', output);
-    });
+    return await editorEngine.sandbox.session.runCommand(args.command);
 }
