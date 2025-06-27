@@ -146,7 +146,8 @@ export class GitManager {
      * Create a commit
      */
     async commit(message: string): Promise<GitCommandResult> {
-        return this.runCommand(`git commit --allow-empty --no-verify -m "${message}"`);
+        const escapedMessage = message.replace(/\"/g, '\\"');
+        return this.runCommand(`git commit --allow-empty --no-verify -m "${escapedMessage}"`);
     }
 
     /**
@@ -195,7 +196,7 @@ export class GitManager {
             );
             return result.success ? this.formatGitLogOutput(result.output) : null;
         } catch (error) {
-            console.error('Failed to get commit note', error);
+            console.warn('Failed to get commit note', error);
             return null;
         }
     }
@@ -251,8 +252,6 @@ export class GitManager {
      * Parse git log output into GitCommit objects
      */
     private parseGitLog(rawOutput: string): GitCommit[] {
-        console.log('rawOutput', rawOutput.toString());
-
         const cleanOutput = this.formatGitLogOutput(rawOutput);
 
         if (!cleanOutput) {

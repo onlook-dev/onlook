@@ -14,6 +14,7 @@ export interface UserChatMessage extends Message {
     context: ChatMessageContext[];
     parts: TextPart[];
     content: string;
+    commitOid: string | null;
 }
 
 export interface AssistantChatMessage extends Message {

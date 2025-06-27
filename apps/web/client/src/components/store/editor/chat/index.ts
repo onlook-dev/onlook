@@ -1,7 +1,8 @@
 import type { ProjectManager } from '@/components/store/project/manager';
 import type { UserManager } from '@/components/store/user/manager';
 import { sendAnalytics } from '@/utils/analytics';
-import { ChatMessageRole, StreamRequestType, type ChatMessageContext } from '@onlook/models/chat';
+import type { GitCommit } from '@onlook/git';
+import { ChatMessageRole, type ChatMessageContext } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -44,15 +45,17 @@ export class ChatManager {
         }
 
         const context = contextOverride ?? await this.context.getChatContext();
-        const userMessage = this.conversation.addUserMessage(content, context);
+        const userMessage = await this.conversation.addUserMessage(content, context);
+
         this.conversation.current.updateName(content);
         if (!userMessage) {
             console.error('Failed to add user message');
             return null;
         }
-        sendAnalytics('send chat message', {
-            content,
-        });
+        const commit = await this.createCommit(content);
+        if (commit) {
+            this.conversation.attachCommitToUserMessage(userMessage.id, commit);
+        }
         return this.generateStreamMessages(content);
     }
 
@@ -104,23 +107,23 @@ export class ChatManager {
         message.updateContent(newMessageContent);
         await this.conversation.current.removeAllMessagesAfter(message);
         await this.conversation.current.updateMessage(message);
-        return this.generateStreamMessages(StreamRequestType.CHAT);
+        return this.generateStreamMessages(newMessageContent);
     }
 
-    private async generateStreamMessages(userPrompt?: string): Promise<Message[] | null> {
+    private async generateStreamMessages(userPrompt: string): Promise<Message[] | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;
         }
-        this.createCommit(userPrompt);
         return this.conversation.current.getMessagesForStream();
     }
 
-    createCommit(userPrompt?: string) {
-        this.editorEngine.versions?.createCommit(
+    async createCommit(userPrompt: string): Promise<GitCommit | null> {
+        const res = await this.editorEngine.versions?.createCommit(
             userPrompt ?? "Save before chat",
             false,
         );
+        return res?.commit ?? null;
     }
 
     clear() {

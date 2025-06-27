@@ -1,6 +1,7 @@
 import { type ProjectManager } from '@/components/store/project/manager';
 import { api } from '@/trpc/client';
-import { type ChatConversation, type ChatMessageContext } from '@onlook/models';
+import type { GitCommit } from '@onlook/git';
+import { ChatMessageRole, type ChatConversation, type ChatMessageContext } from '@onlook/models';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { ChatManager } from '..';
@@ -124,6 +125,15 @@ export class ConversationManager {
         const newMessage = UserChatMessageImpl.fromStringContent(content, context);
         await this.addMessage(newMessage);
         return newMessage;
+    }
+
+    attachCommitToUserMessage(id: string, commit: GitCommit) {
+        const message = this.current?.messages.find((m) => m.id === id && m.role === ChatMessageRole.USER);
+        if (!message) {
+            console.error('No message found with id', id);
+            return;
+        }
+        (message as UserChatMessageImpl).commitOid = commit.oid;
     }
 
     async addAssistantMessage(message: Message): Promise<AssistantChatMessageImpl | undefined> {

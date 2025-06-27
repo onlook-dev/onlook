@@ -44,13 +44,11 @@ export class VersionsManager {
     createCommit = async (
         message: string = 'New Onlook backup',
         showToast = true,
-    ): Promise<
-        | {
-            success: boolean;
-            errorReason?: CreateCommitFailureReason;
-        }
-        | undefined
-    > => {
+    ): Promise<{
+        success: boolean;
+        commit: GitCommit | null;
+        errorReason?: CreateCommitFailureReason;
+    }> => {
         try {
             if (this.isSaving) {
                 if (showToast) {
@@ -58,6 +56,7 @@ export class VersionsManager {
                 }
                 return {
                     success: false,
+                    commit: null,
                     errorReason: CreateCommitFailureReason.COMMIT_IN_PROGRESS,
                 };
             }
@@ -82,6 +81,7 @@ export class VersionsManager {
 
                 return {
                     success: false,
+                    commit: null,
                     errorReason: CreateCommitFailureReason.NOT_INITIALIZED,
                 };
             }
@@ -94,6 +94,7 @@ export class VersionsManager {
                 }
                 return {
                     success: false,
+                    commit: null,
                     errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
                 };
             }
@@ -109,12 +110,13 @@ export class VersionsManager {
                 }
                 return {
                     success: false,
+                    commit: null,
                     errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
                 };
             }
 
             // Refresh the commits list
-            await this.listCommits();
+            const commits = await this.listCommits();
 
             if (showToast) {
                 toast.success('Backup created successfully!', {
@@ -126,8 +128,10 @@ export class VersionsManager {
                 message,
             });
 
+            const latestCommit = commits.length > 0 ? commits[0] ?? null : null;
             return {
                 success: true,
+                commit: latestCommit,
             };
         } catch (error) {
             if (showToast) {
@@ -139,6 +143,7 @@ export class VersionsManager {
             });
             return {
                 success: false,
+                commit: null,
                 errorReason: CreateCommitFailureReason.FAILED_TO_SAVE,
             };
         } finally {
