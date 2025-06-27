@@ -27,6 +27,8 @@ export const ToolCallDisplay = ({
                     key={toolInvocation.toolCallId}
                     content={toolInvocation.args.command}
                     isStream={isStream}
+                    defaultStdOut={toolInvocation.state === 'result' ? toolInvocation.result.output : null}
+                    defaultStdErr={toolInvocation.state === 'result' ? toolInvocation.result.error : null}
                 />
             );
         }

@@ -186,5 +186,7 @@ async function handleTerminalCommandTool(
     args: z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ) {
-    return 'Terminal command executed!';
+    return await editorEngine.sandbox.session.runCommand(args.command, (output) => {
+        console.log('output', output);
+    });
 }
