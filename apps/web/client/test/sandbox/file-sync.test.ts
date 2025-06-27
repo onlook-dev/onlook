@@ -1,5 +1,5 @@
-import { FileSyncManager } from '@/components/store/editor/sandbox/file-sync';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
+import { FileSyncManager } from '../../src/components/store/editor/sandbox/file-sync';
 
 mock.module('localforage', () => ({
     getItem: mock(async () => null),
@@ -117,7 +117,7 @@ describe('FileSyncManager', async () => {
         await fileSyncManager.updateCache('file3.tsx', '<div>Content 3</div>');
 
         // Get list of files
-        const files = fileSyncManager.listFiles();
+        const files = fileSyncManager.listAllFiles();
 
         // Verify all files are listed
         expect(files).toContain('file1.tsx');
@@ -132,12 +132,12 @@ describe('FileSyncManager', async () => {
         await fileSyncManager.updateCache('file2.tsx', '<div>Content 2</div>');
 
         // Verify files are in cache
-        expect(fileSyncManager.listFiles().length).toBe(2);
+        expect(fileSyncManager.listAllFiles().length).toBe(2);
 
         // Clear cache
         await fileSyncManager.clear();
 
         // Verify cache is empty
-        expect(fileSyncManager.listFiles().length).toBe(0);
+        expect(fileSyncManager.listAllFiles().length).toBe(0);
     });
 });
