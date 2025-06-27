@@ -36,9 +36,46 @@ export const readStyleGuideTool = tool({
     parameters: z.object({}),
 });
 
+export const EDIT_FILE_TOOL_NAME = 'edit_file';
+export const EDIT_FILE_TOOL_PARAMETERS = z.object({
+    path: z.string().describe('The absolute path to the file to edit'),
+    content: z.string()
+        .describe(`The edit to the file. You can leave a comment to indicate the parts of the code that are not being edited with the following format:
+// ... existing code
+const foo = 'bar';
+// ... existing code`),
+});
+
+export const editFileTool = tool({
+    description: 'Edit the contents of a file',
+    parameters: EDIT_FILE_TOOL_PARAMETERS,
+});
+
+export const CREATE_FILE_TOOL_NAME = 'create_file';
+export const CREATE_FILE_TOOL_PARAMETERS = z.object({
+    path: z.string().describe('The absolute path to the file to create'),
+    content: z.string().describe('The content of the file'),
+});
+export const createFileTool = tool({
+    description: 'Create a new file',
+    parameters: CREATE_FILE_TOOL_PARAMETERS,
+});
+
+export const TERMINAL_COMMAND_TOOL_NAME = 'terminal_command';
+export const TERMINAL_COMMAND_TOOL_PARAMETERS = z.object({
+    command: z.string().describe('The command to run'),
+});
+export const terminalCommandTool = tool({
+    description: 'Run a Bash command in the terminal',
+    parameters: TERMINAL_COMMAND_TOOL_PARAMETERS,
+});
+
 export const chatToolSet: ToolSet = {
     [LIST_FILES_TOOL_NAME]: listFilesTool,
     [READ_FILES_TOOL_NAME]: readFilesTool,
     [ONLOOK_INSTRUCTIONS_TOOL_NAME]: onlookInstructionsTool,
     [READ_STYLE_GUIDE_TOOL_NAME]: readStyleGuideTool,
+    [EDIT_FILE_TOOL_NAME]: editFileTool,
+    [CREATE_FILE_TOOL_NAME]: createFileTool,
+    [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
 };

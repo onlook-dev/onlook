@@ -2,6 +2,10 @@ import { useEditorEngine } from '@/components/store/editor';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import {
+    CREATE_FILE_TOOL_NAME,
+    CREATE_FILE_TOOL_PARAMETERS,
+    EDIT_FILE_TOOL_NAME,
+    EDIT_FILE_TOOL_PARAMETERS,
     LIST_FILES_TOOL_NAME,
     LIST_FILES_TOOL_PARAMETERS,
     ONLOOK_INSTRUCTIONS,
@@ -9,6 +13,8 @@ import {
     READ_FILES_TOOL_NAME,
     READ_FILES_TOOL_PARAMETERS,
     READ_STYLE_GUIDE_TOOL_NAME,
+    TERMINAL_COMMAND_TOOL_NAME,
+    TERMINAL_COMMAND_TOOL_PARAMETERS,
 } from '@onlook/ai';
 import { ChatType } from '@onlook/models';
 import type { Message, ToolCall } from 'ai';
@@ -80,6 +86,24 @@ async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine:
         } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
             const result = ONLOOK_INSTRUCTIONS;
             return result;
+        } else if (toolName === EDIT_FILE_TOOL_NAME) {
+            const result = await handleEditFileTool(
+                toolCall.args as z.infer<typeof EDIT_FILE_TOOL_PARAMETERS>,
+                editorEngine,
+            );
+            return result;
+        } else if (toolName === CREATE_FILE_TOOL_NAME) {
+            const result = await handleCreateFileTool(
+                toolCall.args as z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
+                editorEngine,
+            );
+            return result;
+        } else if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
+            const result = await handleTerminalCommandTool(
+                toolCall.args as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
+                editorEngine,
+            );
+            return result;
         } else {
             throw new Error(`Unknown tool call: ${toolCall.toolName}`);
         }
@@ -117,4 +141,43 @@ async function handleReadStyleGuideTool(editorEngine: EditorEngine) {
         throw new Error('Style guide files not found');
     }
     return result;
+}
+
+async function handleEditFileTool(
+    args: z.infer<typeof EDIT_FILE_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+): Promise<string> {
+    const exists = await editorEngine.sandbox.fileExists(args.path);
+    if (!exists) {
+        throw new Error('File does not exist');
+    }
+    const result = await editorEngine.sandbox.writeFile(args.path, args.content);
+    if (!result) {
+        throw new Error('Error editing file');
+    }
+    // TODO: Implement file editing
+    return 'File edited!';
+}
+
+async function handleCreateFileTool(
+    args: z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+) {
+    const exists = await editorEngine.sandbox.fileExists(args.path);
+    if (exists) {
+        throw new Error('File already exists');
+    }
+    // TODO: Implement file creation
+    // const result = await editorEngine.sandbox.writeFile(args.path, args.content);
+    // if (!result) {
+    //     throw new Error('Error creating file');
+    // }
+    return 'File created!';
+}
+
+async function handleTerminalCommandTool(
+    args: z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+) {
+    return 'Terminal command executed!';
 }

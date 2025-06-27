@@ -1,7 +1,7 @@
 import type { Message } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { MarkdownRenderer } from '../markdown-renderer';
-import { ToolCallSimple } from './tool-call-simple';
+import { ToolCallDisplay } from './tool-call-display';
 
 export const MessageContent = observer(
     ({
@@ -33,11 +33,14 @@ export const MessageContent = observer(
                 );
             } else if (part.type === 'tool-invocation') {
                 return (
-                    <ToolCallSimple
+                    <ToolCallDisplay
+                        messageId={messageId}
+                        index={idx}
+                        lastToolInvocationIdx={lastToolInvocationIdx}
+                        toolInvocation={part.toolInvocation}
                         key={part.toolInvocation.toolCallId}
-                        toolName={part.toolInvocation.toolName}
-                        label={part.toolInvocation.toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
-                        loading={isStream && idx === lastToolInvocationIdx}
+                        isStream={isStream}
+                        applied={applied}
                     />
                 );
             } else if (part.type === 'reasoning') {

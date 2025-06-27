@@ -3,7 +3,6 @@ import { SystemTheme } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { basicSetup } from '@uiw/codemirror-extensions-basic-setup';
 import CodeMirror from '@uiw/react-codemirror';
-import { useTheme } from 'next-themes';
 
 export const CodeBlock = ({
     className,
@@ -13,7 +12,6 @@ export const CodeBlock = ({
     code: string;
     disableColor?: boolean;
 }) => {
-    const { theme } = useTheme();
     const languageExtension = getExtensions('javascript');
     const extensions = [
         basicSetup({

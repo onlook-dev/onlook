@@ -13,8 +13,8 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { memo, useCallback, useMemo, useState } from 'react';
+import { FolderDropdown } from '../folder-dropdown/folder-dropdown';
 import type { FolderNode } from '../providers/types';
-import { FolderDropdown } from './folder-dropdown';
 
 export const FolderDropdownMenu = memo(
     ({
