@@ -89,7 +89,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
         if (projectId !== creationData.project.id) return;
 
-        const messages = await editorEngine.chat.getStreamMessages(
+        const messages = await editorEngine.chat.getEditMessages(
             creationData.prompt,
             creationData.images,
         );
@@ -181,7 +181,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                     <RightPanel />
                 </div>
 
-                    <BottomBar />            
+                <BottomBar />
             </div>
             <SettingsModal showProjectTabs={true} />
             <SubscriptionModal />

@@ -38,7 +38,7 @@ export class ChatManager {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
-    async getStreamMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
+    async getEditMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;
@@ -52,10 +52,11 @@ export class ChatManager {
             console.error('Failed to add user message');
             return null;
         }
-        const commit = await this.createCommit(content);
-        if (commit) {
-            this.conversation.attachCommitToUserMessage(userMessage.id, commit);
-        }
+        this.createCommit(content).then((commit) => {
+            if (commit) {
+                this.conversation.attachCommitToUserMessage(userMessage.id, commit);
+            }
+        });
         return this.generateStreamMessages(content);
     }
 

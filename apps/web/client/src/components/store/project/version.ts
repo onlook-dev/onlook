@@ -178,6 +178,17 @@ export class VersionsManager {
         }
     };
 
+    getCommitByOid = async (oid: string): Promise<GitCommit | null> => {
+        if (!this.commits) {
+            this.commits = await this.gitManager.listCommits();
+        }
+        const commit = this.commits.find((commit) => commit.oid === oid);
+        if (!commit) {
+            return null;
+        }
+        return commit;
+    };
+
     checkoutCommit = async (commit: GitCommit): Promise<boolean> => {
         sendAnalytics('versions checkout commit', {
             commit: commit.displayName || commit.message,

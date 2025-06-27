@@ -13,7 +13,7 @@ export class UserChatMessageImpl implements UserChatMessage {
     aiSdkId: string | undefined;
     commitOid: string | null;
 
-    constructor(content: string, context: ChatMessageContext[] = []) {
+    constructor(content: string, context: ChatMessageContext[] = [], commitOid?: string) {
         this.id = uuidv4();
         this.aiSdkId = undefined;
         this.content = content;
@@ -43,8 +43,8 @@ export class UserChatMessageImpl implements UserChatMessage {
         return new UserChatMessageImpl(message.content, context);
     }
 
-    static fromStringContent(content: string, context: ChatMessageContext[]): UserChatMessageImpl {
-        return new UserChatMessageImpl(content, context);
+    static fromStringContent(content: string, context: ChatMessageContext[], commitOid?: string): UserChatMessageImpl {
+        return new UserChatMessageImpl(content, context, commitOid);
     }
 
     toStreamMessage(): Message {
