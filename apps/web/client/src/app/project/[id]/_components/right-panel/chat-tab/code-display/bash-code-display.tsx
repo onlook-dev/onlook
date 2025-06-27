@@ -92,22 +92,23 @@ export const BashCodeDisplay = observer(
         return (
             <div className="flex flex-col border rounded-lg bg-background w-full text-foreground">
                 <div className="flex flex-col w-full h-full">
-                    <div className="relative flex  p-4 text-xs w-full overflow-x-auto bg-background-secondary">
-                        <span className="text-foreground-secondary select-none mr-2">$</span>
-                        <code className="w-full">{content}</code>
+                    <div className="relative flex p-4 text-xs w-full overflow-auto bg-background-secondary">
+                        <code className="whitespace-pre">
+                            <span className="text-foreground-secondary select-none mr-2">$</span>
+                            {content}</code>
                     </div>
                     {(stdOut !== null || stdErr !== null) && (
                         <div className="w-full h-[1px] bg-foreground-secondary/30"></div>
                     )}
                     {stdOut !== null && (
-                        <div className="px-4 py-2 text-xs w-full max-h-48 overflow-auto bg-background-secondary whitespace-pre-wrap font-mono space-y-1">
+                        <code className="px-4 py-2 text-xs w-full max-h-48 overflow-auto bg-background-secondary whitespace-pre font-mono space-y-1">
                             {formatCommandOutput(stdOut)}
-                        </div>
+                        </code>
                     )}
                     {stdErr !== null && (
-                        <div className="px-4 py-2 text-xs w-full max-h-48 overflow-auto bg-background-secondary text-red-500 whitespace-pre-wrap font-mono">
+                        <code className="px-4 py-2 text-xs w-full max-h-48 overflow-auto bg-background-secondary text-red-500 whitespace-pre font-mono">
                             {formatCommandOutput(stdErr)}
-                        </div>
+                        </code>
                     )}
                 </div>
 
