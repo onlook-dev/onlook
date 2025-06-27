@@ -5,7 +5,10 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import stripAnsi from 'strip-ansi';
 
-const formatCommandOutput = (output: string) => {
+const formatCommandOutput = (output: string | null) => {
+    if (output === null) {
+        return null;
+    }
     const lines = output.split('\n');
 
     return lines.map((line, index) => {
@@ -55,11 +58,11 @@ const formatCommandOutput = (output: string) => {
 };
 
 export const BashCodeDisplay = observer(
-    ({ content, isStream }: { content: string; isStream: boolean }) => {
+    ({ content, defaultStdOut, defaultStdErr, isStream }: { content: string; defaultStdOut: string | null; defaultStdErr: string | null; isStream: boolean }) => {
         const editorEngine = useEditorEngine();
         const [running, setRunning] = useState(false);
-        const [stdOut, setStdOut] = useState<string | null>(null);
-        const [stdErr, setStdErr] = useState<string | null>(null);
+        const [stdOut, setStdOut] = useState<string | null>(defaultStdOut);
+        const [stdErr, setStdErr] = useState<string | null>(defaultStdErr);
 
         const runCommand = async () => {
             setRunning(true);
@@ -89,7 +92,7 @@ export const BashCodeDisplay = observer(
         return (
             <div className="flex flex-col border rounded-lg bg-background w-full text-foreground">
                 <div className="flex flex-col w-full h-full">
-                    <div className="relative flex items-center p-4 text-xs w-full overflow-x-auto bg-background-secondary">
+                    <div className="relative flex  p-4 text-xs w-full overflow-x-auto bg-background-secondary">
                         <span className="text-foreground-secondary select-none mr-2">$</span>
                         <code className="w-full">{content}</code>
                     </div>

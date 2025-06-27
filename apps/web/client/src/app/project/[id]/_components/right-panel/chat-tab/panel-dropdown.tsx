@@ -10,7 +10,6 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 
 export const ChatPanelDropdown = observer(({
@@ -24,10 +23,9 @@ export const ChatPanelDropdown = observer(({
 }) => {
     const userManager = useUserManager();
     const editorEngine = useEditorEngine();
-
-    const chatSettings = userManager.settings.settings.chat;
     const selectedTab = editorEngine.state.rightPanelTab;
 
+    const chatSettings = userManager.settings.settings.chat;
     const updateChatSettings = (e: React.MouseEvent, settings: Partial<ChatSettings>) => {
         e.preventDefault();
         userManager.settings.updateChat(settings);
@@ -39,8 +37,7 @@ export const ChatPanelDropdown = observer(({
                 <div className="flex items-center">{children}</div>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="min-w-[220px]">
-
-                <DropdownMenuItem
+                {/* <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {
                         updateChatSettings(e, {
@@ -71,7 +68,7 @@ export const ChatPanelDropdown = observer(({
                         )}
                     />
                     Show code while rendering
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
 
                 {/* TODO: Reenable */}
                 {/* <DropdownMenuItem
