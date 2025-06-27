@@ -158,6 +158,57 @@ export class FileSyncManager {
         await this.saveToLocalStorage();
     }
 
+    async rename(oldPath: string, newPath: string) {
+        let hasChanges = false;
+        
+        // Handle folder renaming - find all files that start with oldPath
+        const normalizedOldPath = oldPath.endsWith('/') ? oldPath : oldPath + '/';
+        const normalizedNewPath = newPath.endsWith('/') ? newPath : newPath + '/';
+        
+        // Update binary cache entries
+        const binaryEntriesToUpdate: Array<{ oldKey: string; newKey: string; content: Uint8Array }> = [];
+        for (const [filePath, content] of this.binaryCache.entries()) {
+            if (filePath === oldPath) {
+                binaryEntriesToUpdate.push({ oldKey: filePath, newKey: newPath, content });
+                hasChanges = true;
+            } else if (filePath.startsWith(normalizedOldPath)) {
+                const relativePath = filePath.substring(normalizedOldPath.length);
+                const newFilePath = normalizedNewPath + relativePath;
+                binaryEntriesToUpdate.push({ oldKey: filePath, newKey: newFilePath, content });
+                hasChanges = true;
+            }
+        }
+        
+        for (const { oldKey, newKey, content } of binaryEntriesToUpdate) {
+            this.binaryCache.set(newKey, content);
+            this.binaryCache.delete(oldKey);
+        }
+        
+        // Update text cache entries
+        const textEntriesToUpdate: Array<{ oldKey: string; newKey: string; content: string }> = [];
+        for (const [filePath, content] of this.cache.entries()) {
+            if (filePath === oldPath) {
+                textEntriesToUpdate.push({ oldKey: filePath, newKey: newPath, content });
+                hasChanges = true;
+            } else if (filePath.startsWith(normalizedOldPath)) {
+                const relativePath = filePath.substring(normalizedOldPath.length);
+                const newFilePath = normalizedNewPath + relativePath;
+                textEntriesToUpdate.push({ oldKey: filePath, newKey: newFilePath, content });
+                hasChanges = true;
+            }
+        }
+        
+        // Apply text cache updates
+        for (const { oldKey, newKey, content } of textEntriesToUpdate) {
+            this.cache.set(newKey, content);
+            this.cache.delete(oldKey);
+        }
+        
+        if (hasChanges) {
+            await this.saveToLocalStorage();
+        }
+    }
+
     listAllFiles() {
         return [
             ...Array.from(this.cache.keys()),

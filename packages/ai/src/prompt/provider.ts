@@ -8,28 +8,16 @@ import type {
 import type { Attachment, Message, UserContent } from 'ai';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
-import { CODE_BLOCK_RULES, SEARCH_REPLACE_EXAMPLE_CONVERSATION, SYSTEM_PROMPT } from './edit';
 import { CODE_FENCE } from './format';
 import { wrapXml } from './helpers';
 import { SHELL_PROMPT } from './shell';
-import { PLATFORM_SIGNATURE } from './signatures';
 import { SUMMARY_PROMPTS } from './summary';
+import { SYSTEM_PROMPT } from './system';
 
 export function getSystemPrompt() {
     let prompt = '';
-
     prompt += wrapXml('role', SYSTEM_PROMPT);
-    prompt += '\n';
-    prompt += wrapXml('code-block-rules', CODE_BLOCK_RULES);
-    prompt += '\n';
-    prompt += wrapXml('shell-prompt', SHELL_PROMPT);
-    prompt += '\n';
-    prompt += wrapXml(
-        'example-conversation',
-        getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION),
-    );
-
-    prompt = prompt.replace(PLATFORM_SIGNATURE, 'linux');
+    prompt += wrapXml('shell', SHELL_PROMPT);
     return prompt;
 }
 
@@ -177,16 +165,7 @@ export function getSummaryPrompt() {
     prompt += wrapXml('summary-format', SUMMARY_PROMPTS.format);
     prompt += wrapXml('summary-reminder', SUMMARY_PROMPTS.reminder);
 
-    prompt += wrapXml('example-conversation', getSummaryExampleConversation());
     prompt += wrapXml('example-summary-output', 'EXAMPLE SUMMARY:\n' + SUMMARY_PROMPTS.summary);
-    return prompt;
-}
-
-export function getSummaryExampleConversation() {
-    let prompt = 'EXAMPLE CONVERSATION:\n';
-    for (const message of SEARCH_REPLACE_EXAMPLE_CONVERSATION) {
-        prompt += `${message.role.toUpperCase()}: ${message.content}\n`;
-    }
     return prompt;
 }
 

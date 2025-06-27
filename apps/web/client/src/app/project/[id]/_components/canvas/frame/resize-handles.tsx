@@ -67,6 +67,8 @@ export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
                 width: Math.round(newWidth),
                 height: Math.round(newHeight),
             };
+
+            editorEngine.overlay.undebouncedRefresh();
         };
 
         const stopResize = (e: MouseEvent) => {

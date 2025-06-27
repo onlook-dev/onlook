@@ -161,7 +161,7 @@ export class SessionManager {
         this.terminalSessions.clear();
     }
 
-    async runCommand(command: string, streamCallback: (output: string) => void): Promise<{
+    async runCommand(command: string, streamCallback?: (output: string) => void): Promise<{
         output: string;
         success: boolean;
         error: string | null;
@@ -186,8 +186,7 @@ export class SessionManager {
 
             await cmd.open();
             const disposer = cmd.onOutput((output) => {
-                console.log('output', output);
-                streamCallback(output);
+                streamCallback?.(output);
                 terminalSession.xterm?.write(output);
             });
 

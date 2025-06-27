@@ -3,11 +3,11 @@ export function ButtonLink({ href, children, rightIcon }: { href: string; childr
     return (
         <a
             href={href}
-            className="text-foreground-primary text-lg font-normal flex items-center gap-2 border-b border-foreground-primary/80 pb-1 hover:opacity-80 transition-opacity"
+            className="text-foreground-secondary text-regular flex items-center gap-2 border-b-[0.5px] border-foreground-secondary/50 hover:border-foreground-primary pb-2 hover:text-foreground-primary transition-colors group"
             style={{ width: 'fit-content' }}
         >
             {children}
-            {rightIcon && <span className="ml-2 flex items-center">{rightIcon}</span>}
+            {rightIcon && <span className="ml-2 flex items-center group-hover:text-foreground-primary transition-colors">{rightIcon}</span>}
         </a>
     );
 }

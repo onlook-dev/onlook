@@ -1,4 +1,4 @@
-export type FileEventType = 'add' | 'change' | 'remove' | '*';
+export type FileEventType = 'add' | 'change' | 'remove' | 'rename' | '*';
 
 export interface FileEvent {
     type: FileEventType;

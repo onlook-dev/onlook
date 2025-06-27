@@ -1,5 +1,6 @@
 'use client';
 
+import { ExternalRoutes, Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons';
 import { Footer } from '../_components/landing-page/page-footer';
 import { TopBar } from '../_components/top-bar';
@@ -21,19 +22,19 @@ export default function SitemapPage() {
                                 <h2 className="text-2xl font-light text-foreground-primary mb-6">Company</h2>
                                 <ul className="space-y-4 text-foreground-secondary">
                                     <li>
-                                        <a href="/about" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">About</a>
+                                        <a href={Routes.ABOUT} className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">About</a>
                                     </li>
                                     <li>
-                                        <a href="https://docs.onlook.com" target="_blank" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">Docs</a>
+                                        <a href={ExternalRoutes.DOCS} target="_blank" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">Docs</a>
                                     </li>
                                     <li>
-                                        <a href="/faq" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">FAQ</a>
+                                        <a href={Routes.FAQ} className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">FAQ</a>
                                     </li>
                                     <li>
-                                        <a href="https://onlook.substack.com" target="_blank" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">Blog</a>
+                                        <a href={ExternalRoutes.BLOG} target="_blank" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">Blog</a>
                                     </li>
                                     <li>
-                                        <a href="/careers" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">Careers</a>
+                                        <a href={Routes.CAREERS} className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">Careers</a>
                                     </li>
                                 </ul>
                             </div>
@@ -46,7 +47,7 @@ export default function SitemapPage() {
                                         <a href="/get-started" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">Get Started</a>
                                     </li>
                                     <li>
-                                        <a href="https://github.com/onlook" target="_blank" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">GitHub</a>
+                                        <a href={ExternalRoutes.GITHUB} target="_blank" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">GitHub</a>
                                     </li>
                                     <li>
                                         <a href="/visual-editor" className="text-foreground-secondary text-regular hover:underline hover:text-foreground-primary">Visual Editor</a>
@@ -96,10 +97,10 @@ export default function SitemapPage() {
                             <div>
                                 <h2 className="text-2xl font-light text-foreground-primary mb-6">Connect</h2>
                                 <div className="flex gap-6">
-                                    <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-foreground-secondary hover:text-foreground-primary transition-colors">
+                                    <a href={ExternalRoutes.GITHUB} target="_blank" rel="noopener noreferrer" className="text-foreground-secondary hover:text-foreground-primary transition-colors">
                                         <Icons.GitHubLogo className="w-6 h-6" />
                                     </a>
-                                    <a href="https://discord.com" target="_blank" rel="noopener noreferrer" className="text-foreground-secondary hover:text-foreground-primary transition-colors">
+                                    <a href={ExternalRoutes.DISCORD} target="_blank" rel="noopener noreferrer" className="text-foreground-secondary hover:text-foreground-primary transition-colors">
                                         <Icons.DiscordLogo className="w-6 h-6" />
                                     </a>
                                 </div>
