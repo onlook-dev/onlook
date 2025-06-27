@@ -1,3 +1,4 @@
+import { Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons';
 import { ButtonLink } from '../button-link';
 import { FAQDropdown } from './faq-dropdown';
@@ -25,7 +26,7 @@ export function FAQSection() {
                     <h2 className="text-foreground-primary text-6xl leading-[1.1] font-light mb-12 mt-4 max-w-3xl">
                         Frequently<br />asked questions
                     </h2>
-                    <ButtonLink href="/faq" rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>Read our FAQs</ButtonLink>
+                    <ButtonLink href={Routes.FAQ} rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>Read our FAQs</ButtonLink>
                 </div>
                 <div className="flex-1 flex flex-col gap-6">
                     <FAQDropdown faqs={faqs} />

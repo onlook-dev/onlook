@@ -100,7 +100,7 @@ export default function SitemapPage() {
                                     <a href={ExternalRoutes.GITHUB} target="_blank" rel="noopener noreferrer" className="text-foreground-secondary hover:text-foreground-primary transition-colors">
                                         <Icons.GitHubLogo className="w-6 h-6" />
                                     </a>
-                                    <a href={ExternalRoutes.X} target="_blank" rel="noopener noreferrer" className="text-foreground-secondary hover:text-foreground-primary transition-colors">
+                                    <a href={ExternalRoutes.DISCORD} target="_blank" rel="noopener noreferrer" className="text-foreground-secondary hover:text-foreground-primary transition-colors">
                                         <Icons.DiscordLogo className="w-6 h-6" />
                                     </a>
                                 </div>
