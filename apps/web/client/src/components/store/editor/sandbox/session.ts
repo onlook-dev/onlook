@@ -92,47 +92,6 @@ export class SessionManager {
         }
     }
 
-    async ensureSessionReady(): Promise<boolean> {
-        try {
-            if (!this.session) {
-                console.error('No session available');
-                return false;
-            }
-
-            // Check if session is connected
-            const isConnected = await this.ping();
-            if (!isConnected) {
-                console.log('Session not connected, attempting to reconnect...');
-                return false;
-            }
-
-            // Ensure terminal sessions exist and are properly initialized
-            if (this.terminalSessions.size === 0) {
-                console.log('No terminal sessions found, creating new ones...');
-                await this.createTerminalSessions(this.session);
-            }
-
-            // Check if the terminal session is active
-            const terminalSession = Array.from(this.terminalSessions.values()).find(
-                session => session.type === CLISessionType.TERMINAL
-            );
-
-            if (terminalSession) {
-                const terminalSessionImpl = terminalSession as any;
-                const isTerminalActive = await terminalSessionImpl.isTerminalActive();
-                if (!isTerminalActive) {
-                    console.log('Terminal session not active, reinitializing...');
-                    await terminalSessionImpl.initTerminal();
-                }
-            }
-
-            return true;
-        } catch (error) {
-            console.error('Failed to ensure session is ready:', error);
-            return false;
-        }
-    }
-
     async ping() {
         if (!this.session) return false;
         try {

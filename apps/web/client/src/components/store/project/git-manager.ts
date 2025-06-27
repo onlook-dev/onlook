@@ -1,6 +1,8 @@
 import { type GitCommit } from '@onlook/git';
 import type { EditorEngine } from '../editor/engine';
 
+export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
+
 export interface GitStatus {
     files: string[];
 }
@@ -117,18 +119,15 @@ export class GitManager {
      */
     async getStatus(): Promise<GitStatus | null> {
         try {
-            const status = await this.editorEngine?.sandbox.session.session?.git
-                .status()
+            const status = await this.editorEngine?.sandbox.session.session?.git.status();
             if (!status) {
+                console.error('Failed to get git status');
                 return null;
             }
-
-            console.log('status', status);
 
             return {
                 files: Object.keys(status.changedFiles || {}),
             };
-
         } catch (error) {
             console.error('Failed to get git status:', error);
             return null;
@@ -181,8 +180,9 @@ export class GitManager {
      * Add a display name note to a commit
      */
     async addCommitNote(commitOid: string, displayName: string): Promise<GitCommandResult> {
+        const escapedDisplayName = displayName.replace(/\"/g, '\\"');
         return this.runCommand(
-            `git notes --ref=refs/notes/onlook-display-name add -f -m "${displayName}" ${commitOid}`,
+            `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} add -f -m "${escapedDisplayName}" ${commitOid}`,
         );
     }
 
@@ -192,7 +192,7 @@ export class GitManager {
     async getCommitNote(commitOid: string): Promise<string | null> {
         try {
             const result = await this.runCommand(
-                `git notes --ref=refs/notes/onlook-display-name show ${commitOid}`,
+                `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} show ${commitOid}`,
             );
             return result.success ? this.formatGitLogOutput(result.output) : null;
         } catch (error) {
@@ -216,28 +216,11 @@ export class GitManager {
 
             let result = await this.editorEngine.sandbox.session.runCommand(command);
 
-            // If the command failed due to shell not being active, try to reconnect and retry once
-            if (!result.success && result.error?.includes('Shell with id') && result.error?.includes('is not active')) {
-                console.log('Shell not active, attempting to ensure session is ready and retry...');
-
-                // Try to ensure session is ready
-                const sessionManager = this.editorEngine.sandbox.session;
-                if ('ensureSessionReady' in sessionManager && typeof sessionManager.ensureSessionReady === 'function') {
-                    const isReady = await (sessionManager as any).ensureSessionReady();
-                    if (isReady) {
-                        console.log('Session ready, retrying command...');
-                        result = await this.editorEngine.sandbox.session.runCommand(command, (output) => {
-                            console.log(`${command} retry output:`, output);
-                        });
-                    }
-                }
+            if (!result.success) {
+                throw new Error(result.error ?? 'Failed to run command');
             }
 
-            return {
-                success: result?.success || false,
-                output: result?.output || '',
-                error: result?.error || null,
-            };
+            return result;
         } catch (error) {
             console.error(`Error running command: ${command}`, error);
             return {

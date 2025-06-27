@@ -134,6 +134,7 @@ export class ConversationManager {
             return;
         }
         (message as UserChatMessageImpl).commitOid = commit.oid;
+        this.current?.updateMessage(message);
     }
 
     async addAssistantMessage(message: Message): Promise<AssistantChatMessageImpl | undefined> {

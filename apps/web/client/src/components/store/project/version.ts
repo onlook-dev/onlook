@@ -123,6 +123,7 @@ export class VersionsManager {
                     description: `Created backup: "${message}"`,
                 });
             }
+            this.isSaving = true;
 
             sendAnalytics('versions create commit success', {
                 message,
@@ -193,13 +194,11 @@ export class VersionsManager {
         sendAnalytics('versions checkout commit', {
             commit: commit.displayName || commit.message,
         });
-
         const res = await this.createCommit('Save before restoring backup', false);
 
-        // If failed to create commit, don't continue backing up
-        // If the commit was empty, this is ok
+        // If failed to create commit, warn the user but continue
         if (!res?.success) {
-            toast.error('Failed to save before restoring backup');
+            toast.warning('Failed to save before restoring backup');
         }
 
         const restoreResult = await this.gitManager.restoreToCommit(commit.oid);

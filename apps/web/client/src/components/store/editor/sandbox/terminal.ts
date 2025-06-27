@@ -52,21 +52,6 @@ export class CLISessionImpl implements CLISession {
         }
     }
 
-    async isTerminalActive(): Promise<boolean> {
-        if (!this.terminal) {
-            return false;
-        }
-        
-        try {
-            // Try to write an empty string to test if the terminal is responsive
-            await this.terminal.write('');
-            return true;
-        } catch (error) {
-            console.warn('Terminal is not active:', error);
-            return false;
-        }
-    }
-
     async initTerminal() {
         try {
             const terminal = await this.session?.terminals.create();
