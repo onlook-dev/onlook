@@ -1,12 +1,12 @@
-import { useProjectManager } from '@/components/store/project';
+import { useEditorEngine } from '@/components/store/editor';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { VersionRow, VersionRowType } from './version-row';
 import { NoSavedVersions } from './empty-state/saved';
 
 export const SavedVersions = observer(() => {
-    const projectManager = useProjectManager();
-    const commits = projectManager.versions?.savedCommits;
+    const editorEngine = useEditorEngine();
+    const commits = editorEngine.versions.savedCommits;
 
     return (
         <div className="flex flex-col gap-4 p-4">

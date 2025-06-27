@@ -121,7 +121,7 @@ export const ChatInput = observer(() => {
             console.warn('Already waiting for response');
             return;
         }
-        const streamMessages = await editorEngine.chat.getStreamMessages(inputValue);
+        const streamMessages = await editorEngine.chat.getEditMessages(inputValue);
         if (!streamMessages) {
             toast.error('Failed to send message. Please try again.');
             return;

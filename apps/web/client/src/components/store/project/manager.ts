@@ -2,16 +2,13 @@ import { api } from '@/trpc/client';
 import { fromProject, fromProjectSettings, toProjectSettings, createDefaultProjectSettings } from '@onlook/db';
 import type { Project, ProjectSettings } from '@onlook/models';
 import { makeAutoObservable, reaction } from 'mobx';
-import { VersionsManager } from './version';
 
 
 export class ProjectManager {
     private _project: Project | null = null;
     private _projectSettings: ProjectSettings = toProjectSettings(createDefaultProjectSettings(''));
-    readonly versions: VersionsManager | null = null;
 
     constructor() {
-        this.versions = new VersionsManager(this);
         makeAutoObservable(this);
 
         reaction(

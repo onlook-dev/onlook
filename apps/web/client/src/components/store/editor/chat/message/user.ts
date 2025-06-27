@@ -11,6 +11,7 @@ export class UserChatMessageImpl implements UserChatMessage {
     context: ChatMessageContext[] = [];
     parts: TextPart[] = [];
     aiSdkId: string | undefined;
+    commitOid: string | null;
 
     constructor(content: string, context: ChatMessageContext[] = []) {
         this.id = uuidv4();
@@ -18,11 +19,13 @@ export class UserChatMessageImpl implements UserChatMessage {
         this.content = content;
         this.parts = [{ type: 'text', text: content }];
         this.context = context;
+        this.commitOid = null;
     }
 
     static fromJSON(data: UserChatMessage): UserChatMessageImpl {
         const message = new UserChatMessageImpl(data.content, data.context);
         message.id = data.id;
+        message.commitOid = data.commitOid;
         return message;
     }
 
@@ -33,6 +36,7 @@ export class UserChatMessageImpl implements UserChatMessage {
             context: message.context,
             parts: message.parts,
             content: message.content,
+            commitOid: message.commitOid,
         };
     }
 
