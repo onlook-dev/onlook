@@ -1,4 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { useUserManager } from '@/components/store/user';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
@@ -28,15 +27,6 @@ export const CollapsibleCodeBlock = observer(({
     isStream,
 }: CollapsibleCodeBlockProps) => {
     const userManager = useUserManager();
-    const editorEngine = useEditorEngine();
-
-    const applyChange = async () => {
-        await editorEngine.chat.code.applyCode(messageId);
-    };
-
-    const rejectChange = async () => {
-        await editorEngine.chat.code.revertCode(messageId);
-    };
 
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
@@ -104,13 +94,7 @@ export const CollapsibleCodeBlock = observer(({
                                 style={{ overflow: 'hidden' }}
                             >
                                 <div className="border-t">
-                                    {isStream ? (
-                                        <code className="p-4 text-xs w-full overflow-x-auto block text-foreground-secondary">
-                                            {content}
-                                        </code>
-                                    ) : (
-                                        <CodeBlock code={updatedContent} />
-                                    )}
+                                    <CodeBlock code={updatedContent} />
                                     <div className="flex justify-end gap-1.5 p-1 border-t">
                                         <Button
                                             size="sm"
