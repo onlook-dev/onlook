@@ -100,12 +100,12 @@ export const BashCodeDisplay = observer(
                         <div className="w-full h-[1px] bg-foreground-secondary/30"></div>
                     )}
                     {stdOut !== null && (
-                        <div className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary whitespace-pre-wrap font-mono space-y-1">
+                        <div className="px-4 py-2 text-xs w-full max-h-48 overflow-auto bg-background-secondary whitespace-pre-wrap font-mono space-y-1">
                             {formatCommandOutput(stdOut)}
                         </div>
                     )}
                     {stdErr !== null && (
-                        <div className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary text-red-500 whitespace-pre-wrap font-mono">
+                        <div className="px-4 py-2 text-xs w-full max-h-48 overflow-auto bg-background-secondary text-red-500 whitespace-pre-wrap font-mono">
                             {formatCommandOutput(stdErr)}
                         </div>
                     )}
