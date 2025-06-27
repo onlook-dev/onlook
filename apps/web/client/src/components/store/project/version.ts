@@ -182,12 +182,8 @@ export class VersionsManager {
 
         // If failed to create commit, don't continue backing up
         // If the commit was empty, this is ok
-        if (!res?.success && res?.errorReason !== CreateCommitFailureReason.COMMIT_EMPTY) {
-            sendAnalytics('versions checkout commit failed', {
-                commit: commit.displayName || commit.message,
-                errorReason: res?.errorReason,
-            });
-            return false;
+        if (!res?.success) {
+            toast.error('Failed to save before restoring backup');
         }
 
         const restoreResult = await this.gitManager.restoreToCommit(commit.oid);
