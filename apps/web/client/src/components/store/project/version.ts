@@ -61,12 +61,6 @@ export class VersionsManager {
                 };
             }
 
-            this.isSaving = true;
-
-            sendAnalytics('versions create commit', {
-                message,
-            });
-
             const isInitialized = await this.gitManager.isRepoInitialized();
             if (!isInitialized) {
                 await this.gitManager.initRepo();
