@@ -192,7 +192,7 @@ export class GitManager {
     async getCommitNote(commitOid: string): Promise<string | null> {
         try {
             const result = await this.runCommand(
-                `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} show ${commitOid}`,
+                `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} show ${commitOid} 2>/dev/null || true`,
             );
             return result.success ? this.formatGitLogOutput(result.output) : null;
         } catch (error) {
