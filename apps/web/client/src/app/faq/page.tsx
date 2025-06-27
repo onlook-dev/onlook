@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { FAQDropdown } from '../_components/landing-page/faq-dropdown';
-import { Footer } from '../_components/landing-page/page-footer';
-import { TopBar } from '../_components/top-bar';
+import { CTASection } from '../_components/landing-page/cta-section';
+import { WebsiteLayout } from '../_components/website-layout';
 
 const faqSections = [
     {
@@ -131,17 +131,14 @@ export default function FAQPage() {
     }, [currentSection]);
 
     return (
-        <main className="min-h-screen bg-background">
-            <div className="fixed top-0 left-0 w-full h-12 bg-background/80 backdrop-blur-sm z-50">
-                <TopBar />
-            </div>
+        <WebsiteLayout showFooter={true}>
             <div className="w-full max-w-6xl mx-auto py-32 px-4 md:px-8">
-                <h1 className="text-foreground-primary text-[4vw] leading-[1.1] font-light mb-16 max-w-3xl text-balance">
+                <h1 className="text-foreground-primary text-6xl leading-[1.1] font-light mb-16 max-w-3xl text-balance">
                     Frequently Asked <br />Questions
                 </h1>
                 <div className="flex flex-col md:flex-row gap-8" ref={faqContainerRef} style={{ position: 'relative' }}>
                     {/* FAQ Content */}
-                    <section className="flex-1 pr-0 md:pr-8 md:border-r md:border-foreground-tertiary/30">
+                    <section className="flex-1 pr-0 md:pr-8  max-w-[800px]">
                         {faqSections.map((section, i) => (
                             <div
                                 key={section.anchor}
@@ -154,39 +151,9 @@ export default function FAQPage() {
                             </div>
                         ))}
                     </section>
-                    {/* Sidebar: smart fixed/absolute */}
-                    <aside className="hidden md:block w-64" style={{ position: 'relative' }}>
-                        <div ref={sidebarRef} style={sidebarStyle}>
-                            <div className="flex flex-row items-start group">
-                                {/* Sidebar List */}
-                                <ul className="flex flex-col gap-4">
-                                    {faqSections.map((section, i) => (
-                                        <li key={section.anchor}>
-                                            <a
-                                                href={`#${section.anchor}`}
-                                                className={`transition-colors text-regular px-2 py-1 rounded-md ${currentSection === section.anchor
-                                                    ? 'text-foreground-secondary group-hover:text-foreground-primary'
-                                                    : 'text-foreground-tertiary/50 hover:text-foreground-secondary group-hover:text-foreground-tertiary'
-                                                    }`}
-                                                onClick={e => {
-                                                    e.preventDefault();
-                                                    const element = document.getElementById(section.anchor);
-                                                    if (element) {
-                                                        element.scrollIntoView({ behavior: 'smooth' });
-                                                    }
-                                                }}
-                                            >
-                                                {section.title}
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </aside>
                 </div>
             </div>
-            <Footer />
-        </main>
+            <CTASection href="/" />
+        </WebsiteLayout>
     );
 } 
