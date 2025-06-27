@@ -1,7 +1,5 @@
-import { useEditorEngine } from '@/components/store/editor';
 import type { EditorEngine } from '@/components/store/editor/engine';
 import { api } from '@/trpc/client';
-import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import {
     CREATE_FILE_TOOL_NAME,
     CREATE_FILE_TOOL_PARAMETERS,
@@ -17,9 +15,7 @@ import {
     TERMINAL_COMMAND_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_PARAMETERS
 } from '@onlook/ai';
-import { ChatType } from '@onlook/models';
-import type { Message, ToolCall } from 'ai';
-import { createContext, useContext } from 'react';
+import type { ToolCall } from 'ai';
 import { z } from 'zod';
 
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
