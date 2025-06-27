@@ -1,6 +1,6 @@
 'use client';
 
-import { Routes } from '@/utils/constants';
+import { ExternalRoutes, Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { usePathname } from 'next/navigation';
@@ -43,7 +43,7 @@ export const TopBar = () => {
                         {link.child}
                     </a>
                 ))}
-                <a href="https://docs.onlook.com" target="_blank" className="text-regular hover:underline">
+                <a href={ExternalRoutes.DOCS} target="_blank" className="text-regular hover:underline">
                     Docs
                 </a>
                 <GitHubButton />

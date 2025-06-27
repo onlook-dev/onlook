@@ -1,3 +1,4 @@
+import { ExternalRoutes, Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons';
 import { useRouter } from 'next/navigation';
 import { Illustrations } from './illustrations';
@@ -20,10 +21,10 @@ export function Footer() {
                     <div>
                         <h4 className="text-regularPlus mb-4 text-foreground-primary">Company</h4>
                         <ul className="flex flex-col gap-4 text-regular text-foreground-secondary">
-                            {/* <li><a href="/about" className="hover:underline">About</a></li> */}
-                            <li><a href="https://docs.onlook.com" target="_blank" className="hover:underline">Docs</a></li>
-                            <li><a href="/faq" className="hover:underline">FAQ</a></li>
-                            <li><a href="https://onlook.substack.com" target="_blank" className="hover:underline">Blog</a></li>
+                            {/* <li><a href={Routes.ABOUT} className="hover:underline">About</a></li> */}
+                            <li><a href={ExternalRoutes.DOCS} target="_blank" className="hover:underline">Docs</a></li>
+                            <li><a href={Routes.FAQ} className="hover:underline">FAQ</a></li>
+                            <li><a href={ExternalRoutes.BLOG} target="_blank" className="hover:underline">Blog</a></li>
                             {/* <li><a href="#" className="hover:underline">Careers</a></li> */}
                             <li><a href="mailto:contact@onlook.com" className="hover:underline">Contact</a></li>
                         </ul>
@@ -31,29 +32,29 @@ export function Footer() {
                     <div className="min-w-[200px]">
                         <h4 className="text-regularPlus mb-4 text-foreground-primary">Product</h4>
                         <ul className="flex flex-col gap-4 text-regular text-foreground-secondary">
-                            <li><a href="/projects" className="hover:underline">My Projects</a></li>
-                            <li><a href="https://github.com/onlook-dev/onlook" target="_blank" className="hover:underline">GitHub Repo</a></li>
+                            <li><a href={Routes.PROJECTS} className="hover:underline">My Projects</a></li>
+                            <li><a href={ExternalRoutes.GITHUB} target="_blank" className="hover:underline">GitHub Repo</a></li>
                         </ul>
                     </div>
                     <div>
                         <h4 className="text-regularPlus mb-4 text-foreground-primary">Follow Us</h4>
                         <div className="flex gap-6 mt-2 items-center">
-                            <a href="https://x.com/onlookdev" target="_blank" rel="noopener noreferrer">
+                            <a href={ExternalRoutes.X} target="_blank" rel="noopener noreferrer">
                                 <Icons.SocialX className="w-6 h-6 text-foreground-secondary hover:text-foreground-primary transition-colors" />
                             </a>
-                            <a href="https://www.linkedin.com/company/onlook-dev/" target="_blank" rel="noopener noreferrer">
+                            <a href={ExternalRoutes.LINKEDIN} target="_blank" rel="noopener noreferrer">
                                 <Icons.SocialLinkedIn className="w-6 h-6 text-foreground-secondary hover:text-foreground-primary transition-colors" />
                             </a>
-                            <a href="https://onlook.substack.com/" target="_blank" rel="noopener noreferrer">
+                            <a href={ExternalRoutes.SUBSTACK} target="_blank" rel="noopener noreferrer">
                                 <Icons.SocialSubstack className="w-6 h-6 text-foreground-secondary hover:text-foreground-primary transition-colors" />
                             </a>
-                            <a href="https://www.youtube.com/@onlookdev" target="_blank" rel="noopener noreferrer">
+                            <a href={ExternalRoutes.YOUTUBE} target="_blank" rel="noopener noreferrer">
                                 <Icons.SocialYoutube className="w-6 h-6 text-foreground-secondary hover:text-foreground-primary transition-colors" />
                             </a>
-                            <a href="https://github.com/onlook-dev/onlook" target="_blank" rel="noopener noreferrer">
+                            <a href={ExternalRoutes.GITHUB} target="_blank" rel="noopener noreferrer">
                                 <Icons.GitHubLogo className="w-5.5 h-5.5 text-foreground-secondary hover:text-foreground-primary transition-colors" />
                             </a>
-                            <a href="https://discord.gg/ZZzadNQtns" target="_blank" rel="noopener noreferrer">
+                            <a href={ExternalRoutes.DISCORD} target="_blank" rel="noopener noreferrer">
                                 <Icons.DiscordLogo className="w-6 h-6 text-foreground-secondary hover:text-foreground-primary transition-colors" />
                             </a>
                         </div>
