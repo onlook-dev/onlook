@@ -133,7 +133,6 @@ export class ConversationManager {
         }
         const newMessage = AssistantChatMessageImpl.fromMessage(message);
         await this.addMessage(newMessage);
-        this.chatManager.autoApplyCode(newMessage);
         return newMessage;
     }
 

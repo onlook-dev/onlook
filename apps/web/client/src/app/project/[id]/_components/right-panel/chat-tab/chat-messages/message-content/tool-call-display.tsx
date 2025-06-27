@@ -19,7 +19,8 @@ export const ToolCallDisplay = ({
     isStream: boolean,
     applied: boolean
 }) => {
-    if (!isStream) {
+
+    if (!isStream || toolInvocation.state === 'result') {
         if (toolInvocation.toolName === TERMINAL_COMMAND_TOOL_NAME) {
             return (
                 <BashCodeDisplay

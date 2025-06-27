@@ -1758,7 +1758,7 @@ var DefaultSettings = {
   CHAT_SETTINGS: {
     showSuggestions: true,
     autoApplyCode: true,
-    expandCodeBlocks: true,
+    expandCodeBlocks: false,
     showMiniChat: true
   },
   EDITOR_SETTINGS: {
@@ -17382,5 +17382,5 @@ export {
   penpalParent
 };
 
-//# debugId=D60FAD13D304A75464756E2164756E21
+//# debugId=8D5A9ABF19555AF764756E2164756E21
 //# sourceMappingURL=index.js.map
