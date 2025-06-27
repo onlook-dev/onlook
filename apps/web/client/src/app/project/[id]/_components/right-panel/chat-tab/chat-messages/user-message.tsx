@@ -228,7 +228,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                             </button>
                         </TooltipTrigger>
                         <TooltipContent side="top" sideOffset={5}>
-                            {isRestoring ? 'Restoring...' : 'Restore Checkpoint'}
+                            {isRestoring ? 'Restoring Checkpoint...' : 'Restore Checkpoint'}
                         </TooltipContent>
                     </Tooltip>
                 </div>
