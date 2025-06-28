@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { Gradient } from '@onlook/ui/color-picker';
+import { generateGradientCSS, type GradientState } from '@onlook/ui/color-picker';
 import { useCallback } from 'react';
 
 interface GradientUpdateOptions {
@@ -10,13 +10,15 @@ export const useGradientUpdate = ({ onValueChange }: GradientUpdateOptions = {})
     const editorEngine = useEditorEngine();
 
     const handleGradientUpdateEnd = useCallback(
-        (gradient: Gradient) => {
+        (gradient: GradientState) => {
             try {
-                // Apply gradient via backgroundImage and clear backgroundColor
-                editorEngine.style.update('backgroundImage', gradient.cssValue);
+                const cssValue = generateGradientCSS(gradient);
+
                 editorEngine.style.update('backgroundColor', 'transparent');
-                onValueChange?.('backgroundImage', gradient.cssValue);
+                editorEngine.style.update('backgroundImage', cssValue);
+
                 onValueChange?.('backgroundColor', 'transparent');
+                onValueChange?.('backgroundImage', cssValue);
             } catch (error) {
                 console.error('Error updating gradient:', error);
             }
