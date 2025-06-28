@@ -81,6 +81,7 @@ export class ChatConversationImpl implements ChatConversation {
             this.messages = [...this.messages, message];
         }
         this.updatedAt = new Date().toISOString();
+        await this.saveConversationToStorage();
         await this.saveMessageToStorage(message);
     }
 
