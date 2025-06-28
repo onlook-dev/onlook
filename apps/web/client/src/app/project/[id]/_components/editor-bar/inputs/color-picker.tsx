@@ -1,7 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { SystemTheme } from '@onlook/models/assets';
 import type { TailwindColor } from '@onlook/models/style';
-import { ColorPicker, Gradient, type GradientState, type GradientStop } from '@onlook/ui/color-picker';
+import {
+    ColorPicker,
+    Gradient,
+    type GradientState,
+    type GradientStop,
+} from '@onlook/ui/color-picker';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
@@ -10,7 +15,6 @@ import { Color, toNormalCase, type Palette } from '@onlook/utility';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { useGradientUpdate } from '../hooks/use-gradient-update';
-
 
 const ColorGroup = ({
     name,
@@ -60,7 +64,8 @@ const ColorGroup = ({
 
             {expanded &&
                 colors.map((color) => {
-                    const isSelected = selectedColor && Color.from(color.lightColor).isEqual(selectedColor);
+                    const isSelected =
+                        selectedColor && Color.from(color.lightColor).isEqual(selectedColor);
 
                     return (
                         <div
@@ -90,7 +95,7 @@ const ColorGroup = ({
 enum TabValue {
     BRAND = 'brand',
     CUSTOM = 'custom',
-    GRADIENT = 'gradient'
+    GRADIENT = 'gradient',
 }
 
 interface ColorPickerProps {
@@ -113,41 +118,289 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     const [colorDefaults, setColorDefaults] = useState<Record<string, TailwindColor[]>>({});
     const [theme] = useState<SystemTheme>(SystemTheme.LIGHT);
     const { handleGradientUpdateEnd } = useGradientUpdate();
-    
-    // Gradient controller state
+
     const [gradientState, setGradientState] = useState<GradientState>({
         type: 'linear',
         angle: 90,
         stops: [
             { id: 'stop-1', color: '#ff6b6b', position: 0 },
-            { id: 'stop-2', color: '#feca57', position: 100 }
-        ]
+            { id: 'stop-2', color: '#feca57', position: 100 },
+        ],
     });
     const [selectedStopId, setSelectedStopId] = useState<string>('stop-1');
 
-    // Preset gradients - enough to fill the grid nicely
+    const parseGradientFromCSS = useCallback((cssValue: string): GradientState | null => {
+        try {
+            const normalized = cssValue.trim();
+
+            const linearMatch = normalized.match(/linear-gradient\(([^)]+)\)/);
+            const radialMatch = normalized.match(/radial-gradient\(([^)]+)\)/);
+            const conicMatch = normalized.match(/conic-gradient\(([^)]+)\)/);
+
+            let type: GradientState['type'] = 'linear';
+            let angle = 90;
+            let stopsString = '';
+
+            if (linearMatch && linearMatch[1]) {
+                type = 'linear';
+                const params = linearMatch[1];
+                const angleMatch = params.match(/(\d+)deg/);
+                if (angleMatch && angleMatch[1]) {
+                    angle = parseInt(angleMatch[1]);
+                    stopsString = params.replace(/^\d+deg,?\s*/, '');
+                } else {
+                    stopsString = params;
+                }
+            } else if (radialMatch && radialMatch[1]) {
+                type = 'radial';
+                stopsString = radialMatch[1].replace(/^(circle|ellipse).*?,?\s*/, '');
+            } else if (conicMatch && conicMatch[1]) {
+                type = 'conic';
+                const params = conicMatch[1];
+                const angleMatch = params.match(/from\s+(\d+)deg/);
+                if (angleMatch && angleMatch[1]) {
+                    angle = parseInt(angleMatch[1]);
+                    stopsString = params.replace(/^from\s+\d+deg,?\s*/, '');
+                } else {
+                    stopsString = params;
+                }
+            } else {
+                return null;
+            }
+
+            const stops: GradientStop[] = [];
+            const stopMatches = stopsString.split(/,(?![^()]*\))/);
+
+            stopMatches.forEach((stop, index) => {
+                const trimmed = stop.trim();
+                const match = trimmed.match(
+                    /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/,
+                );
+                if (match && match[1]) {
+                    const color = match[1];
+                    const position = match[2]
+                        ? parseFloat(match[2])
+                        : (index / Math.max(1, stopMatches.length - 1)) * 100;
+                    stops.push({
+                        id: `stop-${index + 1}`,
+                        color,
+                        position: Math.round(position),
+                    });
+                }
+            });
+
+            if (stops.length < 2) return null;
+
+            return { type, angle, stops };
+        } catch (error) {
+            console.warn('Failed to parse gradient:', error);
+            return null;
+        }
+    }, []);
+
+    useEffect(() => {
+        const selectedElement = editorEngine.elements.selected[0];
+        if (!selectedElement) return;
+
+        const existingBackgroundImage =
+            editorEngine.style.selectedStyle?.styles.computed.backgroundImage;
+        if (
+            existingBackgroundImage &&
+            existingBackgroundImage !== 'none' &&
+            existingBackgroundImage.includes('gradient')
+        ) {
+            const parsed = parseGradientFromCSS(existingBackgroundImage);
+            if (parsed && parsed.stops.length > 0) {
+                setGradientState(parsed);
+                const firstStop = parsed.stops[0];
+                if (firstStop) {
+                    setSelectedStopId(firstStop.id);
+                    onChange(Color.from(firstStop.color));
+                }
+            }
+        } else {
+            const defaultGradient: GradientState = {
+                type: 'linear',
+                angle: 90,
+                stops: [
+                    { id: 'stop-1', color: '#ff6b6b', position: 0 },
+                    { id: 'stop-2', color: '#feca57', position: 100 },
+                ],
+            };
+            setGradientState(defaultGradient);
+            setSelectedStopId('stop-1');
+        }
+    }, [editorEngine.elements.selected, parseGradientFromCSS, onChange]);
+
     const presetGradients = [
-        { id: 'sunset', css: 'linear-gradient(45deg, #ff6b6b, #feca57)', stops: [{ id: '1', color: '#ff6b6b', position: 0 }, { id: '2', color: '#feca57', position: 100 }] },
-        { id: 'ocean', css: 'linear-gradient(45deg, #48cae4, #023e8a)', stops: [{ id: '1', color: '#48cae4', position: 0 }, { id: '2', color: '#023e8a', position: 100 }] },
-        { id: 'purple-pink', css: 'linear-gradient(45deg, #f72585, #b5179e)', stops: [{ id: '1', color: '#f72585', position: 0 }, { id: '2', color: '#b5179e', position: 100 }] },
-        { id: 'blue-purple', css: 'linear-gradient(90deg, #667eea, #764ba2)', stops: [{ id: '1', color: '#667eea', position: 0 }, { id: '2', color: '#764ba2', position: 100 }] },
-        { id: 'pink-red', css: 'linear-gradient(135deg, #f093fb, #f5576c)', stops: [{ id: '1', color: '#f093fb', position: 0 }, { id: '2', color: '#f5576c', position: 100 }] },
-        { id: 'cyan-blue', css: 'linear-gradient(180deg, #4facfe, #00f2fe)', stops: [{ id: '1', color: '#4facfe', position: 0 }, { id: '2', color: '#00f2fe', position: 100 }] },
-        { id: 'green-teal', css: 'linear-gradient(45deg, #11998e, #38ef7d)', stops: [{ id: '1', color: '#11998e', position: 0 }, { id: '2', color: '#38ef7d', position: 100 }] },
-        { id: 'purple-deep', css: 'linear-gradient(90deg, #8360c3, #2ebf91)', stops: [{ id: '1', color: '#8360c3', position: 0 }, { id: '2', color: '#2ebf91', position: 100 }] },
-        { id: 'orange-coral', css: 'linear-gradient(135deg, #ff9a9e, #fecfef)', stops: [{ id: '1', color: '#ff9a9e', position: 0 }, { id: '2', color: '#fecfef', position: 100 }] },
-        { id: 'blue-sky', css: 'linear-gradient(45deg, #74b9ff, #0984e3)', stops: [{ id: '1', color: '#74b9ff', position: 0 }, { id: '2', color: '#0984e3', position: 100 }] },
-        { id: 'mint-fresh', css: 'linear-gradient(90deg, #a8edea, #fed6e3)', stops: [{ id: '1', color: '#a8edea', position: 0 }, { id: '2', color: '#fed6e3', position: 100 }] },
-        { id: 'warm-flame', css: 'linear-gradient(135deg, #ff9a9e, #fad0c4)', stops: [{ id: '1', color: '#ff9a9e', position: 0 }, { id: '2', color: '#fad0c4', position: 100 }] },
-        { id: 'night-fade', css: 'linear-gradient(180deg, #a18cd1, #fbc2eb)', stops: [{ id: '1', color: '#a18cd1', position: 0 }, { id: '2', color: '#fbc2eb', position: 100 }] },
-        { id: 'spring-warmth', css: 'linear-gradient(45deg, #fad0c4, #ffd1ff)', stops: [{ id: '1', color: '#fad0c4', position: 0 }, { id: '2', color: '#ffd1ff', position: 100 }] },
-        { id: 'juicy-peach', css: 'linear-gradient(90deg, #ffecd2, #fcb69f)', stops: [{ id: '1', color: '#ffecd2', position: 0 }, { id: '2', color: '#fcb69f', position: 100 }] },
-        { id: 'young-passion', css: 'linear-gradient(135deg, #ff8177, #ff867a)', stops: [{ id: '1', color: '#ff8177', position: 0 }, { id: '2', color: '#ff867a', position: 100 }] },
-        { id: 'lady-lips', css: 'linear-gradient(180deg, #ff9a9e, #f687b3)', stops: [{ id: '1', color: '#ff9a9e', position: 0 }, { id: '2', color: '#f687b3', position: 100 }] },
-        { id: 'sunny-morning', css: 'linear-gradient(45deg, #f6d365, #fda085)', stops: [{ id: '1', color: '#f6d365', position: 0 }, { id: '2', color: '#fda085', position: 100 }] },
-        { id: 'rainy-ashville', css: 'linear-gradient(90deg, #fbc2eb, #a6c1ee)', stops: [{ id: '1', color: '#fbc2eb', position: 0 }, { id: '2', color: '#a6c1ee', position: 100 }] },
-        { id: 'frozen-dreams', css: 'linear-gradient(135deg, #fdcbf1, #e6dee9)', stops: [{ id: '1', color: '#fdcbf1', position: 0 }, { id: '2', color: '#e6dee9', position: 100 }] },
-        { id: 'winter-neva', css: 'linear-gradient(180deg, #a8edea, #fed6e3)', stops: [{ id: '1', color: '#a8edea', position: 0 }, { id: '2', color: '#fed6e3', position: 100 }] },
+        {
+            id: 'sunset',
+            css: 'linear-gradient(45deg, #ff6b6b, #feca57)',
+            stops: [
+                { id: '1', color: '#ff6b6b', position: 0 },
+                { id: '2', color: '#feca57', position: 100 },
+            ],
+        },
+        {
+            id: 'ocean',
+            css: 'linear-gradient(45deg, #48cae4, #023e8a)',
+            stops: [
+                { id: '1', color: '#48cae4', position: 0 },
+                { id: '2', color: '#023e8a', position: 100 },
+            ],
+        },
+        {
+            id: 'purple-pink',
+            css: 'linear-gradient(45deg, #f72585, #b5179e)',
+            stops: [
+                { id: '1', color: '#f72585', position: 0 },
+                { id: '2', color: '#b5179e', position: 100 },
+            ],
+        },
+        {
+            id: 'blue-purple',
+            css: 'linear-gradient(90deg, #667eea, #764ba2)',
+            stops: [
+                { id: '1', color: '#667eea', position: 0 },
+                { id: '2', color: '#764ba2', position: 100 },
+            ],
+        },
+        {
+            id: 'pink-red',
+            css: 'linear-gradient(135deg, #f093fb, #f5576c)',
+            stops: [
+                { id: '1', color: '#f093fb', position: 0 },
+                { id: '2', color: '#f5576c', position: 100 },
+            ],
+        },
+        {
+            id: 'cyan-blue',
+            css: 'linear-gradient(180deg, #4facfe, #00f2fe)',
+            stops: [
+                { id: '1', color: '#4facfe', position: 0 },
+                { id: '2', color: '#00f2fe', position: 100 },
+            ],
+        },
+        {
+            id: 'green-teal',
+            css: 'linear-gradient(45deg, #11998e, #38ef7d)',
+            stops: [
+                { id: '1', color: '#11998e', position: 0 },
+                { id: '2', color: '#38ef7d', position: 100 },
+            ],
+        },
+        {
+            id: 'purple-deep',
+            css: 'linear-gradient(90deg, #8360c3, #2ebf91)',
+            stops: [
+                { id: '1', color: '#8360c3', position: 0 },
+                { id: '2', color: '#2ebf91', position: 100 },
+            ],
+        },
+        {
+            id: 'orange-coral',
+            css: 'linear-gradient(135deg, #ff9a9e, #fecfef)',
+            stops: [
+                { id: '1', color: '#ff9a9e', position: 0 },
+                { id: '2', color: '#fecfef', position: 100 },
+            ],
+        },
+        {
+            id: 'blue-sky',
+            css: 'linear-gradient(45deg, #74b9ff, #0984e3)',
+            stops: [
+                { id: '1', color: '#74b9ff', position: 0 },
+                { id: '2', color: '#0984e3', position: 100 },
+            ],
+        },
+        {
+            id: 'mint-fresh',
+            css: 'linear-gradient(90deg, #a8edea, #fed6e3)',
+            stops: [
+                { id: '1', color: '#a8edea', position: 0 },
+                { id: '2', color: '#fed6e3', position: 100 },
+            ],
+        },
+        {
+            id: 'warm-flame',
+            css: 'linear-gradient(135deg, #ff9a9e, #fad0c4)',
+            stops: [
+                { id: '1', color: '#ff9a9e', position: 0 },
+                { id: '2', color: '#fad0c4', position: 100 },
+            ],
+        },
+        {
+            id: 'night-fade',
+            css: 'linear-gradient(180deg, #a18cd1, #fbc2eb)',
+            stops: [
+                { id: '1', color: '#a18cd1', position: 0 },
+                { id: '2', color: '#fbc2eb', position: 100 },
+            ],
+        },
+        {
+            id: 'spring-warmth',
+            css: 'linear-gradient(45deg, #fad0c4, #ffd1ff)',
+            stops: [
+                { id: '1', color: '#fad0c4', position: 0 },
+                { id: '2', color: '#ffd1ff', position: 100 },
+            ],
+        },
+        {
+            id: 'juicy-peach',
+            css: 'linear-gradient(90deg, #ffecd2, #fcb69f)',
+            stops: [
+                { id: '1', color: '#ffecd2', position: 0 },
+                { id: '2', color: '#fcb69f', position: 100 },
+            ],
+        },
+        {
+            id: 'young-passion',
+            css: 'linear-gradient(135deg, #ff8177, #ff867a)',
+            stops: [
+                { id: '1', color: '#ff8177', position: 0 },
+                { id: '2', color: '#ff867a', position: 100 },
+            ],
+        },
+        {
+            id: 'lady-lips',
+            css: 'linear-gradient(180deg, #ff9a9e, #f687b3)',
+            stops: [
+                { id: '1', color: '#ff9a9e', position: 0 },
+                { id: '2', color: '#f687b3', position: 100 },
+            ],
+        },
+        {
+            id: 'sunny-morning',
+            css: 'linear-gradient(45deg, #f6d365, #fda085)',
+            stops: [
+                { id: '1', color: '#f6d365', position: 0 },
+                { id: '2', color: '#fda085', position: 100 },
+            ],
+        },
+        {
+            id: 'rainy-ashville',
+            css: 'linear-gradient(90deg, #fbc2eb, #a6c1ee)',
+            stops: [
+                { id: '1', color: '#fbc2eb', position: 0 },
+                { id: '2', color: '#a6c1ee', position: 100 },
+            ],
+        },
+        {
+            id: 'frozen-dreams',
+            css: 'linear-gradient(135deg, #fdcbf1, #e6dee9)',
+            stops: [
+                { id: '1', color: '#fdcbf1', position: 0 },
+                { id: '2', color: '#e6dee9', position: 100 },
+            ],
+        },
+        {
+            id: 'winter-neva',
+            css: 'linear-gradient(180deg, #a8edea, #fed6e3)',
+            stops: [
+                { id: '1', color: '#a8edea', position: 0 },
+                { id: '2', color: '#fed6e3', position: 100 },
+            ],
+        },
     ];
 
     useEffect(() => {
@@ -157,7 +410,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     useEffect(() => {
         (async () => {
             try {
-                await editorEngine.theme.scanConfig()
+                await editorEngine.theme.scanConfig();
                 setColorGroups(editorEngine.theme.colorGroups);
                 setColorDefaults(editorEngine.theme.colorDefaults);
             } catch (error) {
@@ -177,25 +430,21 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         }
     };
 
-    const filteredColorGroups = Object.entries(colorGroups).filter(
-        ([name, colors]) => {
-            const query = searchQuery.toLowerCase();
-            return (
-                name.toLowerCase().includes(query) ||
-                colors.some((color) => color.name.toLowerCase().includes(query))
-            );
-        },
-    );
+    const filteredColorGroups = Object.entries(colorGroups).filter(([name, colors]) => {
+        const query = searchQuery.toLowerCase();
+        return (
+            name.toLowerCase().includes(query) ||
+            colors.some((color) => color.name.toLowerCase().includes(query))
+        );
+    });
 
-    const filteredColorDefaults = Object.entries(colorDefaults).filter(
-        ([name, colors]) => {
-            const query = searchQuery.toLowerCase();
-            return (
-                name.toLowerCase().includes(query) ||
-                colors.some((color) => color.name.toLowerCase().includes(query))
-            );
-        },
-    );
+    const filteredColorDefaults = Object.entries(colorDefaults).filter(([name, colors]) => {
+        const query = searchQuery.toLowerCase();
+        return (
+            name.toLowerCase().includes(query) ||
+            colors.some((color) => color.name.toLowerCase().includes(query))
+        );
+    });
 
     const handleColorSelect = (colorItem: TailwindColor) => {
         onChangeEnd(colorItem);
@@ -210,65 +459,47 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         };
         onChangeEnd(removeColorAction);
     };
-    
+
     const isColorRemoved = (colorToCheck: Color) => colorToCheck.isEqual(Color.from('transparent'));
 
-    // Gradient controller handlers
-    const handleGradientChange = useCallback((newGradient: GradientState) => {
-        setGradientState(newGradient);
-        
-        // Generate CSS based on gradient type and apply
-        const sortedStops = [...newGradient.stops].sort((a, b) => a.position - b.position);
-        const stopStrings = sortedStops.map(stop => `${stop.color} ${stop.position}%`);
-        
-        let cssValue: string;
-        switch (newGradient.type) {
-            case 'radial':
-                cssValue = `radial-gradient(circle, ${stopStrings.join(', ')})`;
-                break;
-            case 'conic':
-                cssValue = `conic-gradient(from ${newGradient.angle}deg, ${stopStrings.join(', ')})`;
-                break;
-            default:
-                cssValue = `linear-gradient(${newGradient.angle}deg, ${stopStrings.join(', ')})`;
-        }
-        
-        // Apply via the existing gradient update system
-        handleGradientUpdateEnd({
-            id: 'current-gradient',
-            name: 'Current Gradient',
-            direction: `${newGradient.angle}deg`,
-            stops: newGradient.stops.map(s => ({ color: s.color, position: s.position })),
-            cssValue
-        });
-    }, [handleGradientUpdateEnd]);
+    const handleGradientChange = useCallback(
+        (newGradient: GradientState) => {
+            setGradientState(newGradient);
+            handleGradientUpdateEnd(newGradient);
+        },
+        [handleGradientUpdateEnd],
+    );
 
-    const handleStopColorChange = useCallback((stopId: string, newColor: Color) => {
-        try {
-            const updatedGradient = {
-                ...gradientState,
-                stops: gradientState.stops.map(stop =>
-                    stop.id === stopId
-                        ? { ...stop, color: newColor.toHex() }
-                        : stop
-                )
-            };
-            setGradientState(updatedGradient);
-            handleGradientChange(updatedGradient);
-        } catch (error) {
-            console.error('Error updating stop color:', error);
-        }
-    }, [gradientState, handleGradientChange]);
+    const handleStopColorChange = useCallback(
+        (stopId: string, newColor: Color) => {
+            try {
+                const updatedGradient = {
+                    ...gradientState,
+                    stops: gradientState.stops.map((stop) =>
+                        stop.id === stopId ? { ...stop, color: newColor.toHex() } : stop,
+                    ),
+                };
+                setGradientState(updatedGradient);
+                handleGradientChange(updatedGradient);
+            } catch (error) {
+                console.error('Error updating stop color:', error);
+            }
+        },
+        [gradientState, handleGradientChange],
+    );
 
-    const handleStopSelect = useCallback((stopId: string) => {
-        setSelectedStopId(stopId);
-        // Update the color picker to show the selected stop's color
-        const selectedStop = gradientState.stops.find(s => s.id === stopId);
-        if (selectedStop) {
-            const stopColor = Color.from(selectedStop.color);
-            onChange(stopColor);
-        }
-    }, [gradientState.stops, onChange]);
+    const handleStopSelect = useCallback(
+        (stopId: string) => {
+            setSelectedStopId(stopId);
+            // Update the color picker to show the selected stop's color
+            const selectedStop = gradientState.stops.find((s) => s.id === stopId);
+            if (selectedStop) {
+                const stopColor = Color.from(selectedStop.color);
+                onChange(stopColor);
+            }
+        },
+        [gradientState.stops, onChange],
+    );
 
     function renderPalette() {
         const colors = Object.keys(palette.colors);
@@ -339,17 +570,19 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                     try {
                                         const newGradientState: GradientState = {
                                             type: 'linear',
-                                            angle: parseInt(preset.css.match(/(\d+)deg/)?.[1] || '90'),
+                                            angle: parseInt(
+                                                preset.css.match(/(\d+)deg/)?.[1] || '90',
+                                            ),
                                             stops: preset.stops.map((stop, index) => ({
                                                 id: `stop-${index + 1}`,
                                                 color: stop.color,
-                                                position: stop.position
-                                            }))
+                                                position: stop.position,
+                                            })),
                                         };
                                         setGradientState(newGradientState);
                                         setSelectedStopId('stop-1');
                                         handleGradientChange(newGradientState);
-                                        
+
                                         // Update the color picker to show the first stop's color
                                         const firstStop = newGradientState.stops[0];
                                         if (firstStop) {
@@ -372,17 +605,19 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                     try {
                                         const newGradientState: GradientState = {
                                             type: 'linear',
-                                            angle: parseInt(preset.css.match(/(\d+)deg/)?.[1] || '90'),
+                                            angle: parseInt(
+                                                preset.css.match(/(\d+)deg/)?.[1] || '90',
+                                            ),
                                             stops: preset.stops.map((stop, index) => ({
                                                 id: `stop-${index + 1}`,
                                                 color: stop.color,
-                                                position: stop.position
-                                            }))
+                                                position: stop.position,
+                                            })),
                                         };
                                         setGradientState(newGradientState);
                                         setSelectedStopId('stop-1');
                                         handleGradientChange(newGradientState);
-                                        
+
                                         // Update the color picker to show the first stop's color
                                         const firstStop = newGradientState.stops[0];
                                         if (firstStop) {
@@ -409,8 +644,6 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         );
     }
 
-
-
     return (
         <div className="flex flex-col justify-between items-center">
             <Tabs defaultValue={TabValue.BRAND} className="w-full">
@@ -436,7 +669,6 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         </TabsTrigger>
                     </div>
 
-
                     <HoverOnlyTooltip
                         content="Remove Background Color"
                         side="bottom"
@@ -446,22 +678,21 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                     >
                         <button
                             className={`p-1 rounded transition-colors ${
-                                isColorRemoved(color) 
-                                    ? 'bg-background-secondary' 
+                                isColorRemoved(color)
+                                    ? 'bg-background-secondary'
                                     : 'hover:bg-background-tertiary'
                             }`}
                             onClick={handleRemoveColor}
                         >
-                            <Icons.SquareX 
+                            <Icons.SquareX
                                 className={`h-4 w-4 ${
-                                    isColorRemoved(color) 
-                                        ? 'text-foreground-primary' 
+                                    isColorRemoved(color)
+                                        ? 'text-foreground-primary'
                                         : 'text-foreground-tertiary'
-                                }`} 
+                                }`}
                             />
                         </button>
                     </HoverOnlyTooltip>
-
                 </TabsList>
 
                 <TabsContent value={TabValue.BRAND} className="p-0 m-0 text-xs">
@@ -535,33 +766,11 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         </button>
                     </div>
                     <Separator />
-                    <div className="h-28 px-1 overflow-hidden overflow-y-auto">{renderPalette()}</div>
+                    <div className="h-28 px-1 overflow-hidden overflow-y-auto">
+                        {renderPalette()}
+                    </div>
                 </TabsContent>
                 <TabsContent value={TabValue.GRADIENT} className="p-0 m-0">
-                    {/* Color Picker for selected stop */}
-                    {selectedStopId && (
-                        <>
-                            <ColorPicker
-                                color={color}
-                                onChange={(newColor) => {
-                                    onChange(newColor);
-                                    if (selectedStopId) {
-                                        handleStopColorChange(selectedStopId, newColor);
-                                    }
-                                }}
-                                onChangeEnd={(val) => {
-                                    onChangeEnd?.(val);
-                                    setPalette(val.palette);
-                                    if (selectedStopId) {
-                                        handleStopColorChange(selectedStopId, val);
-                                    }
-                                }}
-                            />
-                            <Separator />
-                        </>
-                    )}
-                    
-                    {/* Gradient Controller */}
                     <Gradient
                         gradient={gradientState}
                         onGradientChange={handleGradientChange}
@@ -571,8 +780,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         className="border-b border-border"
                         showPresets={false}
                     />
-                    
-                    {/* Preset Gradients */}
+
                     <div className="flex flex-row items-center justify-between w-full px-2 py-1">
                         <span className="text-foreground-secondary text-small">Presets</span>
                         <button
@@ -588,7 +796,9 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         </button>
                     </div>
                     <Separator />
-                    <div className="h-28 px-1 overflow-hidden overflow-y-auto">{renderPresets()}</div>
+                    <div className="h-28 px-1 overflow-hidden overflow-y-auto">
+                        {renderPresets()}
+                    </div>
                 </TabsContent>
             </Tabs>
         </div>
