@@ -1750,7 +1750,7 @@ var DefaultSettings = {
     build: "bun run build",
     install: "bun install"
   },
-  IMAGE_FOLDER: "public/images",
+  IMAGE_FOLDER: "public",
   IMAGE_DIMENSION: { width: "100px", height: "100px" },
   FONT_FOLDER: "public/fonts",
   FONT_CONFIG: "app/fonts.ts",
@@ -1758,7 +1758,7 @@ var DefaultSettings = {
   CHAT_SETTINGS: {
     showSuggestions: true,
     autoApplyCode: true,
-    expandCodeBlocks: true,
+    expandCodeBlocks: false,
     showMiniChat: true
   },
   EDITOR_SETTINGS: {
@@ -17262,6 +17262,11 @@ var BEDROCK_MODEL_MAP = {
   ["claude-3-7-sonnet-20250219" /* SONNET_3_7 */]: "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
   ["claude-3-5-haiku-20241022" /* HAIKU */]: "us.anthropic.claude-3-5-haiku-20241022-v1:0"
 };
+var VERTEX_MODEL_MAP = {
+  ["claude-sonnet-4-20250514" /* SONNET_4 */]: "claude-sonnet-4@20250514",
+  ["claude-3-7-sonnet-20250219" /* SONNET_3_7 */]: "claude-3-7-sonnet@20250219",
+  ["claude-3-5-haiku-20241022" /* HAIKU */]: "claude-3-5-haiku@20241022"
+};
 // script/api/theme/index.ts
 function getTheme() {
   try {
@@ -17377,5 +17382,5 @@ export {
   penpalParent
 };
 
-//# debugId=D921FBA8ABBC66F964756E2164756E21
+//# debugId=8D5A9ABF19555AF764756E2164756E21
 //# sourceMappingURL=index.js.map

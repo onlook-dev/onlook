@@ -23,11 +23,11 @@ function fetchUserData(userId) {
 }
 
 async function fetchUserData(userId: string): Promise<User> {
-  // ...
+  // ... existing code
   if (!response.ok) {
     throw new Error('Failed to fetch user: ' + response.status);
   }
-  // ...
+  // ... new code
 }`;
 
         const expectedResult = `interface User {

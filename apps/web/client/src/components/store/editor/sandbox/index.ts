@@ -315,6 +315,7 @@ export class SandboxManager {
 
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
         const normalizedPath = normalizePath(path);
+
         try {
             return this.fileSync.writeBinary(
                 normalizedPath,
@@ -412,15 +413,48 @@ export class SandboxManager {
     }
 
     async handleFileChange(event: WatchEvent) {
-        for (const path of event.paths) {
-            if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
-                continue;
-            }
-            const normalizedPath = normalizePath(path);
-            const eventType = event.type;
-            if (event.type === 'remove') {
+        const eventType = event.type;
+
+        if (eventType === 'remove') {
+            for (const path of event.paths) {
+                if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
+                    continue;
+                }
+                const normalizedPath = normalizePath(path);
                 await this.fileSync.delete(normalizedPath);
-            } else if (eventType === 'change' || eventType === 'add') {
+
+                this.fileEventBus.publish({
+                    type: eventType,
+                    paths: [normalizedPath],
+                    timestamp: Date.now(),
+                });
+            }
+        } else if (eventType === 'change' || eventType === 'add') {
+            if (event.paths.length === 2) {
+                // This mean rename a file or a folder, move a file or a folder
+                const [oldPath, newPath] = event.paths;
+
+                if (!oldPath || !newPath) {
+                    console.error('Invalid rename event', event);
+                    return;
+                }
+                const oldNormalizedPath = normalizePath(oldPath);
+                const newNormalizedPath = normalizePath(newPath);
+                await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
+
+                this.fileEventBus.publish({
+                    type: 'rename',
+                    paths: [oldPath, newPath],
+                    timestamp: Date.now(),
+                });
+                return;
+            }
+            for (const path of event.paths) {
+                if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
+                    continue;
+                }
+                const normalizedPath = normalizePath(path);
+
                 if (isImageFile(normalizedPath)) {
                     await this.fileSync.trackBinaryFile(normalizedPath);
                 } else {
@@ -437,12 +471,13 @@ export class SandboxManager {
                         await this.processFileForMapping(normalizedPath);
                     }
                 }
+
+                this.fileEventBus.publish({
+                    type: eventType,
+                    paths: [normalizedPath],
+                    timestamp: Date.now(),
+                });
             }
-            this.fileEventBus.publish({
-                type: eventType,
-                paths: [normalizedPath],
-                timestamp: Date.now(),
-            });
         }
     }
 
@@ -493,7 +528,6 @@ export class SandboxManager {
             const dirPath = getDirName(normalizedPath);
             const fileName = getBaseName(normalizedPath);
             const dirEntries = await this.session.session.fs.readdir(dirPath);
-
             return dirEntries.some((entry: any) => entry.name === fileName);
         } catch (error) {
             console.error(`Error checking file existence ${normalizedPath}:`, error);
@@ -570,6 +604,25 @@ export class SandboxManager {
             return true;
         } catch (error) {
             console.error(`Error deleting file ${path}:`, error);
+            return false;
+        }
+    }
+
+    async rename(oldPath: string, newPath: string): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for rename');
+            return false;
+        }
+
+        try {
+            const normalizedOldPath = normalizePath(oldPath);
+            const normalizedNewPath = normalizePath(newPath);
+
+            await this.session.session.fs.rename(normalizedOldPath, normalizedNewPath);
+
+            return true;
+        } catch (error) {
+            console.error(`Error renaming file ${oldPath} to ${newPath}:`, error);
             return false;
         }
     }

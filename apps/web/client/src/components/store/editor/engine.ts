@@ -25,6 +25,7 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
+import { VersionsManager } from '../project/version';
 
 export class EditorEngine {
     readonly chat: ChatManager;
@@ -52,6 +53,7 @@ export class EditorEngine {
     readonly code: CodeManager = new CodeManager(this);
     readonly ide: IDEManager = new IDEManager(this);
     readonly hosting: HostingManager = new HostingManager(this);
+    readonly versions: VersionsManager = new VersionsManager(this);
 
     constructor(
         private projectManager: ProjectManager,

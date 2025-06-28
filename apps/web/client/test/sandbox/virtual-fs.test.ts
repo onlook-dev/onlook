@@ -100,52 +100,52 @@ describe('VirtualFileSystem', () => {
 
     describe('Path Utilities', () => {
         test('should normalize paths', () => {
-            expect(vfs.normalizePath('test.txt')).toBe('/test.txt');
-            expect(vfs.normalizePath('/test.txt')).toBe('/test.txt');
-            expect(vfs.normalizePath('dir\\file.txt')).toBe('/dir/file.txt');
-            expect(vfs.normalizePath('/dir//file.txt')).toBe('/dir/file.txt');
+            expect(vfs.normalizePath('test.txt')).toBe('test.txt');
+            expect(vfs.normalizePath('/project/sandbox/test.txt')).toBe('test.txt');
+            expect(vfs.normalizePath('dir\\file.txt')).toBe('dir/file.txt');
+            expect(vfs.normalizePath('/project/sandbox/dir//file.txt')).toBe('dir/file.txt');
         });
 
         test('should get directory name', () => {
-            expect(vfs.dirname('/dir/file.txt')).toBe('/dir');
-            expect(vfs.dirname('/file.txt')).toBe('/');
-            expect(vfs.dirname('file.txt')).toBe('/');
+            expect(vfs.dirname('dir/file.txt')).toBe('dir');
+            expect(vfs.dirname('file.txt')).toBe('.'); // Returns '.' to match files utility behavior
+            expect(vfs.dirname('deep/nested/file.txt')).toBe('deep/nested');
         });
 
         test('should get base name', () => {
-            expect(vfs.basename('/dir/file.txt')).toBe('file.txt');
-            expect(vfs.basename('/file.txt')).toBe('file.txt');
+            expect(vfs.basename('dir/file.txt')).toBe('file.txt');
             expect(vfs.basename('file.txt')).toBe('file.txt');
+            expect(vfs.basename('deep/nested/file.txt')).toBe('file.txt');
         });
 
         test('should join paths', () => {
-            expect(vfs.join('dir', 'file.txt')).toBe('/dir/file.txt');
-            expect(vfs.join('/dir', 'subdir', 'file.txt')).toBe('/dir/subdir/file.txt');
+            expect(vfs.join('dir', 'file.txt')).toBe('dir/file.txt');
+            expect(vfs.join('dir', 'subdir', 'file.txt')).toBe('dir/subdir/file.txt');
         });
     });
 
     describe('File Listing', () => {
         test('should list all files', async () => {
-            await vfs.writeFile('/file1.txt', 'content1');
-            await vfs.writeFile('/dir/file2.txt', 'content2');
-            await vfs.writeFile('/dir/subdir/file3.txt', 'content3');
+            await vfs.writeFile('file1.txt', 'content1');
+            await vfs.writeFile('dir/file2.txt', 'content2');
+            await vfs.writeFile('dir/subdir/file3.txt', 'content3');
 
             const allFiles = vfs.listAllFiles();
-            expect(allFiles).toContain('/file1.txt');
-            expect(allFiles).toContain('/dir/file2.txt');
-            expect(allFiles).toContain('/dir/subdir/file3.txt');
+            expect(allFiles).toContain('file1.txt');
+            expect(allFiles).toContain('dir/file2.txt');
+            expect(allFiles).toContain('dir/subdir/file3.txt');
             expect(allFiles.length).toBe(3);
         });
 
         test('should identify binary files by extension', async () => {
-            await vfs.writeBinaryFile('/image.png', new Uint8Array([1, 2, 3]));
-            await vfs.writeFile('/text.txt', 'content');
-            await vfs.writeBinaryFile('/archive.zip', new Uint8Array([4, 5, 6]));
+            await vfs.writeBinaryFile('image.png', new Uint8Array([1, 2, 3]));
+            await vfs.writeFile('text.txt', 'content');
+            await vfs.writeBinaryFile('archive.zip', new Uint8Array([4, 5, 6]));
 
             const binaryFiles = vfs.listBinaryFiles();
-            expect(binaryFiles).toContain('/image.png');
-            expect(binaryFiles).toContain('/archive.zip');
-            expect(binaryFiles).not.toContain('/text.txt');
+            expect(binaryFiles).toContain('image.png');
+            expect(binaryFiles).toContain('archive.zip');
+            expect(binaryFiles).not.toContain('text.txt');
         });
     });
 

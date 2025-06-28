@@ -1,8 +1,9 @@
 import { Volume } from 'memfs';
-import { type FileOperations } from '@onlook/utility';
+import { type FileOperations, getDirName, getBaseName } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import localforage from 'localforage';
 import { convertToBase64, convertFromBase64 } from '@onlook/utility';
+import { normalizePath as sandboxNormalizePath } from './helpers';
 
 export interface VirtualFileSystemOptions {
     persistenceKey?: string;
@@ -39,7 +40,7 @@ export interface VirtualFileSystemInterface extends FileOperations {
     saveToStorage(): Promise<void>;
     loadFromStorage(): Promise<void>;
 
-    // Path utilities
+    // Path utilities (compatible with both helper.ts and utility package)
     normalizePath(path: string): string;
     dirname(path: string): string;
     basename(path: string): string;
@@ -86,9 +87,9 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
         }
     }
 
-    // Path utilities
-    normalizePath(path: string): string {
-        // Ensure path starts with /
+    // Internal VFS path utilities (always start with / for memfs)
+    private toVFSPath(path: string): string {
+        // Convert sandbox-relative path to VFS absolute path
         if (!path.startsWith('/')) {
             path = '/' + path;
         }
@@ -96,29 +97,32 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
         return path.replace(/\\/g, '/').replace(/\/+/g, '/');
     }
 
+    // Public path utilities
+    normalizePath(path: string): string {
+        return sandboxNormalizePath(path);
+    }
+
     dirname(path: string): string {
-        const normalized = this.normalizePath(path);
-        const lastSlash = normalized.lastIndexOf('/');
-        if (lastSlash === 0) return '/';
-        if (lastSlash === -1) return '.';
-        return normalized.substring(0, lastSlash);
+        // Ensure path uses forward slashes and align exactly with files utility
+        const normalizedPath = path.replace(/\\/g, '/');
+        return getDirName(normalizedPath);
     }
 
     basename(path: string): string {
-        const normalized = this.normalizePath(path);
-        const lastSlash = normalized.lastIndexOf('/');
-        return normalized.substring(lastSlash + 1);
+        const normalizedPath = path.replace(/\\/g, '/');
+        return getBaseName(normalizedPath);
     }
 
     join(...paths: string[]): string {
-        return this.normalizePath(paths.join('/'));
+        const joined = paths.filter(Boolean).join('/').replace(/\/+/g, '/');
+        return sandboxNormalizePath(joined);
     }
 
     // Basic file operations (FileOperations interface)
     async readFile(filePath: string): Promise<string | null> {
         try {
-            const normalizedPath = this.normalizePath(filePath);
-            const content = this.volume.readFileSync(normalizedPath, {
+            const vfsPath = this.toVFSPath(filePath);
+            const content = this.volume.readFileSync(vfsPath, {
                 encoding: 'utf8',
             }) as string;
             return content;
@@ -130,13 +134,13 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
 
     async writeFile(filePath: string, content: string): Promise<boolean> {
         try {
-            const normalizedPath = this.normalizePath(filePath);
+            const vfsPath = this.toVFSPath(filePath);
 
             // Ensure directory exists
-            const dirPath = this.dirname(normalizedPath);
-            await this.mkdir(dirPath, true);
+            const vfsDirPath = this.toVFSPath(this.dirname(filePath));
+            this.volume.mkdirSync(vfsDirPath, { recursive: true });
 
-            this.volume.writeFileSync(normalizedPath, content, { encoding: 'utf8' });
+            this.volume.writeFileSync(vfsPath, content, { encoding: 'utf8' });
 
             if (this.options.enablePersistence) {
                 await this.saveToStorage();
@@ -151,8 +155,8 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
 
     async fileExists(filePath: string): Promise<boolean> {
         try {
-            const normalizedPath = this.normalizePath(filePath);
-            return this.volume.existsSync(normalizedPath);
+            const vfsPath = this.toVFSPath(filePath);
+            return this.volume.existsSync(vfsPath);
         } catch (error) {
             return false;
         }
@@ -160,22 +164,22 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
 
     async delete(filePath: string, recursive: boolean = false): Promise<boolean> {
         try {
-            const normalizedPath = this.normalizePath(filePath);
+            const vfsPath = this.toVFSPath(filePath);
 
-            if (!this.volume.existsSync(normalizedPath)) {
+            if (!this.volume.existsSync(vfsPath)) {
                 return false;
             }
 
-            const stats = this.volume.statSync(normalizedPath);
+            const stats = this.volume.statSync(vfsPath);
 
             if (stats.isDirectory()) {
                 if (recursive) {
-                    this.volume.rmSync(normalizedPath, { recursive: true, force: true });
+                    this.volume.rmSync(vfsPath, { recursive: true, force: true });
                 } else {
-                    this.volume.rmdirSync(normalizedPath);
+                    this.volume.rmdirSync(vfsPath);
                 }
             } else {
-                this.volume.unlinkSync(normalizedPath);
+                this.volume.unlinkSync(vfsPath);
             }
 
             if (this.options.enablePersistence) {
@@ -196,18 +200,18 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
         overwrite: boolean = false,
     ): Promise<boolean> {
         try {
-            const normalizedSource = this.normalizePath(source);
-            const normalizedDest = this.normalizePath(destination);
+            const vfsSource = this.toVFSPath(source);
+            const vfsDest = this.toVFSPath(destination);
 
-            if (!this.volume.existsSync(normalizedSource)) {
+            if (!this.volume.existsSync(vfsSource)) {
                 return false;
             }
 
-            if (this.volume.existsSync(normalizedDest) && !overwrite) {
+            if (this.volume.existsSync(vfsDest) && !overwrite) {
                 return false;
             }
 
-            const stats = this.volume.statSync(normalizedSource);
+            const stats = this.volume.statSync(vfsSource);
 
             if (stats.isDirectory()) {
                 if (!recursive) {
@@ -215,23 +219,24 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
                 }
 
                 // Create destination directory
-                await this.mkdir(normalizedDest, true);
+                this.volume.mkdirSync(vfsDest, { recursive: true });
 
                 // Copy all contents
-                const entries = this.volume.readdirSync(normalizedSource) as string[];
+                const entries = this.volume.readdirSync(vfsSource) as string[];
                 for (const entry of entries) {
-                    const srcPath = this.join(normalizedSource, entry);
-                    const destPath = this.join(normalizedDest, entry);
+                    const srcPath = this.join(source, entry);
+                    const destPath = this.join(destination, entry);
                     await this.copy(srcPath, destPath, recursive, overwrite);
                 }
             } else {
                 // Ensure destination directory exists
-                const destDir = this.dirname(normalizedDest);
-                await this.mkdir(destDir, true);
+                const destDir = this.dirname(destination);
+                const vfsDestDir = this.toVFSPath(destDir);
+                this.volume.mkdirSync(vfsDestDir, { recursive: true });
 
                 // Copy file
-                const content = this.volume.readFileSync(normalizedSource);
-                this.volume.writeFileSync(normalizedDest, content);
+                const content = this.volume.readFileSync(vfsSource);
+                this.volume.writeFileSync(vfsDest, content);
             }
 
             if (this.options.enablePersistence) {
@@ -248,8 +253,8 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
     // Enhanced file operations
     async readBinaryFile(filePath: string): Promise<Uint8Array | null> {
         try {
-            const normalizedPath = this.normalizePath(filePath);
-            const content = this.volume.readFileSync(normalizedPath) as Buffer;
+            const vfsPath = this.toVFSPath(filePath);
+            const content = this.volume.readFileSync(vfsPath) as Buffer;
             return new Uint8Array(content);
         } catch (error) {
             console.error(`Error reading binary file ${filePath}:`, error);
@@ -259,13 +264,13 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
 
     async writeBinaryFile(filePath: string, content: Uint8Array): Promise<boolean> {
         try {
-            const normalizedPath = this.normalizePath(filePath);
+            const vfsPath = this.toVFSPath(filePath);
 
             // Ensure directory exists
-            const dirPath = this.dirname(normalizedPath);
-            await this.mkdir(dirPath, true);
+            const vfsDirPath = this.toVFSPath(this.dirname(filePath));
+            this.volume.mkdirSync(vfsDirPath, { recursive: true });
 
-            this.volume.writeFileSync(normalizedPath, Buffer.from(content));
+            this.volume.writeFileSync(vfsPath, Buffer.from(content));
 
             if (this.options.enablePersistence) {
                 await this.saveToStorage();
@@ -281,8 +286,8 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
     // Directory operations
     async mkdir(dirPath: string, recursive: boolean = false): Promise<boolean> {
         try {
-            const normalizedPath = this.normalizePath(dirPath);
-            this.volume.mkdirSync(normalizedPath, { recursive });
+            const vfsPath = this.toVFSPath(dirPath);
+            this.volume.mkdirSync(vfsPath, { recursive });
 
             if (this.options.enablePersistence) {
                 await this.saveToStorage();
@@ -297,12 +302,12 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
 
     async rmdir(dirPath: string, recursive: boolean = false): Promise<boolean> {
         try {
-            const normalizedPath = this.normalizePath(dirPath);
+            const vfsPath = this.toVFSPath(dirPath);
 
             if (recursive) {
-                this.volume.rmSync(normalizedPath, { recursive: true, force: true });
+                this.volume.rmSync(vfsPath, { recursive: true, force: true });
             } else {
-                this.volume.rmdirSync(normalizedPath);
+                this.volume.rmdirSync(vfsPath);
             }
 
             if (this.options.enablePersistence) {
@@ -318,8 +323,8 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
 
     async readdir(dirPath: string): Promise<string[]> {
         try {
-            const normalizedPath = this.normalizePath(dirPath);
-            const entries = this.volume.readdirSync(normalizedPath) as string[];
+            const vfsPath = this.toVFSPath(dirPath);
+            const entries = this.volume.readdirSync(vfsPath) as string[];
             return entries;
         } catch (error) {
             console.error(`Error reading directory ${dirPath}:`, error);
@@ -330,8 +335,8 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
     // File metadata
     async stat(filePath: string): Promise<FileStats | null> {
         try {
-            const normalizedPath = this.normalizePath(filePath);
-            const stats = this.volume.statSync(normalizedPath);
+            const vfsPath = this.toVFSPath(filePath);
+            const stats = this.volume.statSync(vfsPath);
 
             return {
                 isFile: () => stats.isFile(),
@@ -350,22 +355,23 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
     listAllFiles(): string[] {
         const files: string[] = [];
 
-        const walkDir = (dirPath: string) => {
+        const walkDir = (vfsPath: string, sandboxPath: string = '') => {
             try {
-                const entries = this.volume.readdirSync(dirPath) as string[];
+                const entries = this.volume.readdirSync(vfsPath) as string[];
 
                 for (const entry of entries) {
-                    const fullPath = this.join(dirPath, entry);
-                    const stats = this.volume.statSync(fullPath);
+                    const fullVfsPath = vfsPath === '/' ? `/${entry}` : `${vfsPath}/${entry}`;
+                    const fullSandboxPath = sandboxPath ? `${sandboxPath}/${entry}` : entry;
+                    const stats = this.volume.statSync(fullVfsPath);
 
                     if (stats.isFile()) {
-                        files.push(fullPath);
+                        files.push(fullSandboxPath);
                     } else if (stats.isDirectory()) {
-                        walkDir(fullPath);
+                        walkDir(fullVfsPath, fullSandboxPath);
                     }
                 }
             } catch (error) {
-                console.error(`Error walking directory ${dirPath}:`, error);
+                console.error(`Error walking directory ${vfsPath}:`, error);
             }
         };
 
@@ -373,7 +379,7 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
         return files;
     }
 
-    listBinaryFiles(dir: string = '/'): string[] {
+    listBinaryFiles(dir: string = ''): string[] {
         const binaryExtensions = [
             '.png',
             '.jpg',
@@ -391,7 +397,7 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
         const allFiles = this.listAllFiles();
 
         return allFiles.filter((file) => {
-            if (dir !== '/' && !file.startsWith(this.normalizePath(dir))) {
+            if (dir && !file.startsWith(dir)) {
                 return false;
             }
 
@@ -430,20 +436,22 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
 
             const allFiles = this.listAllFiles();
 
-            for (const filePath of allFiles) {
+            for (const sandboxPath of allFiles) {
                 try {
+                    const vfsPath = this.toVFSPath(sandboxPath);
                     // Try to read as text first
-                    const textContent = this.volume.readFileSync(filePath, {
+                    const textContent = this.volume.readFileSync(vfsPath, {
                         encoding: 'utf8',
                     }) as string;
-                    textFiles[filePath] = textContent;
+                    textFiles[sandboxPath] = textContent;
                 } catch {
                     // If text reading fails, read as binary
                     try {
-                        const binaryContent = this.volume.readFileSync(filePath) as Buffer;
-                        binaryFiles[filePath] = convertToBase64(new Uint8Array(binaryContent));
+                        const vfsPath = this.toVFSPath(sandboxPath);
+                        const binaryContent = this.volume.readFileSync(vfsPath) as Buffer;
+                        binaryFiles[sandboxPath] = convertToBase64(new Uint8Array(binaryContent));
                     } catch (error) {
-                        console.error(`Error reading file ${filePath} for persistence:`, error);
+                        console.error(`Error reading file ${sandboxPath} for persistence:`, error);
                     }
                 }
             }
@@ -467,13 +475,14 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
             // Load text files
             const textFiles = await localforage.getItem<Record<string, string>>(this.storageKey);
             if (textFiles) {
-                for (const [filePath, content] of Object.entries(textFiles)) {
+                for (const [sandboxPath, content] of Object.entries(textFiles)) {
                     try {
-                        const dirPath = this.dirname(filePath);
-                        await this.mkdir(dirPath, true);
-                        this.volume.writeFileSync(filePath, content, { encoding: 'utf8' });
+                        const vfsPath = this.toVFSPath(sandboxPath);
+                        const vfsDirPath = this.toVFSPath(this.dirname(sandboxPath));
+                        this.volume.mkdirSync(vfsDirPath, { recursive: true });
+                        this.volume.writeFileSync(vfsPath, content, { encoding: 'utf8' });
                     } catch (error) {
-                        console.error(`Error restoring text file ${filePath}:`, error);
+                        console.error(`Error restoring text file ${sandboxPath}:`, error);
                     }
                 }
             }
@@ -483,14 +492,15 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
                 this.binaryStorageKey,
             );
             if (binaryFiles) {
-                for (const [filePath, base64Content] of Object.entries(binaryFiles)) {
+                for (const [sandboxPath, base64Content] of Object.entries(binaryFiles)) {
                     try {
-                        const dirPath = this.dirname(filePath);
-                        await this.mkdir(dirPath, true);
+                        const vfsPath = this.toVFSPath(sandboxPath);
+                        const vfsDirPath = this.toVFSPath(this.dirname(sandboxPath));
+                        this.volume.mkdirSync(vfsDirPath, { recursive: true });
                         const binaryContent = convertFromBase64(base64Content);
-                        this.volume.writeFileSync(filePath, Buffer.from(binaryContent));
+                        this.volume.writeFileSync(vfsPath, Buffer.from(binaryContent));
                     } catch (error) {
-                        console.error(`Error restoring binary file ${filePath}:`, error);
+                        console.error(`Error restoring binary file ${sandboxPath}:`, error);
                     }
                 }
             }
@@ -518,12 +528,12 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
     }
 
     has(filePath: string): boolean {
-        return this.volume.existsSync(this.normalizePath(filePath));
+        return this.volume.existsSync(this.toVFSPath(filePath));
     }
 
     hasBinary(filePath: string): boolean {
-        const normalizedPath = this.normalizePath(filePath);
-        if (!this.volume.existsSync(normalizedPath)) {
+        const vfsPath = this.toVFSPath(filePath);
+        if (!this.volume.existsSync(vfsPath)) {
             return false;
         }
 
@@ -542,7 +552,7 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
             '.tar',
             '.gz',
         ];
-        const ext = normalizedPath.toLowerCase().substring(normalizedPath.lastIndexOf('.'));
+        const ext = filePath.toLowerCase().substring(filePath.lastIndexOf('.'));
         return binaryExtensions.includes(ext);
     }
 
@@ -563,12 +573,11 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
 
     // Sync operations for compatibility
     async syncFromRemote(filePath: string, remoteContent: string): Promise<boolean> {
-        const normalizedPath = this.normalizePath(filePath);
-        const currentContent = await this.readFile(normalizedPath);
+        const currentContent = await this.readFile(filePath);
         const contentChanged = currentContent !== remoteContent;
 
         if (contentChanged) {
-            await this.writeFile(normalizedPath, remoteContent);
+            await this.writeFile(filePath, remoteContent);
         }
 
         return contentChanged;
@@ -576,22 +585,21 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
 
     // Track binary file without loading content (for lazy loading)
     async trackBinaryFile(filePath: string): Promise<void> {
-        const normalizedPath = this.normalizePath(filePath);
-        if (!this.has(normalizedPath)) {
+        if (!this.has(filePath)) {
             // Create empty placeholder file
-            await this.writeBinaryFile(normalizedPath, new Uint8Array(0));
+            await this.writeBinaryFile(filePath, new Uint8Array(0));
         }
     }
 
     // Check if binary file has actual content loaded
     hasBinaryContent(filePath: string): boolean {
-        const normalizedPath = this.normalizePath(filePath);
-        if (!this.volume.existsSync(normalizedPath)) {
+        const vfsPath = this.toVFSPath(filePath);
+        if (!this.volume.existsSync(vfsPath)) {
             return false;
         }
 
         try {
-            const stats = this.volume.statSync(normalizedPath);
+            const stats = this.volume.statSync(vfsPath);
             return stats.size > 0;
         } catch {
             return false;

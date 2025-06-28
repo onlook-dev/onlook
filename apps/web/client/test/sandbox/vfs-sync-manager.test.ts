@@ -169,23 +169,23 @@ describe('VFSSyncManager', () => {
 
     describe('File Listing', () => {
         test('should list all files', async () => {
-            await syncManager.updateCache('/file1.txt', 'content1');
-            await syncManager.updateCache('/dir/file2.txt', 'content2');
+            await syncManager.updateCache('file1.txt', 'content1');
+            await syncManager.updateCache('dir/file2.txt', 'content2');
 
             const allFiles = syncManager.listAllFiles();
-            expect(allFiles).toContain('/file1.txt');
-            expect(allFiles).toContain('/dir/file2.txt');
+            expect(allFiles).toContain('file1.txt');
+            expect(allFiles).toContain('dir/file2.txt');
         });
 
         test('should list binary files in directory', async () => {
-            await syncManager.trackBinaryFile('/images/photo.jpg');
-            await syncManager.trackBinaryFile('/images/icon.png');
-            await syncManager.updateCache('/images/readme.txt', 'text file');
+            await syncManager.trackBinaryFile('images/photo.jpg');
+            await syncManager.trackBinaryFile('images/icon.png');
+            await syncManager.updateCache('images/readme.txt', 'text file');
 
-            const binaryFiles = syncManager.listBinaryFiles('/images');
-            expect(binaryFiles).toContain('/images/photo.jpg');
-            expect(binaryFiles).toContain('/images/icon.png');
-            expect(binaryFiles).not.toContain('/images/readme.txt');
+            const binaryFiles = syncManager.listBinaryFiles('images');
+            expect(binaryFiles).toContain('images/photo.jpg');
+            expect(binaryFiles).toContain('images/icon.png');
+            expect(binaryFiles).not.toContain('images/readme.txt');
         });
     });
 
@@ -211,14 +211,14 @@ describe('VFSSyncManager', () => {
 
     describe('Path Utilities', () => {
         test('should normalize paths', () => {
-            expect(syncManager.normalizePath('test.txt')).toBe('/test.txt');
-            expect(syncManager.normalizePath('/test.txt')).toBe('/test.txt');
+            expect(syncManager.normalizePath('test.txt')).toBe('test.txt');
+            expect(syncManager.normalizePath('/project/sandbox/test.txt')).toBe('test.txt');
         });
 
         test('should provide path utilities', () => {
-            expect(syncManager.dirname('/dir/file.txt')).toBe('/dir');
-            expect(syncManager.basename('/dir/file.txt')).toBe('file.txt');
-            expect(syncManager.join('dir', 'file.txt')).toBe('/dir/file.txt');
+            expect(syncManager.dirname('dir/file.txt')).toBe('dir');
+            expect(syncManager.basename('dir/file.txt')).toBe('file.txt');
+            expect(syncManager.join('dir', 'file.txt')).toBe('dir/file.txt');
         });
     });
 

@@ -10,7 +10,7 @@ import { SettingsModal } from '@/components/ui/settings-modal';
 import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
-import { ChatType } from '@onlook/models';
+import { ChatType, type ChatMessageContext } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
@@ -50,6 +50,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     );
 
     useEffect(() => {
+
         const initializeProject = async () => {
             if (!result) {
                 return;
@@ -89,9 +90,12 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
         if (projectId !== creationData.project.id) return;
 
-        const messages = await editorEngine.chat.getStreamMessages(
+        const createContext: ChatMessageContext[] = await editorEngine.chat.context.getCreateContext();
+        const context = [...createContext, ...creationData.images];
+
+        const messages = await editorEngine.chat.getEditMessages(
             creationData.prompt,
-            creationData.images,
+            context,
         );
 
         if (!messages) {
@@ -181,7 +185,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                     <RightPanel />
                 </div>
 
-                    <BottomBar />            
+                <BottomBar />
             </div>
             <SettingsModal showProjectTabs={true} />
             <SubscriptionModal />

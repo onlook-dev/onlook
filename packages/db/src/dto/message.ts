@@ -21,6 +21,7 @@ export const toMessage = (dbMessage: DbMessage): ChatMessage => {
             createdAt: dbMessage.createdAt,
             context: dbMessage.context,
             parts: dbMessage.parts as TextPart[],
+            commitOid: dbMessage.commitOid ?? null,
         }
     } else {
         return {
@@ -35,6 +36,7 @@ export const toMessage = (dbMessage: DbMessage): ChatMessage => {
 export const fromMessage = (conversationId: string, message: ChatMessage): DbMessage => {
     let snapshots: ChatSnapshot = {};
     let context: ChatMessageContext[] = [];
+    let commitOid: string | null = null;
 
     if (message.role === ChatMessageRole.ASSISTANT) {
         snapshots = message.snapshots;
@@ -42,6 +44,7 @@ export const fromMessage = (conversationId: string, message: ChatMessage): DbMes
 
     if (message.role === ChatMessageRole.USER) {
         context = message.context;
+        commitOid = message.commitOid;
     }
 
     return {
@@ -53,6 +56,7 @@ export const fromMessage = (conversationId: string, message: ChatMessage): DbMes
         applied: message.role === ChatMessageRole.ASSISTANT ? message.applied ?? false : false,
         snapshots,
         context,
-        parts: message.parts
+        parts: message.parts,
+        commitOid,
     }
 }

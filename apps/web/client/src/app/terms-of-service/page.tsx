@@ -1,14 +1,10 @@
 'use client';
 
-import { Footer } from '../_components/landing-page/page-footer';
-import { TopBar } from '../_components/top-bar';
+import { WebsiteLayout } from '../_components/website-layout';
 
 export default function TermsPage() {
     return (
-        <div className="flex min-h-screen flex-col">
-            <div className="fixed top-0 left-0 w-full h-12 bg-background/80 backdrop-blur-sm z-50">
-                <TopBar />
-            </div>
+        <WebsiteLayout showFooter={true}>
             <main className="flex-1 pt-16">
                 <div className="max-w-4xl mx-auto px-8 py-16">
                     <h1 className="text-4xl font-light text-foreground-primary mb-8">Terms of Use</h1>
@@ -95,7 +91,6 @@ export default function TermsPage() {
                     </div>
                 </div>
             </main>
-            <Footer />
-        </div>
+        </WebsiteLayout>
     );
 } 
