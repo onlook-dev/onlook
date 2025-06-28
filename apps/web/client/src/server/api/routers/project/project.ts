@@ -29,6 +29,18 @@ export const projectRouter = createTRPCRouter({
             });
             return projects.map((project) => toProject(project.project));
         }),
+    get: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const project = await ctx.db.query.projects.findFirst({
+                where: eq(projects.id, input.projectId),
+            });
+            if (!project) {
+                console.error('project not found');
+                return null;
+            }
+            return toProject(project)
+        }),
     getFullProject: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {

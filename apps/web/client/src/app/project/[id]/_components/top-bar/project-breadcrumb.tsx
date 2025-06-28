@@ -1,10 +1,11 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectManager } from '@/components/store/project';
 import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
 import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
 import { uploadBlobToStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
+import { fromPreviewImg } from '@onlook/db';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -24,8 +25,8 @@ import { useRef, useState } from 'react';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
-    const project = projectManager.project;
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: updateProject } = api.project.update.useMutation()
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
     const router = useRouter();
@@ -65,19 +66,16 @@ export const ProjectBreadcrumb = observer(() => {
             return;
         }
 
-        // Update project metadata
+        const dbPreviewImg = fromPreviewImg({
+            type: 'storage',
+            storagePath: {
+                bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
+                path: data?.path,
+            },
+        })
         if (project?.metadata) {
-            projectManager.updatePartialProject({
-                metadata: {
-                    ...project.metadata,
-                    previewImg: {
-                        type: 'storage',
-                        storagePath: {
-                            bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
-                            path: data?.path,
-                        },
-                    }
-                }
+            updateProject({
+                ...dbPreviewImg
             });
         }
     }
