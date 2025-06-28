@@ -77,8 +77,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             editorEngine.frames.applyFrames(frames);
             await editorEngine.chat.conversation.fetchOrCreateConversation(project.id);
             resumeCreate();
-            editorEngine.chat.context.getCreateContext();
-
         };
 
         initializeProject().catch((error) => {

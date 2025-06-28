@@ -202,7 +202,6 @@ export class ChatContext {
         }
     }
 
-
     clearAttachments() {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
     }
