@@ -1,8 +1,7 @@
 'use client';
 
 import type { ProcessedFile, Project } from '@/app/projects/types';
-import { useUserManager } from '@/components/store/user';
-import { api } from '@/trpc/client';
+import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { blobToBase64String } from 'blob-util';
 import { useRouter } from 'next/navigation';
@@ -58,7 +57,10 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
     const [error, setError] = useState<string | null>(null);
     const [direction, setDirection] = useState(0);
     const [isFinalizing, setIsFinalizing] = useState(false);
-    const userManager = useUserManager();
+    const { data: user } = api.user.get.useQuery();
+    const { mutateAsync: uploadProject } = api.sandbox.uploadProject.useMutation();
+    const { mutateAsync: createProject } = api.project.create.useMutation();
+
     const router = useRouter();
 
     const setProjectData = (newData: Partial<Project>) => {
@@ -114,7 +116,7 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
         project: CodeSandboxProject,
     ): Promise<{ sandboxId: string; previewUrl: string }> => {
         try {
-            const response = await api.sandbox.uploadProject.mutate({
+            const response = await uploadProject({
                 files: project.files,
                 projectName: projectData.folderPath,
             });
@@ -133,7 +135,7 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
         try {
             setIsFinalizing(true);
 
-            if (!userManager.user?.id) {
+            if (!user?.id) {
                 console.error('No user found');
                 return;
             }
@@ -144,14 +146,14 @@ export const ProjectCreationProvider: React.FC<ProjectCreationProviderProps> = (
             const codeSandboxProject = await convertToCodeSandboxFormat(projectData.files);
             const { sandboxId, previewUrl } = await uploadToCodeSandbox(codeSandboxProject);
 
-            const project = await api.project.create.mutate({
+            const project = await createProject({
                 project: {
                     name: projectData.name ?? 'New project',
                     sandboxId,
                     sandboxUrl: previewUrl,
                     description: 'Your new project',
                 },
-                userId: userManager.user.id,
+                userId: user.id,
             });
             if (!project) {
                 console.error('Failed to create project');

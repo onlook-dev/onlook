@@ -1,6 +1,7 @@
 import { client } from '@/utils/analytics/server';
 import { createClient } from '@/utils/supabase/server';
 import type { User } from '@onlook/db';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { api } from '~/trpc/server';
 
@@ -38,20 +39,20 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }
 
-async function getOrCreateUser(user: User): Promise<User> {
+async function getOrCreateUser(user: SupabaseUser): Promise<User> {
     const existingUser = await api.user.getById(user.id);
     if (!existingUser) {
         console.log(`User ${user.id} not found, creating...`);
         const newUser = await api.user.create({
             id: user.id,
-            name: user.user_metadata.name,
+            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
             email: user.email,
-            avatarUrl: user.user_metadata.avatar_url,
-        });
+            avatarUrl: user.user_metadata?.avatar_url,
+        })
         return newUser;
     }
     console.log(`User ${user.id} found, returning...`);
-    return user;
+    return existingUser;
 }
 
 function trackUserSignedIn(userId: string, properties: Record<string, any>) {

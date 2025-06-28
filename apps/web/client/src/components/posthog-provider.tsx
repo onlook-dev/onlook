@@ -29,8 +29,8 @@ export const PostHogProvider = observer(({ children }: { children: React.ReactNo
             try {
                 posthog.identify(user.id, {
                     name: user.name,
-                    email: userManager.user.email,
-                    avatar_url: userManager.user.avatarUrl,
+                    email: user.email,
+                    avatar_url: user.avatarUrl,
                 }, {
                     signup_date: new Date().toISOString(),
                 })

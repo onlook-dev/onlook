@@ -19,6 +19,16 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const projectRouter = createTRPCRouter({
+    list: protectedProcedure
+        .query(async ({ ctx }) => {
+            const projects = await ctx.db.query.userProjects.findMany({
+                where: eq(userProjects.userId, ctx.user.id),
+                with: {
+                    project: true,
+                },
+            });
+            return projects.map((project) => toProject(project.project));
+        }),
     getFullProject: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {

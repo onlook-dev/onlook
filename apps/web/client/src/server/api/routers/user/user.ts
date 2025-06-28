@@ -55,11 +55,11 @@ export const userRouter = createTRPCRouter({
         return user;
     }),
     create: protectedProcedure.input(userInsertSchema).mutation(async ({ ctx, input }) => {
-        const user = await ctx.db.insert(users).values(input).returning({ id: users.id });
-        if (!user[0]) {
+        const [user] = await ctx.db.insert(users).values(input).returning();
+        if (!user) {
             throw new Error('Failed to create user');
         }
-        return user[0];
+        return user;
     }),
     settings: userSettingsRoute,
 });

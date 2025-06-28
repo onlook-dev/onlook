@@ -2,7 +2,6 @@
 
 import { login } from '@/app/login/actions';
 import { useCreateManager } from '@/components/store/create';
-import { useUserManager } from '@/components/store/user';
 import { api as clientApi } from '@/trpc/client';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
@@ -136,7 +135,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
 
     // Create manager
     const createManager = useCreateManager();
-    const userManager = useUserManager();
+    const { data: user } = api.user.get.useQuery();
 
     useEffect(() => {
         checkGitHubConnection();
@@ -224,7 +223,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
         setFilesError(null);
 
         try {
-            if (!userManager.user?.id) {
+            if (!user?.id) {
                 console.error('No user found');
                 return;
             }
@@ -241,7 +240,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
                     sandboxUrl: previewUrl,
                     description: 'Your new project',
                 },
-                userId: userManager.user.id,
+                userId: user.id,
             });
             if (!project) {
                 console.error('Failed to create project');

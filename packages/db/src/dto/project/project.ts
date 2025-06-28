@@ -1,5 +1,5 @@
 import type { PreviewImg, Project } from '@onlook/models';
-import type { Project as DbProject } from '../schema';
+import type { Project as DbProject } from '../../schema';
 
 export const toProject = (
     dbProject: DbProject,
