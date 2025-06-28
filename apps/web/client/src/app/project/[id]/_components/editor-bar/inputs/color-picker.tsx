@@ -152,17 +152,64 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                     stopsString = params;
                 }
             } else if (radialMatch && radialMatch[1]) {
-                type = 'radial';
-                stopsString = radialMatch[1].replace(/^(circle|ellipse).*?,?\s*/, '');
+                const params = radialMatch[1];
+                // Check if it's a diamond gradient (ellipse 80% 80% pattern)
+                if (params.includes('ellipse 80% 80%')) {
+                    type = 'diamond';
+                    stopsString = params.replace(/^ellipse\s+80%\s+80%\s+at\s+center,?\s*/, '');
+                } else {
+                    type = 'radial';
+                    stopsString = params.replace(/^(circle|ellipse).*?,?\s*/, '');
+                }
             } else if (conicMatch && conicMatch[1]) {
-                type = 'conic';
                 const params = conicMatch[1];
                 const angleMatch = params.match(/from\s+(\d+)deg/);
+                
                 if (angleMatch && angleMatch[1]) {
                     angle = parseInt(angleMatch[1]);
                     stopsString = params.replace(/^from\s+\d+deg,?\s*/, '');
                 } else {
                     stopsString = params;
+                }
+                
+                // Parse stops first to check for angular pattern
+                const stopMatches = stopsString.split(/,(?![^()]*\))/);
+                const tempStops: { color: string; position: number }[] = [];
+                
+                stopMatches.forEach((stop, index) => {
+                    const trimmed = stop.trim();
+                    const match = trimmed.match(
+                        /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/,
+                    );
+                    if (match && match[1]) {
+                        const color = match[1];
+                        const position = match[2]
+                            ? parseFloat(match[2])
+                            : (index / Math.max(1, stopMatches.length - 1)) * 100;
+                        tempStops.push({ color, position });
+                    }
+                });
+                
+                // Check if it's an angular gradient (has duplicate end color at 100%)
+                const firstStop = tempStops[0];
+                const lastStop = tempStops[tempStops.length - 1];
+                const isAngular = tempStops.length >= 3 && 
+                    firstStop && lastStop && 
+                    firstStop.color === lastStop.color && 
+                    Math.abs(lastStop.position - 100) < 1;
+                
+                if (isAngular) {
+                    type = 'angular';
+                    // Remove the duplicate end color for angular gradients
+                    tempStops.pop();
+                    // Reconstruct stopsString without the duplicate
+                    stopsString = tempStops.map(stop => 
+                        stop.position === Math.round(stop.position) 
+                            ? `${stop.color} ${Math.round(stop.position)}%`
+                            : `${stop.color} ${stop.position}%`
+                    ).join(', ');
+                } else {
+                    type = 'conic';
                 }
             } else {
                 return null;
@@ -232,10 +279,20 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         }
     }, [editorEngine.elements.selected, parseGradientFromCSS, onChange]);
 
-    const presetGradients = [
+    const isColorRemoved = (colorToCheck: Color) => colorToCheck.isEqual(Color.from('transparent'));
+
+    interface PresetGradient {
+        id: string;
+        css: string;
+        type: GradientState['type'];
+        stops: Array<{ id: string; color: string; position: number }>;
+    }
+
+    const presetGradients: PresetGradient[] = [
         {
             id: 'sunset',
             css: 'linear-gradient(45deg, #ff6b6b, #feca57)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#ff6b6b', position: 0 },
                 { id: '2', color: '#feca57', position: 100 },
@@ -244,6 +301,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'ocean',
             css: 'linear-gradient(45deg, #48cae4, #023e8a)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#48cae4', position: 0 },
                 { id: '2', color: '#023e8a', position: 100 },
@@ -252,6 +310,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'purple-pink',
             css: 'linear-gradient(45deg, #f72585, #b5179e)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#f72585', position: 0 },
                 { id: '2', color: '#b5179e', position: 100 },
@@ -260,6 +319,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'blue-purple',
             css: 'linear-gradient(90deg, #667eea, #764ba2)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#667eea', position: 0 },
                 { id: '2', color: '#764ba2', position: 100 },
@@ -268,6 +328,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'pink-red',
             css: 'linear-gradient(135deg, #f093fb, #f5576c)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#f093fb', position: 0 },
                 { id: '2', color: '#f5576c', position: 100 },
@@ -276,14 +337,55 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'cyan-blue',
             css: 'linear-gradient(180deg, #4facfe, #00f2fe)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#4facfe', position: 0 },
                 { id: '2', color: '#00f2fe', position: 100 },
             ],
         },
         {
+            id: 'angular-sunset',
+            css: 'conic-gradient(from 0deg, #ff9a9e, #fecfef, #fecfef)',
+            type: 'angular',
+            stops: [
+                { id: '1', color: '#ff9a9e', position: 0 },
+                { id: '2', color: '#fecfef', position: 50 },
+                { id: '3', color: '#fecfef', position: 100 },
+            ],
+        },
+        {
+            id: 'diamond-mint',
+            css: 'radial-gradient(ellipse 80% 80% at center, #a8edea, #fed6e3)',
+            type: 'diamond',
+            stops: [
+                { id: '1', color: '#a8edea', position: 0 },
+                { id: '2', color: '#fed6e3', position: 100 },
+            ],
+        },
+        {
+            id: 'radial-sunset',
+            css: 'radial-gradient(circle, #ff6b6b, #feca57)',
+            type: 'radial',
+            stops: [
+                { id: '1', color: '#ff6b6b', position: 0 },
+                { id: '2', color: '#feca57', position: 100 },
+            ],
+        },
+        {
+            id: 'conic-rainbow',
+            css: 'conic-gradient(from 0deg, #ff6b6b, #feca57, #48cae4, #ff6b6b)',
+            type: 'conic',
+            stops: [
+                { id: '1', color: '#ff6b6b', position: 0 },
+                { id: '2', color: '#feca57', position: 33 },
+                { id: '3', color: '#48cae4', position: 66 },
+                { id: '4', color: '#ff6b6b', position: 100 },
+            ],
+        },
+        {
             id: 'green-teal',
             css: 'linear-gradient(45deg, #11998e, #38ef7d)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#11998e', position: 0 },
                 { id: '2', color: '#38ef7d', position: 100 },
@@ -292,6 +394,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'purple-deep',
             css: 'linear-gradient(90deg, #8360c3, #2ebf91)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#8360c3', position: 0 },
                 { id: '2', color: '#2ebf91', position: 100 },
@@ -300,6 +403,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'orange-coral',
             css: 'linear-gradient(135deg, #ff9a9e, #fecfef)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#ff9a9e', position: 0 },
                 { id: '2', color: '#fecfef', position: 100 },
@@ -308,6 +412,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'blue-sky',
             css: 'linear-gradient(45deg, #74b9ff, #0984e3)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#74b9ff', position: 0 },
                 { id: '2', color: '#0984e3', position: 100 },
@@ -316,6 +421,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'mint-fresh',
             css: 'linear-gradient(90deg, #a8edea, #fed6e3)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#a8edea', position: 0 },
                 { id: '2', color: '#fed6e3', position: 100 },
@@ -324,6 +430,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'warm-flame',
             css: 'linear-gradient(135deg, #ff9a9e, #fad0c4)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#ff9a9e', position: 0 },
                 { id: '2', color: '#fad0c4', position: 100 },
@@ -332,6 +439,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'night-fade',
             css: 'linear-gradient(180deg, #a18cd1, #fbc2eb)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#a18cd1', position: 0 },
                 { id: '2', color: '#fbc2eb', position: 100 },
@@ -340,6 +448,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'spring-warmth',
             css: 'linear-gradient(45deg, #fad0c4, #ffd1ff)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#fad0c4', position: 0 },
                 { id: '2', color: '#ffd1ff', position: 100 },
@@ -348,6 +457,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'juicy-peach',
             css: 'linear-gradient(90deg, #ffecd2, #fcb69f)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#ffecd2', position: 0 },
                 { id: '2', color: '#fcb69f', position: 100 },
@@ -356,6 +466,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'young-passion',
             css: 'linear-gradient(135deg, #ff8177, #ff867a)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#ff8177', position: 0 },
                 { id: '2', color: '#ff867a', position: 100 },
@@ -364,41 +475,10 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         {
             id: 'lady-lips',
             css: 'linear-gradient(180deg, #ff9a9e, #f687b3)',
+            type: 'linear',
             stops: [
                 { id: '1', color: '#ff9a9e', position: 0 },
                 { id: '2', color: '#f687b3', position: 100 },
-            ],
-        },
-        {
-            id: 'sunny-morning',
-            css: 'linear-gradient(45deg, #f6d365, #fda085)',
-            stops: [
-                { id: '1', color: '#f6d365', position: 0 },
-                { id: '2', color: '#fda085', position: 100 },
-            ],
-        },
-        {
-            id: 'rainy-ashville',
-            css: 'linear-gradient(90deg, #fbc2eb, #a6c1ee)',
-            stops: [
-                { id: '1', color: '#fbc2eb', position: 0 },
-                { id: '2', color: '#a6c1ee', position: 100 },
-            ],
-        },
-        {
-            id: 'frozen-dreams',
-            css: 'linear-gradient(135deg, #fdcbf1, #e6dee9)',
-            stops: [
-                { id: '1', color: '#fdcbf1', position: 0 },
-                { id: '2', color: '#e6dee9', position: 100 },
-            ],
-        },
-        {
-            id: 'winter-neva',
-            css: 'linear-gradient(180deg, #a8edea, #fed6e3)',
-            stops: [
-                { id: '1', color: '#a8edea', position: 0 },
-                { id: '2', color: '#fed6e3', position: 100 },
             ],
         },
     ];
@@ -459,8 +539,6 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         };
         onChangeEnd(removeColorAction);
     };
-
-    const isColorRemoved = (colorToCheck: Color) => colorToCheck.isEqual(Color.from('transparent'));
 
     const handleGradientChange = useCallback(
         (newGradient: GradientState) => {
@@ -568,11 +646,16 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                 style={{ background: preset.css }}
                                 onClick={() => {
                                     try {
-                                        const newGradientState: GradientState = {
-                                            type: 'linear',
-                                            angle: parseInt(
+                                        let angle = 0;
+                                        if (preset.type === 'linear') {
+                                            angle = parseInt(
                                                 preset.css.match(/(\d+)deg/)?.[1] || '90',
-                                            ),
+                                            );
+                                        }
+                                        
+                                        const newGradientState: GradientState = {
+                                            type: preset.type,
+                                            angle: angle,
                                             stops: preset.stops.map((stop, index) => ({
                                                 id: `stop-${index + 1}`,
                                                 color: stop.color,
@@ -583,7 +666,6 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                         setSelectedStopId('stop-1');
                                         handleGradientChange(newGradientState);
 
-                                        // Update the color picker to show the first stop's color
                                         const firstStop = newGradientState.stops[0];
                                         if (firstStop) {
                                             onChange(Color.from(firstStop.color));
@@ -603,11 +685,16 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                 key={preset.id}
                                 onClick={() => {
                                     try {
-                                        const newGradientState: GradientState = {
-                                            type: 'linear',
-                                            angle: parseInt(
+                                        let angle = 0;
+                                        if (preset.type === 'linear') {
+                                            angle = parseInt(
                                                 preset.css.match(/(\d+)deg/)?.[1] || '90',
-                                            ),
+                                            );
+                                        }
+                                        
+                                        const newGradientState: GradientState = {
+                                            type: preset.type,
+                                            angle: angle,
                                             stops: preset.stops.map((stop, index) => ({
                                                 id: `stop-${index + 1}`,
                                                 color: stop.color,
@@ -618,7 +705,6 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                         setSelectedStopId('stop-1');
                                         handleGradientChange(newGradientState);
 
-                                        // Update the color picker to show the first stop's color
                                         const firstStop = newGradientState.stops[0];
                                         if (firstStop) {
                                             onChange(Color.from(firstStop.color));
@@ -759,9 +845,9 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                         >
                             {viewMode === 'grid' ? (
-                                <Icons.ViewGrid className="h-4 w-4" />
+                                <Icons.ViewGrid className="w-3 h-3" />
                             ) : (
-                                <Icons.ViewHorizontal className="h-4 w-4" />
+                                <Icons.ViewHorizontal className="w-3 h-3" />
                             )}
                         </button>
                     </div>
@@ -784,15 +870,15 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                     <div className="flex flex-row items-center justify-between w-full px-2 py-1">
                         <span className="text-foreground-secondary text-small">Presets</span>
                         <button
-                            aria-label={`Toggle ${viewMode === 'grid' ? 'list' : 'grid'} mode`}
-                            className="text-foreground-tertiary hover:text-foreground-hover rounded"
+                            className={`px-1 py-1 text-xs transition-colors w-6 h-6 flex items-center justify-center rounded ${
+                                viewMode === 'grid'
+                                    ? 'text-foreground-secondary hover:text-foreground-primary hover:bg-background-hover'
+                                    : 'text-foreground-primary bg-background-secondary'
+                            }`}
                             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                            title="Toggle view mode"
                         >
-                            {viewMode === 'grid' ? (
-                                <Icons.ViewGrid className="h-4 w-4" />
-                            ) : (
-                                <Icons.ViewHorizontal className="h-4 w-4" />
-                            )}
+                            {viewMode === 'grid' ? <Icons.ViewGrid className="w-3 h-3" /> : <Icons.ViewHorizontal className="w-3 h-3" />}
                         </button>
                     </div>
                     <Separator />
