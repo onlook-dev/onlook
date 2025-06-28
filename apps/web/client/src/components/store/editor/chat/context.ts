@@ -128,6 +128,73 @@ export class ChatContext {
         ];
     }
 
+    async getCreateContext() {
+        try {
+            const context: ChatMessageContext[] = [];
+            const pageContext = await this.getDefaultPageContext();
+            const styleGuideContext = await this.getDefaultStyleGuideContext();
+            if (pageContext) {
+                context.push(pageContext);
+            }
+            if (styleGuideContext) {
+                context.push(...styleGuideContext);
+            }
+            return context;
+        } catch (error) {
+            console.error('Error getting create context', error);
+            return [];
+        }
+    }
+
+    async getDefaultPageContext(): Promise<FileMessageContext | null> {
+        try {
+            const pagePaths = ['./app/page.tsx', './src/app/page.tsx'];
+            for (const pagePath of pagePaths) {
+                const content = await this.editorEngine.sandbox.readFile(pagePath);
+                if (content) {
+                    const defaultPageContext: FileMessageContext = {
+                        type: MessageContextType.FILE,
+                        path: pagePath,
+                        content,
+                        displayName: pagePath.split('/').pop() || 'page.tsx',
+                    }
+                    return defaultPageContext
+                }
+            }
+            return null;
+        } catch (error) {
+            console.error('Error getting default page context', error);
+            return null;
+        }
+    }
+
+    async getDefaultStyleGuideContext(): Promise<FileMessageContext[] | null> {
+        try {
+            const styleGuide = await this.editorEngine.theme.initializeTailwindColorContent();
+            if (!styleGuide) {
+                throw new Error('No style guide found');
+            }
+            const tailwindConfigContext: FileMessageContext = {
+                type: MessageContextType.FILE,
+                path: styleGuide.configPath,
+                content: styleGuide.configContent,
+                displayName: styleGuide.configPath.split('/').pop() || 'tailwind.config.ts',
+            }
+
+            const cssContext: FileMessageContext = {
+                type: MessageContextType.FILE,
+                path: styleGuide.cssPath,
+                content: styleGuide.cssContent,
+                displayName: styleGuide.cssPath.split('/').pop() || 'globals.css',
+            }
+
+            return [tailwindConfigContext, cssContext];
+        } catch (error) {
+            console.error('Error getting default style guide context', error);
+            return null;
+        }
+    }
+
     clearAttachments() {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
     }
