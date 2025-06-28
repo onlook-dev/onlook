@@ -1,6 +1,6 @@
 import { injectPreloadScript } from '@/components/store/editor/pages/helper';
 import { env } from '@/env';
-import { CodeSandbox, Sandbox, WebSocketSession } from '@codesandbox/sdk';
+import { CodeSandbox, type Sandbox, type WebSocketSession } from '@codesandbox/sdk';
 import { CSB_PREVIEW_TASK_NAME, getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
 import { generate, parse } from '@onlook/parser';
 import { addScriptConfig } from '@onlook/parser/src/code-edit/config';

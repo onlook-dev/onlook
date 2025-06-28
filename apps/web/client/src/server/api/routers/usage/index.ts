@@ -57,12 +57,12 @@ export const usageRouter = createTRPCRouter({
         return {
             daily: {
                 period: 'day',
-                usageCount: lastDayCount[0]?.count || 0,
+                usageCount: lastDayCount[0]?.count ?? 0,
                 limitCount: dailyLimitCount,
             } satisfies Usage,
             monthly: {
                 period: 'month',
-                usageCount: lastMonthCount[0]?.count || 0,
+                usageCount: lastMonthCount[0]?.count ?? 0,
                 limitCount: monthlyLimitCount,
             } satisfies Usage,
         };
