@@ -149,26 +149,19 @@ export class ChatContext {
     async getDefaultPageContext(): Promise<FileMessageContext | null> {
         try {
             const pagePaths = ['./app/page.tsx', './src/app/page.tsx'];
-            let pathPath = '';
-            let pageContent = '';
             for (const pagePath of pagePaths) {
                 const content = await this.editorEngine.sandbox.readFile(pagePath);
                 if (content) {
-                    pathPath = pagePath;
-                    pageContent = content;
-                    break;
+                    const defaultPageContext: FileMessageContext = {
+                        type: MessageContextType.FILE,
+                        path: pagePath,
+                        content,
+                        displayName: pagePath.split('/').pop() || 'page.tsx',
+                    }
+                    return defaultPageContext
                 }
             }
-            if (!pathPath) {
-                return null;
-            }
-            const defaultPageContext: FileMessageContext = {
-                type: MessageContextType.FILE,
-                path: pathPath,
-                content: pageContent,
-                displayName: pathPath.split('/').pop() || 'page.tsx',
-            }
-            return defaultPageContext
+            return null;
         } catch (error) {
             console.error('Error getting default page context', error);
             return null;
