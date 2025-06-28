@@ -1,29 +1,48 @@
 import { bedrock } from '@ai-sdk/amazon-bedrock';
 import { createAnthropic } from '@ai-sdk/anthropic';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { createVertexAnthropic } from '@ai-sdk/google-vertex/anthropic/edge';
-import { BEDROCK_MODEL_MAP, CLAUDE_MODELS, LLMProvider, VERTEX_MODEL_MAP } from '@onlook/models';
+import { createOpenAI } from '@ai-sdk/openai';
+import {
+    BEDROCK_MODEL_MAP,
+    CLAUDE_MODELS,
+    GEMINI_MODELS,
+    OPENAI_MODELS,
+    LLMProvider,
+    VERTEX_MODEL_MAP,
+} from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { type LanguageModelV1 } from 'ai';
 
 export async function initModel(
     provider: LLMProvider,
-    model: CLAUDE_MODELS,
+    model: CLAUDE_MODELS | OPENAI_MODELS | GEMINI_MODELS,
 ): Promise<{ model: LanguageModelV1; providerOptions: Record<string, any> }> {
     switch (provider) {
         case LLMProvider.ANTHROPIC:
             return {
-                model: await getAnthropicProvider(model),
+                model: await getAnthropicProvider(model as CLAUDE_MODELS),
                 providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
             };
         case LLMProvider.BEDROCK:
             return {
-                model: await getBedrockProvider(model),
+                model: await getBedrockProvider(model as CLAUDE_MODELS),
                 providerOptions: { bedrock: { cachePoint: { type: 'default' } } },
             };
         case LLMProvider.GOOGLE_VERTEX:
             return {
-                model: await getVertexProvider(model),
+                model: await getVertexProvider(model as CLAUDE_MODELS),
                 providerOptions: {},
+            };
+        case LLMProvider.OPENAI:
+            return {
+                model: await getOpenAIProvider(model as OPENAI_MODELS),
+                providerOptions: { openai: { cacheControl: { type: 'ephemeral' } } },
+            };
+        case LLMProvider.GOOGLE:
+            return {
+                model: await getGoogleProvider(model as GEMINI_MODELS),
+                providerOptions: { google: { cacheControl: { type: 'ephemeral' } } },
             };
         default:
             assertNever(provider);
@@ -71,4 +90,25 @@ async function getVertexProvider(model: CLAUDE_MODELS) {
             privateKey: process.env.GOOGLE_PRIVATE_KEY,
         },
     })(vertexModel);
+}
+
+async function getOpenAIProvider(model: OPENAI_MODELS): Promise<LanguageModelV1> {
+    if (!process.env.OPENAI_API_KEY) {
+        throw new Error('OPENAI_API_KEY must be set');
+    }
+    const openai = createOpenAI({
+        apiKey: process.env.OPENAI_API_KEY!,
+    });
+
+    return openai(model);
+}
+
+async function getGoogleProvider(model: GEMINI_MODELS): Promise<LanguageModelV1> {
+    if (!process.env.GOOGLE_API_KEY) {
+        throw new Error('GOOGLE_API_KEY must be set');
+    }
+    const google = createGoogleGenerativeAI({
+        apiKey: process.env.GOOGLE_API_KEY!,
+    });
+    return google(model);
 }
