@@ -6,7 +6,6 @@ import { ChatMessageRole, type ChatMessageContext } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
 import { ChatErrorManager } from './error';
@@ -16,7 +15,6 @@ export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
 
 export class ChatManager {
     conversation: ConversationManager;
-    code: ChatCodeManager;
     context: ChatContext;
     suggestions: SuggestionManager;
     error: ChatErrorManager;
@@ -28,7 +26,6 @@ export class ChatManager {
     ) {
         this.context = new ChatContext(this.editorEngine, this.projectManager);
         this.conversation = new ConversationManager(this, this.projectManager);
-        this.code = new ChatCodeManager(this, this.editorEngine);
         this.suggestions = new SuggestionManager(this.projectManager);
         this.error = new ChatErrorManager();
         makeAutoObservable(this);
@@ -128,7 +125,6 @@ export class ChatManager {
     }
 
     clear() {
-        this.code.clear();
         this.context.clear();
         this.conversation.clear();
     }
