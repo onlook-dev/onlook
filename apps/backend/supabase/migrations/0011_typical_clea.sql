@@ -1,4 +1,4 @@
-CREATE TYPE "public"."verification_request_status" AS ENUM('active', 'expired', 'used');--> statement-breakpoint
+;--> statement-breakpoint
 CREATE TYPE "public"."price_keys" AS ENUM('PRO_MONTHLY_TIER_1', 'PRO_MONTHLY_TIER_2', 'PRO_MONTHLY_TIER_3', 'PRO_MONTHLY_TIER_4', 'PRO_MONTHLY_TIER_5', 'PRO_MONTHLY_TIER_6', 'PRO_MONTHLY_TIER_7', 'PRO_MONTHLY_TIER_8', 'PRO_MONTHLY_TIER_9', 'PRO_MONTHLY_TIER_10', 'PRO_MONTHLY_TIER_11');--> statement-breakpoint
 CREATE TYPE "public"."product_type" AS ENUM('free', 'pro');--> statement-breakpoint
 CREATE TYPE "public"."scheduled_subscription_action" AS ENUM('price_change', 'cancellation');--> statement-breakpoint
@@ -65,7 +65,7 @@ ALTER TABLE "preview_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "published_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "auth"."users" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "custom_domain_verification" ALTER COLUMN "status" SET DATA TYPE "undefined"."verification_request_status";--> statement-breakpoint
+ALTER TABLE "custom_domain_verification" ALTER COLUMN "status" SET DATA TYPE "public"."verification_request_status";--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ALTER COLUMN "status" SET DEFAULT 'active';--> statement-breakpoint
 ALTER TABLE "messages" ADD COLUMN "commit_oid" text;--> statement-breakpoint
 ALTER TABLE "user_settings" ADD COLUMN "should_warn_delete" boolean DEFAULT true NOT NULL;--> statement-breakpoint
