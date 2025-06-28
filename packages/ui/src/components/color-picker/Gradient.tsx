@@ -2,7 +2,9 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Color } from '@onlook/utility';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip';
+import { Popover, PopoverContent, PopoverTrigger } from '../popover';
 import { Icons } from '../icons';
+import { ColorPicker } from './ColorPicker';
 
 const FlipIcon = ({ className, ...props }: { className?: string; [key: string]: any }) => (
     <svg
@@ -333,11 +335,13 @@ export const Gradient: React.FC<GradientProps> = ({
         stopId: string | null;
         startX: number;
         startPosition: number;
+        hasMoved: boolean;
     }>({
         isDragging: false,
         stopId: null,
         startX: 0,
         startPosition: 0,
+        hasMoved: false,
     });
 
     const trackRef = useRef<HTMLDivElement>(null);
@@ -353,6 +357,7 @@ export const Gradient: React.FC<GradientProps> = ({
                 stopId,
                 startX: event.clientX,
                 startPosition: stop.position,
+                hasMoved: false,
             });
 
             onStopSelect(stopId);
@@ -365,6 +370,12 @@ export const Gradient: React.FC<GradientProps> = ({
             if (!dragState.isDragging || !dragState.stopId || !trackRef.current) return;
 
             event.preventDefault();
+
+            // Check if the mouse has moved enough to consider this a drag
+            const moveDistance = Math.abs(event.clientX - dragState.startX);
+            if (moveDistance > 3) {
+                setDragState((prev) => ({ ...prev, hasMoved: true }));
+            }
 
             const rect = trackRef.current.getBoundingClientRect();
             const relativeX = event.clientX - rect.left;
@@ -387,6 +398,7 @@ export const Gradient: React.FC<GradientProps> = ({
                 stopId: null,
                 startX: 0,
                 startPosition: 0,
+                hasMoved: false,
             });
         };
 
@@ -397,6 +409,7 @@ export const Gradient: React.FC<GradientProps> = ({
                     stopId: null,
                     startX: 0,
                     startPosition: 0,
+                    hasMoved: false,
                 });
             }
         };
@@ -527,13 +540,6 @@ export const Gradient: React.FC<GradientProps> = ({
             }
         },
         [onGradientChange, onStopSelect],
-    );
-
-    const handleColorSwatchClick = useCallback(
-        (stopId: string) => {
-            onStopSelect(stopId);
-        },
-        [onStopSelect],
     );
 
     const gradientCSS = generateGradientCSS(gradient);
@@ -683,7 +689,7 @@ export const Gradient: React.FC<GradientProps> = ({
                                         userSelect: 'none',
                                     }}
                                     onMouseDown={(e) => handleStopMouseDown(stop.id, e)}
-                                    onClick={() => handleColorSwatchClick(stop.id)}
+                                    onClick={() => onStopSelect(stop.id)}
                                     title={`${stop.color} at ${stop.position.toFixed(1)}%`}
                                 >
                                     <div className="relative w-full h-full">
@@ -736,18 +742,45 @@ export const Gradient: React.FC<GradientProps> = ({
                                         <div className="rounded overflow-hidden flex-1">
                                             <div className="rounded flex items-center gap-[1.5px] flex-1">
                                                 <div className="flex items-center gap-1 bg-background-secondary px-1 py-1 flex-1">
-                                                    <div
-                                                        className={`w-4.5 h-4.5 border cursor-pointer transition-all flex-shrink-0 rounded bg-white/10 ${
-                                                            isSelected
-                                                                ? 'border-2 border-white shadow-lg'
-                                                                : 'border border-foreground-tertiary hover:border-foreground-secondary'
-                                                        }`}
-                                                        style={{ backgroundColor: stop.color }}
-                                                        onClick={() =>
-                                                            handleColorSwatchClick(stop.id)
-                                                        }
-                                                        title={`Click to select (${stop.color.replace('#', '')})`}
-                                                    />
+                                                    <Popover>
+                                                        <PopoverTrigger asChild>
+                                                            <button
+                                                                className={`w-4.5 h-4.5 border cursor-pointer transition-all flex-shrink-0 rounded bg-white/10 ${
+                                                                    isSelected
+                                                                        ? 'border-2 border-white shadow-lg'
+                                                                        : 'border border-foreground-tertiary hover:border-foreground-secondary'
+                                                                } p-0`}
+                                                                style={{
+                                                                    backgroundColor: stop.color,
+                                                                }}
+                                                                onClick={() =>
+                                                                    onStopSelect(stop.id)
+                                                                }
+                                                                title={`Click to select (${stop.color.replace('#', '')})`}
+                                                            />
+                                                        </PopoverTrigger>
+                                                        <PopoverContent
+                                                            className="w-[224px] overflow-hidden rounded-lg p-0 shadow-xl backdrop-blur-lg"
+                                                            side="left"
+                                                            align="center"
+                                                        >
+                                                            <ColorPicker
+                                                                color={Color.from(stop.color)}
+                                                                onChange={(newColor) =>
+                                                                    onStopColorChange(
+                                                                        stop.id,
+                                                                        newColor,
+                                                                    )
+                                                                }
+                                                                onChangeEnd={(newColor) =>
+                                                                    onStopColorChange(
+                                                                        stop.id,
+                                                                        newColor,
+                                                                    )
+                                                                }
+                                                            />
+                                                        </PopoverContent>
+                                                    </Popover>
                                                     <span
                                                         className={`text-xs flex-1 min-w-0 text-left ${
                                                             isSelected
