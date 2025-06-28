@@ -14,7 +14,7 @@
         <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=fr">Français</a></p>
         <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=de">Deutsch</a></p>
         <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=es">Español</a></p>
-        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=it">Itapano</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=it">Italiano</a></p>
         <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=ru">Русский</a></p>
         <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=pt">Português</a></p>
         <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=nl">Nederlands</a></p>
