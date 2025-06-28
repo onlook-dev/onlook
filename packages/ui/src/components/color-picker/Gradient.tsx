@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Color } from '@onlook/utility';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../select';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../tooltip';
+import { Icons } from '../icons';
 
 const FlipIcon = ({ className, ...props }: { className?: string; [key: string]: any }) => (
     <svg
@@ -202,9 +204,9 @@ const PRESET_GRADIENTS: GradientState[] = [
     },
 ];
 
-const generateId = () => Math.random().toString(36).substr(2, 9);
+const generateId = () => Math.random().toString(36).slice(2, 11);
 
-const generateGradientCSS = (gradient: GradientState): string => {
+export const generateGradientCSS = (gradient: GradientState): string => {
     const sortedStops = [...gradient.stops].sort((a, b) => a.position - b.position);
     const stopStrings = sortedStops.map((stop) => `${stop.color} ${stop.position}%`);
 
@@ -215,7 +217,7 @@ const generateGradientCSS = (gradient: GradientState): string => {
             return `radial-gradient(circle, ${stopStrings.join(', ')})`;
         case 'conic':
             return `conic-gradient(from ${gradient.angle}deg, ${stopStrings.join(', ')})`;
-        case 'angular':
+        case 'angular': {
             const angularStops = [...sortedStops];
             if (angularStops.length > 0) {
                 const firstStop = angularStops[0];
@@ -231,7 +233,8 @@ const generateGradientCSS = (gradient: GradientState): string => {
                 (stop) => `${stop.color} ${stop.position}%`,
             );
             return `conic-gradient(from ${gradient.angle}deg, ${angularStopStrings.join(', ')})`;
-        case 'diamond':
+        }
+        case 'diamond': {
             if (sortedStops.length < 2) {
                 const singleColor = sortedStops[0]?.color || '#000000';
                 return `radial-gradient(circle, ${singleColor})`;
@@ -239,9 +242,81 @@ const generateGradientCSS = (gradient: GradientState): string => {
 
             const diamondStopStrings = sortedStops.map((stop) => `${stop.color} ${stop.position}%`);
             return `radial-gradient(ellipse 80% 80% at center, ${diamondStopStrings.join(', ')})`;
+        }
         default:
             return `linear-gradient(${gradient.angle}deg, ${stopStrings.join(', ')})`;
     }
+};
+
+const PercentageInput: React.FC<{
+    value: number;
+    onChange: (value: number) => void;
+    className?: string;
+}> = ({ value, onChange, className = '' }) => {
+    const [displayValue, setDisplayValue] = useState(value.toFixed(0));
+    const [isFocused, setIsFocused] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (!isFocused) {
+            setDisplayValue(value.toFixed(0));
+        }
+    }, [value, isFocused]);
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const increment = e.shiftKey ? 10 : 1;
+            const currentValue = parseInt(displayValue) || 0;
+            let newValue;
+
+            if (e.key === 'ArrowUp') {
+                newValue = Math.min(100, currentValue + increment);
+            } else {
+                newValue = Math.max(0, currentValue - increment);
+            }
+
+            setDisplayValue(newValue.toString());
+            onChange(newValue);
+        } else if (e.key === 'Enter' || e.key === 'Escape') {
+            inputRef.current?.blur();
+        }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const inputValue = e.target.value.replace(/[^0-9]/g, '');
+        setDisplayValue(inputValue);
+    };
+
+    const handleBlur = () => {
+        setIsFocused(false);
+        const numValue = parseInt(displayValue) || 0;
+        const clampedValue = Math.max(0, Math.min(100, numValue));
+        setDisplayValue(clampedValue.toString());
+        onChange(clampedValue);
+    };
+
+    const handleFocus = () => {
+        setIsFocused(true);
+        // Select all text on focus for easier editing
+        setTimeout(() => {
+            inputRef.current?.select();
+        }, 0);
+    };
+
+    return (
+        <input
+            ref={inputRef}
+            value={`${displayValue}%`}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            className={`flex items-center justify-start pl-0.75 w-10 h-6.5 rounded bg-background-secondary text-foreground-secondary text-xs border-none outline-none focus:bg-background-tertiary focus:text-foreground-primary cursor-text ${className}`}
+            style={{ minWidth: '2.5rem' }}
+            title="Use ↑↓ arrows to adjust, Shift+↑↓ for ±10%"
+        />
+    );
 };
 
 export const Gradient: React.FC<GradientProps> = ({
@@ -326,12 +401,16 @@ export const Gradient: React.FC<GradientProps> = ({
             }
         };
 
+        const handleSelectStart = (event: Event) => {
+            event.preventDefault();
+        };
+
         if (dragState.isDragging) {
             document.addEventListener('mousemove', handleMouseMove, { passive: false });
             document.addEventListener('mouseup', handleMouseUp, { passive: false });
             document.addEventListener('mouseleave', handleMouseLeave);
             document.addEventListener('contextmenu', handleMouseUp);
-            document.addEventListener('selectstart', (e) => e.preventDefault());
+            document.addEventListener('selectstart', handleSelectStart);
         }
 
         return () => {
@@ -339,7 +418,7 @@ export const Gradient: React.FC<GradientProps> = ({
             document.removeEventListener('mouseup', handleMouseUp);
             document.removeEventListener('mouseleave', handleMouseLeave);
             document.removeEventListener('contextmenu', handleMouseUp);
-            document.removeEventListener('selectstart', (e) => e.preventDefault());
+            document.removeEventListener('selectstart', handleSelectStart);
         };
     }, [dragState, gradient, onGradientChange]);
 
@@ -460,10 +539,12 @@ export const Gradient: React.FC<GradientProps> = ({
     const gradientCSS = generateGradientCSS(gradient);
 
     return (
-        <div className={`flex flex-col gap-3 p-3 ${className}`}>
+        <div className={`flex flex-col gap-3 p-0 ${className}`}>
             {showPresets && (
                 <div>
-                    <h4 className="text-sm font-medium text-foreground-primary mb-2">Presets</h4>
+                    <h4 className="text-sm font-medium text-foreground-primary mb-2 select-none px-3">
+                        Presets
+                    </h4>
                     <div className="grid grid-cols-3 gap-2">
                         {PRESET_GRADIENTS.map((preset, index) => (
                             <button
@@ -482,10 +563,12 @@ export const Gradient: React.FC<GradientProps> = ({
 
             <div className="space-y-2">
                 {showPresets && (
-                    <h4 className="text-sm font-medium text-foreground-primary mb-3">Custom</h4>
+                    <h4 className="text-sm font-medium text-foreground-primary mb-3 select-none">
+                        Custom
+                    </h4>
                 )}
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between px-3 pt-2">
                     <Select
                         value={gradient.type}
                         onValueChange={(value) =>
@@ -495,7 +578,10 @@ export const Gradient: React.FC<GradientProps> = ({
                             })
                         }
                     >
-                        <SelectTrigger className="w-fit bg-background-secondary border-background-secondary py-1.5 px-2 h-fit text-xs rounded focus:outline-none focus:ring-0">
+                        <SelectTrigger
+                            size="sm"
+                            className="w-24 bg-background-secondary border-background-secondary px-2 text-xs rounded focus:outline-none focus:ring-0"
+                        >
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="rounded-md bg-background-secondary">
@@ -532,33 +618,47 @@ export const Gradient: React.FC<GradientProps> = ({
                         </SelectContent>
                     </Select>
 
-                    <div className="flex items-center gap-0 ml-auto">
-                        <button
-                            onClick={flipGradient}
-                            className="p-1.5 text-foreground-secondary hover:text-foreground-primary transition-colors"
-                            title="Flip gradient"
-                        >
-                            <FlipIcon className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                            onClick={rotateGradient}
-                            className="p-1.5 text-foreground-secondary hover:text-foreground-primary transition-colors"
-                            title="Rotate gradient"
-                        >
-                            <RotateIcon className="w-3.5 h-3.5" />
-                        </button>
+                    <div className="flex items-center gap-0.5 ml-auto">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={flipGradient}
+                                    className="p-1.5 text-foreground-secondary hover:text-foreground-primary transition-colors hover:bg-background-hover rounded"
+                                    title="Flip gradient"
+                                >
+                                    <FlipIcon className="w-3.5 h-3.5" />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent hideArrow className="mb-1">
+                                <p>Flip direction</p>
+                            </TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={rotateGradient}
+                                    className="p-1.5 text-foreground-secondary hover:text-foreground-primary transition-colors hover:bg-background-hover rounded"
+                                    title="Rotate gradient"
+                                >
+                                    <RotateIcon className="w-3.5 h-3.5" />
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent hideArrow className="mb-1">
+                                <p>Rotate angle</p>
+                            </TooltipContent>
+                        </Tooltip>
                     </div>
                 </div>
 
-                <div className="relative">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-foreground-secondary">Stops</span>
+                <div className="relative px-3">
+                    <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs text-foreground-secondary select-none">Stops</span>
                         <button
                             onClick={addStop}
-                            className="px-2 py-1 text-xs text-foreground-secondary hover:text-foreground-primary transition-colors w-8 h-6 flex items-center justify-center"
+                            className="px-1 py-1 text-xs text-foreground-secondary hover:text-foreground-primary transition-colors w-6 h-6 flex items-center justify-center hover:bg-background-hover rounded"
                             title="Add stop"
                         >
-                            +
+                            <Icons.Plus className="w-3.5 h-3.5" />
                         </button>
                     </div>
                     <div
@@ -575,7 +675,7 @@ export const Gradient: React.FC<GradientProps> = ({
                             return (
                                 <div
                                     key={stop.id}
-                                    className={`absolute top-0 w-5 h-6 transform -translate-x-1/2 -translate-y-1 ${
+                                    className={`absolute top-0 w-7 h-7 transform -translate-x-1/2 -translate-y-2.5 ${
                                         isActive ? 'cursor-grabbing' : 'cursor-grab'
                                     }`}
                                     style={{
@@ -588,12 +688,12 @@ export const Gradient: React.FC<GradientProps> = ({
                                 >
                                     <div className="relative w-full h-full">
                                         {isSelected || isActive ? (
-                                            <SelectedStopIcon className="w-5 h-6" />
+                                            <SelectedStopIcon className="w-7 h-7" />
                                         ) : (
-                                            <UnselectedStopIcon className="w-5 h-6" />
+                                            <UnselectedStopIcon className="w-7 h-7" />
                                         )}
                                         <div
-                                            className="absolute top-1.5 left-1/2 transform -translate-x-1/2 w-2.5 h-2.5 rounded border border-white"
+                                            className="absolute top-[3.5px] left-1/2 transform -translate-x-1/2 w-4 h-4 rounded border border-white/40"
                                             style={{ backgroundColor: stop.color }}
                                         />
                                     </div>
@@ -603,44 +703,71 @@ export const Gradient: React.FC<GradientProps> = ({
                     </div>
                 </div>
 
-                <div className="space-y-1.5">
+                <div className="space-y-0.5 mb-2">
                     {gradient.stops
                         .sort((a, b) => a.position - b.position)
                         .map((stop) => {
                             const isSelected = selectedStopId === stop.id;
                             const canDelete = gradient.stops.length > 1;
+
+                            const handlePositionChange = (newPosition: number) => {
+                                const updatedStops = gradient.stops.map((s) =>
+                                    s.id === stop.id ? { ...s, position: newPosition } : s,
+                                );
+                                onGradientChange({
+                                    ...gradient,
+                                    stops: updatedStops,
+                                });
+                            };
+
                             return (
-                                <div key={stop.id} className="flex items-center gap-2">
-                                    <div className="flex bg-background-secondary border border-border rounded px-1 py-1 items-center gap-2 flex-1">
-                                        <span className="text-xs text-foreground-secondary font-mono w-8 text-center flex-shrink-0">
-                                            {stop.position.toFixed(0)}%
-                                        </span>
-
-                                        <div className="w-px h-4 bg-foreground-tertiary flex-shrink-0"></div>
-
-                                        <div
-                                            className={`w-4 h-4 border cursor-pointer transition-all flex-shrink-0 ${
-                                                isSelected
-                                                    ? 'border-2 border-white shadow-lg'
-                                                    : 'border border-foreground-tertiary hover:border-foreground-secondary'
-                                            }`}
-                                            style={{ backgroundColor: stop.color }}
-                                            onClick={() => handleColorSwatchClick(stop.id)}
-                                            title={`Click to select (${stop.color})`}
+                                <div
+                                    key={stop.id}
+                                    className={`flex items-center gap-1 px-3 py-0.5 ${
+                                        isSelected ? 'bg-background-active' : ''
+                                    }`}
+                                >
+                                    <div className="flex rounded items-center gap-0.5 flex-1">
+                                        <PercentageInput
+                                            value={stop.position}
+                                            onChange={handlePositionChange}
+                                            className="mr-0.5"
                                         />
-
-                                        <span className="text-xs text-foreground-primary font-mono flex-1 min-w-0">
-                                            {stop.color.toUpperCase()}
-                                        </span>
-
-                                        <div className="w-px h-4 bg-foreground-tertiary flex-shrink-0"></div>
-                                        <span className="text-xs text-foreground-secondary font-mono w-8 text-center flex-shrink-0">
-                                            {stop.position.toFixed(0)}%
-                                        </span>
+                                        <div className="rounded overflow-hidden flex-1">
+                                            <div className="rounded flex items-center gap-[1.5px] flex-1">
+                                                <div className="flex items-center gap-1 bg-background-secondary px-1 py-1 flex-1">
+                                                    <div
+                                                        className={`w-4.5 h-4.5 border cursor-pointer transition-all flex-shrink-0 rounded bg-white/10 ${
+                                                            isSelected
+                                                                ? 'border-2 border-white shadow-lg'
+                                                                : 'border border-foreground-tertiary hover:border-foreground-secondary'
+                                                        }`}
+                                                        style={{ backgroundColor: stop.color }}
+                                                        onClick={() =>
+                                                            handleColorSwatchClick(stop.id)
+                                                        }
+                                                        title={`Click to select (${stop.color.replace('#', '')})`}
+                                                    />
+                                                    <span
+                                                        className={`text-xs flex-1 min-w-0 text-left ${
+                                                            isSelected
+                                                                ? 'text-foreground-primary'
+                                                                : 'text-foreground-secondary'
+                                                        }`}
+                                                    >
+                                                        {stop.color.replace('#', '').toUpperCase()}
+                                                    </span>
+                                                </div>
+                                                <PercentageInput
+                                                    value={stop.position}
+                                                    onChange={handlePositionChange}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                     <button
                                         onClick={() => canDelete && deleteStop(stop.id)}
-                                        className={`w-5 h-5 rounded text-xs flex items-center justify-center transition-colors ${
+                                        className={`w-6 h-6.5 rounded text-xs flex items-center justify-center transition-colors ${
                                             canDelete
                                                 ? 'hover:bg-background-secondary text-foreground-secondary hover:text-foreground-primary'
                                                 : 'text-foreground-tertiary cursor-not-allowed'
@@ -650,7 +777,7 @@ export const Gradient: React.FC<GradientProps> = ({
                                         }
                                         disabled={!canDelete}
                                     >
-                                        −
+                                        <Icons.Minus className="w-3.5 h-3.5" />
                                     </button>
                                 </div>
                             );
