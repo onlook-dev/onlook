@@ -1,5 +1,4 @@
 import { createContext, useContext } from 'react';
-import { projectManager } from '../project';
 import { EditorEngine } from './engine';
 
 const EditorEngineContext = createContext<EditorEngine | null>(null);
@@ -10,10 +9,11 @@ export const useEditorEngine = () => {
     return ctx;
 };
 
-export const EditorEngineProvider = ({ children }: {
+export const EditorEngineProvider = ({ children, projectId }: {
     children: React.ReactNode,
+    projectId: string,
 }) => {
-    const editorEngine = new EditorEngine(projectManager);
+    const editorEngine = new EditorEngine(projectId);
     return (
         <EditorEngineContext.Provider value={editorEngine} >
             {children}

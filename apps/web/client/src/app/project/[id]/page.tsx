@@ -7,8 +7,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         return <div>Invalid project ID</div>;
     }
     return (
-        <ProjectProviders>
-            <Main projectId={projectId} />
+        <ProjectProviders projectId={projectId}>
+            <Main />
         </ProjectProviders>
     );
 }

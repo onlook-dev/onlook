@@ -26,6 +26,7 @@ import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
 
 export class EditorEngine {
+    readonly projectId: string;
     readonly chat: ChatManager;
     readonly image: ImageManager;
     readonly theme: ThemeManager;
@@ -53,7 +54,8 @@ export class EditorEngine {
     readonly hosting: HostingManager = new HostingManager(this);
     readonly versions: VersionsManager = new VersionsManager(this);
 
-    constructor() {
+    constructor(projectId: string) {
+        this.projectId = projectId;
         this.chat = new ChatManager(this);
         this.pages = new PagesManager(this);
         this.image = new ImageManager(this);

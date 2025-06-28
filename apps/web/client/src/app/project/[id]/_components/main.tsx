@@ -3,10 +3,8 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectManager } from '@/components/store/project';
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
 import { SettingsModal } from '@/components/ui/settings-modal';
-import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { ChatType, type ChatMessageContext } from '@onlook/models';
@@ -24,24 +22,15 @@ import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
 
-export const Main = observer(({ projectId }: { projectId: string }) => {
+export const Main = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
     const createManager = useCreateManager();
     const { data: user } = api.user.get.useQuery();
     const { sendMessages } = useChatContext();
-    const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId });
+    const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId: editorEngine.projectId });
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
     const { tabState } = useTabActive();
-    const { addSubscription } = useCleanupOnPageChange();
-
-    useEffect(() => {
-        addSubscription('project-main', () => {
-            projectManager.clear();
-            editorEngine.clear();
-        });
-    }, [projectManager, editorEngine, addSubscription]);
 
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,
@@ -54,8 +43,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 return;
             }
             const { project, userCanvas, frames } = result;
-            projectManager.project = project;
-
             if (project.sandbox?.id) {
                 if (!editorEngine.sandbox.session.session) {
                     await editorEngine.sandbox.session.start(
@@ -82,7 +69,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         const creationData = createManager.pendingCreationData;
         if (!creationData) return;
 
-        if (projectId !== creationData.project.id) return;
+        if (editorEngine.projectId !== creationData.project.id) return;
 
         const createContext: ChatMessageContext[] = await editorEngine.chat.context.getCreateContext();
         const context = [...createContext, ...creationData.images];
@@ -102,7 +89,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
     useEffect(() => {
         if (tabState === 'reactivated') {
-            editorEngine.sandbox.session.reconnect(projectId, user?.id);
+            editorEngine.sandbox.session.reconnect(editorEngine.projectId, user?.id);
         }
     }, [tabState]);
 
@@ -141,7 +128,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 <Canvas />
 
                 <div className="absolute top-0 w-full">
-                    <TopBar projectId={projectId} />
+                    <TopBar />
                 </div>
 
                 {/* Left Panel */}

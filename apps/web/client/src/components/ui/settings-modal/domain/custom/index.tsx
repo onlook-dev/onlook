@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager } from '@/components/store/project';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { ProductType } from '@onlook/stripe';
@@ -11,11 +10,11 @@ import { Verified } from './verified';
 
 export const CustomDomain = observer(() => {
     const editorEngine = useEditorEngine();
-    const domains = useDomainsManager();
     const state = useStateManager();
     const { data: subscription } = api.subscription.get.useQuery();
     const product = subscription?.product;
-    const customDomain = domains.domains.custom;
+    const { data: domains } = api.domain.getAll.useQuery();
+
 
     const renderContent = () => {
         if (product?.type !== ProductType.PRO) {
