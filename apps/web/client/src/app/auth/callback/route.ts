@@ -14,7 +14,7 @@ export async function GET(request: Request) {
         if (!error) {
             const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === 'development';
-            const user = await getOrCreateUser(data.user.id);
+            const user = await getOrCreateUser(data.user);
 
             trackUserSignedIn(user.id, {
                 name: data.user.user_metadata.name,
@@ -38,14 +38,19 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/auth/auth-code-error`);
 }
 
-async function getOrCreateUser(userId: string): Promise<User> {
-    const user = await api.user.getById(userId);
-    if (!user) {
-        console.log(`User ${userId} not found, creating...`);
-        const newUser = await api.user.create({ id: userId });
+async function getOrCreateUser(user: User): Promise<User> {
+    const existingUser = await api.user.getById(user.id);
+    if (!existingUser) {
+        console.log(`User ${user.id} not found, creating...`);
+        const newUser = await api.user.create({
+            id: user.id,
+            name: user.user_metadata.name,
+            email: user.email,
+            avatarUrl: user.user_metadata.avatar_url,
+        });
         return newUser;
     }
-    console.log(`User ${userId} found, returning...`);
+    console.log(`User ${user.id} found, returning...`);
     return user;
 }
 

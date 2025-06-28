@@ -15,7 +15,7 @@ export const CustomDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
     const domainsManager = useDomainsManager();
     const projectManager = useProjectManager();
-    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
+    const { data: subscription } = api.subscription.get.useQuery();
 
     const project = projectManager.project;
     const product = subscription?.product;

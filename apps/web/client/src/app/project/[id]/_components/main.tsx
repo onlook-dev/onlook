@@ -4,7 +4,6 @@ import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
 import { useProjectManager } from '@/components/store/project';
-import { useUserManager } from '@/components/store/user';
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
 import { SettingsModal } from '@/components/ui/settings-modal';
 import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
@@ -29,7 +28,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectManager();
     const createManager = useCreateManager();
-    const userManager = useUserManager();
+    const { data: user } = api.user.get.useQuery();
     const { sendMessages } = useChatContext();
     const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId });
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
@@ -50,7 +49,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     );
 
     useEffect(() => {
-
         const initializeProject = async () => {
             if (!result) {
                 return;
@@ -59,15 +57,11 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
             projectManager.project = project;
 
             if (project.sandbox?.id) {
-                if (userManager.user?.id) {
-                    if (!editorEngine.sandbox.session.session) {
-                        await editorEngine.sandbox.session.start(
-                            project.sandbox.id,
-                            userManager.user.id,
-                        );
-                    }
-                } else {
-                    console.error('Initializing project: No user id');
+                if (!editorEngine.sandbox.session.session) {
+                    await editorEngine.sandbox.session.start(
+                        project.sandbox.id,
+                        user?.id,
+                    );
                 }
             } else {
                 console.error('Initializing project: No sandbox id');
@@ -82,7 +76,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
         initializeProject().catch((error) => {
             console.error('Error initializing project:', error);
         });
-    }, [result, userManager.user?.id]);
+    }, [result, user?.id]);
 
     const resumeCreate = async () => {
         const creationData = createManager.pendingCreationData;
@@ -108,7 +102,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
     useEffect(() => {
         if (tabState === 'reactivated') {
-            editorEngine.sandbox.session.reconnect(projectId, userManager.user?.id);
+            editorEngine.sandbox.session.reconnect(projectId, user?.id);
         }
     }, [tabState]);
 

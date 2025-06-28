@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { usageRecords } from '../subscription';
 import { subscriptions } from '../subscription/subscription';
@@ -12,6 +12,11 @@ export const users = pgTable('users', {
     id: uuid('id')
         .primaryKey()
         .references(() => authUsers.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    name: text('name').notNull(),
+    avatarUrl: text('avatar_url'),
+    email: text('email').notNull().unique(),
+    createdAt: timestamp('created_at').notNull().defaultNow(),
+    updatedAt: timestamp('updated_at').notNull().defaultNow(),
 }).enableRLS();
 
 export const usersRelations = relations(users, ({ many, one }) => ({

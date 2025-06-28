@@ -1,9 +1,7 @@
 'use client';
 
-import { useUserManager } from '@/components/store/user';
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
 import { SettingsModal } from '@/components/ui/settings-modal';
-import { useEffect } from 'react';
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
 import { ContributorSection } from './_components/landing-page/contributor-section';
@@ -14,12 +12,6 @@ import { WhatCanOnlookDoSection } from './_components/landing-page/what-can-onlo
 import { WebsiteLayout } from './_components/website-layout';
 
 export default function Main() {
-    const userManager = useUserManager();
-
-    useEffect(() => {
-        userManager.fetchUser();
-    }, []);
-
     return (
         <WebsiteLayout showFooter={true}>
             <div className="w-screen h-screen flex items-center justify-center" id="hero">

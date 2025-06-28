@@ -4,6 +4,7 @@ import {
     frames,
     projectInsertSchema,
     projects,
+    projectUpdateSchema,
     toCanvas,
     toFrame,
     toProject,
@@ -101,7 +102,7 @@ export const projectRouter = createTRPCRouter({
             });
             return projects.map((project) => toProject(project.project));
         }),
-    update: protectedProcedure.input(projectInsertSchema).mutation(async ({ ctx, input }) => {
+    update: protectedProcedure.input(projectUpdateSchema).mutation(async ({ ctx, input }) => {
         if (!input.id) {
             throw new Error('Project ID is required');
         }

@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useDomainsManager } from '@/components/store/project';
-import { useUserManager } from '@/components/store/user';
+import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { ProductType } from '@onlook/stripe';
 import { Icons } from '@onlook/ui/icons';
@@ -12,8 +12,8 @@ import { Verified } from './verified';
 export const CustomDomain = observer(() => {
     const editorEngine = useEditorEngine();
     const domains = useDomainsManager();
-    const userManager = useUserManager();
-    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
+    const state = useStateManager();
+    const { data: subscription } = api.subscription.get.useQuery();
     const product = subscription?.product;
     const customDomain = domains.domains.custom;
 
@@ -23,7 +23,7 @@ export const CustomDomain = observer(() => {
                 <UpgradePrompt
                     onClick={() => {
                         editorEngine.state.settingsOpen = false;
-                        userManager.subscription.isModalOpen = true;
+                        state.isSubscriptionModalOpen = true;
                     }}
                 />
             );
