@@ -8,6 +8,7 @@ import { motion } from 'motion/react';
 import { DivSelected } from './div-selected';
 import { DropdownManagerProvider } from './hooks/use-dropdown-manager';
 import { TextSelected } from './text-selected';
+import { WindowEditorBar } from './window-editor';
 
 enum TAG_CATEGORIES {
     TEXT = 'text',
@@ -46,26 +47,26 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
 
     return (
         <DropdownManagerProvider>
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 20 }}
-                className={cn(
-                    "flex flex-col border-[0.5px] border-border p-1 px-1.5 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50 overflow-hidden",
-                    editorEngine.state.editorMode === EditorMode.PREVIEW && "hidden"
-                )}
-                transition={{
-                    type: 'spring',
-                    bounce: 0.1,
-                    duration: 0.4,
-                    stiffness: 200,
-                    damping: 25,
-                }}
-            >
-                {selectedTag === TAG_CATEGORIES.TEXT && <TextSelected availableWidth={availableWidth} />}
-                {selectedTag === TAG_CATEGORIES.DIV && <DivSelected availableWidth={availableWidth} />}
-                {/* {selectedTag === 'image' && <ImgSelected />} */}
-            </motion.div>
+            {editorEngine.frames.selected[0] && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className={cn(
+                        "flex flex-col border-[0.5px] border-border p-1 px-1.5 bg-background/95 rounded-xl backdrop-blur-md drop-shadow-xl z-50 overflow-hidden",
+                        editorEngine.state.editorMode === EditorMode.PREVIEW && "hidden"
+                    )}
+                >
+                    {!editorEngine.elements.selected[0] ? (
+                        <WindowEditorBar />
+                    ) : (
+                        <>
+                            {selectedTag === TAG_CATEGORIES.TEXT && <TextSelected availableWidth={availableWidth} />}
+                            {selectedTag === TAG_CATEGORIES.DIV && <DivSelected availableWidth={availableWidth} />}
+                        </>
+                    )}
+                </motion.div>
+            )}
         </DropdownManagerProvider>
     );
 });
