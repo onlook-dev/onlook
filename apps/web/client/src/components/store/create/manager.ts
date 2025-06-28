@@ -1,7 +1,7 @@
 import { api } from '@/trpc/client';
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import type { Project as DbProject } from '@onlook/db';
-import type { ImageMessageContext } from '@onlook/models/chat';
+import { MessageContextType, type FileMessageContext, type ImageMessageContext } from '@onlook/models/chat';
 import { makeAutoObservable } from "mobx";
 import { v4 as uuidv4 } from 'uuid';
 import { parseRepoUrl } from '../editor/pages/helper';

@@ -61,7 +61,7 @@ export class GitManager {
             // Set user.email if not configured
             if (!hasEmail) {
                 const emailConfigResult = await this.runCommand(
-                    'git config user.email "git@onlook.com"',
+                    'git config user.email "support@onlook.com"',
                 );
                 if (!emailConfigResult.success) {
                     console.error('Failed to set git user.email:', emailConfigResult.error);
