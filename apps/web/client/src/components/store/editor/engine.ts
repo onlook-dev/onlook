@@ -1,6 +1,4 @@
-import { type ProjectManager } from '@/components/store/project/manager';
 import { makeAutoObservable } from 'mobx';
-import { VersionsManager } from '../project/version';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
@@ -25,6 +23,7 @@ import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
+import { VersionsManager } from './version';
 
 export class EditorEngine {
     readonly chat: ChatManager;
@@ -54,16 +53,14 @@ export class EditorEngine {
     readonly hosting: HostingManager = new HostingManager(this);
     readonly versions: VersionsManager = new VersionsManager(this);
 
-    constructor(
-        private projectManager: ProjectManager,
-    ) {
-        this.chat = new ChatManager(this, this.projectManager);
-        this.pages = new PagesManager(this, this.projectManager);
+    constructor() {
+        this.chat = new ChatManager(this);
+        this.pages = new PagesManager(this);
         this.image = new ImageManager(this);
-        this.theme = new ThemeManager(this, this.projectManager);
-        this.font = new FontManager(this, this.projectManager);
-        this.canvas = new CanvasManager(this.projectManager)
-        this.frames = new FramesManager(this, this.projectManager);
+        this.theme = new ThemeManager(this);
+        this.font = new FontManager(this);
+        this.canvas = new CanvasManager(this);
+        this.frames = new FramesManager(this);
         makeAutoObservable(this);
     }
 

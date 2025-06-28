@@ -52,25 +52,25 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     return (
         <html lang={locale} className={inter.variable} suppressHydrationWarning>
             <body>
-                <FeatureFlagsProvider>
-                    <PostHogProvider>
-                        <ThemeProvider
-                            attribute="class"
-                            forcedTheme="dark"
-                            enableSystem
-                            disableTransitionOnChange
-                        >
-                            <TRPCReactProvider>
+                <TRPCReactProvider>
+                    <FeatureFlagsProvider>
+                        <PostHogProvider>
+                            <ThemeProvider
+                                attribute="class"
+                                forcedTheme="dark"
+                                enableSystem
+                                disableTransitionOnChange
+                            >
                                 <AuthProvider>
                                     <NextIntlClientProvider>
                                         {children}
                                         <Toaster />
                                     </NextIntlClientProvider>
                                 </AuthProvider>
-                            </TRPCReactProvider>
-                        </ThemeProvider>
-                    </PostHogProvider>
-                </FeatureFlagsProvider>
+                            </ThemeProvider>
+                        </PostHogProvider>
+                    </FeatureFlagsProvider>
+                </TRPCReactProvider>
             </body>
         </html>
     );

@@ -2,8 +2,8 @@ import { sendAnalytics } from '@/utils/analytics';
 import { type GitCommit } from '@onlook/git';
 import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../editor/engine';
-import { GitManager } from './git-manager';
+import type { EditorEngine } from '../engine';
+import { GitManager } from './git';
 
 export enum CreateCommitFailureReason {
     NOT_INITIALIZED = 'NOT_INITIALIZED',
