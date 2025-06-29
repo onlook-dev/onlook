@@ -6,6 +6,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     if (!projectId) {
         return <div>Invalid project ID</div>;
     }
+
     return (
         <ProjectProviders projectId={projectId}>
             <Main />

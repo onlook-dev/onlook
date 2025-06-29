@@ -28,9 +28,10 @@ export const Main = observer(() => {
     const { data: user } = api.user.get.useQuery();
     const { sendMessages } = useChatContext();
     const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId: editorEngine.projectId });
+    const { tabState } = useTabActive();
+
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
-    const { tabState } = useTabActive();
 
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,
@@ -43,17 +44,10 @@ export const Main = observer(() => {
                 return;
             }
             const { project, userCanvas, frames, conversations } = result;
-            if (project.sandbox?.id) {
-                if (!editorEngine.sandbox.session.session) {
-                    await editorEngine.sandbox.session.start(
-                        project.sandbox.id,
-                        user?.id,
-                    );
-                }
-            } else {
-                console.error('Initializing project: No sandbox id');
-            }
-
+            await editorEngine.sandbox.session.start(
+                project.sandbox.id,
+                user?.id,
+            );
             editorEngine.canvas.applyCanvas(userCanvas);
             editorEngine.frames.applyFrames(frames);
             editorEngine.chat.conversation.applyConversations(conversations);
@@ -63,7 +57,11 @@ export const Main = observer(() => {
         initializeProject().catch((error) => {
             console.error('Error initializing project:', error);
         });
-    }, [result, user?.id]);
+
+        return () => {
+            editorEngine.sandbox.session.clear();
+        };
+    }, [result, user?.id, editorEngine.projectId]);
 
     const resumeCreate = async () => {
         const creationData = createManager.pendingCreationData;
