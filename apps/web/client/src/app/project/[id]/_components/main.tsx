@@ -4,7 +4,7 @@ import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
-import { SettingsModal } from '@/components/ui/settings-modal';
+import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { ChatType, type ChatMessageContext } from '@onlook/models';
@@ -168,7 +168,7 @@ export const Main = observer(() => {
 
                 <BottomBar />
             </div>
-            <SettingsModal showProjectTabs={true} />
+            <SettingsModalWithProjects showProjectTabs={true} />
             <SubscriptionModal />
         </TooltipProvider>
     );

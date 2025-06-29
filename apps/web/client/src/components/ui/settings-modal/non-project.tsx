@@ -61,12 +61,6 @@ export const NonProjectSettingsModal = observer(() => {
                                 <div className="flex flex-1 min-h-0 overflow-hidden">
                                     {/* Left navigation - fixed width */}
                                     <div className="flex flex-col overflow-y-scroll select-none">
-                                        {showProjectTabs && <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
-                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
-                                                Project
-                                            </p>
-                                        </div>}
-                                        {showProjectTabs && <Separator />}
                                         <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
                                             <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
                                                 Global Settings

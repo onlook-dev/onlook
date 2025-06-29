@@ -10,7 +10,7 @@ export const AdvancedSettingsSection = () => {
 
     const openAdvancedSettings = () => {
         editorEngine.state.publishOpen = false;
-        editorEngine.state.settingsTab = SettingsTabValue.DOMAIN;
+        stateManager.settingsTab = SettingsTabValue.DOMAIN;
         stateManager.isSettingsModalOpen = true;
     };
 

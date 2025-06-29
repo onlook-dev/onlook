@@ -2,6 +2,7 @@
 
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { SettingsTabValue } from '@/components/ui/settings-modal/helpers';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -89,7 +90,7 @@ export const TopBar = observer(() => {
                             size="icon"
                             className="h-8"
                             onClick={() => {
-                                editorEngine.state.settingsTab = SettingsTabValue.VERSIONS;
+                                stateManager.settingsTab = SettingsTabValue.VERSIONS;
                                 stateManager.isSettingsModalOpen = true;
                             }}
                         >

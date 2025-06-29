@@ -42,10 +42,14 @@ export function Settings({ project }: { project: Project }) {
     };
 
     const handleRenameProject = () => {
-        updateProject({
-            id: project.id,
-            name: projectName,
-        });
+        updateProject(
+            {
+                id: project.id,
+                project: {
+                    name: projectName,
+                },
+            },
+        );
         setShowRenameDialog(false);
     };
 

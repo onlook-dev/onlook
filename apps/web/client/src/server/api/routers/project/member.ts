@@ -17,9 +17,17 @@ export const memberRouter = createTRPCRouter({
                     user: true,
                 },
             });
+            // TODO: Fix this later
             return members.map((member) => ({
                 role: member.role,
-                user: toUser(member.user),
+                user: toUser({
+                    id: member.user.id,
+                    name: '',
+                    email: member.user.email,
+                    avatarUrl: '',
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                }),
             }));
         }),
     remove: protectedProcedure
