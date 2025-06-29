@@ -1,5 +1,8 @@
+import { type FrameViewEventPayload } from '@onlook/constants';
+
 export type PenpalParentMethods = {
     getFrameId: () => string;
+    handleFrameViewEvent: (event: FrameViewEventPayload) => void;
 };
 
 // Parent methods should be treated as promises

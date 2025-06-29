@@ -1,38 +1,61 @@
-import { EditorAttributes } from '@onlook/constants';
+import { EditorAttributes, FrameViewEvents } from '@onlook/constants';
 import type { LayerNode } from '@onlook/models';
+import debounce from 'lodash/debounce';
+import { penpalParent } from '../index';
 import { isValidHtmlElement } from '../helpers/dom';
 import { getInstanceId, getOid, getOrAssignDomId } from '../helpers/ids';
 import { getFrameId } from './state';
 
-export interface ProcessDomResult {
-    rootDomId: string;
-    layerMap: Array<[string, LayerNode]>;
-}
 
-export function processDom(root: HTMLElement = document.body): ProcessDomResult | null {
+const processDebounced = debounce(async (root: HTMLElement = document.body): Promise<boolean> => {
     const frameId = getFrameId();
     if (!frameId) {
         console.warn('frameView id not found, skipping dom processing');
-        return null;
+        return false;
     }
     const layerMap = buildLayerTree(root);
     if (!layerMap) {
         console.warn('Error building layer tree, root element is null');
-        return null;
+        return false;
     }
 
     const rootDomId = root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
     if (!rootDomId) {
         console.warn('Root dom id not found');
-        return null;
+        return false;
     }
     const rootNode = layerMap.get(rootDomId);
     if (!rootNode) {
         console.warn('Root node not found');
-        return null;
+        return false;
+    }
+    if (penpalParent) {
+        try {
+            await penpalParent.handleFrameViewEvent({
+                action: FrameViewEvents.DOM_PROCESSED,
+                args: {
+                    frameId,
+                    layerMap: Object.fromEntries(layerMap),
+                    rootNode
+                }
+            });
+        } catch (error) {
+            console.error('Failed to send DOM processed data to parent:', error);
+        }
+    } else {
+        console.warn('penpalParent not available, cannot send DOM processed data');
     }
 
-    return { rootDomId, layerMap: Array.from(layerMap.entries()) };
+    return true;
+}, 500);
+
+export async function processDom(root: HTMLElement = document.body): Promise<boolean> {
+    if (!getFrameId()) {
+        console.warn('frameView id not found, skipping dom processing');
+        return false;
+    }
+    await processDebounced(root);
+    return true;
 }
 
 export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null {

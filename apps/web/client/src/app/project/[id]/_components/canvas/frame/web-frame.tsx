@@ -73,13 +73,16 @@ export const WebFrameComponent = observer(
                 messenger,
                 methods: {
                     getFrameId: () => frame.id,
+                    handleFrameViewEvent(event) {
+                        editorEngine.frameViewEventHandler.handleEvents(event);
+                    },
                 } satisfies PenpalParentMethods,
             });
 
             // Store the connection reference
             connectionRef.current = connection;
 
-            connection.promise.then((child) => {
+            connection.promise.then(async (child) => {
                 if (!child) {
                     console.error(
                         `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
@@ -90,7 +93,7 @@ export const WebFrameComponent = observer(
                 const remote = child as unknown as PenpalChildMethods;
                 setPenpalChild(remote);
                 remote.setFrameId(frame.id);
-                remote.processDom();
+                await remote.processDom();
                 console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
             });
 
@@ -176,6 +179,7 @@ export const WebFrameComponent = observer(
                 isChildTextEditable: promisifyMethod(penpalChild?.isChildTextEditable),
                 handleBodyReady: promisifyMethod(penpalChild?.handleBodyReady),
                 captureScreenshot: promisifyMethod(penpalChild?.captureScreenshot),
+                listenForFrameViewEvents: promisifyMethod(penpalChild?.listenForFrameViewEvents),
             };
 
             // Register the iframe with the editor engine

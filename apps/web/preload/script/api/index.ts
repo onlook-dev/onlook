@@ -1,4 +1,4 @@
-import { processDom, type ProcessDomResult } from './dom';
+import { processDom } from './dom';
 import {
     getChildrenCount,
     getElementAtLoc,
@@ -27,6 +27,7 @@ import { captureScreenshot } from './screenshot';
 import { setFrameId } from './state';
 import { updateStyle } from './style';
 import { getTheme, setTheme } from './theme';
+import { listenForFrameViewEvents } from './events';
 
 export const preloadMethods = {
     // Misc
@@ -81,7 +82,9 @@ export const preloadMethods = {
     insertImage,
     removeImage,
     handleBodyReady,
+
+    // Events
+    listenForFrameViewEvents,
 }
 
 export type PenpalChildMethods = typeof preloadMethods;
-export type { ProcessDomResult };

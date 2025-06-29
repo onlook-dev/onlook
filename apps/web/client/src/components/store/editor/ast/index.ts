@@ -194,15 +194,26 @@ export class AstManager {
         this.layersManager.clear();
     }
 
-    async refreshAstDoc(frame: WebFrameView) {
-        // const root = await this.getBodyFromFrameView(frame);
-        // this.mappings.updateDocument(frame.id, root.ownerDocument);
+    refreshAstDoc(frame: WebFrameView) {
+        const root = this.getBodyFromFrameView(frame);
+        if (root) {
+            this.mappings.updateDocument(frame.id, root.ownerDocument);
+        }
     }
 
-    async getBodyFromFrameView(view: WebFrameView) {
-        // const htmlString = await view.executeJavaScript('document.documentElement.outerHTML');
-        // const parser = new DOMParser();
-        // const doc = parser.parseFromString(htmlString, 'text/html');
-        // return doc.body;
+    getBodyFromFrameView(view: WebFrameView): HTMLElement {
+        try {
+            // access iframe's contentDocument directly
+            const doc = view.contentDocument;
+            if (!doc) {
+                console.warn('Failed to access iframe contentDocument');
+                return document.body; // returning document body as fallback!
+            }
+            
+            return doc.body;
+        } catch (error) {
+            console.error('Error accessing iframe content:', error);
+            return document.body;
+        }
     }
 }
