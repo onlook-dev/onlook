@@ -15,12 +15,13 @@ export const useStartProject = () => {
 
     const { tabState } = useTabActive();
     const { data: user, isLoading: isUserLoading } = api.user.get.useQuery();
-    const { sendMessages } = useChatContext();
     const { data: project, isLoading: isProjectLoading } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: canvasWithFrames, isLoading: isCanvasLoading } = api.canvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
     const { data: conversations, isLoading: isConversationsLoading } = api.chat.conversation.get.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
-    const updateCreateRequest = api.project.createRequest.updateStatus.useMutation();
+    const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation();
+
+    const { sendMessages } = useChatContext();
 
     useEffect(() => {
         if (project) {
@@ -47,10 +48,10 @@ export const useStartProject = () => {
     }, [conversations]);
 
     useEffect(() => {
-        if (creationRequest) {
+        if (creationRequest && !isSandboxLoading) {
             resumeCreate(creationRequest);
         }
-    }, [creationRequest]);
+    }, [creationRequest, isSandboxLoading]);
 
     const resumeCreate = async (creationData: ProjectCreateRequest) => {
 
@@ -76,7 +77,7 @@ export const useStartProject = () => {
             return;
         }
         sendMessages(messages, ChatType.CREATE);
-        await updateCreateRequest.mutateAsync({
+        await updateCreateRequest({
             projectId: editorEngine.projectId,
             status: ProjectCreateRequestStatus.COMPLETED,
         });
