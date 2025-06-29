@@ -1,3 +1,34 @@
+
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="right">
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=en">English</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=zh-CN">简体中文</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=zh-TW">繁體中文</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=ja">日本語</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=ko">한국어</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=hi">हिन्दी</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=th">ไทย</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=fr">Français</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=de">Deutsch</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=es">Español</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=it">Italiano</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=ru">Русский</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=pt">Português</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=nl">Nederlands</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=pl">Polski</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=ar">العربية</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=fa">فارسی</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=tr">Türkçe</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=vi">Tiếng Việt</a></p>
+        <p><a href="https://openaitx.github.io/view.html?user=onlook-dev&project=onlook&lang=id">Bahasa Indonesia</a></p>
+      </div>
+    </div>
+  </details>
+</div>
+
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 
 <div align="center">
