@@ -17,6 +17,7 @@ export const customRouter = createTRPCRouter({
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
         const [customDomain] = await ctx.db.insert(publishedDomains).values({
+            projectId: input.projectId,
             fullDomain: input.domain,
         }).returning();
         return customDomain ? toDomainInfoFromPublished(customDomain) : null;
