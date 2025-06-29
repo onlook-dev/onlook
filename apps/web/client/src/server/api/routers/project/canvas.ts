@@ -1,5 +1,6 @@
 import {
-    canvases, canvasUpdateSchema, createDefaultCanvas, createDefaultUserCanvas, toCanvas, toFrame, userCanvases, type Canvas,
+    canvases, canvasUpdateSchema,
+    createDefaultUserCanvas, toCanvas, toFrame, userCanvases,
     type UserCanvas
 } from '@onlook/db';
 import { eq } from 'drizzle-orm';
@@ -41,9 +42,7 @@ export const canvasRouter = createTRPCRouter({
             if (!dbCanvas) {
                 return null;
             }
-            const canvas: Canvas = dbCanvas ?? createDefaultCanvas(input.projectId);
-            const userCanvas: UserCanvas = dbCanvas.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
-
+            const userCanvas: UserCanvas = dbCanvas.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, dbCanvas.id);
             return {
                 userCanvas: toCanvas(userCanvas),
                 frames: dbCanvas.frames.map(toFrame),
