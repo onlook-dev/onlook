@@ -20,6 +20,7 @@ import { ProjectBreadcrumb } from './project-breadcrumb';
 import { PublishButton } from './publish';
 
 export const TopBar = observer(() => {
+    const stateManager = useStateManager();
     const editorEngine = useEditorEngine();
     const { isWaiting } = useChatContext();
     const { isEnabled } = useFeatureFlags();
@@ -89,7 +90,7 @@ export const TopBar = observer(() => {
                             className="h-8"
                             onClick={() => {
                                 editorEngine.state.settingsTab = SettingsTabValue.VERSIONS;
-                                editorEngine.state.settingsOpen = true;
+                                stateManager.isSettingsModalOpen = true;
                             }}
                         >
                             <Icons.CounterClockwiseClock className="h-4 w-4" />

@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
 import { sendAnalytics } from '@/utils/analytics';
@@ -25,6 +26,8 @@ import { useRef, useState } from 'react';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
+    const stateManager = useStateManager();
+
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: updateProject } = api.project.update.useMutation()
     const t = useTranslations();
@@ -75,7 +78,10 @@ export const ProjectBreadcrumb = observer(() => {
         })
         if (project?.metadata) {
             updateProject({
-                ...dbPreviewImg
+                id: project.id,
+                project: {
+                    ...dbPreviewImg,
+                },
             });
         }
     }
@@ -200,7 +206,7 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => editorEngine.state.settingsOpen = true}>
+                    <DropdownMenuItem onClick={() => stateManager.isSettingsModalOpen = true}>
                         <div className="flex row center items-center group">
                             <Icons.Gear className="mr-2 group-hover:rotate-12 transition-transform" />
                             {t(transKeys.help.menu.openSettings)}

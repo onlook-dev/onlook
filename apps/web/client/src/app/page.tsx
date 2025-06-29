@@ -1,7 +1,7 @@
 'use client';
 
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
-import { SettingsModal } from '@/components/ui/settings-modal';
+import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
 import { ContributorSection } from './_components/landing-page/contributor-section';
@@ -28,7 +28,7 @@ export default function Main() {
             <CTASection />
             <AuthModal />
 
-            <SettingsModal showProjectTabs={false} />
+            <NonProjectSettingsModal />
             <SubscriptionModal />
         </WebsiteLayout >
     );

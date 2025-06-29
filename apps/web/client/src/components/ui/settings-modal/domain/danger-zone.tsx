@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { PublishStatus } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
@@ -7,6 +8,8 @@ import { observer } from 'mobx-react-lite';
 
 export const DangerZone = observer(() => {
     const editorEngine = useEditorEngine();
+    const stateManager = useStateManager();
+
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
     const hostingManager = editorEngine.hosting;
     const previewDomain = domains?.preview;
@@ -25,7 +28,7 @@ export const DangerZone = observer(() => {
             toast.success('Project unpublished', {
                 description: 'Your project is no longer publicly accessible.',
             });
-            editorEngine.state.settingsOpen = false;
+            stateManager.isSettingsModalOpen = false;
             editorEngine.state.publishOpen = true;
         }
     };

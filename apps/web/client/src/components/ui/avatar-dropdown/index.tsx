@@ -1,6 +1,5 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
@@ -23,7 +22,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const stateManager = useStateManager();
     const supabase = createClient();
     const router = useRouter();
-    const editorEngine = useEditorEngine();
+
     const { data: user } = api.user.get.useQuery();
     const initials = getInitials(user?.name ?? '');
     const [open, setOpen] = useState(false);
@@ -39,7 +38,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     };
 
     const handleOpenSettings = () => {
-        editorEngine.state.settingsOpen = true;
+        stateManager.isSettingsModalOpen = true;
         setOpen(false);
     };
 

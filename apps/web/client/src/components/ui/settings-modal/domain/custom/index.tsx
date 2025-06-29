@@ -10,7 +10,8 @@ import { Verified } from './verified';
 
 export const CustomDomain = observer(() => {
     const editorEngine = useEditorEngine();
-    const state = useStateManager();
+    const stateManager = useStateManager();
+
     const { data: subscription } = api.subscription.get.useQuery();
     const product = subscription?.product;
     const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
@@ -20,8 +21,8 @@ export const CustomDomain = observer(() => {
             return (
                 <UpgradePrompt
                     onClick={() => {
-                        editorEngine.state.settingsOpen = false;
-                        state.isSubscriptionModalOpen = true;
+                        stateManager.isSettingsModalOpen = false;
+                        stateManager.isSubscriptionModalOpen = true;
                     }}
                 />
             );

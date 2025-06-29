@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { sendAnalytics } from '@/utils/analytics';
 import {
@@ -35,6 +36,7 @@ interface DNSRecord {
 
 export const Verification = observer(() => {
     const editorEngine = useEditorEngine();
+    const stateManager = useStateManager();
     const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createCustomDomain } = api.domain.custom.create.useMutation();
     const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
@@ -115,29 +117,31 @@ export const Verification = observer(() => {
     }
 
     async function verifyDomain() {
-        setStatus(VerificationStatus.LOADING);
-        setError(null);
-        const response = await verifyCustomDomain({
-            verificationId: response.verificationId,
-            projectId: editorEngine.projectId,
-        });
+        // TODO: Implement domain verification
 
-        if (!response.success) {
-            setError(response.message ?? 'Failed to verify domain');
-            setStatus(VerificationStatus.VERIFYING);
-            sendAnalytics('verify domain failed', {
-                domain: domain,
-                error: response.message ?? 'Failed to verify domain',
-            });
-            return;
-        }
+        // setStatus(VerificationStatus.LOADING);
+        // setError(null);
+        // const response = await verifyCustomDomain({
+        //     verificationId: response.verificationId,
+        //     projectId: editorEngine.projectId,
+        // });
 
-        setStatus(VerificationStatus.VERIFIED);
-        setError(null);
-        addCustomDomain(domain);
-        sendAnalytics('verify domain success', {
-            domain: domain,
-        });
+        // if (!response.success) {
+        //     setError(response.message ?? 'Failed to verify domain');
+        //     setStatus(VerificationStatus.VERIFYING);
+        //     sendAnalytics('verify domain failed', {
+        //         domain: domain,
+        //         error: response.message ?? 'Failed to verify domain',
+        //     });
+        //     return;
+        // }
+
+        // setStatus(VerificationStatus.VERIFIED);
+        // setError(null);
+        // addCustomDomain(domain);
+        // sendAnalytics('verify domain success', {
+        //     domain: domain,
+        // });
     }
 
     const handleDomainVerified = () => {
@@ -146,7 +150,7 @@ export const Verification = observer(() => {
         });
 
         setTimeout(() => {
-            editorEngine.state.settingsOpen = false;
+            stateManager.isSettingsModalOpen = false;
             editorEngine.state.publishOpen = true;
         }, 1000);
     };
