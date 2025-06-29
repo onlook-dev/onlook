@@ -103,23 +103,6 @@ export class SessionManager {
         }
     }
 
-    async disconnect() {
-        if (!this.session) {
-            console.error('No session found');
-            return;
-        }
-        await this.session.disconnect();
-        this.session = null;
-        this.isConnecting = false;
-        this.terminalSessions.forEach(terminal => {
-            if (terminal.type === 'terminal') {
-                terminal.terminal?.kill();
-                terminal.xterm?.dispose();
-            }
-        });
-        this.terminalSessions.clear();
-    }
-
     async runCommand(command: string, streamCallback?: (output: string) => void): Promise<{
         output: string;
         success: boolean;
@@ -165,5 +148,18 @@ export class SessionManager {
                 error: error instanceof Error ? error.message : 'Unknown error occurred'
             };
         }
+    }
+
+    async clear() {
+        await this.session?.disconnect();
+        this.session = null;
+        this.isConnecting = false;
+        this.terminalSessions.forEach(terminal => {
+            if (terminal.type === 'terminal') {
+                terminal.terminal?.kill();
+                terminal.xterm?.dispose();
+            }
+        });
+        this.terminalSessions.clear();
     }
 }

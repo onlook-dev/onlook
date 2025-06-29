@@ -1,5 +1,5 @@
 import { type GitCommit } from '@onlook/git';
-import type { EditorEngine } from '../editor/engine';
+import type { EditorEngine } from '../engine';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 

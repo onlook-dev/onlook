@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useUserManager } from '@/components/store/user';
+import { api } from '@/trpc/react';
 import type { ChatSettings } from '@onlook/models';
 import { EditorTabValue } from '@onlook/models';
 import {
@@ -21,14 +21,15 @@ export const ChatPanelDropdown = observer(({
     isChatHistoryOpen: boolean;
     setIsChatHistoryOpen: (isOpen: boolean) => void;
 }) => {
-    const userManager = useUserManager();
+    const { mutate: updateSettings } = api.user.settings.upsert.useMutation();
     const editorEngine = useEditorEngine();
     const selectedTab = editorEngine.state.rightPanelTab;
 
-    const chatSettings = userManager.settings.settings.chat;
     const updateChatSettings = (e: React.MouseEvent, settings: Partial<ChatSettings>) => {
         e.preventDefault();
-        userManager.settings.updateChat(settings);
+        updateSettings({
+            ...settings,
+        });
     };
 
     return (

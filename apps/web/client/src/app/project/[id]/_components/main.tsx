@@ -3,11 +3,8 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectManager } from '@/components/store/project';
-import { useUserManager } from '@/components/store/user';
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
-import { SettingsModal } from '@/components/ui/settings-modal';
-import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
+import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { ChatType, type ChatMessageContext } from '@onlook/models';
@@ -25,24 +22,16 @@ import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
 
-export const Main = observer(({ projectId }: { projectId: string }) => {
+export const Main = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
     const createManager = useCreateManager();
-    const userManager = useUserManager();
+    const { data: user } = api.user.get.useQuery();
     const { sendMessages } = useChatContext();
-    const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId });
+    const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId: editorEngine.projectId });
+    const { tabState } = useTabActive();
+
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
-    const { tabState } = useTabActive();
-    const { addSubscription } = useCleanupOnPageChange();
-
-    useEffect(() => {
-        addSubscription('project-main', () => {
-            projectManager.clear();
-            editorEngine.clear();
-        });
-    }, [projectManager, editorEngine, addSubscription]);
 
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,
@@ -50,45 +39,35 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
     );
 
     useEffect(() => {
-
         const initializeProject = async () => {
             if (!result) {
                 return;
             }
-            const { project, userCanvas, frames } = result;
-            projectManager.project = project;
-
-            if (project.sandbox?.id) {
-                if (userManager.user?.id) {
-                    if (!editorEngine.sandbox.session.session) {
-                        await editorEngine.sandbox.session.start(
-                            project.sandbox.id,
-                            userManager.user.id,
-                        );
-                    }
-                } else {
-                    console.error('Initializing project: No user id');
-                }
-            } else {
-                console.error('Initializing project: No sandbox id');
-            }
-
+            const { project, userCanvas, frames, conversations } = result;
+            await editorEngine.sandbox.session.start(
+                project.sandbox.id,
+                user?.id,
+            );
             editorEngine.canvas.applyCanvas(userCanvas);
             editorEngine.frames.applyFrames(frames);
-            await editorEngine.chat.conversation.fetchOrCreateConversation(project.id);
+            editorEngine.chat.conversation.applyConversations(conversations);
             resumeCreate();
         };
 
         initializeProject().catch((error) => {
             console.error('Error initializing project:', error);
         });
-    }, [result, userManager.user?.id]);
+
+        return () => {
+            editorEngine.sandbox.session.clear();
+        };
+    }, [result, user?.id, editorEngine.projectId]);
 
     const resumeCreate = async () => {
         const creationData = createManager.pendingCreationData;
         if (!creationData) return;
 
-        if (projectId !== creationData.project.id) return;
+        if (editorEngine.projectId !== creationData.project.id) return;
 
         const createContext: ChatMessageContext[] = await editorEngine.chat.context.getCreateContext();
         const context = [...createContext, ...creationData.images];
@@ -108,7 +87,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
     useEffect(() => {
         if (tabState === 'reactivated') {
-            editorEngine.sandbox.session.reconnect(projectId, userManager.user?.id);
+            editorEngine.sandbox.session.reconnect(editorEngine.projectId, user?.id);
         }
     }, [tabState]);
 
@@ -147,7 +126,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 <Canvas />
 
                 <div className="absolute top-0 w-full">
-                    <TopBar projectId={projectId} />
+                    <TopBar />
                 </div>
 
                 {/* Left Panel */}
@@ -187,7 +166,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
                 <BottomBar />
             </div>
-            <SettingsModal showProjectTabs={true} />
+            <SettingsModalWithProjects />
             <SubscriptionModal />
         </TooltipProvider>
     );

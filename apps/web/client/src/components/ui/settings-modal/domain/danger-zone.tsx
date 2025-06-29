@@ -1,27 +1,24 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { useStateManager } from '@/components/store/state';
+import { api } from '@/trpc/react';
 import { PublishStatus } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
 
 export const DangerZone = observer(() => {
-    const domainsManager = useDomainsManager();
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
-    const hostingManager = editorEngine.hosting;
-    const previewDomain = domainsManager.domains.preview;
-    const customDomain = domainsManager.domains.custom;
-    const project = projectManager.project;
+    const stateManager = useStateManager();
 
-    if (!project) {
-        return <div>No project found</div>;
-    }
+    const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
+    const hostingManager = editorEngine.hosting;
+    const previewDomain = domains?.preview;
+    const customDomain = domains?.published;
 
     const isUnpublishing = hostingManager?.state.status === PublishStatus.LOADING;
 
     const unpublish = async (urls: string[]) => {
-        const success = await hostingManager.unpublish(project.id, urls);
+        const success = await hostingManager.unpublish(editorEngine.projectId, urls);
 
         if (!success) {
             toast.error('Failed to unpublish project', {
@@ -31,7 +28,7 @@ export const DangerZone = observer(() => {
             toast.success('Project unpublished', {
                 description: 'Your project is no longer publicly accessible.',
             });
-            editorEngine.state.settingsOpen = false;
+            stateManager.isSettingsModalOpen = false;
             editorEngine.state.publishOpen = true;
         }
     };

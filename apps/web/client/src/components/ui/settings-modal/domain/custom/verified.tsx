@@ -1,4 +1,5 @@
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -11,14 +12,9 @@ import { Input } from '@onlook/ui/input';
 import { timeAgo } from '@onlook/utility';
 
 export const Verified = () => {
-    const projectManager = useProjectManager();
-    const domainsManager = useDomainsManager();
-    const project = projectManager.project;
-    const customDomain = domainsManager.domains.custom;
-
-    if (!project) {
-        return <div>No project found</div>;
-    }
+    const editorEngine = useEditorEngine();
+    const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: removeCustomDomain } = api.domain.custom.remove.useMutation();
 
     if (!customDomain) {
         return <div>No custom domain found</div>;
@@ -28,7 +24,10 @@ export const Verified = () => {
     const lastUpdated = customDomain.publishedAt ? timeAgo(customDomain.publishedAt) : null;
 
     function removeDomain() {
-        domainsManager.removeCustomDomain(baseUrl);
+        removeCustomDomain({
+            domain: baseUrl,
+            projectId: editorEngine.projectId,
+        });
     }
 
     return (

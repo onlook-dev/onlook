@@ -1,4 +1,3 @@
-import type { ProjectManager } from '@/components/store/project/manager';
 import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
@@ -18,7 +17,6 @@ export class ChatContext {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
         reaction(

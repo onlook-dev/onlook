@@ -2,6 +2,7 @@
 
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { SettingsTabValue } from '@/components/ui/settings-modal/helpers';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
@@ -19,7 +20,8 @@ import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 import { PublishButton } from './publish';
 
-export const TopBar = observer(({ projectId }: { projectId: string }) => {
+export const TopBar = observer(() => {
+    const stateManager = useStateManager();
     const editorEngine = useEditorEngine();
     const { isWaiting } = useChatContext();
     const { isEnabled } = useFeatureFlags();
@@ -48,7 +50,7 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2 mr-2">
                 {isEnabled('NEXT_PUBLIC_FEATURE_COLLABORATION') && (
-                    <Members projectId={projectId} />
+                    <Members />
                 )}
                 <motion.div
                     className="space-x-0 hidden lg:block"
@@ -88,8 +90,8 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                             size="icon"
                             className="h-8"
                             onClick={() => {
-                                editorEngine.state.settingsTab = SettingsTabValue.VERSIONS;
-                                editorEngine.state.settingsOpen = true;
+                                stateManager.settingsTab = SettingsTabValue.VERSIONS;
+                                stateManager.isSettingsModalOpen = true;
                             }}
                         >
                             <Icons.CounterClockwiseClock className="h-4 w-4" />
