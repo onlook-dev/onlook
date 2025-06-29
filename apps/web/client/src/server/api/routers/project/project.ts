@@ -3,6 +3,8 @@ import {
     conversations,
     createDefaultCanvas, createDefaultConversation, createDefaultFrame, createDefaultUserCanvas,
     frames,
+    projectCreateRequestInsertSchema,
+    projectCreateRequests,
     projectInsertSchema,
     projects,
     projectUpdateSchema,
@@ -77,7 +79,15 @@ export const projectRouter = createTRPCRouter({
             };
         }),
     create: protectedProcedure
-        .input(z.object({ project: projectInsertSchema, userId: z.string() }))
+        .input(z.object({
+            project: projectInsertSchema,
+            userId: z.string(),
+            creationData: projectCreateRequestInsertSchema
+                .omit({
+                    projectId: true,
+                })
+                .optional(),
+        }))
         .mutation(async ({ ctx, input }) => {
             return await ctx.db.transaction(async (tx) => {
                 // 1. Insert the new project
@@ -108,6 +118,13 @@ export const projectRouter = createTRPCRouter({
                 const newConversation = createDefaultConversation(newProject.id);
                 await tx.insert(conversations).values(newConversation);
 
+                // 6. Create the creation request
+                if (input.creationData) {
+                    await tx.insert(projectCreateRequests).values({
+                        ...input.creationData,
+                        projectId: newProject.id,
+                    });
+                }
                 return newProject;
             });
         }),
