@@ -3,25 +3,35 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
+import { type ProjectCreateRequest } from '@onlook/db';
+import { ChatType, CreateRequestContextType, MessageContextType, ProjectCreateRequestStatus, type ChatMessageContext, type ImageMessageContext, type Project } from '@onlook/models';
 import { useEffect, useState } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
 
 export const useStartProject = () => {
     const editorEngine = useEditorEngine();
-    const { tabState } = useTabActive();
+    const [isProjectReady, setIsProjectReady] = useState(false);
+    const [isSandboxLoading, setIsSandboxLoading] = useState(true);
 
-    const { data: user } = api.user.get.useQuery();
+    const { tabState } = useTabActive();
+    const { data: user, isLoading: isUserLoading } = api.user.get.useQuery();
     const { sendMessages } = useChatContext();
-    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: canvasWithFrames } = api.canvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
-    const { data: conversations } = api.chat.conversation.get.useQuery({ projectId: editorEngine.projectId });
-    const [isStartingProject, setIsStartingProject] = useState(false);
+    const { data: project, isLoading: isProjectLoading } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: canvasWithFrames, isLoading: isCanvasLoading } = api.canvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
+    const { data: conversations, isLoading: isConversationsLoading } = api.chat.conversation.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: creationRequest, isLoading: isCreationRequestLoading } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
+    const updateCreateRequest = api.project.createRequest.updateStatus.useMutation();
 
     useEffect(() => {
         if (project) {
-            editorEngine.sandbox.session.start(project.sandbox.id);
+            startSandbox(project);
         }
     }, [project]);
+
+    const startSandbox = async (project: Project) => {
+        await editorEngine.sandbox.session.start(project.sandbox.id);
+        setIsSandboxLoading(false);
+    }
 
     useEffect(() => {
         if (canvasWithFrames) {
@@ -36,27 +46,41 @@ export const useStartProject = () => {
         }
     }, [conversations]);
 
-    // const resumeCreate = async () => {
-    //     const creationData = createManager.pendingCreationData;
-    //     if (!creationData) return;
+    useEffect(() => {
+        if (creationRequest) {
+            resumeCreate(creationRequest);
+        }
+    }, [creationRequest]);
 
-    //     if (editorEngine.projectId !== creationData.project.id) return;
+    const resumeCreate = async (creationData: ProjectCreateRequest) => {
 
-    //     const createContext: ChatMessageContext[] = await editorEngine.chat.context.getCreateContext();
-    //     const context = [...createContext, ...creationData.images];
+        if (editorEngine.projectId !== creationData.projectId) return;
 
-    //     const messages = await editorEngine.chat.getEditMessages(
-    //         creationData.prompt,
-    //         context,
-    //     );
+        const createContext: ChatMessageContext[] = await editorEngine.chat.context.getCreateContext();
+        const imageContexts: ImageMessageContext[] = creationData.context.filter((context) => context.type === CreateRequestContextType.IMAGE).map((context) => ({
+            type: MessageContextType.IMAGE,
+            content: context.content,
+            mimeType: context.mimeType,
+            displayName: 'user image',
+        }));
+        const context: ChatMessageContext[] = [...createContext, ...imageContexts];
+        const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
 
-    //     if (!messages) {
-    //         console.error('Failed to get creation messages');
-    //         return;
-    //     }
-    //     createManager.pendingCreationData = null;
-    //     sendMessages(messages, ChatType.CREATE);
-    // };
+        const messages = await editorEngine.chat.getEditMessages(
+            prompt,
+            context,
+        );
+
+        if (!messages) {
+            console.error('Failed to get creation messages');
+            return;
+        }
+        sendMessages(messages, ChatType.CREATE);
+        await updateCreateRequest.mutateAsync({
+            projectId: editorEngine.projectId,
+            status: ProjectCreateRequestStatus.COMPLETED,
+        });
+    };
 
     useEffect(() => {
         if (tabState === 'reactivated') {
@@ -64,5 +88,17 @@ export const useStartProject = () => {
         }
     }, [tabState]);
 
-    return { isStartingProject };
+    useEffect(() => {
+        const allQueriesResolved =
+            !isUserLoading &&
+            !isProjectLoading &&
+            !isCanvasLoading &&
+            !isConversationsLoading &&
+            !isCreationRequestLoading &&
+            !isSandboxLoading;
+
+        setIsProjectReady(allQueriesResolved);
+    }, [isUserLoading, isProjectLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading, isSandboxLoading]);
+
+    return { isProjectReady };
 }

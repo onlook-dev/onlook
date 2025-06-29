@@ -18,7 +18,7 @@ import { TopBar } from './top-bar';
 
 export const Main = observer(() => {
     const editorEngine = useEditorEngine();
-    const { isStartingProject } = useStartProject();
+    const { isProjectReady } = useStartProject();
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
@@ -26,7 +26,7 @@ export const Main = observer(() => {
         rightPanelRef,
     );
 
-    if (isStartingProject) {
+    if (!isProjectReady) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2">
                 <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />

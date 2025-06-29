@@ -1,9 +1,10 @@
-import { type CreateRequestContext } from '@onlook/models';
+import { ProjectCreateRequestStatus, type CreateRequestContext } from '@onlook/models';
 import { jsonb, pgEnum, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { projects } from './project';
 
-export const projectCreateStatus = pgEnum('project_create_status', ['pending', 'completed', 'failed']);
+
+export const projectCreateStatus = pgEnum('project_create_status', ProjectCreateRequestStatus);
 
 export const projectCreateRequests = pgTable(
     'project_create_requests',
@@ -16,7 +17,7 @@ export const projectCreateRequests = pgTable(
         context: jsonb("context").$type<CreateRequestContext[]>().notNull(),
         createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
         updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-        status: projectCreateStatus('status').notNull().default('pending'),
+        status: projectCreateStatus('status').notNull().default(ProjectCreateRequestStatus.PENDING),
     },
 ).enableRLS();
 

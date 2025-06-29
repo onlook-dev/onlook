@@ -3,6 +3,12 @@ export enum CreateRequestContextType {
     IMAGE = 'image',
 }
 
+export enum ProjectCreateRequestStatus {
+    PENDING = 'pending',
+    COMPLETED = 'completed',
+    FAILED = 'failed',
+}
+
 type BaseCreateRequestContext = {
     type: CreateRequestContextType;
     content: string;

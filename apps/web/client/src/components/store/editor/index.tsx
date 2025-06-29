@@ -9,12 +9,11 @@ export const useEditorEngine = () => {
     return ctx;
 };
 
-export const EditorEngineProvider = ({ children, projectId, userId }: {
+export const EditorEngineProvider = ({ children, projectId }: {
     children: React.ReactNode,
     projectId: string,
-    userId: string,
 }) => {
-    const editorEngine = useMemo(() => new EditorEngine(projectId, userId), [projectId, userId]);
+    const editorEngine = useMemo(() => new EditorEngine(projectId), [projectId]);
 
     useEffect(() => {
         return () => {

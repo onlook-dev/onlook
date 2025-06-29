@@ -17,12 +17,14 @@ import {
     type Canvas,
     type UserCanvas
 } from '@onlook/db';
-import { ProjectRole } from '@onlook/models';
+import { ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { projectCreateRequestRouter } from './createRequest';
 
 export const projectRouter = createTRPCRouter({
+    createRequest: projectCreateRequestRouter,
     list: protectedProcedure
         .query(async ({ ctx }) => {
             const projects = await ctx.db.query.userProjects.findMany({
@@ -122,6 +124,7 @@ export const projectRouter = createTRPCRouter({
                 if (input.creationData) {
                     await tx.insert(projectCreateRequests).values({
                         ...input.creationData,
+                        status: ProjectCreateRequestStatus.PENDING,
                         projectId: newProject.id,
                     });
                 }

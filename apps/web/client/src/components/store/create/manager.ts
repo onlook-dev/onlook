@@ -88,9 +88,6 @@ export class CreateManager {
             const newProject = await api.project.create.mutate({
                 project,
                 userId,
-                creationData: {
-                    context: [],
-                },
             });
             return newProject;
         }
