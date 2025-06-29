@@ -182,6 +182,59 @@ export const ChatInput = observer(() => {
         reader.readAsDataURL(file);
     };
 
+    const handleScreenshot = async () => {
+        try {
+            const framesWithViews = editorEngine.frames.getAll().filter(f => !!f.view);
+            
+            if (framesWithViews.length === 0) {
+                toast.error('No active frame available for screenshot');
+                return;
+            }
+
+            let screenshotData = null;
+            let mimeType = 'image/jpeg';
+            
+            for (const frame of framesWithViews) {
+                try {
+                    if (!frame.view || typeof frame.view.captureScreenshot !== 'function') {
+                        continue;
+                    }
+
+                    const result = await frame.view.captureScreenshot();
+                    screenshotData = result.data;
+                    mimeType = result.mimeType;
+                    break;
+                } catch (frameError) {
+                    continue;
+                }
+            }
+
+            if (!screenshotData) {
+                throw new Error('All frames failed to capture screenshot');
+            }
+            
+            const base64Data = screenshotData.startsWith('data:') 
+                ? screenshotData 
+                : `data:${mimeType};base64,${screenshotData}`;
+            
+            const contextImage: ImageMessageContext = {
+                type: MessageContextType.IMAGE,
+                content: base64Data,
+                mimeType: mimeType,
+                displayName: 'Screenshot',
+            };
+            
+            editorEngine.chat.context.context.push(contextImage);
+            toast.success('Screenshot captured successfully');
+        } catch (error) {
+            if (error instanceof Error && error.message.includes('destroyed connection')) {
+                toast.error('Frame connection lost. Please reload the page and try again.');
+            } else {
+                toast.error('Failed to capture screenshot. Please try again.');
+            }
+        }
+    };
+
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
     };
@@ -294,36 +347,42 @@ export const ChatInput = observer(() => {
                     }}
                 />
             </div>
-            <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
-                <ActionButtons disabled={disabled} handleImageEvent={handleImageEvent} />
-                {isWaiting ? (
-                    <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
-                        <TooltipTrigger asChild>
-                            <Button
-                                size={'icon'}
-                                variant={'secondary'}
-                                className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                                onClick={() => {
-                                    setActionTooltipOpen(false);
-                                    stop();
-                                }}
-                            >
-                                <Icons.Stop />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>{'Stop response'}</TooltipContent>
-                    </Tooltip>
-                ) : (
-                    <Button
-                        size={'icon'}
-                        variant={'secondary'}
-                        className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                        disabled={inputEmpty || status !== 'ready'}
-                        onClick={sendMessage}
-                    >
-                        <Icons.ArrowRight />
-                    </Button>
-                )}
+            <div className="flex flex-row w-full justify-end pt-2 pb-2 px-2">
+                <div className="flex flex-row items-center gap-1.5">
+                    <ActionButtons 
+                        disabled={disabled} 
+                        handleImageEvent={handleImageEvent}
+                        handleScreenshot={handleScreenshot}
+                    />
+                    {isWaiting ? (
+                        <Tooltip open={actionTooltipOpen} onOpenChange={setActionTooltipOpen}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    size={'icon'}
+                                    variant={'secondary'}
+                                    className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                                    onClick={() => {
+                                        setActionTooltipOpen(false);
+                                        stop();
+                                    }}
+                                >
+                                    <Icons.Stop />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>{'Stop response'}</TooltipContent>
+                        </Tooltip>
+                    ) : (
+                        <Button
+                            size={'icon'}
+                            variant={'secondary'}
+                            className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                            disabled={inputEmpty || status !== 'ready'}
+                            onClick={sendMessage}
+                        >
+                            <Icons.ArrowRight />
+                        </Button>
+                    )}
+                </div>
             </div>
         </div>
     );
