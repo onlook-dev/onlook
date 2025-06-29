@@ -636,7 +636,7 @@ export class SandboxManager {
         this.fileWatcher = null;
         this.fileSync.clear();
         this.templateNodeMap.clear();
-        this.session.disconnect();
+        this.session.clear();
         this.isIndexed = false;
         this.isIndexing = false;
     }

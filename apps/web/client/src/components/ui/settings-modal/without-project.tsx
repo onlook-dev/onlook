@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
@@ -6,16 +6,13 @@ import { cn } from '@onlook/ui/utils';
 import { capitalizeFirstLetter } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
 import { SettingsTabValue, type SettingTab } from './helpers';
 import { PreferencesTab } from './preferences-tab';
-import { ProjectSettingsTabs } from './with-project';
 
-export const SettingsModal = observer(({ showProjectTabs = false }: { showProjectTabs: boolean }) => {
-    const editorEngine = useEditorEngine();
-    const pagesManager = editorEngine.pages;
+export const NonProjectSettingsModal = observer(() => {
+    const stateManager = useStateManager();
 
-    const globalTabs: SettingTab[] = [
+    const tabs: SettingTab[] = [
         {
             label: SettingsTabValue.PREFERENCES,
             icon: <Icons.Person className="mr-2 h-4 w-4" />,
@@ -23,22 +20,9 @@ export const SettingsModal = observer(({ showProjectTabs = false }: { showProjec
         },
     ]
 
-    const [tabs, setTabs] = useState<SettingTab[]>(globalTabs);
-
-    useEffect(() => {
-        if (editorEngine.state.settingsOpen) {
-            pagesManager.scanPages();
-            editorEngine.image.scanImages();
-        }
-    }, [editorEngine.state.settingsOpen]);
-
-    const appendProjectTabs = (projectTabs: SettingTab[]) => {
-        setTabs([...tabs, ...projectTabs]);
-    }
-
     return (
         <AnimatePresence>
-            {editorEngine.state.settingsOpen && (
+            {stateManager.isSettingsModalOpen && (
                 <>
                     {/* Backdrop */}
                     <motion.div
@@ -46,7 +30,7 @@ export const SettingsModal = observer(({ showProjectTabs = false }: { showProjec
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50"
-                        onClick={() => (editorEngine.state.settingsOpen = false)}
+                        onClick={() => (stateManager.isSettingsModalOpen = false)}
                     />
 
                     {/* Modal */}
@@ -66,7 +50,7 @@ export const SettingsModal = observer(({ showProjectTabs = false }: { showProjec
                                         variant="ghost"
                                         size="icon"
                                         className="ml-auto"
-                                        onClick={() => (editorEngine.state.settingsOpen = false)}
+                                        onClick={() => (stateManager.isSettingsModalOpen = false)}
                                     >
                                         <Icons.CrossS className="h-4 w-4" />
                                     </Button>
@@ -77,29 +61,22 @@ export const SettingsModal = observer(({ showProjectTabs = false }: { showProjec
                                 <div className="flex flex-1 min-h-0 overflow-hidden">
                                     {/* Left navigation - fixed width */}
                                     <div className="flex flex-col overflow-y-scroll select-none">
-                                        {showProjectTabs && <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
-                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
-                                                Project
-                                            </p>
-                                            <ProjectSettingsTabs appendTabs={appendProjectTabs} />
-                                        </div>}
-                                        {showProjectTabs && <Separator />}
                                         <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
                                             <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
                                                 Global Settings
                                             </p>
-                                            {globalTabs.map((tab) => (
+                                            {tabs.map((tab) => (
                                                 <Button
                                                     key={tab.label}
                                                     variant="ghost"
                                                     className={cn(
                                                         'w-full justify-start px-0 hover:bg-transparent',
-                                                        editorEngine.state.settingsTab === tab.label
+                                                        stateManager.settingsTab === tab.label
                                                             ? 'text-foreground-active'
                                                             : 'text-muted-foreground',
                                                     )}
                                                     onClick={() =>
-                                                        (editorEngine.state.settingsTab = tab.label)
+                                                        (stateManager.settingsTab = tab.label)
                                                     }
                                                 >
                                                     {tab.icon}
@@ -113,7 +90,7 @@ export const SettingsModal = observer(({ showProjectTabs = false }: { showProjec
                                     <div className="flex-1 overflow-y-auto">
                                         {
                                             tabs.find(
-                                                (tab) => tab.label === editorEngine.state.settingsTab,
+                                                (tab) => tab.label === stateManager.settingsTab,
                                             )?.component
                                         }
                                     </div>

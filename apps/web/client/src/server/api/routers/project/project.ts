@@ -1,10 +1,13 @@
 import {
     canvases,
-    createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
+    conversations,
+    createDefaultCanvas, createDefaultConversation, createDefaultFrame, createDefaultUserCanvas,
     frames,
     projectInsertSchema,
     projects,
+    projectUpdateSchema,
     toCanvas,
+    toConversation,
     toFrame,
     toProject,
     userCanvases,
@@ -18,6 +21,28 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const projectRouter = createTRPCRouter({
+    list: protectedProcedure
+        .query(async ({ ctx }) => {
+            const projects = await ctx.db.query.userProjects.findMany({
+                where: eq(userProjects.userId, ctx.user.id),
+                with: {
+                    project: true,
+                },
+            });
+            return projects.map((project) => toProject(project.project));
+        }),
+    get: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const project = await ctx.db.query.projects.findFirst({
+                where: eq(projects.id, input.projectId),
+            });
+            if (!project) {
+                console.error('project not found');
+                return null;
+            }
+            return toProject(project)
+        }),
     getFullProject: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
@@ -34,7 +59,6 @@ export const projectRouter = createTRPCRouter({
                     },
                     conversations: {
                         orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
-                        limit: 1,
                     },
                 },
             });
@@ -49,6 +73,7 @@ export const projectRouter = createTRPCRouter({
                 project: toProject(project),
                 userCanvas: toCanvas(userCanvas),
                 frames: project.canvas?.frames.map(toFrame) ?? [],
+                conversations: project.conversations.map(toConversation) ?? [],
             };
         }),
     create: protectedProcedure
@@ -79,6 +104,10 @@ export const projectRouter = createTRPCRouter({
                 const newFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl);
                 await tx.insert(frames).values(newFrame);
 
+                // 5. Create the default conversation
+                const newConversation = createDefaultConversation(newProject.id);
+                await tx.insert(conversations).values(newConversation);
+
                 return newProject;
             });
         }),
@@ -101,10 +130,10 @@ export const projectRouter = createTRPCRouter({
             });
             return projects.map((project) => toProject(project.project));
         }),
-    update: protectedProcedure.input(projectInsertSchema).mutation(async ({ ctx, input }) => {
-        if (!input.id) {
-            throw new Error('Project ID is required');
-        }
-        await ctx.db.update(projects).set(input).where(eq(projects.id, input.id));
+    update: protectedProcedure.input(z.object({
+        id: z.string(),
+        project: projectUpdateSchema,
+    })).mutation(async ({ ctx, input }) => {
+        await ctx.db.update(projects).set(input.project).where(eq(projects.id, input.id));
     }),
 });

@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useUserManager } from '@/components/store/user';
+import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
@@ -21,14 +21,14 @@ export const Suggestions = observer(
         }
     >(({ disabled, inputValue, setInput, onSuggestionFocus }, ref) => {
         const editorEngine = useEditorEngine();
-        const userManager = useUserManager();
+        const { data: settings } = api.user.settings.get.useQuery();
         const [focusedIndex, setFocusedIndex] = useState<number>(-1);
         const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
         const suggestions = editorEngine.chat.suggestions.suggestions;
         const shouldHideSuggestions =
             editorEngine.chat.suggestions.shouldHide ||
-            !userManager.settings.settings?.chat?.showSuggestions ||
+            !settings?.chat?.showSuggestions ||
             disabled ||
             inputValue.trim().length > 0 ||
             editorEngine.error.errors.length > 0;

@@ -1,7 +1,6 @@
 import { DefaultSettings } from '@onlook/constants';
-import type { UserMetadata, UserSettings } from '@onlook/models';
-import { get } from 'lodash';
-import type { AuthUser, UserSettings as DbUserSettings } from '../schema';
+import type { UserSettings } from '@onlook/models';
+import type { UserSettings as DbUserSettings } from '../../schema';
 
 export const toUserSettings = (settings: DbUserSettings): UserSettings => {
     return {
@@ -29,14 +28,5 @@ export const fromUserSettings = (userId: string, settings: UserSettings): DbUser
         showSuggestions: settings.chat.showSuggestions,
         showMiniChat: settings.chat.showMiniChat,
         shouldWarnDelete: settings.editor.shouldWarnDelete,
-    };
-};
-
-export const fromAuthUser = (authUser: AuthUser): UserMetadata => {
-    return {
-        id: authUser.id,
-        name: get(authUser.rawUserMetaData, 'full_name'),
-        email: authUser.email,
-        avatarUrl: get(authUser.rawUserMetaData, 'avatar_url'),
     };
 };
