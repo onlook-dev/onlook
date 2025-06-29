@@ -168,7 +168,7 @@ export const Main = observer(() => {
 
                 <BottomBar />
             </div>
-            <SettingsModalWithProjects showProjectTabs={true} />
+            <SettingsModalWithProjects />
             <SubscriptionModal />
         </TooltipProvider>
     );
