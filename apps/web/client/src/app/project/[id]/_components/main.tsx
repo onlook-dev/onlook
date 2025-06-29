@@ -42,7 +42,7 @@ export const Main = observer(() => {
             if (!result) {
                 return;
             }
-            const { project, userCanvas, frames } = result;
+            const { project, userCanvas, frames, conversations } = result;
             if (project.sandbox?.id) {
                 if (!editorEngine.sandbox.session.session) {
                     await editorEngine.sandbox.session.start(
@@ -56,7 +56,7 @@ export const Main = observer(() => {
 
             editorEngine.canvas.applyCanvas(userCanvas);
             editorEngine.frames.applyFrames(frames);
-            await editorEngine.chat.conversation.fetchOrCreateConversation(project.id);
+            editorEngine.chat.conversation.applyConversations(conversations);
             resumeCreate();
         };
 

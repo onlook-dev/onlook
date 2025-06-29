@@ -33,6 +33,15 @@ export class ConversationManager {
             this._current = ChatConversationImpl.fromJSON(this.conversations[0]);
         } else {
             console.error('No conversations found, creating new conversation');
+
+        }
+    }
+
+    applyConversations(conversations: ChatConversation[]) {
+        this._conversations = conversations.map((c) => ChatConversationImpl.fromJSON(c));
+        if (this._conversations.length !== 0 && this._conversations[0]) {
+            this._current = ChatConversationImpl.fromJSON(this._conversations[0]);
+        } else {
             this.startNewConversation();
         }
     }
@@ -139,7 +148,6 @@ export class ConversationManager {
             return;
         }
         await this.current.addOrUpdateMessage(message);
-        await this.current.saveConversationToStorage();
     }
 
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {

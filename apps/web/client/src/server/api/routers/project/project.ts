@@ -1,11 +1,13 @@
 import {
     canvases,
-    createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
+    conversations,
+    createDefaultCanvas, createDefaultConversation, createDefaultFrame, createDefaultUserCanvas,
     frames,
     projectInsertSchema,
     projects,
     projectUpdateSchema,
     toCanvas,
+    toConversation,
     toFrame,
     toProject,
     userCanvases,
@@ -57,7 +59,6 @@ export const projectRouter = createTRPCRouter({
                     },
                     conversations: {
                         orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
-                        limit: 1,
                     },
                 },
             });
@@ -72,6 +73,7 @@ export const projectRouter = createTRPCRouter({
                 project: toProject(project),
                 userCanvas: toCanvas(userCanvas),
                 frames: project.canvas?.frames.map(toFrame) ?? [],
+                conversations: project.conversations.map(toConversation) ?? [],
             };
         }),
     create: protectedProcedure
@@ -101,6 +103,10 @@ export const projectRouter = createTRPCRouter({
                 // 4. Create the default frame
                 const newFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl);
                 await tx.insert(frames).values(newFrame);
+
+                // 5. Create the default conversation
+                const newConversation = createDefaultConversation(newProject.id);
+                await tx.insert(conversations).values(newConversation);
 
                 return newProject;
             });

@@ -14,7 +14,6 @@ import { ProjectTabs } from './project-tabs';
 
 export const SettingsModalWithProjects = observer(() => {
     const editorEngine = useEditorEngine();
-    const pagesManager = editorEngine.pages;
     const stateManager = useStateManager();
 
     const globalTabs: SettingTab[] = [
@@ -29,7 +28,7 @@ export const SettingsModalWithProjects = observer(() => {
 
     useEffect(() => {
         if (stateManager.isSettingsModalOpen) {
-            pagesManager.scanPages();
+            editorEngine.pages.scanPages();
             editorEngine.image.scanImages();
         }
     }, [stateManager.isSettingsModalOpen]);
