@@ -16,9 +16,10 @@ function keepDomUpdated() {
         domUpdateInterval = null;
     }
 
-    const interval = setInterval(() => {
+    const interval = setInterval(async () => {
         try {
-            if (processDom() !== null) {
+            const isDomProcessed = await processDom();
+            if (isDomProcessed) {
                 clearInterval(interval);
                 domUpdateInterval = null;
             }

@@ -40,7 +40,7 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             value: LeftPanelTabValue.LAYERS,
             icon: <Icons.Layers className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.layers,
-            disabled: true,
+            // disabled: true,
         },
         {
             value: LeftPanelTabValue.APPS,

@@ -3,6 +3,8 @@ import { getHtmlElement } from '../../helpers';
 import { buildLayerTree } from '../dom';
 import { getElementByDomId } from '../elements';
 import { getDomElement } from '../elements/helpers';
+import { penpalParent } from '../../index';
+import { FrameViewEvents } from '@onlook/constants';
 
 export function publishStyleUpdate(domId: string) {
     const domEl = getElementByDomId(domId, true);
@@ -10,7 +12,10 @@ export function publishStyleUpdate(domId: string) {
         console.warn('No domEl found for style update event');
         return;
     }
-    // ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, { domEl });
+    penpalParent?.handleFrameViewEvent({
+        action: FrameViewEvents.UPDATE_STYLE,
+        args: { domEl }
+    });
 }
 
 export function publishInsertElement(
@@ -24,7 +29,10 @@ export function publishInsertElement(
         console.warn('No domEl or layerMap found for insert element event');
         return;
     }
-    // ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerMap, editText });
+    penpalParent?.handleFrameViewEvent({
+        action: FrameViewEvents.INSERT_ELEMENT,
+        args: { domEl, layerMap, editText }
+    });
 }
 
 export function publishRemoveElement(location: ActionLocation) {
@@ -36,7 +44,10 @@ export function publishRemoveElement(location: ActionLocation) {
         console.warn('No parentDomEl or layerMap found for remove element event');
         return;
     }
-    // ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED, { parentDomEl, layerMap });
+    penpalParent?.handleFrameViewEvent({
+        action: FrameViewEvents.REMOVE_ELEMENT,
+        args: { parentDomEl, layerMap }
+    });
 }
 
 export function publishMoveElement(domEl: DomElement) {
@@ -47,10 +58,14 @@ export function publishMoveElement(domEl: DomElement) {
         console.warn('No domEl or layerMap found for move element event');
         return;
     }
-    // ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { domEl, layerMap });
+    penpalParent?.handleFrameViewEvent({
+        action: FrameViewEvents.MOVE_ELEMENT,
+        args: { domEl, layerMap }
+    });
 }
 
 export function publishGroupElement(domEl: DomElement) {
+    console.log('publishGroupElement', domEl);
     const parent = getHtmlElement(domEl.domId)?.parentElement;
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
 
@@ -58,7 +73,11 @@ export function publishGroupElement(domEl: DomElement) {
         console.warn('No domEl or layerMap found for group element event');
         return;
     }
-    // ipcRenderer.sendToHost(WebviewChannels.ELEMENT_GROUPED, { domEl, layerMap });
+
+    penpalParent?.handleFrameViewEvent({
+        action: FrameViewEvents.GROUP_ELEMENTS,
+        args: { domEl, layerMap }
+    });
 }
 
 export function publishUngroupElement(parentEl: DomElement) {
@@ -69,7 +88,10 @@ export function publishUngroupElement(parentEl: DomElement) {
         console.warn('No parentEl or layerMap found for ungroup element event');
         return;
     }
-    // ipcRenderer.sendToHost(WebviewChannels.ELEMENT_UNGROUPED, { parentEl, layerMap });
+    penpalParent?.handleFrameViewEvent({
+        action: FrameViewEvents.UNGROUP_ELEMENTS,
+        args: { parentEl, layerMap }
+    });
 }
 
 export function publishEditText(domEl: DomElement) {
@@ -80,5 +102,8 @@ export function publishEditText(domEl: DomElement) {
         console.warn('No domEl or layerMap found for edit text event');
         return;
     }
-    // ipcRenderer.sendToHost(WebviewChannels.ELEMENT_TEXT_EDITED, { domEl, layerMap });
+    penpalParent?.handleFrameViewEvent({
+        action: FrameViewEvents.EDIT_ELEMENT_TEXT,
+        args: { domEl, layerMap }
+    });
 }

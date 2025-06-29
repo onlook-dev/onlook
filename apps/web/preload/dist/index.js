@@ -857,7 +857,7 @@ var require_mapping_list = __commonJS((exports) => {
 // ../../../packages/penpal/src/child.ts
 var PENPAL_CHILD_CHANNEL = "PENPAL_CHILD";
 // script/index.ts
-var import_debounce = __toESM(require_debounce(), 1);
+var import_debounce2 = __toESM(require_debounce(), 1);
 
 // ../../../node_modules/penpal/dist/penpal.mjs
 var PenpalError = class extends Error {
@@ -1783,6 +1783,9 @@ var LANGUAGE_DISPLAY_NAMES = {
   ["zh" /* Chinese */]: "中文",
   ["ko" /* Korean */]: "한국어"
 };
+// script/api/dom.ts
+var import_debounce = __toESM(require_debounce(), 1);
+
 // script/helpers/dom.ts
 function getHtmlElement(domId) {
   return document.querySelector(`[${"data-odid" /* DATA_ONLOOK_DOM_ID */}="${domId}"]`);
@@ -1845,28 +1848,52 @@ function getFrameId() {
 }
 
 // script/api/dom.ts
-function processDom(root = document.body) {
+var processDebounced = import_debounce.default(async (root = document.body) => {
   const frameId = getFrameId();
   if (!frameId) {
     console.warn("frameView id not found, skipping dom processing");
-    return null;
+    return false;
   }
   const layerMap = buildLayerTree(root);
   if (!layerMap) {
     console.warn("Error building layer tree, root element is null");
-    return null;
+    return false;
   }
   const rootDomId = root.getAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */);
   if (!rootDomId) {
     console.warn("Root dom id not found");
-    return null;
+    return false;
   }
   const rootNode = layerMap.get(rootDomId);
   if (!rootNode) {
     console.warn("Root node not found");
-    return null;
+    return false;
   }
-  return { rootDomId, layerMap: Array.from(layerMap.entries()) };
+  if (penpalParent) {
+    try {
+      await penpalParent.handleFrameViewEvent({
+        action: "dom-processed" /* DOM_PROCESSED */,
+        args: {
+          frameId,
+          layerMap: Object.fromEntries(layerMap),
+          rootNode
+        }
+      });
+    } catch (error) {
+      console.error("Failed to send DOM processed data to parent:", error);
+    }
+  } else {
+    console.warn("penpalParent not available, cannot send DOM processed data");
+  }
+  return true;
+}, 500);
+async function processDom(root = document.body) {
+  if (!getFrameId()) {
+    console.warn("frameView id not found, skipping dom processing");
+    return false;
+  }
+  await processDebounced(root);
+  return true;
 }
 function buildLayerTree(root) {
   if (!isValidHtmlElement(root)) {
@@ -12345,7 +12372,7 @@ var cssManager = CSSManager.getInstance();
 // script/api/style/update.ts
 function updateStyle(domId, change) {
   cssManager.updateStyle(domId, change.updated);
-  return getElementByDomId(domId, true);
+  return domId;
 }
 // script/api/elements/dom/image.ts
 function insertImage(domId, image) {
@@ -12870,6 +12897,79 @@ function endAllDrag() {
 }
 
 // script/api/events/publish.ts
+function publishStyleUpdate(domId) {
+  const domEl = getElementByDomId(domId, true);
+  if (!domEl) {
+    console.warn("No domEl found for style update event");
+    return;
+  }
+  penpalParent?.handleFrameViewEvent({
+    action: "update-style" /* UPDATE_STYLE */,
+    args: { domEl }
+  });
+}
+function publishInsertElement(location, domEl, editText) {
+  const parent2 = getHtmlElement(location.targetDomId);
+  const layerMap = parent2 ? buildLayerTree(parent2) : null;
+  if (!domEl || !layerMap) {
+    console.warn("No domEl or layerMap found for insert element event");
+    return;
+  }
+  penpalParent?.handleFrameViewEvent({
+    action: "insert-element" /* INSERT_ELEMENT */,
+    args: { domEl, layerMap, editText }
+  });
+}
+function publishRemoveElement(location) {
+  const parent2 = getHtmlElement(location.targetDomId);
+  const layerMap = parent2 ? buildLayerTree(parent2) : null;
+  const parentDomEl = parent2 ? getDomElement(parent2, true) : null;
+  if (!parentDomEl || !layerMap) {
+    console.warn("No parentDomEl or layerMap found for remove element event");
+    return;
+  }
+  penpalParent?.handleFrameViewEvent({
+    action: "remove-element" /* REMOVE_ELEMENT */,
+    args: { parentDomEl, layerMap }
+  });
+}
+function publishMoveElement(domEl) {
+  const parent2 = getHtmlElement(domEl.domId)?.parentElement;
+  const layerMap = parent2 ? buildLayerTree(parent2) : null;
+  if (!domEl || !layerMap) {
+    console.warn("No domEl or layerMap found for move element event");
+    return;
+  }
+  penpalParent?.handleFrameViewEvent({
+    action: "move-element" /* MOVE_ELEMENT */,
+    args: { domEl, layerMap }
+  });
+}
+function publishGroupElement(domEl) {
+  console.log("publishGroupElement", domEl);
+  const parent2 = getHtmlElement(domEl.domId)?.parentElement;
+  const layerMap = parent2 ? buildLayerTree(parent2) : null;
+  if (!domEl || !layerMap) {
+    console.warn("No domEl or layerMap found for group element event");
+    return;
+  }
+  penpalParent?.handleFrameViewEvent({
+    action: "group-elements" /* GROUP_ELEMENTS */,
+    args: { domEl, layerMap }
+  });
+}
+function publishUngroupElement(parentEl) {
+  const parent2 = getHtmlElement(parentEl.domId)?.parentElement;
+  const layerMap = parent2 ? buildLayerTree(parent2) : null;
+  if (!parentEl || !layerMap) {
+    console.warn("No parentEl or layerMap found for ungroup element event");
+    return;
+  }
+  penpalParent?.handleFrameViewEvent({
+    action: "ungroup-elements" /* UNGROUP_ELEMENTS */,
+    args: { parentEl, layerMap }
+  });
+}
 function publishEditText(domEl) {
   const parent2 = getHtmlElement(domEl.domId)?.parentElement;
   const layerMap = parent2 ? buildLayerTree(parent2) : null;
@@ -12877,6 +12977,10 @@ function publishEditText(domEl) {
     console.warn("No domEl or layerMap found for edit text event");
     return;
   }
+  penpalParent?.handleFrameViewEvent({
+    action: "edit-element-text" /* EDIT_ELEMENT_TEXT */,
+    args: { domEl, layerMap }
+  });
 }
 
 // script/api/elements/text.ts
@@ -12983,6 +13087,17 @@ function listenForDomMutation() {
         }
       }
     }
+    if (added.size > 0 || removed.size > 0) {
+      const frameId = getFrameId();
+      penpalParent?.handleFrameViewEvent({
+        action: "window-mutated" /* WINDOW_MUTATED */,
+        args: {
+          frameId,
+          added: Object.fromEntries(added),
+          removed: Object.fromEntries(removed)
+        }
+      });
+    }
   });
   observer.observe(targetNode, config);
 }
@@ -13025,6 +13140,81 @@ function listenForEvents() {
 function listenForWindowEvents() {
   window.addEventListener("resize", () => {});
 }
+function listenForFrameViewEvents(event) {
+  const { action, args } = event;
+  switch (action) {
+    case "update-style" /* UPDATE_STYLE */: {
+      const { domId, style } = args;
+      const domEl_id = updateStyle(domId, style);
+      publishStyleUpdate(domEl_id);
+      break;
+    }
+    case "insert-element" /* INSERT_ELEMENT */: {
+      const { element, location, editText: editText2 } = args;
+      const domEl = insertElement(element, location);
+      if (domEl) {
+        publishInsertElement(location, domEl, editText2);
+      }
+      break;
+    }
+    case "remove-element" /* REMOVE_ELEMENT */: {
+      const { location } = args;
+      removeElement(location);
+      publishRemoveElement(location);
+      break;
+    }
+    case "move-element" /* MOVE_ELEMENT */: {
+      const { domId, newIndex } = args;
+      const domEl = moveElement(domId, newIndex);
+      if (domEl)
+        publishMoveElement(domEl);
+      break;
+    }
+    case "edit-element-text" /* EDIT_ELEMENT_TEXT */: {
+      const { domId, content } = args;
+      const domEl = editText(domId, content);
+      if (domEl) {
+        publishEditText(domEl);
+      }
+      break;
+    }
+    case "group-elements" /* GROUP_ELEMENTS */: {
+      const { parent: parent2, container, children } = args;
+      const domEl = groupElements(parent2, container, children);
+      if (domEl)
+        publishGroupElement(domEl);
+      break;
+    }
+    case "ungroup-elements" /* UNGROUP_ELEMENTS */: {
+      const { parent: parent2, container } = args;
+      const parentDomEl = ungroupElements(parent2, container);
+      if (parentDomEl)
+        publishUngroupElement(parentDomEl);
+      break;
+    }
+    case "insert-image" /* INSERT_IMAGE */: {
+      const { domId, image } = args;
+      insertImage(domId, image.content);
+      publishStyleUpdate(domId);
+      break;
+    }
+    case "remove-image" /* REMOVE_IMAGE */: {
+      const { domId } = args;
+      removeImage(domId);
+      publishStyleUpdate(domId);
+      break;
+    }
+    case "clean-after-write" /* CLEAN_AFTER_WRITE_TO_CODE */: {
+      processDom();
+      break;
+    }
+    default: {
+      const exhaustiveCheck = action;
+      console.warn(`Unknown event: ${exhaustiveCheck}`);
+      break;
+    }
+  }
+}
 
 // script/api/ready.ts
 function handleBodyReady() {
@@ -13038,9 +13228,10 @@ function keepDomUpdated() {
     clearInterval(domUpdateInterval);
     domUpdateInterval = null;
   }
-  const interval = setInterval(() => {
+  const interval = setInterval(async () => {
     try {
-      if (processDom() !== null) {
+      const isDomProcessed = await processDom();
+      if (isDomProcessed) {
         clearInterval(interval);
         domUpdateInterval = null;
       }
@@ -17332,7 +17523,8 @@ var preloadMethods = {
   ungroupElements,
   insertImage,
   removeImage,
-  handleBodyReady
+  handleBodyReady,
+  listenForFrameViewEvents
 };
 
 // script/index.ts
@@ -17370,7 +17562,7 @@ var createMessageConnection = async () => {
   });
   return penpalParent;
 };
-var reconnect = import_debounce.default(() => {
+var reconnect = import_debounce2.default(() => {
   if (isConnecting)
     return;
   console.log(`${PENPAL_CHILD_CHANNEL} - Reconnecting to penpal parent`);
@@ -17382,5 +17574,5 @@ export {
   penpalParent
 };
 
-//# debugId=8D5A9ABF19555AF764756E2164756E21
+//# debugId=429F9560307D1FB864756E2164756E21
 //# sourceMappingURL=index.js.map

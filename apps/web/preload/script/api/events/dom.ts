@@ -1,6 +1,8 @@
-import { EditorAttributes } from '@onlook/constants';
+import { EditorAttributes, FrameViewEvents } from '@onlook/constants';
 import type { LayerNode } from '@onlook/models';
 import { buildLayerTree } from '../dom';
+import { penpalParent } from '../..';
+import { getFrameId } from '../state';
 
 export function listenForDomMutation() {
     const targetNode = document.body;
@@ -44,6 +46,18 @@ export function listenForDomMutation() {
             }
         }
 
+        if (added.size > 0 || removed.size > 0) {
+            const frameId = getFrameId();
+            penpalParent?.handleFrameViewEvent({
+                action: FrameViewEvents.WINDOW_MUTATED,
+                args: {
+                    frameId,
+                    added: Object.fromEntries(added),
+                    removed: Object.fromEntries(removed)
+                }
+            });
+        }
+        
         // if (added.size > 0 || removed.size > 0) {
         //     ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATED, {
         //         added: Object.fromEntries(added),

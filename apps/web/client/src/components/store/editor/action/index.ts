@@ -1,6 +1,4 @@
 import { sendAnalytics } from '@/utils/analytics';
-import type { DomElement } from '@onlook/models';
-import { EditorMode } from '@onlook/models';
 import {
     type Action,
     type EditTextAction,
@@ -15,9 +13,9 @@ import {
 } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { assertNever } from '@onlook/utility';
-import { debounce, cloneDeep } from 'lodash';
-import { toJS } from 'mobx';
+import { cloneDeep } from 'lodash';
 import type { EditorEngine } from '../engine';
+import { FrameViewEvents } from '@onlook/constants';
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) { }
@@ -47,6 +45,7 @@ export class ActionManager {
         await this.editorEngine.code.write(action);
         sendAnalytics('redo');
     }
+
 
     private async dispatch(action: Action) {
         switch (action.type) {
@@ -85,7 +84,6 @@ export class ActionManager {
     }
 
     async updateStyle({ targets }: UpdateStyleAction) {
-        const domEls: DomElement[] = [];
         for (const target of targets) {
             const frameData = this.editorEngine.frames.get(target.frameId);
             if (!frameData) {
@@ -108,24 +106,12 @@ export class ActionManager {
                 original:target.change.original,
                 updated: convertedChange,
             };
-            // cloneDeep is used to avoid the issue of observable values can not pass through the webview
-            const domEl = await frameData.view.updateStyle(target.domId, cloneDeep(change));
-            if (!domEl) {
-                console.error('Failed to update style');
-                continue;
-            }
+            // cloneDeep is used to avoid the issue of observable values can not pass through the webview     
+            await frameData.view.listenForFrameViewEvents({ action: FrameViewEvents.UPDATE_STYLE, args: { domId: target.domId, style: cloneDeep(change) } });
 
-            domEls.push(domEl);
         }
 
-        this.refreshDomElement(domEls);
     }
-
-    debouncedRefreshDomElement(domEls: DomElement[]) {
-        this.editorEngine.elements.click(domEls);
-    }
-
-    refreshDomElement = debounce(this.debouncedRefreshDomElement, 100, { leading: true });
 
     private async insertElement({ targets, element, editText, location }: InsertElementAction) {
         for (const elementMetadata of targets) {
@@ -136,14 +122,8 @@ export class ActionManager {
             }
 
             try {
-                const domEl = await frameView.view.insertElement(element, location);
-                if (!domEl) {
-                    console.error('Failed to insert element');
-                    return;
-                }
-
-                this.refreshAndClickMutatedElement(domEl);
-            } catch (err) {
+                await frameView.view.listenForFrameViewEvents({ action: FrameViewEvents.INSERT_ELEMENT, args: { element, location, editText : editText ?? false } });
+            } catch (err) {  
                 console.error('Error inserting element:', err);
             }
         }
@@ -157,16 +137,7 @@ export class ActionManager {
                 return;
             }
 
-            const domEl = await frameView.view.removeElement(location);
-
-            if (!domEl) {
-                console.error('Failed to remove element');
-                return;
-            }
-
-            await this.editorEngine.overlay.refresh();
-
-            this.refreshAndClickMutatedElement(domEl);
+            await frameView.view.listenForFrameViewEvents({ action: FrameViewEvents.REMOVE_ELEMENT, args: { location } })
         }
     }
 
@@ -177,12 +148,7 @@ export class ActionManager {
                 console.error('Failed to get frameView');
                 return;
             }
-            const domEl = await frameView.view.moveElement(target.domId, location.index);
-            if (!domEl) {
-                console.error('Failed to move element');
-                return;
-            }
-            this.refreshAndClickMutatedElement(domEl);
+            await frameView.view.listenForFrameViewEvents({ action: FrameViewEvents.MOVE_ELEMENT, args: { domId: target.domId, newIndex: location.index } });
         }
     }
 
@@ -193,13 +159,8 @@ export class ActionManager {
                 console.error('Failed to get frameView');
                 return;
             }
-            const domEl = await frameView.view.editText(target.domId, newContent);
-            if (!domEl) {
-                console.error('Failed to edit text');
-                return;
-            }
 
-            this.refreshAndClickMutatedElement(domEl);
+            await frameView.view.listenForFrameViewEvents({ action: FrameViewEvents.EDIT_ELEMENT_TEXT, args: {domId : target.domId, content: newContent}})
         }
     }
 
@@ -210,18 +171,8 @@ export class ActionManager {
             return;
         }
 
-        const domEl = (await frameView.view.groupElements(
-            parent,
-            container,
-            children,
-        )) as DomElement;
+        (await frameView.view.listenForFrameViewEvents({ action: FrameViewEvents.GROUP_ELEMENTS, args: { parent, container, children } }));
 
-        if (!domEl) {
-            console.error('Failed to group elements');
-            return;
-        }
-
-        this.refreshAndClickMutatedElement(domEl);
     }
 
     private async ungroupElements({ parent, container }: UngroupElementsAction) {
@@ -230,53 +181,31 @@ export class ActionManager {
             console.error('Failed to get frameView');
             return;
         }
-
-        const domEl = (await frameView.view.ungroupElements(parent, container)) as DomElement;
-
-        if (!domEl) {
-            console.error('Failed to ungroup elements');
-            return;
-        }
-
-        this.refreshAndClickMutatedElement(domEl);
+        (await frameView.view.listenForFrameViewEvents({ action: FrameViewEvents.UNGROUP_ELEMENTS, args: { parent, container } }));
     }
 
-    private insertImage({ targets, image }: InsertImageAction) {
-        targets.forEach((target) => {
+    private async insertImage({ targets, image }: InsertImageAction) {
+        const promises = targets.map(async (target) => {
             const frameView = this.editorEngine.frames.get(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
             }
-            // sendToWebview(frameView, WebviewChannels.INSERT_IMAGE, {
-            //     domId: target.domId,
-            //     image,
-            // });
+            await frameView.view.listenForFrameViewEvents({ action: FrameViewEvents.INSERT_IMAGE, args: { domId: target.domId, image } });
         });
+        await Promise.all(promises);
     }
 
-    private removeImage({ targets }: RemoveImageAction) {
-        targets.forEach((target) => {
+    private async removeImage({ targets }: RemoveImageAction) {
+        const promises = targets.map(async (target) => {
             const frameView = this.editorEngine.frames.get(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
             }
-            // sendToWebview(frameView, WebviewChannels.REMOVE_IMAGE, {
-            //     domId: target.domId,
-            // });
+            await frameView.view.listenForFrameViewEvents({ action: FrameViewEvents.REMOVE_IMAGE, args: { domId: target.domId } });
         });
-    }
-
-    async refreshAndClickMutatedElement(
-        domEl: DomElement,
-        // newMap: Map<string, LayerNode>,
-        // frameData: FrameData,
-    ) {
-        this.editorEngine.state.editorMode = EditorMode.DESIGN;
-        // await this.editorEngine.ast.refreshAstDoc(frameData.view);
-        this.editorEngine.elements.click([domEl]);
-        // this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
+        await Promise.all(promises);
     }
 
     clear() {
