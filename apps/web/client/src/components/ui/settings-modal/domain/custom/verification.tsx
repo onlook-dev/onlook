@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { api } from '@/trpc/react';
 import { sendAnalytics } from '@/utils/analytics';
 import {
     FREESTYLE_IP_ADDRESS,
@@ -17,7 +17,7 @@ import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { getValidUrl, isApexDomain } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { RecordField } from './record-field';
 
 enum VerificationStatus {
@@ -35,27 +35,16 @@ interface DNSRecord {
 
 export const Verification = observer(() => {
     const editorEngine = useEditorEngine();
-    const domainsManager = useDomainsManager();
-    const projectManager = useProjectManager();
+    const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: createCustomDomain } = api.domain.custom.create.useMutation();
+    const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
+    const { mutateAsync: verifyCustomDomain } = api.domain.verification.verify.useMutation();
 
     const [status, setStatus] = useState(VerificationStatus.NO_DOMAIN);
     const [domain, setDomain] = useState('');
     const [records, setRecords] = useState<DNSRecord[]>([]);
     const [error, setError] = useState<string | null>();
     const [ownedDomains, setOwnedDomains] = useState<string[]>([]);
-
-    const project = projectManager.project;
-    const domains = domainsManager.domains;
-
-    useEffect(() => {
-        if (project) {
-            domainsManager.getDomains(project.id)
-        }
-    }, [editorEngine.state.settingsOpen, project]);
-
-    if (!projectManager.project) {
-        return null;
-    }
 
     function editDomain() {
         setStatus(VerificationStatus.NO_DOMAIN);
@@ -107,10 +96,13 @@ export const Verification = observer(() => {
         setError(null);
 
         // Send verification request to server
-        const response = await domainsManager.createDomainVerification(validDomain);
+        const response = await createDomainVerification({
+            domain: validDomain,
+            projectId: editorEngine.projectId,
+        });
 
-        if (!response.success || !response.verificationCode) {
-            setError(response.message ?? 'Failed to create domain verification');
+        if (!response || !response.verificationCode) {
+            setError('Failed to create domain verification');
             setStatus(VerificationStatus.NO_DOMAIN);
             return;
         }
@@ -125,7 +117,10 @@ export const Verification = observer(() => {
     async function verifyDomain() {
         setStatus(VerificationStatus.LOADING);
         setError(null);
-        const response = await domainsManager.verifyCustomDomain(domain);
+        const response = await verifyCustomDomain({
+            verificationId: response.verificationId,
+            projectId: editorEngine.projectId,
+        });
 
         if (!response.success) {
             setError(response.message ?? 'Failed to verify domain');
@@ -157,18 +152,10 @@ export const Verification = observer(() => {
     };
 
     const addCustomDomain = (url: string) => {
-        sendAnalytics('add custom domain', {
+        createCustomDomain({
             domain: url,
+            projectId: editorEngine.projectId,
         });
-        if (!domainsManager) {
-            setError('Failed to add custom domain');
-            sendAnalytics('add custom domain failed', {
-                domain: url,
-                error: 'domains manager not found',
-            });
-            return;
-        }
-        domainsManager.addCustomDomain(url);
         setStatus(VerificationStatus.VERIFIED);
         setDomain(url);
         setError(null);

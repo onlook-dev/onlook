@@ -1,20 +1,19 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
 import { PublishStatus } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
-import { timeAgo } from '@onlook/utility';
+import { getPublishUrls, timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { UrlSection } from './url';
 
 export const PreviewDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
-    const domainsManager = useDomainsManager();
-    const projectManager = useProjectManager();
-    const project = projectManager.project;
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: domain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: createPreviewDomain } = api.domain.preview.create.useMutation();
     const state = editorEngine.hosting.state;
-    const domain = domainsManager.domains.preview;
     const isLoading = state.status === PublishStatus.LOADING;
 
     if (!project) {
@@ -22,7 +21,7 @@ export const PreviewDomainSection = observer(() => {
     }
 
     const createBaseDomain = async (): Promise<void> => {
-        const domain = await domainsManager.createPreviewDomain();
+        const domain = await createPreviewDomain({ projectId: editorEngine.projectId });
         if (!domain) {
             console.error('Failed to create preview domain');
             return;
@@ -38,7 +37,7 @@ export const PreviewDomainSection = observer(() => {
         }
         const res = await editorEngine.hosting.publishPreview(project.id, {
             buildScript: DefaultSettings.COMMANDS.build,
-            urls: [domain.url],
+            urls: getPublishUrls(domain.url),
             options: {
                 skipBadge: false,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,

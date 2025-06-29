@@ -12,14 +12,11 @@ export const memberRouter = createTRPCRouter({
         )
         .query(async ({ ctx, input }) => {
             const members = await ctx.db.query.userProjects.findMany({
-                where: and(
-                    eq(userProjects.projectId, input.projectId),
-                    eq(userProjects.userId, ctx.user.id),
-                ),
+                where: eq(userProjects.projectId, input.projectId),
                 with: {
-                    user: true
-                }
-            })
+                    user: true,
+                },
+            });
             return members.map((member) => ({
                 role: member.role,
                 user: toUser(member.user),

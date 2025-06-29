@@ -1,14 +1,19 @@
-import { useProjectManager } from '@/components/store/project';
+
+import { useEditorEngine } from '@/components/store/editor';
 import { useDebouncedInput } from '@/hooks/use-debounce-input';
+import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
+import { fromProjectSettings } from '@onlook/db';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 
 export const ProjectTab = observer(() => {
-    const projectsManager = useProjectManager();
-    const project = projectsManager.project;
-    const projectSettings = projectsManager.projectSettings;
+    const editorEngine = useEditorEngine();
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: updateProject } = api.project.update.useMutation();
+    const { data: projectSettings } = api.settings.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: updateProjectSettings } = api.settings.upsert.useMutation();
 
     const installCommand = projectSettings?.commands?.install ?? DefaultSettings.COMMANDS.install;
     const runCommand = projectSettings?.commands?.run ?? DefaultSettings.COMMANDS.run;
@@ -18,36 +23,48 @@ export const ProjectTab = observer(() => {
     // Create debounced input handlers
     const nameInput = useDebouncedInput(
         name,
-        (value) => projectsManager.updatePartialProject({ name: value })
+        (value) => updateProject({
+            id: editorEngine.projectId,
+            name: value,
+        })
     );
 
     const installInput = useDebouncedInput(
         installCommand,
-        (value) => projectsManager.updateProjectSettings({
-            commands: {
-                ...projectSettings?.commands,
-                install: value,
-            },
+        (value) => updateProjectSettings({
+            projectId: editorEngine.projectId,
+            settings: fromProjectSettings(editorEngine.projectId, {
+                commands: {
+                    ...projectSettings?.commands,
+                    install: value,
+                },
+            }),
         })
     );
 
     const runInput = useDebouncedInput(
         runCommand,
-        (value) => projectsManager.updateProjectSettings({
-            commands: {
-                ...projectSettings?.commands,
-                run: value,
-            },
+        (value) => updateProjectSettings({
+            projectId: editorEngine.projectId,
+            settings: fromProjectSettings(editorEngine.projectId, {
+                commands: {
+                    ...projectSettings?.commands,
+                    run: value,
+                },
+            }),
         })
     );
 
     const buildInput = useDebouncedInput(
         buildCommand,
-        (value) => projectsManager.updateProjectSettings({
-            commands: {
-                ...projectSettings?.commands,
-                build: value,
-            },
+        (value) => updateProjectSettings({
+            projectId: editorEngine.projectId,
+            settings: fromProjectSettings(editorEngine.projectId, {
+                commands: {
+                    ...projectSettings?.commands,
+                    build: value,
+                },
+            }),
         })
     );
 
