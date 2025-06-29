@@ -7,15 +7,17 @@ import { cn } from '@onlook/ui/utils';
 import { capitalizeFirstLetter } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import DomainTab from './domain';
 import { SettingsTabValue, type SettingTab } from './helpers';
 import { PreferencesTab } from './preferences-tab';
-import { ProjectTabs } from './project-tabs';
+import { ProjectTab } from './project';
+import { SiteTab } from './site';
+import { VersionsTab } from './versions';
 
 export const SettingsModalWithProjects = observer(() => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
-
     const globalTabs: SettingTab[] = [
         {
             label: SettingsTabValue.PREFERENCES,
@@ -24,7 +26,30 @@ export const SettingsModalWithProjects = observer(() => {
         },
     ]
 
-    const [tabs, setTabs] = useState<SettingTab[]>(globalTabs);
+    const projectTabs: SettingTab[] = [
+        {
+            label: SettingsTabValue.SITE,
+            icon: <Icons.File className="mr-2 h-4 w-4" />,
+            component: <SiteTab />,
+        },
+        {
+            label: SettingsTabValue.DOMAIN,
+            icon: <Icons.Globe className="mr-2 h-4 w-4" />,
+            component: <DomainTab />,
+        },
+        {
+            label: SettingsTabValue.PROJECT,
+            icon: <Icons.Gear className="mr-2 h-4 w-4" />,
+            component: <ProjectTab />,
+        },
+        {
+            label: SettingsTabValue.VERSIONS,
+            icon: <Icons.Code className="mr-2 h-4 w-4" />,
+            component: <VersionsTab />,
+        },
+    ];
+
+    const tabs = [...globalTabs, ...projectTabs];
 
     useEffect(() => {
         if (stateManager.isSettingsModalOpen) {
@@ -32,10 +57,6 @@ export const SettingsModalWithProjects = observer(() => {
             editorEngine.image.scanImages();
         }
     }, [stateManager.isSettingsModalOpen]);
-
-    const appendProjectTabs = (projectTabs: SettingTab[]) => {
-        setTabs([...tabs, ...projectTabs]);
-    }
 
     return (
         <AnimatePresence>
@@ -82,7 +103,24 @@ export const SettingsModalWithProjects = observer(() => {
                                             <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
                                                 Project
                                             </p>
-                                            <ProjectTabs appendTabs={appendProjectTabs} />
+                                            {projectTabs.map((tab) => (
+                                                <Button
+                                                    key={tab.label}
+                                                    variant="ghost"
+                                                    className={cn(
+                                                        'w-full justify-start px-0 hover:bg-transparent',
+                                                        stateManager.settingsTab === tab.label
+                                                            ? 'text-foreground-active'
+                                                            : 'text-muted-foreground',
+                                                    )}
+                                                    onClick={() =>
+                                                        (stateManager.settingsTab = tab.label)
+                                                    }
+                                                >
+                                                    {tab.icon}
+                                                    {capitalizeFirstLetter(tab.label.toLowerCase())}
+                                                </Button>
+                                            ))}
                                         </div>
                                         <Separator />
                                         <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">

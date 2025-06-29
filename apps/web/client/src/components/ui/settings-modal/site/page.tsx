@@ -9,9 +9,10 @@ import { useMetadataForm } from './use-metadata-form';
 
 export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path: string }) => {
     const editorEngine = useEditorEngine();
-    const { data: project } = api.project.getFullProject.useQuery({ projectId: editorEngine.projectId });
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
-    const baseUrl = domains?.preview?.url;
+    const baseUrl = domains?.published?.url ?? domains?.preview?.url ?? project?.sandbox?.url;
+
     const {
         title,
         description,

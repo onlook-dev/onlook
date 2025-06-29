@@ -1,4 +1,4 @@
-import { createDefaultUserSettings, toUserSettings, userInsertSchema, users, userSettings, userSettingsUpdateSchema } from '@onlook/db';
+import { createDefaultUserSettings, toUser, toUserSettings, userInsertSchema, users, userSettings, userSettingsUpdateSchema } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -39,7 +39,15 @@ export const userRouter = createTRPCRouter({
         const user = await ctx.db.query.users.findFirst({
             where: eq(users.id, authUser.id),
         });
-        return user;
+        const userData = user ? toUser({
+            id: user.id,
+            name: user.name ?? authUser.user_metadata.name,
+            email: user.email ?? authUser.email,
+            avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
+            createdAt: user.createdAt ?? new Date(authUser.created_at ?? Date.now()),
+            updatedAt: user.updatedAt ?? new Date(authUser.updated_at ?? Date.now()),
+        }) : null;
+        return userData;
     }),
     getById: protectedProcedure.input(z.string()).query(async ({ ctx, input }) => {
         const user = await ctx.db.query.users.findFirst({

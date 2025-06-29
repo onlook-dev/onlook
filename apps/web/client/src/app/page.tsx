@@ -1,7 +1,7 @@
 'use client';
 
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
-import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
+import { NonProjectSettingsModal } from '@/components/ui/settings-modal/without-project';
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
 import { ContributorSection } from './_components/landing-page/contributor-section';
