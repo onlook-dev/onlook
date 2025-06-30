@@ -1,6 +1,8 @@
+import type { WebSocketSession } from "@codesandbox/sdk";
+
 // System reserved names (Windows compatibility)
 export const RESERVED_NAMES = [
-    'CON', 'PRN', 'AUX', 'NUL', 
+    'CON', 'PRN', 'AUX', 'NUL',
     'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
     'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
 ] as const;
@@ -69,9 +71,9 @@ export const doesFileExist = (files: string[], filePath: string): boolean => {
 
 export const doesFolderExist = (files: string[], folderPath: string): boolean => {
     const normalizedFolderPath = folderPath.replace(/\\/g, '/');
-    
+
     const cleanFolderPath = normalizedFolderPath.replace(/\/$/, '');
-    
+
     return files.some(file => {
         const normalizedFile = file.replace(/\\/g, '/');
 
@@ -79,7 +81,7 @@ export const doesFolderExist = (files: string[], folderPath: string): boolean =>
     });
 };
 
-export const createFileInSandbox = async (session: any, filePath: string, content: string = '', editorEngine?: any): Promise<void> => {
+export const createFileInSandbox = async (session: WebSocketSession, filePath: string, content: string = '', editorEngine?: any): Promise<void> => {
     try {
         if (!session) {
             throw new Error('No sandbox session available');
@@ -116,4 +118,3 @@ export const createFolderInSandbox = async (session: any, folderPath: string, ed
     }
 };
 
- 
