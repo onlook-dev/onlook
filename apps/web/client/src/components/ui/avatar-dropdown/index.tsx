@@ -1,8 +1,9 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
-import { useUserManager } from '@/components/store/user';
+import { useStateManager } from '@/components/store/state';
+import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
+import { createClient } from '@/utils/supabase/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -18,25 +19,26 @@ import { useState } from 'react';
 import { UsageSection } from './plans';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
+    const stateManager = useStateManager();
+    const supabase = createClient();
     const router = useRouter();
-    const userManager = useUserManager();
-    const editorEngine = useEditorEngine();
-    const user = userManager.user;
+
+    const { data: user } = api.user.get.useQuery();
     const initials = getInitials(user?.name ?? '');
     const [open, setOpen] = useState(false);
 
     const handleSignOut = async () => {
-        await userManager.signOut();
+        await supabase.auth.signOut();
         router.push(Routes.LOGIN);
     };
 
     const handleOpenSubscription = () => {
-        userManager.subscription.isModalOpen = true;
+        stateManager.isSubscriptionModalOpen = true;
         setOpen(false);
     };
 
     const handleOpenSettings = () => {
-        editorEngine.state.settingsOpen = true;
+        stateManager.isSettingsModalOpen = true;
         setOpen(false);
     };
 

@@ -1,4 +1,5 @@
-import { useDomainsManager } from '@/components/store/project';
+import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -7,8 +8,9 @@ import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 
 export const PreviewDomain = observer(() => {
-    const domains = useDomainsManager();
-    const preview = domains.domains.preview;
+    const editorEngine = useEditorEngine();
+    const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
+    const preview = domains?.preview;
 
     if (!preview) {
         return <div>No preview domain found</div>;

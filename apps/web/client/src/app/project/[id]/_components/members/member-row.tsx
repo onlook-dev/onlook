@@ -1,9 +1,9 @@
-import type { ProjectRole, UserMetadata } from '@onlook/models';
+import type { ProjectRole, User } from '@onlook/models';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import { getInitials } from '@onlook/utility';
 
 interface MemberRowProps {
-    user: UserMetadata;
+    user: User;
     role: ProjectRole;
 }
 

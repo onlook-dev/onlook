@@ -1,5 +1,3 @@
-import type { ProjectManager } from '@/components/store/project/manager';
-import type { UserManager } from '@/components/store/user/manager';
 import { sendAnalytics } from '@/utils/analytics';
 import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, type ChatMessageContext } from '@onlook/models/chat';
@@ -21,12 +19,10 @@ export class ChatManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
-        private userManager: UserManager,
     ) {
-        this.context = new ChatContext(this.editorEngine, this.projectManager);
-        this.conversation = new ConversationManager(this, this.projectManager);
-        this.suggestions = new SuggestionManager(this.projectManager);
+        this.context = new ChatContext(this.editorEngine);
+        this.conversation = new ConversationManager(this.editorEngine.projectId);
+        this.suggestions = new SuggestionManager(this.editorEngine.projectId);
         this.error = new ChatErrorManager();
         makeAutoObservable(this);
     }
