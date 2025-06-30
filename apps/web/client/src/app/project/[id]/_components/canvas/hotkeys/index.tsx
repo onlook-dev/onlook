@@ -83,8 +83,8 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
         Hotkey.CHAT_MODE_TOGGLE.command,
         () => {
             editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
-            // Trigger custom event to open chat mode menu
-            window.dispatchEvent(new Event('open-chat-mode-menu'));
+            // Trigger open chat mode menu
+            window.dispatchEvent(new CustomEvent('open-chat-mode-menu'));
         },
         { preventDefault: true },
     );

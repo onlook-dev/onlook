@@ -52,7 +52,7 @@ export class Hotkey {
     }
 
     get readableCommand() {
-        const isMac = process.platform === 'darwin';
+        const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
         return this.command
             .replace('mod', isMac ? '⌘' : 'Ctrl')
             .split('+')
