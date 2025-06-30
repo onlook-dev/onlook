@@ -38,9 +38,8 @@ export class ImageManager {
     async upload(file: File, destinationFolder: string): Promise<void> {
         try {
             const path = `${destinationFolder}/${file.name}`;
-            // Convert file to base64 for tRPC transmission
-            const buffer = Buffer.from(await file.arrayBuffer());
-            await this.editorEngine.sandbox.writeBinaryFile(path, buffer);
+            const uint8Array = new Uint8Array(await file.arrayBuffer());
+            await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
             this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
