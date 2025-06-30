@@ -6,6 +6,7 @@ import type {
     ProjectMessageContext,
 } from '@onlook/models';
 import type { Attachment, Message, UserContent } from 'ai';
+import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
 import { CODE_FENCE } from './format';
@@ -24,6 +25,12 @@ export function getSystemPrompt() {
 export function getCreatePageSystemPrompt() {
     let prompt = getSystemPrompt() + '\n\n';
     prompt += wrapXml('create-system-prompt', CREATE_NEW_PAGE_SYSTEM_PROMPT);
+    return prompt;
+}
+
+export function getAskModeSystemPrompt() {
+    let prompt = '';
+    prompt += wrapXml('role', ASK_MODE_SYSTEM_PROMPT);
     return prompt;
 }
 
