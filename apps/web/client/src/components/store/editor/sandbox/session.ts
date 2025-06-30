@@ -84,8 +84,8 @@ export class SessionManager {
                 return;
             }
 
-            await this.start(sandboxId, userId);
             this.isConnecting = false;
+            await this.start(sandboxId, userId);
         } catch (error) {
             console.error('Failed to reconnect to sandbox', error);
             this.isConnecting = false;
