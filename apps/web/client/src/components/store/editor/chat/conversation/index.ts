@@ -4,6 +4,7 @@ import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, type ChatConversation, type ChatMessageContext } from '@onlook/models';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
+import { toast } from 'sonner';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
@@ -59,17 +60,16 @@ export class ConversationManager {
         try {
             this.creatingConversation = true;
             if (this.current && this.current.messages.length === 0 && !this.current.displayName) {
-                console.error(
-                    'Error starting new conversation. Current conversation is already empty.',
-                );
-                return;
+                throw new Error('Current conversation is already empty.');
             }
-            console.log('Starting new conversation');
             const newConversation = await api.chat.conversation.create.mutate({ projectId: this.projectId });
             this._current = ChatConversationImpl.fromJSON(newConversation);
             this._conversations.push(this._current);
         } catch (error) {
             console.error('Error starting new conversation', error);
+            toast.error('Error starting new conversation.', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         } finally {
             this.creatingConversation = false;
         }
