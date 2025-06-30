@@ -4,7 +4,6 @@ export * from './forward';
 export * from './github';
 export * from './image';
 export * from './project';
-export * from './project/settings';
 export * from './subscription';
 export * from './usage';
 export * from './user';

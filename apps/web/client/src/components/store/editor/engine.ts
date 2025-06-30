@@ -28,7 +28,6 @@ import { VersionsManager } from './version';
 export class EditorEngine {
     readonly projectId: string;
 
-
     readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
     readonly canvas: CanvasManager = new CanvasManager();
@@ -57,7 +56,6 @@ export class EditorEngine {
 
     constructor(projectId: string) {
         this.projectId = projectId;
-
         makeAutoObservable(this);
     }
 

@@ -113,7 +113,6 @@ export class SessionManager {
                 throw new Error('No session found');
             }
 
-
             const terminalSession = Array.from(this.terminalSessions.values()).find(session => session.type === CLISessionType.TERMINAL) as TerminalSession | undefined;
 
             if (!terminalSession?.terminal) {

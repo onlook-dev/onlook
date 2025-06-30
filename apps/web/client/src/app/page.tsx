@@ -1,7 +1,8 @@
 'use client';
 
+import { CreateManagerProvider } from '@/components/store/create';
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
-import { NonProjectSettingsModal } from '@/components/ui/settings-modal/without-project';
+import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
 import { ContributorSection } from './_components/landing-page/contributor-section';
@@ -13,23 +14,25 @@ import { WebsiteLayout } from './_components/website-layout';
 
 export default function Main() {
     return (
-        <WebsiteLayout showFooter={true}>
-            <div className="w-screen h-screen flex items-center justify-center" id="hero">
-                <Hero />
-            </div>
+        <CreateManagerProvider>
+            <WebsiteLayout showFooter={true}>
+                <div className="w-screen h-screen flex items-center justify-center" id="hero">
+                    <Hero />
+                </div>
 
-            {/* <FeaturesSection /> */}
-            {/* <CodeOneToOneSection /> */}
-            <ContributorSection />
-            <WhatCanOnlookDoSection />
-            {/* <ObsessForHoursSection /> */}
-            <TestimonialsSection />
-            <FAQSection />
-            <CTASection />
-            <AuthModal />
+                {/* <FeaturesSection /> */}
+                {/* <CodeOneToOneSection /> */}
+                <ContributorSection />
+                <WhatCanOnlookDoSection />
+                {/* <ObsessForHoursSection /> */}
+                <TestimonialsSection />
+                <FAQSection />
+                <CTASection />
+                <AuthModal />
 
-            <NonProjectSettingsModal />
-            <SubscriptionModal />
-        </WebsiteLayout >
+                <NonProjectSettingsModal />
+                <SubscriptionModal />
+            </WebsiteLayout >
+        </CreateManagerProvider>
     );
 }
