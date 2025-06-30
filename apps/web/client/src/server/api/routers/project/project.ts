@@ -18,7 +18,7 @@ import {
     type UserCanvas
 } from '@onlook/db';
 import { ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
-import { desc, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { projectCreateRequestRouter } from './createRequest';
@@ -27,14 +27,13 @@ export const projectRouter = createTRPCRouter({
     createRequest: projectCreateRequestRouter,
     list: protectedProcedure
         .query(async ({ ctx }) => {
-            const fetchedProjects = await ctx.db.query.userProjects.findMany({
+            const fetchedUserProjects = await ctx.db.query.userProjects.findMany({
                 where: eq(userProjects.userId, ctx.user.id),
                 with: {
                     project: true,
                 },
-                orderBy: [desc(projects.updatedAt)],
             });
-            return fetchedProjects.map((project) => toProject(project.project));
+            return fetchedUserProjects.map((userProject) => toProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
         }),
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
