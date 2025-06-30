@@ -11,8 +11,8 @@ import { UrlSection } from './url';
 export const PreviewDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: domain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
-    const { mutateAsync: createPreviewDomain } = api.domain.preview.create.useMutation();
+    const { data: domain, refetch: refetchDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;
 
@@ -24,10 +24,10 @@ export const PreviewDomainSection = observer(() => {
         const domain = await createPreviewDomain({ projectId: editorEngine.projectId });
         if (!domain) {
             console.error('Failed to create preview domain');
+            toast.error('Failed to create preview domain');
             return;
         }
-
-        publish();
+        await refetchDomain();
     };
 
     const publish = async () => {
@@ -102,8 +102,8 @@ export const PreviewDomainSection = observer(() => {
                     <h3 className="">Publish</h3>
                 </div>
 
-                <Button onClick={createBaseDomain} className="w-full rounded-md p-3">
-                    Publish my site
+                <Button disabled={isCreatingDomain} onClick={createBaseDomain} className="w-full rounded-md p-3">
+                    {isCreatingDomain ? 'Creating domain...' : 'Publish my site'}
                 </Button>
             </>
         );
@@ -149,7 +149,6 @@ export const PreviewDomainSection = observer(() => {
             {domain?.url
                 ? renderDomain()
                 : renderNoDomain()}
-
         </div>
     );
 });
