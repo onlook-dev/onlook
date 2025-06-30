@@ -440,6 +440,7 @@ export class SandboxManager {
                 }
                 const oldNormalizedPath = normalizePath(oldPath);
                 const newNormalizedPath = normalizePath(newPath);
+
                 await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
 
                 this.fileEventBus.publish({
@@ -589,16 +590,6 @@ export class SandboxManager {
 
             // Delete the file using the filesystem API
             await this.session.session.fs.remove(normalizedPath, recursive);
-
-            // Clean up the file sync cache
-            await this.fileSync.delete(normalizedPath);
-
-            // Publish file deletion event
-            this.fileEventBus.publish({
-                type: 'remove',
-                paths: [normalizedPath],
-                timestamp: Date.now(),
-            });
 
             console.log(`Successfully deleted file: ${normalizedPath}`);
             return true;

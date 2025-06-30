@@ -130,6 +130,10 @@ export class VFSSyncManager {
         }
     }
 
+    async rename(oldPath: string, newPath: string): Promise<boolean> {
+        return await this.vfs.rename(oldPath, newPath);
+    }
+
     async updateBinaryCache(filePath: string, content: Uint8Array): Promise<void> {
         await this.vfs.writeBinaryFile(filePath, content);
     }

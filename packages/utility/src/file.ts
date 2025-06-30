@@ -25,6 +25,7 @@ export interface FileOperations {
         recursive?: boolean,
         overwrite?: boolean,
     ) => Promise<boolean>;
+    rename: (oldPath: string, newPath: string) => Promise<boolean>; // Rename a file or directory
 }
 
 /**

@@ -4,6 +4,7 @@ import { makeAutoObservable } from 'mobx';
 import localforage from 'localforage';
 import { convertToBase64, convertFromBase64 } from '@onlook/utility';
 import { normalizePath as sandboxNormalizePath } from './helpers';
+import { BINARY_EXTENSIONS } from '@onlook/constants';
 
 export interface VirtualFileSystemOptions {
     persistenceKey?: string;
@@ -250,6 +251,24 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
         }
     }
 
+    async rename(oldPath: string, newPath: string): Promise<boolean> {
+        try {
+            const vfsOldPath = this.toVFSPath(oldPath);
+            const vfsNewPath = this.toVFSPath(newPath);
+
+            this.volume.renameSync(vfsOldPath, vfsNewPath);
+
+            if (this.options.enablePersistence) {
+                await this.saveToStorage();
+            }
+            
+            return true;
+        } catch (error) {
+            console.error(`Error renaming ${oldPath} to ${newPath}:`, error);
+            return false;
+        }
+    }
+
     // Enhanced file operations
     async readBinaryFile(filePath: string): Promise<Uint8Array | null> {
         try {
@@ -439,20 +458,23 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
             for (const sandboxPath of allFiles) {
                 try {
                     const vfsPath = this.toVFSPath(sandboxPath);
-                    // Try to read as text first
-                    const textContent = this.volume.readFileSync(vfsPath, {
-                        encoding: 'utf8',
-                    }) as string;
-                    textFiles[sandboxPath] = textContent;
-                } catch {
-                    // If text reading fails, read as binary
-                    try {
-                        const vfsPath = this.toVFSPath(sandboxPath);
+                    
+                    // Determine if file is binary based on extension
+                    const isBinary = this.isBinaryFile(sandboxPath);
+                    
+                    if (isBinary) {
+                        // Read as binary
                         const binaryContent = this.volume.readFileSync(vfsPath) as Buffer;
                         binaryFiles[sandboxPath] = convertToBase64(new Uint8Array(binaryContent));
-                    } catch (error) {
-                        console.error(`Error reading file ${sandboxPath} for persistence:`, error);
+                    } else {
+                        // Read as text
+                        const textContent = this.volume.readFileSync(vfsPath, {
+                            encoding: 'utf8',
+                        }) as string;
+                        textFiles[sandboxPath] = textContent;
                     }
+                } catch (error) {
+                    console.error(`Error reading file ${sandboxPath} for persistence:`, error);
                 }
             }
 
@@ -537,23 +559,12 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
             return false;
         }
 
-        // Check if it's a binary file by extension
-        const binaryExtensions = [
-            '.png',
-            '.jpg',
-            '.jpeg',
-            '.gif',
-            '.bmp',
-            '.svg',
-            '.ico',
-            '.webp',
-            '.pdf',
-            '.zip',
-            '.tar',
-            '.gz',
-        ];
+        return true;
+    }
+
+    isBinaryFile(filePath: string): boolean {
         const ext = filePath.toLowerCase().substring(filePath.lastIndexOf('.'));
-        return binaryExtensions.includes(ext);
+        return BINARY_EXTENSIONS.includes(ext);
     }
 
     // Batch operations for performance
