@@ -192,7 +192,8 @@ export class GitManager {
     async getCommitNote(commitOid: string): Promise<string | null> {
         try {
             const result = await this.runCommand(
-                `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} show ${commitOid} 2>/dev/null || true`,
+                `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} show ${commitOid}`,
+                true,
             );
             return result.success ? this.formatGitLogOutput(result.output) : null;
         } catch (error) {
@@ -204,7 +205,7 @@ export class GitManager {
     /**
      * Run a git command through the sandbox session
      */
-    private async runCommand(command: string): Promise<GitCommandResult> {
+    private async runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
         try {
             if (!this.editorEngine?.sandbox?.session) {
                 return {
@@ -214,7 +215,7 @@ export class GitManager {
                 };
             }
 
-            let result = await this.editorEngine.sandbox.session.runCommand(command);
+            let result = await this.editorEngine.sandbox.session.runCommand(command + (ignoreError ? ' 2>/dev/null || true' : ''));
 
             if (!result.success) {
                 throw new Error(result.error ?? 'Failed to run command');

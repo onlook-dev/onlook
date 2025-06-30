@@ -26,7 +26,6 @@ export const ProjectTab = observer(() => {
         (value) => updateProject({
             id: editorEngine.projectId,
             project: {
-                ...project,
                 name: value,
             },
         })

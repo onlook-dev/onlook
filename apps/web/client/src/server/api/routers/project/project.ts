@@ -3,6 +3,8 @@ import {
     conversations,
     createDefaultCanvas, createDefaultConversation, createDefaultFrame, createDefaultUserCanvas,
     frames,
+    projectCreateRequestInsertSchema,
+    projectCreateRequests,
     projectInsertSchema,
     projects,
     projectUpdateSchema,
@@ -15,21 +17,23 @@ import {
     type Canvas,
     type UserCanvas
 } from '@onlook/db';
-import { ProjectRole } from '@onlook/models';
+import { ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { projectCreateRequestRouter } from './createRequest';
 
 export const projectRouter = createTRPCRouter({
+    createRequest: projectCreateRequestRouter,
     list: protectedProcedure
         .query(async ({ ctx }) => {
-            const projects = await ctx.db.query.userProjects.findMany({
+            const fetchedUserProjects = await ctx.db.query.userProjects.findMany({
                 where: eq(userProjects.userId, ctx.user.id),
                 with: {
                     project: true,
                 },
             });
-            return projects.map((project) => toProject(project.project));
+            return fetchedUserProjects.map((userProject) => toProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
         }),
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -77,7 +81,15 @@ export const projectRouter = createTRPCRouter({
             };
         }),
     create: protectedProcedure
-        .input(z.object({ project: projectInsertSchema, userId: z.string() }))
+        .input(z.object({
+            project: projectInsertSchema,
+            userId: z.string(),
+            creationData: projectCreateRequestInsertSchema
+                .omit({
+                    projectId: true,
+                })
+                .optional(),
+        }))
         .mutation(async ({ ctx, input }) => {
             return await ctx.db.transaction(async (tx) => {
                 // 1. Insert the new project
@@ -108,6 +120,14 @@ export const projectRouter = createTRPCRouter({
                 const newConversation = createDefaultConversation(newProject.id);
                 await tx.insert(conversations).values(newConversation);
 
+                // 6. Create the creation request
+                if (input.creationData) {
+                    await tx.insert(projectCreateRequests).values({
+                        ...input.creationData,
+                        status: ProjectCreateRequestStatus.PENDING,
+                        projectId: newProject.id,
+                    });
+                }
                 return newProject;
             });
         }),
