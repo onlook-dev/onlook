@@ -35,3 +35,18 @@ export enum GEMINI_MODELS {
     GEMINI_2_5_PRO_PREVIEW_TTS = 'gemini-2.5-pro-preview-tts',
     GEMINI_2_5_FLASH = 'gemini-2.5-flash',
 }
+
+interface ModelMapping {
+    [LLMProvider.ANTHROPIC]: CLAUDE_MODELS;
+    [LLMProvider.BEDROCK]: CLAUDE_MODELS;
+    [LLMProvider.GOOGLE_VERTEX]: CLAUDE_MODELS;
+    [LLMProvider.OPENAI]: OPENAI_MODELS;
+    [LLMProvider.GOOGLE]: GEMINI_MODELS;
+}
+
+export type InitialModelPayload = {
+    [K in keyof ModelMapping]: {
+        provider: K;
+        model: ModelMapping[K];
+    };
+}[keyof ModelMapping];

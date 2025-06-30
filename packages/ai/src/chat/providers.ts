@@ -10,38 +10,39 @@ import {
     OPENAI_MODELS,
     LLMProvider,
     VERTEX_MODEL_MAP,
+    type InitialModelPayload,
 } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { type LanguageModelV1 } from 'ai';
 
-export async function initModel(
-    provider: LLMProvider,
-    model: CLAUDE_MODELS | OPENAI_MODELS | GEMINI_MODELS,
-): Promise<{ model: LanguageModelV1; providerOptions: Record<string, any> }> {
+export async function initModel({
+    provider,
+    model,
+}: InitialModelPayload): Promise<{ model: LanguageModelV1; providerOptions: Record<string, any> }> {
     switch (provider) {
         case LLMProvider.ANTHROPIC:
             return {
-                model: await getAnthropicProvider(model as CLAUDE_MODELS),
+                model: await getAnthropicProvider(model),
                 providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
             };
         case LLMProvider.BEDROCK:
             return {
-                model: await getBedrockProvider(model as CLAUDE_MODELS),
+                model: await getBedrockProvider(model),
                 providerOptions: { bedrock: { cachePoint: { type: 'default' } } },
             };
         case LLMProvider.GOOGLE_VERTEX:
             return {
-                model: await getVertexProvider(model as CLAUDE_MODELS),
+                model: await getVertexProvider(model),
                 providerOptions: {},
             };
         case LLMProvider.OPENAI:
             return {
-                model: await getOpenAIProvider(model as OPENAI_MODELS),
+                model: await getOpenAIProvider(model),
                 providerOptions: { openai: { cacheControl: { type: 'ephemeral' } } },
             };
         case LLMProvider.GOOGLE:
             return {
-                model: await getGoogleProvider(model as GEMINI_MODELS),
+                model: await getGoogleProvider(model),
                 providerOptions: { google: { cacheControl: { type: 'ephemeral' } } },
             };
         default:
