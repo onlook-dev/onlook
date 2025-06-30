@@ -5,6 +5,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { type ProjectCreateRequest } from '@onlook/db';
 import { ChatType, CreateRequestContextType, MessageContextType, ProjectCreateRequestStatus, type ChatMessageContext, type ImageMessageContext, type Project } from '@onlook/models';
+import { toast } from '@onlook/ui/sonner';
 import { useEffect, useState } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
 
@@ -55,32 +56,50 @@ export const useStartProject = () => {
 
     const resumeCreate = async (creationData: ProjectCreateRequest) => {
 
-        if (editorEngine.projectId !== creationData.projectId) return;
+        try {
+            if (editorEngine.projectId !== creationData.projectId) {
+                throw new Error('Project ID mismatch');
+            }
 
-        const createContext: ChatMessageContext[] = await editorEngine.chat.context.getCreateContext();
-        const imageContexts: ImageMessageContext[] = creationData.context.filter((context) => context.type === CreateRequestContextType.IMAGE).map((context) => ({
-            type: MessageContextType.IMAGE,
-            content: context.content,
-            mimeType: context.mimeType,
-            displayName: 'user image',
-        }));
-        const context: ChatMessageContext[] = [...createContext, ...imageContexts];
-        const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
+            const createContext: ChatMessageContext[] = await editorEngine.chat.context.getCreateContext();
+            const imageContexts: ImageMessageContext[] = creationData.context.filter((context) => context.type === CreateRequestContextType.IMAGE).map((context) => ({
+                type: MessageContextType.IMAGE,
+                content: context.content,
+                mimeType: context.mimeType,
+                displayName: 'user image',
+            }));
+            const context: ChatMessageContext[] = [...createContext, ...imageContexts];
+            const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
 
-        const messages = await editorEngine.chat.getEditMessages(
-            prompt,
-            context,
-        );
+            const messages = await editorEngine.chat.getEditMessages(
+                prompt,
+                context,
+            );
 
-        if (!messages) {
-            console.error('Failed to get creation messages');
-            return;
+            if (!messages) {
+                console.error('Failed to get creation messages');
+                throw new Error('Failed to get creation messages');
+            }
+            sendMessages(messages, ChatType.CREATE);
+
+        } catch (error) {
+            console.error('Failed to get creation messages', error);
+            toast.error('Failed to resume create request', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         }
-        sendMessages(messages, ChatType.CREATE);
-        await updateCreateRequest({
-            projectId: editorEngine.projectId,
-            status: ProjectCreateRequestStatus.COMPLETED,
-        });
+
+        try {
+            await updateCreateRequest({
+                projectId: editorEngine.projectId,
+                status: ProjectCreateRequestStatus.COMPLETED,
+            });
+        } catch (error) {
+            console.error('Failed to update create request', error);
+            toast.error('Failed to complete create request', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+        }
     };
 
     useEffect(() => {
