@@ -5,6 +5,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 
 interface ChatModeToggleProps {
     chatMode: ChatType;
@@ -13,50 +14,61 @@ interface ChatModeToggleProps {
 }
 
 export const ChatModeToggle = observer(({ chatMode, onChatModeChange, disabled = false }: ChatModeToggleProps) => {
-    const getCurrentModeIcon = () => {
-        return chatMode === ChatType.EDIT ? Icons.Build : Icons.Ask;
-    };
+    const [isOpen, setIsOpen] = useState(false);
 
-    const getCurrentModeLabel = () => {
-        return chatMode === ChatType.EDIT ? 'Build' : 'Ask';
-    };
+    useEffect(() => {
+        const handleOpenMenu = () => {
+            setIsOpen(true);
+        };
 
-    const Icon = getCurrentModeIcon();
+        window.addEventListener('open-chat-mode-menu', handleOpenMenu);
+        return () => window.removeEventListener('open-chat-mode-menu', handleOpenMenu);
+    }, []);
 
-    return (
-        <DropdownMenu>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            disabled={disabled}
-                            className={cn(
-                                'h-8 px-2 text-foreground-onlook group flex items-center gap-1.5',
-                                disabled && 'opacity-50 cursor-not-allowed'
-                            )}
-                        >
-                            <Icon 
+        const getCurrentModeIcon = () => {
+            return chatMode === ChatType.EDIT ? Icons.Build : Icons.Ask;
+        };
+
+        const getCurrentModeLabel = () => {
+            return chatMode === ChatType.EDIT ? 'Build' : 'Ask';
+        };
+
+        const Icon = getCurrentModeIcon();
+
+        return (
+            <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={disabled}
                                 className={cn(
-                                    'w-4 h-4',
-                                    disabled 
-                                        ? 'text-foreground-tertiary' 
-                                        : 'text-foreground-secondary group-hover:text-foreground'
-                                )} 
-                            />
-                            <span className="text-xs font-medium">
-                                {getCurrentModeLabel()}
-                            </span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipPortal>
-                    <TooltipContent side="top">
-                        Open mode menu 
-                    </TooltipContent>
-                </TooltipPortal>
-            </Tooltip>
+                                    'h-8 px-2 text-foreground-onlook group flex items-center gap-1.5',
+                                    disabled && 'opacity-50 cursor-not-allowed'
+                                )}
+                            >
+                                <Icon 
+                                    className={cn(
+                                        'w-4 h-4',
+                                        disabled 
+                                            ? 'text-foreground-tertiary' 
+                                            : 'text-foreground-secondary group-hover:text-foreground'
+                                    )} 
+                                />
+                                <span className="text-xs font-medium">
+                                    {getCurrentModeLabel()}
+                                </span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                        <TooltipContent side="top">
+                            Open mode menu (⌘.)
+                        </TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
             <DropdownMenuContent align="start" className="w-40">
                 <DropdownMenuItem
                     onClick={() => onChatModeChange(ChatType.EDIT)}
