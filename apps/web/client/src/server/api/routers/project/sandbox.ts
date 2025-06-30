@@ -44,12 +44,22 @@ export const sandboxRouter = createTRPCRouter({
                     id: z.string(),
                     port: z.number(),
                 }),
+                config: z.object({
+                    title: z.string().optional(),
+                    description: z.string().optional(),
+                    tags: z.array(z.string()).optional(),
+                }).optional(),
             }),
         )
         .mutation(async ({ input }) => {
             const sandbox = await sdk.sandboxes.create({
                 source: 'template',
                 id: input.sandbox.id,
+
+                // Metadata
+                title: input.config?.title,
+                description: input.config?.description,
+                tags: input.config?.tags,
             });
 
             const previewUrl = getSandboxPreviewUrl(sandbox.id, input.sandbox.port);

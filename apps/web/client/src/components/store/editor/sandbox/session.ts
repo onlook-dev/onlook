@@ -24,7 +24,7 @@ export class SessionManager {
         this.session = await connectToSandbox({
             session,
             getSession: async (id) => {
-                return await api.sandbox.get.query({ sandboxId: id, userId });
+                return await api.sandbox.start.mutate({ sandboxId: id, userId });
             },
         });
         this.session.keepActiveWhileConnected(true);
@@ -84,7 +84,7 @@ export class SessionManager {
                 return;
             }
 
-            this.session = await api.sandbox.get.query({ sandboxId, userId });
+            this.session = await api.sandbox.start.mutate({ sandboxId, userId });
             this.isConnecting = false;
         } catch (error) {
             console.error('Failed to reconnect to sandbox', error);
