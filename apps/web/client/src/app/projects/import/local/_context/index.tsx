@@ -49,6 +49,7 @@ export const ProjectCreationProvider = ({
     children,
     totalSteps,
 }: ProjectCreationProviderProps) => {
+    const router = useRouter();
     const [currentStep, setCurrentStep] = useState(0);
     const [projectData, setProjectDataState] = useState<Partial<Project>>({
         name: '',
@@ -62,8 +63,6 @@ export const ProjectCreationProvider = ({
     const { mutateAsync: createProject } = api.project.create.useMutation();
     const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
     const { mutateAsync: startSandbox } = api.sandbox.start.useMutation();
-
-    const router = useRouter();
 
     const setProjectData = (newData: Partial<Project>) => {
         setProjectDataState((prevData) => ({ ...prevData, ...newData }));
@@ -135,7 +134,6 @@ export const ProjectCreationProvider = ({
     const validateNextJsProject = async (
         files: ProcessedFile[],
     ): Promise<NextJsProjectValidation> => {
-        // Look for package.json
         const packageJsonFile = files.find((f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT);
 
         if (!packageJsonFile) {
@@ -144,23 +142,18 @@ export const ProjectCreationProvider = ({
 
         try {
             const packageJson = JSON.parse(packageJsonFile.content as string);
-
-            // Check for Next.js in dependencies
             const hasNext = packageJson.dependencies?.next || packageJson.devDependencies?.next;
             if (!hasNext) {
                 return { isValid: false, error: 'Next.js not found in dependencies' };
             }
 
-            // Check for React dependencies
             const hasReact = packageJson.dependencies?.react || packageJson.devDependencies?.react;
             if (!hasReact) {
                 return { isValid: false, error: 'React not found in dependencies' };
             }
 
-            // Determine router type
             let routerType: 'app' | 'pages' = 'pages';
 
-            // Check for App Router (app directory with layout file)
             const hasAppLayout = files.some(
                 (f) =>
                     (f.path.includes('app/layout.') || f.path.includes('src/app/layout.')) &&
