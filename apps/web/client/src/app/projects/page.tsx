@@ -1,7 +1,7 @@
 'use client';
 
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
-import { NonProjectSettingsModal } from '@/components/ui/settings-modal/without-project';
+import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
 import { observer } from 'mobx-react-lite';
 import { SelectProject } from './_components/select';
 import { TopBar } from './_components/top-bar';

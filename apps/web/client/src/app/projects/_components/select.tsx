@@ -9,15 +9,11 @@ import { Carousel } from './carousel';
 import { ProjectInfo } from './info';
 
 export const SelectProject = observer(() => {
-    const { data: projects, isLoading } = api.project.list.useQuery();
+    const { data: fetchedProjects, isLoading } = api.project.list.useQuery();
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
-    const sortedProjects = projects?.toSorted(
-        (a, b) =>
-            new Date(b.metadata.updatedAt).getTime() -
-            new Date(a.metadata.updatedAt).getTime(),
-    ) ?? [];
+    const projects = fetchedProjects ?? [];
 
     const handleProjectChange: (index: number) => void = (index: number) => {
         if (currentProjectIndex === index) {
@@ -40,7 +36,7 @@ export const SelectProject = observer(() => {
 
     return (
         <div className="flex flex-row w-full">
-            {sortedProjects.length === 0 ? (
+            {projects.length === 0 ? (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-4">
                     <div className="text-xl text-foreground-secondary">No projects found</div>
                     <div className="text-md text-foreground-tertiary">Create a new project to get started</div>
@@ -57,11 +53,11 @@ export const SelectProject = observer(() => {
             ) : (
                 <>
                     <div className="w-3/5 h-full">
-                        <Carousel slides={sortedProjects} onSlideChange={handleProjectChange} />
+                        <Carousel slides={projects} onSlideChange={handleProjectChange} />
                     </div>
                     <div className="w-2/5 flex flex-col justify-center items-start p-4 mr-10 gap-6">
-                        {sortedProjects[currentProjectIndex] && (
-                            <ProjectInfo project={sortedProjects[currentProjectIndex]} direction={direction} />
+                        {projects[currentProjectIndex] && (
+                            <ProjectInfo project={projects[currentProjectIndex]} direction={direction} />
                         )}
                     </div>
                 </>
