@@ -2,6 +2,8 @@ export enum LLMProvider {
     ANTHROPIC = 'anthropic',
     BEDROCK = 'bedrock',
     GOOGLE_VERTEX = 'google-vertex',
+    OPENAI = 'openai',
+    GOOGLE = 'google',
 }
 
 export enum CLAUDE_MODELS {
@@ -21,3 +23,15 @@ export const VERTEX_MODEL_MAP = {
     [CLAUDE_MODELS.SONNET_3_7]: 'claude-3-7-sonnet@20250219',
     [CLAUDE_MODELS.HAIKU]: 'claude-3-5-haiku@20241022',
 };
+
+export enum OPENAI_MODELS {
+    GPT_4_1 = 'gpt-4.1',
+    GPT_4_1_MINI = 'gpt-4.1-mini',
+    GPT_4O = 'gpt-4o',
+}
+
+export enum GEMINI_MODELS {
+    GEMINI_2_5_PRO = 'gemini-2.5-pro',
+    GEMINI_2_5_PRO_PREVIEW_TTS = 'gemini-2.5-pro-preview-tts',
+    GEMINI_2_5_FLASH = 'gemini-2.5-flash',
+}
