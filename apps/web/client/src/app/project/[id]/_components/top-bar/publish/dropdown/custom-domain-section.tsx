@@ -16,16 +16,11 @@ export const CustomDomainSection = observer(() => {
     const stateManager = useStateManager();
 
     const { data: subscription } = api.subscription.get.useQuery();
-    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: domain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
     const product = subscription?.product;
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;
     const isPro = product?.type === ProductType.PRO;
-
-    if (!project) {
-        return 'Something went wrong. Project not found.';
-    }
 
     const openCustomDomain = (): void => {
         editorEngine.state.publishOpen = false;
@@ -38,7 +33,7 @@ export const CustomDomainSection = observer(() => {
             console.error(`No custom domain hosting manager found`);
             return;
         }
-        const res = await editorEngine.hosting.publishCustom(project.id, {
+        const res = await editorEngine.hosting.publishCustom(editorEngine.projectId, {
             buildScript: DefaultSettings.COMMANDS.build,
             urls: getPublishUrls(domain.url),
             options: {

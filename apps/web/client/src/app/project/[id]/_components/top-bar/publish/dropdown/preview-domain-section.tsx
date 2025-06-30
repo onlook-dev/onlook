@@ -10,34 +10,26 @@ import { UrlSection } from './url';
 
 export const PreviewDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
-    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: domain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
-    const { mutateAsync: createPreviewDomain } = api.domain.preview.create.useMutation();
+    const { data: domain, refetch: refetchDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;
 
-    if (!project) {
-        return 'Something went wrong. Project not found.';
-    }
-
     const createBaseDomain = async (): Promise<void> => {
-        const domain = await createPreviewDomain({ projectId: editorEngine.projectId });
-        if (!domain) {
+        const previewDomain = await createPreviewDomain({ projectId: editorEngine.projectId });
+        if (!previewDomain) {
             console.error('Failed to create preview domain');
+            toast.error('Failed to create preview domain');
             return;
         }
-
-        publish();
+        await refetchDomain();
+        publish(previewDomain.domain);
     };
 
-    const publish = async () => {
-        if (!domain) {
-            console.error(`No preview domain info found`);
-            return;
-        }
-        const res = await editorEngine.hosting.publishPreview(project.id, {
+    const publish = async (url: string) => {
+        const res = await editorEngine.hosting.publishPreview(editorEngine.projectId, {
             buildScript: DefaultSettings.COMMANDS.build,
-            urls: getPublishUrls(domain.url),
+            urls: getPublishUrls(url),
             options: {
                 skipBadge: false,
                 buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
@@ -53,12 +45,12 @@ export const PreviewDomainSection = observer(() => {
     };
 
     const retry = () => {
-        if (!domain) {
+        if (!domain?.url) {
             console.error(`No preview domain info found`);
             return;
         }
         editorEngine.hosting.resetState();
-        publish();
+        publish(domain.url);
     };
 
     const renderDomain = () => {
@@ -102,15 +94,15 @@ export const PreviewDomainSection = observer(() => {
                     <h3 className="">Publish</h3>
                 </div>
 
-                <Button onClick={createBaseDomain} className="w-full rounded-md p-3">
-                    Publish my site
+                <Button disabled={isCreatingDomain} onClick={createBaseDomain} className="w-full rounded-md p-3">
+                    {isCreatingDomain ? 'Creating domain...' : 'Publish my site'}
                 </Button>
             </>
         );
     };
 
     const renderActionSection = () => {
-        if (!domain) {
+        if (!domain?.url) {
             return 'Something went wrong';
         }
 
@@ -120,7 +112,7 @@ export const PreviewDomainSection = observer(() => {
                 {(state.status === PublishStatus.PUBLISHED ||
                     state.status === PublishStatus.UNPUBLISHED) && (
                         <Button
-                            onClick={publish}
+                            onClick={() => publish(domain.url)}
                             variant="outline"
                             className="w-full rounded-md p-3"
                             disabled={isLoading}
@@ -149,7 +141,6 @@ export const PreviewDomainSection = observer(() => {
             {domain?.url
                 ? renderDomain()
                 : renderNoDomain()}
-
         </div>
     );
 });
