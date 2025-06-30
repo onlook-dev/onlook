@@ -209,7 +209,7 @@ export const ChatInput = observer(() => {
             
             for (const frame of framesWithViews) {
                 try {
-                    if (!frame.view || typeof frame.view.captureScreenshot !== 'function') {
+                    if (!frame.view?.captureScreenshot) {
                         continue;
                     }
 
@@ -220,7 +220,7 @@ export const ChatInput = observer(() => {
                         break;
                     }
                 } catch (frameError) {
-                    continue;
+                    // Continue to next frame on error
                 }
             }
 
