@@ -5,7 +5,7 @@ import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
-import { CSB_PREVIEW_TASK_NAME, SandboxTemplates, Templates } from '@onlook/constants';
+import { SandboxTemplates, Templates } from '@onlook/constants';
 import { addScriptConfig, generate, parse } from '@onlook/parser';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -80,11 +80,16 @@ export const ProjectCreationProvider = ({
                 return;
             }
 
-            const template = SandboxTemplates[Templates.EMPTY_NEXTJS];
+            const template = SandboxTemplates[Templates.BLANK];
             const forkedSandbox = await forkSandbox({
                 sandbox: {
                     id: template.id,
                     port: template.port,
+                },
+                config: {
+                    title: `Imported project - ${user.id}`,
+                    description: 'Your new project',
+                    tags: ['imported', 'local', user.id],
                 },
             });
 
@@ -104,7 +109,8 @@ export const ProjectCreationProvider = ({
             });
 
             await uploadToSandbox(projectData.files, session);
-            await runSetupTask(session);
+            await session.setup.run();
+            await session.setup.waitUntilComplete();
             await session.disconnect();
 
             const project = await createProject({
@@ -294,12 +300,5 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
                 `Failed to upload file: ${file.path} - ${fileError instanceof Error ? fileError.message : 'Unknown error'}`,
             );
         }
-    }
-};
-
-const runSetupTask = async (session: WebSocketSession) => {
-    const task = await session.tasks.get(CSB_PREVIEW_TASK_NAME);
-    if (task) {
-        await task.run();
     }
 };

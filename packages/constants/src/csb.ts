@@ -17,6 +17,7 @@ export const SandboxTemplates: Record<Templates, SandboxTemplate> = {
 };
 
 export const CSB_PREVIEW_TASK_NAME = 'dev';
+export const CSB_SETUP_TASK_NAME = 'setupTasks';
 export const CSB_DOMAIN = 'csb.app';
 
 export function getSandboxPreviewUrl(sandboxId: string, port: number) {
