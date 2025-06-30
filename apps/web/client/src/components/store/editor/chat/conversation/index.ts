@@ -11,6 +11,7 @@ import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
 export class ConversationManager {
     private _current: ChatConversationImpl | null = null;
     private _conversations: ChatConversation[] = [];
+    creatingConversation = false;
 
     constructor(
         private projectId: string,
@@ -24,17 +25,6 @@ export class ConversationManager {
 
     get conversations() {
         return this._conversations;
-    }
-
-    async fetchOrCreateConversation(projectId: string) {
-        this._conversations = await this.getConversations(projectId);
-
-        if (this.conversations.length > 0 && !!this.conversations[0]) {
-            this._current = ChatConversationImpl.fromJSON(this.conversations[0]);
-        } else {
-            console.error('No conversations found, creating new conversation');
-
-        }
     }
 
     applyConversations(conversations: ChatConversation[]) {
@@ -65,17 +55,24 @@ export class ConversationManager {
         return sorted || [];
     }
 
-    startNewConversation() {
-        if (this.current && this.current.messages.length === 0 && !this.current.displayName) {
-            console.error(
-                'Error starting new conversation. Current conversation is already empty.',
-            );
-            return;
+    async startNewConversation() {
+        try {
+            this.creatingConversation = true;
+            if (this.current && this.current.messages.length === 0 && !this.current.displayName) {
+                console.error(
+                    'Error starting new conversation. Current conversation is already empty.',
+                );
+                return;
+            }
+            console.log('Starting new conversation');
+            const newConversation = await api.chat.conversation.create.mutate({ projectId: this.projectId });
+            this._current = ChatConversationImpl.fromJSON(newConversation);
+            this._conversations.push(this._current);
+        } catch (error) {
+            console.error('Error starting new conversation', error);
+        } finally {
+            this.creatingConversation = false;
         }
-        console.log('Starting new conversation');
-        this._current = ChatConversationImpl.create(this.projectId);
-        this._conversations.push(this._current);
-        this._current.saveConversationToStorage();
     }
 
     selectConversation(id: string) {
