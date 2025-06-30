@@ -82,21 +82,20 @@ export const useStartProject = () => {
             }
             sendMessages(messages, ChatType.CREATE);
 
+            try {
+                await updateCreateRequest({
+                    projectId: editorEngine.projectId,
+                    status: ProjectCreateRequestStatus.COMPLETED,
+                });
+            } catch (error) {
+                console.error('Failed to update create request', error);
+                toast.error('Failed to complete create request', {
+                    description: error instanceof Error ? error.message : 'Unknown error',
+                });
+            }
         } catch (error) {
-            console.error('Failed to get creation messages', error);
+            console.error('Failed to resume create request', error);
             toast.error('Failed to resume create request', {
-                description: error instanceof Error ? error.message : 'Unknown error',
-            });
-        }
-
-        try {
-            await updateCreateRequest({
-                projectId: editorEngine.projectId,
-                status: ProjectCreateRequestStatus.COMPLETED,
-            });
-        } catch (error) {
-            console.error('Failed to update create request', error);
-            toast.error('Failed to complete create request', {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
         }
