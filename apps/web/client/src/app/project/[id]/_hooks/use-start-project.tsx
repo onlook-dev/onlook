@@ -55,7 +55,6 @@ export const useStartProject = () => {
     }, [creationRequest, isSandboxLoading]);
 
     const resumeCreate = async (creationData: ProjectCreateRequest) => {
-
         try {
             if (editorEngine.projectId !== creationData.projectId) {
                 throw new Error('Project ID mismatch');
