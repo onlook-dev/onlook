@@ -19,10 +19,10 @@ export const sandboxRouter = createTRPCRouter({
         )
         .mutation(async ({ input }) => {
             const startData = await sdk.sandboxes.resume(input.sandboxId);
-            const session: SandboxBrowserSession = await startData.createBrowserSession({
+            const session = await startData.createBrowserSession({
                 id: shortenUuid(input.userId ?? uuidv4(), 20),
             });
-            return session;
+            return session as SandboxBrowserSession;
         }),
     hibernate: protectedProcedure
         .input(

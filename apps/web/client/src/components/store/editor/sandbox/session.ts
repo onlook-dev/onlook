@@ -84,7 +84,7 @@ export class SessionManager {
                 return;
             }
 
-            this.session = await api.sandbox.start.mutate({ sandboxId, userId });
+            await this.start(sandboxId, userId);
             this.isConnecting = false;
         } catch (error) {
             console.error('Failed to reconnect to sandbox', error);
