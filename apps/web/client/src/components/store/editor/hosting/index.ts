@@ -115,14 +115,16 @@ export class HostingManager {
                 throw new Error('Failed to deploy project');
             }
 
+            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful. Cleaning up...', progress: 90 });
+
             if (!options?.skipBadge) {
+                this.updateState({ status: PublishStatus.LOADING, message: 'Cleaning up...', progress: 90 });
                 await this.removeBadge('./');
                 timer.log('"Built with Onlook" badge removed');
-                this.updateState({ status: PublishStatus.LOADING, message: 'Cleaning up...', progress: 90 });
             }
 
             timer.log('Deployment completed');
-            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful', progress: 100 });
+            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful!', progress: 100 });
 
             return {
                 success: true,
