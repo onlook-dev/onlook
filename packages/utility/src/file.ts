@@ -25,6 +25,7 @@ export interface FileOperations {
         recursive?: boolean,
         overwrite?: boolean,
     ) => Promise<boolean>;
+    rename: (oldPath: string, newPath: string) => Promise<boolean>; // Rename a file or directory
 }
 
 /**
@@ -109,4 +110,13 @@ export const convertToBase64 = (file: Uint8Array): string => {
             .map((byte: number) => String.fromCharCode(byte))
             .join(''),
     );
+};
+
+export const convertFromBase64 = (base64: string): Uint8Array => {
+    const binaryString = atob(base64);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
 };

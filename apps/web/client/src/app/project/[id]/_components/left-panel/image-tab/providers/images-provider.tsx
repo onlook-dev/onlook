@@ -8,6 +8,8 @@ import { useImageMove } from '../hooks/use-image-move';
 import type { FolderNode } from './types';
 import { useFolder } from '../hooks/use-folder';
 import { DefaultSettings } from '@onlook/constants';
+import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
+import { isImageFile } from '@onlook/utility';
 
 interface ImagesContextValue {
     folderStructure: FolderNode;
@@ -30,7 +32,7 @@ interface ImagesProviderProps {
 
 export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
     const editorEngine = useEditorEngine();
-    
+    const { addSubscription } = useCleanupOnPageChange();
 
     const deleteOperations = useImageDelete();
     const renameOperations = useImageRename();
@@ -90,6 +92,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
     useEffect(() => {
         setFolderStructure(baseFolderStructure);
     }, [baseFolderStructure]);
+    
 
     const triggerFolderStructureUpdate = useCallback(() => {
         setFolderStructure(prev => ({ ...prev }));
@@ -117,6 +120,17 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
             }, [folderOperations.scanFolderChildren, triggerFolderStructureUpdate]),
         },
     };
+
+
+
+    useEffect(() => {
+        const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', (event) => {
+            if (event.paths && event.paths[0] && isImageFile(event.paths[0])) {
+                editorEngine.image.scanImages();
+            }
+        });
+        addSubscription('image-manager', unsubscribe);
+    }, [editorEngine.sandbox.fileEventBus]);
 
     return <ImagesContext.Provider value={value}>{children}</ImagesContext.Provider>;
 });

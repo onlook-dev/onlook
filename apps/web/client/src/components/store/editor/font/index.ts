@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import type { ParseResult } from '@babel/parser';
 import * as t from '@babel/types';
@@ -82,6 +82,7 @@ export class FontManager {
     private _allFontFamilies: RawFont[] = FAMILIES as RawFont[];
     private disposers: Array<() => void> = [];
     private previousFonts: Font[] = [];
+    private fontConfigFileWatcher: (() => void) | null = null;
 
     private _fontConfigPath: string | null = null;
     tailwindConfigPath = normalizePath(DefaultSettings.TAILWIND_CONFIG);
@@ -95,9 +96,7 @@ export class FontManager {
         return this._fontConfigPath;
     }
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
 
         // Initialize FlexSearch index
@@ -131,21 +130,9 @@ export class FontManager {
                 if (session) {
                     await this.updateFontConfigPath();
                     this.loadInitialFonts();
-                }
-            },
-            { fireImmediately: true },
-        );
-
-        const fontConfigDisposer = reaction(
-            () =>
-                this.editorEngine.state.brandTab === BrandTabValue.FONTS &&
-                this.editorEngine.sandbox?.readFile(this.fontConfigPath),
-            async (contentPromise) => {
-                if (contentPromise) {
-                    const content = await contentPromise;
-                    if (content) {
-                        this.syncFontsWithConfigs();
-                    }
+                    this.setupFontConfigFileWatcher();
+                } else {
+                    this.cleanupFontConfigFileWatcher();
                 }
             },
             { fireImmediately: true },
@@ -177,7 +164,7 @@ export class FontManager {
             { fireImmediately: true },
         );
 
-        this.disposers.push(sandboxDisposer, fontConfigDisposer, defaultFontDisposer);
+        this.disposers.push(sandboxDisposer, defaultFontDisposer);
     }
 
     private convertFont(font: RawFont): Font {
@@ -801,6 +788,9 @@ export class FontManager {
         this._lastDefaultFont = null;
         this._currentFontIndex = 0;
         this._isFetching = false;
+
+        // Clean up file watcher
+        this.cleanupFontConfigFileWatcher();
 
         // Clean up all reactions
         this.disposers.forEach((disposer) => disposer());
@@ -1530,6 +1520,38 @@ export class FontManager {
             });
         } catch (error) {
             console.error(`Error traversing className in ${filePath}:`, error);
+        }
+    }
+
+    /**
+     * Sets up file watcher for the font config file
+     */
+    private setupFontConfigFileWatcher(): void {
+        this.cleanupFontConfigFileWatcher();
+
+        const sandbox = this.editorEngine.sandbox;
+        if (!sandbox || this.editorEngine.state.brandTab !== BrandTabValue.FONTS) {
+            return;
+        }
+
+        this.fontConfigFileWatcher = sandbox.fileEventBus.subscribe('*', async (event) => {
+            const normalizedFontConfigPath = normalizePath(this.fontConfigPath);
+            const affectsFont = event.paths.some(
+                (path) => normalizePath(path) === normalizedFontConfigPath,
+            );
+
+            if (!affectsFont) {
+                return;
+            }
+
+            await this.syncFontsWithConfigs();
+        });
+    }
+
+    private cleanupFontConfigFileWatcher(): void {
+        if (this.fontConfigFileWatcher) {
+            this.fontConfigFileWatcher();
+            this.fontConfigFileWatcher = null;
         }
     }
 }

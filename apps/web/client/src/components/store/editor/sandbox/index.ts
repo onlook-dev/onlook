@@ -8,7 +8,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
 import { FileEventBus } from './file-event-bus';
-import { FileSyncManager } from './file-sync';
+import { VFSSyncManager } from './vfs-sync-manager';
 import { FileWatcher } from './file-watcher';
 import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
@@ -17,7 +17,7 @@ import { SessionManager } from './session';
 export class SandboxManager {
     readonly session: SessionManager;
     private fileWatcher: FileWatcher | null = null;
-    private fileSync: FileSyncManager = new FileSyncManager();
+    private fileSync: VFSSyncManager = new VFSSyncManager();
     private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
     readonly fileEventBus: FileEventBus = new FileEventBus();
     private isIndexed = false;
@@ -440,6 +440,7 @@ export class SandboxManager {
                 }
                 const oldNormalizedPath = normalizePath(oldPath);
                 const newNormalizedPath = normalizePath(newPath);
+
                 await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
 
                 this.fileEventBus.publish({
@@ -589,16 +590,6 @@ export class SandboxManager {
 
             // Delete the file using the filesystem API
             await this.session.session.fs.remove(normalizedPath, recursive);
-
-            // Clean up the file sync cache
-            await this.fileSync.delete(normalizedPath);
-
-            // Publish file deletion event
-            this.fileEventBus.publish({
-                type: 'remove',
-                paths: [normalizedPath],
-                timestamp: Date.now(),
-            });
 
             console.log(`Successfully deleted file: ${normalizedPath}`);
             return true;
