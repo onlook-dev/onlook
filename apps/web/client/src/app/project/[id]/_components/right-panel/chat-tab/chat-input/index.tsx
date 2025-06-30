@@ -17,6 +17,7 @@ import { useEffect, useRef, useState } from 'react';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
+import { ChatModeToggle } from './chat-mode-toggle';
 
 export const ChatInput = observer(() => {
     const { sendMessages, stop, isWaiting } = useChatContext();
@@ -27,6 +28,7 @@ export const ChatInput = observer(() => {
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
+    const [chatMode, setChatMode] = useState<ChatType>(ChatType.EDIT);
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -123,15 +125,26 @@ export const ChatInput = observer(() => {
         }
         const savedInput = inputValue.trim();
         setInputValue('');
-        const streamMessages = await editorEngine.chat.getEditMessages(savedInput);
+        
+        const streamMessages = chatMode === ChatType.ASK 
+            ? await editorEngine.chat.getAskMessages(savedInput)
+            : await editorEngine.chat.getEditMessages(savedInput);
+            
         if (!streamMessages) {
             toast.error('Failed to send message. Please try again.');
             setInputValue(savedInput);
             return;
         }
 
-        sendMessages(streamMessages, ChatType.EDIT);
+        sendMessages(streamMessages, chatMode);
     }
+
+    const getPlaceholderText = () => {
+        if (chatMode === ChatType.ASK) {
+            return 'Ask a question about your project...';
+        }
+        return t(transKeys.editor.panels.edit.tabs.chat.input.placeholder);
+    };
 
     const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
         const items = e.clipboardData.items;
@@ -201,37 +214,31 @@ export const ChatInput = observer(() => {
                     }
 
                     const result = await frame.view.captureScreenshot();
-                    screenshotData = result.data;
-                    mimeType = result.mimeType;
-                    break;
+                    if (result && result.data) {
+                        screenshotData = result.data;
+                        mimeType = result.mimeType || 'image/jpeg';
+                        break;
+                    }
                 } catch (frameError) {
                     continue;
                 }
             }
 
             if (!screenshotData) {
-                throw new Error('All frames failed to capture screenshot');
+                toast.error('Failed to capture screenshot. Please refresh the page and try again.');
+                return;
             }
-            
-            const base64Data = screenshotData.startsWith('data:') 
-                ? screenshotData 
-                : `data:${mimeType};base64,${screenshotData}`;
-            
+
             const contextImage: ImageMessageContext = {
                 type: MessageContextType.IMAGE,
-                content: base64Data,
+                content: screenshotData,
                 mimeType: mimeType,
                 displayName: 'Screenshot',
             };
-            
             editorEngine.chat.context.context.push(contextImage);
-            toast.success('Screenshot captured successfully');
+            toast.success('Screenshot added to chat');
         } catch (error) {
-            if (error instanceof Error && error.message.includes('destroyed connection')) {
-                toast.error('Frame connection lost. Please reload the page and try again.');
-            } else {
-                toast.error('Failed to capture screenshot. Please try again.');
-            }
+            toast.error('Failed to capture screenshot. Please try again.');
         }
     };
 
@@ -313,11 +320,7 @@ export const ChatInput = observer(() => {
                 <Textarea
                     ref={textareaRef}
                     disabled={disabled}
-                    placeholder={
-                        disabled
-                            ? t(transKeys.editor.panels.edit.tabs.chat.emptyState)
-                            : t(transKeys.editor.panels.edit.tabs.chat.input.placeholder)
-                    }
+                    placeholder={getPlaceholderText()}
                     className={cn(
                         'bg-transparent dark:bg-transparent mt-2 overflow-auto max-h-32 text-small p-0 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',
                         'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50 cursor-text',
@@ -347,7 +350,14 @@ export const ChatInput = observer(() => {
                     }}
                 />
             </div>
-            <div className="flex flex-row w-full justify-end pt-2 pb-2 px-2">
+            <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
+                <div className="flex flex-row items-center gap-1.5">
+                    <ChatModeToggle 
+                        chatMode={chatMode}
+                        onChatModeChange={setChatMode}
+                        disabled={disabled}
+                    />
+                </div>
                 <div className="flex flex-row items-center gap-1.5">
                     <ActionButtons 
                         disabled={disabled} 
@@ -376,7 +386,7 @@ export const ChatInput = observer(() => {
                             size={'icon'}
                             variant={'secondary'}
                             className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                            disabled={inputEmpty || status !== 'ready'}
+                            disabled={inputEmpty || disabled}
                             onClick={sendMessage}
                         >
                             <Icons.ArrowRight />

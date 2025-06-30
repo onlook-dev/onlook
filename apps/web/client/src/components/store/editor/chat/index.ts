@@ -53,6 +53,24 @@ export class ChatManager {
         return this.generateStreamMessages(content);
     }
 
+    async getAskMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
+        if (!this.conversation.current) {
+            console.error('No conversation found');
+            return null;
+        }
+
+        const context = contextOverride ?? await this.context.getChatContext();
+        const userMessage = await this.conversation.addUserMessage(content, context);
+
+        this.conversation.current.updateName(content);
+        if (!userMessage) {
+            console.error('Failed to add user message');
+            return null;
+        }
+        // No commit creation for ask mode consultative only.
+        return this.generateStreamMessages(content);
+    }
+
     async getFixErrorMessages(): Promise<Message[] | null> {
         const errors = this.editorEngine.error.errors;
         if (!this.conversation.current) {
