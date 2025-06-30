@@ -1,6 +1,5 @@
 "use client";
 
-import type { ProjectManager } from '@/components/store/project/manager';
 import type { ParseResult } from '@babel/parser';
 import * as t from '@babel/types';
 import { DefaultSettings } from '@onlook/constants';
@@ -98,7 +97,6 @@ export class FontManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
 
@@ -240,11 +238,6 @@ export class FontManager {
     }
 
     async scanFonts() {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return [];
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -289,11 +282,6 @@ export class FontManager {
     }
 
     async scanExistingFonts(): Promise<Font[] | undefined> {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return [];
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -340,11 +328,6 @@ export class FontManager {
      * 3. Adding the font variable to the appropriate layout file
      */
     async addFont(font: Font) {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return false;
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -440,11 +423,6 @@ export class FontManager {
     }
 
     async removeFont(font: Font) {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return false;
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -498,11 +476,6 @@ export class FontManager {
     }
 
     async setDefaultFont(font: Font) {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return false;
-        }
-
         try {
             const prevDefaultFont = this._defaultFont;
             this._defaultFont = font.id;
@@ -534,11 +507,6 @@ export class FontManager {
             style: string;
         }[],
     ) {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return false;
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -1261,11 +1229,6 @@ export class FontManager {
      * Uses more sophisticated font handling for layout files.
      */
     private async syncFontsWithConfigs() {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return;
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');

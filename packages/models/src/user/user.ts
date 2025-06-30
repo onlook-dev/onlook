@@ -1,6 +1,8 @@
-export interface UserMetadata {
+export interface User {
     id: string;
-    name?: string;
-    avatarUrl?: string | null;
-    email?: string;
+    name: string | null;
+    avatarUrl: string | null;
+    email: string | null;
+    createdAt: Date;
+    updatedAt: Date;
 }

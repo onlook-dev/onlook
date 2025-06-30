@@ -1,5 +1,5 @@
 import type { ProjectSettings } from '@onlook/models';
-import type { ProjectSettings as DbProjectSettings } from '../schema';
+import type { ProjectSettings as DbProjectSettings } from '../../schema';
 
 export const toProjectSettings = (dbProjectSettings: DbProjectSettings): ProjectSettings => {
     return {

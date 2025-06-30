@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
 import type { PageMetadata } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
@@ -8,11 +8,11 @@ import { MetadataForm } from './metadata-form';
 import { useMetadataForm } from './use-metadata-form';
 
 export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path: string }) => {
-    const projectsManager = useProjectManager();
-    const domainsManager = useDomainsManager()
     const editorEngine = useEditorEngine();
-    const project = projectsManager.project;
-    const baseUrl = domainsManager.domains.preview?.url ?? domainsManager.domains.preview?.url ?? project?.sandbox.url;
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
+    const baseUrl = domains?.published?.url ?? domains?.preview?.url ?? project?.sandbox?.url;
+
     const {
         title,
         description,

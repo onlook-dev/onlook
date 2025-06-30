@@ -1,4 +1,4 @@
-import { useUserManager } from '@/components/store/user';
+import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
@@ -26,8 +26,7 @@ export const CollapsibleCodeBlock = observer(({
     applied,
     isStream,
 }: CollapsibleCodeBlockProps) => {
-    const userManager = useUserManager();
-
+    const { data: settings } = api.user.settings.get.useQuery();
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
 
@@ -38,7 +37,7 @@ export const CollapsibleCodeBlock = observer(({
     };
 
     const getAnimation = () => {
-        if (isStream && userManager.settings.settings?.chat?.expandCodeBlocks) {
+        if (isStream && settings?.chat?.expandCodeBlocks) {
             return { height: 'auto', opacity: 1 };
         }
         return isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 };

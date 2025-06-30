@@ -1,4 +1,4 @@
-import type { ProjectManager } from '@/components/store/project/manager';
+
 import { DEFAULT_COLOR_NAME, TAILWIND_WEB_COLORS } from '@onlook/constants';
 import type {
     ClassReplacement,
@@ -49,18 +49,11 @@ export class ThemeManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
     }
 
     async scanConfig() {
-        const project = this.projectManager.project;
-        if (!project) {
-            console.error('No project found');
-            return;
-        }
-
         try {
             const configResult = await this.scanTailwindConfig();
 
@@ -321,11 +314,6 @@ export class ThemeManager {
     }
 
     async rename(oldName: string, newName: string) {
-        const project = this.projectManager.project;
-        if (!project) {
-            return;
-        }
-
         try {
             await this.updateTailwindColorConfig(oldName, newName, SystemTheme.LIGHT);
 
@@ -392,12 +380,6 @@ export class ThemeManager {
     }
 
     async delete(groupName: string, colorName?: string) {
-        const project = this.projectManager.project;
-        if (!project) {
-            console.error('No project found');
-            return;
-        }
-
         try {
             const colorUpdate = await this.initializeTailwindColorContent();
             if (!colorUpdate) {
@@ -512,12 +494,6 @@ export class ThemeManager {
         theme?: SystemTheme,
         shouldSaveToConfig = false,
     ) {
-        const project = this.projectManager.project;
-        if (!project) {
-            console.error('No project found');
-            return;
-        }
-
         try {
             // For new colors, pass empty originalKey and parentName
             const originalGroupName = camelCase(groupName);
@@ -550,11 +526,10 @@ export class ThemeManager {
     }
 
     async add(newName: string) {
-        const project = this.projectManager.project;
-        if (!project || !newName.trim()) {
+        if (!newName.trim()) {
+            console.error('No color name provided');
             return;
         }
-
         try {
             await this.updateTailwindColorConfig('', '#FFFFFF', newName.trim());
             // Refresh colors
@@ -570,10 +545,6 @@ export class ThemeManager {
         newColor: Color,
         theme?: SystemTheme,
     ) {
-        const project = this.projectManager.project;
-        if (!project) {
-            return;
-        }
         try {
             await this.updateTailwindColorConfig(
                 `${colorFamily}-${index * 100}`,
@@ -595,12 +566,6 @@ export class ThemeManager {
         isDefaultPalette?: boolean,
         theme?: SystemTheme,
     ) {
-        const project = this.projectManager.project;
-        if (!project) {
-            console.error('No project found');
-            return;
-        }
-
         try {
             if (isDefaultPalette) {
                 const colorToDuplicate = this.defaultColors[groupName];

@@ -5,7 +5,6 @@ import { fromFrame } from '@onlook/db';
 import { FrameType, type Frame, type WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
-import type { ProjectManager } from '../../project/manager';
 import type { EditorEngine } from '../engine';
 import { FrameImpl } from './frame';
 
@@ -22,7 +21,6 @@ export class FramesManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
     }
@@ -46,13 +44,7 @@ export class FramesManager {
     }
 
     private async getProjectCanvas() {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            console.error('No project ID available');
-            return null;
-        }
-
-        const canvas = await api.canvas.get.query({ projectId });
+        const canvas = await api.canvas.get.query({ projectId: this.editorEngine.projectId });
         if (!canvas) {
             console.error('Canvas not found');
             return null;

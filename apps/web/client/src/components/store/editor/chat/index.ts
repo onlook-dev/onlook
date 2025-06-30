@@ -1,12 +1,9 @@
-import type { ProjectManager } from '@/components/store/project/manager';
-import type { UserManager } from '@/components/store/user/manager';
 import { sendAnalytics } from '@/utils/analytics';
 import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, type ChatMessageContext } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
 import { ChatErrorManager } from './error';
@@ -16,20 +13,16 @@ export const FOCUS_CHAT_INPUT_EVENT = 'focus-chat-input';
 
 export class ChatManager {
     conversation: ConversationManager;
-    code: ChatCodeManager;
     context: ChatContext;
     suggestions: SuggestionManager;
     error: ChatErrorManager;
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
-        private userManager: UserManager,
     ) {
-        this.context = new ChatContext(this.editorEngine, this.projectManager);
-        this.conversation = new ConversationManager(this, this.projectManager);
-        this.code = new ChatCodeManager(this, this.editorEngine);
-        this.suggestions = new SuggestionManager(this.projectManager);
+        this.context = new ChatContext(this.editorEngine);
+        this.conversation = new ConversationManager(this.editorEngine.projectId);
+        this.suggestions = new SuggestionManager(this.editorEngine.projectId);
         this.error = new ChatErrorManager();
         makeAutoObservable(this);
     }
@@ -128,7 +121,6 @@ export class ChatManager {
     }
 
     clear() {
-        this.code.clear();
         this.context.clear();
         this.conversation.clear();
     }

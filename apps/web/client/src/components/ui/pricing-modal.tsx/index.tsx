@@ -1,6 +1,6 @@
 'use client';
 
-import { useUserManager } from '@/components/store/user';
+import { useStateManager } from '@/components/store/state';
 import { useGetBackground } from '@/hooks/use-get-background';
 import { transKeys } from '@/i18n/keys';
 import { ProductType, ScheduledSubscriptionAction } from '@onlook/stripe';
@@ -14,14 +14,14 @@ import { ProCard } from './pro-card';
 import { useSubscription } from './use-subscription';
 
 export const SubscriptionModal = observer(() => {
-    const userManager = useUserManager();
+    const state = useStateManager();
     const t = useTranslations();
     const backgroundUrl = useGetBackground('create');
     const { subscription } = useSubscription();
 
     return (
         <AnimatePresence>
-            {userManager.subscription.isModalOpen && (
+            {state.isSubscriptionModalOpen && (
                 <motion.div
                     className="fixed inset-0 z-99"
                     initial={{ opacity: 0 }}
@@ -40,7 +40,7 @@ export const SubscriptionModal = observer(() => {
                         <div className="absolute inset-0 bg-background/50" />
                         <Button
                             variant="ghost"
-                            onClick={() => userManager.subscription.isModalOpen = false}
+                            onClick={() => state.isSubscriptionModalOpen = false}
                             className="fixed top-8 right-10 text-foreground-secondary"
                         >
                             <Icons.CrossL className="h-4 w-4" />

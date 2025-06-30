@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
 import { PublishStatus, SettingsTabValue } from '@onlook/models';
@@ -13,13 +13,12 @@ import { UrlSection } from './url';
 
 export const CustomDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
-    const domainsManager = useDomainsManager();
-    const projectManager = useProjectManager();
-    const { data: subscription, isLoading: isLoadingSubscription } = api.subscription.get.useQuery();
+    const stateManager = useStateManager();
 
-    const project = projectManager.project;
+    const { data: subscription } = api.subscription.get.useQuery();
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: domain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
     const product = subscription?.product;
-    const domain = domainsManager.domains.custom;
     const state = editorEngine.hosting.state;
     const isLoading = state.status === PublishStatus.LOADING;
     const isPro = product?.type === ProductType.PRO;
@@ -30,8 +29,8 @@ export const CustomDomainSection = observer(() => {
 
     const openCustomDomain = (): void => {
         editorEngine.state.publishOpen = false;
-        editorEngine.state.settingsTab = SettingsTabValue.DOMAIN;
-        editorEngine.state.settingsOpen = true;
+        stateManager.settingsTab = SettingsTabValue.DOMAIN;
+        stateManager.isSettingsModalOpen = true;
     };
 
     const publish = async () => {

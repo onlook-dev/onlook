@@ -13,7 +13,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const chat = useChat({
         id: 'user-chat',
         api: '/api/chat',
-        maxSteps: 10,
+        maxSteps: 20,
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, config) => {
             if (config.finishReason !== 'tool-calls') {
@@ -21,6 +21,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             }
             if (config.finishReason === 'stop') {
                 editorEngine.chat.context.clearAttachments();
+                editorEngine.chat.error.clear();
+            } else if (config.finishReason === 'length') {
+                editorEngine.chat.error.handleChatError(new Error('Output length limit reached'));
+            } else if (config.finishReason === 'content-filter') {
+                editorEngine.chat.error.handleChatError(new Error('Content filter error'));
+            } else if (config.finishReason === 'error') {
+                editorEngine.chat.error.handleChatError(new Error('Error in chat'));
+            } else if (config.finishReason === 'other' || config.finishReason === 'unknown') {
+                editorEngine.chat.error.handleChatError(new Error('Unknown finish reason'));
             }
         },
         onError: (error) => {
