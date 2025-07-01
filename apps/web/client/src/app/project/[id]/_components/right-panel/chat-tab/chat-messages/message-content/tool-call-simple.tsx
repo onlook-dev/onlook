@@ -32,7 +32,7 @@ export function ToolCallSimple({
     loading?: boolean;
 }) {
     const toolName = toolInvocation.toolName;
-    const Icon = TOOL_ICONS[toolName] || Icons.QuestionMarkCircled;
+    const Icon = TOOL_ICONS[toolName] ?? Icons.QuestionMarkCircled;
 
     const getLabel = () => {
         try {
