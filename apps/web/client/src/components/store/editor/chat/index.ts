@@ -21,8 +21,8 @@ export class ChatManager {
         private editorEngine: EditorEngine,
     ) {
         this.context = new ChatContext(this.editorEngine);
-        this.conversation = new ConversationManager(this.editorEngine.projectId);
-        this.suggestions = new SuggestionManager(this.editorEngine.projectId);
+        this.conversation = new ConversationManager(this.editorEngine);
+        this.suggestions = new SuggestionManager(this.editorEngine);
         this.error = new ChatErrorManager();
         makeAutoObservable(this);
     }

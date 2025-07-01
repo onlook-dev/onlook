@@ -27,59 +27,34 @@ import { VersionsManager } from './version';
 
 export class EditorEngine {
     readonly projectId: string;
-    readonly error: ErrorManager
-    readonly state: StateManager
-    readonly canvas: CanvasManager
-    readonly text: TextEditingManager
-    readonly sandbox: SandboxManager
-    readonly history: HistoryManager
-    readonly elements: ElementsManager
-    readonly overlay: OverlayManager
-    readonly insert: InsertManager
-    readonly move: MoveManager
-    readonly copy: CopyManager
-    readonly group: GroupManager
-    readonly ast: AstManager
-    readonly action: ActionManager
-    readonly style: StyleManager
-    readonly code: CodeManager
-    readonly ide: IDEManager
-    readonly hosting: HostingManager
-    readonly versions: VersionsManager
-    readonly chat: ChatManager
-    readonly image: ImageManager
-    readonly theme: ThemeManager
-    readonly font: FontManager
-    readonly pages: PagesManager
-    readonly frames: FramesManager
+    readonly error: ErrorManager = new ErrorManager();
+    readonly state: StateManager = new StateManager();
+    readonly canvas: CanvasManager = new CanvasManager();
+    readonly text: TextEditingManager = new TextEditingManager(this);
+    readonly sandbox: SandboxManager = new SandboxManager(this);
+    readonly history: HistoryManager = new HistoryManager(this);
+    readonly elements: ElementsManager = new ElementsManager(this);
+    readonly overlay: OverlayManager = new OverlayManager(this);
+    readonly insert: InsertManager = new InsertManager(this);
+    readonly move: MoveManager = new MoveManager(this);
+    readonly copy: CopyManager = new CopyManager(this);
+    readonly group: GroupManager = new GroupManager(this);
+    readonly ast: AstManager = new AstManager(this);
+    readonly action: ActionManager = new ActionManager(this);
+    readonly style: StyleManager = new StyleManager(this);
+    readonly code: CodeManager = new CodeManager(this);
+    readonly ide: IDEManager = new IDEManager(this);
+    readonly hosting: HostingManager = new HostingManager(this);
+    readonly versions: VersionsManager = new VersionsManager(this);
+    readonly chat: ChatManager = new ChatManager(this);
+    readonly image: ImageManager = new ImageManager(this);
+    readonly theme: ThemeManager = new ThemeManager(this);
+    readonly font: FontManager = new FontManager(this);
+    readonly pages: PagesManager = new PagesManager(this);
+    readonly frames: FramesManager = new FramesManager(this);
 
     constructor(projectId: string) {
         this.projectId = projectId;
-        this.error = new ErrorManager();
-        this.state = new StateManager();
-        this.canvas = new CanvasManager();
-        this.chat = new ChatManager(this);
-        this.text = new TextEditingManager(this);
-        this.sandbox = new SandboxManager(this);
-        this.history = new HistoryManager(this);
-        this.elements = new ElementsManager(this);
-        this.overlay = new OverlayManager(this);
-        this.insert = new InsertManager(this);
-        this.move = new MoveManager(this);
-        this.copy = new CopyManager(this);
-        this.group = new GroupManager(this);
-        this.ast = new AstManager(this);
-        this.action = new ActionManager(this);
-        this.style = new StyleManager(this);
-        this.code = new CodeManager(this);
-        this.ide = new IDEManager(this);
-        this.hosting = new HostingManager(this);
-        this.versions = new VersionsManager(this);
-        this.image = new ImageManager(this);
-        this.theme = new ThemeManager(this);
-        this.font = new FontManager(this);
-        this.pages = new PagesManager(this);
-        this.frames = new FramesManager(this);
         makeAutoObservable(this);
     }
 

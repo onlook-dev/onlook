@@ -5,6 +5,7 @@ import { ChatMessageRole, type ChatConversation, type ChatMessageContext } from 
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
+import type { EditorEngine } from '../../engine';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
@@ -15,7 +16,7 @@ export class ConversationManager {
     creatingConversation = false;
 
     constructor(
-        private projectId: string,
+        private editorEngine: EditorEngine,
     ) {
         makeAutoObservable(this);
     }
@@ -62,7 +63,7 @@ export class ConversationManager {
             if (this.current && this.current.messages.length === 0 && !this.current.displayName) {
                 throw new Error('Current conversation is already empty.');
             }
-            const newConversation = await api.chat.conversation.create.mutate({ projectId: this.projectId });
+            const newConversation = await api.chat.conversation.create.mutate({ projectId: this.editorEngine.projectId });
             this._current = ChatConversationImpl.fromJSON(newConversation);
             this._conversations.push(this._current);
         } catch (error) {
