@@ -1,6 +1,6 @@
 import type { LayerNode } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { FramesManager } from '../frames';
 
 interface LayerMetadata {
     document: Document;
@@ -47,7 +47,9 @@ const FAKE_DATA = [
 export class LayersManager {
     frameIdToLayerMetadata = new Map<string, LayerMetadata>();
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private readonly framesManager: FramesManager,
+    ) {
         makeAutoObservable(this);
     }
 
@@ -58,7 +60,7 @@ export class LayersManager {
     }
 
     get filteredLayers(): LayerNode[] {
-        const selectedWebviews = this.editorEngine.frames.selected;
+        const selectedWebviews = this.framesManager.selected;
         if (selectedWebviews.length === 0) {
             return this.layers;
         }

@@ -58,28 +58,32 @@ export class EditorEngine {
         this.error = new ErrorManager();
         this.state = new StateManager();
         this.canvas = new CanvasManager();
-        this.chat = new ChatManager(this);
-        this.text = new TextEditingManager(this);
-        this.sandbox = new SandboxManager(this);
-        this.history = new HistoryManager(this);
-        this.elements = new ElementsManager(this);
-        this.overlay = new OverlayManager(this);
-        this.insert = new InsertManager(this);
-        this.move = new MoveManager(this);
-        this.copy = new CopyManager(this);
-        this.group = new GroupManager(this);
-        this.ast = new AstManager(this);
-        this.action = new ActionManager(this);
-        this.style = new StyleManager(this);
-        this.code = new CodeManager(this);
-        this.ide = new IDEManager(this);
-        this.hosting = new HostingManager(this);
-        this.versions = new VersionsManager(this);
-        this.image = new ImageManager(this);
-        this.theme = new ThemeManager(this);
-        this.font = new FontManager(this);
-        this.pages = new PagesManager(this);
-        this.frames = new FramesManager(this);
+
+        this.sandbox = new SandboxManager(this.error);
+        this.hosting = new HostingManager(this.sandbox);
+        this.versions = new VersionsManager(this.sandbox);
+
+        // Handle circular dependencies
+        this.ast = new AstManager(this.frames, this.sandbox);
+        this.frames = new FramesManager(this.projectId, this.ast);
+        this.elements = new ElementsManager(this.frames, this.overlay, this.sandbox, this.action);
+        this.overlay = new OverlayManager(this.canvas, this.elements, this.frames, this.state);
+        this.code = new CodeManager(this.elements, this.ide, this.state, this.error, this.sandbox);
+        this.history = new HistoryManager(this.code);
+        this.action = new ActionManager(this.frames, this.elements, this.history, this.code, this.theme, this.overlay, this.state);
+        this.ide = new IDEManager(this.sandbox, this.action, this.frames);
+
+        this.theme = new ThemeManager(this.sandbox);
+        this.image = new ImageManager(this.sandbox, this.elements);
+        this.style = new StyleManager(this.action, this.elements);
+        this.pages = new PagesManager(this.frames, this.sandbox);
+        this.font = new FontManager(this.history, this.sandbox, this.state);
+        this.group = new GroupManager(this.elements, this.frames, this.action);
+        this.insert = new InsertManager(this.overlay, this.action, this.state);
+        this.text = new TextEditingManager(this.history, this.overlay, this.frames, this.elements);
+        this.chat = new ChatManager(this.projectId, this.elements, this.sandbox, this.theme, this.error, this.versions);
+        this.move = new MoveManager(this.overlay, this.frames, this.elements, this.action, this.style);
+        this.copy = new CopyManager(this.elements, this.frames, this.sandbox, this.action, this.image);
         makeAutoObservable(this);
     }
 

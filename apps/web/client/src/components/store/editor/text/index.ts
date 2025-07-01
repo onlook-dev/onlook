@@ -2,7 +2,10 @@ import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/w
 import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { ElementsManager } from '../element';
+import type { FramesManager } from '../frames';
+import type { HistoryManager } from '../history';
+import type { OverlayManager } from '../overlay';
 import { adaptRectToCanvas } from '../overlay/utils';
 
 export class TextEditingManager {
@@ -10,7 +13,12 @@ export class TextEditingManager {
     private originalContent: string | null = null;
     private shouldNotStartEditing = false;
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private historyManager: HistoryManager,
+        private overlayManager: OverlayManager,
+        private framesManager: FramesManager,
+        private elementsManager: ElementsManager,
+    ) {
         makeAutoObservable(this);
     }
 
@@ -51,13 +59,13 @@ export class TextEditingManager {
             this.targetDomEl = el;
             this.originalContent = originalContent;
             this.shouldNotStartEditing = true;
-            this.editorEngine.history.startTransaction();
+            this.historyManager.startTransaction();
 
             const adjustedRect = adaptRectToCanvas(el.rect, frameView);
             const isComponent = el.instanceId !== null;
-            this.editorEngine.overlay.clear();
+            this.overlayManager.clear();
 
-            this.editorEngine.overlay.state.addTextEditor(
+            this.overlayManager.state.addTextEditor(
                 adjustedRect,
                 this.originalContent,
                 el.styles?.computed ?? {},
@@ -82,7 +90,7 @@ export class TextEditingManager {
         }
 
         try {
-            const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
+            const frameData = this.framesManager.get(this.targetDomEl.frameId);
             if (!frameData) {
                 console.error('No frameView found for text editing');
                 return;
@@ -111,7 +119,7 @@ export class TextEditingManager {
         }
 
         try {
-            const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
+            const frameData = this.framesManager.get(this.targetDomEl.frameId);
             if (!frameData) {
                 console.error('No frameView found for end text editing');
                 return;
@@ -137,8 +145,8 @@ export class TextEditingManager {
 
     async clean(): Promise<void> {
         this.targetDomEl = null;
-        this.editorEngine.overlay.state.removeTextEditor();
-        await this.editorEngine.history.commitTransaction();
+        this.overlayManager.state.removeTextEditor();
+        await this.historyManager.commitTransaction();
         this.shouldNotStartEditing = false;
     }
 
@@ -148,7 +156,7 @@ export class TextEditingManager {
         frameView: WebFrameView,
     ): Promise<void> {
         try {
-            await this.editorEngine.history.push({
+            await this.historyManager.push({
                 type: 'edit-text',
                 targets: [
                     {
@@ -161,8 +169,8 @@ export class TextEditingManager {
                 newContent,
             });
             const adjustedRect = adaptRectToCanvas(domEl.rect, frameView);
-            this.editorEngine.overlay.state.updateTextEditor(adjustedRect);
-            await this.editorEngine.overlay.refresh();
+            this.overlayManager.state.updateTextEditor(adjustedRect);
+            await this.overlayManager.refresh();
         } catch (error) {
             console.error('Error handling edited text:', error);
             return;
@@ -175,7 +183,7 @@ export class TextEditingManager {
         }
 
         try {
-            const selected = this.editorEngine.elements.selected;
+            const selected = this.elementsManager.selected;
             if (selected.length === 0) {
                 return;
             }
@@ -185,7 +193,7 @@ export class TextEditingManager {
                 return;
             }
 
-            const frameData = this.editorEngine.frames.get(selectedEl.frameId);
+            const frameData = this.framesManager.get(selectedEl.frameId);
             if (!frameData) {
                 return;
             }

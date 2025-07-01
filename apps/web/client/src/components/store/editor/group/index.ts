@@ -6,13 +6,19 @@ import type {
     UngroupElementsAction
 } from '@onlook/models/actions';
 import { createDomId, createOid } from '@onlook/utility';
-import type { EditorEngine } from '../engine';
+import type { ActionManager } from '../action';
+import type { ElementsManager } from '../element';
+import type { FramesManager } from '../frames';
 
 export class GroupManager {
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(
+        private readonly elementsManager: ElementsManager,
+        private readonly framesManager: FramesManager,
+        private readonly actionManager: ActionManager,
+    ) { }
 
     async groupSelectedElements() {
-        const selectedEls = this.editorEngine.elements.selected;
+        const selectedEls = this.elementsManager.selected;
         const groupTarget = this.getGroupParentId(selectedEls);
         if (!groupTarget) {
             console.error('Failed to get group target');
@@ -26,7 +32,7 @@ export class GroupManager {
             return;
         }
 
-        await this.editorEngine.action.run(groupAction);
+        await this.actionManager.run(groupAction);
     }
 
     async ungroupSelectedElement() {
@@ -35,7 +41,7 @@ export class GroupManager {
             return;
         }
 
-        const selectedEl = this.editorEngine.elements.selected[0];
+        const selectedEl = this.elementsManager.selected[0];
         if (!selectedEl) {
             console.error('No selected element');
             return;
@@ -47,7 +53,7 @@ export class GroupManager {
             return;
         }
 
-        await this.editorEngine.action.run(ungroupAction);
+        await this.actionManager.run(ungroupAction);
     }
 
     getGroupParentId(
@@ -99,11 +105,11 @@ export class GroupManager {
     }
 
     canGroupElements() {
-        return this.getGroupParentId(this.editorEngine.elements.selected, false) !== null;
+        return this.getGroupParentId(this.elementsManager.selected, false) !== null;
     }
 
     canUngroupElement() {
-        return this.editorEngine.elements.selected.length === 1;
+        return this.elementsManager.selected.length === 1;
     }
 
     async getGroupAction(
@@ -111,7 +117,7 @@ export class GroupManager {
         parentDomId: string,
         selectedEls: DomElement[],
     ): Promise<GroupElementsAction | null> {
-        const frame = this.editorEngine.frames.get(frameId);
+        const frame = this.framesManager.get(frameId);
         if (!frame) {
             console.error('Failed to get frame');
             return null;
@@ -152,7 +158,7 @@ export class GroupManager {
     }
 
     async getUngroupAction(selectedEl: DomElement): Promise<UngroupElementsAction | null> {
-        const frame = this.editorEngine.frames.get(selectedEl.frameId);
+        const frame = this.framesManager.get(selectedEl.frameId);
         if (!frame) {
             console.error('Failed to get frame');
             return null;

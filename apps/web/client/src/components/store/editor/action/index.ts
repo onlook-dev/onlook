@@ -15,36 +15,49 @@ import {
 } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { assertNever } from '@onlook/utility';
-import { debounce, cloneDeep } from 'lodash';
-import { toJS } from 'mobx';
-import type { EditorEngine } from '../engine';
+import { cloneDeep, debounce } from 'lodash';
+import type { CodeManager } from '../code';
+import type { ElementsManager } from '../element';
+import type { FramesManager } from '../frames';
+import type { HistoryManager } from '../history';
+import type { OverlayManager } from '../overlay';
+import type { StateManager } from '../state';
+import type { ThemeManager } from '../theme';
 
 export class ActionManager {
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(
+        private readonly framesManager: FramesManager,
+        private readonly elementsManager: ElementsManager,
+        private readonly historyManager: HistoryManager,
+        private readonly codeManager: CodeManager,
+        private readonly themeManager: ThemeManager,
+        private readonly overlayManager: OverlayManager,
+        private readonly stateManager: StateManager,
+    ) { }
 
     async run(action: Action) {
-        await this.editorEngine.history.push(action);
+        await this.historyManager.push(action);
         await this.dispatch(action);
     }
 
     async undo() {
-        const action = this.editorEngine.history.undo();
+        const action = this.historyManager.undo();
 
         if (action == null) {
             return;
         }
         await this.dispatch(action);
-        await this.editorEngine.code.write(action);
+        await this.codeManager.write(action);
         sendAnalytics('undo');
     }
 
     async redo() {
-        const action = this.editorEngine.history.redo();
+        const action = this.historyManager.redo();
         if (action == null) {
             return;
         }
         await this.dispatch(action);
-        await this.editorEngine.code.write(action);
+        await this.codeManager.write(action);
         sendAnalytics('redo');
     }
 
@@ -87,14 +100,14 @@ export class ActionManager {
     async updateStyle({ targets }: UpdateStyleAction) {
         const domEls: DomElement[] = [];
         for (const target of targets) {
-            const frameData = this.editorEngine.frames.get(target.frameId);
+            const frameData = this.framesManager.get(target.frameId);
             if (!frameData) {
                 console.error('Failed to get frameView');
                 return;
             }
             const convertedChange = Object.fromEntries(
                 Object.entries(target.change.updated).map(([key, value]) => {
-                    const newValue = this.editorEngine.theme.getColorByName(value.value);
+                    const newValue = this.themeManager.getColorByName(value.value);
                     if (value.type === StyleChangeType.Custom && newValue) {
                         value.value = newValue;
                     }
@@ -105,7 +118,7 @@ export class ActionManager {
                 }),
             );
             const change = {
-                original:target.change.original,
+                original: target.change.original,
                 updated: convertedChange,
             };
             // cloneDeep is used to avoid the issue of observable values can not pass through the webview
@@ -122,14 +135,14 @@ export class ActionManager {
     }
 
     debouncedRefreshDomElement(domEls: DomElement[]) {
-        this.editorEngine.elements.click(domEls);
+        this.elementsManager.click(domEls);
     }
 
     refreshDomElement = debounce(this.debouncedRefreshDomElement, 100, { leading: true });
 
     private async insertElement({ targets, element, editText, location }: InsertElementAction) {
         for (const elementMetadata of targets) {
-            const frameView = this.editorEngine.frames.get(elementMetadata.frameId);
+            const frameView = this.framesManager.get(elementMetadata.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -151,7 +164,7 @@ export class ActionManager {
 
     private async removeElement({ targets, location }: RemoveElementAction) {
         for (const target of targets) {
-            const frameView = this.editorEngine.frames.get(target.frameId);
+            const frameView = this.framesManager.get(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -164,7 +177,7 @@ export class ActionManager {
                 return;
             }
 
-            await this.editorEngine.overlay.refresh();
+            await this.overlayManager.refresh();
 
             this.refreshAndClickMutatedElement(domEl);
         }
@@ -172,7 +185,7 @@ export class ActionManager {
 
     private async moveElement({ targets, location }: MoveElementAction) {
         for (const target of targets) {
-            const frameView = this.editorEngine.frames.get(target.frameId);
+            const frameView = this.framesManager.get(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -188,7 +201,7 @@ export class ActionManager {
 
     private async editText({ targets, newContent }: EditTextAction) {
         for (const target of targets) {
-            const frameView = this.editorEngine.frames.get(target.frameId);
+            const frameView = this.framesManager.get(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -204,7 +217,7 @@ export class ActionManager {
     }
 
     private async groupElements({ parent, container, children }: GroupElementsAction) {
-        const frameView = this.editorEngine.frames.get(parent.frameId);
+        const frameView = this.framesManager.get(parent.frameId);
         if (!frameView) {
             console.error('Failed to get frameView');
             return;
@@ -225,7 +238,7 @@ export class ActionManager {
     }
 
     private async ungroupElements({ parent, container }: UngroupElementsAction) {
-        const frameView = this.editorEngine.frames.get(parent.frameId);
+        const frameView = this.framesManager.get(parent.frameId);
         if (!frameView) {
             console.error('Failed to get frameView');
             return;
@@ -243,7 +256,7 @@ export class ActionManager {
 
     private insertImage({ targets, image }: InsertImageAction) {
         targets.forEach((target) => {
-            const frameView = this.editorEngine.frames.get(target.frameId);
+            const frameView = this.framesManager.get(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -257,7 +270,7 @@ export class ActionManager {
 
     private removeImage({ targets }: RemoveImageAction) {
         targets.forEach((target) => {
-            const frameView = this.editorEngine.frames.get(target.frameId);
+            const frameView = this.framesManager.get(target.frameId);
             if (!frameView) {
                 console.error('Failed to get frameView');
                 return;
@@ -273,13 +286,13 @@ export class ActionManager {
         // newMap: Map<string, LayerNode>,
         // frameData: FrameData,
     ) {
-        this.editorEngine.state.editorMode = EditorMode.DESIGN;
+        this.stateManager.editorMode = EditorMode.DESIGN;
         // await this.editorEngine.ast.refreshAstDoc(frameData.view);
-        this.editorEngine.elements.click([domEl]);
+        this.elementsManager.click([domEl]);
         // this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
     }
 
     clear() {
-        this.editorEngine.history.clear();
+        this.historyManager.clear();
     }
 }

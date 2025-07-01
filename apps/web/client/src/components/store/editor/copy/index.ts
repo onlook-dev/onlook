@@ -7,8 +7,12 @@ import type {
 } from '@onlook/models/actions';
 import { createDomId, createOid } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { ActionManager } from '../action';
+import type { ElementsManager } from '../element';
+import type { FramesManager } from '../frames';
 import { getCleanedElement } from '../history/helpers';
+import type { ImageManager } from '../image';
+import type { SandboxManager } from '../sandbox';
 
 export class CopyManager {
     copied: {
@@ -16,22 +20,28 @@ export class CopyManager {
         codeBlock: string | null;
     } | null = null;
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private readonly elementsManager: ElementsManager,
+        private readonly framesManager: FramesManager,
+        private readonly sandboxManager: SandboxManager,
+        private readonly actionManager: ActionManager,
+        private readonly imageManager: ImageManager,
+    ) {
         makeAutoObservable(this);
     }
 
     async copy() {
-        const selected = this.editorEngine.elements.selected;
+        const selected = this.elementsManager.selected;
         if (selected.length === 0) {
             return;
         }
-        const selectedEl = this.editorEngine.elements.selected[0];
+        const selectedEl = this.elementsManager.selected[0];
         if (!selectedEl) {
             console.error('Failed to copy element');
             return;
         }
         const frameId = selectedEl.frameId;
-        const frameData = this.editorEngine.frames.get(frameId);
+        const frameData = this.framesManager.get(frameId);
         if (!frameData) {
             console.error('Failed to get frameView');
             return;
@@ -49,7 +59,7 @@ export class CopyManager {
             console.error('Failed to copy element');
             return;
         }
-        const codeBlock = await this.editorEngine.sandbox.getCodeBlock(selectedEl.oid);
+        const codeBlock = await this.sandboxManager.getCodeBlock(selectedEl.oid);
         this.copied = { element: targetEl, codeBlock: codeBlock };
         await this.clearClipboard();
     }
@@ -63,7 +73,7 @@ export class CopyManager {
     }
 
     async paste() {
-        const selected = this.editorEngine.elements.selected;
+        const selected = this.elementsManager.selected;
         if (selected.length === 0) {
             return;
         }
@@ -77,14 +87,14 @@ export class CopyManager {
             return;
         }
 
-        const selectedEl = this.editorEngine.elements.selected[0];
+        const selectedEl = this.elementsManager.selected[0];
 
         if (!selectedEl) {
             console.error('Failed to paste element');
             return;
         }
 
-        const targets: Array<ActionTarget> = this.editorEngine.elements.selected.map(
+        const targets: Array<ActionTarget> = this.elementsManager.selected.map(
             (selectedEl) => {
                 const target: ActionTarget = {
                     frameId: selectedEl.frameId,
@@ -117,7 +127,7 @@ export class CopyManager {
             codeBlock: this.copied.codeBlock,
         };
 
-        await this.editorEngine.action.run(action);
+        await this.actionManager.run(action);
     }
 
     async pasteImageFromClipboard(): Promise<boolean> {
@@ -131,7 +141,7 @@ export class CopyManager {
                     reader.readAsDataURL(blob);
                     reader.onloadend = async () => {
                         const base64data = reader.result as string;
-                        await this.editorEngine.image.insert(base64data, imageType);
+                        await this.imageManager.insert(base64data, imageType);
                     };
                     return true;
                 }
@@ -144,7 +154,7 @@ export class CopyManager {
 
     async cut() {
         await this.copy();
-        await this.editorEngine.elements.delete();
+        await this.elementsManager.delete();
     }
 
     async duplicate() {
@@ -156,7 +166,7 @@ export class CopyManager {
 
     async getInsertLocation(selectedEl: DomElement): Promise<ActionLocation | undefined> {
         const frameId = selectedEl.frameId;
-        const frameData = this.editorEngine.frames.get(frameId);
+        const frameData = this.framesManager.get(frameId);
         if (!frameData) {
             console.error('Failed to get frameView');
             return;

@@ -1,8 +1,11 @@
 import type { DomElement, ElementPosition } from '@onlook/models';
 import type { MoveElementAction } from '@onlook/models/actions';
 import type React from 'react';
-import type { EditorEngine } from '../engine';
-import type { FrameData } from '../frames';
+import type { ActionManager } from '../action';
+import type { ElementsManager } from '../element';
+import type { FrameData, FramesManager } from '../frames';
+import type { OverlayManager } from '../overlay';
+import type { StyleManager } from '../style';
 
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;
@@ -11,14 +14,20 @@ export class MoveManager {
     MIN_DRAG_DISTANCE = 5;
     isDragInProgress = false;
 
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(
+        private readonly overlayManager: OverlayManager,
+        private readonly framesManager: FramesManager,
+        private readonly elementsManager: ElementsManager,
+        private readonly actionManager: ActionManager,
+        private readonly styleManager: StyleManager,
+    ) { }
 
     get isDragging() {
         return !!this.dragOrigin;
     }
 
     async start(el: DomElement, position: ElementPosition, frameView: FrameData) {
-        if (!this.editorEngine.elements.selected.some((selected) => selected.domId === el.domId)) {
+        if (!this.elementsManager.selected.some((selected) => selected.domId === el.domId)) {
             console.warn('Element not selected, cannot start drag');
             return;
         }
@@ -52,7 +61,7 @@ export class MoveManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.get(this.dragTarget.frameId);
+        const frameView = this.framesManager.get(this.dragTarget.frameId);
         if (!frameView) {
             console.error('No frameView found for drag');
             return;
@@ -63,7 +72,7 @@ export class MoveManager {
         const dy = y - this.dragOrigin.y;
 
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
-            this.editorEngine.overlay.clear();
+            this.overlayManager.clear();
             try {
                 const positionType = this.dragTarget.styles?.computed?.position;
                 if (positionType === 'absolute') {
@@ -84,7 +93,7 @@ export class MoveManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.get(this.dragTarget.frameId);
+        const frameView = this.framesManager.get(this.dragTarget.frameId);
         if (!frameView) {
             console.error('No frameView found for drag end');
             await this.endAllDrag();
@@ -108,7 +117,7 @@ export class MoveManager {
 
                 if (res) {
                     const { left, top } = res;
-                    await this.editorEngine.style.updateMultiple({
+                    await this.styleManager.updateMultiple({
                         left: left,
                         top: top,
                         transform: 'none',
@@ -132,7 +141,7 @@ export class MoveManager {
                             newIndex,
                             this.originalIndex,
                         );
-                        await this.editorEngine.action.run(moveAction);
+                        await this.actionManager.run(moveAction);
                     }
                 }
             }
@@ -147,7 +156,7 @@ export class MoveManager {
     async endAllDrag() {
         const promises: Promise<unknown>[] = [];
 
-        this.editorEngine.frames.getAll().forEach((frameData) => {
+        this.framesManager.getAll().forEach((frameData) => {
             try {
                 const promise = frameData.view.endAllDrag() as Promise<unknown>;
                 promises.push(promise);
@@ -160,7 +169,7 @@ export class MoveManager {
     }
 
     async moveSelected(direction: 'up' | 'down') {
-        const selected = this.editorEngine.elements.selected;
+        const selected = this.elementsManager.selected;
         if (selected.length === 1 && selected[0]) {
             await this.shiftElement(selected[0], direction);
         } else {
@@ -173,7 +182,7 @@ export class MoveManager {
     }
 
     async shiftElement(element: DomElement, direction: 'up' | 'down'): Promise<void> {
-        const frameView = this.editorEngine.frames.get(element.frameId);
+        const frameView = this.framesManager.get(element.frameId);
         if (!frameView) {
             return;
         }
@@ -213,7 +222,7 @@ export class MoveManager {
                 currentIndex,
             );
 
-            await this.editorEngine.action.run(moveAction);
+            await this.actionManager.run(moveAction);
         } catch (error) {
             console.error('Error shifting element:', error);
         }

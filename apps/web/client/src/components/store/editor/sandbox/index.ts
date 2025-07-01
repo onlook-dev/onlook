@@ -6,7 +6,7 @@ import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '
 import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
-import type { EditorEngine } from '../engine';
+import type { ErrorManager } from '../error';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
 import { FileWatcher } from './file-watcher';
@@ -23,8 +23,8 @@ export class SandboxManager {
     private isIndexed = false;
     private isIndexing = false;
 
-    constructor(private readonly editorEngine: EditorEngine) {
-        this.session = new SessionManager(this.editorEngine);
+    constructor(private readonly errorManager: ErrorManager) {
+        this.session = new SessionManager(this.errorManager);
         makeAutoObservable(this);
 
         reaction(

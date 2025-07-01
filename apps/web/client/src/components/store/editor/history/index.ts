@@ -2,7 +2,7 @@ import { sendAnalytics } from '@/utils/analytics';
 import type { Action } from '@onlook/models/actions';
 import { jsonClone } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { CodeManager } from '../code';
 import { transformRedoAction, undoAction, updateTransactionActions } from './helpers';
 
 enum TransactionType {
@@ -22,11 +22,12 @@ interface NotInTransaction {
 type TransactionState = InTransaction | NotInTransaction;
 
 export class HistoryManager {
+    undoStack: Action[] = [];
+    redoStack: Action[] = [];
+    inTransaction: TransactionState = { type: TransactionType.NOT_IN_TRANSACTION };
+
     constructor(
-        private editorEngine: EditorEngine,
-        private undoStack: Action[] = [],
-        private redoStack: Action[] = [],
-        private inTransaction: TransactionState = { type: TransactionType.NOT_IN_TRANSACTION },
+        private codeManager: CodeManager,
     ) {
         makeAutoObservable(this);
     }
@@ -81,7 +82,7 @@ export class HistoryManager {
         }
 
         this.undoStack.push(action);
-        await this.editorEngine.code.write(action);
+        await this.codeManager.write(action);
 
         switch (action.type) {
             case 'update-style':

@@ -24,7 +24,8 @@ import { getOidFromJsxElement } from '@onlook/parser/src/code-edit/helpers';
 import { Color } from '@onlook/utility';
 import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { ActionManager } from '../action';
+import type { SandboxManager } from '../sandbox';
 import {
     addTailwindCssVariable,
     addTailwindNestedColor,
@@ -48,7 +49,7 @@ export class ThemeManager {
     private cssPath: string | null = null;
 
     constructor(
-        private editorEngine: EditorEngine,
+        private readonly sandboxManager: SandboxManager,
     ) {
         makeAutoObservable(this);
     }
@@ -462,10 +463,10 @@ export class ThemeManager {
                 return shouldKeep;
             });
             const updatedCssContent = updatedCssLines.join('\n');
-            await this.editorEngine.sandbox.writeFile(cssPath, updatedCssContent);
+            await this.sandboxManager.writeFile(cssPath, updatedCssContent);
 
             const output = generate(updateAst, {}, configContent).code;
-            await this.editorEngine.sandbox.writeFile(configPath, output);
+            await this.sandboxManager.writeFile(configPath, output);
 
             // Also delete the color group in the class references
             const replacements: ClassReplacement[] = [];
@@ -669,7 +670,7 @@ export class ThemeManager {
         configPath: string | null;
         cssPath: string | null;
     } {
-        const list: string[] = this.editorEngine.sandbox.listAllFiles();
+        const list: string[] = this.sandboxManager.listAllFiles();
 
         if (!list.length) {
             return { configPath: null, cssPath: null };
@@ -689,13 +690,13 @@ export class ThemeManager {
                 return null;
             }
 
-            const configContent = await this.editorEngine.sandbox.readFile(configPath);
+            const configContent = await this.sandboxManager.readFile(configPath);
             if (!configContent) {
                 console.log('Could not read Tailwind config file');
                 return null;
             }
 
-            const cssContent = await this.editorEngine.sandbox.readFile(cssPath);
+            const cssContent = await this.sandboxManager.readFile(cssPath);
             if (!cssContent) {
                 console.log('Could not read CSS file');
                 return {
@@ -807,7 +808,7 @@ export class ThemeManager {
         });
 
         const output = generate(updateAst, {}, configContent).code;
-        await this.editorEngine.sandbox.writeFile(configPath, output);
+        await this.sandboxManager.writeFile(configPath, output);
 
         if (!isUpdated) {
             const newCssVarName = `${colorFamily}-${shadeKey}`;
@@ -817,7 +818,7 @@ export class ThemeManager {
                 newColor,
             );
 
-            await this.editorEngine.sandbox.writeFile(cssPath, updatedCssContent);
+            await this.sandboxManager.writeFile(cssPath, updatedCssContent);
         } else {
             // Update the CSS file
             const originalName = `${colorFamily}-${shadeKey}`;
@@ -828,7 +829,7 @@ export class ThemeManager {
                 newColor,
                 theme,
             );
-            await this.editorEngine.sandbox.writeFile(cssPath, updatedCssContent);
+            await this.sandboxManager.writeFile(cssPath, updatedCssContent);
         }
 
         return isUpdated;
@@ -872,7 +873,7 @@ export class ThemeManager {
             theme,
         );
 
-        await this.editorEngine.sandbox.writeFile(cssPath, updatedCssContent);
+        await this.sandboxManager.writeFile(cssPath, updatedCssContent);
 
         // Update config file
         const { keyUpdated, valueUpdated, output } = this.updateTailwindConfigFile(
@@ -884,7 +885,7 @@ export class ThemeManager {
         );
 
         if (keyUpdated || valueUpdated) {
-            await this.editorEngine.sandbox.writeFile(configPath, output);
+            await this.sandboxManager.writeFile(configPath, output);
 
             // Update class references if the name changed
             if (keyUpdated) {
@@ -934,7 +935,7 @@ export class ThemeManager {
                 newCssVarName,
                 newColor,
             );
-            await this.editorEngine.sandbox.writeFile(cssPath, updatedCssContent);
+            await this.sandboxManager.writeFile(cssPath, updatedCssContent);
         }
 
         // Update config file
@@ -961,7 +962,7 @@ export class ThemeManager {
         });
 
         const output = generate(updateAst, { compact: false }, configContent).code;
-        await this.editorEngine.sandbox.writeFile(configPath, output);
+        await this.sandboxManager.writeFile(configPath, output);
 
         return { success: true };
     }
@@ -972,7 +973,7 @@ export class ThemeManager {
             return null;
         }
 
-        const files = await this.editorEngine.sandbox.readFiles([configPath, cssPath]);
+        const files = await this.sandboxManager.readFiles([configPath, cssPath]);
         if (!files[configPath] || !files[cssPath]) {
             return null;
         }
@@ -1149,9 +1150,9 @@ export class ThemeManager {
     }
 
     async updateClassReferences(replacements: ClassReplacement[]): Promise<void> {
-        const sourceFiles = this.editorEngine.sandbox.listAllFiles();
+        const sourceFiles = this.sandboxManager.listAllFiles();
         const filesToUpdate = sourceFiles.filter((file) => file.endsWith('.tsx')) as string[];
-        const contents = await this.editorEngine.sandbox.readFiles(filesToUpdate);
+        const contents = await this.sandboxManager.readFiles(filesToUpdate);
 
         await Promise.all(
             filesToUpdate.map(async (file) => {
@@ -1205,7 +1206,7 @@ export class ThemeManager {
                 if (updates.size > 0) {
                     transformAst(ast, updates);
                     const output = generate(ast, { retainLines: true }, content).code;
-                    await this.editorEngine.sandbox.writeFile(file, output);
+                    await this.sandboxManager.writeFile(file, output);
                 }
             }),
         );

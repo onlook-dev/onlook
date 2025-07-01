@@ -10,23 +10,27 @@ import {
 } from '@onlook/models/chat';
 import type { ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { ElementsManager } from '../element';
+import type { SandboxManager } from '../sandbox';
+import type { ThemeManager } from '../theme';
 
 export class ChatContext {
     context: ChatMessageContext[] = this.getProjectContext();
 
     constructor(
-        private editorEngine: EditorEngine,
+        private elementsManager: ElementsManager,
+        private sandboxManager: SandboxManager,
+        private themeManager: ThemeManager,
     ) {
         makeAutoObservable(this);
         reaction(
-            () => this.editorEngine.elements.selected,
+            () => this.elementsManager.selected,
             () => this.getChatContext().then((context) => (this.context = context)),
         );
     }
 
     async getChatContext(): Promise<ChatMessageContext[]> {
-        const selected = this.editorEngine.elements.selected;
+        const selected = this.elementsManager.selected;
         const fileNames = new Set<string>();
         let highlightedContext: HighlightMessageContext[] = [];
         if (selected.length) {
@@ -49,7 +53,7 @@ export class ChatContext {
     private async getFileContext(fileNames: Set<string>): Promise<FileMessageContext[]> {
         const fileContext: FileMessageContext[] = [];
         for (const fileName of fileNames) {
-            const fileContent = await this.editorEngine.sandbox.readFile(fileName);
+            const fileContent = await this.sandboxManager.readFile(fileName);
             if (fileContent === null) {
                 continue;
             }
@@ -75,13 +79,13 @@ export class ChatContext {
                 continue;
             }
 
-            const codeBlock = await this.editorEngine.sandbox.getCodeBlock(oid);
+            const codeBlock = await this.sandboxManager.getCodeBlock(oid);
             if (codeBlock === null) {
                 console.error('No code block found for node', node);
                 continue;
             }
 
-            const templateNode = await this.editorEngine.sandbox.getTemplateNode(oid);
+            const templateNode = await this.sandboxManager.getTemplateNode(oid);
             if (!templateNode) {
                 console.error('No template node found for node', node);
                 continue;
@@ -148,7 +152,7 @@ export class ChatContext {
         try {
             const pagePaths = ['./app/page.tsx', './src/app/page.tsx'];
             for (const pagePath of pagePaths) {
-                const content = await this.editorEngine.sandbox.readFile(pagePath);
+                const content = await this.sandboxManager.readFile(pagePath);
                 if (content) {
                     const defaultPageContext: FileMessageContext = {
                         type: MessageContextType.FILE,
@@ -168,7 +172,7 @@ export class ChatContext {
 
     async getDefaultStyleGuideContext(): Promise<FileMessageContext[] | null> {
         try {
-            const styleGuide = await this.editorEngine.theme.initializeTailwindColorContent();
+            const styleGuide = await this.themeManager.initializeTailwindColorContent();
             if (!styleGuide) {
                 throw new Error('No style guide found');
             }

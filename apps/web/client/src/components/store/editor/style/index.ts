@@ -5,10 +5,11 @@ import {
     type UpdateStyleAction,
 } from '@onlook/models/actions';
 import { StyleChangeType, type StyleChange } from '@onlook/models/style';
+import { convertFontString } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { CSSProperties } from 'react';
-import type { EditorEngine } from '../engine';
-import { convertFontString } from '@onlook/utility';
+import type { ActionManager } from '../action';
+import type { ElementsManager } from '../element';
 
 export interface SelectedStyle {
     styles: DomElementStyles;
@@ -27,10 +28,13 @@ export class StyleManager {
     prevSelected = '';
     mode: StyleMode = StyleMode.Root;
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private actionManager: ActionManager,
+        private elementsManager: ElementsManager,
+    ) {
         makeAutoObservable(this);
         reaction(
-            () => this.editorEngine.elements.selected,
+            () => this.elementsManager.selected,
             (selectedElements) => this.onSelectedElementsChanged(selectedElements),
         );
     }
@@ -38,7 +42,7 @@ export class StyleManager {
     updateCustom(style: string, value: string, domIds: string[] = []) {
         const styleObj = { [style]: value };
         const action = this.getUpdateStyleAction(styleObj, domIds, StyleChangeType.Custom);
-        this.editorEngine.action.run(action);
+        this.actionManager.run(action);
         this.updateStyleNoAction(styleObj);
     }
 
@@ -48,13 +52,13 @@ export class StyleManager {
 
     updateMultiple(styles: Record<string, string>) {
         const action = this.getUpdateStyleAction(styles);
-        this.editorEngine.action.run(action);
+        this.actionManager.run(action);
         this.updateStyleNoAction(styles);
     }
 
     updateFontFamily(style: string, value: Font) {
         const styleObj = { [style]: value.id };
-        
+
         const action = this.getUpdateStyleAction(styleObj);
         const formattedAction = {
             ...action,
@@ -82,7 +86,7 @@ export class StyleManager {
                 },
             })),
         };
-        this.editorEngine.action.run(formattedAction);
+        this.actionManager.run(formattedAction);
     }
 
     getUpdateStyleAction(
@@ -90,13 +94,7 @@ export class StyleManager {
         domIds: string[] = [],
         type: StyleChangeType = StyleChangeType.Value,
     ): UpdateStyleAction {
-        if (!this.editorEngine) {
-            return {
-                type: 'update-style',
-                targets: [],
-            };
-        }
-        const selected = this.editorEngine.elements.selected;
+        const selected = this.elementsManager.selected;
         const filteredSelected =
             domIds.length > 0 ? selected.filter((el) => domIds.includes(el.domId)) : selected;
 

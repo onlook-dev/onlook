@@ -1,16 +1,19 @@
-// import { invokeMainChannel } from '@/lib/utils';
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import { EditorAttributes } from '@onlook/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { FramesManager } from '../frames';
+import type { SandboxManager } from '../sandbox';
 import { LayersManager } from './layers';
 
 export class AstManager {
     private layersManager: LayersManager;
 
-    constructor(private editorEngine: EditorEngine) {
-        this.layersManager = new LayersManager(editorEngine);
+    constructor(
+        private readonly framesManager: FramesManager,
+        private readonly sandboxManager: SandboxManager,
+    ) {
+        this.layersManager = new LayersManager(this.framesManager);
         makeAutoObservable(this);
     }
 
@@ -71,7 +74,7 @@ export class AstManager {
             console.warn('Failed to processNodeForMap: No oid found');
             return;
         }
-        const templateNode = await this.editorEngine.sandbox.getTemplateNode(node.oid);
+        const templateNode = await this.sandboxManager.getTemplateNode(node.oid);
         if (!templateNode) {
             console.warn('Failed to processNodeForMap: Template node not found');
             return;
@@ -84,7 +87,7 @@ export class AstManager {
             return;
         }
 
-        const frame = this.editorEngine.frames.get(frameId);
+        const frame = this.framesManager.get(frameId);
         if (!frame) {
             console.warn('Failed: Frame not found');
             return;
@@ -182,7 +185,7 @@ export class AstManager {
     }
 
     updateElementInstance(frameId: string, domId: string, instanceId: string, component: string) {
-        const frame = this.editorEngine.frames.get(frameId);
+        const frame = this.framesManager.get(frameId);
         if (!frame) {
             console.warn('Failed to updateElementInstanceId: Frame not found');
             return;

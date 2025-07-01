@@ -28,8 +28,10 @@ import * as FlexSearch from 'flexsearch';
 import { camelCase } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import * as pathModule from 'path';
-import type { EditorEngine } from '../engine';
+import type { HistoryManager } from '../history';
+import type { SandboxManager } from '../sandbox';
 import { normalizePath } from '../sandbox/helpers';
+import type { StateManager } from '../state';
 
 type TraverseCallback = (
     classNameAttr: t.JSXAttribute,
@@ -96,7 +98,9 @@ export class FontManager {
     }
 
     constructor(
-        private editorEngine: EditorEngine,
+        private historyManager: HistoryManager,
+        private sandboxManager: SandboxManager,
+        private stateManager: StateManager,
     ) {
         makeAutoObservable(this);
 
@@ -125,8 +129,8 @@ export class FontManager {
         // React to sandbox connection status
         const sandboxDisposer = reaction(
             () =>
-                this.editorEngine.state.brandTab === BrandTabValue.FONTS &&
-                this.editorEngine.sandbox?.session.session,
+                this.stateManager.brandTab === BrandTabValue.FONTS &&
+                this.sandboxManager.session.session,
             async (session) => {
                 if (session) {
                     await this.updateFontConfigPath();
@@ -138,8 +142,8 @@ export class FontManager {
 
         const fontConfigDisposer = reaction(
             () =>
-                this.editorEngine.state.brandTab === BrandTabValue.FONTS &&
-                this.editorEngine.sandbox?.readFile(this.fontConfigPath),
+                this.stateManager.brandTab === BrandTabValue.FONTS &&
+                this.sandboxManager.readFile(this.fontConfigPath),
             async (contentPromise) => {
                 if (contentPromise) {
                     const content = await contentPromise;
@@ -154,7 +158,7 @@ export class FontManager {
         const defaultFontDisposer = reaction(
             () => this._fonts.length,
             async (fontsCount) => {
-                if (fontsCount > 0 && this.editorEngine.sandbox) {
+                if (fontsCount > 0 && this.sandboxManager) {
                     try {
                         const defaultFontId = await this.getDefaultFont();
                         if (defaultFontId) {
@@ -162,7 +166,7 @@ export class FontManager {
                             if (fontObj) {
                                 const codeDiff = await this.setProjectDefaultFont(fontObj);
                                 if (codeDiff) {
-                                    await this.editorEngine.history.push({
+                                    await this.historyManager.push({
                                         type: 'write-code',
                                         diffs: [codeDiff],
                                     });
@@ -238,7 +242,7 @@ export class FontManager {
     }
 
     async scanFonts() {
-        const sandbox = this.editorEngine.sandbox;
+        const sandbox = this.sandboxManager;
         if (!sandbox) {
             console.error('No sandbox session found');
             return [];
@@ -261,7 +265,7 @@ export class FontManager {
                 return [];
             }
 
-            const content = (await this.editorEngine.sandbox?.readFile(this.fontConfigPath)) ?? '';
+            const content = (await this.sandboxManager.readFile(this.fontConfigPath)) ?? '';
             if (!content) {
                 this._fonts = [];
                 return [];
@@ -282,7 +286,7 @@ export class FontManager {
     }
 
     async scanExistingFonts(): Promise<Font[] | undefined> {
-        const sandbox = this.editorEngine.sandbox;
+        const sandbox = this.sandboxManager;
         if (!sandbox) {
             console.error('No sandbox session found');
             return [];
@@ -328,7 +332,7 @@ export class FontManager {
      * 3. Adding the font variable to the appropriate layout file
      */
     async addFont(font: Font) {
-        const sandbox = this.editorEngine.sandbox;
+        const sandbox = this.sandboxManager;
         if (!sandbox) {
             console.error('No sandbox session found');
             return false;
@@ -423,14 +427,8 @@ export class FontManager {
     }
 
     async removeFont(font: Font) {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            console.error('No sandbox session found');
-            return false;
-        }
-
         try {
-            const content = await sandbox.readFile(this.fontConfigPath);
+            const content = await this.sandboxManager.readFile(this.fontConfigPath);
             if (!content) {
                 return false;
             }
@@ -455,7 +453,7 @@ export class FontManager {
                     path: this.fontConfigPath,
                 };
 
-                const success = await sandbox.writeFile(this.fontConfigPath, code);
+                const success = await this.sandboxManager.writeFile(this.fontConfigPath, code);
                 if (!success) {
                     throw new Error('Failed to write font configuration');
                 }
@@ -488,7 +486,7 @@ export class FontManager {
                 //   type: "write-code",
                 //   diffs: [codeDiff],
                 // });
-                await this.editorEngine.sandbox.writeFile(codeDiff.path, codeDiff.generated);
+                await this.sandboxManager.writeFile(codeDiff.path, codeDiff.generated);
                 return true;
             } else {
                 return false;
@@ -507,15 +505,9 @@ export class FontManager {
             style: string;
         }[],
     ) {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            console.error('No sandbox session found');
-            return false;
-        }
-
         try {
             // Read the current font configuration file
-            const content = (await sandbox.readFile(this.fontConfigPath)) ?? '';
+            const content = (await this.sandboxManager.readFile(this.fontConfigPath)) ?? '';
 
             // Parse the file content using Babel
             const ast = parse(content, {
@@ -573,7 +565,7 @@ export class FontManager {
 
                     // Save the file as binary data
                     const buffer = Buffer.from(fontFile.file.buffer);
-                    await sandbox.writeBinaryFile(filePath, buffer);
+                    await this.sandboxManager.writeBinaryFile(filePath, buffer);
 
                     return {
                         path: filePath,
@@ -667,7 +659,7 @@ export class FontManager {
 
             // Generate and write the updated code back to the file
             const { code } = generate(ast);
-            await sandbox.writeFile(this.fontConfigPath, code);
+            await this.sandboxManager.writeFile(this.fontConfigPath, code);
 
             await this.scanFonts();
 
@@ -816,11 +808,6 @@ export class FontManager {
         ast: ParseResult<t.File>,
         fontName: string,
     ): Promise<void> {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            return;
-        }
-
         const { code } = generate(ast);
         const importRegex = new RegExp(
             `import\\s*{([^}]*)}\\s*from\\s*['"]${this.fontImportPath}['"]`,
@@ -844,7 +831,7 @@ export class FontManager {
             newContent = fontImport + '\n' + newContent;
         }
 
-        await sandbox.writeFile(filePath, newContent);
+        await this.sandboxManager.writeFile(filePath, newContent);
     }
 
     /**
@@ -855,14 +842,10 @@ export class FontManager {
         fontName: string,
         targetElements: string[],
     ): Promise<void> {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            return;
-        }
         const normalizedFilePath = normalizePath(filePath);
 
         try {
-            const content = await sandbox.readFile(normalizedFilePath);
+            const content = await this.sandboxManager.readFile(normalizedFilePath);
             if (!content) {
                 console.error(`Failed to read file: ${filePath}`);
                 return;
@@ -986,11 +969,6 @@ export class FontManager {
      * Removes a font variable from the layout file
      */
     private async removeFontVariableFromLayout(fontId: string): Promise<boolean> {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            return false;
-        }
-
         try {
             const routerConfig = await this.detectRouterType();
             if (!routerConfig) {
@@ -1010,7 +988,7 @@ export class FontManager {
 
             const normalizedFilePath = normalizePath(layoutPath);
 
-            const content = (await sandbox.readFile(normalizedFilePath)) ?? '';
+            const content = (await this.sandboxManager.readFile(normalizedFilePath)) ?? '';
             if (!content) {
                 return false;
             }
@@ -1068,7 +1046,7 @@ export class FontManager {
                     }
                 }
 
-                return await sandbox.writeFile(normalizedFilePath, newContent);
+                return await this.sandboxManager.writeFile(normalizedFilePath, newContent);
             }
             return false;
         } catch (error) {
@@ -1085,18 +1063,13 @@ export class FontManager {
         font: Font,
         targetElements: string[],
     ): Promise<CodeDiff | null> {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            return null;
-        }
-
         let updatedAst = false;
         const fontClassName = `font-${font.id}`;
         let result = null;
 
         const normalizedFilePath = normalizePath(filePath);
 
-        const content = await sandbox.readFile(normalizedFilePath);
+        const content = await this.sandboxManager.readFile(normalizedFilePath);
         if (!content) {
             console.error(`Failed to read file: ${filePath}`);
             return null;
@@ -1229,12 +1202,6 @@ export class FontManager {
      * Uses more sophisticated font handling for layout files.
      */
     private async syncFontsWithConfigs() {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            console.error('No sandbox session found');
-            return;
-        }
-
         try {
             const currentFonts = await this.scanFonts();
 
@@ -1288,11 +1255,6 @@ export class FontManager {
         type: 'app' | 'pages';
         basePath: string;
     } | null> {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            return null;
-        }
-
         const APP_ROUTER_PATHS = ['src/app', 'app'];
         const PAGES_ROUTER_PATHS = ['src/pages', 'pages'];
 
@@ -1300,7 +1262,7 @@ export class FontManager {
             // Check for app router (app/layout.tsx or src/app/layout.tsx)
             for (const appPath of APP_ROUTER_PATHS) {
                 try {
-                    const appFiles = await sandbox
+                    const appFiles = await this.sandboxManager
                         .listFilesRecursively(appPath)
                         .then((files) => files.filter((file) => file.includes('layout.tsx')));
 
@@ -1315,7 +1277,7 @@ export class FontManager {
             // Check for pages router (pages/_app.tsx or src/pages/_app.tsx)
             for (const pagesPath of PAGES_ROUTER_PATHS) {
                 try {
-                    const pagesFiles = await sandbox
+                    const pagesFiles = await this.sandboxManager
                         .listFilesRecursively(pagesPath)
                         .then((files) => files.filter((file) => file.includes('_app.tsx')));
                     if (pagesFiles.length > 0) {
@@ -1338,17 +1300,12 @@ export class FontManager {
      * Removes a font from the Tailwind config
      */
     private async removeFontFromTailwindConfig(font: Font) {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            return false;
-        }
-
         try {
             if (!this.tailwindConfigPath) {
                 return false;
             }
 
-            const content = await sandbox.readFile(this.tailwindConfigPath);
+            const content = await this.sandboxManager.readFile(this.tailwindConfigPath);
             if (!content) {
                 return false;
             }
@@ -1358,7 +1315,7 @@ export class FontManager {
             if (!code) {
                 return false;
             }
-            return await sandbox.writeFile(this.tailwindConfigPath, code);
+            return await this.sandboxManager.writeFile(this.tailwindConfigPath, code);
         } catch (error) {
             console.error('Error removing font from Tailwind config:', error);
             return false;
@@ -1369,17 +1326,12 @@ export class FontManager {
      * Updates Tailwind config with a new font
      */
     private async updateTailwindFontConfig(font: Font) {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            return false;
-        }
-
         try {
             if (!this.tailwindConfigPath) {
                 return false;
             }
 
-            const content = await sandbox.readFile(this.tailwindConfigPath);
+            const content = await this.sandboxManager.readFile(this.tailwindConfigPath);
             if (!content) {
                 return false;
             }
@@ -1468,7 +1420,7 @@ export class FontManager {
             }
 
             const { code } = generate(ast);
-            return await sandbox.writeFile(this.tailwindConfigPath, code);
+            return await this.sandboxManager.writeFile(this.tailwindConfigPath, code);
         } catch (error) {
             console.error('Error updating Tailwind font config:', error);
             return false;
@@ -1482,14 +1434,8 @@ export class FontManager {
         targetElements: string[],
         callback: TraverseCallback,
     ): Promise<void> {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            console.error('No sandbox session found');
-            return;
-        }
-
         try {
-            const content = await sandbox.readFile(filePath);
+            const content = await this.sandboxManager.readFile(filePath);
             if (!content) {
                 console.error(`Failed to read file: ${filePath}`);
                 return;

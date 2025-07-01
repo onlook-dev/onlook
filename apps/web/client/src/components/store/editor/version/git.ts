@@ -1,5 +1,5 @@
 import { type GitCommit } from '@onlook/git';
-import type { EditorEngine } from '../engine';
+import type { SandboxManager } from '../sandbox';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 
@@ -14,14 +14,14 @@ export interface GitCommandResult {
 }
 
 export class GitManager {
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private sandboxManager: SandboxManager) { }
 
     /**
      * Check if git repository is initialized
      */
     async isRepoInitialized(): Promise<boolean> {
         try {
-            return (await this.editorEngine?.sandbox.fileExists('.git')) || false;
+            return (await this.sandboxManager.fileExists('.git')) || false;
         } catch (error) {
             console.error('Error checking if repository is initialized:', error);
             return false;
@@ -33,7 +33,7 @@ export class GitManager {
      */
     async ensureGitConfig(): Promise<boolean> {
         try {
-            if (!this.editorEngine?.sandbox?.session) {
+            if (!this.sandboxManager?.session) {
                 console.error('No editor engine or session available');
                 return false;
             }
@@ -86,7 +86,7 @@ export class GitManager {
                 return true;
             }
 
-            if (!this.editorEngine?.sandbox?.session) {
+            if (!this.sandboxManager?.session) {
                 console.error('No editor engine or session available');
                 return false;
             }
@@ -119,7 +119,7 @@ export class GitManager {
      */
     async getStatus(): Promise<GitStatus | null> {
         try {
-            const status = await this.editorEngine?.sandbox.session.session?.git.status();
+            const status = await this.sandboxManager.session.session?.git.status();
             if (!status) {
                 console.error('Failed to get git status');
                 return null;
@@ -207,7 +207,7 @@ export class GitManager {
      */
     private async runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
         try {
-            if (!this.editorEngine?.sandbox?.session) {
+            if (!this.sandboxManager?.session) {
                 return {
                     success: false,
                     output: '',
@@ -215,7 +215,7 @@ export class GitManager {
                 };
             }
 
-            let result = await this.editorEngine.sandbox.session.runCommand(command + (ignoreError ? ' 2>/dev/null || true' : ''));
+            let result = await this.sandboxManager.session.runCommand(command + (ignoreError ? ' 2>/dev/null || true' : ''));
 
             if (!result.success) {
                 throw new Error(result.error ?? 'Failed to run command');

@@ -18,15 +18,21 @@ import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
 import { createDomId, createOid } from '@onlook/utility';
 import type React from 'react';
-import type { EditorEngine } from '../engine';
+import type { ActionManager } from '../action';
 import type { FrameData } from '../frames';
+import type { OverlayManager } from '../overlay';
 import { getRelativeMousePositionToFrameView } from '../overlay/utils';
+import type { StateManager } from '../state';
 
 export class InsertManager {
     isDrawing = false;
     private drawOrigin: ElementPosition | undefined;
 
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(
+        private readonly overlayManager: OverlayManager,
+        private readonly actionManager: ActionManager,
+        private readonly stateManager: StateManager,
+    ) { }
 
     getDefaultProperties(mode: EditorMode): DropElementProperties {
         switch (mode) {
@@ -81,7 +87,7 @@ export class InsertManager {
         }
 
         this.isDrawing = false;
-        this.editorEngine.overlay.state.updateInsertRect(null);
+        this.overlayManager.state.updateInsertRect(null);
 
         if (!frameView) {
             console.error('frameView not found');
@@ -103,7 +109,7 @@ export class InsertManager {
             return;
         }
         const containerRect = overlayContainer.getBoundingClientRect();
-        this.editorEngine.overlay.state.updateInsertRect({
+        this.overlayManager.state.updateInsertRect({
             ...rect,
             top: rect.top - containerRect.top,
             left: rect.left - containerRect.left,
@@ -149,7 +155,7 @@ export class InsertManager {
             console.error('Failed to create insert action');
             return;
         }
-        await this.editorEngine.action.run(insertAction);
+        await this.actionManager.run(insertAction);
     }
 
     async createInsertAction(
@@ -162,7 +168,7 @@ export class InsertManager {
             console.error('Insert position not found');
             return;
         }
-        const mode = this.editorEngine.state.editorMode;
+        const mode = this.stateManager.editorMode;
         const domId = createDomId();
         const oid = createOid();
         const width = Math.max(Math.round(newRect.width), 30);
@@ -273,7 +279,7 @@ export class InsertManager {
             pasteParams: null,
             codeBlock: null,
         };
-        this.editorEngine.action.run(action);
+        this.actionManager.run(action);
     }
 
     updateElementBackgroundAction(
@@ -310,7 +316,7 @@ export class InsertManager {
                 },
             ],
         };
-        this.editorEngine.action.run(action);
+        this.actionManager.run(action);
     }
 
     async insertDroppedElement(
@@ -357,7 +363,7 @@ export class InsertManager {
             codeBlock: null,
         };
 
-        this.editorEngine.action.run(action);
+        this.actionManager.run(action);
     }
 
     clear() {

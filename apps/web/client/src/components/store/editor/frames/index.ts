@@ -5,7 +5,7 @@ import { fromFrame } from '@onlook/db';
 import { FrameType, type Frame, type WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
-import type { EditorEngine } from '../engine';
+import type { AstManager } from '../ast';
 import { FrameImpl } from './frame';
 
 export interface FrameData {
@@ -20,7 +20,8 @@ export class FramesManager {
     private _frames: FrameImpl[] = [];
 
     constructor(
-        private editorEngine: EditorEngine,
+        private projectId: string,
+        private astManager: AstManager,
     ) {
         makeAutoObservable(this);
     }
@@ -44,7 +45,7 @@ export class FramesManager {
     }
 
     private async getProjectCanvas() {
-        const canvas = await api.canvas.get.query({ projectId: this.editorEngine.projectId });
+        const canvas = await api.canvas.get.query({ projectId: this.projectId });
         if (!canvas) {
             console.error('Canvas not found');
             return null;
@@ -137,7 +138,7 @@ export class FramesManager {
 
     disposeFrame(frameId: string) {
         this.frameIdToData.delete(frameId);
-        this.editorEngine?.ast?.mappings?.remove(frameId);
+        this.astManager.mappings.remove(frameId);
     }
 
     reloadAll() {

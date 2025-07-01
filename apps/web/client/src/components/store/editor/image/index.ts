@@ -8,17 +8,21 @@ import {
     isImageFile,
 } from '@onlook/utility/src/file';
 import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { ElementsManager } from '../element';
+import type { SandboxManager } from '../sandbox';
 
 export class ImageManager {
     private images: string[] = [];
     private _isScanning = false;
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private readonly sandboxManager: SandboxManager,
+        private readonly elementsManager: ElementsManager,
+    ) {
         makeAutoObservable(this);
 
         reaction(
-            () => this.editorEngine.sandbox.isIndexingFiles,
+            () => this.sandboxManager.isIndexingFiles,
             (isIndexingFiles) => {
                 if (!isIndexingFiles) {
                     this.scanImages();
@@ -27,7 +31,7 @@ export class ImageManager {
         );
 
         reaction(
-            () => this.editorEngine.sandbox.listBinaryFiles(DefaultSettings.IMAGE_FOLDER),
+            () => this.sandboxManager.listBinaryFiles(DefaultSettings.IMAGE_FOLDER),
             () => {
                 this.scanImages();
             }
@@ -39,7 +43,7 @@ export class ImageManager {
         try {
             const path = `${destinationFolder}/${file.name}`;
             const uint8Array = new Uint8Array(await file.arrayBuffer());
-            await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
+            await this.sandboxManager.writeBinaryFile(path, uint8Array);
             this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
@@ -49,7 +53,7 @@ export class ImageManager {
 
     async delete(originPath: string): Promise<void> {
         try {
-            await this.editorEngine.sandbox.delete(originPath);
+            await this.sandboxManager.delete(originPath);
             this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
@@ -61,7 +65,7 @@ export class ImageManager {
         try {
             const basePath = getDirName(originPath);
             const newPath = `${basePath}/${newName}`;
-            await this.editorEngine.sandbox.rename(originPath, newPath);
+            await this.sandboxManager.rename(originPath, newPath);
             this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
@@ -127,7 +131,7 @@ export class ImageManager {
     }
 
     getTargets() {
-        const selected = this.editorEngine.elements.selected;
+        const selected = this.elementsManager.selected;
 
         if (!selected || selected.length === 0) {
             console.error('No elements selected');
@@ -150,7 +154,7 @@ export class ImageManager {
         this._isScanning = true;
 
         try {
-            const files = this.editorEngine.sandbox.listBinaryFiles(
+            const files = this.sandboxManager.listBinaryFiles(
                 DefaultSettings.IMAGE_FOLDER,
             );
 
@@ -192,7 +196,7 @@ export class ImageManager {
             }
 
             // Read the binary file using the sandbox
-            const binaryData = await this.editorEngine.sandbox.readBinaryFile(imagePath);
+            const binaryData = await this.sandboxManager.readBinaryFile(imagePath);
             if (!binaryData) {
                 console.warn(`Failed to read binary data for ${imagePath}`);
                 return null;

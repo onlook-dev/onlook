@@ -15,7 +15,7 @@ import {
     type FreestyleFile,
 } from 'freestyle-sandboxes';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { SandboxManager } from '../sandbox';
 
 const DEFAULT_PUBLISH_STATE: PublishState = {
     status: PublishStatus.UNPUBLISHED,
@@ -34,17 +34,17 @@ enum PublishType {
 export class HostingManager {
     state: PublishState = DEFAULT_PUBLISH_STATE;
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(private readonly sandboxManager: SandboxManager) {
         makeAutoObservable(this);
     }
 
     private get fileOps(): FileOperations {
         return {
-            readFile: (path: string) => this.editorEngine.sandbox.readFile(path),
-            writeFile: (path: string, content: string) => this.editorEngine.sandbox.writeFile(path, content),
-            fileExists: (path: string) => this.editorEngine.sandbox.fileExists(path),
-            copy: (source: string, destination: string, recursive?: boolean, overwrite?: boolean) => this.editorEngine.sandbox.copy(source, destination, recursive, overwrite),
-            delete: (path: string, recursive?: boolean) => this.editorEngine.sandbox.delete(path, recursive),
+            readFile: (path: string) => this.sandboxManager.readFile(path),
+            writeFile: (path: string, content: string) => this.sandboxManager.writeFile(path, content),
+            fileExists: (path: string) => this.sandboxManager.fileExists(path),
+            copy: (source: string, destination: string, recursive?: boolean, overwrite?: boolean) => this.sandboxManager.copy(source, destination, recursive, overwrite),
+            delete: (path: string, recursive?: boolean) => this.sandboxManager.delete(path, recursive),
         };
     }
 
@@ -230,7 +230,7 @@ export class HostingManager {
             success: buildSuccess,
             error: buildError,
             output: buildOutput,
-        } = await this.editorEngine.sandbox.session.runCommand(BUILD_SCRIPT_NO_LINT, (output: string) => {
+        } = await this.sandboxManager.session.runCommand(BUILD_SCRIPT_NO_LINT, (output: string) => {
             console.log('Build output: ', output);
         });
 
@@ -293,11 +293,6 @@ export class HostingManager {
      */
     private async serializeFiles(currentDir: string): Promise<Record<string, FreestyleFile>> {
         const timer = new LogTimer('File Serialization');
-
-        if (!this.editorEngine.sandbox.session.session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
             const allFilePaths = await this.getAllFilePathsFlat(currentDir);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
@@ -344,7 +339,7 @@ export class HostingManager {
         while (dirsToProcess.length > 0) {
             const currentDir = dirsToProcess.shift()!;
             try {
-                const entries = await this.editorEngine.sandbox.session.session!.fs.readdir(currentDir);
+                const entries = await this.sandboxManager.session.session!.fs.readdir(currentDir);
 
                 for (const entry of entries) {
                     const fullPath = `${currentDir}/${entry.name}`;
@@ -399,7 +394,7 @@ export class HostingManager {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
             try {
-                const textContent = await this.editorEngine.sandbox.readFile(fullPath);
+                const textContent = await this.sandboxManager.readFile(fullPath);
 
                 if (textContent !== null) {
                     return {
@@ -436,7 +431,7 @@ export class HostingManager {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
             try {
-                const binaryContent = await this.editorEngine.sandbox.readBinaryFile(fullPath);
+                const binaryContent = await this.sandboxManager.readBinaryFile(fullPath);
 
                 if (binaryContent) {
                     const base64String = btoa(

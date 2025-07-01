@@ -2,15 +2,22 @@ import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
 import type { RemoveElementAction } from '@onlook/models/actions';
 import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
-import type { FrameData } from '../frames';
+import type { ActionManager } from '../action';
+import type { FrameData, FramesManager } from '../frames';
+import type { OverlayManager } from '../overlay';
 import { adaptRectToCanvas } from '../overlay/utils';
+import type { SandboxManager } from '../sandbox';
 
 export class ElementsManager {
     private _hovered: DomElement | undefined;
     private _selected: DomElement[] = [];
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private readonly framesManager: FramesManager,
+        private readonly overlayManager: OverlayManager,
+        private readonly sandboxManager: SandboxManager,
+        private readonly actionManager: ActionManager,
+    ) {
         makeAutoObservable(this);
     }
 
@@ -27,7 +34,7 @@ export class ElementsManager {
     }
 
     mouseover(domEl: DomElement) {
-        const frameData = this.editorEngine.frames.get(domEl.frameId);
+        const frameData = this.framesManager.get(domEl.frameId);
         if (!frameData) {
             console.error('Frame data not found');
             return;
@@ -43,7 +50,7 @@ export class ElementsManager {
         const { view } = frameData;
         const adjustedRect = adaptRectToCanvas(frameEl.rect, view);
         const isComponent = !!domEl.instanceId;
-        this.editorEngine.overlay.state.updateHoverRect(adjustedRect, isComponent);
+        this.overlayManager.state.updateHoverRect(adjustedRect, isComponent);
         this.setHoveredElement(frameEl);
     }
 
@@ -60,11 +67,11 @@ export class ElementsManager {
     }
 
     click(domEls: DomElement[]) {
-        this.editorEngine.overlay.state.removeClickRects();
+        this.overlayManager.state.removeClickRects();
         this.clearSelectedElements();
 
         for (const domEl of domEls) {
-            const frameData = this.editorEngine.frames.get(domEl.frameId);
+            const frameData = this.framesManager.get(domEl.frameId);
             if (!frameData) {
                 console.error('Frame data not found');
                 continue;
@@ -72,7 +79,7 @@ export class ElementsManager {
             const { view } = frameData;
             const adjustedRect = adaptRectToCanvas(domEl.rect, view);
             const isComponent = !!domEl.instanceId;
-            this.editorEngine.overlay.state.addClickRect(
+            this.overlayManager.state.addClickRect(
                 adjustedRect,
                 domEl.styles,
                 isComponent,
@@ -103,7 +110,7 @@ export class ElementsManager {
 
         for (const selectedEl of selected) {
             const frameId = selectedEl.frameId;
-            const frameData = this.editorEngine.frames.get(frameId);
+            const frameData = this.framesManager.get(frameId);
             if (!frameData) {
                 console.error('Frame data not found');
                 return;
@@ -129,7 +136,7 @@ export class ElementsManager {
                 this.emitError('OID not found. Try refreshing the page.');
                 return;
             }
-            const codeBlock = await this.editorEngine.sandbox.getCodeBlock(oid);
+            const codeBlock = await this.sandboxManager.getCodeBlock(oid);
 
             if (!codeBlock) {
                 this.emitError('Code block not found. Try refreshing the page.');
@@ -138,7 +145,7 @@ export class ElementsManager {
 
             removeAction.codeBlock = codeBlock;
 
-            this.editorEngine.action.run(removeAction).catch((err) => {
+            this.actionManager.run(removeAction).catch((err) => {
                 console.error('Error deleting element', err);
             });
         }

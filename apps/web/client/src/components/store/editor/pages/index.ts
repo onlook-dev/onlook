@@ -1,8 +1,8 @@
 import { sendAnalytics } from '@/utils/analytics';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
-import type { FrameData } from '../frames';
+import type { FrameData, FramesManager } from '../frames';
+import type { SandboxManager } from '../sandbox';
 import {
     createPageInSandbox,
     deletePageInSandbox,
@@ -22,7 +22,8 @@ export class PagesManager {
     private groupedRoutes = '';
 
     constructor(
-        private editorEngine: EditorEngine,
+        private framesManager: FramesManager,
+        private sandboxManager: SandboxManager,
     ) {
         makeAutoObservable(this);
     }
@@ -37,10 +38,10 @@ export class PagesManager {
     }
 
     private getActiveFrame(): FrameData | undefined {
-        if (!this.editorEngine?.frames) {
+        if (!this.framesManager) {
             return undefined;
         }
-        return this.editorEngine.frames.selected[0] ?? this.editorEngine.frames.getAll()[0];
+        return this.framesManager.selected[0] ?? this.framesManager.getAll()[0];
     }
 
     public isNodeActive(node: PageNode): boolean {
@@ -114,7 +115,7 @@ export class PagesManager {
 
     private setPages(pages: PageNode[]) {
         this.pages = pages;
-        if (this.editorEngine?.frames) {
+        if (this.framesManager) {
             // If no pages, clear active states by using empty path
             const pathToUse = pages.length === 0 ? '' : this.currentPath;
             this.updateActiveStates(this.pages, pathToUse);
@@ -123,9 +124,9 @@ export class PagesManager {
 
     async scanPages() {
         try {
-            if (this.editorEngine?.sandbox?.session?.session) {
+            if (this.sandboxManager.session.session) {
                 try {
-                    const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox.session.session);
+                    const realPages = await scanPagesFromSandbox(this.sandboxManager.session.session);
                     this.setPages(realPages);
                     return;
                 } catch (error) {
@@ -154,7 +155,7 @@ export class PagesManager {
             throw new Error('This page already exists');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
+        const session = this.sandboxManager.session.session;
         if (!session) {
             throw new Error('No sandbox session available');
         }
@@ -180,7 +181,7 @@ export class PagesManager {
             throw new Error('A page with this name already exists');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
+        const session = this.sandboxManager.session.session;
         if (!session) {
             throw new Error('No sandbox session available');
         }
@@ -197,7 +198,7 @@ export class PagesManager {
     }
 
     public async duplicatePage(sourcePath: string, targetPath: string): Promise<void> {
-        const session = this.editorEngine?.sandbox?.session?.session;
+        const session = this.sandboxManager.session.session;
         if (!session) {
             throw new Error('No sandbox session available');
         }
@@ -223,7 +224,7 @@ export class PagesManager {
             throw new Error('Cannot delete root page');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
+        const session = this.sandboxManager.session.session;
         if (!session) {
             throw new Error('No sandbox session available');
         }
@@ -244,7 +245,7 @@ export class PagesManager {
             throw new Error('A page with this name does not exist');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
+        const session = this.sandboxManager.session.session;
         if (!session) {
             throw new Error('No sandbox session available');
         }
@@ -308,11 +309,11 @@ export class PagesManager {
     }
 
     public handleFrameUrlChange(frameId: string) {
-        if (!this.editorEngine?.frames) {
+        if (!this.framesManager) {
             return;
         }
 
-        const frameView = this.editorEngine.frames.get(frameId);
+        const frameView = this.framesManager.get(frameId);
         if (!frameView) {
             return;
         }

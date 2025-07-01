@@ -3,7 +3,11 @@ import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, type ChatMessageContext } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { ElementsManager } from '../element';
+import type { ErrorManager } from '../error';
+import type { SandboxManager } from '../sandbox';
+import type { ThemeManager } from '../theme';
+import type { VersionsManager } from '../version';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
 import { ChatErrorManager } from './error';
@@ -18,11 +22,16 @@ export class ChatManager {
     error: ChatErrorManager;
 
     constructor(
-        private editorEngine: EditorEngine,
+        private projectId: string,
+        private elementsManager: ElementsManager,
+        private sandboxManager: SandboxManager,
+        private themeManager: ThemeManager,
+        private errorManager: ErrorManager,
+        private versionsManager: VersionsManager,
     ) {
-        this.context = new ChatContext(this.editorEngine);
-        this.conversation = new ConversationManager(this.editorEngine.projectId);
-        this.suggestions = new SuggestionManager(this.editorEngine.projectId);
+        this.context = new ChatContext(this.elementsManager, this.sandboxManager, this.themeManager);
+        this.conversation = new ConversationManager(this.projectId);
+        this.suggestions = new SuggestionManager(this.projectId);
         this.error = new ChatErrorManager();
         makeAutoObservable(this);
     }
@@ -54,7 +63,7 @@ export class ChatManager {
     }
 
     async getFixErrorMessages(): Promise<Message[] | null> {
-        const errors = this.editorEngine.error.errors;
+        const errors = this.errorManager.errors;
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;
@@ -113,7 +122,7 @@ export class ChatManager {
     }
 
     async createCommit(userPrompt: string): Promise<GitCommit | null> {
-        const res = await this.editorEngine.versions?.createCommit(
+        const res = await this.versionsManager.createCommit(
             userPrompt ?? "Save before chat",
             false,
         );

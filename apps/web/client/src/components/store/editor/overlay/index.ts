@@ -1,20 +1,28 @@
 import type { DomElement, DomElementStyles, RectDimensions } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { CanvasManager } from '../canvas';
+import type { ElementsManager } from '../element';
+import type { FramesManager } from '../frames';
+import type { StateManager } from '../state';
 import { OverlayState } from './state';
 import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
     state: OverlayState = new OverlayState();
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private readonly canvasManager: CanvasManager,
+        private readonly elementsManager: ElementsManager,
+        private readonly framesManager: FramesManager,
+        private readonly stateManager: StateManager,
+    ) {
         makeAutoObservable(this);
         reaction(
             () => ({
-                position: this.editorEngine.canvas?.position,
-                scale: this.editorEngine.canvas?.scale,
-                shouldHideOverlay: this.editorEngine.state?.shouldHideOverlay,
+                position: this.canvasManager.position,
+                scale: this.canvasManager.scale,
+                shouldHideOverlay: this.stateManager.shouldHideOverlay,
             }),
             () => {
                 this.refresh();
@@ -27,8 +35,8 @@ export class OverlayManager {
 
         // Refresh click rects
         const newClickRects: { rect: RectDimensions; styles: DomElementStyles | null }[] = [];
-        for (const selectedElement of this.editorEngine.elements.selected) {
-            const frameData = this.editorEngine.frames.get(selectedElement.frameId);
+        for (const selectedElement of this.elementsManager.selected) {
+            const frameData = this.framesManager.get(selectedElement.frameId);
             if (!frameData) {
                 console.error('Frame data not found');
                 continue;
@@ -52,19 +60,19 @@ export class OverlayManager {
     refresh = debounce(this.undebouncedRefresh, 100, { leading: true });
 
     showMeasurement() {
-        this.editorEngine.overlay.removeMeasurement();
-        if (!this.editorEngine.elements.selected.length || !this.editorEngine.elements.hovered) {
+        this.removeMeasurement();
+        if (!this.elementsManager.selected.length || !this.elementsManager.hovered) {
             return;
         }
 
-        const selectedEl = this.editorEngine.elements.selected[0];
+        const selectedEl = this.elementsManager.selected[0];
         if (!selectedEl) {
             return;
         }
 
-        const hoverEl = this.editorEngine.elements.hovered;
+        const hoverEl = this.elementsManager.hovered;
         const frameId = selectedEl.frameId;
-        const frameData = this.editorEngine.frames.get(frameId);
+        const frameData = this.framesManager.get(frameId);
         if (!frameData) {
             return;
         }
@@ -74,7 +82,7 @@ export class OverlayManager {
         const selectedRect = adaptRectToCanvas(selectedEl.rect, view);
         const hoverRect = adaptRectToCanvas(hoverEl.rect, view);
 
-        this.editorEngine.overlay.updateMeasurement(selectedRect, hoverRect);
+        this.updateMeasurement(selectedRect, hoverRect);
     }
 
     updateMeasurement = (fromRect: RectDimensions, toRect: RectDimensions) => {

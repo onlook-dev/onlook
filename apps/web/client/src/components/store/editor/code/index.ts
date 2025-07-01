@@ -1,4 +1,3 @@
-import type { EditorEngine } from '@/components/store/editor/engine';
 import {
     EditorTabValue,
     type Action,
@@ -9,6 +8,11 @@ import {
 import { toast } from '@onlook/ui/sonner';
 import { assertNever } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
+import type { IDEManager } from '../dev';
+import type { ElementsManager } from '../element';
+import type { ErrorManager } from '../error';
+import type { SandboxManager } from '../sandbox';
+import type { StateManager } from '../state';
 import {
     getEditTextRequests,
     getGroupRequests,
@@ -24,7 +28,13 @@ import {
 } from './requests';
 
 export class CodeManager {
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private readonly elementsManager: ElementsManager,
+        private readonly ideManager: IDEManager,
+        private readonly stateManager: StateManager,
+        private readonly errorManager: ErrorManager,
+        private readonly sandboxManager: SandboxManager,
+    ) {
         makeAutoObservable(this);
     }
 
@@ -34,20 +44,20 @@ export class CodeManager {
 
     async viewCodeBlock(oid: string) {
         try {
-            this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
+            this.stateManager.rightPanelTab = EditorTabValue.DEV;
             const element =
-                this.editorEngine.elements.selected.find((el: DomElement) => el.oid === oid) ||
-                this.editorEngine.elements.selected.find((el: DomElement) => el.instanceId === oid);
+                this.elementsManager.selected.find((el: DomElement) => el.oid === oid) ||
+                this.elementsManager.selected.find((el: DomElement) => el.instanceId === oid);
 
             if (element) {
                 // First get the file path and load the file
-                const filePath = await this.editorEngine.ide.getFilePathFromOid(element.oid || '');
+                const filePath = await this.ideManager.getFilePathFromOid(element.oid || '');
                 if (filePath) {
                     // Load the file first
-                    await this.editorEngine.ide.openFile(filePath);
+                    await this.ideManager.openFile(filePath);
                     // Then select the element after a small delay to ensure the file is loaded
                     setTimeout(() => {
-                        this.editorEngine.elements.selected = [element];
+                        this.elementsManager.selected = [element];
                     }, 500);
                 }
             }
@@ -60,7 +70,7 @@ export class CodeManager {
         try {
             // TODO: This is a hack to write code, we should refactor this
             if (action.type === 'write-code' && action.diffs[0]) {
-                await this.editorEngine.sandbox.writeFile(
+                await this.sandboxManager.writeFile(
                     action.diffs[0].path,
                     action.diffs[0].generated,
                 );
@@ -73,7 +83,7 @@ export class CodeManager {
             toast.error('Error writing requests', {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
-            this.editorEngine.error.addCodeApplicationError(error instanceof Error ? error.message : 'Unknown error', action);
+            this.errorManager.addCodeApplicationError(error instanceof Error ? error.message : 'Unknown error', action);
         }
     }
 
@@ -81,7 +91,7 @@ export class CodeManager {
         const groupedRequests = await this.groupRequestByFile(requests);
         const codeDiffs = await processGroupedRequests(groupedRequests);
         for (const diff of codeDiffs) {
-            await this.editorEngine.sandbox.writeFile(diff.path, diff.generated);
+            await this.sandboxManager.writeFile(diff.path, diff.generated);
         }
     }
 
@@ -116,11 +126,11 @@ export class CodeManager {
         const requestByFile: FileToRequests = new Map();
 
         for (const request of requests) {
-            const templateNode = await this.editorEngine.sandbox.getTemplateNode(request.oid);
+            const templateNode = await this.sandboxManager.getTemplateNode(request.oid);
             if (!templateNode) {
                 throw new Error(`Template node not found for oid: ${request.oid}`);
             }
-            const codeBlock = await this.editorEngine.sandbox.readFile(templateNode.path);
+            const codeBlock = await this.sandboxManager.readFile(templateNode.path);
             if (!codeBlock) {
                 throw new Error(`Failed to read file: ${templateNode.path}`);
             }

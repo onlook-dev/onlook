@@ -3,7 +3,9 @@ import { BINARY_EXTENSIONS } from '@onlook/constants';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import path from 'path';
-import type { EditorEngine } from '../engine';
+import type { ActionManager } from '../action';
+import type { FramesManager } from '../frames';
+import type { SandboxManager } from '../sandbox';
 
 export interface EditorFile {
     id: string;
@@ -31,14 +33,18 @@ export class IDEManager {
     isLoading = false;
     isFilesLoading = false;
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private readonly sandboxManager: SandboxManager,
+        private readonly actionManager: ActionManager,
+        private readonly framesManager: FramesManager,
+    ) {
         makeAutoObservable(this);
     }
 
     private isSandboxReady() {
         return !!(
-            this.editorEngine.sandbox.session.session &&
-            !this.editorEngine.sandbox.session.isConnecting
+            this.sandboxManager.session.session &&
+            !this.sandboxManager.session.isConnecting
         );
     }
 
@@ -49,7 +55,7 @@ export class IDEManager {
         }
         this.isFilesLoading = true;
         try {
-            this.files = await this.editorEngine.sandbox.listAllFiles();
+            this.files = await this.sandboxManager.listAllFiles();
         } catch (error) {
             console.error('Error loading files:', error);
         } finally {
@@ -70,7 +76,7 @@ export class IDEManager {
             let isBinary = false;
 
             if (BINARY_EXTENSIONS.includes(ext)) {
-                const binaryContent = await this.editorEngine.sandbox.readBinaryFile(filePath);
+                const binaryContent = await this.sandboxManager.readBinaryFile(filePath);
                 if (binaryContent) {
                     const base64String = btoa(
                         Array.from(binaryContent)
@@ -81,7 +87,7 @@ export class IDEManager {
                     isBinary = true;
                 }
             } else {
-                const readFileContent = await this.editorEngine.sandbox.readFile(filePath);
+                const readFileContent = await this.sandboxManager.readFile(filePath);
                 if (readFileContent) {
                     content = readFileContent;
                 }
@@ -137,10 +143,10 @@ export class IDEManager {
         }
         this.isLoading = true;
         try {
-            const originalContent = await this.editorEngine.sandbox.readFile(
+            const originalContent = await this.sandboxManager.readFile(
                 this.activeFile.path,
             );
-            this.editorEngine.action.run({
+            this.actionManager.run({
                 type: 'write-code',
                 diffs: [
                     {
@@ -151,7 +157,7 @@ export class IDEManager {
                 ],
             });
             const file = this.openedFiles.find((f) => f.id === this.activeFile!.id);
-            if (file){
+            if (file) {
                 file.isDirty = false;
                 file.savedContent = file.content;
             }
@@ -172,7 +178,7 @@ export class IDEManager {
 
         if (this.shouldRefreshPreview(this.activeFile.path)) {
             setTimeout(() => {
-                this.editorEngine.frames.reloadAll();
+                this.framesManager.reloadAll();
             }, 100);
         }
     }
@@ -209,7 +215,7 @@ export class IDEManager {
             console.error('File not found');
             return;
         }
-        const content = await this.editorEngine.sandbox.readFile(path);
+        const content = await this.sandboxManager.readFile(path);
         if (content == null) {
             console.error('Content is null');
             return;
@@ -232,7 +238,7 @@ export class IDEManager {
             return null;
         }
         try {
-            const templateNode = await this.editorEngine.sandbox.getTemplateNode(oid);
+            const templateNode = await this.sandboxManager.getTemplateNode(oid);
             if (templateNode?.path) {
                 return templateNode.path;
             }
@@ -252,7 +258,7 @@ export class IDEManager {
             return null;
         }
         try {
-            const templateNode = await this.editorEngine.sandbox.getTemplateNode(element.oid);
+            const templateNode = await this.sandboxManager.getTemplateNode(element.oid);
             if (templateNode?.startTag) {
                 return {
                     startLineNumber: templateNode.startTag.start.line,
@@ -278,7 +284,7 @@ export class IDEManager {
                 console.error('No path found');
                 return;
             }
-            const originalContent = await this.editorEngine.sandbox.readFile(path);
+            const originalContent = await this.sandboxManager.readFile(path);
             const file = this.openedFiles.find((f) => f.id === id);
             if (file) file.isDirty = false;
             this.activeFile = {
