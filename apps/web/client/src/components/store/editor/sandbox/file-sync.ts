@@ -10,13 +10,14 @@ export class FileSyncManager {
     private binaryStorageKey
 
     constructor(
-        private editorEngine: EditorEngine,
+        private readonly editorEngine: EditorEngine,
     ) {
         this.cache = new Map();
         this.binaryCache = new Map();
-        this.restoreFromLocalStorage();
         this.storageKey = 'file-cache-' + this.editorEngine.projectId;
         this.binaryStorageKey = 'binary-file-cache-' + this.editorEngine.projectId;
+
+        this.restoreFromLocalStorage();
         makeAutoObservable(this);
     }
 
