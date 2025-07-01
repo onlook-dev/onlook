@@ -8,7 +8,6 @@ export const LIST_FILES_TOOL_PARAMETERS = z.object({
         .describe(
             'The absolute path to the directory to get files from. This should be the root directory of the project.',
         ),
-    recursive: z.boolean().optional().describe('Whether to list files recursively'),
 });
 export const listFilesTool = tool({
     description: 'List all files in the current directory, including subdirectories',

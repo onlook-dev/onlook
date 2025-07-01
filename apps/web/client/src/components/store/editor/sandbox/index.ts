@@ -305,10 +305,7 @@ export class SandboxManager {
         await this.fileSync.updateCache(filePath, content);
     }
 
-    async listFiles(dir: string, recursive = false) {
-        if (recursive) {
-            return this.listFilesRecursively(dir);
-        }
+    async listFiles(dir: string) {
         return this.session.session?.fs.readdir(dir);
     }
 
