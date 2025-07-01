@@ -3,21 +3,22 @@ import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { ChatType } from '@onlook/models';
 import type { Message } from 'ai';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useRef } from 'react';
 
 type ExtendedUseChatHelpers = UseChatHelpers & { sendMessages: (messages: Message[], type: ChatType) => Promise<string | null | undefined> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
     const editorEngine = useEditorEngine();
-    let lastMessage: Message | null = null;
+    const lastMessageRef = useRef<Message | null>(null);
+
     const chat = useChat({
         id: 'user-chat',
         api: '/api/chat',
         maxSteps: 20,
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, { finishReason }) => {
-            lastMessage = message;
+            lastMessageRef.current = message;
             if (finishReason !== 'tool-calls') {
                 editorEngine.chat.conversation.addAssistantMessage(message);
             }
@@ -39,15 +40,15 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             console.error('Error in chat', error);
             editorEngine.chat.error.handleChatError(error);
 
-            if (lastMessage) {
-                editorEngine.chat.conversation.addAssistantMessage(lastMessage);
-                lastMessage = null;
+            if (lastMessageRef.current) {
+                editorEngine.chat.conversation.addAssistantMessage(lastMessageRef.current);
+                lastMessageRef.current = null;
             }
         },
     });
 
     const sendMessages = async (messages: Message[], type: ChatType = ChatType.EDIT) => {
-        lastMessage = null;
+        lastMessageRef.current = null;
         editorEngine.chat.error.clear();
         chat.setMessages(messages);
         return chat.reload({
