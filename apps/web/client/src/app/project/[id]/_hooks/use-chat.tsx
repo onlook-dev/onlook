@@ -21,6 +21,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             lastMessageRef.current = message;
             if (finishReason !== 'tool-calls') {
                 editorEngine.chat.conversation.addAssistantMessage(message);
+                lastMessageRef.current = null;
             }
 
             if (finishReason === 'stop') {
