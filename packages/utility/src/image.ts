@@ -64,23 +64,5 @@ export function canHaveBackgroundImage(tagName: string): boolean {
 
     const backgroundElements = ['div', 'section', 'header', 'footer', 'main', 'article', 'aside'];
 
-    const textElements = [
-        'p',
-        'span',
-        'h1',
-        'h2',
-        'h3',
-        'h4',
-        'h5',
-        'h6',
-        'input',
-        'button',
-        'textarea',
-    ];
-
-    if (textElements.includes(tag)) {
-        return false;
-    }
-
     return backgroundElements.includes(tag);
 }
