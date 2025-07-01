@@ -44,7 +44,7 @@ async function fetchUserData(userId: string): Promise<User> {
   return response.json();
 }`;
 
-        const result = await applyCodeChange(originalCode, updateSnippet);
+        const result = await applyCodeChange(originalCode, updateSnippet, 'I will add email field to User interface and improve fetchUserData function with proper typing and error handling');
         expect(result).toBe(expectedResult);
     });
 });
