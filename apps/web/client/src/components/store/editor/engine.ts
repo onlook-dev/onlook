@@ -60,20 +60,20 @@ export class EditorEngine {
         this.canvas = new CanvasManager();
 
         this.sandbox = new SandboxManager(this.error);
+        this.theme = new ThemeManager(this.sandbox);
         this.hosting = new HostingManager(this.sandbox);
         this.versions = new VersionsManager(this.sandbox);
 
         // Handle circular dependencies
-        this.ast = new AstManager(this.frames, this.sandbox);
-        this.frames = new FramesManager(this.projectId, this.ast);
-        this.elements = new ElementsManager(this.frames, this.overlay, this.sandbox, this.action);
+        this.frames = new FramesManager(this.projectId);
         this.overlay = new OverlayManager(this.canvas, this.elements, this.frames, this.state);
-        this.code = new CodeManager(this.elements, this.ide, this.state, this.error, this.sandbox);
+        this.elements = new ElementsManager(this.frames, this.overlay, this.sandbox, this.action);
+        this.code = new CodeManager(this.error, this.sandbox);
         this.history = new HistoryManager(this.code);
         this.action = new ActionManager(this.frames, this.elements, this.history, this.code, this.theme, this.overlay, this.state);
-        this.ide = new IDEManager(this.sandbox, this.action, this.frames);
+        this.ide = new IDEManager(this.sandbox, this.action, this.frames, this.state, this.elements);
 
-        this.theme = new ThemeManager(this.sandbox);
+        this.ast = new AstManager(this.frames, this.sandbox);
         this.image = new ImageManager(this.sandbox, this.elements);
         this.style = new StyleManager(this.action, this.elements);
         this.pages = new PagesManager(this.frames, this.sandbox);

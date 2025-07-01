@@ -25,8 +25,9 @@ import { FolderModal } from './folder-modal';
 
 export const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const { addSubscription } = useCleanupOnPageChange();
     const ide = editorEngine.ide;
+
+    const { addSubscription } = useCleanupOnPageChange();
     const [isFilesVisible, setIsFilesVisible] = useState(true);
     const [fileModalOpen, setFileModalOpen] = useState(false);
     const [folderModalOpen, setFolderModalOpen] = useState(false);

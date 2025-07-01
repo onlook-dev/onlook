@@ -5,7 +5,6 @@ import { fromFrame } from '@onlook/db';
 import { FrameType, type Frame, type WebFrame } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
-import type { AstManager } from '../ast';
 import { FrameImpl } from './frame';
 
 export interface FrameData {
@@ -21,7 +20,6 @@ export class FramesManager {
 
     constructor(
         private projectId: string,
-        private astManager: AstManager,
     ) {
         makeAutoObservable(this);
     }
@@ -138,7 +136,6 @@ export class FramesManager {
 
     disposeFrame(frameId: string) {
         this.frameIdToData.delete(frameId);
-        this.astManager.mappings.remove(frameId);
     }
 
     reloadAll() {

@@ -1,11 +1,14 @@
 import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config';
 import { BINARY_EXTENSIONS } from '@onlook/constants';
+import { EditorTabValue, type DomElement } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import path from 'path';
 import type { ActionManager } from '../action';
+import type { ElementsManager } from '../element';
 import type { FramesManager } from '../frames';
 import type { SandboxManager } from '../sandbox';
+import type { StateManager } from '../state';
 
 export interface EditorFile {
     id: string;
@@ -37,6 +40,8 @@ export class IDEManager {
         private readonly sandboxManager: SandboxManager,
         private readonly actionManager: ActionManager,
         private readonly framesManager: FramesManager,
+        private readonly stateManager: StateManager,
+        private readonly elementsManager: ElementsManager,
     ) {
         makeAutoObservable(this);
     }
@@ -46,6 +51,32 @@ export class IDEManager {
             this.sandboxManager.session.session &&
             !this.sandboxManager.session.isConnecting
         );
+    }
+
+    async viewCodeBlock(oid: string) {
+        try {
+            this.stateManager.rightPanelTab = EditorTabValue.DEV;
+            const element =
+                this.elementsManager.selected.find((el: DomElement) => el.oid === oid) ||
+                this.elementsManager.selected.find((el: DomElement) => el.instanceId === oid);
+
+            if (element) {
+                const templateNode = await this.sandboxManager.getTemplateNode(element.oid || '');
+                if (templateNode) {
+                    await this.openFile(templateNode.path);
+                    // Then select the element after a small delay to ensure the file is loaded
+                    setTimeout(() => {
+                        this.elementsManager.selected = [element];
+                    }, 500);
+                }
+            }
+        } catch (error) {
+            console.error('Error viewing source:', error);
+        }
+    }
+
+    async viewSourceFile(filePath: string) {
+        await this.openFile(filePath);
     }
 
     async refreshFiles() {
@@ -230,22 +261,6 @@ export class IDEManager {
         if (this.activeFile && this.activeFile.id === file.id) {
             this.activeFile = updated;
         }
-    }
-
-    async getFilePathFromOid(oid: string): Promise<string | null> {
-        if (!this.isSandboxReady()) {
-            console.error('Sandbox not connected');
-            return null;
-        }
-        try {
-            const templateNode = await this.sandboxManager.getTemplateNode(oid);
-            if (templateNode?.path) {
-                return templateNode.path;
-            }
-        } catch (error) {
-            console.error('Error getting file path from OID:', error);
-        }
-        return null;
     }
 
     async getElementCodeRange(element: any): Promise<CodeRange | null> {

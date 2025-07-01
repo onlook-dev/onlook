@@ -49,7 +49,7 @@ export const CodeModal = ({
                         <Button
                             className="ml-auto gap-2"
                             variant={'ghost'}
-                            onClick={() => editorEngine.code.viewSourceFile(fileName)}
+                            onClick={() => editorEngine.ide.viewSourceFile(fileName)}
                         >
                             {'View source'} <Icons.ExternalLink />
                         </Button>

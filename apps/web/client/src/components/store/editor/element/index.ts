@@ -2,11 +2,12 @@ import type { CoreElementType, DomElement, DynamicType } from '@onlook/models';
 import type { RemoveElementAction } from '@onlook/models/actions';
 import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
-import type { ActionManager } from '../action';
+import type { EditorEngine } from '../engine';
 import type { FrameData, FramesManager } from '../frames';
-import type { OverlayManager } from '../overlay';
 import { adaptRectToCanvas } from '../overlay/utils';
+import type { OverlayManager } from '../overlay';
 import type { SandboxManager } from '../sandbox';
+import type { ActionManager } from '../action';
 
 export class ElementsManager {
     private _hovered: DomElement | undefined;

@@ -13,7 +13,6 @@ export class OverlayManager {
 
     constructor(
         private readonly canvasManager: CanvasManager,
-        private readonly elementsManager: ElementsManager,
         private readonly framesManager: FramesManager,
         private readonly stateManager: StateManager,
     ) {

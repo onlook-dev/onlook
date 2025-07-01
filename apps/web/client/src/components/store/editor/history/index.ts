@@ -27,7 +27,7 @@ export class HistoryManager {
     inTransaction: TransactionState = { type: TransactionType.NOT_IN_TRANSACTION };
 
     constructor(
-        private codeManager: CodeManager,
+        private readonly codeManager: CodeManager,
     ) {
         makeAutoObservable(this);
     }

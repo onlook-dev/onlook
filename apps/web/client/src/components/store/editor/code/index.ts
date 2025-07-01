@@ -1,18 +1,13 @@
 import {
-    EditorTabValue,
     type Action,
     type CodeDiffRequest,
-    type DomElement,
-    type FileToRequests,
+    type FileToRequests
 } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { assertNever } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
-import type { IDEManager } from '../dev';
-import type { ElementsManager } from '../element';
 import type { ErrorManager } from '../error';
 import type { SandboxManager } from '../sandbox';
-import type { StateManager } from '../state';
 import {
     getEditTextRequests,
     getGroupRequests,
@@ -29,41 +24,10 @@ import {
 
 export class CodeManager {
     constructor(
-        private readonly elementsManager: ElementsManager,
-        private readonly ideManager: IDEManager,
-        private readonly stateManager: StateManager,
         private readonly errorManager: ErrorManager,
         private readonly sandboxManager: SandboxManager,
     ) {
         makeAutoObservable(this);
-    }
-
-    viewSourceFile(fileName: string) {
-        console.log('viewSourceFile', fileName);
-    }
-
-    async viewCodeBlock(oid: string) {
-        try {
-            this.stateManager.rightPanelTab = EditorTabValue.DEV;
-            const element =
-                this.elementsManager.selected.find((el: DomElement) => el.oid === oid) ||
-                this.elementsManager.selected.find((el: DomElement) => el.instanceId === oid);
-
-            if (element) {
-                // First get the file path and load the file
-                const filePath = await this.ideManager.getFilePathFromOid(element.oid || '');
-                if (filePath) {
-                    // Load the file first
-                    await this.ideManager.openFile(filePath);
-                    // Then select the element after a small delay to ensure the file is loaded
-                    setTimeout(() => {
-                        this.elementsManager.selected = [element];
-                    }, 500);
-                }
-            }
-        } catch (error) {
-            console.error('Error viewing source:', error);
-        }
     }
 
     async write(action: Action) {
