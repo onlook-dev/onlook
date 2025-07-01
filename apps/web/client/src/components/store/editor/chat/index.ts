@@ -99,7 +99,6 @@ export class ChatManager {
         }
 
         const newContext = await this.context.getRefreshedContext(message.context);
-        console.log('newContext', newContext);
         message.updateMessage(newMessageContent, newContext);
 
         await this.conversation.current.removeAllMessagesAfter(message);
