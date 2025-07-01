@@ -65,7 +65,7 @@ async function handleListFilesTool(
     args: z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ) {
-    const result = await editorEngine.sandbox.listFiles(args.path);
+    const result = await editorEngine.sandbox.listFiles(args.path, args.recursive);
     if (!result) {
         throw new Error('Error listing files');
     }
