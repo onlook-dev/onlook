@@ -162,29 +162,37 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
         e.preventDefault();
         e.stopPropagation();
 
-        // try {
-        //     const propertiesData = e.dataTransfer.getData('application/json');
-        //     if (!propertiesData) {
-        //         console.error('No element properties in drag data');
-        //         return;
-        //     }
+        try {
+            const propertiesData = e.dataTransfer.getData('application/json');
+            if (!propertiesData) {
+                console.error('No element properties in drag data');
+                return;
+            }
 
-        //     const properties = JSON.parse(propertiesData);
+            const properties = JSON.parse(propertiesData);
 
-        //     if (properties.type === 'image') {
-        //         const frameView = getWebview();
-        //         const dropPosition = getRelativeMousePosition(e);
-        //         await editorEngine.insert.insertDroppedImage(frameView, dropPosition, properties);
-        //     } else {
-        //         const frameView = getWebview();
-        //         const dropPosition = getRelativeMousePosition(e);
-        //         await editorEngine.insert.insertDroppedElement(frameView, dropPosition, properties);
-        //     }
+            if (properties.type === 'image') {
+                const frameData = editorEngine.frames.get(frame.id);
+                if (!frameData) {
+                    console.error('Frame data not found');
+                    return;
+                }
+                const dropPosition = getRelativeMousePosition(e);
+                await editorEngine.insert.insertDroppedImage(frameData, dropPosition, properties, e.altKey);
+            } else {
+                const frameData = editorEngine.frames.get(frame.id);
+                if (!frameData) {
+                    console.error('Frame data not found');
+                    return;
+                }
+                const dropPosition = getRelativeMousePosition(e);
+                await editorEngine.insert.insertDroppedElement(frameData, dropPosition, properties);
+            }
 
-        //     editorEngine.state.editorMode = EditorMode.DESIGN;
-        // } catch (error) {
-        //     console.error('drop operation failed:', error);
-        // }
+            editorEngine.state.editorMode = EditorMode.DESIGN;
+        } catch (error) {
+            console.error('drop operation failed:', error);
+        }
     };
 
     const gestureScreenClassName = useMemo(() => {
