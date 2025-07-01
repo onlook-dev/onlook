@@ -230,7 +230,7 @@ export class InsertManager {
         const targetElement = await frame.view.getElementAtLoc(
             dropPosition.x,
             dropPosition.y,
-            false,
+            true,
         );
 
         if (!targetElement) {
@@ -246,7 +246,7 @@ export class InsertManager {
         if (altKey && this.shouldUseAsBackground(targetElement)) {
             const actionElement = await frame.view.getActionElement(targetElement.domId);
             if (actionElement) {
-                this.updateElementBackgroundAction(frame, actionElement, imageData);
+                this.updateElementBackgroundAction(frame, actionElement, imageData, targetElement);
                 return;
             }
         }
@@ -282,12 +282,6 @@ export class InsertManager {
 
         if (textElements.includes(tagName)) {
             return false;
-        }
-        const hasBackgroundImage =
-            targetElement.styles?.defined?.backgroundImage ||
-            targetElement.styles?.computed?.backgroundImage;
-        if (hasBackgroundImage) {
-            return true;
         }
 
         return backgroundElements.includes(tagName);
@@ -404,11 +398,31 @@ export class InsertManager {
         frame: FrameData,
         targetElement: ActionElement,
         imageData: ImageContentData,
+        originalElement: DomElement,
     ) {
         const url = imageData.originPath.replace(
             new RegExp(`^${DefaultSettings.IMAGE_FOLDER}\/`),
             '',
         );
+        const originStyles = originalElement.styles?.computed;
+        let original = {};
+        if (originStyles?.backgroundImage) {
+            original = {
+                backgroundImage: {
+                    value: originStyles.backgroundImage,
+                    type: StyleChangeType.Value,
+                },
+                backgroundSize: {
+                    value: originStyles.backgroundSize,
+                    type: StyleChangeType.Value,
+                },
+                backgroundPosition: {
+                    value: originStyles.backgroundPosition,
+                    type: StyleChangeType.Value,
+                },
+            };
+        }
+
         const action: UpdateStyleAction = {
             type: 'update-style',
             targets: [
@@ -428,7 +442,7 @@ export class InsertManager {
                                 type: StyleChangeType.Value,
                             },
                         },
-                        original: {},
+                        original,
                     },
 
                     domId: targetElement.domId,
