@@ -1,3 +1,5 @@
+'use client';
+
 import { createContext, useContext, useEffect, useMemo } from 'react';
 import { EditorEngine } from './engine';
 
