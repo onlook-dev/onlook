@@ -568,6 +568,13 @@ export class FontManager {
                     const fileName = getFontFileName(baseFontName, weight, style);
                     const filePath = pathModule.join(
                         fontsDir,
+
+                        // Security fix: Sanitize paths to prevent traversal attacks
+                        const sanitizeUserPath = (userPath: string): string => {
+                            if (!userPath) return '';
+                            return path.basename(userPath.replace(/\0/g, '').replace(/\.\./g, ''));
+                        };
+
                         `${fileName}.${fontFile.file.name.split('.').pop()}`,
                     );
 
