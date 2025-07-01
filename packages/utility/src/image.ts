@@ -34,3 +34,53 @@ export function addBase64Prefix(mimeType: string, base64: string): string {
     }
     return `data:${mimeType};base64,${base64}`;
 }
+
+/**
+ * Converts a CSS background-image URL from full URL to relative path
+ * Example: url("https://xxx-3000.csb.app/images/a.jpg") -> url("/images/c.jpg")
+ */
+export function urlToRelativePath(url: string): string {
+    const urlMatch = url.match(/url\s*\(\s*["']?([^"')]+)["']?\s*\)/);
+
+    if (!urlMatch || !urlMatch[1]) {
+        // If it's not a url() function or no URL found, return as is
+        return url;
+    }
+
+    const fullUrl = urlMatch[1];
+
+    try {
+        const url = new URL(fullUrl);
+        // Extract just the pathname (e.g., "/images/c.jpg")
+        return `url('${url.pathname}')`;
+    } catch (error) {
+        // If it's already a relative path or invalid URL, return as is
+        return url;
+    }
+}
+
+export function canHaveBackgroundImage(tagName: string): boolean {
+    const tag = tagName.toLowerCase();
+
+    const backgroundElements = ['div', 'section', 'header', 'footer', 'main', 'article', 'aside'];
+
+    const textElements = [
+        'p',
+        'span',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'input',
+        'button',
+        'textarea',
+    ];
+
+    if (textElements.includes(tag)) {
+        return false;
+    }
+
+    return backgroundElements.includes(tag);
+}

@@ -17,7 +17,7 @@ import {
 } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
-import { createDomId, createOid } from '@onlook/utility';
+import { canHaveBackgroundImage, createDomId, createOid, urlToRelativePath } from '@onlook/utility';
 import type React from 'react';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
@@ -243,7 +243,7 @@ export class InsertManager {
             return;
         }
 
-        if (altKey && this.shouldUseAsBackground(targetElement)) {
+        if (altKey && canHaveBackgroundImage(targetElement.tagName)) {
             const actionElement = await frame.view.getActionElement(targetElement.domId);
             if (actionElement) {
                 this.updateElementBackgroundAction(frame, actionElement, imageData, targetElement);
@@ -251,40 +251,6 @@ export class InsertManager {
             }
         }
         this.insertImageElement(frame, location, imageData);
-    }
-
-    private shouldUseAsBackground(targetElement: DomElement): boolean {
-        const tagName = targetElement.tagName.toLowerCase();
-
-        const backgroundElements = [
-            'div',
-            'section',
-            'header',
-            'footer',
-            'main',
-            'article',
-            'aside',
-        ];
-
-        const textElements = [
-            'p',
-            'span',
-            'h1',
-            'h2',
-            'h3',
-            'h4',
-            'h5',
-            'h6',
-            'input',
-            'button',
-            'textarea',
-        ];
-
-        if (textElements.includes(tagName)) {
-            return false;
-        }
-
-        return backgroundElements.includes(tagName);
     }
 
     private async updateImageSource(
@@ -407,20 +373,23 @@ export class InsertManager {
         const originStyles = originalElement.styles?.computed;
         let original = {};
         if (originStyles?.backgroundImage) {
-            original = {
-                backgroundImage: {
-                    value: originStyles.backgroundImage,
-                    type: StyleChangeType.Value,
-                },
-                backgroundSize: {
-                    value: originStyles.backgroundSize,
-                    type: StyleChangeType.Value,
-                },
-                backgroundPosition: {
-                    value: originStyles.backgroundPosition,
-                    type: StyleChangeType.Value,
-                },
-            };
+            const backgroundImageValue = originStyles.backgroundImage;
+            if (backgroundImageValue) {
+                original = {
+                    backgroundImage: {
+                        value: urlToRelativePath(backgroundImageValue),
+                        type: StyleChangeType.Value,
+                    },
+                    backgroundSize: {
+                        value: originStyles.backgroundSize,
+                        type: StyleChangeType.Value,
+                    },
+                    backgroundPosition: {
+                        value: originStyles.backgroundPosition,
+                        type: StyleChangeType.Value,
+                    },
+                };
+            }
         }
 
         const action: UpdateStyleAction = {
