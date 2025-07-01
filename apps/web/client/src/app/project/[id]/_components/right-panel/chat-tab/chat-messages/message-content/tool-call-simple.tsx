@@ -42,19 +42,19 @@ export function ToolCallSimple({
             }
             if (toolName === EDIT_FILE_TOOL_NAME) {
                 if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Editing " + ' ' + (toolInvocation.args.path.split('/').pop() || '');
+                    label = "Editing " + (toolInvocation.args.path.split('/').pop() || '');
                 } else {
                     label = "Editing file";
                 }
             } else if (toolName === CREATE_FILE_TOOL_NAME) {
                 if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Creating file " + ' ' + (toolInvocation.args.path.split('/').pop() || '');
+                    label = "Creating file " + (toolInvocation.args.path.split('/').pop() || '');
                 } else {
                     label = "Creating file";
                 }
             } else if (toolName === LIST_FILES_TOOL_NAME) {
                 if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Reading directory " + ' ' + (toolInvocation.args.path.split('/').pop() || '');
+                    label = "Reading directory " + (toolInvocation.args.path.split('/').pop() || '');
                 } else {
                     label = "Reading directory";
                 }
