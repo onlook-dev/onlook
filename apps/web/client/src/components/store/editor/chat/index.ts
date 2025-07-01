@@ -50,7 +50,7 @@ export class ChatManager {
                 this.conversation.attachCommitToUserMessage(userMessage.id, commit);
             }
         });
-        return this.generateStreamMessages(content);
+        return this.generateStreamMessages();
     }
 
     async getFixErrorMessages(): Promise<Message[] | null> {
@@ -80,7 +80,7 @@ export class ChatManager {
         sendAnalytics('send fix error chat message', {
             errors: errors.map((e) => e.content),
         });
-        return this.generateStreamMessages(prompt);
+        return this.generateStreamMessages();
     }
 
     async getResubmitMessages(id: string, newMessageContent: string) {
@@ -98,13 +98,16 @@ export class ChatManager {
             return;
         }
 
-        message.updateContent(newMessageContent);
+        const newContext = await this.context.getRefreshedContext(message.context);
+        console.log('newContext', newContext);
+        message.updateMessage(newMessageContent, newContext);
+
         await this.conversation.current.removeAllMessagesAfter(message);
         await this.conversation.current.updateMessage(message);
-        return this.generateStreamMessages(newMessageContent);
+        return this.generateStreamMessages();
     }
 
-    private async generateStreamMessages(userPrompt: string): Promise<Message[] | null> {
+    private async generateStreamMessages(): Promise<Message[] | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;
