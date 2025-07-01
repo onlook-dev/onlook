@@ -29,10 +29,11 @@ export const EDIT_FILE_TOOL_NAME = 'edit_file';
 export const EDIT_FILE_TOOL_PARAMETERS = z.object({
     path: z.string().describe('The absolute path to the file to edit'),
     content: z.string()
-        .describe(`The edit to the file. You can leave a comment to indicate the parts of the code that are not being edited with the following format:
+        .describe(`The edit to the file. You only need to include the parts of the code that is being edited instead of the entire file. You can leave comments to indicate the parts of the code that are not being edited such as:
 // ... existing code
 const foo = 'bar';
-// ... existing code`),
+// ... existing code
+The user will handle adding the rest of the code. Make sure there's enough context for the user to understand where the changes are being made.`),
 });
 
 export const editFileTool = tool({
