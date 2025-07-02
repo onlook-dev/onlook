@@ -65,7 +65,6 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
     private volume: Volume;
     private options: VirtualFileSystemOptions;
     private storageKey: string;
-    private binaryStorageKey: string;
 
     constructor(options: VirtualFileSystemOptions = {}) {
         this.volume = new Volume();
@@ -75,7 +74,6 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
             ...options,
         };
         this.storageKey = this.options.persistenceKey!;
-        this.binaryStorageKey = `${this.options.persistenceKey}-binary`;
 
         makeAutoObservable(this);
 
@@ -261,7 +259,7 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
             if (this.options.enablePersistence) {
                 await this.saveToStorage();
             }
-            
+
             return true;
         } catch (error) {
             console.error(`Error renaming ${oldPath} to ${newPath}:`, error);
@@ -450,39 +448,8 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
         }
 
         try {
-            const textFiles: Record<string, string> = {};
-            const binaryFiles: Record<string, string> = {};
-
-            const allFiles = this.listAllFiles();
-
-            for (const sandboxPath of allFiles) {
-                try {
-                    const vfsPath = this.toVFSPath(sandboxPath);
-                    
-                    // Determine if file is binary based on extension
-                    const isBinary = this.isBinaryFile(sandboxPath);
-                    
-                    if (isBinary) {
-                        // Read as binary
-                        const binaryContent = this.volume.readFileSync(vfsPath) as Buffer;
-                        binaryFiles[sandboxPath] = convertToBase64(new Uint8Array(binaryContent));
-                    } else {
-                        // Read as text
-                        const textContent = this.volume.readFileSync(vfsPath, {
-                            encoding: 'utf8',
-                        }) as string;
-                        textFiles[sandboxPath] = textContent;
-                    }
-                } catch (error) {
-                    console.error(`Error reading file ${sandboxPath} for persistence:`, error);
-                }
-            }
-
-            // Save text files
-            await localforage.setItem(this.storageKey, textFiles);
-
-            // Save binary files
-            await localforage.setItem(this.binaryStorageKey, binaryFiles);
+            const snapshot = this.volume.toJSON();
+            await localforage.setItem(this.storageKey, snapshot);
         } catch (error) {
             console.error('Error saving to storage:', error);
         }
@@ -494,37 +461,9 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
         }
 
         try {
-            // Load text files
-            const textFiles = await localforage.getItem<Record<string, string>>(this.storageKey);
-            if (textFiles) {
-                for (const [sandboxPath, content] of Object.entries(textFiles)) {
-                    try {
-                        const vfsPath = this.toVFSPath(sandboxPath);
-                        const vfsDirPath = this.toVFSPath(this.dirname(sandboxPath));
-                        this.volume.mkdirSync(vfsDirPath, { recursive: true });
-                        this.volume.writeFileSync(vfsPath, content, { encoding: 'utf8' });
-                    } catch (error) {
-                        console.error(`Error restoring text file ${sandboxPath}:`, error);
-                    }
-                }
-            }
-
-            // Load binary files
-            const binaryFiles = await localforage.getItem<Record<string, string>>(
-                this.binaryStorageKey,
-            );
-            if (binaryFiles) {
-                for (const [sandboxPath, base64Content] of Object.entries(binaryFiles)) {
-                    try {
-                        const vfsPath = this.toVFSPath(sandboxPath);
-                        const vfsDirPath = this.toVFSPath(this.dirname(sandboxPath));
-                        this.volume.mkdirSync(vfsDirPath, { recursive: true });
-                        const binaryContent = convertFromBase64(base64Content);
-                        this.volume.writeFileSync(vfsPath, Buffer.from(binaryContent));
-                    } catch (error) {
-                        console.error(`Error restoring binary file ${sandboxPath}:`, error);
-                    }
-                }
+            const snapshot = await localforage.getItem(this.storageKey);
+            if (snapshot) {
+                this.volume.fromJSON(snapshot as any);
             }
         } catch (error) {
             console.error('Error loading from storage:', error);
@@ -534,7 +473,6 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
     private async clearStorage(): Promise<void> {
         try {
             await localforage.removeItem(this.storageKey);
-            await localforage.removeItem(this.binaryStorageKey);
         } catch (error) {
             console.error('Error clearing storage:', error);
         }
