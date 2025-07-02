@@ -58,7 +58,7 @@ export const FolderDropdownMenu = memo(
 
         const isVisible = useMemo(() => {
             return alwaysVisible || activeDropdown === folder.name;
-        }, [activeDropdown, folder?.name, alwaysVisible]);
+        }, [activeDropdown, folder.name, alwaysVisible]);
 
         return (
             <div

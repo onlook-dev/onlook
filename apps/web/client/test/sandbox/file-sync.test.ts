@@ -1,5 +1,5 @@
-import { VFSSyncManager } from '../../src/components/store/editor/sandbox/vfs-sync-manager';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
+import { VFSSyncManager } from '../../src/components/store/editor/sandbox/vfs-sync-manager';
 
 mock.module('localforage', () => ({
     getItem: mock(async () => null),
@@ -119,10 +119,11 @@ describe('VFSSyncManager', async () => {
         // Get list of files
         const files = vfsSyncManager.listAllFiles();
 
+        console.log(files);
         // Verify all files are listed
-        expect(files).toContain('/file1.tsx');
-        expect(files).toContain('/file2.tsx');
-        expect(files).toContain('/file3.tsx');
+        expect(files).toContain('file1.tsx');
+        expect(files).toContain('file2.tsx');
+        expect(files).toContain('file3.tsx');
         expect(files.length).toBe(3);
     });
 

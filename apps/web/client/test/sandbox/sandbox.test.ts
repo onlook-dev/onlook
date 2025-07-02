@@ -1,4 +1,4 @@
-import { IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import { runInAction } from 'mobx';
 
@@ -21,7 +21,7 @@ import { SandboxManager } from '../../src/components/store/editor/sandbox';
 // Mock EditorEngine
 const mockEditorEngine = {
     error: {
-        addError: mock(() => {}),
+        addError: mock(() => { }),
     },
 };
 
@@ -133,7 +133,7 @@ describe('SandboxManager', () => {
             onEvent: mock((callback: any) => {
                 mockWatcher.callback = callback;
             }),
-            dispose: mock(() => {}),
+            dispose: mock(() => { }),
             callback: null,
         };
 
@@ -198,7 +198,7 @@ describe('SandboxManager', () => {
 
         const files = await testManager.listFilesRecursively(
             './',
-            IGNORED_DIRECTORIES,
+            EXCLUDED_SYNC_DIRECTORIES,
             JSX_FILE_EXTENSIONS,
         );
 
