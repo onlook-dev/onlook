@@ -42,27 +42,24 @@ export function addBase64Prefix(mimeType: string, base64: string): string {
 export function urlToRelativePath(url: string): string {
     const urlMatch = url.match(/url\s*\(\s*["']?([^"')]+)["']?\s*\)/);
 
+    // If it's not a url() function or no URL found, return as is
     if (!urlMatch || !urlMatch[1]) {
-        // If it's not a url() function or no URL found, return as is
         return url;
     }
 
     const fullUrl = urlMatch[1];
 
+    // Extract the pathname (e.g., "/images/c.jpg")
     try {
-        const url = new URL(fullUrl);
-        // Extract just the pathname (e.g., "/images/c.jpg")
-        return `url('${url.pathname}')`;
+        const newUrl = new URL(fullUrl);
+        return `url('${newUrl.pathname}')`;
     } catch (error) {
-        // If it's already a relative path or invalid URL, return as is
         return url;
     }
 }
 
 export function canHaveBackgroundImage(tagName: string): boolean {
     const tag = tagName.toLowerCase();
-
     const backgroundElements = ['div', 'section', 'header', 'footer', 'main', 'article', 'aside'];
-
     return backgroundElements.includes(tag);
 }
