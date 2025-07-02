@@ -5,11 +5,13 @@ import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { customRouter } from './custom';
 import { previewRouter } from './preview';
 import { verificationRouter } from './verify';
+import { publishRouter } from './publish';
 
 export const domainRouter = createTRPCRouter({
     preview: previewRouter,
     custom: customRouter,
     verification: verificationRouter,
+    publish: publishRouter,
     getAll: protectedProcedure.input(z.object({
         projectId: z.string(),
     })).query(async ({ ctx, input }) => {

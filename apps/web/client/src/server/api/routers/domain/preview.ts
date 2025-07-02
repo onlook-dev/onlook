@@ -7,6 +7,7 @@ import { and, eq, inArray, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { HostingProviderFactory } from './hosting-factory';
+import { publishRouter } from './publish';
 
 export const previewRouter = createTRPCRouter({
     get: protectedProcedure.input(z.object({
