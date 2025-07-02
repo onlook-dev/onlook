@@ -24,18 +24,16 @@ export class TextEditingManager {
                 | boolean
                 | null;
             if (isEditable !== true) {
-                toast.error(
+                throw new Error(
                     isEditable === null
                         ? "Can't determine if text is editable"
                         : "Can't edit text because it's not plain text. Edit in code or use AI.",
                 );
-                return;
             }
 
             const res = (await frameView.startEditingText(el.domId)) as EditTextResult | null;
             if (!res) {
-                console.error('Failed to start editing text, no result returned');
-                return;
+                throw new Error('Failed to start editing text, no result returned');
             }
 
             const computedStyles = (await frameView.getComputedStyleByDomId(el.domId)) as Record<
@@ -43,8 +41,7 @@ export class TextEditingManager {
                 string
             > | null;
             if (!computedStyles) {
-                console.error('Failed to get computed styles for text editing');
-                return;
+                throw new Error('Failed to get computed styles for text editing');
             }
 
             const { originalContent } = res;
@@ -71,21 +68,20 @@ export class TextEditingManager {
             );
         } catch (error) {
             console.error('Error starting text edit:', error);
-            return;
+            toast.error('Failed to edit text. Try using AI or code editor.', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         }
     }
 
     async edit(newContent: string): Promise<void> {
-        if (!this.targetDomEl) {
-            console.error('No target dom element to edit');
-            return;
-        }
-
         try {
+            if (!this.targetDomEl) {
+                throw new Error('No target dom element to edit');
+            }
             const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
             if (!frameData) {
-                console.error('No frameView found for text editing');
-                return;
+                throw new Error('No frameView found for text editing');
             }
 
             const domEl = (await frameData.view.editText(
@@ -93,34 +89,33 @@ export class TextEditingManager {
                 newContent,
             )) as DomElement | null;
             if (!domEl) {
-                console.error('Failed to edit text. No dom element returned');
-                return;
+                throw new Error('Failed to edit text. No dom element returned');
             }
 
             await this.handleEditedText(domEl, newContent, frameData.view);
         } catch (error) {
             console.error('Error editing text:', error);
-            return;
+            toast.error('Failed to edit text', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         }
     }
 
     async end(): Promise<void> {
-        if (!this.targetDomEl) {
-            console.error('No target dom element to stop editing');
-            return;
-        }
 
         try {
+            if (!this.targetDomEl) {
+                throw new Error('No target dom element to stop editing');
+            }
+
             const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
             if (!frameData) {
-                console.error('No frameView found for end text editing');
-                return;
+                throw new Error('No frameView found for end text editing');
             }
 
             const res = await frameData.view.stopEditingText(this.targetDomEl.domId);
             if (!res) {
-                console.error('Failed to stop editing text. No result returned');
-                return;
+                throw new Error('Failed to stop editing text. No result returned');
             }
 
             const { newContent, domEl } = res as {
@@ -131,7 +126,9 @@ export class TextEditingManager {
             await this.clean();
         } catch (error) {
             console.error('Error ending text edit:', error);
-            return;
+            toast.error('Failed to end text editing', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         }
     }
 
@@ -165,7 +162,9 @@ export class TextEditingManager {
             await this.editorEngine.overlay.refresh();
         } catch (error) {
             console.error('Error handling edited text:', error);
-            return;
+            toast.error('Failed to handle edited text', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         }
     }
 
