@@ -27,7 +27,6 @@ import { VersionsManager } from './version';
 
 export class EditorEngine {
     readonly projectId: string;
-
     readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
     readonly canvas: CanvasManager = new CanvasManager();

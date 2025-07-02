@@ -5,18 +5,21 @@ import {
     getAstFromContent,
     getContentFromAst,
 } from '@onlook/parser';
+import localforage from 'localforage';
+import type { EditorEngine } from '../engine';
 
 export class TemplateNodeMapper {
     private oidToTemplateNodeMap = new Map<string, TemplateNode>();
-    private storageKey = 'template-node-map';
+    private storageKey
 
-    constructor(private localforage: LocalForage) {
+    constructor(private readonly editorEngine: EditorEngine) {
+        this.storageKey = 'template-node-map-' + this.editorEngine.projectId;
         this.restoreFromLocalStorage();
     }
 
     private async restoreFromLocalStorage() {
         try {
-            const storedCache = await this.localforage.getItem<Record<string, TemplateNode>>(
+            const storedCache = await localforage.getItem<Record<string, TemplateNode>>(
                 this.storageKey,
             );
             if (storedCache) {
@@ -32,7 +35,7 @@ export class TemplateNodeMapper {
     private async saveToLocalStorage() {
         try {
             const cacheObject = Object.fromEntries(this.oidToTemplateNodeMap.entries());
-            await this.localforage.setItem(this.storageKey, cacheObject);
+            await localforage.setItem(this.storageKey, cacheObject);
         } catch (error) {
             console.error('Error saving to localForage:', error);
         }

@@ -10,9 +10,8 @@ import { useMetadataForm } from './use-metadata-form';
 
 export const SiteTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
-    const baseUrl = domains?.published?.url ?? domains?.preview?.url ?? project?.sandbox.url;
+    const baseUrl = domains?.published?.url ?? domains?.preview?.url;
 
     const homePage = useMemo(() => {
         return editorEngine.pages.tree.find((page) => page.path === '/');
@@ -40,9 +39,6 @@ export const SiteTab = observer(() => {
     };
 
     const handleSave = async () => {
-        if (!project) {
-            return;
-        }
         try {
             const updatedMetadata: PageMetadata = {
                 ...homePage?.metadata ?? {},

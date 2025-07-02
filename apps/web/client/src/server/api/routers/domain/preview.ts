@@ -38,9 +38,15 @@ export const previewRouter = createTRPCRouter({
         const [preview] = await ctx.db.insert(previewDomains).values({
             fullDomain: domain,
             projectId: input.projectId,
-        }).returning({
-            fullDomain: previewDomains.fullDomain,
-        });
+        }).onConflictDoUpdate({
+            target: [previewDomains.fullDomain],
+            set: {
+                projectId: input.projectId,
+            },
+        })
+            .returning({
+                fullDomain: previewDomains.fullDomain,
+            });
 
         if (!preview) {
             throw new TRPCError({

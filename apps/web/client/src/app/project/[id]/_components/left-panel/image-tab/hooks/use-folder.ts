@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react';
 import { useEditorEngine } from '@/components/store/editor';
+import type { WebSocketSession } from '@codesandbox/sdk';
+import { useCallback, useState } from 'react';
 import type { FolderNode } from '../providers/types';
 
 interface FolderState {
@@ -99,8 +100,8 @@ export const useFolder = () => {
         try {
             const { folderToRename, newFolderName } = renameState;
             const oldPath = folderToRename.fullPath;
-            const parentPath = oldPath.includes('/') 
-                ? oldPath.substring(0, oldPath.lastIndexOf('/')) 
+            const parentPath = oldPath.includes('/')
+                ? oldPath.substring(0, oldPath.lastIndexOf('/'))
                 : '';
             const newPath = parentPath ? `${parentPath}/${newFolderName}` : newFolderName;
 
@@ -137,7 +138,7 @@ export const useFolder = () => {
 
         try {
             const folderPath = `${deleteState.folderToDelete.fullPath}`;
-            
+
             for (const image of deleteState.folderToDelete.images) {
                 if (image) {
                     await editorEngine.sandbox.delete(image);
@@ -194,7 +195,7 @@ export const useFolder = () => {
         try {
             const { folderToMove, targetFolder } = moveState;
             const oldPath = folderToMove.fullPath;
-            const newPath = targetFolder.fullPath 
+            const newPath = targetFolder.fullPath
                 ? `${targetFolder.fullPath}/${folderToMove.name}`
                 : folderToMove.name;
 
@@ -220,7 +221,7 @@ export const useFolder = () => {
         }
     }, [moveState, editorEngine]);
 
-    const moveFolderContents = async (folder: FolderNode, newPath: string, session: any) => {
+    const moveFolderContents = async (folder: FolderNode, newPath: string, session: WebSocketSession) => {
         const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
         const gitkeepContent = '# This folder was created by Onlook\n';
         await session.fs.writeTextFile(gitkeepPath, gitkeepContent);
@@ -239,7 +240,7 @@ export const useFolder = () => {
         }
     };
 
-    const moveSubfolder = async (subfolder: FolderNode, newParentPath: string, session: any) => {
+    const moveSubfolder = async (subfolder: FolderNode, newParentPath: string, session: WebSocketSession) => {
         const newSubfolderPath = `${newParentPath}/${subfolder.name}`;
         await moveFolderContents(subfolder, newSubfolderPath, session);
     };
@@ -356,9 +357,9 @@ export const useFolder = () => {
 
             const folderPathToScan = folder.fullPath
             const entries = await editorEngine.sandbox.session.session.fs.readdir(folderPathToScan);
-            
+
             const existingChildNames = new Set(folder.children.keys());
-            
+
             for (const entry of entries) {
                 if (entry.type === 'directory' && !existingChildNames.has(entry.name)) {
                     // Create new folder node for empty directory
@@ -370,7 +371,7 @@ export const useFolder = () => {
                         images: [],
                         children: new Map(),
                     };
-                    
+
                     folder.children.set(entry.name, newFolderNode);
                 }
             }

@@ -21,7 +21,16 @@ export class CreateManager {
                 console.error('No user ID found');
                 return;
             }
-            const { sandboxId, previewUrl } = await this.createSandbox();
+            const config = {
+                title: `Prompted project - ${userId}`,
+                description: prompt,
+                tags: ['prompt', userId],
+            };
+
+            const { sandboxId, previewUrl } = await api.sandbox.fork.mutate({
+                sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
+                config,
+            });
             const project = await this.createDefaultProject(sandboxId, previewUrl);
             const newProject = await api.project.create.mutate({
                 project,
@@ -103,12 +112,5 @@ export class CreateManager {
             branch
         });
     }
-
-    async createSandbox() {
-        return await api.sandbox.fork.mutate({
-            sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
-        });
-    }
-
 }
 

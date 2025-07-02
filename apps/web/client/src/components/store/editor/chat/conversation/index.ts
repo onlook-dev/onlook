@@ -4,6 +4,8 @@ import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, type ChatConversation, type ChatMessageContext } from '@onlook/models';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
+import { toast } from 'sonner';
+import type { EditorEngine } from '../../engine';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
@@ -11,9 +13,10 @@ import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
 export class ConversationManager {
     private _current: ChatConversationImpl | null = null;
     private _conversations: ChatConversation[] = [];
+    creatingConversation = false;
 
     constructor(
-        private projectId: string,
+        private editorEngine: EditorEngine,
     ) {
         makeAutoObservable(this);
     }
@@ -24,17 +27,6 @@ export class ConversationManager {
 
     get conversations() {
         return this._conversations;
-    }
-
-    async fetchOrCreateConversation(projectId: string) {
-        this._conversations = await this.getConversations(projectId);
-
-        if (this.conversations.length > 0 && !!this.conversations[0]) {
-            this._current = ChatConversationImpl.fromJSON(this.conversations[0]);
-        } else {
-            console.error('No conversations found, creating new conversation');
-
-        }
     }
 
     applyConversations(conversations: ChatConversation[]) {
@@ -65,17 +57,23 @@ export class ConversationManager {
         return sorted || [];
     }
 
-    startNewConversation() {
-        if (this.current && this.current.messages.length === 0 && !this.current.displayName) {
-            console.error(
-                'Error starting new conversation. Current conversation is already empty.',
-            );
-            return;
+    async startNewConversation() {
+        try {
+            this.creatingConversation = true;
+            if (this.current && this.current.messages.length === 0 && !this.current.displayName) {
+                throw new Error('Current conversation is already empty.');
+            }
+            const newConversation = await api.chat.conversation.create.mutate({ projectId: this.editorEngine.projectId });
+            this._current = ChatConversationImpl.fromJSON(newConversation);
+            this._conversations.push(this._current);
+        } catch (error) {
+            console.error('Error starting new conversation', error);
+            toast.error('Error starting new conversation.', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+        } finally {
+            this.creatingConversation = false;
         }
-        console.log('Starting new conversation');
-        this._current = ChatConversationImpl.create(this.projectId);
-        this._conversations.push(this._current);
-        this._current.saveConversationToStorage();
     }
 
     selectConversation(id: string) {
