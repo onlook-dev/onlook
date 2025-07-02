@@ -53,7 +53,9 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                     case MouseAction.MOVE:
                         editorEngine.elements.mouseover(el);
                         if (e.altKey) {
-                            editorEngine.overlay.showMeasurement();
+                            if (editorEngine.state.editorMode !== EditorMode.INSERT_IMAGE) {
+                                editorEngine.overlay.showMeasurement();
+                            }
                         } else {
                             editorEngine.overlay.removeMeasurement();
                         }
