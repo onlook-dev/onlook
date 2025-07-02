@@ -27,17 +27,17 @@ export const readFilesTool = tool({
 export const EDIT_FILE_TOOL_NAME = 'edit_file';
 export const EDIT_FILE_TOOL_PARAMETERS = z.object({
     path: z.string().describe('The absolute path to the file to edit'),
-    instruction: z
-        .string()
-        .describe(
-            'A single sentence instruction describing what you are going to do for the sketched edit. This is used to assist the less intelligent model in applying the edit. Use the first person to describe what you are going to do. Use it to disambiguate uncertainty in the edit.',
-        ),
     content: z.string()
-        .describe(`The edit to the file. You only need to include the parts of the code that are being edited instead of the entire file. You must leave comments to indicate the parts of the code that are not being edited such as:
+        .describe(`The edit to the file. You only need to include the parts of the code that are being edited instead of the entire file. A smaller model will handle implementing the rest of the code. You must leave comments to indicate the parts of the code that are not being edited such as:
 // ... existing code
 const foo = 'bar';
 // ... existing code
-The user will handle adding the rest of the code. Make sure there's enough context for the user to understand where the changes are being made.`),
+Make sure there's enough context for the smaller model to understand where the changes are being made.`),
+    instruction: z
+        .string()
+        .describe(
+            'A single sentence instruction describing what you are going to do for the sketched edit. This is used to assist a smaller model in applying the edit. Use the first person to describe what you are going to do. Use it to disambiguate uncertainty in the edit.',
+        ),
 });
 
 export const editFileTool = tool({
