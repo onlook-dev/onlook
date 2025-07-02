@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 
-const createPrompt = (originalCode: string, updateSnippet: string, instruction: string) => `<instruction>${instruction}</instruction>\n<code>${originalCode}</code>\n<update>${updateSnippet}</update>`;
+const createPrompt = (originalCode: string, updateSnippet: string, instruction: string) =>
+    `<instruction>${instruction}</instruction>\n<code>${originalCode}</code>\n<update>${updateSnippet}</update>`;
 
 export enum FastApplyProvider {
     MORPH = 'morph',
@@ -93,9 +94,17 @@ export async function applyCodeChange(
     // Run provider attempts in order of preference
     for (const { provider, applyFn } of providerAttempts) {
         try {
-            const result = provider === FastApplyProvider.MORPH 
-                ? await (applyFn as typeof applyCodeChangeWithMorph)(originalCode, updateSnippet, instruction)
-                : await (applyFn as typeof applyCodeChangeWithRelace)(originalCode, updateSnippet);
+            const result =
+                provider === FastApplyProvider.MORPH
+                    ? await (applyFn as typeof applyCodeChangeWithMorph)(
+                          originalCode,
+                          updateSnippet,
+                          instruction,
+                      )
+                    : await (applyFn as typeof applyCodeChangeWithRelace)(
+                          originalCode,
+                          updateSnippet,
+                      );
             if (result) return result;
         } catch (error) {
             console.warn(`Code application failed with provider ${provider}:`, error);
