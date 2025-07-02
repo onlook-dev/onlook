@@ -33,8 +33,7 @@ enum PublishType {
 
 export class HostingManager {
     state: PublishState = DEFAULT_PUBLISH_STATE;
-    private currentPublishId: string | null = null;
-    private pollingInterval: ReturnType<typeof setInterval> | null = null;
+    private currentSubscription: { unsubscribe: () => void } | null = null;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -49,35 +48,13 @@ export class HostingManager {
 
     resetState() {
         this.state = DEFAULT_PUBLISH_STATE;
-        this.stopPolling();
+        this.stopSubscription();
     }
 
-    private stopPolling() {
-        if (this.pollingInterval) {
-            clearInterval(this.pollingInterval);
-            this.pollingInterval = null;
-        }
-        this.currentPublishId = null;
-    }
-
-    private async pollPublishState(publishId: string): Promise<void> {
-        try {
-            const state = await api.domain.publish.getPublishState.query({ publishId });
-            this.updateState(state);
-
-            // Stop polling if finished
-            if (state.status === PublishStatus.PUBLISHED || state.status === PublishStatus.ERROR) {
-                this.stopPolling();
-            }
-        } catch (error) {
-            console.error('Error polling publish state:', error);
-            this.updateState({
-                status: PublishStatus.ERROR,
-                message: 'Failed to get deployment status',
-                error: error instanceof Error ? error.message : 'Unknown error',
-                progress: 100,
-            });
-            this.stopPolling();
+    private stopSubscription() {
+        if (this.currentSubscription) {
+            this.currentSubscription.unsubscribe();
+            this.currentSubscription = null;
         }
     }
 
@@ -90,63 +67,72 @@ export class HostingManager {
     }
 
     private async publish(type: PublishType, projectId: string, request: PublishRequest): Promise<PublishResponse> {
-        try {
-            this.stopPolling(); // Stop any existing polling
-            
-            // Get the project path
-            const projectPath = this.editorEngine.manager.project?.folderPath;
-            if (!projectPath) {
-                throw new Error('Project path not found');
-            }
-
-            // Start the publish process on the server
-            const { publishId } = await api.domain.publish.startPublish.mutate({
-                type: type === PublishType.CUSTOM ? 'custom' : 'preview',
-                projectId,
-                projectPath,
-                request,
-            });
-
-            this.currentPublishId = publishId;
-
-            // Start polling for progress
-            this.pollingInterval = setInterval(async () => {
-                await this.pollPublishState(publishId);
-            }, 1000); // Poll every second
-
-            // Initial poll
-            await this.pollPublishState(publishId);
-
-            // Wait for completion (with timeout)
-            const timeout = 600000; // 10 minutes timeout
-            const startTime = Date.now();
-
-            while (this.state.status === PublishStatus.LOADING) {
-                if (Date.now() - startTime > timeout) {
-                    throw new Error('Deployment timed out');
+        return new Promise((resolve) => {
+            try {
+                this.stopSubscription(); // Stop any existing subscription
+                
+                // Get the project path
+                const projectPath = this.editorEngine.manager.project?.folderPath;
+                if (!projectPath) {
+                    throw new Error('Project path not found');
                 }
-                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Subscribe to the publish process
+                this.currentSubscription = api.domain.publish.publish.subscribe(
+                    {
+                        type: type === PublishType.CUSTOM ? 'custom' : 'preview',
+                        projectId,
+                        projectPath,
+                        request,
+                    },
+                    {
+                        onData: (state: PublishState) => {
+                            this.updateState(state);
+                            
+                            // Resolve promise when finished
+                            if (state.status === PublishStatus.PUBLISHED) {
+                                resolve({
+                                    success: true,
+                                    message: state.message || 'Deployment successful',
+                                });
+                                this.stopSubscription();
+                            } else if (state.status === PublishStatus.ERROR) {
+                                resolve({
+                                    success: false,
+                                    message: state.error || state.message || 'Deployment failed',
+                                });
+                                this.stopSubscription();
+                            }
+                        },
+                        onError: (error: Error) => {
+                            console.error('Subscription error:', error);
+                            this.updateState({
+                                status: PublishStatus.ERROR,
+                                message: 'Failed to connect to deployment service',
+                                error: error.message,
+                                progress: 100,
+                            });
+                            resolve({
+                                success: false,
+                                message: error.message || 'Unknown error',
+                            });
+                            this.stopSubscription();
+                        },
+                    }
+                );
+            } catch (error) {
+                console.error('Failed to start deployment:', error);
+                this.updateState({ 
+                    status: PublishStatus.ERROR, 
+                    message: 'Failed to start deployment', 
+                    progress: 100 
+                });
+                resolve({
+                    success: false,
+                    message: error instanceof Error ? error.message : 'Unknown error',
+                });
             }
-
-            return {
-                success: this.state.status === PublishStatus.PUBLISHED,
-                message: this.state.message || 'Deployment completed',
-            };
-
-        } catch (error) {
-            console.error('Failed to deploy:', error);
-            this.updateState({ 
-                status: PublishStatus.ERROR, 
-                message: 'Failed to deploy to environment', 
-                progress: 100 
-            });
-            return {
-                success: false,
-                message: error instanceof Error ? error.message : 'Unknown error',
-            };
-        } finally {
-            this.stopPolling();
-        }
+        });
     }
 
     async unpublish(projectId: string, urls: string[]): Promise<PublishResponse> {
@@ -173,7 +159,7 @@ export class HostingManager {
     private async deployWeb(
         type: PublishType,
         projectId: string,
-        files: Record<string, FreestyleFile>,
+        files: Record<string, any>,
         urls: string[],
         envVars?: Record<string, string>,
     ): Promise<boolean> {

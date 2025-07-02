@@ -13,11 +13,16 @@ import { promisify } from 'util';
 import { z } from 'zod';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { observable } from '@trpc/server/observable';
+import { EventEmitter } from 'events';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { HostingProviderFactory } from './hosting-factory';
 import { HostingProvider } from '@onlook/models';
 
 const execAsync = promisify(exec);
+
+// Event emitter for publish state updates
+const publishEvents = new EventEmitter();
 
 // In-memory store for publish states (can be replaced with Redis in production)
 const publishStates = new Map<string, PublishState>();
@@ -87,7 +92,7 @@ const serverFileOps: FileOperations = {
 };
 
 export const publishRouter = createTRPCRouter({
-    startPublish: protectedProcedure
+    publish: protectedProcedure
         .input(
             z.object({
                 type: z.enum(['preview', 'custom']),
@@ -105,40 +110,64 @@ export const publishRouter = createTRPCRouter({
                 }),
             }),
         )
-        .mutation(async ({ ctx, input }) => {
-            const publishId = `${input.projectId}-${Date.now()}`;
-            const initialState: PublishState = {
-                status: PublishStatus.LOADING,
-                message: 'Starting deployment...',
-                progress: 0,
-                buildLog: null,
-                error: null,
-            };
-            
-            publishStates.set(publishId, initialState);
-
-            // Start the publish process asynchronously
-            publishAsync(
-                input.type === 'preview' ? PublishType.PREVIEW : PublishType.CUSTOM,
-                input.projectId,
-                input.projectPath,
-                input.request,
-                publishId,
-                ctx.db
-            ).catch(error => {
-                console.error('Publish error:', error);
-                publishStates.set(publishId, {
-                    status: PublishStatus.ERROR,
-                    message: error.message || 'Unknown error occurred',
-                    progress: 100,
+        .subscription(({ ctx, input }) => {
+            return observable<PublishState>((emit) => {
+                const publishId = `${input.projectId}-${Date.now()}`;
+                
+                // Initial state
+                const initialState: PublishState = {
+                    status: PublishStatus.LOADING,
+                    message: 'Starting deployment...',
+                    progress: 0,
                     buildLog: null,
-                    error: error.message,
-                });
-            });
+                    error: null,
+                };
+                
+                publishStates.set(publishId, initialState);
+                emit.next(initialState);
 
-            return { publishId };
+                // Set up event listener for this specific publish
+                const onStateUpdate = (state: PublishState) => {
+                    emit.next(state);
+                };
+
+                publishEvents.on(publishId, onStateUpdate);
+
+                // Start the publish process asynchronously
+                publishAsync(
+                    input.type === 'preview' ? PublishType.PREVIEW : PublishType.CUSTOM,
+                    input.projectId,
+                    input.projectPath,
+                    input.request,
+                    publishId,
+                    ctx.db
+                ).then(() => {
+                    // Cleanup after completion
+                    setTimeout(() => {
+                        publishStates.delete(publishId);
+                        publishEvents.removeListener(publishId, onStateUpdate);
+                    }, 300000); // 5 minutes
+                }).catch(error => {
+                    console.error('Publish error:', error);
+                    const errorState: PublishState = {
+                        status: PublishStatus.ERROR,
+                        message: error.message || 'Unknown error occurred',
+                        progress: 100,
+                        buildLog: null,
+                        error: error.message,
+                    };
+                    publishStates.set(publishId, errorState);
+                    publishEvents.emit(publishId, errorState);
+                });
+
+                // Cleanup function
+                return () => {
+                    publishEvents.removeListener(publishId, onStateUpdate);
+                };
+            });
         }),
 
+    // Keep the polling endpoint as a fallback
     getPublishState: protectedProcedure
         .input(z.object({ publishId: z.string() }))
         .query(async ({ input }) => {
@@ -149,13 +178,6 @@ export const publishRouter = createTRPCRouter({
                     code: 'NOT_FOUND',
                     message: 'Publish state not found',
                 });
-            }
-
-            // Clean up completed states after some time
-            if (state.status === PublishStatus.PUBLISHED || state.status === PublishStatus.ERROR) {
-                setTimeout(() => {
-                    publishStates.delete(input.publishId);
-                }, 300000); // 5 minutes
             }
 
             return state;
@@ -172,7 +194,10 @@ async function publishAsync(
 ): Promise<void> {
     const updateState = (state: Partial<PublishState>) => {
         const current = publishStates.get(publishId) || {};
-        publishStates.set(publishId, { ...current, ...state });
+        const newState = { ...current, ...state };
+        publishStates.set(publishId, newState);
+        // Emit the state update
+        publishEvents.emit(publishId, newState);
     };
 
     try {
@@ -226,7 +251,7 @@ async function publishAsync(
 
         // Remove badge
         if (!request.options?.skipBadge) {
-            updateState({ status: PublishStatus.LOADING, message: 'Cleaning up...', progress: 90 });
+            updateState({ status: PublishStatus.LOADING, message: 'Cleaning up...', progress: 95 });
             await removeBadge(fullProjectPath, serverFileOps);
             timer.log('"Built with Onlook" badge removed');
         }
@@ -288,16 +313,41 @@ async function runBuildStep(
     }
 
     try {
-        const { stdout, stderr } = await execAsync(BUILD_SCRIPT_NO_LINT, {
+        // Use spawn for streaming output
+        const child = exec(BUILD_SCRIPT_NO_LINT, {
             maxBuffer: 10 * 1024 * 1024, // 10MB buffer
         });
 
-        if (stderr) {
-            console.error('Build stderr:', stderr);
-        }
+        let buildOutput = '';
+
+        child.stdout?.on('data', (data) => {
+            const output = data.toString();
+            buildOutput += output;
+            console.log('Build output:', output);
+            // Update build log in real-time
+            updateState({ buildLog: buildOutput });
+        });
+
+        child.stderr?.on('data', (data) => {
+            const error = data.toString();
+            console.error('Build stderr:', error);
+            buildOutput += error;
+            updateState({ buildLog: buildOutput });
+        });
+
+        await new Promise((resolve, reject) => {
+            child.on('exit', (code) => {
+                if (code === 0) {
+                    resolve(undefined);
+                } else {
+                    reject(new Error(`Build failed with exit code ${code}`));
+                }
+            });
+            child.on('error', reject);
+        });
         
-        console.log('Build succeeded with output:', stdout);
-        updateState({ buildLog: stdout });
+        console.log('Build succeeded');
+        updateState({ buildLog: buildOutput });
     } catch (error: any) {
         throw new Error(`Build failed: ${error.message}`);
     }
