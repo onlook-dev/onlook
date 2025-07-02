@@ -1,5 +1,5 @@
 import type { PreviewImg, Project } from '@onlook/models';
-import type { Project as DbProject } from '../schema';
+import type { Project as DbProject } from '../../schema';
 
 export const toProject = (
     dbProject: DbProject,
@@ -14,14 +14,14 @@ export const toProject = (
         metadata: {
             createdAt: dbProject.createdAt.toISOString(),
             updatedAt: dbProject.updatedAt.toISOString(),
-            previewImg: getPreviewImgFromDb(dbProject),
+            previewImg: toPreviewImg(dbProject),
             description: dbProject.description,
         },
     };
 };
 
 export const fromProject = (project: Project): DbProject => {
-    const { previewImgUrl, previewImgPath, previewImgBucket } = getPreviewImgFromModel(project.metadata.previewImg);
+    const { previewImgUrl, previewImgPath, previewImgBucket } = fromPreviewImg(project.metadata.previewImg);
     return {
         id: project.id,
         name: project.name,
@@ -36,7 +36,7 @@ export const fromProject = (project: Project): DbProject => {
     };
 };
 
-function getPreviewImgFromDb(dbProject: DbProject): PreviewImg | null {
+export function toPreviewImg(dbProject: DbProject): PreviewImg | null {
     let previewImg: PreviewImg | null = null;
     if (dbProject.previewImgUrl) {
         previewImg = {
@@ -55,7 +55,7 @@ function getPreviewImgFromDb(dbProject: DbProject): PreviewImg | null {
     return previewImg;
 }
 
-function getPreviewImgFromModel(previewImg: PreviewImg | null): { previewImgUrl: string | null, previewImgPath: string | null, previewImgBucket: string | null } {
+export function fromPreviewImg(previewImg: PreviewImg | null): { previewImgUrl: string | null, previewImgPath: string | null, previewImgBucket: string | null } {
     let res: {
         previewImgUrl: string | null,
         previewImgPath: string | null,

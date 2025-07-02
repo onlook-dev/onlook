@@ -1,5 +1,7 @@
-import { previewDomains, publishedDomains } from '@onlook/db';
+import { env } from '@/env';
+import { previewDomains, publishedDomains, toDomainInfoFromPreview } from '@onlook/db';
 import { HostingProvider } from '@onlook/models';
+import { getValidSubdomain } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
 import { and, eq, inArray, ne } from 'drizzle-orm';
 import { z } from 'zod';
@@ -10,19 +12,20 @@ export const previewRouter = createTRPCRouter({
     get: protectedProcedure.input(z.object({
         projectId: z.string(),
     })).query(async ({ ctx, input }) => {
-        const preview = await ctx.db.query.previewDomains.findMany({
+        const preview = await ctx.db.query.previewDomains.findFirst({
             where: eq(previewDomains.projectId, input.projectId),
         });
-        return preview;
+        return preview ? toDomainInfoFromPreview(preview) : null;
     }),
     create: protectedProcedure.input(z.object({
-        domain: z.string(),
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
         // Check if the domain is already taken by another project
         // This should never happen, but just in case
+        const domain = `${getValidSubdomain(input.projectId)}.${env.NEXT_PUBLIC_HOSTING_DOMAIN}`;
+
         const existing = await ctx.db.query.previewDomains.findFirst({
-            where: and(eq(previewDomains.fullDomain, input.domain), ne(previewDomains.projectId, input.projectId)),
+            where: and(eq(previewDomains.fullDomain, domain), ne(previewDomains.projectId, input.projectId)),
         });
 
         if (existing) {
@@ -33,11 +36,17 @@ export const previewRouter = createTRPCRouter({
         }
 
         const [preview] = await ctx.db.insert(previewDomains).values({
-            fullDomain: input.domain,
+            fullDomain: domain,
             projectId: input.projectId,
-        }).returning({
-            fullDomain: previewDomains.fullDomain,
-        });
+        }).onConflictDoUpdate({
+            target: [previewDomains.fullDomain],
+            set: {
+                projectId: input.projectId,
+            },
+        })
+            .returning({
+                fullDomain: previewDomains.fullDomain,
+            });
 
         if (!preview) {
             throw new TRPCError({

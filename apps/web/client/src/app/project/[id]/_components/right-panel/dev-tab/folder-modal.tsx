@@ -11,13 +11,13 @@ import {
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
+import path from 'path';
 import { useEffect, useMemo, useState } from 'react';
 import {
     createFolderInSandbox,
     doesFolderExist,
     validateFolderName,
 } from './file-operations';
-import path from 'path';
 
 interface FolderModalProps {
     open: boolean;
@@ -85,7 +85,7 @@ export function FolderModal({
                 throw new Error('No sandbox session available');
             }
 
-            await createFolderInSandbox(session, fullPath, editorEngine);
+            await createFolderInSandbox(session, fullPath, editorEngine.sandbox);
             toast(`Folder "${name}" created successfully!`);
 
             setName('');

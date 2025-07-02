@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 import type { GitCommit } from '@onlook/git';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -30,6 +31,8 @@ export const VersionRow = observer(
         onRename?: () => void;
     }) => {
         const editorEngine = useEditorEngine();
+        const stateManager = useStateManager();
+
         const inputRef = useRef<HTMLInputElement>(null);
         const [isRenaming, setIsRenaming] = useState(autoRename);
         const [commitDisplayName, setCommitDisplayName] = useState(
@@ -91,7 +94,7 @@ export const VersionRow = observer(
                 return;
             }
             setTimeout(() => {
-                editorEngine.state.settingsOpen = false;
+                stateManager.isSettingsModalOpen = false;
             }, 1000);
         };
 

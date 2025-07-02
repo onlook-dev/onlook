@@ -1,9 +1,9 @@
+import { ProjectRole } from '@onlook/models';
 import { relations } from 'drizzle-orm';
 import { pgEnum, pgTable, primaryKey, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { projects } from '../project';
 import { users } from './user';
-import { ProjectRole } from '@onlook/models';
 
 export const projectRole = pgEnum('project_role', ProjectRole);
 

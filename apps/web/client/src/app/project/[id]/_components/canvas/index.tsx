@@ -118,6 +118,7 @@ export const Canvas = observer(() => {
     const middleMouseButtonDown = useCallback((e: MouseEvent) => {
         if (e.button === 1) {
             editorEngine.state.editorMode = EditorMode.PAN;
+            editorEngine.state.canvasPanning = true;
             e.preventDefault();
             e.stopPropagation();
         }
@@ -126,6 +127,7 @@ export const Canvas = observer(() => {
     const middleMouseButtonUp = useCallback((e: MouseEvent) => {
         if (e.button === 1) {
             editorEngine.state.editorMode = EditorMode.DESIGN;
+            editorEngine.state.canvasPanning = false;
             e.preventDefault();
             e.stopPropagation();
         }

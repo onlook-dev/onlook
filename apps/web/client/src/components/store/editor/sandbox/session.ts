@@ -24,7 +24,7 @@ export class SessionManager {
         this.session = await connectToSandbox({
             session,
             getSession: async (id) => {
-                return await api.sandbox.get.query({ sandboxId: id, userId });
+                return await api.sandbox.start.mutate({ sandboxId: id, userId });
             },
         });
         this.session.keepActiveWhileConnected(true);
@@ -84,8 +84,8 @@ export class SessionManager {
                 return;
             }
 
-            this.session = await api.sandbox.get.query({ sandboxId, userId });
             this.isConnecting = false;
+            await this.start(sandboxId, userId);
         } catch (error) {
             console.error('Failed to reconnect to sandbox', error);
             this.isConnecting = false;
@@ -103,23 +103,6 @@ export class SessionManager {
         }
     }
 
-    async disconnect() {
-        if (!this.session) {
-            console.error('No session found');
-            return;
-        }
-        await this.session.disconnect();
-        this.session = null;
-        this.isConnecting = false;
-        this.terminalSessions.forEach(terminal => {
-            if (terminal.type === 'terminal') {
-                terminal.terminal?.kill();
-                terminal.xterm?.dispose();
-            }
-        });
-        this.terminalSessions.clear();
-    }
-
     async runCommand(command: string, streamCallback?: (output: string) => void): Promise<{
         output: string;
         success: boolean;
@@ -129,7 +112,6 @@ export class SessionManager {
             if (!this.session) {
                 throw new Error('No session found');
             }
-
 
             const terminalSession = Array.from(this.terminalSessions.values()).find(session => session.type === CLISessionType.TERMINAL) as TerminalSession | undefined;
 
@@ -165,5 +147,18 @@ export class SessionManager {
                 error: error instanceof Error ? error.message : 'Unknown error occurred'
             };
         }
+    }
+
+    async clear() {
+        await this.session?.disconnect();
+        this.session = null;
+        this.isConnecting = false;
+        this.terminalSessions.forEach(terminal => {
+            if (terminal.type === 'terminal') {
+                terminal.terminal?.kill();
+                terminal.xterm?.dispose();
+            }
+        });
+        this.terminalSessions.clear();
     }
 }

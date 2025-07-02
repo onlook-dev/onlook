@@ -1,19 +1,18 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
-import { type PageMetadata, type PageNode } from '@onlook/models';
+import { api } from '@/trpc/react';
+import { DefaultSettings } from '@onlook/constants';
+import { type PageMetadata } from '@onlook/models';
+import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
-import { DefaultSettings } from '@onlook/constants';
-import { useMetadataForm } from './use-metadata-form';
-import { toast } from '@onlook/ui/sonner';
 import { MetadataForm } from './metadata-form';
+import { useMetadataForm } from './use-metadata-form';
 
 export const SiteTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectManager();
-    const domainsManager = useDomainsManager()
-    const project = projectsManager.project;
-    const baseUrl = domainsManager.domains.preview?.url ?? domainsManager.domains.custom?.url ?? project?.sandbox.url;
+    const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
+    const baseUrl = domains?.published?.url ?? domains?.preview?.url;
+
     const homePage = useMemo(() => {
         return editorEngine.pages.tree.find((page) => page.path === '/');
     }, [editorEngine.pages.tree]);
@@ -40,9 +39,6 @@ export const SiteTab = observer(() => {
     };
 
     const handleSave = async () => {
-        if (!project) {
-            return;
-        }
         try {
             const updatedMetadata: PageMetadata = {
                 ...homePage?.metadata ?? {},

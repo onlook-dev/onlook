@@ -3,7 +3,6 @@ import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constant
 import { type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
-import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
@@ -17,14 +16,16 @@ import { SessionManager } from './session';
 export class SandboxManager {
     readonly session: SessionManager;
     private fileWatcher: FileWatcher | null = null;
-    private fileSync: FileSyncManager = new FileSyncManager();
-    private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
+    private fileSync: FileSyncManager
+    private templateNodeMap: TemplateNodeMapper
     readonly fileEventBus: FileEventBus = new FileEventBus();
     private isIndexed = false;
     private isIndexing = false;
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
+        this.fileSync = new FileSyncManager(this.editorEngine);
+        this.templateNodeMap = new TemplateNodeMapper(this.editorEngine);
         makeAutoObservable(this);
 
         reaction(
@@ -636,7 +637,7 @@ export class SandboxManager {
         this.fileWatcher = null;
         this.fileSync.clear();
         this.templateNodeMap.clear();
-        this.session.disconnect();
+        this.session.clear();
         this.isIndexed = false;
         this.isIndexing = false;
     }

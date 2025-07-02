@@ -2,11 +2,12 @@ import { env } from '@/env';
 import {
     authUsers,
     createDefaultUserCanvas,
-    fromAuthUser,
     projectInvitationInsertSchema,
     projectInvitations,
+    toUser,
     userCanvases,
     userProjects,
+    users,
 } from '@onlook/db';
 import { getResendClient, sendInvitationEmail } from '@onlook/email';
 import { ProjectRole } from '@onlook/models';
@@ -32,8 +33,8 @@ export const invitationRouter = createTRPCRouter({
             });
         }
 
-        const inviter = await ctx.db.query.authUsers.findFirst({
-            where: eq(authUsers.id, invitation.inviterId),
+        const inviter = await ctx.db.query.users.findFirst({
+            where: eq(users.id, invitation.inviterId),
         });
 
         if (!inviter) {
@@ -45,7 +46,7 @@ export const invitationRouter = createTRPCRouter({
 
         return {
             ...invitation,
-            inviter: fromAuthUser(inviter),
+            inviter: toUser(inviter),
         };
     }),
     list: protectedProcedure

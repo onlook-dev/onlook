@@ -1,22 +1,17 @@
-import { ProjectManager } from '@/components/store/project/manager';
+
 import { sendAnalytics } from '@/utils/analytics';
 import type { ChatSuggestion, Project } from '@onlook/models';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import type { CoreMessage, CoreSystemMessage, ImagePart, TextPart } from 'ai';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '../engine';
 
-// TODO: Use hooks
 export class SuggestionManager {
-    projectId: string | null = null;
     shouldHide = false;
     private _suggestions: ChatSuggestion[] = [];
 
-    constructor(private projectManager: ProjectManager) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-        reaction(
-            () => this.projectManager.project,
-            (current) => this.getCurrentProjectSuggestions(current),
-        );
     }
 
     get suggestions() {
@@ -32,10 +27,9 @@ export class SuggestionManager {
         if (!project) {
             return;
         }
-        if (this.projectId === project.id) {
+        if (this.editorEngine.projectId === project.id) {
             return;
         }
-        this.projectId = project.id;
         this._suggestions = await this.getSuggestionsFromStorage(project.id);
     }
 
@@ -54,7 +48,7 @@ export class SuggestionManager {
     }
 
     private saveSuggestionsToStorage() {
-        if (!this.projectId) {
+        if (!this.editorEngine.projectId) {
             console.error('No project id found');
             return;
         }
