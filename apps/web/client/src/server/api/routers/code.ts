@@ -4,12 +4,12 @@ import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 export const codeRouter = createTRPCRouter({
     applyDiff: protectedProcedure
-        .input(z.object({ 
-            originalCode: z.string(), 
+        .input(z.object({
+            originalCode: z.string(),
             updateSnippet: z.string(),
             instruction: z.string()
         }))
-        .mutation(async ({ ctx, input }): Promise<{ result: string | null, error: string | null }> => {
+        .mutation(async ({ input }): Promise<{ result: string | null, error: string | null }> => {
             try {
                 const result = await applyCodeChange(input.originalCode, input.updateSnippet, input.instruction);
                 if (!result) {
