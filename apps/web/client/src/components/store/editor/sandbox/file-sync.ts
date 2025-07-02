@@ -1,15 +1,22 @@
 import { convertToBase64 } from '@onlook/utility';
 import localforage from 'localforage';
 import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '../engine';
+
 export class FileSyncManager {
     private cache: Map<string, string>;
     private binaryCache: Map<string, Uint8Array>;
-    private storageKey = 'file-sync-cache';
-    private binaryStorageKey = 'binary-file-sync-cache';
+    private storageKey
+    private binaryStorageKey
 
-    constructor() {
+    constructor(
+        private readonly editorEngine: EditorEngine,
+    ) {
         this.cache = new Map();
         this.binaryCache = new Map();
+        this.storageKey = 'file-cache-' + this.editorEngine.projectId;
+        this.binaryStorageKey = 'binary-file-cache-' + this.editorEngine.projectId;
+
         this.restoreFromLocalStorage();
         makeAutoObservable(this);
     }
@@ -23,9 +30,9 @@ export class FileSyncManager {
     }
 
     // Track binary file path without reading content (using empty placeholder)
-    async trackBinaryFile(filePath: string) {        
+    async trackBinaryFile(filePath: string) {
         if (!this.hasBinary(filePath)) {
-            this.binaryCache.set(filePath, new Uint8Array(0)); 
+            this.binaryCache.set(filePath, new Uint8Array(0));
             await this.saveToLocalStorage();
         }
     }
@@ -39,7 +46,7 @@ export class FileSyncManager {
     async readOrFetchBinaryFile(
         filePath: string,
         readFile: (path: string) => Promise<Uint8Array | null>,
-    ): Promise<Uint8Array | null> {        
+    ): Promise<Uint8Array | null> {
         if (this.hasBinary(filePath)) {
             const cachedContent = this.binaryCache.get(filePath);
             // If content is empty (placeholder), fetch the actual content
@@ -64,7 +71,7 @@ export class FileSyncManager {
             if (content === null) {
                 throw new Error(`File content for ${filePath} not found`);
             }
-            
+
             this.updateBinaryCache(filePath, content);
             return content;
         } catch (error) {
@@ -124,7 +131,7 @@ export class FileSyncManager {
     ): Promise<boolean> {
         try {
             // Write to cache first
-            
+
             this.updateBinaryCache(filePath, content);
 
             // Then write to remote
@@ -160,11 +167,11 @@ export class FileSyncManager {
 
     async rename(oldPath: string, newPath: string) {
         let hasChanges = false;
-        
+
         // Handle folder renaming - find all files that start with oldPath
         const normalizedOldPath = oldPath.endsWith('/') ? oldPath : oldPath + '/';
         const normalizedNewPath = newPath.endsWith('/') ? newPath : newPath + '/';
-        
+
         // Update binary cache entries
         const binaryEntriesToUpdate: Array<{ oldKey: string; newKey: string; content: Uint8Array }> = [];
         for (const [filePath, content] of this.binaryCache.entries()) {
@@ -178,12 +185,12 @@ export class FileSyncManager {
                 hasChanges = true;
             }
         }
-        
+
         for (const { oldKey, newKey, content } of binaryEntriesToUpdate) {
             this.binaryCache.set(newKey, content);
             this.binaryCache.delete(oldKey);
         }
-        
+
         // Update text cache entries
         const textEntriesToUpdate: Array<{ oldKey: string; newKey: string; content: string }> = [];
         for (const [filePath, content] of this.cache.entries()) {
@@ -197,13 +204,13 @@ export class FileSyncManager {
                 hasChanges = true;
             }
         }
-        
+
         // Apply text cache updates
         for (const { oldKey, newKey, content } of textEntriesToUpdate) {
             this.cache.set(newKey, content);
             this.cache.delete(oldKey);
         }
-        
+
         if (hasChanges) {
             await this.saveToLocalStorage();
         }
@@ -300,7 +307,7 @@ export class FileSyncManager {
         readFile: (path: string) => Promise<string | null>,
     ): Promise<Record<string, string>> {
         const results: Record<string, string> = {};
-        
+
         const promises = filePaths.map(async (filePath) => {
             try {
                 const content = await this.readOrFetch(filePath, readFile);
@@ -314,7 +321,7 @@ export class FileSyncManager {
         });
 
         const batchResults = await Promise.all(promises);
-        
+
         for (const result of batchResults) {
             if (result) {
                 results[result.path] = result.content;
@@ -351,14 +358,14 @@ export class FileSyncManager {
      */
     async trackBinaryFilesBatch(filePaths: string[]): Promise<void> {
         let hasChanges = false;
-        
+
         for (const filePath of filePaths) {
             if (!this.hasBinary(filePath)) {
                 this.binaryCache.set(filePath, new Uint8Array(0));
                 hasChanges = true;
             }
         }
-        
+
         if (hasChanges) {
             await this.saveToLocalStorage();
         }
