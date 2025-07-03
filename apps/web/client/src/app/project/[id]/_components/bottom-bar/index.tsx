@@ -52,12 +52,29 @@ const TOOLBAR_ITEMS = ({ t }: { t: ReturnType<typeof useTranslations> }) => [
         label: t(transKeys.editor.toolbar.tools.insertText.name),
         tooltip: t(transKeys.editor.toolbar.tools.insertText.tooltip),
     },
+    {
+        mode: EditorMode.INSERT_WINDOW,
+        icon: Icons.Desktop,
+        hotkey: Hotkey.INSERT_WINDOW,
+        disabled: false,
+        draggable: true,
+        label: "Insert Window",
+        tooltip: "Insert a new window",
+    },
 ];
 
 export const BottomBar = observer(() => {
     const t = useTranslations();
     const editorEngine = useEditorEngine();
-    const toolbarItems = TOOLBAR_ITEMS({ t });
+    const toolbarItems = TOOLBAR_ITEMS({ t }).map(item => {
+        if (item.mode === EditorMode.INSERT_WINDOW) {
+            return {
+                ...item,
+                disabled: editorEngine.frames.selected.length === 0,
+            };
+        }
+        return item;
+    });
 
     // Ensure default state is set
     useEffect(() => {

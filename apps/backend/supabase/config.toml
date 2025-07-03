@@ -23,8 +23,8 @@ port = 54323
 
 [auth.external.github]
 enabled = true
-client_id = "env(GITHUB_CLIENT_ID)"
-secret = "env(GITHUB_SECRET)"
+client_id = "Ov23liP82aSfr8OFcLV5"
+secret = "4634a377743074a5086d6306b8ef89174a2a2944"
 redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
 
 [auth.external.google]

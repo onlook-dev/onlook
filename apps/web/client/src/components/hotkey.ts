@@ -30,6 +30,9 @@ export class Hotkey {
     static readonly INSERT_TEXT = new Hotkey('t', 'Insert Text');
     static readonly ENTER = new Hotkey('enter', 'Edit Text');
 
+    // Window
+    static readonly INSERT_WINDOW = new Hotkey('w', 'Insert Window');
+
     // Copy
     static readonly COPY = new Hotkey('mod+c', 'Copy');
     static readonly PASTE = new Hotkey('mod+v', 'Paste');

@@ -163,8 +163,9 @@ export const Main = observer(() => {
                 >
                     <RightPanel />
                 </div>
-
-                <BottomBar />
+                <div className="z-50">
+                    <BottomBar />
+                </div>
             </div>
             <SettingsModalWithProjects />
             <SubscriptionModal />

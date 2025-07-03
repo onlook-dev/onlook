@@ -9,6 +9,7 @@ import { Frames } from './frames';
 import { HotkeysArea } from './hotkeys';
 import { Overlay } from './overlay';
 import { PanOverlay } from './overlay/pan';
+import { SelectionBoxOverlay } from './selection-box-overlay';
 
 const ZOOM_SENSITIVITY = 0.006;
 const PAN_SENSITIVITY = 0.52;
@@ -172,6 +173,7 @@ export const Canvas = observer(() => {
                         clampPosition(position, scale)
                     }
                 />
+                <SelectionBoxOverlay />
             </div>
         </HotkeysArea>
     );

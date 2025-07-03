@@ -11,6 +11,7 @@ export enum EditorMode {
     INSERT_TEXT = 'insert-text',
     INSERT_DIV = 'insert-div',
     INSERT_IMAGE = 'insert-image',
+    INSERT_WINDOW = 'insert-window',
 }
 
 export enum EditorTabValue {
