@@ -88,10 +88,15 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
         return deployments[type]?.status === DeploymentStatus.IN_PROGRESS;
     };
 
-    // Stop polling when deployments complete
+    // Stop polling when deployments complete, start polling when in progress
     useEffect(() => {
         Object.entries(deployments).forEach(([type, deployment]) => {
-            if (deployment?.status !== DeploymentStatus.IN_PROGRESS) {
+            if (deployment?.status === DeploymentStatus.IN_PROGRESS) {
+                setSubscriptionStates(prev => ({
+                    ...prev,
+                    [type as DeploymentType]: true,
+                }));
+            } else {
                 setSubscriptionStates(prev => ({
                     ...prev,
                     [type as DeploymentType]: false,
