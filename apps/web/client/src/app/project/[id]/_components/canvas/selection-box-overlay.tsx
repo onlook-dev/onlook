@@ -62,14 +62,14 @@ export const SelectionBoxOverlay: React.FC = observer(() => {
                 startRef.current = null;
                 setEnd(null);
                 window.removeEventListener('mousemove', handleMouseMove);
-                window.removeEventListener('mouseup', handleMouseUp as any);
+                window.removeEventListener('mouseup', handleMouseUp );
                 return;
             }
             // Convert selection box coordinates to canvas coordinates
             const scale = editorEngine.canvas.scale;
             const position = editorEngine.canvas.position;
             const canvasX = (left - position.x) / scale;
-            const canvasY = (top - position.y) / scale - 28;
+            const canvasY = (top - position.y) / scale ;
             const canvasWidth = width / scale;
             const canvasHeight = height / scale;
             if (

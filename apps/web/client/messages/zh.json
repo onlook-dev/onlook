@@ -212,6 +212,10 @@
                 "insertText": {
                     "name": "插入文本",
                     "tooltip": "添加新文本元素"
+                },
+                "insertWindow": {
+                    "name": "插入窗口",
+                    "tooltip": "添加新窗口元素"
                 }
             },
             "versionHistory": "版本历史"

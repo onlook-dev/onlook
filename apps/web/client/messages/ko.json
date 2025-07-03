@@ -212,6 +212,10 @@
                 "insertText": {
                     "name": "텍스트 추가",
                     "tooltip": "새 텍스트 요소 추가"
+                },
+                "insertWindow": {
+                    "name": "윈도우 추가",
+                    "tooltip": "새 윈도우 요소 추가"
                 }
             },
             "versionHistory": "버전 기록"

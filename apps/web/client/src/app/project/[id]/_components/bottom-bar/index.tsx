@@ -58,8 +58,8 @@ const TOOLBAR_ITEMS = ({ t }: { t: ReturnType<typeof useTranslations> }) => [
         hotkey: Hotkey.INSERT_WINDOW,
         disabled: false,
         draggable: true,
-        label: "Insert Window",
-        tooltip: "Insert a new window",
+        label: t(transKeys.editor.toolbar.tools.insertWindow.name),
+        tooltip: t(transKeys.editor.toolbar.tools.insertWindow.tooltip),
     },
 ];
 
