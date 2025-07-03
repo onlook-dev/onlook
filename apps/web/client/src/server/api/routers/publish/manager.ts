@@ -1,10 +1,8 @@
 import { WebSocketSession } from '@codesandbox/sdk';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
-import { addBuiltWithScript, injectBuiltWithScript, removeBuiltWithScript, removeBuiltWithScriptFromLayout } from '@onlook/growth';
+import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import {
     PublishStatus,
-    PublishType,
-    type PublishResponse,
     type PublishState
 } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
@@ -12,11 +10,10 @@ import { isBinaryFile, isEmptyString, isNullOrUndefined, LogTimer, updateGitigno
 import {
     type FreestyleFile,
 } from 'freestyle-sandboxes';
-import { deployFreestyle } from './deploy';
 
 export class PublishManager {
     constructor(
-        private readonly session: WebSocketSession
+        private readonly session: WebSocketSession,
     ) { }
 
     private get fileOps(): FileOperations {
@@ -46,48 +43,43 @@ export class PublishManager {
     }
 
     async publish({
-        type,
-        projectId,
         buildScript,
-        urls,
         skipBadge,
         skipBuild,
         buildFlags,
         envVars,
     }: {
-        type: PublishType,
-        projectId: string,
         buildScript: string,
-        urls: string[],
         buildFlags: string;
         skipBadge: boolean;
         skipBuild: boolean;
         envVars: Record<string, string>;
-    }): Promise<PublishResponse> {
+    }): Promise<{
+        success: boolean,
+        files: Record<string, FreestyleFile>,
+    }> {
         try {
-            const timer = new LogTimer('Deployment');
 
             this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project...', progress: 5 });
             await this.runPrepareStep();
-            timer.log('Prepare completed');
+            console.log('Prepare completed');
 
             if (!skipBadge) {
                 this.updateState({ status: PublishStatus.LOADING, message: 'Adding badge...', progress: 10 });
                 await this.addBadge('./');
-                timer.log('"Built with Onlook" badge added');
+                console.log('"Built with Onlook" badge added');
             }
 
             // Run the build script
             this.updateState({ status: PublishStatus.LOADING, message: 'Creating optimized build...', progress: 20 });
             await this.runBuildStep(buildScript, skipBuild, buildFlags, envVars);
 
-            timer.log('Build completed');
+            console.log('Build completed');
             this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project for deployment...', progress: 60 });
 
             // Postprocess the project for deployment
-            const { success: postprocessSuccess, error: postprocessError } =
-                await this.postprocessNextBuild();
-            timer.log('Postprocess completed');
+            const { success: postprocessSuccess, error: postprocessError } = await this.postprocessNextBuild();
+            console.log('Postprocess completed');
 
             if (!postprocessSuccess) {
                 throw new Error(
@@ -100,60 +92,19 @@ export class PublishManager {
             const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
 
             this.updateState({ status: PublishStatus.LOADING, message: 'Deploying project...', progress: 80 });
-
-            timer.log('Files serialized, sending to Freestyle...');
-            const success = await deployFreestyle(this.session.db, type, projectId, files, {
-                domains: urls,
-                entrypoint: 'server.js',
-                envVars: envVars,
-            });
-
-            if (!success) {
-                throw new Error('Failed to deploy project');
-            }
-
-            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful. Cleaning up...', progress: 90 });
-
-            if (!skipBadge) {
-                this.updateState({ status: PublishStatus.LOADING, message: 'Cleaning up...', progress: 90 });
-                // Terminate session and sandbox
-                timer.log('"Built with Onlook" badge removed');
-            }
-
-            timer.log('Deployment completed');
-            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful!', progress: 100 });
+            console.log('Files serialized, sending to Freestyle...');
 
             return {
                 success: true,
-                message: 'Deployment successful',
+                files,
             };
+
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
             this.updateState({ status: PublishStatus.ERROR, message: 'Failed to deploy to preview environment', progress: 100 });
             return {
                 success: false,
-                message: error instanceof Error ? error.message : 'Unknown error',
-            };
-        }
-    }
-
-    async unpublish(projectId: string, urls: string[]): Promise<PublishResponse> {
-        try {
-            const success = await deployFreestyle(PublishType.UNPUBLISH, projectId, {}, urls);
-
-            if (!success) {
-                throw new Error('Failed to delete deployment');
-            }
-
-            return {
-                success: true,
-                message: 'Deployment deleted',
-            };
-        } catch (error) {
-            console.error('Failed to delete deployment', error);
-            return {
-                success: false,
-                message: 'Failed to delete deployment. ' + error,
+                files: {},
             };
         }
     }
@@ -161,11 +112,6 @@ export class PublishManager {
     private async addBadge(folderPath: string) {
         await injectBuiltWithScript(folderPath, this.fileOps);
         await addBuiltWithScript(folderPath, this.fileOps);
-    }
-
-    private async removeBadge(folderPath: string) {
-        await removeBuiltWithScriptFromLayout(folderPath, this.fileOps);
-        await removeBuiltWithScript(folderPath, this.fileOps);
     }
 
     private async runPrepareStep() {

@@ -1,13 +1,14 @@
+import { previewDomains, type PreviewDomain } from '@onlook/db';
 import {
     PublishType
 } from '@onlook/models';
+import { TRPCError } from '@trpc/server';
+import { eq } from 'drizzle-orm';
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../../trpc";
+import { deployFreestyle } from './deploy.ts';
 import { forkBuildSandbox } from './fork';
 import { PublishManager } from './manager.ts';
-import { previewDomains } from '@onlook/db';
-import { eq } from 'drizzle-orm';
-import { TRPCError } from '@trpc/server';
 
 export const publishRouter = createTRPCRouter({
     publish: protectedProcedure.input(z.object({
@@ -27,11 +28,16 @@ export const publishRouter = createTRPCRouter({
             envVars,
         } = input;
 
+
         const userId = ctx.user.id;
 
-        // Get and check preview domain
+
+        // Run domain check
+
+        let foundPreviewDomains: PreviewDomain[] = [];
+
         if (type === PublishType.PREVIEW) {
-            const foundPreviewDomains = await ctx.db.query.previewDomains.findMany({
+            foundPreviewDomains = await ctx.db.query.previewDomains.findMany({
                 where: eq(previewDomains.projectId, projectId),
             });
             if (!foundPreviewDomains || foundPreviewDomains.length === 0) {
@@ -42,32 +48,57 @@ export const publishRouter = createTRPCRouter({
             }
         }
 
-
-
         // Fork sandbox
-        // Open a connection
-        // Run build process
+
         // Deploy to Freestyle
+        const urls = type === PublishType.PREVIEW ? foundPreviewDomains.map(domain => domain.fullDomain) : [];
+
         const session = await forkBuildSandbox(sandboxId, userId);
         const publishManager = new PublishManager(session);
-        const response = await publishManager.publish({
-            type,
-            projectId,
+
+        // Run build process
+
+        const {
+            success,
+            files
+        } = await publishManager.publish({
+            skipBadge: false,
+            skipBuild: false,
             buildScript,
             buildFlags,
             envVars,
         });
 
+        if (!success) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Failed to build project',
+            });
+        }
 
-
+        // Deploy to Freestyle
+        deployFreestyle({
+            files,
+            urls,
+            envVars,
+        });
     }),
 
     unpublish: publicProcedure.input(z.object({
+        type: z.nativeEnum(PublishType),
         projectId: z.string(),
         urls: z.array(z.string()),
     })).mutation(async ({ ctx, input }) => {
         const { projectId, urls } = input;
 
+        // Run domain check
+
         // Delete deployment
+        deployFreestyle({
+            files: {},
+            urls,
+            envVars: {},
+        });
     }),
 });
+
