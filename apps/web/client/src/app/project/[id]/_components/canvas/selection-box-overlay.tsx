@@ -118,8 +118,8 @@ export const SelectionBoxOverlay: React.FC = observer(() => {
             top,
             width,
             height,
-            border: '2px solid red',
-            background: 'rgba(255,0,0,0.1)',
+            border: '2px solid #fff',
+            background: 'rgba(255,255,255,0.2)',
             pointerEvents: 'none',
             zIndex: 10,
         };
@@ -133,6 +133,7 @@ export const SelectionBoxOverlay: React.FC = observer(() => {
                 inset: 0,
                 zIndex: 10,
                 pointerEvents: editorEngine.state.editorMode === EditorMode.INSERT_WINDOW ? 'auto' : 'none',
+                cursor: editorEngine.state.editorMode === EditorMode.INSERT_WINDOW ? 'crosshair' : 'default',
             }}
             onMouseDown={handleMouseDown}
         >
