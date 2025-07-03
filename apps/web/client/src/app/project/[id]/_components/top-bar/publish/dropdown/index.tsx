@@ -1,3 +1,4 @@
+import { useHostingType } from '@/components/store/hosting';
 import { DeploymentType } from '@onlook/models';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';

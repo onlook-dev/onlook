@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useHostingType } from '@/components/store/hosting';
 import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
@@ -6,7 +7,6 @@ import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useHosting } from '../use-hosting';
 import { UrlSection } from './url';
 
 export const PreviewDomainSection = observer(() => {
@@ -14,7 +14,7 @@ export const PreviewDomainSection = observer(() => {
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: domain, refetch: refetchDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
-    const { deployment, publish: runPublish, isDeploying } = useHosting(DeploymentType.PREVIEW);
+    const { deployment, publish: runPublish, isDeploying } = useHostingType(DeploymentType.PREVIEW);
 
     const createBaseDomain = async (): Promise<void> => {
         const previewDomain = await createPreviewDomain({ projectId: editorEngine.projectId });
@@ -35,7 +35,6 @@ export const PreviewDomainSection = observer(() => {
         }
 
         const res = await runPublish({
-            type: DeploymentType.PREVIEW,
             projectId: editorEngine.projectId,
             buildScript: DefaultSettings.COMMANDS.build,
             buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,

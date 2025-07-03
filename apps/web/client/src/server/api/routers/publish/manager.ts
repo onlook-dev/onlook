@@ -59,33 +59,32 @@ export class PublishManager {
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing deployment...',
-            progress: 25,
+            progress: 30,
         });
 
         if (!skipBadge) {
             await updateDeployment({
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Adding "Built with Onlook" badge...',
-                progress: 30,
+                progress: 35,
             });
             await this.addBadge('./');
         }
 
-        // Run the build script
-        await this.runBuildStep(buildScript, buildFlags, envVars);
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Building project...',
-            progress: 35,
+            progress: 40,
         });
 
-        // Postprocess the project for deployment
-        const { success: postprocessSuccess, error: postprocessError } = await this.postprocessNextBuild();
+        await this.runBuildStep(buildScript, buildFlags, envVars);
+
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Postprocessing project...',
-            progress: 40,
+            progress: 50,
         });
+        const { success: postprocessSuccess, error: postprocessError } = await this.postprocessNextBuild();
 
         if (!postprocessSuccess) {
             throw new Error(
@@ -96,14 +95,12 @@ export class PublishManager {
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing files for publish...',
-            progress: 50,
+            progress: 60,
         });
 
         // Serialize the files for deployment
         const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
-        const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
-
-        return files;
+        return await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
     }
 
     private async addBadge(folderPath: string) {

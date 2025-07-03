@@ -128,7 +128,7 @@ export async function publishInBackground({
     updateDeployment(db, deploymentId, {
         status: DeploymentStatus.IN_PROGRESS,
         message: 'Deploying build...',
-        progress: 70,
+        progress: 80,
     });
 
     await deployFreestyle({

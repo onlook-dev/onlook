@@ -1,5 +1,5 @@
-import { useHosting } from '@/app/project/[id]/_components/top-bar/publish/use-hosting';
 import { useEditorEngine } from '@/components/store/editor';
+import { useHostingType } from '@/components/store/hosting';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { DeploymentType } from '@onlook/models/hosting';
@@ -12,8 +12,8 @@ export const DangerZone = observer(() => {
     const stateManager = useStateManager();
 
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
-    const { unpublish: runUnpublishPreview, isDeploying: isUnpublishingPreview } = useHosting(DeploymentType.UNPUBLISH_PREVIEW);
-    const { unpublish: runUnpublishCustom, isDeploying: isUnpublishingCustom } = useHosting(DeploymentType.UNPUBLISH_CUSTOM);
+    const { unpublish: runUnpublishPreview, isDeploying: isUnpublishingPreview } = useHostingType(DeploymentType.UNPUBLISH_PREVIEW);
+    const { unpublish: runUnpublishCustom, isDeploying: isUnpublishingCustom } = useHostingType(DeploymentType.UNPUBLISH_CUSTOM);
 
     const previewDomain = domains?.preview;
     const customDomain = domains?.published;

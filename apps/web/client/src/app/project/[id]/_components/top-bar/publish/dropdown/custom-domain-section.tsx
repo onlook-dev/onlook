@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useHostingType } from '@/components/store/hosting';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
@@ -9,7 +10,6 @@ import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useHosting } from '../use-hosting';
 import { UrlSection } from './url';
 
 export const CustomDomainSection = observer(() => {
@@ -18,7 +18,7 @@ export const CustomDomainSection = observer(() => {
 
     const { data: subscription } = api.subscription.get.useQuery();
     const { data: domain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
-    const { deployment, publish: runPublish, isDeploying } = useHosting(DeploymentType.CUSTOM);
+    const { deployment, publish: runPublish, isDeploying } = useHostingType(DeploymentType.CUSTOM);
 
     const product = subscription?.product;
     const isPro = product?.type === ProductType.PRO;
@@ -35,7 +35,6 @@ export const CustomDomainSection = observer(() => {
             return;
         }
         const res = await runPublish({
-            type: DeploymentType.CUSTOM,
             projectId: editorEngine.projectId,
             buildScript: DefaultSettings.COMMANDS.build,
             buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,

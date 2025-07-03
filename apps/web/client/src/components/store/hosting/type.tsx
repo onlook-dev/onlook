@@ -1,7 +1,7 @@
 'use client';
 
 import { DeploymentType } from '@onlook/models';
-import { useHostingContext } from '../../../app/project/[id]/_components/top-bar/publish/hosting-provider';
+import { useHostingContext } from './provider';
 
 export function useHostingType(type: DeploymentType) {
     const context = useHostingContext();

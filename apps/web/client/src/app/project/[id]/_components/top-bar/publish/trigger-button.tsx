@@ -1,16 +1,16 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useHostingType } from '@/components/store/hosting';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useHosting } from './use-hosting';
 
 export const TriggerButton = observer(() => {
     const editorEngine = useEditorEngine();
-    const { deployment: previewDeployment, isDeploying: isPreviewDeploying } = useHosting(DeploymentType.PREVIEW);
-    const { deployment: customDeployment, isDeploying: isCustomDeploying } = useHosting(DeploymentType.CUSTOM);
+    const { deployment: previewDeployment, isDeploying: isPreviewDeploying } = useHostingType(DeploymentType.PREVIEW);
+    const { deployment: customDeployment, isDeploying: isCustomDeploying } = useHostingType(DeploymentType.CUSTOM);
     const isPreviewCompleted = previewDeployment?.status === DeploymentStatus.COMPLETED;
     const isCustomCompleted = customDeployment?.status === DeploymentStatus.COMPLETED;
     const isPreviewFailed = previewDeployment?.status === DeploymentStatus.FAILED;
