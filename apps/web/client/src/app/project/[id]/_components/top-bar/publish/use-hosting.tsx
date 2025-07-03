@@ -10,8 +10,6 @@ export function useHosting(type: DeploymentType) {
     const { data: deployment, refetch } = api.publish.deployment.getByType.useQuery({
         projectId: editorEngine.projectId,
         type,
-    }, {
-        refetchInterval: 5000,
     });
     const { mutateAsync: runPublish } = api.publish.publish.useMutation();
     const { mutateAsync: runUnpublish } = api.publish.unpublish.useMutation();

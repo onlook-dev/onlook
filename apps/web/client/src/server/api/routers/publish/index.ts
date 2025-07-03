@@ -52,7 +52,7 @@ export const publishRouter = createTRPCRouter({
         } = input;
 
         const userId = ctx.user.id;
-        const deployment = await createDeployment(ctx.db, projectId, type, userId);
+        const deployment = await createDeployment(ctx.db, projectId, type, userId,);
 
         publishInBackground({
             deploymentId: deployment.id,
@@ -89,17 +89,11 @@ export const publishRouter = createTRPCRouter({
             progress: 20,
         });
 
-        const result = await deployFreestyle({
+        await deployFreestyle({
             files: {},
             urls,
             envVars: {},
         });
-        if (!result.success) {
-            throw new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message: 'Failed to unpublish project',
-            });
-        }
 
         updateDeployment(ctx.db, deployment.id, {
             status: DeploymentStatus.COMPLETED,
@@ -162,12 +156,12 @@ async function publishInBackground({
         urls: deploymentUrls,
     });
 
-    const { session, sandboxId: forkedSandboxId } = await forkBuildSandbox(sandboxId, userId);
+    const { session, sandboxId: forkedSandboxId } = await forkBuildSandbox(sandboxId, userId, deploymentId);
 
     updateDeployment(db, deploymentId, {
         status: DeploymentStatus.BUILDING,
         message: 'Creating optimized build...',
-        progress: 40,
+        progress: 20,
         sandboxId: forkedSandboxId,
     });
 
@@ -186,7 +180,7 @@ async function publishInBackground({
         progress: 70,
     });
 
-    deployFreestyle({
+    await deployFreestyle({
         files,
         urls: deploymentUrls,
         envVars,

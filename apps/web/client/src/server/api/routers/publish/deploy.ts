@@ -20,35 +20,28 @@ export const deployFreestyle = async (
     success: boolean;
     message?: string;
 }> => {
-    try {
-        const entrypoint = 'server.js';
-        const adapter = HostingProviderFactory.create(HostingProvider.FREESTYLE);
-        const deploymentFiles: Record<string, { content: string; encoding?: 'utf-8' | 'base64' }> = {};
-        for (const [path, file] of Object.entries(files)) {
-            deploymentFiles[path] = {
-                content: file.content,
-                encoding: (file.encoding === 'base64' ? 'base64' : 'utf-8')
-            };
-        }
-
-        const result = await adapter.deploy({
-            files: deploymentFiles,
-            config: {
-                domains: urls,
-                entrypoint,
-                envVars,
-            },
-        });
-
-        return {
-            success: result.success,
-            message: result.message,
-        };
-    } catch (error) {
-        console.error('Failed to deploy project', error);
-        return {
-            success: false,
-            message: 'Failed to deploy project',
+    const entrypoint = 'server.js';
+    const adapter = HostingProviderFactory.create(HostingProvider.FREESTYLE);
+    const deploymentFiles: Record<string, { content: string; encoding?: 'utf-8' | 'base64' }> = {};
+    for (const [path, file] of Object.entries(files)) {
+        deploymentFiles[path] = {
+            content: file.content,
+            encoding: (file.encoding === 'base64' ? 'base64' : 'utf-8')
         };
     }
+
+    const result = await adapter.deploy({
+        files: deploymentFiles,
+        config: {
+            domains: urls,
+            entrypoint,
+            envVars,
+        },
+    });
+
+    if (!result.success) {
+        throw new Error(result.message ?? 'Failed to deploy project');
+    }
+
+    return result;
 }

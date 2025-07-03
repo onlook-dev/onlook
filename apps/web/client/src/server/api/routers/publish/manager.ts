@@ -23,8 +23,13 @@ export class PublishManager {
                 return true;
             },
             fileExists: async (path: string) => {
-                const stat = await this.session.fs.stat(path);
-                return stat.type === 'file';
+                try {
+                    const stat = await this.session.fs.stat(path);
+                    return stat.type === 'file';
+                } catch (error) {
+                    console.error(`[fileExists] Error checking if file exists at ${path}:`, error);
+                    return false;
+                }
             },
             copy: async (source: string, destination: string, recursive?: boolean, overwrite?: boolean) => {
                 await this.session.fs.copy(source, destination, recursive, overwrite);
@@ -54,7 +59,7 @@ export class PublishManager {
         await updateDeployment({
             status: DeploymentStatus.PREPARING,
             message: 'Preparing deployment...',
-            progress: 30,
+            progress: 25,
         });
 
         if (!skipBadge) {
@@ -71,7 +76,7 @@ export class PublishManager {
         await updateDeployment({
             status: DeploymentStatus.BUILDING,
             message: 'Building project...',
-            progress: 30,
+            progress: 35,
         });
 
         // Postprocess the project for deployment
