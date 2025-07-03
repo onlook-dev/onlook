@@ -7,14 +7,13 @@
  * need to use are documented accordingly near the end.
  */
 
-import { initTRPC, TRPCError } from '@trpc/server';
-import superjson from 'superjson';
-import { ZodError } from 'zod';
-import type { User } from '@supabase/supabase-js';
-import type { SetRequiredDeep } from 'type-fest';
-
 import { createClient } from '@/utils/supabase/server';
 import { db } from '@onlook/db/src/client';
+import type { User } from '@supabase/supabase-js';
+import { initTRPC, TRPCError } from '@trpc/server';
+import superjson from 'superjson';
+import type { SetRequiredDeep } from 'type-fest';
+import { ZodError } from 'zod';
 
 /**
  * 1. CONTEXT

@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
-import { PublishStatus } from '@onlook/models/hosting';
+import { DeploymentStatus } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
@@ -15,7 +15,7 @@ export const DangerZone = observer(() => {
     const previewDomain = domains?.preview;
     const customDomain = domains?.published;
 
-    const isUnpublishing = hostingManager?.state.status === PublishStatus.LOADING;
+    const isUnpublishing = hostingManager?.state.status === DeploymentStatus.LOADING;
 
     const unpublish = async (urls: string[]) => {
         const success = await hostingManager.unpublish(editorEngine.projectId, urls);

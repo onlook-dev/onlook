@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
-import { PublishStatus, PublishType } from '@onlook/models';
+import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { timeAgo } from '@onlook/utility';
@@ -14,7 +14,7 @@ export const PreviewDomainSection = observer(() => {
     const { data: domain, refetch: refetchDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
     const state = editorEngine.hosting.state;
-    const isLoading = state.status === PublishStatus.LOADING;
+    const isLoading = state.status === DeploymentStatus.LOADING;
 
     const createBaseDomain = async (): Promise<void> => {
         const previewDomain = await createPreviewDomain({ projectId: editorEngine.projectId });
@@ -35,8 +35,7 @@ export const PreviewDomainSection = observer(() => {
         }
 
         const res = await editorEngine.hosting.publish({
-            sandboxId: project.sandbox.id,
-            type: PublishType.PREVIEW,
+            type: DeploymentType.PREVIEW,
             projectId: editorEngine.projectId,
             buildScript: DefaultSettings.COMMANDS.build,
             buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
@@ -68,19 +67,19 @@ export const PreviewDomainSection = observer(() => {
                     <h3 className="">
                         Base Domain
                     </h3>
-                    {state.status === PublishStatus.PUBLISHED && domain.publishedAt && (
+                    {state.status === DeploymentStatus.PUBLISHED && domain.publishedAt && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-green-300">Live</p>
                             <p>•</p>
                             <p>Updated {timeAgo(domain.publishedAt)} ago</p>
                         </div>
                     )}
-                    {state.status === PublishStatus.ERROR && (
+                    {state.status === DeploymentStatus.ERROR && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-red-500">Error</p>
                         </div>
                     )}
-                    {state.status === PublishStatus.LOADING && (
+                    {state.status === DeploymentStatus.LOADING && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="">Updating • In progress</p>
                         </div>
@@ -113,8 +112,8 @@ export const PreviewDomainSection = observer(() => {
         return (
             <div className="w-full flex flex-col gap-2">
                 <UrlSection url={domain.url} isCopyable={true} />
-                {(state.status === PublishStatus.PUBLISHED ||
-                    state.status === PublishStatus.UNPUBLISHED) && (
+                {(state.status === DeploymentStatus.PUBLISHED ||
+                    state.status === DeploymentStatus.UNPUBLISHED) && (
                         <Button
                             onClick={() => publish()}
                             variant="outline"
@@ -124,7 +123,7 @@ export const PreviewDomainSection = observer(() => {
                             Update
                         </Button>
                     )}
-                {state.status === PublishStatus.ERROR && (
+                {state.status === DeploymentStatus.ERROR && (
                     <div className="w-full flex flex-col gap-2">
                         <p className="text-red-500 max-h-20 overflow-y-auto">{state.message}</p>
                         <Button

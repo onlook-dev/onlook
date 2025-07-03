@@ -2,8 +2,8 @@ import { WebSocketSession } from '@codesandbox/sdk';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import {
-    PublishStatus,
-    type PublishState
+    DeploymentStatus,
+    type DeploymentState
 } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
 import { isBinaryFile, isEmptyString, isNullOrUndefined, LogTimer, updateGitignore, type FileOperations } from '@onlook/utility';
@@ -38,7 +38,7 @@ export class PublishManager {
         };
     }
 
-    private updateState(state: Partial<PublishState>) {
+    private updateState(state: Partial<DeploymentState>) {
         console.log('Update state', state);
     }
 
@@ -60,22 +60,22 @@ export class PublishManager {
     }> {
         try {
 
-            this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project...', progress: 5 });
+            this.updateState({ status: DeploymentStatus.LOADING, message: 'Preparing project...', progress: 5 });
             await this.runPrepareStep();
             console.log('Prepare completed');
 
             if (!skipBadge) {
-                this.updateState({ status: PublishStatus.LOADING, message: 'Adding badge...', progress: 10 });
+                this.updateState({ status: DeploymentStatus.LOADING, message: 'Adding badge...', progress: 10 });
                 await this.addBadge('./');
                 console.log('"Built with Onlook" badge added');
             }
 
             // Run the build script
-            this.updateState({ status: PublishStatus.LOADING, message: 'Creating optimized build...', progress: 20 });
+            this.updateState({ status: DeploymentStatus.LOADING, message: 'Creating optimized build...', progress: 20 });
             await this.runBuildStep(buildScript, skipBuild, buildFlags, envVars);
 
             console.log('Build completed');
-            this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project for deployment...', progress: 60 });
+            this.updateState({ status: DeploymentStatus.LOADING, message: 'Preparing project for deployment...', progress: 60 });
 
             // Postprocess the project for deployment
             const { success: postprocessSuccess, error: postprocessError } = await this.postprocessNextBuild();
@@ -91,7 +91,7 @@ export class PublishManager {
             const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
             const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
 
-            this.updateState({ status: PublishStatus.LOADING, message: 'Deploying project...', progress: 80 });
+            this.updateState({ status: DeploymentStatus.LOADING, message: 'Deploying project...', progress: 80 });
             console.log('Files serialized, sending to Freestyle...');
 
             return {
@@ -101,7 +101,7 @@ export class PublishManager {
 
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
-            this.updateState({ status: PublishStatus.ERROR, message: 'Failed to deploy to preview environment', progress: 100 });
+            this.updateState({ status: DeploymentStatus.ERROR, message: 'Failed to deploy to preview environment', progress: 100 });
             return {
                 success: false,
                 files: {},

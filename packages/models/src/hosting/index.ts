@@ -1,18 +1,25 @@
-export enum PublishStatus {
-    UNPUBLISHED = 'unpublished',
-    LOADING = 'loading',
-    PUBLISHED = 'published',
-    ERROR = 'error',
-}
-
-export enum PublishType {
-    CUSTOM = 'custom',
+export enum DeploymentType {
     PREVIEW = 'preview',
-    UNPUBLISH = 'unpublish',
+    CUSTOM = 'custom',
+    ALL = 'all',
+    UNPUBLISH_PREVIEW = 'unpublish_preview',
+    UNPUBLISH_CUSTOM = 'unpublish_custom',
+    UNPUBLISH_ALL = 'unpublish_all',
 }
 
-export interface PublishState {
-    status: PublishStatus;
+export enum DeploymentStatus {
+    PENDING = 'pending',
+    PREPARING = 'preparing',
+    BUILDING = 'building',
+    DEPLOYING = 'deploying',
+    CLEANUP = 'cleanup',
+    COMPLETED = 'completed',
+    FAILED = 'failed',
+    CANCELLED = 'cancelled',
+}
+
+export interface DeploymentState {
+    status: DeploymentStatus;
     message: string | null;
     buildLog: string | null;
     error: string | null;

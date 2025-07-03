@@ -1,14 +1,14 @@
 import { api } from '@/trpc/client';
 import {
-    PublishStatus,
-    PublishType,
-    type PublishState
+    DeploymentStatus,
+    DeploymentType,
+    type DeploymentState
 } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 
-const DEFAULT_PUBLISH_STATE: PublishState = {
-    status: PublishStatus.UNPUBLISHED,
+const DEFAULT_PUBLISH_STATE: DeploymentState = {
+    status: DeploymentStatus.UNPUBLISHED,
     message: null,
     buildLog: null,
     error: null,
@@ -16,13 +16,13 @@ const DEFAULT_PUBLISH_STATE: PublishState = {
 };
 
 export class HostingManager {
-    state: PublishState = DEFAULT_PUBLISH_STATE;
+    state: DeploymentState = DEFAULT_PUBLISH_STATE;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
-    private updateState(state: Partial<PublishState>) {
+    private updateState(state: Partial<DeploymentState>) {
         this.state = {
             ...this.state,
             ...state,
@@ -34,23 +34,20 @@ export class HostingManager {
     }
 
     async publish({
-        sandboxId,
         projectId,
         buildScript,
         type,
         buildFlags,
         envVars,
     }: {
-        sandboxId: string;
         projectId: string;
-        type: PublishType;
+        type: DeploymentType;
         buildScript: string;
         buildFlags: string;
         envVars: Record<string, string>;
     }) {
 
         const response = await api.publish.publish.mutate({
-            sandboxId,
             projectId,
             type,
             buildScript,

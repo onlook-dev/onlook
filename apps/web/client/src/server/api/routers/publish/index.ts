@@ -1,26 +1,29 @@
-import { previewDomains, type PreviewDomain } from '@onlook/db';
+import type { SandboxBrowserSession, WebSocketSession } from '@codesandbox/sdk';
+import { deployments, previewDomains, projects, publishedDomains, type Deployment } from '@onlook/db';
+import { type db as DrizzleDb } from '@onlook/db/src/client';
 import {
-    PublishType
+    DeploymentStatus,
+    DeploymentType
 } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
+import { randomUUID } from 'crypto';
 import { eq } from 'drizzle-orm';
+import type { FreestyleFile } from 'freestyle-sandboxes';
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../../trpc";
+import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { deployFreestyle } from './deploy.ts';
 import { forkBuildSandbox } from './fork';
 import { PublishManager } from './manager.ts';
 
 export const publishRouter = createTRPCRouter({
     publish: protectedProcedure.input(z.object({
-        sandboxId: z.string(),
         projectId: z.string(),
-        type: z.nativeEnum(PublishType),
+        type: z.nativeEnum(DeploymentType),
         buildScript: z.string(),
         buildFlags: z.string(),
         envVars: z.record(z.string(), z.string()),
     })).mutation(async ({ ctx, input }) => {
         const {
-            sandboxId,
             projectId,
             type,
             buildScript,
@@ -28,72 +31,38 @@ export const publishRouter = createTRPCRouter({
             envVars,
         } = input;
 
-
         const userId = ctx.user.id;
+        const deployment = await createDeployment(ctx.db, projectId, type, userId);
 
-
-        // Run domain check
-
-        let foundPreviewDomains: PreviewDomain[] = [];
-
-        if (type === PublishType.PREVIEW) {
-            foundPreviewDomains = await ctx.db.query.previewDomains.findMany({
-                where: eq(previewDomains.projectId, projectId),
-            });
-            if (!foundPreviewDomains || foundPreviewDomains.length === 0) {
-                throw new TRPCError({
-                    code: 'BAD_REQUEST',
-                    message: 'No preview domain found',
-                });
-            }
-        }
-
-        // Fork sandbox
-
-        // Deploy to Freestyle
-        const urls = type === PublishType.PREVIEW ? foundPreviewDomains.map(domain => domain.fullDomain) : [];
-
-        const session = await forkBuildSandbox(sandboxId, userId);
-        const publishManager = new PublishManager(session);
-
-        // Run build process
-
-        const {
-            success,
-            files
-        } = await publishManager.publish({
-            skipBadge: false,
-            skipBuild: false,
+        publishInBackground({
+            deploymentId: deployment.id,
+            userId,
+            db: ctx.db,
+            projectId,
+            type,
             buildScript,
             buildFlags,
             envVars,
-        });
-
-        if (!success) {
-            throw new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message: 'Failed to build project',
+        }).catch(error => {
+            console.error(`Publish job ${deployment.id} failed:`, error);
+            updateDeployment(ctx.db, deployment.id, {
+                status: DeploymentStatus.FAILED,
+                error: error instanceof Error ? error.message : 'Unknown error',
             });
-        }
-
-        // Deploy to Freestyle
-        deployFreestyle({
-            files,
-            urls,
-            envVars,
         });
+
+        return { deploymentId: deployment.id };
     }),
 
-    unpublish: publicProcedure.input(z.object({
-        type: z.nativeEnum(PublishType),
+    unpublish: protectedProcedure.input(z.object({
+        type: z.nativeEnum(DeploymentType),
         projectId: z.string(),
         urls: z.array(z.string()),
     })).mutation(async ({ ctx, input }) => {
         const { projectId, urls } = input;
-
-        // Run domain check
-
-        // Delete deployment
+        const userId = ctx.user.id;
+        const deployment = await createDeployment(ctx.db, projectId, DeploymentType.UNPUBLISH_ALL, userId);
+        // TODO: Implement unpublish
         deployFreestyle({
             files: {},
             urls,
@@ -102,3 +71,181 @@ export const publishRouter = createTRPCRouter({
     }),
 });
 
+async function createDeployment(db: typeof DrizzleDb, projectId: string, type: DeploymentType, userId: string): Promise<Deployment> {
+    const [deployment] = await db.insert(deployments).values({
+        id: randomUUID(),
+        projectId,
+        type,
+        status: DeploymentStatus.PENDING,
+        requestedBy: userId,
+        message: 'Creating deployment...',
+    }).returning();
+
+    if (!deployment) {
+        throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to create deployment',
+        });
+    }
+
+    return deployment;
+}
+
+// New function to handle background publishing
+async function publishInBackground({
+    deploymentId,
+    userId,
+    db,
+    projectId,
+    type,
+    buildScript,
+    buildFlags,
+    envVars,
+}: {
+    deploymentId: string;
+    userId: string;
+    db: typeof DrizzleDb;
+    projectId: string;
+    type: DeploymentType;
+    buildScript: string;
+    buildFlags: string;
+    envVars: Record<string, string>;
+}) {
+    const deploymentUrls = await getProjectUrls(db, projectId, type);
+
+    await updateDeployment(db, deploymentId, {
+        status: DeploymentStatus.PREPARING,
+        urls: deploymentUrls,
+        message: 'Preparing deployment...',
+    });
+
+    const sandboxId = await getSandboxId(db, projectId);
+
+    updateDeployment(db, deploymentId, {
+        status: DeploymentStatus.BUILDING,
+        message: 'Creating build environment...',
+    });
+
+    const session: WebSocketSession = await forkBuildSandbox(sandboxId, userId);
+
+    updateDeployment(db, deploymentId, {
+        status: DeploymentStatus.BUILDING,
+        message: 'Creating optimized build...',
+    });
+
+    const files = await runBuildProcess(session, {
+        buildScript,
+        buildFlags,
+        envVars,
+    });
+
+    updateDeployment(db, deploymentId, {
+        status: DeploymentStatus.DEPLOYING,
+        message: 'Deploying build...',
+    });
+
+    deployFreestyle({
+        files,
+        urls: deploymentUrls,
+        envVars,
+    });
+
+    updateDeployment(db, deploymentId, {
+        status: DeploymentStatus.CLEANUP,
+        message: 'Cleaning up build environment...',
+    });
+
+    await session.disconnect();
+
+    updateDeployment(db, deploymentId, {
+        status: DeploymentStatus.COMPLETED,
+        message: 'Deployment Success!',
+    });
+}
+
+async function getProjectUrls(db: typeof DrizzleDb, projectId: string, type: DeploymentType): Promise<string[]> {
+    let urls: string[] = [];
+    if (type === DeploymentType.PREVIEW) {
+        const foundPreviewDomains = await db.query.previewDomains.findMany({
+            where: eq(previewDomains.projectId, projectId),
+        });
+        if (!foundPreviewDomains || foundPreviewDomains.length === 0) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'No preview domain found',
+            });
+        }
+        urls = foundPreviewDomains.map(domain => domain.fullDomain);
+    } else if (type === DeploymentType.CUSTOM) {
+        const foundCustomDomains = await db.query.publishedDomains.findMany({
+            where: eq(publishedDomains.projectId, projectId),
+        });
+        if (!foundCustomDomains || foundCustomDomains.length === 0) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'No custom domain found',
+            });
+        }
+        urls = foundCustomDomains.map(domain => domain.fullDomain);
+    } else {
+        throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Invalid publish type',
+        });
+    }
+    return urls;
+}
+
+async function getSandboxId(db: typeof DrizzleDb, projectId: string): Promise<string> {
+    const project = await db.query.projects.findFirst({
+        where: eq(projects.id, projectId),
+    });
+    if (!project) {
+        throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Project not found',
+        });
+    }
+    return project.sandboxId;
+}
+
+async function runBuildProcess(session: SandboxBrowserSession, input: {
+    buildScript: string;
+    buildFlags: string;
+    envVars: Record<string, string>;
+}): Promise<Record<string, FreestyleFile>> {
+    const {
+        buildScript,
+        buildFlags,
+        envVars,
+    } = input;
+
+    const publishManager = new PublishManager(session);
+    const {
+        success,
+        files
+    } = await publishManager.publish({
+        skipBadge: false,
+        skipBuild: false,
+        buildScript,
+        buildFlags,
+        envVars,
+    });
+
+    if (!success) {
+        throw new TRPCError({
+            code: 'INTERNAL_SERVER_ERROR',
+            message: 'Failed to build project',
+        });
+    }
+
+    return files;
+}
+
+async function updateDeployment(db: typeof DrizzleDb, deploymentId: string, deployment: Partial<Deployment>) {
+    try {
+        await db.update(deployments).set(deployment).where(eq(deployments.id, deploymentId));
+    } catch (error) {
+        console.error(`Failed to update deployment ${deploymentId}:`, error);
+    }
+}

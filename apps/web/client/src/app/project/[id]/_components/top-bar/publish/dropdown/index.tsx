@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { PublishStatus } from '@onlook/models';
+import { DeploymentStatus } from '@onlook/models';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { AdvancedSettingsSection } from './advanced-settings';
@@ -13,7 +13,7 @@ export const PublishDropdown = observer(() => {
 
     return (
         <div className="rounded-md flex flex-col text-foreground-secondary">
-            {state.status === PublishStatus.LOADING ? <LoadingState /> : (
+            {state.status === DeploymentStatus.LOADING ? <LoadingState /> : (
                 <>
                     <PreviewDomainSection />
 
