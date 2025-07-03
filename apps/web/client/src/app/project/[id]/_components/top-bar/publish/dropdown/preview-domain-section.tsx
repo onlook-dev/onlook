@@ -6,6 +6,7 @@ import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { useHosting } from '../use-hosting';
 import { UrlSection } from './url';
 
 export const PreviewDomainSection = observer(() => {
@@ -13,8 +14,7 @@ export const PreviewDomainSection = observer(() => {
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: domain, refetch: refetchDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
-    const state = editorEngine.hosting.state;
-    const isLoading = state.status === DeploymentStatus.LOADING;
+    const { deployment, publish: runPublish, isDeploying } = useHosting(DeploymentType.PREVIEW);
 
     const createBaseDomain = async (): Promise<void> => {
         const previewDomain = await createPreviewDomain({ projectId: editorEngine.projectId });
@@ -34,7 +34,7 @@ export const PreviewDomainSection = observer(() => {
             return;
         }
 
-        const res = await editorEngine.hosting.publish({
+        const res = await runPublish({
             type: DeploymentType.PREVIEW,
             projectId: editorEngine.projectId,
             buildScript: DefaultSettings.COMMANDS.build,
@@ -52,7 +52,7 @@ export const PreviewDomainSection = observer(() => {
             console.error(`No preview domain info found`);
             return;
         }
-        editorEngine.hosting.resetState();
+        // editorEngine.hosting.resetState();
         publish();
     };
 
@@ -67,19 +67,19 @@ export const PreviewDomainSection = observer(() => {
                     <h3 className="">
                         Base Domain
                     </h3>
-                    {state.status === DeploymentStatus.PUBLISHED && domain.publishedAt && (
+                    {deployment?.status === DeploymentStatus.COMPLETED && domain.publishedAt && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-green-300">Live</p>
                             <p>•</p>
                             <p>Updated {timeAgo(domain.publishedAt)} ago</p>
                         </div>
                     )}
-                    {state.status === DeploymentStatus.ERROR && (
+                    {deployment?.status === DeploymentStatus.FAILED && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-red-500">Error</p>
                         </div>
                     )}
-                    {state.status === DeploymentStatus.LOADING && (
+                    {isDeploying && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="">Updating • In progress</p>
                         </div>
@@ -112,20 +112,20 @@ export const PreviewDomainSection = observer(() => {
         return (
             <div className="w-full flex flex-col gap-2">
                 <UrlSection url={domain.url} isCopyable={true} />
-                {(state.status === DeploymentStatus.PUBLISHED ||
-                    state.status === DeploymentStatus.UNPUBLISHED) && (
+                {(deployment?.status === DeploymentStatus.COMPLETED ||
+                    deployment?.status === DeploymentStatus.FAILED) && (
                         <Button
                             onClick={() => publish()}
                             variant="outline"
                             className="w-full rounded-md p-3"
-                            disabled={isLoading}
+                            disabled={isDeploying}
                         >
                             Update
                         </Button>
                     )}
-                {state.status === DeploymentStatus.ERROR && (
+                {deployment?.status === DeploymentStatus.FAILED && (
                     <div className="w-full flex flex-col gap-2">
-                        <p className="text-red-500 max-h-20 overflow-y-auto">{state.message}</p>
+                        <p className="text-red-500 max-h-20 overflow-y-auto">{deployment?.message}</p>
                         <Button
                             variant="outline"
                             className="w-full rounded-md p-3"

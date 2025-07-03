@@ -1,7 +1,8 @@
+import { useHosting } from '@/app/project/[id]/_components/top-bar/publish/use-hosting';
 import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
-import { DeploymentStatus } from '@onlook/models/hosting';
+import { DeploymentStatus, DeploymentType } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
@@ -11,16 +12,16 @@ export const DangerZone = observer(() => {
     const stateManager = useStateManager();
 
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
-    const hostingManager = editorEngine.hosting;
+    const { deployment, unpublish: runUnpublish, isDeploying } = useHosting(DeploymentType.UNPUBLISH_ALL);
     const previewDomain = domains?.preview;
     const customDomain = domains?.published;
 
-    const isUnpublishing = hostingManager?.state.status === DeploymentStatus.LOADING;
+    const isUnpublishing = deployment?.status === DeploymentStatus.PENDING;
 
-    const unpublish = async (urls: string[]) => {
-        const success = await hostingManager.unpublish(editorEngine.projectId, urls);
+    const unpublish = async (type: DeploymentType) => {
+        const response = await runUnpublish(editorEngine.projectId, type);
 
-        if (!success) {
+        if (!response) {
             toast.error('Failed to unpublish project', {
                 description: 'Please try again.',
             });
@@ -46,7 +47,7 @@ export const DangerZone = observer(() => {
                     <Button
                         onClick={() => {
                             if (previewDomain) {
-                                unpublish([previewDomain.url]);
+                                unpublish(DeploymentType.UNPUBLISH_PREVIEW);
                             }
                         }}
                         className="ml-auto"
@@ -63,7 +64,7 @@ export const DangerZone = observer(() => {
                             Unpublish from {customDomain.url}
                         </p>
                         <Button
-                            onClick={() => unpublish([customDomain.url])}
+                            onClick={() => unpublish(DeploymentType.UNPUBLISH_CUSTOM)}
                             className="ml-auto"
                             size="sm"
                             variant="destructive"

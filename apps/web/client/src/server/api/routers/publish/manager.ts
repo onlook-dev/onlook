@@ -1,10 +1,6 @@
 import { WebSocketSession } from '@codesandbox/sdk';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
-import {
-    DeploymentStatus,
-    type DeploymentState
-} from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
 import { isBinaryFile, isEmptyString, isNullOrUndefined, LogTimer, updateGitignore, type FileOperations } from '@onlook/utility';
 import {
@@ -38,44 +34,32 @@ export class PublishManager {
         };
     }
 
-    private updateState(state: Partial<DeploymentState>) {
-        console.log('Update state', state);
-    }
-
     async publish({
         buildScript,
         skipBadge,
-        skipBuild,
         buildFlags,
         envVars,
     }: {
         buildScript: string,
         buildFlags: string;
         skipBadge: boolean;
-        skipBuild: boolean;
         envVars: Record<string, string>;
     }): Promise<{
         success: boolean,
         files: Record<string, FreestyleFile>,
     }> {
         try {
-
-            this.updateState({ status: DeploymentStatus.LOADING, message: 'Preparing project...', progress: 5 });
             await this.runPrepareStep();
             console.log('Prepare completed');
 
             if (!skipBadge) {
-                this.updateState({ status: DeploymentStatus.LOADING, message: 'Adding badge...', progress: 10 });
                 await this.addBadge('./');
                 console.log('"Built with Onlook" badge added');
             }
 
             // Run the build script
-            this.updateState({ status: DeploymentStatus.LOADING, message: 'Creating optimized build...', progress: 20 });
-            await this.runBuildStep(buildScript, skipBuild, buildFlags, envVars);
-
+            await this.runBuildStep(buildScript, buildFlags, envVars);
             console.log('Build completed');
-            this.updateState({ status: DeploymentStatus.LOADING, message: 'Preparing project for deployment...', progress: 60 });
 
             // Postprocess the project for deployment
             const { success: postprocessSuccess, error: postprocessError } = await this.postprocessNextBuild();
@@ -90,8 +74,6 @@ export class PublishManager {
             // Serialize the files for deployment
             const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
             const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
-
-            this.updateState({ status: DeploymentStatus.LOADING, message: 'Deploying project...', progress: 80 });
             console.log('Files serialized, sending to Freestyle...');
 
             return {
@@ -101,7 +83,6 @@ export class PublishManager {
 
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
-            this.updateState({ status: DeploymentStatus.ERROR, message: 'Failed to deploy to preview environment', progress: 100 });
             return {
                 success: false,
                 files: {},
@@ -129,7 +110,7 @@ export class PublishManager {
         }
     }
 
-    private async runBuildStep(buildScript: string, skipBuild: boolean, buildFlags: string, envVars: Record<string, string>): Promise<void> {
+    private async runBuildStep(buildScript: string, buildFlags: string, envVars: Record<string, string>): Promise<void> {
         try {
             // Use default build flags if no build flags are provided
             const buildFlagsString: string = isNullOrUndefined(buildFlags)
@@ -139,11 +120,6 @@ export class PublishManager {
             const BUILD_SCRIPT_NO_LINT = isEmptyString(buildFlagsString)
                 ? buildScript
                 : `${buildScript} -- ${buildFlagsString}`;
-
-            if (skipBuild) {
-                console.log('Skipping build');
-                return;
-            }
 
             const output = await this.session.commands.run(BUILD_SCRIPT_NO_LINT);
             console.log('Build output: ', output);

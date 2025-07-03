@@ -9,6 +9,7 @@ import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { useHosting } from '../use-hosting';
 import { UrlSection } from './url';
 
 export const CustomDomainSection = observer(() => {
@@ -17,9 +18,9 @@ export const CustomDomainSection = observer(() => {
 
     const { data: subscription } = api.subscription.get.useQuery();
     const { data: domain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
+    const { deployment, publish: runPublish, isDeploying } = useHosting(DeploymentType.CUSTOM);
+
     const product = subscription?.product;
-    const state = editorEngine.hosting.state;
-    const isLoading = state.status === DeploymentStatus.LOADING;
     const isPro = product?.type === ProductType.PRO;
 
     const openCustomDomain = (): void => {
@@ -33,7 +34,7 @@ export const CustomDomainSection = observer(() => {
             console.error(`No custom domain hosting manager found`);
             return;
         }
-        const res = await editorEngine.hosting.publish({
+        const res = await runPublish({
             type: DeploymentType.CUSTOM,
             projectId: editorEngine.projectId,
             buildScript: DefaultSettings.COMMANDS.build,
@@ -48,7 +49,6 @@ export const CustomDomainSection = observer(() => {
             console.error(`No custom domain hosting manager found`);
             return;
         }
-        editorEngine.hosting.resetState();
         publish();
     };
 
@@ -87,19 +87,19 @@ export const CustomDomainSection = observer(() => {
                     <h3 className="">
                         Custom Domain
                     </h3>
-                    {state.status === DeploymentStatus.PUBLISHED && domain.publishedAt && (
+                    {deployment?.status === DeploymentStatus.COMPLETED && domain.publishedAt && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-green-300">Live</p>
                             <p>•</p>
                             <p>Updated {timeAgo(domain.publishedAt)} ago</p>
                         </div>
                     )}
-                    {state.status === DeploymentStatus.ERROR && (
+                    {deployment?.status === DeploymentStatus.FAILED && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-red-500">Error</p>
                         </div>
                     )}
-                    {state.status === DeploymentStatus.LOADING && (
+                    {isDeploying && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="">Updating • In progress</p>
                         </div>
@@ -118,8 +118,8 @@ export const CustomDomainSection = observer(() => {
         return (
             <div className="w-full flex flex-col gap-2">
                 <UrlSection url={domain.url} isCopyable={false} />
-                {(state.status === DeploymentStatus.PUBLISHED ||
-                    state.status === DeploymentStatus.UNPUBLISHED) && (
+                {(deployment?.status === DeploymentStatus.COMPLETED ||
+                    deployment?.status === DeploymentStatus.FAILED) && (
                         <Button
                             onClick={publish}
                             variant="outline"
@@ -128,14 +128,14 @@ export const CustomDomainSection = observer(() => {
                                 !domain.publishedAt &&
                                 'bg-blue-400 hover:bg-blue-500 text-white',
                             )}
-                            disabled={isLoading}
+                            disabled={isDeploying}
                         >
                             {domain.publishedAt ? 'Update' : `Publish to ${domain.url}`}
                         </Button>
                     )}
-                {state.status === DeploymentStatus.ERROR && (
+                {deployment?.status === DeploymentStatus.FAILED && (
                     <div className="w-full flex flex-col gap-2">
-                        <p className="text-red-500 max-h-20 overflow-y-auto">{state.message}</p>
+                        <p className="text-red-500 max-h-20 overflow-y-auto">{deployment?.message}</p>
                         <Button
                             variant="outline"
                             className="w-full rounded-md p-3"

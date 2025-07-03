@@ -1,5 +1,5 @@
 import type { SandboxBrowserSession, WebSocketSession } from '@codesandbox/sdk';
-import { deployments, previewDomains, projects, publishedDomains, type Deployment } from '@onlook/db';
+import { deployments, deploymentUpdateSchema, previewDomains, projects, publishedDomains, type Deployment } from '@onlook/db';
 import { type db as DrizzleDb } from '@onlook/db/src/client';
 import {
     DeploymentStatus,
@@ -7,7 +7,7 @@ import {
 } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { randomUUID } from 'crypto';
-import { eq } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 import type { FreestyleFile } from 'freestyle-sandboxes';
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
@@ -15,7 +15,30 @@ import { deployFreestyle } from './deploy.ts';
 import { forkBuildSandbox } from './fork';
 import { PublishManager } from './manager.ts';
 
+export const deploymentRouter = createTRPCRouter({
+    getByType: protectedProcedure.input(z.object({
+        projectId: z.string(),
+        type: z.nativeEnum(DeploymentType),
+    })).query(async ({ ctx, input }) => {
+        const { projectId, type } = input;
+        const deployment = await ctx.db.query.deployments.findFirst({
+            where: and(eq(deployments.projectId, projectId), eq(deployments.type, type)),
+            orderBy: desc(deployments.createdAt),
+        });
+        return deployment;
+    }),
+
+    update: protectedProcedure.input(z.object({
+        deploymentId: z.string(),
+        deployment: deploymentUpdateSchema
+    })).mutation(async ({ ctx, input }) => {
+        const { deploymentId, deployment } = input;
+        await updateDeployment(ctx.db, deploymentId, deployment);
+    }),
+});
+
 export const publishRouter = createTRPCRouter({
+    deployment: deploymentRouter,
     publish: protectedProcedure.input(z.object({
         projectId: z.string(),
         type: z.nativeEnum(DeploymentType),
@@ -57,17 +80,37 @@ export const publishRouter = createTRPCRouter({
     unpublish: protectedProcedure.input(z.object({
         type: z.nativeEnum(DeploymentType),
         projectId: z.string(),
-        urls: z.array(z.string()),
     })).mutation(async ({ ctx, input }) => {
-        const { projectId, urls } = input;
+        const { projectId, type } = input;
         const userId = ctx.user.id;
-        const deployment = await createDeployment(ctx.db, projectId, DeploymentType.UNPUBLISH_ALL, userId);
-        // TODO: Implement unpublish
-        deployFreestyle({
+        const deployment = await createDeployment(ctx.db, projectId, type, userId);
+        const urls = await getProjectUrls(ctx.db, projectId, type);
+
+        updateDeployment(ctx.db, deployment.id, {
+            status: DeploymentStatus.PENDING,
+            message: 'Unpublishing project...',
+            progress: 20,
+        });
+
+        const result = await deployFreestyle({
             files: {},
             urls,
             envVars: {},
         });
+        if (!result.success) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Failed to unpublish project',
+            });
+        }
+
+        updateDeployment(ctx.db, deployment.id, {
+            status: DeploymentStatus.COMPLETED,
+            message: 'Project unpublished',
+            progress: 100,
+        });
+
+        return { deploymentId: deployment.id };
     }),
 });
 
@@ -233,7 +276,6 @@ async function runBuildProcess(session: SandboxBrowserSession, input: {
         files
     } = await publishManager.publish({
         skipBadge: false,
-        skipBuild: false,
         buildScript,
         buildFlags,
         envVars,
@@ -249,11 +291,12 @@ async function runBuildProcess(session: SandboxBrowserSession, input: {
     return files;
 }
 
-async function updateDeployment(db: typeof DrizzleDb, deploymentId: string, deployment: Partial<Deployment>) {
+async function updateDeployment(db: typeof DrizzleDb, deploymentId: string, deployment: z.infer<typeof deploymentUpdateSchema>) {
     try {
         await db.update(deployments).set({
             ...deployment,
-            updatedAt: new Date(),
+            type: deployment.type as DeploymentType,
+            status: deployment.status as DeploymentStatus
         }).where(eq(deployments.id, deploymentId));
     } catch (error) {
         console.error(`Failed to update deployment ${deploymentId}:`, error);
