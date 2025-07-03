@@ -1,4 +1,4 @@
-import { createDefaultUserSettings, toUser, toUserSettings, userInsertSchema, users, userSettings, userSettingsUpdateSchema } from '@onlook/db';
+import { createDefaultUserSettings, toUser, toUserSettings, userInsertSchema, users, userSettings, userSettingsUpdateSchema, type User } from '@onlook/db';
 
 import { callUserWebhook } from '@/utils/n8n/webhook';
 import { eq } from 'drizzle-orm';
@@ -64,23 +64,9 @@ export const userRouter = createTRPCRouter({
         });
         return user;
     }),
-    create: protectedProcedure.input(userInsertSchema).mutation(async ({ ctx, input }) => {
-        const [user] = await ctx.db.insert(users).values(input).returning();
-        if (!user) {
-            throw new Error('Failed to create user');
-        }
-        await callUserWebhook({
-            email: user.email,
-            firstName: user.name ?? '',
-            lastName: '',
-            source: 'web beta',
-            subscribed: false,
-        });
-        return user;
-    }),
     upsert: protectedProcedure
         .input(userInsertSchema)
-        .mutation(async ({ ctx, input }) => {
+        .mutation(async ({ ctx, input }): Promise<User> => {
             const existingUser = await ctx.db.query.users.findFirst({
                 where: eq(users.id, input.id),
             });
