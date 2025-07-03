@@ -3,6 +3,7 @@ import type { LayerNode } from '@onlook/models';
 import { isValidHtmlElement } from '../helpers/dom';
 import { getInstanceId, getOid, getOrAssignDomId } from '../helpers/ids';
 import { getFrameId } from './state';
+import { publishDomProcessed } from './events/publish';
 
 export interface ProcessDomResult {
     rootDomId: string;
@@ -31,6 +32,8 @@ export function processDom(root: HTMLElement = document.body): ProcessDomResult 
         console.warn('Root node not found');
         return null;
     }
+
+    publishDomProcessed(layerMap, rootNode);
 
     return { rootDomId, layerMap: Array.from(layerMap.entries()) };
 }

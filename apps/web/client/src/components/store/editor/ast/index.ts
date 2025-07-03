@@ -1,6 +1,4 @@
-// import { invokeMainChannel } from '@/lib/utils';
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
-import { EditorAttributes } from '@onlook/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -18,13 +16,8 @@ export class AstManager {
         return this.layersManager;
     }
 
-    setMapRoot(
-        frameId: string,
-        root: Element,
-        rootNode: LayerNode,
-        layerMap: Map<string, LayerNode>,
-    ) {
-        this.mappings.setMetadata(frameId, root.ownerDocument, rootNode, layerMap);
+    setMapRoot(frameId: string, rootNode: LayerNode, layerMap: Map<string, LayerNode>) {
+        this.mappings.setMetadata(frameId, rootNode, layerMap);
         this.processNode(frameId, rootNode);
     }
 
@@ -112,73 +105,81 @@ export class AstManager {
         node: LayerNode,
         templateNode: TemplateNode,
     ) {
-        // if (node.tagName.toLocaleLowerCase() === 'body') {
-        //     return;
-        // }
-        // if (!node.parent) {
-        //     console.warn('Failed to findNodeInstance: Parent id not found');
-        //     return;
-        // }
-
-        // const parent = this.mappings.getLayerNode(frameId, node.parent);
-        // if (!parent) {
-        //     console.warn('Failed to findNodeInstance: Parent not found in layer map');
-        //     return;
-        // }
-
-        // if (!parent.oid) {
-        //     console.warn('Failed to findNodeInstance: Parent has no oid');
-        //     return;
-        // }
-        // const parentTemplateNode = await this.editorEngine.sandbox.getTemplateNode(parent.oid);
-        // if (!parentTemplateNode) {
-        //     console.warn('Failed to findNodeInstance: Parent template node not found');
-        //     return;
-        // }
-
-        // if (parentTemplateNode.component !== templateNode.component) {
-        //     const htmlParent = this.getHtmlElement(parent.domId, frameId);
-        //     if (!htmlParent) {
-        //         console.warn('Failed to findNodeInstance: Parent node not found');
-        //         return;
-        //     }
-        //     const children = htmlParent.querySelectorAll(
-        //         `[${EditorAttributes.DATA_ONLOOK_ID}='${originalNode.oid}']`,
-        //     );
-        //     const htmlOriginalNode = this.getHtmlElement(originalNode.domId, frameId);
-        //     if (!htmlOriginalNode) {
-        //         console.warn('Failed to findNodeInstance: Original node not found');
-        //         return;
-        //     }
-        //     const index = Array.from(children).indexOf(htmlOriginalNode);
-        //     const res: { instanceId: string; component: string } | undefined =
-        //         await invokeMainChannel(MainChannels.GET_TEMPLATE_NODE_CHILD, {
-        //             parent: parentTemplateNode,
-        //             child: templateNode,
-        //             index,
-        //         });
-        //     if (res) {
-        //         originalNode.instanceId = res.instanceId;
-        //         originalNode.component = res.component;
-        //         this.updateElementInstance(
-        //             frameId,
-        //             originalNode.domId,
-        //             res.instanceId,
-        //             res.component,
-        //         );
-        //     } else {
-        //         await this.findNodeInstance(frameId, originalNode, parent, templateNode);
-        //     }
-        // }
-    }
-
-    getHtmlElement(domId: string, frameId: string): HTMLElement | null {
-        const doc = this.mappings.getMetadata(frameId)?.document;
-        if (!doc) {
-            console.warn('Failed to getNodeFromDomId: Document not found');
-            return null;
+        if (node.tagName.toLocaleLowerCase() === 'body') {
+            return;
         }
-        return doc.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${domId}']`) || null;
+        if (!node.parent) {
+            console.warn('Failed to findNodeInstance: Parent id not found');
+            return;
+        }
+
+        const parent = this.mappings.getLayerNode(frameId, node.parent);
+        if (!parent) {
+            console.warn('Failed to findNodeInstance: Parent not found in layer map');
+            return;
+        }
+
+        if (!parent.oid) {
+            console.warn('Failed to findNodeInstance: Parent has no oid');
+            return;
+        }
+        const parentTemplateNode = await this.editorEngine.sandbox.getTemplateNode(parent.oid);
+
+        if (!parentTemplateNode) {
+            console.warn('Failed to findNodeInstance: Parent template node not found');
+            return;
+        }
+
+        if (parentTemplateNode.component !== templateNode.component) {
+            if (!parent.children) {
+                console.warn('Failed to findNodeInstance: Parent has no children');
+                return;
+            }
+
+            const childrenWithSameOid: LayerNode[] = [];
+            for (const childDomId of parent.children) {
+                const childLayerNode = this.mappings.getLayerNode(frameId, childDomId);
+                if (childLayerNode && childLayerNode.oid === originalNode.oid) {
+                    childrenWithSameOid.push(childLayerNode);
+                }
+            }
+
+            if (childrenWithSameOid.length === 0) {
+                console.warn('Failed to findNodeInstance: No children found with matching OID');
+                return;
+            }
+
+            const index = childrenWithSameOid.findIndex(
+                (child) => child.domId === originalNode.domId,
+            );
+
+            if (index === -1) {
+                console.warn(
+                    'Failed to findNodeInstance: Original node not found in children with same OID',
+                );
+                return;
+            }
+
+            const res: { instanceId: string; component: string } | null =
+                await this.editorEngine.sandbox.getTemplateNodeChild(
+                    parent.oid,
+                    templateNode,
+                    index,
+                );
+
+            if (res) {
+                originalNode.instanceId = res.instanceId;
+                originalNode.component = res.component;
+                this.updateElementInstance(
+                    frameId,
+                    originalNode.domId,
+                    res.instanceId,
+                    res.component,
+                );
+            } else {
+                await this.findNodeInstance(frameId, originalNode, parent, templateNode);
+            }
+        }
     }
 
     updateElementInstance(frameId: string, domId: string, instanceId: string, component: string) {
@@ -192,17 +193,5 @@ export class AstManager {
 
     clear() {
         this.layersManager.clear();
-    }
-
-    async refreshAstDoc(frame: WebFrameView) {
-        // const root = await this.getBodyFromFrameView(frame);
-        // this.mappings.updateDocument(frame.id, root.ownerDocument);
-    }
-
-    async getBodyFromFrameView(view: WebFrameView) {
-        // const htmlString = await view.executeJavaScript('document.documentElement.outerHTML');
-        // const parser = new DOMParser();
-        // const doc = parser.parseFromString(htmlString, 'text/html');
-        // return doc.body;
     }
 }

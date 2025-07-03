@@ -1844,6 +1844,18 @@ function getFrameId() {
   return frameId;
 }
 
+// script/api/events/publish.ts
+function publishDomProcessed(layerMap, rootNode) {
+  if (!penpalParent)
+    return;
+  penpalParent.onDomProcessed({
+    layerMap: Object.fromEntries(layerMap),
+    rootNode
+  }).catch((error) => {
+    console.error("Failed to send DOM processed event:", error);
+  });
+}
+
 // script/api/dom.ts
 function processDom(root = document.body) {
   const frameId = getFrameId();
@@ -1866,6 +1878,7 @@ function processDom(root = document.body) {
     console.warn("Root node not found");
     return null;
   }
+  publishDomProcessed(layerMap, rootNode);
   return { rootDomId, layerMap: Array.from(layerMap.entries()) };
 }
 function buildLayerTree(root) {
@@ -2177,25 +2190,33 @@ function groupElements(parent2, container, children) {
     element.style.display = "none";
     removeIdsFromChildElement(element);
   });
-  return getDomElement(containerEl, true);
+  const domEl = getDomElement(containerEl, true);
+  return domEl;
 }
 function ungroupElements(parent2, container) {
   const parentEl = getHtmlElement(parent2.domId);
   if (!parentEl) {
-    console.warn("Failed to find parent element", parent2.domId);
+    console.warn(`Parent element not found: ${parent2.domId}`);
     return null;
   }
-  const containerEl = Array.from(parentEl.children).find((child2) => child2.getAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */) === container.domId);
+  let containerEl;
+  if (container.domId) {
+    containerEl = getHtmlElement(container.domId);
+  } else {
+    console.warn(`Container domId is required for ungrouping`);
+    return null;
+  }
   if (!containerEl) {
-    console.warn("Failed to find container element", parent2.domId);
+    console.warn(`Container element not found for ungrouping`);
     return null;
   }
-  Array.from(containerEl.children).forEach((child2) => {
-    child2.setAttribute("data-onlook-inserted" /* DATA_ONLOOK_INSERTED */, "true");
-    parentEl.insertBefore(child2, containerEl);
+  const children = Array.from(containerEl.children);
+  children.forEach((child2) => {
+    parentEl.appendChild(child2);
   });
-  containerEl.style.display = "none";
-  return getDomElement(parentEl, true);
+  containerEl.remove();
+  const domEl = getDomElement(parentEl, true);
+  return domEl;
 }
 function createContainerElement(target) {
   const containerEl = document.createElement(target.tagName);
@@ -12345,7 +12366,8 @@ var cssManager = CSSManager.getInstance();
 // script/api/style/update.ts
 function updateStyle(domId, change) {
   cssManager.updateStyle(domId, change.updated);
-  return getElementByDomId(domId, true);
+  const domEl = getElementByDomId(domId, true);
+  return domEl;
 }
 // script/api/elements/dom/image.ts
 function insertImage(domId, image) {
@@ -12869,16 +12891,6 @@ function endAllDrag() {
   removeStub();
 }
 
-// script/api/events/publish.ts
-function publishEditText(domEl) {
-  const parent2 = getHtmlElement(domEl.domId)?.parentElement;
-  const layerMap = parent2 ? buildLayerTree(parent2) : null;
-  if (!domEl || !layerMap) {
-    console.warn("No domEl or layerMap found for edit text event");
-    return;
-  }
-}
-
 // script/api/elements/text.ts
 function startEditingText(domId) {
   const el = getHtmlElement(domId);
@@ -12921,7 +12933,6 @@ function stopEditingText(domId) {
     return null;
   }
   cleanUpElementAfterEditing(el);
-  publishEditText(getDomElement(el, true));
   return { newContent: extractTextContent(el), domEl: getDomElement(el, true) };
 }
 function prepareElementForEditing(el) {
@@ -12960,75 +12971,63 @@ function listenForDomMutation() {
     let removed = new Map;
     for (const mutation of mutationsList) {
       if (mutation.type === "childList") {
-        const parent2 = mutation.target;
-        for (const node of mutation.addedNodes) {
-          if (node.nodeType === Node.TEXT_NODE || shouldIgnoreMutatedNode(node)) {
-            continue;
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */)) {
+            const parent2 = node.parentElement;
+            if (parent2) {
+              const layerMap = buildLayerTree(parent2);
+              if (layerMap) {
+                added = new Map([...added, ...layerMap]);
+              }
+            }
           }
-          const element = node;
-          dedupNewElement(element);
-          const layerMap = buildLayerTree(parent2);
-          if (layerMap) {
-            added = new Map([...added, ...layerMap]);
+        });
+        mutation.removedNodes.forEach((node) => {
+          if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */)) {
+            const parent2 = node.parentElement;
+            if (parent2) {
+              const layerMap = buildLayerTree(parent2);
+              if (layerMap) {
+                removed = new Map([...removed, ...layerMap]);
+              }
+            }
           }
-        }
-        for (const node of mutation.removedNodes) {
-          if (node.nodeType === Node.TEXT_NODE || shouldIgnoreMutatedNode(node)) {
-            continue;
-          }
-          const layerMap = buildLayerTree(parent2);
-          if (layerMap) {
-            removed = new Map([...removed, ...layerMap]);
-          }
-        }
+        });
+      }
+    }
+    if (added.size > 0 || removed.size > 0) {
+      if (penpalParent) {
+        penpalParent.onWindowMutated({
+          added: Object.fromEntries(added),
+          removed: Object.fromEntries(removed)
+        }).catch((error) => {
+          console.error("Failed to send window mutation event:", error);
+        });
       }
     }
   });
   observer.observe(targetNode, config);
 }
-function shouldIgnoreMutatedNode(node) {
-  if (node.id === "onlook-drag-stub" /* ONLOOK_STUB_ID */) {
-    return true;
+function listenForResize() {
+  function notifyResize() {
+    if (penpalParent) {
+      penpalParent.onWindowResized().catch((error) => {
+        console.error("Failed to send window resize event:", error);
+      });
+    }
   }
-  if (node.getAttribute("data-onlook-inserted" /* DATA_ONLOOK_INSERTED */)) {
-    return true;
-  }
-  return false;
-}
-function dedupNewElement(newEl) {
-  const oid = newEl.getAttribute("data-oid" /* DATA_ONLOOK_ID */);
-  if (!oid) {
-    return;
-  }
-  document.querySelectorAll(`[${"data-oid" /* DATA_ONLOOK_ID */}="${oid}"][${"data-onlook-inserted" /* DATA_ONLOOK_INSERTED */}]`).forEach((targetEl) => {
-    const ATTRIBUTES_TO_REPLACE = [
-      "data-odid" /* DATA_ONLOOK_DOM_ID */,
-      "data-onlook-drag-saved-style" /* DATA_ONLOOK_DRAG_SAVED_STYLE */,
-      "data-onlook-editing-text" /* DATA_ONLOOK_EDITING_TEXT */,
-      "data-oiid" /* DATA_ONLOOK_INSTANCE_ID */
-    ];
-    ATTRIBUTES_TO_REPLACE.forEach((attr) => {
-      const targetAttr = targetEl.getAttribute(attr);
-      if (targetAttr) {
-        newEl.setAttribute(attr, targetAttr);
-      }
-    });
-    targetEl.remove();
-  });
+  window.addEventListener("resize", notifyResize);
 }
 
 // script/api/events/index.ts
-function listenForEvents() {
-  listenForWindowEvents();
+function listenForDomChanges() {
   listenForDomMutation();
-}
-function listenForWindowEvents() {
-  window.addEventListener("resize", () => {});
+  listenForResize();
 }
 
 // script/api/ready.ts
 function handleBodyReady() {
-  listenForEvents();
+  listenForDomChanges();
   keepDomUpdated();
   cssManager.injectDefaultStyles();
 }
@@ -17382,5 +17381,5 @@ export {
   penpalParent
 };
 
-//# debugId=0633F97201E17D3164756E2164756E21
+//# debugId=5664F6FC57353D6D64756E2164756E21
 //# sourceMappingURL=index.js.map

@@ -73,6 +73,16 @@ export const WebFrameComponent = observer(
                 messenger,
                 methods: {
                     getFrameId: () => frame.id,
+                    
+                    onWindowMutated: (data: { added: Record<string, any>; removed: Record<string, any> }) => {
+                        editorEngine.frameViewEventHandler.handleWindowMutated(frame.id, data);
+                    },
+                    onWindowResized: () => {
+                        editorEngine.frameViewEventHandler.handleWindowResized(frame.id);
+                    },
+                    onDomProcessed: (data: { layerMap: Record<string, any>; rootNode: any}) => {
+                        editorEngine.frameViewEventHandler.handleDomProcessed(frame.id, data);
+                    },
                 } satisfies PenpalParentMethods,
             });
 
@@ -176,6 +186,7 @@ export const WebFrameComponent = observer(
                 isChildTextEditable: promisifyMethod(penpalChild?.isChildTextEditable),
                 handleBodyReady: promisifyMethod(penpalChild?.handleBodyReady),
                 captureScreenshot: promisifyMethod(penpalChild?.captureScreenshot),
+                getHtmlElementByDomId: promisifyMethod(penpalChild?.getHtmlElementByDomId),
             };
 
             // Register the iframe with the editor engine

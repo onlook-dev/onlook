@@ -1,7 +1,6 @@
 import { EditorAttributes } from '@onlook/constants';
 import type { DomElement, EditTextResult } from '@onlook/models';
 import { getHtmlElement } from '../../helpers';
-import { publishEditText } from '../events/publish';
 import { getDomElement, restoreElementStyle } from './helpers';
 
 export function editTextByDomId(domId: string, content: string): DomElement | null {
@@ -69,7 +68,7 @@ export function stopEditingText(domId: string): { newContent: string; domEl: Dom
         return null;
     }
     cleanUpElementAfterEditing(el);
-    publishEditText(getDomElement(el, true));
+   // publishEditText(getDomElement(el, true));
     return { newContent: extractTextContent(el), domEl: getDomElement(el, true) };
 }
 

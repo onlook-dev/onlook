@@ -5,14 +5,15 @@ import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
 import { CopyManager } from './copy';
-import { IDEManager } from './dev';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
 import { FontManager } from './font';
+import { FrameViewEventHandlerManager } from './frame-view-events';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
-import { HistoryManager } from './history';
 import { HostingManager } from './hosting';
+import { HistoryManager } from './history';
+import { IDEManager } from './dev';
 import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
@@ -52,6 +53,7 @@ export class EditorEngine {
     readonly font: FontManager = new FontManager(this);
     readonly pages: PagesManager = new PagesManager(this);
     readonly frames: FramesManager = new FramesManager(this);
+    readonly frameViewEventHandler: FrameViewEventHandlerManager = new FrameViewEventHandlerManager(this);
 
     constructor(projectId: string) {
         this.projectId = projectId;
@@ -81,6 +83,7 @@ export class EditorEngine {
         this.ide.clear();
         this.error.clear();
         this.sandbox.clear();
+        this.frameViewEventHandler.clear();
     }
 
     clearUI() {

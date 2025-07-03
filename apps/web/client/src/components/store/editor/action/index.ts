@@ -1,5 +1,5 @@
 import { sendAnalytics } from '@/utils/analytics';
-import type { DomElement } from '@onlook/models';
+import type { DomElement, LayerNode } from '@onlook/models';
 import { EditorMode } from '@onlook/models';
 import {
     type Action,
@@ -16,8 +16,8 @@ import {
 import { StyleChangeType } from '@onlook/models/style';
 import { assertNever } from '@onlook/utility';
 import { debounce, cloneDeep } from 'lodash';
-import { toJS } from 'mobx';
 import type { EditorEngine } from '../engine';
+import type { FrameData } from '../frames';
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) { }
@@ -142,7 +142,7 @@ export class ActionManager {
                     return;
                 }
 
-                this.refreshAndClickMutatedElement(domEl);
+                this.refreshAndClickMutatedElement(domEl, frameView, new Map());
             } catch (err) {
                 console.error('Error inserting element:', err);
             }
@@ -166,7 +166,7 @@ export class ActionManager {
 
             await this.editorEngine.overlay.refresh();
 
-            this.refreshAndClickMutatedElement(domEl);
+            this.refreshAndClickMutatedElement(domEl, frameView, new Map());
         }
     }
 
@@ -182,7 +182,7 @@ export class ActionManager {
                 console.error('Failed to move element');
                 return;
             }
-            this.refreshAndClickMutatedElement(domEl);
+            this.refreshAndClickMutatedElement(domEl, frameView, new Map());
         }
     }
 
@@ -199,7 +199,7 @@ export class ActionManager {
                 return;
             }
 
-            this.refreshAndClickMutatedElement(domEl);
+            this.refreshAndClickMutatedElement(domEl, frameView, new Map());
         }
     }
 
@@ -221,7 +221,7 @@ export class ActionManager {
             return;
         }
 
-        this.refreshAndClickMutatedElement(domEl);
+        this.refreshAndClickMutatedElement(domEl, frameView, new Map());
     }
 
     private async ungroupElements({ parent, container }: UngroupElementsAction) {
@@ -238,7 +238,7 @@ export class ActionManager {
             return;
         }
 
-        this.refreshAndClickMutatedElement(domEl);
+        this.refreshAndClickMutatedElement(domEl, frameView, new Map());
     }
 
     private insertImage({ targets, image }: InsertImageAction) {
@@ -270,13 +270,13 @@ export class ActionManager {
 
     async refreshAndClickMutatedElement(
         domEl: DomElement,
-        // newMap: Map<string, LayerNode>,
-        // frameData: FrameData,
+        frameData: FrameData,
+        newMap: Map<string, LayerNode>,
     ) {
         this.editorEngine.state.editorMode = EditorMode.DESIGN;
         // await this.editorEngine.ast.refreshAstDoc(frameData.view);
         this.editorEngine.elements.click([domEl]);
-        // this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
+        this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
     }
 
     clear() {

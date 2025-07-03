@@ -47,7 +47,9 @@ export function groupElements(
         removeIdsFromChildElement(element);
     });
 
-    return getDomElement(containerEl, true);
+    const domEl = getDomElement(containerEl, true);
+    
+    return domEl;
 }
 
 export function ungroupElements(
@@ -56,25 +58,36 @@ export function ungroupElements(
 ): DomElement | null {
     const parentEl = getHtmlElement(parent.domId);
     if (!parentEl) {
-        console.warn('Failed to find parent element', parent.domId);
+        console.warn(`Parent element not found: ${parent.domId}`);
         return null;
     }
 
-    const containerEl = Array.from(parentEl.children).find(
-        (child) => child.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) === container.domId,
-    ) as HTMLElement | undefined;
+    let containerEl: HTMLElement | null;
+    
+    if (container.domId) {
+        containerEl = getHtmlElement(container.domId);
+    } else {
+        console.warn(`Container domId is required for ungrouping`);
+        return null;
+    }
+
     if (!containerEl) {
-        console.warn('Failed to find container element', parent.domId);
+        console.warn(`Container element not found for ungrouping`);
         return null;
     }
 
-    // Insert container children in order into parent behind container
-    Array.from(containerEl.children).forEach((child) => {
-        child.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
-        parentEl.insertBefore(child, containerEl);
+    // Move all children of the container to the parent
+    const children = Array.from(containerEl.children) as HTMLElement[];
+    children.forEach(child => {
+        parentEl.appendChild(child);
     });
-    containerEl.style.display = 'none';
-    return getDomElement(parentEl, true);
+
+    // Remove the empty container
+    containerEl.remove();
+
+    const domEl = getDomElement(parentEl, true);
+    
+    return domEl;
 }
 
 function createContainerElement(target: GroupContainer): HTMLElement {
