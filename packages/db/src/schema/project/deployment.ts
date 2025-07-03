@@ -1,6 +1,6 @@
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { relations } from 'drizzle-orm';
-import { integer, pgEnum, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { integer, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { users } from '../user/user';
 import { projects } from './project';
@@ -9,9 +9,9 @@ export const deploymentStatus = pgEnum('deployment_status', DeploymentStatus);
 export const deploymentType = pgEnum('deployment_type', DeploymentType);
 
 export const deployments = pgTable('deployments', {
-    id: text('id').primaryKey(),
-    requestedBy: text('requested_by').references(() => users.id),
-    projectId: text('project_id').references(() => projects.id),
+    id: uuid('id').primaryKey(),
+    requestedBy: uuid('requested_by').references(() => users.id).notNull(),
+    projectId: uuid('project_id').references(() => projects.id).notNull(),
 
     type: deploymentType('type').notNull(),
     status: deploymentStatus('status').notNull(),
@@ -22,9 +22,9 @@ export const deployments = pgTable('deployments', {
     progress: integer('progress'),
     urls: text('urls').array(),
 
-    createdAt: timestamp('created_at').defaultNow(),
-    updatedAt: timestamp('updated_at').defaultNow(),
-});
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}).enableRLS();
 
 export const deploymentRelations = relations(deployments, ({ one }) => ({
     project: one(projects, {

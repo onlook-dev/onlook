@@ -79,6 +79,7 @@ async function createDeployment(db: typeof DrizzleDb, projectId: string, type: D
         status: DeploymentStatus.PENDING,
         requestedBy: userId,
         message: 'Creating deployment...',
+        progress: 0,
     }).returning();
 
     if (!deployment) {
@@ -117,6 +118,7 @@ async function publishInBackground({
         status: DeploymentStatus.PREPARING,
         urls: deploymentUrls,
         message: 'Preparing deployment...',
+        progress: 10,
     });
 
     const sandboxId = await getSandboxId(db, projectId);
@@ -124,6 +126,7 @@ async function publishInBackground({
     updateDeployment(db, deploymentId, {
         status: DeploymentStatus.BUILDING,
         message: 'Creating build environment...',
+        progress: 20,
     });
 
     const session: WebSocketSession = await forkBuildSandbox(sandboxId, userId);
@@ -131,6 +134,7 @@ async function publishInBackground({
     updateDeployment(db, deploymentId, {
         status: DeploymentStatus.BUILDING,
         message: 'Creating optimized build...',
+        progress: 40,
     });
 
     const files = await runBuildProcess(session, {
@@ -142,6 +146,7 @@ async function publishInBackground({
     updateDeployment(db, deploymentId, {
         status: DeploymentStatus.DEPLOYING,
         message: 'Deploying build...',
+        progress: 70,
     });
 
     deployFreestyle({
@@ -153,6 +158,7 @@ async function publishInBackground({
     updateDeployment(db, deploymentId, {
         status: DeploymentStatus.CLEANUP,
         message: 'Cleaning up build environment...',
+        progress: 90,
     });
 
     await session.disconnect();
@@ -160,6 +166,7 @@ async function publishInBackground({
     updateDeployment(db, deploymentId, {
         status: DeploymentStatus.COMPLETED,
         message: 'Deployment Success!',
+        progress: 100,
     });
 }
 
@@ -244,7 +251,10 @@ async function runBuildProcess(session: SandboxBrowserSession, input: {
 
 async function updateDeployment(db: typeof DrizzleDb, deploymentId: string, deployment: Partial<Deployment>) {
     try {
-        await db.update(deployments).set(deployment).where(eq(deployments.id, deploymentId));
+        await db.update(deployments).set({
+            ...deployment,
+            updatedAt: new Date(),
+        }).where(eq(deployments.id, deploymentId));
     } catch (error) {
         console.error(`Failed to update deployment ${deploymentId}:`, error);
     }
