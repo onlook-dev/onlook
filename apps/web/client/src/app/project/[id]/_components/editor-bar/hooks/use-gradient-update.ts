@@ -13,9 +13,10 @@ export const useGradientUpdate = ({ onValueChange }: GradientUpdateOptions = {})
         (gradient: GradientState) => {
             try {
                 const cssValue = generateGradientCSS(gradient);
-
-                editorEngine.style.update('backgroundColor', 'transparent');
-                editorEngine.style.update('backgroundImage', cssValue);
+                editorEngine.style.updateMultiple({
+                    backgroundColor: 'transparent',
+                    backgroundImage: cssValue
+                });
 
                 onValueChange?.('backgroundColor', 'transparent');
                 onValueChange?.('backgroundImage', cssValue);
