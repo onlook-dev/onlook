@@ -1,4 +1,18 @@
 import { createDefaultUserSettings, toUser, toUserSettings, userInsertSchema, users, userSettings, userSettingsUpdateSchema } from '@onlook/db';
+
+const WEBHOOK_URL = process.env.USER_WEBHOOK_URL ?? 'http://localhost:4000/webhook';
+
+async function callUserWebhook(user: { id: string; email: string | null }) {
+    try {
+        await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: user.id, email: user.email }),
+        });
+    } catch (error) {
+        console.error('Failed to call user webhook', error);
+    }
+}
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -67,6 +81,7 @@ export const userRouter = createTRPCRouter({
         if (!user) {
             throw new Error('Failed to create user');
         }
+        await callUserWebhook({ id: user.id, email: user.email });
         return user;
     }),
     settings: userSettingsRoute,
