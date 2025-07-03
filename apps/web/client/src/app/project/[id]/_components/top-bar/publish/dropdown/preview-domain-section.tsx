@@ -1,15 +1,16 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
-import { PublishStatus } from '@onlook/models';
+import { PublishStatus, PublishType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
-import { getPublishUrls, timeAgo } from '@onlook/utility';
+import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { UrlSection } from './url';
 
 export const PreviewDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: domain, refetch: refetchDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
     const state = editorEngine.hosting.state;
@@ -23,24 +24,27 @@ export const PreviewDomainSection = observer(() => {
             return;
         }
         await refetchDomain();
-        publish(previewDomain.domain);
+        publish();
     };
 
-    const publish = async (url: string) => {
-        const res = await editorEngine.hosting.publishPreview(editorEngine.projectId, {
-            buildScript: DefaultSettings.COMMANDS.build,
-            urls: getPublishUrls(url),
-            options: {
-                skipBadge: false,
-                buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-                skipBuild: false,
-            },
-        });
-        if (!res.success) {
-            console.error(res.message);
-            toast.error(res.message);
+    const publish = async (): Promise<void> => {
+        if (!project) {
+            console.error('No project found');
+            toast.error('No project found');
             return;
         }
+
+        const res = await editorEngine.hosting.publish({
+            sandboxId: project.sandbox.id,
+            type: PublishType.PREVIEW,
+            projectId: editorEngine.projectId,
+            buildScript: DefaultSettings.COMMANDS.build,
+            buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
+            envVars: {},
+        });
+
+        // TODO: handle response
+
         toast.success('Deployment successful');
     };
 
@@ -50,7 +54,7 @@ export const PreviewDomainSection = observer(() => {
             return;
         }
         editorEngine.hosting.resetState();
-        publish(domain.url);
+        publish();
     };
 
     const renderDomain = () => {
@@ -112,7 +116,7 @@ export const PreviewDomainSection = observer(() => {
                 {(state.status === PublishStatus.PUBLISHED ||
                     state.status === PublishStatus.UNPUBLISHED) && (
                         <Button
-                            onClick={() => publish(domain.url)}
+                            onClick={() => publish()}
                             variant="outline"
                             className="w-full rounded-md p-3"
                             disabled={isLoading}

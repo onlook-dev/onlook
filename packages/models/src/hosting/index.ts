@@ -5,6 +5,12 @@ export enum PublishStatus {
     ERROR = 'error',
 }
 
+export enum PublishType {
+    CUSTOM = 'custom',
+    PREVIEW = 'preview',
+    UNPUBLISH = 'unpublish',
+}
+
 export interface PublishState {
     status: PublishStatus;
     message: string | null;
@@ -31,19 +37,6 @@ export interface CreateDomainVerificationResponse {
 export interface VerifyDomainResponse {
     success: boolean;
     message?: string;
-}
-
-export interface PublishOptions {
-    skipBadge?: boolean;
-    skipBuild?: boolean;
-    buildFlags?: string;
-    envVars?: Record<string, string>;
-}
-
-export interface PublishRequest {
-    buildScript: string;
-    urls: string[];
-    options?: PublishOptions;
 }
 
 export interface PublishResponse {
