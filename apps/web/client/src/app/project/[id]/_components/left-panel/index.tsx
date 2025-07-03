@@ -27,11 +27,6 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             label: transKeys.editor.panels.layers.tabs.pages,
         },
         {
-            value: LeftPanelTabValue.WINDOWS,
-            icon: <Icons.Desktop className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.windows.name,
-        },
-        {
             value: LeftPanelTabValue.IMAGES,
             icon: <Icons.Image className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.images,
