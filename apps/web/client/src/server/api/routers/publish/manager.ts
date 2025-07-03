@@ -1,199 +1,111 @@
-import { api } from '@/trpc/client';
+import { WebSocketSession } from '@codesandbox/sdk';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
-import { addBuiltWithScript, injectBuiltWithScript, removeBuiltWithScript, removeBuiltWithScriptFromLayout } from '@onlook/growth';
-import {
-    PublishStatus,
-    type DeploymentResponse,
-    type PublishOptions,
-    type PublishRequest,
-    type PublishResponse,
-    type PublishState,
-} from '@onlook/models';
+import type { deploymentUpdateSchema } from '@onlook/db';
+import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
+import { DeploymentStatus } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
 import { isBinaryFile, isEmptyString, isNullOrUndefined, LogTimer, updateGitignore, type FileOperations } from '@onlook/utility';
 import {
     type FreestyleFile,
 } from 'freestyle-sandboxes';
-import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { z } from 'zod';
 
-const DEFAULT_PUBLISH_STATE: PublishState = {
-    status: PublishStatus.UNPUBLISHED,
-    message: null,
-    buildLog: null,
-    error: null,
-    progress: null,
-};
-
-enum PublishType {
-    CUSTOM = 'custom',
-    PREVIEW = 'preview',
-    UNPUBLISH = 'unpublish',
-}
-
-export class HostingManager {
-    state: PublishState = DEFAULT_PUBLISH_STATE;
-
-    constructor(private editorEngine: EditorEngine) {
-        makeAutoObservable(this);
-    }
+export class PublishManager {
+    constructor(
+        private readonly session: WebSocketSession,
+    ) { }
 
     private get fileOps(): FileOperations {
         return {
-            readFile: (path: string) => this.editorEngine.sandbox.readFile(path),
-            writeFile: (path: string, content: string) => this.editorEngine.sandbox.writeFile(path, content),
-            fileExists: (path: string) => this.editorEngine.sandbox.fileExists(path),
-            copy: (source: string, destination: string, recursive?: boolean, overwrite?: boolean) => this.editorEngine.sandbox.copy(source, destination, recursive, overwrite),
-            delete: (path: string, recursive?: boolean) => this.editorEngine.sandbox.delete(path, recursive),
+            readFile: async (path: string) => this.session.fs.readTextFile(path),
+            writeFile: async (path: string, content: string) => {
+                await this.session.fs.writeTextFile(path, content);
+                return true;
+            },
+            fileExists: async (path: string) => {
+                try {
+                    const stat = await this.session.fs.stat(path);
+                    return stat.type === 'file';
+                } catch (error) {
+                    console.error(`[fileExists] Error checking if file exists at ${path}:`, error);
+                    return false;
+                }
+            },
+            copy: async (source: string, destination: string, recursive?: boolean, overwrite?: boolean) => {
+                await this.session.fs.copy(source, destination, recursive, overwrite);
+                return true;
+            },
+            delete: async (path: string, recursive?: boolean) => {
+                await this.session.fs.remove(path, recursive);
+                return true;
+            },
         };
     }
 
-    private updateState(state: Partial<PublishState>) {
-        this.state = {
-            ...this.state,
-            ...state,
-        };
-    }
+    async publish({
+        buildScript,
+        skipBadge,
+        buildFlags,
+        envVars,
+        updateDeployment,
+    }: {
+        buildScript: string,
+        buildFlags: string;
+        skipBadge: boolean;
+        envVars: Record<string, string>;
+        updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<void>;
+    }): Promise<Record<string, FreestyleFile>> {
+        await this.runPrepareStep();
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Preparing deployment...',
+            progress: 30,
+        });
 
-    resetState() {
-        this.state = DEFAULT_PUBLISH_STATE
-    }
-
-    async publishPreview(projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
-        return this.publish(PublishType.PREVIEW, projectId, { buildScript, urls, options });
-    }
-
-    async publishCustom(projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
-        return this.publish(PublishType.CUSTOM, projectId, { buildScript, urls, options });
-    }
-
-    private async publish(type: PublishType, projectId: string, { buildScript, urls, options }: PublishRequest): Promise<PublishResponse> {
-        try {
-            const timer = new LogTimer('Deployment');
-
-            this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project...', progress: 5 });
-            await this.runPrepareStep();
-            timer.log('Prepare completed');
-
-            if (!options?.skipBadge) {
-                this.updateState({ status: PublishStatus.LOADING, message: 'Adding badge...', progress: 10 });
-                await this.addBadge('./');
-                timer.log('"Built with Onlook" badge added');
-            }
-
-            // Run the build script
-            if (!options?.skipBuild) {
-                this.updateState({ status: PublishStatus.LOADING, message: 'Creating optimized build...', progress: 20 });
-                await this.runBuildStep(buildScript, options);
-            } else {
-                console.log('Skipping build');
-            }
-            timer.log('Build completed');
-            this.updateState({ status: PublishStatus.LOADING, message: 'Preparing project for deployment...', progress: 60 });
-
-            // Postprocess the project for deployment
-            const { success: postprocessSuccess, error: postprocessError } =
-                await this.postprocessNextBuild();
-            timer.log('Postprocess completed');
-
-            if (!postprocessSuccess) {
-                throw new Error(
-                    `Failed to postprocess project for deployment, error: ${postprocessError}`,
-                );
-            }
-
-            // Serialize the files for deployment
-            const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
-            const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
-
-            this.updateState({ status: PublishStatus.LOADING, message: 'Deploying project...', progress: 80 });
-
-            timer.log('Files serialized, sending to Freestyle...');
-            const success = await this.deployWeb(type, projectId, files, urls, options?.envVars);
-
-            if (!success) {
-                throw new Error('Failed to deploy project');
-            }
-
-            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful. Cleaning up...', progress: 90 });
-
-            if (!options?.skipBadge) {
-                this.updateState({ status: PublishStatus.LOADING, message: 'Cleaning up...', progress: 90 });
-                await this.removeBadge('./');
-                timer.log('"Built with Onlook" badge removed');
-            }
-
-            timer.log('Deployment completed');
-            this.updateState({ status: PublishStatus.PUBLISHED, message: 'Deployment successful!', progress: 100 });
-
-            return {
-                success: true,
-                message: 'Deployment successful',
-            };
-        } catch (error) {
-            console.error('Failed to deploy to preview environment', error);
-            this.updateState({ status: PublishStatus.ERROR, message: 'Failed to deploy to preview environment', progress: 100 });
-            return {
-                success: false,
-                message: error instanceof Error ? error.message : 'Unknown error',
-            };
+        if (!skipBadge) {
+            await updateDeployment({
+                status: DeploymentStatus.IN_PROGRESS,
+                message: 'Adding "Built with Onlook" badge...',
+                progress: 35,
+            });
+            await this.addBadge('./');
         }
-    }
 
-    async unpublish(projectId: string, urls: string[]): Promise<PublishResponse> {
-        try {
-            const success = await this.deployWeb(PublishType.UNPUBLISH, projectId, {}, urls);
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Building project...',
+            progress: 40,
+        });
 
-            if (!success) {
-                throw new Error('Failed to delete deployment');
-            }
+        await this.runBuildStep(buildScript, buildFlags, envVars);
 
-            return {
-                success: true,
-                message: 'Deployment deleted',
-            };
-        } catch (error) {
-            console.error('Failed to delete deployment', error);
-            return {
-                success: false,
-                message: 'Failed to delete deployment. ' + error,
-            };
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Postprocessing project...',
+            progress: 50,
+        });
+        const { success: postprocessSuccess, error: postprocessError } = await this.postprocessNextBuild();
+
+        if (!postprocessSuccess) {
+            throw new Error(
+                `Failed to postprocess project for deployment, error: ${postprocessError}`,
+            );
         }
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Preparing files for publish...',
+            progress: 60,
+        });
+
+        // Serialize the files for deployment
+        const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
+        return await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
     }
 
     private async addBadge(folderPath: string) {
         await injectBuiltWithScript(folderPath, this.fileOps);
         await addBuiltWithScript(folderPath, this.fileOps);
-    }
-
-    private async removeBadge(folderPath: string) {
-        await removeBuiltWithScriptFromLayout(folderPath, this.fileOps);
-        await removeBuiltWithScript(folderPath, this.fileOps);
-    }
-
-    private async deployWeb(
-        type: PublishType,
-        projectId: string,
-        files: Record<string, FreestyleFile>,
-        urls: string[],
-        envVars?: Record<string, string>,
-    ): Promise<boolean> {
-        try {
-            const res: DeploymentResponse = await api.domain.preview.publish.mutate({
-                projectId,
-                files: files,
-                type: type === PublishType.CUSTOM ? 'custom' : 'preview',
-                config: {
-                    domains: urls,
-                    entrypoint: 'server.js',
-                    envVars,
-                },
-            });
-            return res.success;
-        } catch (error) {
-            console.error('Failed to deploy project', error);
-            return false;
-        }
     }
 
     private async runPrepareStep() {
@@ -211,33 +123,22 @@ export class HostingManager {
         }
     }
 
-    private async runBuildStep(buildScript: string, options?: PublishOptions) {
-        // Use default build flags if no build flags are provided
-        const buildFlagsString: string = isNullOrUndefined(options?.buildFlags)
-            ? DefaultSettings.EDITOR_SETTINGS.buildFlags
-            : options?.buildFlags || '';
+    private async runBuildStep(buildScript: string, buildFlags: string, envVars: Record<string, string>): Promise<void> {
+        try {
+            // Use default build flags if no build flags are provided
+            const buildFlagsString: string = isNullOrUndefined(buildFlags)
+                ? DefaultSettings.EDITOR_SETTINGS.buildFlags
+                : buildFlags;
 
-        const BUILD_SCRIPT_NO_LINT = isEmptyString(buildFlagsString)
-            ? buildScript
-            : `${buildScript} -- ${buildFlagsString}`;
+            const BUILD_SCRIPT_NO_LINT = isEmptyString(buildFlagsString)
+                ? buildScript
+                : `${buildScript} -- ${buildFlagsString}`;
 
-        if (options?.skipBuild) {
-            console.log('Skipping build');
-            return;
-        }
-
-        const {
-            success: buildSuccess,
-            error: buildError,
-            output: buildOutput,
-        } = await this.editorEngine.sandbox.session.runCommand(BUILD_SCRIPT_NO_LINT, (output: string) => {
+            const output = await this.session.commands.run(BUILD_SCRIPT_NO_LINT);
             console.log('Build output: ', output);
-        });
-
-        if (!buildSuccess) {
-            throw new Error(`Build failed with error: ${buildError}`);
-        } else {
-            console.log('Build succeeded with output: ', buildOutput);
+        } catch (error) {
+            console.error('Failed to run build step', error);
+            throw error;
         }
     }
 
@@ -294,10 +195,6 @@ export class HostingManager {
     private async serializeFiles(currentDir: string): Promise<Record<string, FreestyleFile>> {
         const timer = new LogTimer('File Serialization');
 
-        if (!this.editorEngine.sandbox.session.session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
             const allFilePaths = await this.getAllFilePathsFlat(currentDir);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
@@ -344,7 +241,7 @@ export class HostingManager {
         while (dirsToProcess.length > 0) {
             const currentDir = dirsToProcess.shift()!;
             try {
-                const entries = await this.editorEngine.sandbox.session.session!.fs.readdir(currentDir);
+                const entries = await this.session.fs.readdir(currentDir);
 
                 for (const entry of entries) {
                     const fullPath = `${currentDir}/${entry.name}`;
@@ -399,7 +296,7 @@ export class HostingManager {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
             try {
-                const textContent = await this.editorEngine.sandbox.readFile(fullPath);
+                const textContent = await this.session.fs.readTextFile(fullPath);
 
                 if (textContent !== null) {
                     return {
@@ -436,7 +333,7 @@ export class HostingManager {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
             try {
-                const binaryContent = await this.editorEngine.sandbox.readBinaryFile(fullPath);
+                const binaryContent = await this.session.fs.readFile(fullPath);
 
                 if (binaryContent) {
                     const base64String = btoa(

@@ -12,7 +12,6 @@ import { FontManager } from './font';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
-import { HostingManager } from './hosting';
 import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
@@ -44,7 +43,6 @@ export class EditorEngine {
     readonly style: StyleManager = new StyleManager(this);
     readonly code: CodeManager = new CodeManager(this);
     readonly ide: IDEManager = new IDEManager(this);
-    readonly hosting: HostingManager = new HostingManager(this);
     readonly versions: VersionsManager = new VersionsManager(this);
     readonly chat: ChatManager = new ChatManager(this);
     readonly image: ImageManager = new ImageManager(this);
