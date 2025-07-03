@@ -857,7 +857,7 @@ var require_mapping_list = __commonJS((exports) => {
 // ../../../packages/penpal/src/child.ts
 var PENPAL_CHILD_CHANNEL = "PENPAL_CHILD";
 // script/index.ts
-var import_debounce = __toESM(require_debounce(), 1);
+var import_debounce2 = __toESM(require_debounce(), 1);
 
 // ../../../node_modules/penpal/dist/penpal.mjs
 var PenpalError = class extends Error {
@@ -1857,7 +1857,8 @@ function publishDomProcessed(layerMap, rootNode) {
 }
 
 // script/api/dom.ts
-function processDom(root = document.body) {
+var import_debounce = __toESM(require_debounce(), 1);
+function processDomDebounced(root = document.body) {
   const frameId = getFrameId();
   if (!frameId) {
     console.warn("frameView id not found, skipping dom processing");
@@ -1881,6 +1882,7 @@ function processDom(root = document.body) {
   publishDomProcessed(layerMap, rootNode);
   return { rootDomId, layerMap: Array.from(layerMap.entries()) };
 }
+var processDom = import_debounce.default(processDomDebounced, 500);
 function buildLayerTree(root) {
   if (!isValidHtmlElement(root)) {
     return null;
@@ -17369,7 +17371,7 @@ var createMessageConnection = async () => {
   });
   return penpalParent;
 };
-var reconnect = import_debounce.default(() => {
+var reconnect = import_debounce2.default(() => {
   if (isConnecting)
     return;
   console.log(`${PENPAL_CHILD_CHANNEL} - Reconnecting to penpal parent`);
@@ -17381,5 +17383,5 @@ export {
   penpalParent
 };
 
-//# debugId=5664F6FC57353D6D64756E2164756E21
+//# debugId=268792775C9EB39564756E2164756E21
 //# sourceMappingURL=index.js.map

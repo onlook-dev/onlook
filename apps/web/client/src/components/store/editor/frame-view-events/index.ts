@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import type { LayerNode } from '@onlook/models';
 import type { EditorEngine } from '../engine';
+import { debounce } from 'lodash';
 
 export enum FrameViewEvents {
     DOM_PROCESSED = 'dom-processed',
@@ -28,6 +29,8 @@ export type FrameViewEventPayload = {
 };
 
 export class FrameViewEventHandlerManager {
+    private debouncedHandlers: (() => void)[] = [];
+    
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
@@ -35,15 +38,20 @@ export class FrameViewEventHandlerManager {
     clear() {
     }
 
-    async handleWindowMutated(frameId: string, data: { added: Record<string, LayerNode>; removed: Record<string, LayerNode> }): Promise<void> {        
-        try {
-            await this.editorEngine.refreshLayers();
-            await this.editorEngine.overlay.refresh();
-            
-            await this.validateAndCleanSelections();
-        } catch (error) {
-            console.error('Error handling window mutation:', error);
+    handleWindowMutated() { 
+        const handler = async () => {
+            try {
+                await this.editorEngine.refreshLayers();
+                await this.editorEngine.overlay.refresh();
+                await this.validateAndCleanSelections();
+            } catch (error) {
+                console.error('Error handling window mutation:', error);
+            }
         }
+        const debouncedHandler = debounce(handler, 1000, { leading: true, trailing: true });
+        this.debouncedHandlers.push(() => debouncedHandler.cancel());
+        return debouncedHandler;
+
     }
 
     async handleWindowResized(frameId: string): Promise<void> {

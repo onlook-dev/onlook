@@ -4,13 +4,15 @@ import { isValidHtmlElement } from '../helpers/dom';
 import { getInstanceId, getOid, getOrAssignDomId } from '../helpers/ids';
 import { getFrameId } from './state';
 import { publishDomProcessed } from './events/publish';
+import debounce  from 'lodash/debounce';
 
 export interface ProcessDomResult {
     rootDomId: string;
     layerMap: Array<[string, LayerNode]>;
 }
 
-export function processDom(root: HTMLElement = document.body): ProcessDomResult | null {
+
+function processDomDebounced(root: HTMLElement = document.body): ProcessDomResult | null {
     const frameId = getFrameId();
     if (!frameId) {
         console.warn('frameView id not found, skipping dom processing');
@@ -37,6 +39,9 @@ export function processDom(root: HTMLElement = document.body): ProcessDomResult 
 
     return { rootDomId, layerMap: Array.from(layerMap.entries()) };
 }
+
+
+export const processDom = debounce(processDomDebounced, 500);
 
 export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null {
     if (!isValidHtmlElement(root)) {

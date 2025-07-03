@@ -274,7 +274,6 @@ export class ActionManager {
         newMap: Map<string, LayerNode>,
     ) {
         this.editorEngine.state.editorMode = EditorMode.DESIGN;
-        // await this.editorEngine.ast.refreshAstDoc(frameData.view);
         this.editorEngine.elements.click([domEl]);
         this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
     }

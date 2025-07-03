@@ -74,8 +74,8 @@ export const WebFrameComponent = observer(
                 methods: {
                     getFrameId: () => frame.id,
                     
-                    onWindowMutated: (data: { added: Record<string, any>; removed: Record<string, any> }) => {
-                        editorEngine.frameViewEventHandler.handleWindowMutated(frame.id, data);
+                    onWindowMutated: () => {
+                        editorEngine.frameViewEventHandler.handleWindowMutated();
                     },
                     onWindowResized: () => {
                         editorEngine.frameViewEventHandler.handleWindowResized(frame.id);
@@ -185,8 +185,7 @@ export const WebFrameComponent = observer(
                 removeImage: promisifyMethod(penpalChild?.removeImage),
                 isChildTextEditable: promisifyMethod(penpalChild?.isChildTextEditable),
                 handleBodyReady: promisifyMethod(penpalChild?.handleBodyReady),
-                captureScreenshot: promisifyMethod(penpalChild?.captureScreenshot),
-                getHtmlElementByDomId: promisifyMethod(penpalChild?.getHtmlElementByDomId),
+                captureScreenshot: promisifyMethod(penpalChild?.captureScreenshot)
             };
 
             // Register the iframe with the editor engine
