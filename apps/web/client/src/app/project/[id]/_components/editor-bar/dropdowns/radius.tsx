@@ -30,66 +30,41 @@ export const Radius = observer(() => {
         const bottomRight = boxState.borderBottomRightRadius.num ?? 0;
         const bottomLeft = boxState.borderBottomLeftRadius.num ?? 0;
 
-        // All corners zero
-        if (topLeft === 0 && topRight === 0 && bottomRight === 0 && bottomLeft === 0) {
+        // No radius on any corner
+        if (!topLeft && !topRight && !bottomRight && !bottomLeft) {
             return Icons.RadiusEmpty;
         }
 
-        // All corners same non-zero
-        const allSame = topLeft === topRight && topRight === bottomRight && bottomRight === bottomLeft && topLeft !== 0;
+        // All corners have the same non-zero radius
+        const allSame = topLeft === topRight && topRight === bottomRight && bottomRight === bottomLeft && topLeft;
         if (allSame) {
             return Icons.RadiusFull;
         }
 
-        // One corner only
-        if (topLeft !== 0 && topRight === 0 && bottomRight === 0 && bottomLeft === 0) {
-            return Icons.RadiusTL;
+        // All corners have some radius but values differ
+        if (topLeft && topRight && bottomRight && bottomLeft) {
+            return Icons.RadiusFull;
         }
-        if (topRight !== 0 && topLeft === 0 && bottomRight === 0 && bottomLeft === 0) {
-            return Icons.RadiusTR;
-        }
-        if (bottomRight !== 0 && topLeft === 0 && topRight === 0 && bottomLeft === 0) {
-            return Icons.RadiusBR;
-        }
-        if (bottomLeft !== 0 && topLeft === 0 && topRight === 0 && bottomRight === 0) {
-            return Icons.RadiusBL;
-        }
+
+        // Three corners
+        if (!topLeft && topRight && bottomRight && bottomLeft) return Icons.RadiusTRBRBL;
+        if (topLeft && !topRight && bottomRight && bottomLeft) return Icons.RadiusBRBLTL;
+        if (topLeft && topRight && !bottomRight && bottomLeft) return Icons.RadiusTRBLTL;
+        if (topLeft && topRight && bottomRight && !bottomLeft) return Icons.RadiusTRBRTL;
 
         // Two corners
+        if (topRight && bottomRight && !topLeft && !bottomLeft) return Icons.RadiusTRBR;
+        if (topRight && topLeft && !bottomRight && !bottomLeft) return Icons.RadiusTRTL;
+        if (topLeft && bottomRight && !topRight && !bottomLeft) return Icons.RadiusBRTL;
+        if (bottomRight && bottomLeft && !topLeft && !topRight) return Icons.RadiusBRBL;
+        if (bottomLeft && topLeft && !topRight && !bottomRight) return Icons.RadiusBLTL;
+        if (topRight && bottomLeft && !topLeft && !bottomRight) return Icons.RadiusTRBL;
 
-        if (topRight !== 0 && bottomRight !== 0 && topLeft === 0 && bottomLeft === 0) {
-            return Icons.RadiusTRBR;
-        }
-        if (topRight !== 0 && topLeft !== 0 && bottomRight === 0 && bottomLeft === 0) {
-            return Icons.RadiusTRTL;
-        }
-        if (topLeft !== 0 && bottomRight !== 0 && bottomLeft === 0 && topRight === 0) {
-            return Icons.RadiusBRTL;
-        }
-        if (bottomRight !== 0 && bottomLeft !== 0 && topLeft === 0 && topRight === 0) {
-            return Icons.RadiusBRBL;
-        }
-        if (bottomLeft !== 0 && topLeft !== 0 && topRight === 0 && bottomRight === 0) {
-            return Icons.RadiusBLTL;
-        }
-        if (topRight !== 0 && bottomLeft !== 0 && topLeft === 0 && bottomRight === 0) {
-            return Icons.RadiusTRBL;
-        }
-
-        // Three corners (infer which one is zero)
-        if (topLeft === 0 && topRight !== 0 && bottomRight !== 0 && bottomLeft !== 0) {
-            return Icons.RadiusTRBRBL;
-        }
-        if (topRight === 0 && topLeft !== 0 && bottomRight !== 0 && bottomLeft !== 0) {
-            return Icons.RadiusBRBLTL;
-        }
-        if (bottomRight === 0 && topLeft !== 0 && topRight !== 0 && bottomLeft !== 0) {
-            return Icons.RadiusTRBLTL;
-        }
-        if (bottomLeft === 0 && topLeft !== 0 && topRight !== 0 && bottomRight !== 0) {
-            return Icons.RadiusTRBRTL;
-        }
-
+        // Single corner
+        if (topLeft) return Icons.RadiusTL;
+        if (topRight) return Icons.RadiusTR;
+        if (bottomRight) return Icons.RadiusBR;
+        if (bottomLeft) return Icons.RadiusBL;
 
         return Icons.RadiusFull;
     };
