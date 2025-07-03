@@ -40,35 +40,52 @@ export const SiteTab = observer(() => {
 
     const handleSave = async () => {
         try {
+            const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+
             const updatedMetadata: PageMetadata = {
                 ...homePage?.metadata ?? {},
                 title,
                 description,
+                openGraph: {
+                    ...homePage?.metadata?.openGraph,
+                    title: title,
+                    description: description,
+                    url: baseUrl || '',
+                    siteName: title,
+                    type: 'website',
+                },
             };
 
             if (!homePage?.metadata?.metadataBase) {
-                const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
                 if (url) {
                     updatedMetadata.metadataBase = new URL(url);
                 }
             }
 
             if (uploadedFavicon) {
-                await editorEngine.image.upload(uploadedFavicon, DefaultSettings.IMAGE_FOLDER);
-                const faviconPath = `/${uploadedFavicon.name}`;
+                let faviconPath;
+                try {
+                    await editorEngine.image.upload(uploadedFavicon, DefaultSettings.IMAGE_FOLDER);
+                    faviconPath = `/${uploadedFavicon.name}`;
+                } catch (error) {
+                    console.log(error);
+                    return;
+                }
                 updatedMetadata.icons = {
                     icon: faviconPath,
                 };
             }
             if (uploadedImage) {
-                await editorEngine.image.upload(uploadedImage, DefaultSettings.IMAGE_FOLDER);
-                const imagePath = `/${uploadedImage.name}`;
+                let imagePath;
+                try {
+                    await editorEngine.image.upload(uploadedImage, DefaultSettings.IMAGE_FOLDER);
+                    imagePath = `/${uploadedImage.name}`;
+                } catch (error) {
+                    console.log(error);
+                    return;
+                }
                 updatedMetadata.openGraph = {
                     ...updatedMetadata.openGraph,
-                    title: title,
-                    description: description,
-                    url: baseUrl || '',
-                    siteName: title,
                     images: [
                         {
                             url: imagePath,

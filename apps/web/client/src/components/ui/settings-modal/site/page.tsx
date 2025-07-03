@@ -32,6 +32,8 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
             return;
         }
         try {
+            const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+
             const updatedMetadata: PageMetadata = {
                 ...metadata,
                 title,
@@ -47,7 +49,6 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
             };
 
             if (!metadata?.metadataBase) {
-                const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
                 if (url) {
                     updatedMetadata.metadataBase = new URL(url);
                 }
