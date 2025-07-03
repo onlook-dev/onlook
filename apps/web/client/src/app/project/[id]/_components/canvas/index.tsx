@@ -9,7 +9,7 @@ import { Frames } from './frames';
 import { HotkeysArea } from './hotkeys';
 import { Overlay } from './overlay';
 import { PanOverlay } from './overlay/pan';
-import { SelectionBoxOverlay } from './selection-box-overlay';
+import { SelectionBoxOverlay } from './overlay/add-window';
 
 const ZOOM_SENSITIVITY = 0.006;
 const PAN_SENSITIVITY = 0.52;
