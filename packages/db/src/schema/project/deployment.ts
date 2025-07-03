@@ -12,6 +12,8 @@ export const deployments = pgTable('deployments', {
     id: uuid('id').primaryKey(),
     requestedBy: uuid('requested_by').references(() => users.id).notNull(),
     projectId: uuid('project_id').references(() => projects.id).notNull(),
+    sandboxId: text('sandbox_id'),
+    urls: text('urls').array(),
 
     type: deploymentType('type').notNull(),
     status: deploymentStatus('status').notNull(),
@@ -20,7 +22,6 @@ export const deployments = pgTable('deployments', {
     buildLog: text('build_log'),
     error: text('error'),
     progress: integer('progress'),
-    urls: text('urls').array(),
 
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

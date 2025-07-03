@@ -41,7 +41,13 @@ export const CustomDomainSection = observer(() => {
             buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
             envVars: {},
         });
-        toast.success('Deployment successful');
+        if (!res) {
+            toast.error('Failed to create deployment');
+            return;
+        }
+        toast.success('Created Deployment', {
+            description: 'Deployment ID: ' + res.deploymentId,
+        });
     };
 
     const retry = () => {
@@ -118,21 +124,20 @@ export const CustomDomainSection = observer(() => {
         return (
             <div className="w-full flex flex-col gap-2">
                 <UrlSection url={domain.url} isCopyable={false} />
-                {(deployment?.status === DeploymentStatus.COMPLETED ||
-                    deployment?.status === DeploymentStatus.FAILED) && (
-                        <Button
-                            onClick={publish}
-                            variant="outline"
-                            className={cn(
-                                'w-full rounded-md p-3',
-                                !domain.publishedAt &&
-                                'bg-blue-400 hover:bg-blue-500 text-white',
-                            )}
-                            disabled={isDeploying}
-                        >
-                            {domain.publishedAt ? 'Update' : `Publish to ${domain.url}`}
-                        </Button>
-                    )}
+                {deployment?.status === DeploymentStatus.COMPLETED && (
+                    <Button
+                        onClick={publish}
+                        variant="outline"
+                        className={cn(
+                            'w-full rounded-md p-3',
+                            !domain.publishedAt &&
+                            'bg-blue-400 hover:bg-blue-500 text-white',
+                        )}
+                        disabled={isDeploying}
+                    >
+                        {domain.publishedAt ? 'Update' : `Publish to ${domain.url}`}
+                    </Button>
+                )}
                 {deployment?.status === DeploymentStatus.FAILED && (
                     <div className="w-full flex flex-col gap-2">
                         <p className="text-red-500 max-h-20 overflow-y-auto">{deployment?.message}</p>

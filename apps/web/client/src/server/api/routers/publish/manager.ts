@@ -1,11 +1,14 @@
 import { WebSocketSession } from '@codesandbox/sdk';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
+import type { deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
+import { DeploymentStatus } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
 import { isBinaryFile, isEmptyString, isNullOrUndefined, LogTimer, updateGitignore, type FileOperations } from '@onlook/utility';
 import {
     type FreestyleFile,
 } from 'freestyle-sandboxes';
+import type { z } from 'zod';
 
 export class PublishManager {
     constructor(
@@ -39,55 +42,63 @@ export class PublishManager {
         skipBadge,
         buildFlags,
         envVars,
+        updateDeployment,
     }: {
         buildScript: string,
         buildFlags: string;
         skipBadge: boolean;
         envVars: Record<string, string>;
-    }): Promise<{
-        success: boolean,
-        files: Record<string, FreestyleFile>,
-    }> {
-        try {
-            await this.runPrepareStep();
-            console.log('Prepare completed');
+        updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<void>;
+    }): Promise<Record<string, FreestyleFile>> {
+        await this.runPrepareStep();
+        await updateDeployment({
+            status: DeploymentStatus.PREPARING,
+            message: 'Preparing deployment...',
+            progress: 30,
+        });
 
-            if (!skipBadge) {
-                await this.addBadge('./');
-                console.log('"Built with Onlook" badge added');
-            }
-
-            // Run the build script
-            await this.runBuildStep(buildScript, buildFlags, envVars);
-            console.log('Build completed');
-
-            // Postprocess the project for deployment
-            const { success: postprocessSuccess, error: postprocessError } = await this.postprocessNextBuild();
-            console.log('Postprocess completed');
-
-            if (!postprocessSuccess) {
-                throw new Error(
-                    `Failed to postprocess project for deployment, error: ${postprocessError}`,
-                );
-            }
-
-            // Serialize the files for deployment
-            const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
-            const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
-            console.log('Files serialized, sending to Freestyle...');
-
-            return {
-                success: true,
-                files,
-            };
-
-        } catch (error) {
-            console.error('Failed to deploy to preview environment', error);
-            return {
-                success: false,
-                files: {},
-            };
+        if (!skipBadge) {
+            await updateDeployment({
+                status: DeploymentStatus.BUILDING,
+                message: 'Adding "Built with Onlook" badge...',
+                progress: 30,
+            });
+            await this.addBadge('./');
         }
+
+        // Run the build script
+        await this.runBuildStep(buildScript, buildFlags, envVars);
+        await updateDeployment({
+            status: DeploymentStatus.BUILDING,
+            message: 'Building project...',
+            progress: 30,
+        });
+
+        // Postprocess the project for deployment
+        const { success: postprocessSuccess, error: postprocessError } = await this.postprocessNextBuild();
+        await updateDeployment({
+            status: DeploymentStatus.BUILDING,
+            message: 'Postprocessing project...',
+            progress: 40,
+        });
+
+        if (!postprocessSuccess) {
+            throw new Error(
+                `Failed to postprocess project for deployment, error: ${postprocessError}`,
+            );
+        }
+
+        await updateDeployment({
+            status: DeploymentStatus.BUILDING,
+            message: 'Preparing files for publish...',
+            progress: 50,
+        });
+
+        // Serialize the files for deployment
+        const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
+        const files = await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
+
+        return files;
     }
 
     private async addBadge(folderPath: string) {

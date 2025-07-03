@@ -7,7 +7,6 @@ import {
 
 export function useHosting(type: DeploymentType) {
     const editorEngine = useEditorEngine();
-
     const { data: deployment, refetch } = api.publish.deployment.getByType.useQuery({
         projectId: editorEngine.projectId,
         type,

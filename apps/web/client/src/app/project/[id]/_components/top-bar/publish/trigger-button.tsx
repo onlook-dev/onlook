@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { DeploymentStatus, DeploymentType } from '@onlook/models/hosting';
+import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';

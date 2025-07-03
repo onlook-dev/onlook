@@ -42,9 +42,13 @@ export const PreviewDomainSection = observer(() => {
             envVars: {},
         });
 
-        // TODO: handle response
-
-        toast.success('Deployment successful');
+        if (!res) {
+            toast.error('Failed to create deployment');
+            return;
+        }
+        toast.success('Created Deployment', {
+            description: 'Deployment ID: ' + res.deploymentId,
+        });
     };
 
     const retry = () => {
@@ -112,20 +116,19 @@ export const PreviewDomainSection = observer(() => {
         return (
             <div className="w-full flex flex-col gap-2">
                 <UrlSection url={domain.url} isCopyable={true} />
-                {(deployment?.status === DeploymentStatus.COMPLETED ||
-                    deployment?.status === DeploymentStatus.FAILED) && (
-                        <Button
-                            onClick={() => publish()}
-                            variant="outline"
-                            className="w-full rounded-md p-3"
-                            disabled={isDeploying}
-                        >
-                            Update
-                        </Button>
-                    )}
+                {deployment?.status === DeploymentStatus.COMPLETED && (
+                    <Button
+                        onClick={() => publish()}
+                        variant="outline"
+                        className="w-full rounded-md p-3"
+                        disabled={isDeploying}
+                    >
+                        Update
+                    </Button>
+                )}
                 {deployment?.status === DeploymentStatus.FAILED && (
                     <div className="w-full flex flex-col gap-2">
-                        <p className="text-red-500 max-h-20 overflow-y-auto">{deployment?.message}</p>
+                        <p className="text-red-500 max-h-20 overflow-y-auto">{deployment?.error}</p>
                         <Button
                             variant="outline"
                             className="w-full rounded-md p-3"

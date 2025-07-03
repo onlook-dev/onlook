@@ -1,4 +1,3 @@
-import type { SandboxBrowserSession, WebSocketSession } from '@codesandbox/sdk';
 import { deployments, deploymentUpdateSchema, previewDomains, projects, publishedDomains, type Deployment } from '@onlook/db';
 import { type db as DrizzleDb } from '@onlook/db/src/client';
 import {
@@ -8,7 +7,6 @@ import {
 import { TRPCError } from '@trpc/server';
 import { randomUUID } from 'crypto';
 import { and, desc, eq } from 'drizzle-orm';
-import type { FreestyleFile } from 'freestyle-sandboxes';
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { deployFreestyle } from './deploy.ts';
@@ -25,15 +23,14 @@ export const deploymentRouter = createTRPCRouter({
             where: and(eq(deployments.projectId, projectId), eq(deployments.type, type)),
             orderBy: desc(deployments.createdAt),
         });
-        return deployment;
+        return deployment ?? null;
     }),
-
     update: protectedProcedure.input(z.object({
         deploymentId: z.string(),
         deployment: deploymentUpdateSchema
     })).mutation(async ({ ctx, input }) => {
         const { deploymentId, deployment } = input;
-        await updateDeployment(ctx.db, deploymentId, deployment);
+        return await updateDeployment(ctx.db, deploymentId, deployment);
     }),
 });
 
@@ -156,34 +153,31 @@ async function publishInBackground({
     envVars: Record<string, string>;
 }) {
     const deploymentUrls = await getProjectUrls(db, projectId, type);
-
-    await updateDeployment(db, deploymentId, {
-        status: DeploymentStatus.PREPARING,
-        urls: deploymentUrls,
-        message: 'Preparing deployment...',
-        progress: 10,
-    });
-
     const sandboxId = await getSandboxId(db, projectId);
 
     updateDeployment(db, deploymentId, {
         status: DeploymentStatus.BUILDING,
         message: 'Creating build environment...',
-        progress: 20,
+        progress: 10,
+        urls: deploymentUrls,
     });
 
-    const session: WebSocketSession = await forkBuildSandbox(sandboxId, userId);
+    const { session, sandboxId: forkedSandboxId } = await forkBuildSandbox(sandboxId, userId);
 
     updateDeployment(db, deploymentId, {
         status: DeploymentStatus.BUILDING,
         message: 'Creating optimized build...',
         progress: 40,
+        sandboxId: forkedSandboxId,
     });
 
-    const files = await runBuildProcess(session, {
+    const publishManager = new PublishManager(session);
+    const files = await publishManager.publish({
+        skipBadge: false,
         buildScript,
         buildFlags,
         envVars,
+        updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
     });
 
     updateDeployment(db, deploymentId, {
@@ -257,38 +251,6 @@ async function getSandboxId(db: typeof DrizzleDb, projectId: string): Promise<st
         });
     }
     return project.sandboxId;
-}
-
-async function runBuildProcess(session: SandboxBrowserSession, input: {
-    buildScript: string;
-    buildFlags: string;
-    envVars: Record<string, string>;
-}): Promise<Record<string, FreestyleFile>> {
-    const {
-        buildScript,
-        buildFlags,
-        envVars,
-    } = input;
-
-    const publishManager = new PublishManager(session);
-    const {
-        success,
-        files
-    } = await publishManager.publish({
-        skipBadge: false,
-        buildScript,
-        buildFlags,
-        envVars,
-    });
-
-    if (!success) {
-        throw new TRPCError({
-            code: 'INTERNAL_SERVER_ERROR',
-            message: 'Failed to build project',
-        });
-    }
-
-    return files;
 }
 
 async function updateDeployment(db: typeof DrizzleDb, deploymentId: string, deployment: z.infer<typeof deploymentUpdateSchema>) {

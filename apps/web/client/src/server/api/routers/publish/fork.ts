@@ -13,5 +13,8 @@ export async function forkBuildSandbox(sandboxId: string, userId: string): Promi
     });
 
     const session = await sandbox.connect()
-    return session;
+    return {
+        session,
+        sandboxId: sandbox.id,
+    }
 }
