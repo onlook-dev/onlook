@@ -19,7 +19,6 @@ export const deploymentRouter = createTRPCRouter({
         });
         return deployment ?? null;
     }),
-
     update: protectedProcedure.input(z.object({
         deploymentId: z.string(),
         deployment: deploymentUpdateSchema
