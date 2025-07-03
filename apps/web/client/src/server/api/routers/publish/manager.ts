@@ -57,14 +57,14 @@ export class PublishManager {
     }): Promise<Record<string, FreestyleFile>> {
         await this.runPrepareStep();
         await updateDeployment({
-            status: DeploymentStatus.PREPARING,
+            status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing deployment...',
             progress: 25,
         });
 
         if (!skipBadge) {
             await updateDeployment({
-                status: DeploymentStatus.BUILDING,
+                status: DeploymentStatus.IN_PROGRESS,
                 message: 'Adding "Built with Onlook" badge...',
                 progress: 30,
             });
@@ -74,7 +74,7 @@ export class PublishManager {
         // Run the build script
         await this.runBuildStep(buildScript, buildFlags, envVars);
         await updateDeployment({
-            status: DeploymentStatus.BUILDING,
+            status: DeploymentStatus.IN_PROGRESS,
             message: 'Building project...',
             progress: 35,
         });
@@ -82,7 +82,7 @@ export class PublishManager {
         // Postprocess the project for deployment
         const { success: postprocessSuccess, error: postprocessError } = await this.postprocessNextBuild();
         await updateDeployment({
-            status: DeploymentStatus.BUILDING,
+            status: DeploymentStatus.IN_PROGRESS,
             message: 'Postprocessing project...',
             progress: 40,
         });
@@ -94,7 +94,7 @@ export class PublishManager {
         }
 
         await updateDeployment({
-            status: DeploymentStatus.BUILDING,
+            status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing files for publish...',
             progress: 50,
         });

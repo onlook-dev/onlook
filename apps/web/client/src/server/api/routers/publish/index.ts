@@ -52,7 +52,22 @@ export const publishRouter = createTRPCRouter({
         } = input;
 
         const userId = ctx.user.id;
-        const deployment = await createDeployment(ctx.db, projectId, type, userId,);
+
+        const existingDeployment = await ctx.db.query.deployments.findFirst({
+            where: and(eq(
+                deployments.projectId, projectId),
+                eq(deployments.type, type),
+                eq(deployments.status, DeploymentStatus.IN_PROGRESS),
+            ),
+        });
+        if (existingDeployment) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Deployment already exists',
+            });
+        }
+
+        const deployment = await createDeployment(ctx.db, projectId, type, userId);
 
         publishInBackground({
             deploymentId: deployment.id,
@@ -84,7 +99,7 @@ export const publishRouter = createTRPCRouter({
         const urls = await getProjectUrls(ctx.db, projectId, type);
 
         updateDeployment(ctx.db, deployment.id, {
-            status: DeploymentStatus.PENDING,
+            status: DeploymentStatus.IN_PROGRESS,
             message: 'Unpublishing project...',
             progress: 20,
         });
@@ -110,7 +125,7 @@ async function createDeployment(db: typeof DrizzleDb, projectId: string, type: D
         id: randomUUID(),
         projectId,
         type,
-        status: DeploymentStatus.PENDING,
+        status: DeploymentStatus.IN_PROGRESS,
         requestedBy: userId,
         message: 'Creating deployment...',
         progress: 0,
@@ -150,7 +165,7 @@ async function publishInBackground({
     const sandboxId = await getSandboxId(db, projectId);
 
     updateDeployment(db, deploymentId, {
-        status: DeploymentStatus.BUILDING,
+        status: DeploymentStatus.IN_PROGRESS,
         message: 'Creating build environment...',
         progress: 10,
         urls: deploymentUrls,
@@ -159,7 +174,7 @@ async function publishInBackground({
     const { session, sandboxId: forkedSandboxId } = await forkBuildSandbox(sandboxId, userId, deploymentId);
 
     updateDeployment(db, deploymentId, {
-        status: DeploymentStatus.BUILDING,
+        status: DeploymentStatus.IN_PROGRESS,
         message: 'Creating optimized build...',
         progress: 20,
         sandboxId: forkedSandboxId,
@@ -175,7 +190,7 @@ async function publishInBackground({
     });
 
     updateDeployment(db, deploymentId, {
-        status: DeploymentStatus.DEPLOYING,
+        status: DeploymentStatus.IN_PROGRESS,
         message: 'Deploying build...',
         progress: 70,
     });
@@ -187,7 +202,7 @@ async function publishInBackground({
     });
 
     updateDeployment(db, deploymentId, {
-        status: DeploymentStatus.CLEANUP,
+        status: DeploymentStatus.COMPLETED,
         message: 'Cleaning up build environment...',
         progress: 90,
     });

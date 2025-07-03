@@ -2,7 +2,7 @@ import { useHosting } from '@/app/project/[id]/_components/top-bar/publish/use-h
 import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
-import { DeploymentStatus, DeploymentType } from '@onlook/models/hosting';
+import { DeploymentType } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
@@ -12,26 +12,33 @@ export const DangerZone = observer(() => {
     const stateManager = useStateManager();
 
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
-    const { deployment, unpublish: runUnpublish, isDeploying } = useHosting(DeploymentType.UNPUBLISH_ALL);
+    const { unpublish: runUnpublishPreview, isDeploying: isUnpublishingPreview } = useHosting(DeploymentType.UNPUBLISH_PREVIEW);
+    const { unpublish: runUnpublishCustom, isDeploying: isUnpublishingCustom } = useHosting(DeploymentType.UNPUBLISH_CUSTOM);
+
     const previewDomain = domains?.preview;
     const customDomain = domains?.published;
 
-    const isUnpublishing = deployment?.status === DeploymentStatus.PENDING;
-
     const unpublish = async (type: DeploymentType) => {
-        const response = await runUnpublish(editorEngine.projectId, type);
+        let unpublishResponse: {
+            deploymentId: string;
+        } | null = null;
+        if (type === DeploymentType.UNPUBLISH_PREVIEW) {
+            unpublishResponse = await runUnpublishPreview(editorEngine.projectId);
+        } else {
+            unpublishResponse = await runUnpublishCustom(editorEngine.projectId);
+        }
 
-        if (!response) {
+        if (unpublishResponse) {
+            toast.success('Project is being unpublished', {
+                description: 'Deployment ID: ' + unpublishResponse.deploymentId,
+            });
+        } else {
             toast.error('Failed to unpublish project', {
                 description: 'Please try again.',
             });
-        } else {
-            toast.success('Project unpublished', {
-                description: 'Your project is no longer publicly accessible.',
-            });
-            stateManager.isSettingsModalOpen = false;
-            editorEngine.state.publishOpen = true;
         }
+        stateManager.isSettingsModalOpen = false;
+        editorEngine.state.publishOpen = true;
     };
 
     return (
@@ -53,9 +60,9 @@ export const DangerZone = observer(() => {
                         className="ml-auto"
                         size="sm"
                         variant="destructive"
-                        disabled={!previewDomain || isUnpublishing}
+                        disabled={!previewDomain || isUnpublishingPreview}
                     >
-                        {isUnpublishing ? 'Unpublishing...' : 'Unpublish'}
+                        {isUnpublishingPreview ? 'Unpublishing...' : 'Unpublish'}
                     </Button>
                 </div>
                 {customDomain && (
@@ -68,9 +75,9 @@ export const DangerZone = observer(() => {
                             className="ml-auto"
                             size="sm"
                             variant="destructive"
-                            disabled={!customDomain || isUnpublishing}
+                            disabled={!customDomain || isUnpublishingCustom}
                         >
-                            {isUnpublishing ? 'Unpublishing...' : 'Unpublish'}
+                            {isUnpublishingCustom ? 'Unpublishing...' : 'Unpublish'}
                         </Button>
                     </div>
                 )}

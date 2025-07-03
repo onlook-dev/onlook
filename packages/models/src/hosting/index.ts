@@ -1,21 +1,14 @@
 export enum DeploymentType {
     PREVIEW = 'preview',
     CUSTOM = 'custom',
-    ALL = 'all',
     UNPUBLISH_PREVIEW = 'unpublish_preview',
     UNPUBLISH_CUSTOM = 'unpublish_custom',
-    UNPUBLISH_ALL = 'unpublish_all',
 }
 
 export enum DeploymentStatus {
-    PENDING = 'pending',
-    PREPARING = 'preparing',
-    BUILDING = 'building',
-    DEPLOYING = 'deploying',
-    CLEANUP = 'cleanup',
+    IN_PROGRESS = 'in_progress',
     COMPLETED = 'completed',
     FAILED = 'failed',
-    CANCELLED = 'cancelled',
 }
 
 export interface DeploymentState {
