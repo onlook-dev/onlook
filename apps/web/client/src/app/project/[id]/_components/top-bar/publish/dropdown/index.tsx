@@ -11,12 +11,14 @@ export const PublishDropdown = observer(() => {
     const { deployment: previewDeployment, isDeploying: isPreviewDeploying } = useHostingType(DeploymentType.PREVIEW);
     const { deployment: customDeployment, isDeploying: isCustomDeploying } = useHostingType(DeploymentType.CUSTOM);
 
-    const isDeploying = isPreviewDeploying ?? isCustomDeploying;
-    const deployment = customDeployment ?? previewDeployment;
+    const isDeploying = isPreviewDeploying || isCustomDeploying;
+    const deployment = previewDeployment || customDeployment;
 
     return (
         <div className="rounded-md flex flex-col text-foreground-secondary">
-            {isDeploying ? <LoadingState message={deployment?.message ?? 'Deploying...'} progress={deployment?.progress ?? 0} /> : (
+            {isDeploying ? (
+                <LoadingState message={deployment?.message ?? 'Deploying...'} progress={deployment?.progress ?? 0} />
+            ) : (
                 <>
                     <PreviewDomainSection />
                     <Separator />

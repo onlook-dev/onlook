@@ -1,3 +1,4 @@
+import type { WebSocketSession } from '@codesandbox/sdk';
 import { deployments, deploymentUpdateSchema, previewDomains, projects, publishedDomains, type Deployment } from '@onlook/db';
 import { type db as DrizzleDb } from '@onlook/db/src/client';
 import {
@@ -107,49 +108,53 @@ export async function publishInBackground({
         urls: deploymentUrls,
     });
 
-    const { session, sandboxId: forkedSandboxId } = await forkBuildSandbox(sandboxId, userId, deploymentId);
+    const { session, sandboxId: forkedSandboxId }: { session: WebSocketSession, sandboxId: string } = await forkBuildSandbox(sandboxId, userId, deploymentId);
 
-    updateDeployment(db, deploymentId, {
-        status: DeploymentStatus.IN_PROGRESS,
-        message: 'Creating optimized build...',
-        progress: 20,
-        sandboxId: forkedSandboxId,
-    });
+    try {
+        updateDeployment(db, deploymentId, {
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Creating optimized build...',
+            progress: 20,
+            sandboxId: forkedSandboxId,
+        });
 
-    const publishManager = new PublishManager(session);
-    const files = await publishManager.publish({
-        skipBadge: false,
-        buildScript,
-        buildFlags,
-        envVars,
-        updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
-    });
+        const publishManager = new PublishManager(session);
+        const files = await publishManager.publish({
+            skipBadge: false,
+            buildScript,
+            buildFlags,
+            envVars,
+            updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
+        });
 
-    updateDeployment(db, deploymentId, {
-        status: DeploymentStatus.IN_PROGRESS,
-        message: 'Deploying build...',
-        progress: 80,
-    });
+        updateDeployment(db, deploymentId, {
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Deploying build...',
+            progress: 80,
+        });
 
-    await deployFreestyle({
-        files,
-        urls: deploymentUrls,
-        envVars,
-    });
+        await deployFreestyle({
+            files,
+            urls: deploymentUrls,
+            envVars,
+        });
 
-    updateDeployment(db, deploymentId, {
-        status: DeploymentStatus.COMPLETED,
-        message: 'Cleaning up build environment...',
-        progress: 90,
-    });
+        updateDeployment(db, deploymentId, {
+            status: DeploymentStatus.COMPLETED,
+            message: 'Cleaning up build environment...',
+            progress: 90,
+        });
 
-    await session.disconnect();
+        await session.disconnect();
 
-    updateDeployment(db, deploymentId, {
-        status: DeploymentStatus.COMPLETED,
-        message: 'Deployment Success!',
-        progress: 100,
-    });
+        updateDeployment(db, deploymentId, {
+            status: DeploymentStatus.COMPLETED,
+            message: 'Deployment Success!',
+            progress: 100,
+        });
+    } finally {
+        await session.disconnect();
+    }
 }
 
 export async function getProjectUrls(db: typeof DrizzleDb, projectId: string, type: DeploymentType): Promise<string[]> {
