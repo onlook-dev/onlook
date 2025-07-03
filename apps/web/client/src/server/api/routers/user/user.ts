@@ -1,18 +1,6 @@
 import { createDefaultUserSettings, toUser, toUserSettings, userInsertSchema, users, userSettings, userSettingsUpdateSchema } from '@onlook/db';
 
-const WEBHOOK_URL = process.env.USER_WEBHOOK_URL ?? 'http://localhost:4000/webhook';
-
-async function callUserWebhook(user: { id: string; email: string | null }) {
-    try {
-        await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: user.id, email: user.email }),
-        });
-    } catch (error) {
-        console.error('Failed to call user webhook', error);
-    }
-}
+import { callUserWebhook } from '@/utils/n8n/webhook';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -81,8 +69,41 @@ export const userRouter = createTRPCRouter({
         if (!user) {
             throw new Error('Failed to create user');
         }
-        await callUserWebhook({ id: user.id, email: user.email });
+        await callUserWebhook({
+            email: user.email,
+            firstName: user.name ?? '',
+            lastName: '',
+            source: 'web beta',
+            subscribed: false,
+        });
         return user;
     }),
+    upsert: protectedProcedure
+        .input(userInsertSchema)
+        .mutation(async ({ ctx, input }) => {
+            const existingUser = await ctx.db.query.users.findFirst({
+                where: eq(users.id, input.id),
+            });
+            if (existingUser) {
+                const [user] = await ctx.db.update(users).set(input).where(eq(users.id, input.id)).returning();
+                if (!user) {
+                    throw new Error('Failed to update user');
+                }
+                return user;
+            } else {
+                const [user] = await ctx.db.insert(users).values(input).returning();
+                if (!user) {
+                    throw new Error('Failed to create user');
+                }
+                await callUserWebhook({
+                    email: user.email,
+                    firstName: user.name ?? '',
+                    lastName: '',
+                    source: 'web beta',
+                    subscribed: false,
+                });
+                return user;
+            }
+        }),
     settings: userSettingsRoute,
 });
