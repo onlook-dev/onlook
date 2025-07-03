@@ -141,14 +141,6 @@ export async function publishInBackground({
 
         updateDeployment(db, deploymentId, {
             status: DeploymentStatus.COMPLETED,
-            message: 'Cleaning up build environment...',
-            progress: 90,
-        });
-
-        await session.disconnect();
-
-        updateDeployment(db, deploymentId, {
-            status: DeploymentStatus.COMPLETED,
             message: 'Deployment Success!',
             progress: 100,
         });
