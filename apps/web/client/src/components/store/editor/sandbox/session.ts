@@ -70,21 +70,17 @@ export class SessionManager {
             // Check if the session is still connected
             const isConnected = await this.ping();
             if (isConnected) {
-                this.isConnecting = false;
                 return;
             }
 
             // Attempt soft reconnect
-            this.isConnecting = true;
             await this.session.reconnect()
 
             const isConnected2 = await this.ping();
             if (isConnected2) {
-                this.isConnecting = false;
                 return;
             }
 
-            this.isConnecting = false;
             await this.start(sandboxId, userId);
         } catch (error) {
             console.error('Failed to reconnect to sandbox', error);
