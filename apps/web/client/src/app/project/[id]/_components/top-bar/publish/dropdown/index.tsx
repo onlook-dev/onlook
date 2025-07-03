@@ -1,15 +1,14 @@
 import { DeploymentType } from '@onlook/models';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { useHosting } from '../use-hosting';
 import { AdvancedSettingsSection } from './advanced-settings';
 import { CustomDomainSection } from './custom-domain-section';
 import { LoadingState } from './loading';
 import { PreviewDomainSection } from './preview-domain-section';
 
 export const PublishDropdown = observer(() => {
-    const { deployment: previewDeployment, isDeploying: isPreviewDeploying } = useHosting(DeploymentType.PREVIEW);
-    const { deployment: customDeployment, isDeploying: isCustomDeploying } = useHosting(DeploymentType.CUSTOM);
+    const { deployment: previewDeployment, isDeploying: isPreviewDeploying } = useHostingType(DeploymentType.PREVIEW);
+    const { deployment: customDeployment, isDeploying: isCustomDeploying } = useHostingType(DeploymentType.CUSTOM);
 
     const isDeploying = isPreviewDeploying ?? isCustomDeploying;
     const deployment = customDeployment ?? previewDeployment;

@@ -15,7 +15,7 @@ export function useHosting(type: DeploymentType) {
         projectId: editorEngine.projectId,
         type,
     }, {
-        refetchInterval: isSubscribed ? 3000 : false,
+        refetchInterval: isSubscribed ? 1000 : false,
     });
     const { mutateAsync: runPublish } = api.publish.publish.useMutation();
     const { mutateAsync: runUnpublish } = api.publish.unpublish.useMutation();
