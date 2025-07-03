@@ -23,6 +23,12 @@ export const seedSupabaseUser = async () => {
             email: SEED_USER.EMAIL,
             password: SEED_USER.PASSWORD,
             email_confirm: true,
+            user_metadata: {
+                first_name: SEED_USER.FIRST_NAME,
+                last_name: SEED_USER.LAST_NAME,
+                display_name: SEED_USER.DISPLAY_NAME,
+                avatar_url: SEED_USER.AVATAR_URL,
+            },
         });
 
         if (error) {
