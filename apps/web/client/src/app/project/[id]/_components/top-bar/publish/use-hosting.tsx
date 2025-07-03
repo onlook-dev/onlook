@@ -49,6 +49,7 @@ export function useHosting(type: DeploymentType) {
             buildFlags,
             envVars,
         });
+        await refetch();
         return response;
     }
 
@@ -58,6 +59,7 @@ export function useHosting(type: DeploymentType) {
             projectId,
             type
         });
+        await refetch();
         return response;
     }
 

@@ -93,11 +93,11 @@ export const CustomDomainSection = observer(() => {
                     <h3 className="">
                         Custom Domain
                     </h3>
-                    {deployment?.status === DeploymentStatus.COMPLETED && domain.publishedAt && (
+                    {deployment && deployment?.status === DeploymentStatus.COMPLETED && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-green-300">Live</p>
                             <p>•</p>
-                            <p>Updated {timeAgo(domain.publishedAt)} ago</p>
+                            <p>Updated {timeAgo(deployment.updatedAt.toISOString())} ago</p>
                         </div>
                     )}
                     {deployment?.status === DeploymentStatus.FAILED && (
