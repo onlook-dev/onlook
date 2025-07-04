@@ -32,8 +32,51 @@ export function ToolCallSimple({
     loading?: boolean;
 }) {
     const toolName = toolInvocation.toolName;
-    const label = toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    const Icon = TOOL_ICONS[toolName] || Icons.QuestionMarkCircled;
+    const Icon = TOOL_ICONS[toolName] ?? Icons.QuestionMarkCircled;
+
+    const getLabel = () => {
+        try {
+            let label = '';
+            if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
+                return 'Terminal';
+            }
+            if (toolName === EDIT_FILE_TOOL_NAME) {
+                if (toolInvocation.args && 'path' in toolInvocation.args) {
+                    label = "Editing " + (toolInvocation.args.path.split('/').pop() || '');
+                } else {
+                    label = "Editing file";
+                }
+            } else if (toolName === CREATE_FILE_TOOL_NAME) {
+                if (toolInvocation.args && 'path' in toolInvocation.args) {
+                    label = "Creating file " + (toolInvocation.args.path.split('/').pop() || '');
+                } else {
+                    label = "Creating file";
+                }
+            } else if (toolName === LIST_FILES_TOOL_NAME) {
+                if (toolInvocation.args && 'path' in toolInvocation.args) {
+                    label = "Reading directory " + (toolInvocation.args.path.split('/').pop() || '');
+                } else {
+                    label = "Reading directory";
+                }
+            } else if (toolName === READ_FILES_TOOL_NAME) {
+                if (toolInvocation.args && 'paths' in toolInvocation.args) {
+                    label = "Reading file" + (toolInvocation.args.paths.length > 1 ? 's' : '') + ' ' + (toolInvocation.args.paths.map((path: string) => path.split('/').pop()).join(', ') || '');
+                } else {
+                    label = "Reading files";
+                }
+            } else if (toolName === READ_STYLE_GUIDE_TOOL_NAME) {
+                label = "Reading style guide";
+            } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
+                label = "Reading Onlook instructions";
+            } else {
+                label = toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            }
+            return label;
+        } catch (error) {
+            console.error('Error getting label', error);
+            return toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
+    }
 
     return (
         <div className={cn('flex items-center gap-2 ml-2 text-foreground-tertiary/80', className)}>
@@ -45,7 +88,7 @@ export function ToolCallSimple({
                     'bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]'
                 )}
             >
-                {label || toolName}
+                {getLabel()}
             </span>
         </div>
     );

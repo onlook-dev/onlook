@@ -38,9 +38,9 @@ export function CTASection({ href, onClick }: CTASectionProps = {}) {
     return (
         <div className="w-full max-w-6xl mx-auto py-32 px-8 flex flex-col items-right gap-24">
             <div className="flex-1 flex flex-col items-end justify-center text-right">
-                <h1 className="text-foreground-primary text-6xl leading-[1.05] font-light mb-8 max-w-4xl text-balance">
+                <h2 className="text-foreground-primary text-6xl leading-[1.05] font-light mb-8 max-w-4xl text-balance">
                     Craft a website<br /> for free today
-                </h1>
+                </h2>
                 <div className="flex flex-row items-center justify-end gap-3 w-full">
                     <Button 
                         variant="secondary" 

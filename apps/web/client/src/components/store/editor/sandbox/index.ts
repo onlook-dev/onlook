@@ -1,9 +1,8 @@
 import type { WatchEvent } from '@codesandbox/sdk';
 import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
-import { getContentFromTemplateNode } from '@onlook/parser';
+import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
-import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
@@ -17,14 +16,16 @@ import { SessionManager } from './session';
 export class SandboxManager {
     readonly session: SessionManager;
     private fileWatcher: FileWatcher | null = null;
-    private fileSync: FileSyncManager = new FileSyncManager();
-    private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
+    private fileSync: FileSyncManager
+    private templateNodeMap: TemplateNodeMapper
     readonly fileEventBus: FileEventBus = new FileEventBus();
     private isIndexed = false;
     private isIndexing = false;
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
+        this.fileSync = new FileSyncManager(this.editorEngine);
+        this.templateNodeMap = new TemplateNodeMapper(this.editorEngine);
         makeAutoObservable(this);
 
         reaction(
@@ -497,6 +498,22 @@ export class SandboxManager {
 
     async getTemplateNode(oid: string): Promise<TemplateNode | null> {
         return this.templateNodeMap.getTemplateNode(oid);
+    }
+
+    async getTemplateNodeChild(
+            parentOid: string,
+            child: TemplateNode,
+            index: number,
+        ): Promise<{ instanceId: string; component: string } | null> {
+            
+            const codeBlock = await this.getCodeBlock(parentOid);
+            
+            if (codeBlock == null) {
+                console.error(`Failed to read code block: ${parentOid}`);
+                return null;
+            }
+            
+        return await getTemplateNodeChild(codeBlock, child, index);
     }
 
     async getCodeBlock(oid: string): Promise<string | null> {

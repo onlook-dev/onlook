@@ -4,12 +4,13 @@ import type { ChatSuggestion, Project } from '@onlook/models';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import type { CoreMessage, CoreSystemMessage, ImagePart, TextPart } from 'ai';
 import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '../engine';
 
 export class SuggestionManager {
     shouldHide = false;
     private _suggestions: ChatSuggestion[] = [];
 
-    constructor(private projectId: string) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -26,10 +27,9 @@ export class SuggestionManager {
         if (!project) {
             return;
         }
-        if (this.projectId === project.id) {
+        if (this.editorEngine.projectId === project.id) {
             return;
         }
-        this.projectId = project.id;
         this._suggestions = await this.getSuggestionsFromStorage(project.id);
     }
 
@@ -48,7 +48,7 @@ export class SuggestionManager {
     }
 
     private saveSuggestionsToStorage() {
-        if (!this.projectId) {
+        if (!this.editorEngine.projectId) {
             console.error('No project id found');
             return;
         }

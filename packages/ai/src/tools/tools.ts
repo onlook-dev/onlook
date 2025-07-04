@@ -18,7 +18,7 @@ import {
     readStyleGuideTool,
 } from './guides';
 
-export const chatToolSet: ToolSet = {
+export const buildToolSet: ToolSet = {
     [LIST_FILES_TOOL_NAME]: listFilesTool,
     [READ_FILES_TOOL_NAME]: readFilesTool,
     [ONLOOK_INSTRUCTIONS_TOOL_NAME]: onlookInstructionsTool,
@@ -26,4 +26,11 @@ export const chatToolSet: ToolSet = {
     [EDIT_FILE_TOOL_NAME]: editFileTool,
     [CREATE_FILE_TOOL_NAME]: createFileTool,
     [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
+};
+
+export const askToolSet: ToolSet = {
+    [LIST_FILES_TOOL_NAME]: listFilesTool,
+    [READ_FILES_TOOL_NAME]: readFilesTool,
+    [ONLOOK_INSTRUCTIONS_TOOL_NAME]: onlookInstructionsTool,
+    [READ_STYLE_GUIDE_TOOL_NAME]: readStyleGuideTool,
 };

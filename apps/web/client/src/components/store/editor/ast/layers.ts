@@ -3,46 +3,10 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 interface LayerMetadata {
-    document: Document;
     rootNode: LayerNode;
     domIdToLayerNode: Map<string, LayerNode>;
 }
 
-const FAKE_DATA = [
-    {
-        frameId: 'ia9vdOL0zThOaSEawxIu3',
-        domId: 'odid-59964449-8fdf-4e22-bf9f-e430b6c8cbdc',
-        oid: 'mwz9mme',
-        instanceId: null,
-        textContent: '',
-        tagName: 'body',
-        isVisible: true,
-        component: null,
-        webviewId: 'ia9vdOL0zThOaSEawxIu3',
-        children: [
-            'odid-43caf580-2adb-4327-a2dc-c21aaa18fb1f',
-            'odid-3f74a476-57f0-4ed4-bd93-595d471f6f72',
-        ],
-        parent: null,
-    },
-    {
-        frameId: 'V5CDVYl_lU2diTloklDqf',
-        domId: 'odid-37dd73e2-4060-496b-a5c8-e41af4e889cc',
-        oid: null,
-        instanceId: null,
-        textContent: '',
-        tagName: 'body',
-        isVisible: true,
-        component: null,
-        webviewId: 'V5CDVYl_lU2diTloklDqf',
-        children: [
-            'odid-bfddbebd-7311-4914-af43-004e8d5e4a0f',
-            'odid-20a583e8-704c-4a48-bf99-ef358bb13bc2',
-            'odid-2964f143-415d-412e-81b7-26da0803f56a',
-        ],
-        parent: null,
-    },
-];
 
 export class LayersManager {
     frameIdToLayerMetadata = new Map<string, LayerMetadata>();
@@ -77,12 +41,10 @@ export class LayersManager {
 
     setMetadata(
         frameId: string,
-        doc: Document,
         rootNode: LayerNode,
         domIdToLayerNode: Map<string, LayerNode>,
     ) {
         this.frameIdToLayerMetadata.set(frameId, {
-            document: doc,
             rootNode: rootNode,
             domIdToLayerNode,
         });
@@ -104,13 +66,6 @@ export class LayersManager {
 
     getLayerNode(frameId: string, domId: string): LayerNode | undefined {
         return this.getMapping(frameId)?.get(domId);
-    }
-
-    updateDocument(frameId: string, doc: Document) {
-        const metadata = this.getMetadata(frameId);
-        if (metadata) {
-            metadata.document = doc;
-        }
     }
 
     remove(frameId: string) {

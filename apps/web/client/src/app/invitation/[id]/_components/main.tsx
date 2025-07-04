@@ -56,7 +56,7 @@ export function Main({ invitationId }: { invitationId: string }) {
         );
     }
 
-    const inviter = invitation.inviter.name ?? invitation.inviter.email;
+    const inviter = invitation.inviter.firstName ?? invitation.inviter.displayName ?? invitation.inviter.email;
 
     return (
         <div className="flex flex-row w-full">

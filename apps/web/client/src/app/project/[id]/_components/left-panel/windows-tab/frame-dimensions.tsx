@@ -10,7 +10,6 @@ import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 
 export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
-
     const editorEngine = useEditorEngine();
     const frameData = editorEngine.frames.get(frameId);
 
@@ -186,7 +185,6 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
                     </p>
                 </div>
             </div>
-
         </div>
     );
 });

@@ -1,13 +1,12 @@
-import { env } from '@/env';
-import { z } from 'zod';
-import { Octokit } from 'octokit';
-import { createTRPCRouter, protectedProcedure } from '../trpc';
 import { TRPCError } from '@trpc/server';
+import { Octokit } from 'octokit';
+import { z } from 'zod';
+import { createTRPCRouter, protectedProcedure } from '../trpc';
 
 // Helper function to get user's GitHub access token from Supabase session
 const getUserGitHubToken = async (supabase: any) => {
     const { data: { session }, error } = await supabase.auth.getSession();
-    
+
     if (error || !session) {
         throw new TRPCError({
             code: 'UNAUTHORIZED',
@@ -50,7 +49,7 @@ export const githubRouter = createTRPCRouter({
                 isPrivateRepo: data.private
             };
         }),
-    
+
     getRepo: protectedProcedure
         .input(
             z.object({
@@ -60,9 +59,9 @@ export const githubRouter = createTRPCRouter({
         )
         .query(async ({ input, ctx }) => {
             const octokit = await createUserOctokit(ctx.supabase);
-            const { data } = await octokit.rest.repos.get({ 
-                owner: input.owner, 
-                repo: input.repo 
+            const { data } = await octokit.rest.repos.get({
+                owner: input.owner,
+                repo: input.repo
             });
             return data;
         }),
@@ -75,7 +74,7 @@ export const githubRouter = createTRPCRouter({
         )
         .query(async ({ input, ctx }) => {
             const octokit = await createUserOctokit(ctx.supabase);
-            
+
             if (input?.username) {
                 const { data } = await octokit.rest.orgs.listForUser({
                     username: input.username
@@ -95,7 +94,7 @@ export const githubRouter = createTRPCRouter({
         )
         .query(async ({ input, ctx }) => {
             const octokit = await createUserOctokit(ctx.supabase);
-            
+
             if (input?.username) {
                 // listForUser only supports 'all', 'owner', 'member' types
                 const { data } = await octokit.rest.repos.listForUser({
@@ -144,7 +143,7 @@ export const githubRouter = createTRPCRouter({
     reconnectGitHub: protectedProcedure
         .mutation(async ({ ctx }) => {
             const origin = process.env.NEXT_PUBLIC_APP_URL;
-            
+
             const { data, error } = await ctx.supabase.auth.signInWithOAuth({
                 provider: 'github',
                 options: {

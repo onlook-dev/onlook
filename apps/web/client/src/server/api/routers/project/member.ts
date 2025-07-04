@@ -22,11 +22,18 @@ export const memberRouter = createTRPCRouter({
                 role: member.role,
                 user: toUser({
                     id: member.user.id,
-                    name: '',
                     email: member.user.email,
-                    avatarUrl: '',
                     createdAt: new Date(),
                     updatedAt: new Date(),
+
+                    // @ts-expect-error - TODO: Fix this later
+                    firstName: member.user.firstName ?? '',
+                    // @ts-expect-error - TODO: Fix this later
+                    lastName: member.user.lastName ?? '',
+                    // @ts-expect-error - TODO: Fix this later
+                    displayName: member.user.displayName ?? '',
+                    // @ts-expect-error - TODO: Fix this later
+                    avatarUrl: member.user.avatarUrl ?? '',
                 }),
             }));
         }),

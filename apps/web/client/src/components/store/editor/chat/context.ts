@@ -39,6 +39,27 @@ export class ChatContext {
         return context;
     }
 
+    async getRefreshedContext(context: ChatMessageContext[]): Promise<ChatMessageContext[]> {
+        return await Promise.all(context.map(async (c) => {
+            if (c.type === MessageContextType.FILE) {
+                const fileContent = await this.editorEngine.sandbox.readFile(c.path);
+                if (fileContent === null) {
+                    console.error('No file content found for file', c.path);
+                    return c;
+                }
+                return { ...c, content: fileContent };
+            } else if (c.type === MessageContextType.HIGHLIGHT) {
+                const codeBlock = await this.editorEngine.sandbox.getCodeBlock(c.path);
+                if (codeBlock === null) {
+                    console.error('No code block found for node', c.path);
+                    return c;
+                }
+                return { ...c, content: codeBlock };
+            }
+            return c;
+        })) as ChatMessageContext[];
+    }
+
     private async getImageContext(): Promise<ImageMessageContext[]> {
         const imageContext = this.context.filter(
             (context) => context.type === MessageContextType.IMAGE,
