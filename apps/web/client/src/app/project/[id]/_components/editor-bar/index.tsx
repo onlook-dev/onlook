@@ -78,7 +78,7 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
 
     const getTopBar = () => {
         if (windowSelected) {
-            return <WindowSelected />;
+            return <WindowSelected availableWidth={availableWidth} />;
         }
         if (selectedTag === TAG_CATEGORIES.TEXT) {
             return <TextSelected availableWidth={availableWidth} />;

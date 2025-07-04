@@ -1,7 +1,6 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { SystemTheme } from '@onlook/models/assets';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
@@ -15,25 +14,14 @@ import { WindowActionsGroup } from './window-actions-group';
 
 export const WindowSelected = observer(({ availableWidth = 0 }: { availableWidth?: number }) => {
     const editorEngine = useEditorEngine();
+    const frameData = editorEngine.frames.selected[0];
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'window-selected-overflow-dropdown',
         isOverflow: true
     });
-    const { visibleCount } = useMeasureGroup({
-        availableWidth,
-        count: 4
-    });
-
-    const frameData = editorEngine.frames.selected[0];
-
-    // Only show toolbar when a window is selected
     if (!frameData) return null;
 
-    const handleThemeChange = async (theme: SystemTheme) => {
-        await frameData.view.setTheme(theme);
-    };
-
-    const groups = [
+    const WINDOW_GROUPS = [
         {
             key: 'device',
             label: 'Device',
@@ -64,11 +52,15 @@ export const WindowSelected = observer(({ availableWidth = 0 }: { availableWidth
         }
     ];
 
-    const visibleGroups = groups.slice(0, visibleCount);
-    const overflowGroups = groups.slice(visibleCount);
+    const { visibleCount } = useMeasureGroup({
+        availableWidth,
+        count: WINDOW_GROUPS.length
+    });
+    const visibleGroups = WINDOW_GROUPS.slice(0, visibleCount);
+    const overflowGroups = WINDOW_GROUPS.slice(visibleCount);
 
     return (
-        <div className="flex items-center gap-1 p-1 px-1.5 bg-background-secondary/85 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl">
+        <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
             {visibleGroups.map((group, groupIdx) => (
                 <React.Fragment key={group.key}>
                     {groupIdx > 0 && <InputSeparator />}
@@ -79,14 +71,12 @@ export const WindowSelected = observer(({ availableWidth = 0 }: { availableWidth
                     </div>
                 </React.Fragment>
             ))}
-            {overflowGroups.length > 0 && (
-                <OverflowMenu
-                    isOpen={isOpen}
-                    onOpenChange={onOpenChange}
-                    overflowGroups={overflowGroups}
-                    visibleCount={visibleCount}
-                />
-            )}
+            <OverflowMenu
+                isOpen={isOpen}
+                onOpenChange={onOpenChange}
+                overflowGroups={overflowGroups}
+                visibleCount={visibleCount}
+            />
         </div>
     );
 }); 
