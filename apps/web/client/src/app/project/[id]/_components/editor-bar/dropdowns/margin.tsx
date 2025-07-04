@@ -79,7 +79,7 @@ export const Margin = observer(() => {
             ['margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'margin']
             .some(key => definedStyles?.[key] === 'auto');
 
-        if (isAuto && top == bottom && left == right) {
+        if (isAuto && top === bottom && left === right) {
             return 'Auto';
         }
         
