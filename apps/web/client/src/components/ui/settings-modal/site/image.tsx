@@ -1,5 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { DefaultSettings } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
+import { urlToRelativePath } from '@onlook/utility/src/image';
 import React, {
     forwardRef,
     useCallback,
@@ -26,7 +28,10 @@ const ImagePicker = forwardRef<
     useEffect(() => {
         const loadImage = async () => {
             if (url) {
-                const image = editorEngine.image.find(url);
+                const relativeUrl = urlToRelativePath(url);
+                const fullPath = `${DefaultSettings.IMAGE_FOLDER}${relativeUrl}`;
+                const image = editorEngine.image.find(fullPath);
+
                 if (image) {
                     const imageContent = await editorEngine.image.readImageContent(image);
                     if (imageContent) {

@@ -20,6 +20,7 @@ export class PagesManager {
     private activeRoutesByFrameId: Record<string, string> = {};
     private currentPath = '';
     private groupedRoutes = '';
+    private _isScanning = false;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -34,6 +35,10 @@ export class PagesManager {
     get activeRoute(): string | undefined {
         const frame = this.getActiveFrame();
         return frame ? this.activeRoutesByFrameId[frame.frame.id] : undefined;
+    }
+
+    get isScanning() {  
+        return this._isScanning;
     }
 
     private getActiveFrame(): FrameData | undefined {
@@ -123,14 +128,20 @@ export class PagesManager {
 
     async scanPages() {
         try {
+            if (this._isScanning) {
+                return;
+            }
+            this._isScanning = true;
             if (this.editorEngine?.sandbox?.session?.session) {
                 try {
                     const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox.session.session);
                     this.setPages(realPages);
+                    this._isScanning = false;
                     return;
                 } catch (error) {
                     console.error('Failed to scan pages from sandbox:', error);
                     this.setPages([]);
+                    this._isScanning = false;
                 }
             } else {
                 console.log('Sandbox session not available');
@@ -139,6 +150,8 @@ export class PagesManager {
         } catch (error) {
             console.error('Failed to scan pages:', error);
             this.setPages([]);
+        } finally {
+            this._isScanning = false;
         }
     }
 
