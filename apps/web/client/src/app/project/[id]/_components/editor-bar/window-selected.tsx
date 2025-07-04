@@ -1,17 +1,18 @@
-import { InputSeparator } from './separator';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
 import { useEditorEngine } from '@/components/store/editor';
-import { computeWindowMetadata, getDeviceType } from '@onlook/utility';
 import { Orientation } from '@onlook/constants';
 import { LeftPanelTabValue, type WindowMetadata } from '@onlook/models';
-import { useEffect, useMemo, useState } from 'react';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import { computeWindowMetadata, getDeviceType } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useMemo, useState } from 'react';
+import { InputSeparator } from './separator';
 
 export const WindowsSelected = observer(() => {
     const editorEngine = useEditorEngine();
     const frameData = editorEngine.frames.selected?.[0];
-
+    const [isDuplicating, setIsDuplicating] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const [metadata, setMetadata] = useState<WindowMetadata>(() =>
         computeWindowMetadata(
@@ -51,6 +52,32 @@ export const WindowsSelected = observer(() => {
         editorEngine.state.leftPanelTab = LeftPanelTabValue.WINDOWS;
     };
 
+    const duplicateWindow = async () => {
+        setIsDuplicating(true);
+        try {
+            if (frameData?.frame.id) {
+                await editorEngine.frames.duplicate(frameData.frame.id);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsDuplicating(false);
+        }
+    };
+
+    const deleteWindow = async () => {
+        setIsDeleting(true);
+        try {
+            if (frameData?.frame.id) {
+                await editorEngine.frames.delete(frameData.frame.id);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     return (
         <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">
             <Button
@@ -66,27 +93,32 @@ export const WindowsSelected = observer(() => {
             <InputSeparator />
             <Button
                 variant="ghost"
-                size="icon"
                 className="flex items-center text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                onClick={() =>
-                    frameData?.frame.id && editorEngine.frames.duplicate(frameData.frame.id)
-                }
+                onClick={duplicateWindow}
+                disabled={isDuplicating}
             >
-                <Icons.Copy className="h-4 w-4 min-h-4 min-w-4" />
+                {isDuplicating ? (
+                    <Icons.LoadingSpinner className="size-4 min-size-4 animate-spin" />
+                ) : (
+                    <Icons.Copy className="size-4 min-size-4" />
+                )}
+                Duplicate
             </Button>
             {editorEngine.frames.canDelete() && (
                 <>
                     <InputSeparator />
                     <Button
                         variant="ghost"
-                        size="icon"
                         className="flex items-center text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                        disabled={!editorEngine.frames.canDelete()}
-                        onClick={() =>
-                            frameData?.frame.id && editorEngine.frames.delete(frameData.frame.id)
-                        }
+                        disabled={!editorEngine.frames.canDelete() || isDeleting}
+                        onClick={deleteWindow}
                     >
-                        <Icons.Trash className="h-4 w-4 min-h-4 min-w-4" />
+                        {isDeleting ? (
+                            <Icons.LoadingSpinner className="size-4 min-size-4 animate-spin" />
+                        ) : (
+                            <Icons.Trash className="size-4 min-size-4" />
+                        )}
+                        Delete
                     </Button>
                 </>
             )}

@@ -74,11 +74,17 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
     const selectedElement = editorEngine.elements.selected[0];
     const selectedTag = selectedElement ? getSelectedTag(editorEngine.elements.selected) : null;
     const selectedFrame = editorEngine.frames.selected?.[0];
+    const windowSelected = selectedFrame && !selectedElement;
 
-    console.log(selectedFrame);
-    console.log('Editor bar', editorEngine.frames.frames);
-    
-    
+    const getTopBar = () => {
+        if (windowSelected) {
+            return <WindowsSelected />;
+        }
+        if (selectedTag === TAG_CATEGORIES.TEXT) {
+            return <TextSelected availableWidth={availableWidth} />;
+        }
+        return <DivSelected availableWidth={availableWidth} />;
+    };
 
     return (
         <DropdownManagerProvider>
@@ -98,14 +104,7 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
                     damping: 25,
                 }}
             >
-                {selectedFrame && !selectedElement && <WindowsSelected />}
-                {selectedTag === TAG_CATEGORIES.TEXT && (
-                    <TextSelected availableWidth={availableWidth} />
-                )}
-                {selectedTag === TAG_CATEGORIES.DIV && (
-                    <DivSelected availableWidth={availableWidth} />
-                )}
-                {/* {selectedTag === 'image' && <ImgSelected />} */}
+                {getTopBar()}
             </motion.div>
         </DropdownManagerProvider>
     );
