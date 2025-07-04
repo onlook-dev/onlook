@@ -1,7 +1,9 @@
 import { EditorAttributes } from '@onlook/constants';
 import type { LayerNode } from '@onlook/models';
+import debounce from 'lodash/debounce';
 import { isValidHtmlElement } from '../helpers/dom';
 import { getInstanceId, getOid, getOrAssignDomId } from '../helpers/ids';
+import { publishDomProcessed } from './events/publish';
 import { getFrameId } from './state';
 
 export interface ProcessDomResult {
@@ -9,7 +11,8 @@ export interface ProcessDomResult {
     layerMap: Array<[string, LayerNode]>;
 }
 
-export function processDom(root: HTMLElement = document.body): ProcessDomResult | null {
+
+function processDomDebounced(root: HTMLElement = document.body): ProcessDomResult | null {
     const frameId = getFrameId();
     if (!frameId) {
         console.warn('frameView id not found, skipping dom processing');
@@ -32,8 +35,12 @@ export function processDom(root: HTMLElement = document.body): ProcessDomResult 
         return null;
     }
 
+    publishDomProcessed(layerMap, rootNode);
     return { rootDomId, layerMap: Array.from(layerMap.entries()) };
 }
+
+
+export const processDom = debounce(processDomDebounced, 500);
 
 export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null {
     if (!isValidHtmlElement(root)) {

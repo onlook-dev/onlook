@@ -1,14 +1,14 @@
 "use client"
 
 import { env } from "@/env"
+import { api } from "@/trpc/react"
 import { observer } from "mobx-react-lite"
 import posthog from "posthog-js"
 import { PostHogProvider as PHProvider } from "posthog-js/react"
 import { useEffect } from "react"
-import { useUserManager } from "./store/user"
 
 export const PostHogProvider = observer(({ children }: { children: React.ReactNode }) => {
-    const userManager = useUserManager();
+    const { data: user } = api.user.get.useQuery();
 
     useEffect(() => {
         if (!env.NEXT_PUBLIC_POSTHOG_KEY) {
@@ -25,12 +25,14 @@ export const PostHogProvider = observer(({ children }: { children: React.ReactNo
     }, [])
 
     useEffect(() => {
-        if (userManager.user) {
+        if (user) {
             try {
-                posthog.identify(userManager.user.id, {
-                    name: userManager.user.name,
-                    email: userManager.user.email,
-                    avatar_url: userManager.user.avatarUrl,
+                posthog.identify(user.id, {
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    displayName: user.displayName,
+                    email: user.email,
+                    avatar_url: user.avatarUrl,
                 }, {
                     signup_date: new Date().toISOString(),
                 })
@@ -38,7 +40,7 @@ export const PostHogProvider = observer(({ children }: { children: React.ReactNo
                 console.error('Error identifying user:', error);
             }
         }
-    }, [userManager.user])
+    }, [user])
 
     return (
         <PHProvider client={posthog}>

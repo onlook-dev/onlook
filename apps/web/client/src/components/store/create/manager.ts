@@ -1,19 +1,13 @@
 import { api } from '@/trpc/client';
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import type { Project as DbProject } from '@onlook/db';
-import { MessageContextType, type FileMessageContext, type ImageMessageContext } from '@onlook/models/chat';
+import { CreateRequestContextType } from '@onlook/models';
+import { type ImageMessageContext } from '@onlook/models/chat';
 import { makeAutoObservable } from "mobx";
 import { v4 as uuidv4 } from 'uuid';
 import { parseRepoUrl } from '../editor/pages/helper';
 
 export class CreateManager {
-    pendingCreationData: {
-        userId: string;
-        project: DbProject;
-        prompt: string;
-        images: ImageMessageContext[];
-    } | null = null;
-
     error: string | null = null;
 
     constructor() {
@@ -27,19 +21,35 @@ export class CreateManager {
                 console.error('No user ID found');
                 return;
             }
-            const { sandboxId, previewUrl } = await this.createSandbox();
+            const config = {
+                title: `Prompted project - ${userId}`,
+                description: prompt,
+                tags: ['prompt', userId],
+            };
+
+            const { sandboxId, previewUrl } = await api.sandbox.fork.mutate({
+                sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
+                config,
+            });
             const project = await this.createDefaultProject(sandboxId, previewUrl);
             const newProject = await api.project.create.mutate({
                 project,
                 userId,
+                creationData: {
+                    context: [
+                        {
+                            type: CreateRequestContextType.PROMPT,
+                            content: prompt,
+                        },
+                        ...images.map((image) => ({
+                            type: CreateRequestContextType.IMAGE,
+                            content: image.content,
+                            mimeType: image.mimeType,
+                        })),
+                    ],
+                },
             });
 
-            this.pendingCreationData = {
-                userId,
-                project: newProject,
-                prompt,
-                images,
-            };
             return newProject;
         }
         catch (error) {
@@ -88,13 +98,6 @@ export class CreateManager {
                 project,
                 userId,
             });
-
-            this.pendingCreationData = {
-                userId,
-                project: newProject,
-                prompt: "",
-                images: [],
-            };
             return newProject;
         }
         catch (error) {
@@ -109,12 +112,5 @@ export class CreateManager {
             branch
         });
     }
-
-    async createSandbox() {
-        return await api.sandbox.fork.mutate({
-            sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
-        });
-    }
-
 }
 

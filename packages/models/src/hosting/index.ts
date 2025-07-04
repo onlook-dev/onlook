@@ -1,12 +1,18 @@
-export enum PublishStatus {
-    UNPUBLISHED = 'unpublished',
-    LOADING = 'loading',
-    PUBLISHED = 'published',
-    ERROR = 'error',
+export enum DeploymentType {
+    PREVIEW = 'preview',
+    CUSTOM = 'custom',
+    UNPUBLISH_PREVIEW = 'unpublish_preview',
+    UNPUBLISH_CUSTOM = 'unpublish_custom',
 }
 
-export interface PublishState {
-    status: PublishStatus;
+export enum DeploymentStatus {
+    IN_PROGRESS = 'in_progress',
+    COMPLETED = 'completed',
+    FAILED = 'failed',
+}
+
+export interface DeploymentState {
+    status: DeploymentStatus;
     message: string | null;
     buildLog: string | null;
     error: string | null;
@@ -31,19 +37,6 @@ export interface CreateDomainVerificationResponse {
 export interface VerifyDomainResponse {
     success: boolean;
     message?: string;
-}
-
-export interface PublishOptions {
-    skipBadge?: boolean;
-    skipBuild?: boolean;
-    buildFlags?: string;
-    envVars?: Record<string, string>;
-}
-
-export interface PublishRequest {
-    buildScript: string;
-    urls: string[];
-    options?: PublishOptions;
 }
 
 export interface PublishResponse {

@@ -4,7 +4,6 @@ import { fromCanvas } from '@onlook/db';
 import type { Canvas, Frame, RectPosition } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import type { ProjectManager } from '../../project/manager';
 
 type SettingsObserver = (settings: Frame) => void;
 
@@ -14,7 +13,7 @@ export class CanvasManager {
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
     private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
-    constructor(private projects: ProjectManager) {
+    constructor() {
         this._position = this.getDefaultPanPosition();
         makeAutoObservable(this);
     }
@@ -92,12 +91,10 @@ export class CanvasManager {
     }
 
     private undebouncedSaveSettings() {
-        if (this.projects.project) {
-            this.updateCanvas({
-                id: this.id,
-                position: this.position,
-                scale: this.scale,
-            });
-        }
+        this.updateCanvas({
+            id: this.id,
+            position: this.position,
+            scale: this.scale,
+        });
     }
 }

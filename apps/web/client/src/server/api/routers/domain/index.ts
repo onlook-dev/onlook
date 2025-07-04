@@ -2,11 +2,13 @@ import { previewDomains, publishedDomains, toDomainInfoFromPreview, toDomainInfo
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { customRouter } from './custom';
 import { previewRouter } from './preview';
 import { verificationRouter } from './verify';
 
 export const domainRouter = createTRPCRouter({
     preview: previewRouter,
+    custom: customRouter,
     verification: verificationRouter,
     getAll: protectedProcedure.input(z.object({
         projectId: z.string(),

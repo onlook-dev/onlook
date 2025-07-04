@@ -1,16 +1,25 @@
+export enum ProcessedFileType {
+    BINARY = 'binary',
+    TEXT = 'text',
+}
 
-
-export interface ProcessedFile {
+interface BaseProcessedFile {
     path: string;
     content: string | ArrayBuffer;
-    isBinary: boolean;
+    type: ProcessedFileType;
 }
 
-export interface Project {
-    name: string;
-    folderPath: string;
-    files: ProcessedFile[];
+export interface BinaryProcessedFile extends BaseProcessedFile {
+    type: ProcessedFileType.BINARY;
+    content: ArrayBuffer;
 }
+
+export interface TextProcessedFile extends BaseProcessedFile {
+    type: ProcessedFileType.TEXT;
+    content: string;
+}
+
+export type ProcessedFile = BinaryProcessedFile | TextProcessedFile;
 
 export interface NextJsProjectValidation {
     isValid: boolean;

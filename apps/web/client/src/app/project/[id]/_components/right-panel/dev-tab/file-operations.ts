@@ -1,6 +1,9 @@
+import type { SandboxManager } from "@/components/store/editor/sandbox";
+import type { WebSocketSession } from "@codesandbox/sdk";
+
 // System reserved names (Windows compatibility)
 export const RESERVED_NAMES = [
-    'CON', 'PRN', 'AUX', 'NUL', 
+    'CON', 'PRN', 'AUX', 'NUL',
     'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9',
     'LPT1', 'LPT2', 'LPT3', 'LPT4', 'LPT5', 'LPT6', 'LPT7', 'LPT8', 'LPT9'
 ] as const;
@@ -69,9 +72,9 @@ export const doesFileExist = (files: string[], filePath: string): boolean => {
 
 export const doesFolderExist = (files: string[], folderPath: string): boolean => {
     const normalizedFolderPath = folderPath.replace(/\\/g, '/');
-    
+
     const cleanFolderPath = normalizedFolderPath.replace(/\/$/, '');
-    
+
     return files.some(file => {
         const normalizedFile = file.replace(/\\/g, '/');
 
@@ -79,7 +82,7 @@ export const doesFolderExist = (files: string[], folderPath: string): boolean =>
     });
 };
 
-export const createFileInSandbox = async (session: any, filePath: string, content: string = '', editorEngine?: any): Promise<void> => {
+export const createFileInSandbox = async (session: WebSocketSession, filePath: string, content: string = '', sandboxManager: SandboxManager): Promise<void> => {
     try {
         if (!session) {
             throw new Error('No sandbox session available');
@@ -88,14 +91,14 @@ export const createFileInSandbox = async (session: any, filePath: string, conten
         await session.fs.writeTextFile(filePath, content);
 
         // update cache to include the new file
-        await editorEngine.sandbox.updateFileCache(filePath, content);
+        await sandboxManager.updateFileCache(filePath, content);
     } catch (error) {
         console.error('Error creating file:', error);
         throw error;
     }
 };
 
-export const createFolderInSandbox = async (session: any, folderPath: string, editorEngine?: any): Promise<void> => {
+export const createFolderInSandbox = async (session: WebSocketSession, folderPath: string, sandboxManager: SandboxManager): Promise<void> => {
     try {
         if (!session) {
             throw new Error('No sandbox session available');
@@ -109,11 +112,10 @@ export const createFolderInSandbox = async (session: any, folderPath: string, ed
         await session.fs.writeTextFile(gitkeepPath, gitkeepContent);
 
         // update cache to include the new folder
-        await editorEngine.sandbox.updateFileCache(gitkeepPath, gitkeepContent);
+        await sandboxManager.updateFileCache(gitkeepPath, gitkeepContent);
     } catch (error) {
         console.error('Error creating folder:', error);
         throw error;
     }
 };
 
- 

@@ -1,5 +1,3 @@
-import type { ProjectManager } from '@/components/store/project/manager';
-import type { UserManager } from '@/components/store/user/manager';
 import { sendAnalytics } from '@/utils/analytics';
 import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, type ChatMessageContext } from '@onlook/models/chat';
@@ -21,12 +19,10 @@ export class ChatManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
-        private userManager: UserManager,
     ) {
-        this.context = new ChatContext(this.editorEngine, this.projectManager);
-        this.conversation = new ConversationManager(this, this.projectManager);
-        this.suggestions = new SuggestionManager(this.projectManager);
+        this.context = new ChatContext(this.editorEngine);
+        this.conversation = new ConversationManager(this.editorEngine);
+        this.suggestions = new SuggestionManager(this.editorEngine);
         this.error = new ChatErrorManager();
         makeAutoObservable(this);
     }
@@ -54,7 +50,24 @@ export class ChatManager {
                 this.conversation.attachCommitToUserMessage(userMessage.id, commit);
             }
         });
-        return this.generateStreamMessages(content);
+        return this.generateStreamMessages();
+    }
+
+    async getAskMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
+        if (!this.conversation.current) {
+            console.error('No conversation found');
+            return null;
+        }
+
+        const context = contextOverride ?? await this.context.getChatContext();
+        const userMessage = await this.conversation.addUserMessage(content, context);
+
+        this.conversation.current.updateName(content);
+        if (!userMessage) {
+            console.error('Failed to add user message');
+            return null;
+        }
+        return this.generateStreamMessages();
     }
 
     async getFixErrorMessages(): Promise<Message[] | null> {
@@ -84,7 +97,7 @@ export class ChatManager {
         sendAnalytics('send fix error chat message', {
             errors: errors.map((e) => e.content),
         });
-        return this.generateStreamMessages(prompt);
+        return this.generateStreamMessages();
     }
 
     async getResubmitMessages(id: string, newMessageContent: string) {
@@ -102,13 +115,15 @@ export class ChatManager {
             return;
         }
 
-        message.updateContent(newMessageContent);
+        const newContext = await this.context.getRefreshedContext(message.context);
+        message.updateMessage(newMessageContent, newContext);
+
         await this.conversation.current.removeAllMessagesAfter(message);
         await this.conversation.current.updateMessage(message);
-        return this.generateStreamMessages(newMessageContent);
+        return this.generateStreamMessages();
     }
 
-    private async generateStreamMessages(userPrompt: string): Promise<Message[] | null> {
+    private async generateStreamMessages(): Promise<Message[] | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;

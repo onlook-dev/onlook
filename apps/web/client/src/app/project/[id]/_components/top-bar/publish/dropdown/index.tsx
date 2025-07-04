@@ -1,5 +1,5 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { PublishStatus } from '@onlook/models';
+import { useHostingType } from '@/components/store/hosting';
+import { DeploymentType } from '@onlook/models';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { AdvancedSettingsSection } from './advanced-settings';
@@ -8,15 +8,19 @@ import { LoadingState } from './loading';
 import { PreviewDomainSection } from './preview-domain-section';
 
 export const PublishDropdown = observer(() => {
-    const editorEngine = useEditorEngine();
-    const state = editorEngine.hosting.state;
+    const { deployment: previewDeployment, isDeploying: isPreviewDeploying } = useHostingType(DeploymentType.PREVIEW);
+    const { deployment: customDeployment, isDeploying: isCustomDeploying } = useHostingType(DeploymentType.CUSTOM);
+
+    const isDeploying = isPreviewDeploying || isCustomDeploying;
+    const deployment = previewDeployment || customDeployment;
 
     return (
         <div className="rounded-md flex flex-col text-foreground-secondary">
-            {state.status === PublishStatus.LOADING ? <LoadingState /> : (
+            {isDeploying ? (
+                <LoadingState message={deployment?.message ?? 'Deploying...'} progress={deployment?.progress ?? 0} />
+            ) : (
                 <>
                     <PreviewDomainSection />
-
                     <Separator />
                     <CustomDomainSection />
                     <Separator />

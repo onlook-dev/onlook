@@ -80,9 +80,14 @@ export const useImageDragDrop = (currentFolder?: string) => {
                     fileName: image.fileName,
                     content: image.content,
                     mimeType: image.mimeType,
+                    originPath: image.originPath,
                 }),
             );
 
+            editorEngine.state.editorMode = EditorMode.INSERT_IMAGE;
+            for (const frame of editorEngine.frames.getAll()) {
+                frame.view.style.pointerEvents = 'none';
+            }
             sendAnalytics('image drag');
         },
         [],
@@ -97,10 +102,10 @@ export const useImageDragDrop = (currentFolder?: string) => {
     }, [editorEngine.state]);
 
     const onImageDragEnd = useCallback(() => {
-        // for (const frameView of editorEngine.frames.webviews.values()) {
-        //     frameView.frameView.style.pointerEvents = 'auto';
-        // }
-        // editorEngine.mode = EditorMode.DESIGN;
+        for (const frame of editorEngine.frames.getAll()) {
+            frame.view.style.pointerEvents = 'auto';
+        }
+        editorEngine.state.editorMode = EditorMode.DESIGN;
     }, []);
 
     return {

@@ -1,11 +1,9 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectManager } from '@/components/store/project';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 
 export const NoVersions = observer(() => {
-    const projectManager = useProjectManager();
     const editorEngine = useEditorEngine();
     return (
         <div className="flex flex-col items-center gap-2 border border-dashed rounded p-12 mt-4">

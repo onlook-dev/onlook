@@ -107,6 +107,7 @@ async function handleEditFileTool(
     const updatedContent = await api.code.applyDiff.mutate({
         originalCode: originalContent,
         updateSnippet: args.content,
+        instruction: args.instruction,
     });
     if (!updatedContent.result) {
         throw new Error('Error applying code change: ' + updatedContent.error);

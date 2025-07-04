@@ -25,7 +25,7 @@ export const ProCard = ({
     delay: number;
 }) => {
     const t = useTranslations();
-    const { subscription, isPro, refetchSubscription, isPollingForSubscription, startPollingForSubscription } = useSubscription();
+    const { subscription, isPro, refetchSubscription, setIsCheckingSubscription } = useSubscription();
     const { mutateAsync: checkout } = api.subscription.checkout.useMutation();
     const { mutateAsync: getPriceId } = api.subscription.getPriceId.useMutation();
     const { mutateAsync: updateSubscription } = api.subscription.update.useMutation();
@@ -95,9 +95,7 @@ export const ProCard = ({
             }
 
             window.open(session.url, '_blank');
-            // Start polling for the subscription to be updated every 3 seconds
-            startPollingForSubscription();
-
+            setIsCheckingSubscription(true);
         } catch (error) {
             toast.error(t('pricing.toasts.error.title'), {
                 description: error instanceof Error ? error.message : 'Unknown error',
@@ -145,15 +143,12 @@ export const ProCard = ({
     }, [subscription?.price.key]);
 
     const buttonContent = () => {
-        if (isCheckingOut || isPollingForSubscription) {
+        if (isCheckingOut) {
             return (
                 <div className="flex items-center gap-2">
                     <Icons.Shadow className="w-4 h-4 animate-spin" />
                     <span>
-                        {isPollingForSubscription
-                            ? 'Waiting for payment...'
-                            : t(transKeys.pricing.loading.checkingPayment)
-                        }
+                        {t(transKeys.pricing.loading.checkingPayment)}
                     </span>
                 </div>
             )

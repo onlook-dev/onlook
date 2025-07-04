@@ -1,9 +1,8 @@
 'use client';
 
-import { useUserManager } from '@/components/store/user';
+import { CreateManagerProvider } from '@/components/store/create';
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
-import { SettingsModal } from '@/components/ui/settings-modal';
-import { useEffect } from 'react';
+import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';
 import { ContributorSection } from './_components/landing-page/contributor-section';
@@ -14,30 +13,26 @@ import { WhatCanOnlookDoSection } from './_components/landing-page/what-can-onlo
 import { WebsiteLayout } from './_components/website-layout';
 
 export default function Main() {
-    const userManager = useUserManager();
-
-    useEffect(() => {
-        userManager.fetchUser();
-    }, []);
-
     return (
-        <WebsiteLayout showFooter={true}>
-            <div className="w-screen h-screen flex items-center justify-center" id="hero">
-                <Hero />
-            </div>
+        <CreateManagerProvider>
+            <WebsiteLayout showFooter={true}>
+                <div className="w-screen h-screen flex items-center justify-center" id="hero">
+                    <Hero />
+                </div>
 
-            {/* <FeaturesSection /> */}
-            {/* <CodeOneToOneSection /> */}
-            <ContributorSection />
-            <WhatCanOnlookDoSection />
-            {/* <ObsessForHoursSection /> */}
-            <TestimonialsSection />
-            <FAQSection />
-            <CTASection />
-            <AuthModal />
+                {/* <FeaturesSection /> */}
+                {/* <CodeOneToOneSection /> */}
+                <ContributorSection />
+                <WhatCanOnlookDoSection />
+                {/* <ObsessForHoursSection /> */}
+                <TestimonialsSection />
+                <FAQSection />
+                <CTASection />
+                <AuthModal />
 
-            <SettingsModal showProjectTabs={false} />
-            <SubscriptionModal />
-        </WebsiteLayout >
+                <NonProjectSettingsModal />
+                <SubscriptionModal />
+            </WebsiteLayout >
+        </CreateManagerProvider>
     );
 }

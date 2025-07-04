@@ -1,10 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectManager } from '@/components/store/project';
+import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
 import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
 import { uploadBlobToStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
+import { fromPreviewImg } from '@onlook/db';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -24,8 +26,10 @@ import { useRef, useState } from 'react';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
-    const project = projectManager.project;
+    const stateManager = useStateManager();
+
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: updateProject } = api.project.update.useMutation()
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
     const router = useRouter();
@@ -65,19 +69,19 @@ export const ProjectBreadcrumb = observer(() => {
             return;
         }
 
-        // Update project metadata
+        const dbPreviewImg = fromPreviewImg({
+            type: 'storage',
+            storagePath: {
+                bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
+                path: data?.path,
+            },
+        })
         if (project?.metadata) {
-            projectManager.updatePartialProject({
-                metadata: {
-                    ...project.metadata,
-                    previewImg: {
-                        type: 'storage',
-                        storagePath: {
-                            bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
-                            path: data?.path,
-                        },
-                    }
-                }
+            updateProject({
+                id: project.id,
+                project: {
+                    ...dbPreviewImg,
+                },
             });
         }
     }
@@ -202,7 +206,7 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => editorEngine.state.settingsOpen = true}>
+                    <DropdownMenuItem onClick={() => stateManager.isSettingsModalOpen = true}>
                         <div className="flex row center items-center group">
                             <Icons.Gear className="mr-2 group-hover:rotate-12 transition-transform" />
                             {t(transKeys.help.menu.openSettings)}
