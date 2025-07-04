@@ -25,7 +25,7 @@ export const ImageList = memo(({ images, currentFolder }: ImageListProps) => {
 
 
     return (
-        <div className="flex flex-col gap-2 max-h-[50vh]">
+        <div className="flex flex-col gap-2 h-full">
             <p className="text-sm text-gray-200 font-medium">Images</p>
             {uploadState.isUploading && (
                 <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">

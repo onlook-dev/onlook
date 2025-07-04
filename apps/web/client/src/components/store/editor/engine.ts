@@ -9,10 +9,10 @@ import { IDEManager } from './dev';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
 import { FontManager } from './font';
+import { FrameEventManager } from './frame-view-events';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
-import { HostingManager } from './hosting';
 import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
@@ -27,7 +27,6 @@ import { VersionsManager } from './version';
 
 export class EditorEngine {
     readonly projectId: string;
-
     readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
     readonly canvas: CanvasManager = new CanvasManager();
@@ -45,7 +44,6 @@ export class EditorEngine {
     readonly style: StyleManager = new StyleManager(this);
     readonly code: CodeManager = new CodeManager(this);
     readonly ide: IDEManager = new IDEManager(this);
-    readonly hosting: HostingManager = new HostingManager(this);
     readonly versions: VersionsManager = new VersionsManager(this);
     readonly chat: ChatManager = new ChatManager(this);
     readonly image: ImageManager = new ImageManager(this);
@@ -53,6 +51,7 @@ export class EditorEngine {
     readonly font: FontManager = new FontManager(this);
     readonly pages: PagesManager = new PagesManager(this);
     readonly frames: FramesManager = new FramesManager(this);
+    readonly frameEvent: FrameEventManager = new FrameEventManager(this);
 
     constructor(projectId: string) {
         this.projectId = projectId;
@@ -82,6 +81,7 @@ export class EditorEngine {
         this.ide.clear();
         this.error.clear();
         this.sandbox.clear();
+        this.frameEvent.clear();
     }
 
     clearUI() {

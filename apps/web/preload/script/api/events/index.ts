@@ -1,12 +1,6 @@
-import { listenForDomMutation } from './dom';
+import { listenForDomMutation, listenForResize } from './dom';
 
-export function listenForEvents() {
-    listenForWindowEvents();
+export function listenForDomChanges() {
     listenForDomMutation();
-}
-
-function listenForWindowEvents() {
-    window.addEventListener('resize', () => {
-        // ipcRenderer.sendToHost(WebviewChannels.WINDOW_RESIZED);
-    });
+    listenForResize();
 }

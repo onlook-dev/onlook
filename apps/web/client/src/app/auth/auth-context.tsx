@@ -1,10 +1,11 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import type { ReactNode } from 'react';
 import { SignInMethod } from '@onlook/models/auth';
 import localforage from 'localforage';
+import type { ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { devLogin, login } from '../login/actions';
+
 const LAST_SIGN_IN_METHOD_KEY = 'lastSignInMethod';
 
 interface AuthContextType {

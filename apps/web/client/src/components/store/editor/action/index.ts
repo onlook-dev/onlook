@@ -1,5 +1,5 @@
 import { sendAnalytics } from '@/utils/analytics';
-import type { DomElement } from '@onlook/models';
+import type { DomElement, LayerNode } from '@onlook/models';
 import { EditorMode } from '@onlook/models';
 import {
     type Action,
@@ -15,9 +15,9 @@ import {
 } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { assertNever } from '@onlook/utility';
-import { debounce, cloneDeep } from 'lodash';
-import { toJS } from 'mobx';
+import { cloneDeep, debounce } from 'lodash';
 import type { EditorEngine } from '../engine';
+import type { FrameData } from '../frames';
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) { }
@@ -105,7 +105,7 @@ export class ActionManager {
                 }),
             );
             const change = {
-                original:target.change.original,
+                original: target.change.original,
                 updated: convertedChange,
             };
             // cloneDeep is used to avoid the issue of observable values can not pass through the webview
@@ -129,20 +129,20 @@ export class ActionManager {
 
     private async insertElement({ targets, element, editText, location }: InsertElementAction) {
         for (const elementMetadata of targets) {
-            const frameView = this.editorEngine.frames.get(elementMetadata.frameId);
-            if (!frameView) {
+            const frameData = this.editorEngine.frames.get(elementMetadata.frameId);
+            if (!frameData) {
                 console.error('Failed to get frameView');
                 return;
             }
 
             try {
-                const domEl = await frameView.view.insertElement(element, location);
-                if (!domEl) {
+                const result = await frameData.view.insertElement(element, location);
+                if (!result) {
                     console.error('Failed to insert element');
                     return;
                 }
 
-                this.refreshAndClickMutatedElement(domEl);
+                this.refreshAndClickMutatedElement(result.domEl, frameData, result.newMap);
             } catch (err) {
                 console.error('Error inserting element:', err);
             }
@@ -151,94 +151,94 @@ export class ActionManager {
 
     private async removeElement({ targets, location }: RemoveElementAction) {
         for (const target of targets) {
-            const frameView = this.editorEngine.frames.get(target.frameId);
-            if (!frameView) {
+            const frameData = this.editorEngine.frames.get(target.frameId);
+            if (!frameData) {
                 console.error('Failed to get frameView');
                 return;
             }
 
-            const domEl = await frameView.view.removeElement(location);
+            const result = await frameData.view.removeElement(location);
 
-            if (!domEl) {
+            if (!result) {
                 console.error('Failed to remove element');
                 return;
             }
 
             await this.editorEngine.overlay.refresh();
 
-            this.refreshAndClickMutatedElement(domEl);
+            this.refreshAndClickMutatedElement(result.domEl, frameData, result.newMap);
         }
     }
 
     private async moveElement({ targets, location }: MoveElementAction) {
         for (const target of targets) {
-            const frameView = this.editorEngine.frames.get(target.frameId);
-            if (!frameView) {
+            const frameData = this.editorEngine.frames.get(target.frameId);
+            if (!frameData) {
                 console.error('Failed to get frameView');
                 return;
             }
-            const domEl = await frameView.view.moveElement(target.domId, location.index);
-            if (!domEl) {
+            const result = await frameData.view.moveElement(target.domId, location.index);
+            if (!result) {
                 console.error('Failed to move element');
                 return;
             }
-            this.refreshAndClickMutatedElement(domEl);
+            this.refreshAndClickMutatedElement(result.domEl, frameData, result.newMap);
         }
     }
 
     private async editText({ targets, newContent }: EditTextAction) {
         for (const target of targets) {
-            const frameView = this.editorEngine.frames.get(target.frameId);
-            if (!frameView) {
+            const frameData = this.editorEngine.frames.get(target.frameId);
+            if (!frameData) {
                 console.error('Failed to get frameView');
                 return;
             }
-            const domEl = await frameView.view.editText(target.domId, newContent);
-            if (!domEl) {
+            const result = await frameData.view.editText(target.domId, newContent);
+            if (!result) {
                 console.error('Failed to edit text');
                 return;
             }
 
-            this.refreshAndClickMutatedElement(domEl);
+            this.refreshAndClickMutatedElement(result.domEl, frameData, result.newMap);
         }
     }
 
     private async groupElements({ parent, container, children }: GroupElementsAction) {
-        const frameView = this.editorEngine.frames.get(parent.frameId);
-        if (!frameView) {
+        const frameData = this.editorEngine.frames.get(parent.frameId);
+        if (!frameData) {
             console.error('Failed to get frameView');
             return;
         }
 
-        const domEl = (await frameView.view.groupElements(
+        const result = await frameData.view.groupElements(
             parent,
             container,
             children,
-        )) as DomElement;
+        );
 
-        if (!domEl) {
+        if (!result) {
             console.error('Failed to group elements');
             return;
         }
 
-        this.refreshAndClickMutatedElement(domEl);
+        this.refreshAndClickMutatedElement(result.domEl, frameData, result.newMap);
     }
 
     private async ungroupElements({ parent, container }: UngroupElementsAction) {
-        const frameView = this.editorEngine.frames.get(parent.frameId);
-        if (!frameView) {
+        const frameData = this.editorEngine.frames.get(parent.frameId);
+        if (!frameData) {
             console.error('Failed to get frameView');
             return;
         }
 
-        const domEl = (await frameView.view.ungroupElements(parent, container)) as DomElement;
+        const result = await frameData.view.ungroupElements(parent, container);
 
-        if (!domEl) {
+        if (!result) {
             console.error('Failed to ungroup elements');
             return;
         }
 
-        this.refreshAndClickMutatedElement(domEl);
+        this.refreshAndClickMutatedElement(result.domEl, frameData, result.newMap);
     }
 
     private insertImage({ targets, image }: InsertImageAction) {
@@ -257,8 +257,8 @@ export class ActionManager {
 
     private removeImage({ targets }: RemoveImageAction) {
         targets.forEach((target) => {
-            const frameView = this.editorEngine.frames.get(target.frameId);
-            if (!frameView) {
+            const frameData = this.editorEngine.frames.get(target.frameId);
+            if (!frameData) {
                 console.error('Failed to get frameView');
                 return;
             }
@@ -270,13 +270,15 @@ export class ActionManager {
 
     async refreshAndClickMutatedElement(
         domEl: DomElement,
-        // newMap: Map<string, LayerNode>,
-        // frameData: FrameData,
+        frameData: FrameData,
+        newMap: Map<string, LayerNode> | null,
     ) {
         this.editorEngine.state.editorMode = EditorMode.DESIGN;
-        // await this.editorEngine.ast.refreshAstDoc(frameData.view);
         this.editorEngine.elements.click([domEl]);
-        // this.editorEngine.ast.updateMap(frameData.view.id, newMap, domEl.domId);
+
+        if (newMap) {
+            this.editorEngine.ast.updateMap(frameData.frame.id, newMap, domEl.domId);
+        }
     }
 
     clear() {

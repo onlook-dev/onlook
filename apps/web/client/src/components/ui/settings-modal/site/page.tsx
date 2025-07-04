@@ -3,6 +3,7 @@ import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
 import type { PageMetadata } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
+import { Icons } from '@onlook/ui/icons';
 import { memo } from 'react';
 import { MetadataForm } from './metadata-form';
 import { useMetadataForm } from './use-metadata-form';
@@ -15,14 +16,19 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
 
     const {
         title,
+        titleObject,
         description,
         isDirty,
         uploadedImage,
+        isSimpleTitle,
         handleTitleChange,
+        handleTitleTemplateChange,
+        handleTitleAbsoluteChange,
         handleDescriptionChange,
         handleImageSelect,
         handleDiscard,
         setIsDirty,
+        getFinalTitleMetadata,
     } = useMetadataForm({
         initialMetadata: metadata,
     });
@@ -32,22 +38,25 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
             return;
         }
         try {
+            const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+            const finalTitle = getFinalTitleMetadata();
+            const siteTitle = typeof finalTitle === 'string' ? finalTitle : finalTitle.absolute || finalTitle.default || '';
+
             const updatedMetadata: PageMetadata = {
                 ...metadata,
-                title,
+                title: finalTitle,
                 description,
                 openGraph: {
                     ...metadata?.openGraph,
-                    title: title,
+                    title: siteTitle,
                     description: description,
                     url: baseUrl || '',
-                    siteName: title,
+                    siteName: siteTitle,
                     type: 'website',
                 },
             };
 
             if (!metadata?.metadataBase) {
-                const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
                 if (url) {
                     updatedMetadata.metadataBase = new URL(url);
                 }
@@ -69,7 +78,7 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
                             url: imagePath,
                             width: 1200,
                             height: 630,
-                            alt: title,
+                            alt: siteTitle,
                         },
                     ],
                     type: 'website',
@@ -90,20 +99,35 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
             <div className="flex flex-col gap-2 p-6">
                 <h2 className="text-lg">Page Settings</h2>
             </div>
-            <MetadataForm
-                title={title}
-                description={description}
-                isDirty={isDirty}
-                projectUrl={baseUrl}
-                onTitleChange={handleTitleChange}
-                onDescriptionChange={handleDescriptionChange}
-                onImageSelect={handleImageSelect}
-                onDiscard={handleDiscard}
-                onSave={handleSave}
-                currentMetadata={metadata}
-            />
+            <div className="relative">
+                {editorEngine.pages.isScanning ? (
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center">
+                        <div className="flex items-center gap-3 text-foreground-secondary">
+                            <Icons.LoadingSpinner className="h-5 w-5 animate-spin" />
+                            <span className="text-sm">Fetching metadata...</span>
+                        </div>
+                    </div>
+                ) : (
+                    <MetadataForm
+                        title={title}
+                        titleObject={titleObject}
+                        description={description}
+                        isDirty={isDirty}
+                        projectUrl={baseUrl}
+                        isSimpleTitle={isSimpleTitle}
+                        disabled={editorEngine.pages.isScanning}
+                        onTitleChange={handleTitleChange}
+                        onTitleTemplateChange={handleTitleTemplateChange}
+                        onTitleAbsoluteChange={handleTitleAbsoluteChange}
+                        onDescriptionChange={handleDescriptionChange}
+                        onImageSelect={handleImageSelect}
+                        onDiscard={handleDiscard}
+                        onSave={handleSave}
+                        currentMetadata={metadata}
+                        isRoot={false}
+                    />
+                )}
+            </div>
         </div>
     );
 });
-
-PageTab.displayName = 'PageTab';

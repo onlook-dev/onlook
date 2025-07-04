@@ -1,16 +1,16 @@
 'use client';
 
-import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
+import { type NextJsProjectValidation } from '@/app/projects/types';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
-import { useProjectCreation } from '../_context/context';
+import { useProjectCreation } from '../_context';
 
 export const VerifyProject = () => {
-    const { projectData, prevStep, nextStep, isFinalizing } = useProjectCreation();
+    const { projectData, prevStep, nextStep, isFinalizing, validateNextJsProject } = useProjectCreation();
     const [validation, setValidation] = useState<NextJsProjectValidation | null>(null);
 
     useEffect(() => {
@@ -23,66 +23,6 @@ export const VerifyProject = () => {
         }
         const validation = await validateNextJsProject(projectData.files);
         setValidation(validation);
-    };
-
-    const validateNextJsProject = async (
-        files: ProcessedFile[],
-    ): Promise<NextJsProjectValidation> => {
-        // Look for package.json
-        const packageJsonFile = files.find((f) => f.path.endsWith('package.json') && !f.isBinary);
-
-        if (!packageJsonFile) {
-            return { isValid: false, error: 'No package.json found' };
-        }
-
-        try {
-            const packageJson = JSON.parse(packageJsonFile.content as string);
-
-            // Check for Next.js in dependencies
-            const hasNext = packageJson.dependencies?.next || packageJson.devDependencies?.next;
-            if (!hasNext) {
-                return { isValid: false, error: 'Next.js not found in dependencies' };
-            }
-
-            // Check for React dependencies
-            const hasReact = packageJson.dependencies?.react || packageJson.devDependencies?.react;
-            if (!hasReact) {
-                return { isValid: false, error: 'React not found in dependencies' };
-            }
-
-            // Determine router type
-            let routerType: 'app' | 'pages' = 'pages';
-
-            // Check for App Router (app directory with layout file)
-            const hasAppLayout = files.some(
-                (f) =>
-                    (f.path.includes('app/layout.') || f.path.includes('src/app/layout.')) &&
-                    (f.path.endsWith('.tsx') ||
-                        f.path.endsWith('.ts') ||
-                        f.path.endsWith('.jsx') ||
-                        f.path.endsWith('.js')),
-            );
-
-            if (hasAppLayout) {
-                routerType = 'app';
-            } else {
-                // Check for Pages Router (pages directory)
-                const hasPagesDir = files.some(
-                    (f) => f.path.includes('pages/') || f.path.includes('src/pages/'),
-                );
-
-                if (!hasPagesDir) {
-                    return {
-                        isValid: false,
-                        error: 'No valid Next.js router structure found (missing app/ or pages/ directory)',
-                    };
-                }
-            }
-
-            return { isValid: true, routerType };
-        } catch (error) {
-            return { isValid: false, error: 'Invalid package.json format' };
-        }
     };
 
     const validProject = () => (

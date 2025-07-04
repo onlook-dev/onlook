@@ -22,6 +22,17 @@ const conversationRouter = createTRPCRouter({
             });
             return dbConversations.map((conversation) => toConversation(conversation));
         }),
+    create: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const [conversation] = await ctx.db.insert(conversations).values({
+                projectId: input.projectId,
+            }).returning();
+            if (!conversation) {
+                throw new Error('Failed to create conversation');
+            }
+            return toConversation(conversation);
+        }),
     upsert: protectedProcedure
         .input(z.object({ conversation: conversationInsertSchema }))
         .mutation(async ({ ctx, input }) => {

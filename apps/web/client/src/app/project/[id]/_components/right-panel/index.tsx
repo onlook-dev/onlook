@@ -75,7 +75,7 @@ export const RightPanel = observer(() => {
                     <TabsContent className="h-full overflow-y-auto" value={EditorTabValue.CHAT}>
                         <ChatTab />
                     </TabsContent>
-                    <TabsContent className='h-full overflow-y-auto' value={EditorTabValue.DEV}>
+                    <TabsContent forceMount className={cn('h-full overflow-y-auto', editorEngine.state.rightPanelTab !== EditorTabValue.DEV && 'hidden')} value={EditorTabValue.DEV}>
                         <DevTab />
                     </TabsContent>
                 </Tabs>

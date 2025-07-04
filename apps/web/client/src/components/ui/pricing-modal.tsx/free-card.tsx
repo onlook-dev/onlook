@@ -18,13 +18,13 @@ const FREE_TIER = {
     features: [
         'Visual code editor access',
         '5 projects',
-        '10 AI chat messages a day',
+        '5 AI chat messages a day',
         '50 AI messages a month',
         'Limited to 1 screenshot per chat'
     ],
-    defaultSelectValue: '10',
+    defaultSelectValue: 'daily',
     selectValues: [
-        { value: '10', label: '10 Daily Messages' },
+        { value: 'daily', label: '5 Daily Messages' },
     ],
 };
 
@@ -34,7 +34,7 @@ export const FreeCard = ({
     delay: number;
 }) => {
     const t = useTranslations();
-    const { subscription, isPro } = useSubscription();
+    const { subscription, isPro, setIsCheckingSubscription } = useSubscription();
     const { mutateAsync: manageSubscription } = api.subscription.manageSubscription.useMutation();
     const [isCheckingOut, setIsCheckingOut] = useState(false);
     const isFree = !isPro;
@@ -47,6 +47,7 @@ export const FreeCard = ({
 
             if (session?.url) {
                 window.open(session.url, '_blank');
+                setIsCheckingSubscription(true);
             } else {
                 throw new Error('No checkout URL received');
             }

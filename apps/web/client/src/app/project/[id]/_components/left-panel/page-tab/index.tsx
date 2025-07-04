@@ -108,7 +108,7 @@ export const PagesTab = observer(() => {
 
     const dimensions = useMemo(
         () => ({
-            height: Math.max((height ?? 8) - 16, 100),
+            height: Math.max((height ?? 8) - 32, 100),
             width: width ?? 365,
         }),
         [height, width],

@@ -92,7 +92,7 @@ export function FileModal({
             }
 
             const content = getFileTemplate(name);
-            await createFileInSandbox(session, fullPath, content, editorEngine);
+            await createFileInSandbox(session, fullPath, content, editorEngine.sandbox);
             toast(`File "${name}" created successfully!`);
 
             setName('');

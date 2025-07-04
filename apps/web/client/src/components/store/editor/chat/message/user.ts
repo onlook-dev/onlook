@@ -52,9 +52,10 @@ export class UserChatMessageImpl implements UserChatMessage {
         return getHydratedUserMessage(this.id, this.content, this.context);
     }
 
-    updateContent(content: string) {
+    updateMessage(content: string, context: ChatMessageContext[]) {
         this.content = content;
         this.parts = [{ type: 'text', text: content }];
+        this.context = context;
     }
 
     getStringContent(): string {

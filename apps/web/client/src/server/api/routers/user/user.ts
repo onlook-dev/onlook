@@ -1,37 +1,9 @@
-import { createDefaultUserSettings, toUser, toUserSettings, userInsertSchema, users, userSettings, userSettingsUpdateSchema } from '@onlook/db';
+import { callUserWebhook } from '@/utils/n8n/webhook';
+import { toUser, userInsertSchema, users, type User } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-
-const userSettingsRoute = createTRPCRouter({
-    get: protectedProcedure.query(async ({ ctx }) => {
-        const user = ctx.user;
-        const settings = await ctx.db.query.userSettings.findFirst({
-            where: eq(userSettings.userId, user.id),
-        });
-        return toUserSettings(settings ?? createDefaultUserSettings(user.id));
-    }),
-    upsert: protectedProcedure.input(userSettingsUpdateSchema).mutation(async ({ ctx, input }) => {
-        const user = ctx.user
-
-        const existingSettings = await ctx.db.query.userSettings.findFirst({
-            where: eq(userSettings.userId, user.id),
-        });
-
-        if (!existingSettings) {
-            const newSettings = { ...createDefaultUserSettings(user.id), ...input };
-            const [insertedSettings] = await ctx.db.insert(userSettings).values(newSettings).returning();
-            return toUserSettings(insertedSettings ?? newSettings);
-        }
-        const [updatedSettings] = await ctx.db.update(userSettings).set(input).where(eq(userSettings.userId, user.id)).returning();
-
-        if (!updatedSettings) {
-            throw new Error('Failed to update user settings');
-        }
-
-        return toUserSettings(updatedSettings);
-    }),
-});
+import { userSettingsRouter } from './user-settings';
 
 export const userRouter = createTRPCRouter({
     get: protectedProcedure.query(async ({ ctx }) => {
@@ -41,7 +13,9 @@ export const userRouter = createTRPCRouter({
         });
         const userData = user ? toUser({
             id: user.id,
-            name: user.name ?? authUser.user_metadata.name,
+            firstName: user.firstName ?? authUser.user_metadata.first_name,
+            lastName: user.lastName ?? authUser.user_metadata.last_name,
+            displayName: user.displayName ?? authUser.user_metadata.display_name,
             email: user.email ?? authUser.email,
             avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
             createdAt: user.createdAt ?? new Date(authUser.created_at ?? Date.now()),
@@ -62,12 +36,33 @@ export const userRouter = createTRPCRouter({
         });
         return user;
     }),
-    create: protectedProcedure.input(userInsertSchema).mutation(async ({ ctx, input }) => {
-        const [user] = await ctx.db.insert(users).values(input).returning();
-        if (!user) {
-            throw new Error('Failed to create user');
-        }
-        return user;
-    }),
-    settings: userSettingsRoute,
+    upsert: protectedProcedure
+        .input(userInsertSchema)
+        .mutation(async ({ ctx, input }): Promise<User> => {
+            const existingUser = await ctx.db.query.users.findFirst({
+                where: eq(users.id, input.id),
+            });
+            if (existingUser) {
+                const [user] = await ctx.db.update(users).set(input).where(eq(users.id, input.id)).returning();
+                if (!user) {
+                    throw new Error('Failed to update user');
+                }
+                return user;
+            } else {
+                const [user] = await ctx.db.insert(users).values(input).returning();
+                if (!user) {
+                    throw new Error('Failed to create user');
+                }
+                const authUser = ctx.user;
+                await callUserWebhook({
+                    email: user.email,
+                    firstName: user.firstName ?? authUser.user_metadata.first_name ?? authUser.user_metadata.name,
+                    lastName: user.lastName ?? authUser.user_metadata.last_name,
+                    source: 'web beta',
+                    subscribed: false,
+                });
+                return user;
+            }
+        }),
+    settings: userSettingsRouter,
 });

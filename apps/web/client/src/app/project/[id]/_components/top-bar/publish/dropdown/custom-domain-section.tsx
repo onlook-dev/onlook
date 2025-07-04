@@ -1,13 +1,14 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useHostingType } from '@/components/store/hosting';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
-import { PublishStatus, SettingsTabValue } from '@onlook/models';
+import { DeploymentStatus, DeploymentType, SettingsTabValue } from '@onlook/models';
 import { ProductType } from '@onlook/stripe';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
-import { getPublishUrls, timeAgo } from '@onlook/utility';
+import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { UrlSection } from './url';
 
@@ -16,16 +17,11 @@ export const CustomDomainSection = observer(() => {
     const stateManager = useStateManager();
 
     const { data: subscription } = api.subscription.get.useQuery();
-    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: domain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
-    const product = subscription?.product;
-    const state = editorEngine.hosting.state;
-    const isLoading = state.status === PublishStatus.LOADING;
-    const isPro = product?.type === ProductType.PRO;
+    const { deployment, publish: runPublish, isDeploying } = useHostingType(DeploymentType.CUSTOM);
 
-    if (!project) {
-        return 'Something went wrong. Project not found.';
-    }
+    const product = subscription?.product;
+    const isPro = product?.type === ProductType.PRO;
 
     const openCustomDomain = (): void => {
         editorEngine.state.publishOpen = false;
@@ -38,20 +34,19 @@ export const CustomDomainSection = observer(() => {
             console.error(`No custom domain hosting manager found`);
             return;
         }
-        const res = await editorEngine.hosting.publishCustom(project.id, {
+        const res = await runPublish({
+            projectId: editorEngine.projectId,
             buildScript: DefaultSettings.COMMANDS.build,
-            urls: getPublishUrls(domain.url),
-            options: {
-                skipBadge: true,
-                buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-            },
+            buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
+            envVars: {},
         });
-        if (!res.success) {
-            console.error(res.message);
-            toast.error(res.message);
+        if (!res) {
+            toast.error('Failed to create deployment');
             return;
         }
-        toast.success('Deployment successful');
+        toast.success('Created Deployment', {
+            description: 'Deployment ID: ' + res.deploymentId,
+        });
     };
 
     const retry = () => {
@@ -59,7 +54,6 @@ export const CustomDomainSection = observer(() => {
             console.error(`No custom domain hosting manager found`);
             return;
         }
-        editorEngine.hosting.resetState();
         publish();
     };
 
@@ -98,19 +92,19 @@ export const CustomDomainSection = observer(() => {
                     <h3 className="">
                         Custom Domain
                     </h3>
-                    {state.status === PublishStatus.PUBLISHED && domain.publishedAt && (
+                    {deployment && deployment?.status === DeploymentStatus.COMPLETED && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-green-300">Live</p>
                             <p>•</p>
-                            <p>Updated {timeAgo(domain.publishedAt)} ago</p>
+                            <p>Updated {timeAgo(deployment.updatedAt.toISOString())} ago</p>
                         </div>
                     )}
-                    {state.status === PublishStatus.ERROR && (
+                    {deployment?.status === DeploymentStatus.FAILED && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-red-500">Error</p>
                         </div>
                     )}
-                    {state.status === PublishStatus.LOADING && (
+                    {isDeploying && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="">Updating • In progress</p>
                         </div>
@@ -129,24 +123,23 @@ export const CustomDomainSection = observer(() => {
         return (
             <div className="w-full flex flex-col gap-2">
                 <UrlSection url={domain.url} isCopyable={false} />
-                {(state.status === PublishStatus.PUBLISHED ||
-                    state.status === PublishStatus.UNPUBLISHED) && (
-                        <Button
-                            onClick={publish}
-                            variant="outline"
-                            className={cn(
-                                'w-full rounded-md p-3',
-                                !domain.publishedAt &&
-                                'bg-blue-400 hover:bg-blue-500 text-white',
-                            )}
-                            disabled={isLoading}
-                        >
-                            {domain.publishedAt ? 'Update' : `Publish to ${domain.url}`}
-                        </Button>
-                    )}
-                {state.status === PublishStatus.ERROR && (
+                {deployment?.status === DeploymentStatus.COMPLETED && (
+                    <Button
+                        onClick={publish}
+                        variant="outline"
+                        className={cn(
+                            'w-full rounded-md p-3',
+                            !domain.publishedAt &&
+                            'bg-blue-400 hover:bg-blue-500 text-white',
+                        )}
+                        disabled={isDeploying}
+                    >
+                        {domain.publishedAt ? 'Update' : `Publish to ${domain.url}`}
+                    </Button>
+                )}
+                {deployment?.status === DeploymentStatus.FAILED && (
                     <div className="w-full flex flex-col gap-2">
-                        <p className="text-red-500 max-h-20 overflow-y-auto">{state.message}</p>
+                        <p className="text-red-500 max-h-20 overflow-y-auto">{deployment?.message}</p>
                         <Button
                             variant="outline"
                             className="w-full rounded-md p-3"
