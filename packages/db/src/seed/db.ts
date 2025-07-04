@@ -2,6 +2,7 @@ import {
     canvases,
     conversations,
     createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
+    deployments,
     frames,
     messages,
     previewDomains,
@@ -27,9 +28,17 @@ import {
     type ChatMessageContext,
 } from '@onlook/models';
 import { v4 as uuidv4 } from 'uuid';
+import { SEED_USER } from './constants';
 
 const user0 = {
-    id: '2585ea6b-6303-4f21-977c-62af2f5a21f5',
+    id: SEED_USER.ID,
+    email: SEED_USER.EMAIL,
+    firstName: SEED_USER.FIRST_NAME,
+    lastName: SEED_USER.LAST_NAME,
+    displayName: SEED_USER.DISPLAY_NAME,
+    avatarUrl: SEED_USER.AVATAR_URL,
+    createdAt: new Date(),
+    updatedAt: new Date(),
 } satisfies User;
 
 const project0 = {
@@ -104,6 +113,7 @@ const message0 = {
     conversationId: conversation0.id,
     role: ChatMessageRole.USER,
     content: 'Test message 0',
+    commitOid: null,
     createdAt: new Date(),
     applied: false,
     context: contexts,
@@ -116,6 +126,7 @@ const message1 = {
     conversationId: conversation0.id,
     role: ChatMessageRole.ASSISTANT,
     content: 'Test message 1',
+    commitOid: null,
     createdAt: new Date(),
     applied: false,
     context: contexts,
@@ -128,6 +139,7 @@ const message2 = {
     conversationId: conversation0.id,
     role: ChatMessageRole.ASSISTANT,
     content: 'Test message 2',
+    commitOid: null,
     createdAt: new Date(),
     applied: false,
     context: contexts,
@@ -140,6 +152,7 @@ const message3 = {
     conversationId: conversation1.id,
     role: ChatMessageRole.USER,
     content: 'Test message 3',
+    commitOid: null,
     createdAt: new Date(),
     applied: false,
     context: contexts,
@@ -157,6 +170,7 @@ const message4 = {
     context: contexts,
     parts: [{ type: 'text', text: 'Test message 4' }],
     snapshots: {},
+    commitOid: null,
 } satisfies Message;
 
 export const seedDb = async () => {
@@ -190,6 +204,7 @@ export const seedDb = async () => {
 export const resetDb = async () => {
     console.log('Resetting the database...');
     await db.transaction(async (tx) => {
+        await tx.delete(deployments);
         await tx.delete(previewDomains);
         await tx.delete(publishedDomains);
         await tx.delete(userCanvases);

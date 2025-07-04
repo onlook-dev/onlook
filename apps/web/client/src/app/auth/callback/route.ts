@@ -1,7 +1,5 @@
 import { client } from '@/utils/analytics/server';
 import { createClient } from '@/utils/supabase/server';
-import type { User } from '@onlook/db';
-import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { api } from '~/trpc/server';
 
@@ -15,7 +13,14 @@ export async function GET(request: Request) {
         if (!error) {
             const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === 'development';
-            const user = await getOrCreateUser(data.user);
+            const user = await api.user.upsert({
+                id: data.user.id,
+                firstName: data.user.user_metadata?.first_name,
+                lastName: data.user.user_metadata?.last_name,
+                displayName: data.user.user_metadata?.display_name,
+                email: data.user.email,
+                avatarUrl: data.user.user_metadata?.avatar_url,
+            });
 
             trackUserSignedIn(user.id, {
                 name: data.user.user_metadata.name,
@@ -37,22 +42,6 @@ export async function GET(request: Request) {
 
     // return the user to an error page with instructions
     return NextResponse.redirect(`${origin}/auth/auth-code-error`);
-}
-
-async function getOrCreateUser(user: SupabaseUser): Promise<User> {
-    const existingUser = await api.user.getById(user.id);
-    if (!existingUser) {
-        console.log(`User ${user.id} not found, creating...`);
-        const newUser = await api.user.create({
-            id: user.id,
-            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email,
-            email: user.email,
-            avatarUrl: user.user_metadata?.avatar_url,
-        })
-        return newUser;
-    }
-    console.log(`User ${user.id} found, returning...`);
-    return existingUser;
 }
 
 function trackUserSignedIn(userId: string, properties: Record<string, any>) {

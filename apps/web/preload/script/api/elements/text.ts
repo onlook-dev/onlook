@@ -1,7 +1,7 @@
 import { EditorAttributes } from '@onlook/constants';
-import type { DomElement, EditTextResult } from '@onlook/models';
+import type { DomElement, EditTextResult, LayerNode } from '@onlook/models';
 import { getHtmlElement } from '../../helpers';
-import { publishEditText } from '../events/publish';
+import { buildLayerTree } from '../dom';
 import { getDomElement, restoreElementStyle } from './helpers';
 
 export function editTextByDomId(domId: string, content: string): DomElement | null {
@@ -26,8 +26,8 @@ export function startEditingText(domId: string): EditTextResult | null {
 
     let targetEl: HTMLElement | null = null;
     // Check for element type
-    const hasOnlyTextAndBreaks = childNodes.every(node => 
-        node.nodeType === Node.TEXT_NODE || 
+    const hasOnlyTextAndBreaks = childNodes.every(node =>
+        node.nodeType === Node.TEXT_NODE ||
         (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName.toLowerCase() === 'br')
     );
 
@@ -44,14 +44,14 @@ export function startEditingText(domId: string): EditTextResult | null {
         console.warn('Start editing text failed. No target element found for selector:', domId);
         return null;
     }
-    
+
     const originalContent = extractTextContent(el);
     prepareElementForEditing(targetEl);
 
     return { originalContent };
 }
 
-export function editText(domId: string, content: string): DomElement | null {
+export function editText(domId: string, content: string): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | null {
     const el = getHtmlElement(domId);
     if (!el) {
         console.warn('Edit text failed. No element for selector:', domId);
@@ -59,7 +59,10 @@ export function editText(domId: string, content: string): DomElement | null {
     }
     prepareElementForEditing(el);
     updateTextContent(el, content);
-    return getDomElement(el, true);
+    return {
+        domEl: getDomElement(el, true),
+        newMap: buildLayerTree(el),
+    };
 }
 
 export function stopEditingText(domId: string): { newContent: string; domEl: DomElement } | null {
@@ -69,7 +72,6 @@ export function stopEditingText(domId: string): { newContent: string; domEl: Dom
         return null;
     }
     cleanUpElementAfterEditing(el);
-    publishEditText(getDomElement(el, true));
     return { newContent: extractTextContent(el), domEl: getDomElement(el, true) };
 }
 
