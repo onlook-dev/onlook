@@ -78,7 +78,7 @@ export const WebFrameComponent = observer(
                         editorEngine.frameEvent.handleWindowMutated();
                     },
                     onWindowResized: () => {
-                        editorEngine.frameEvent.handleWindowResized(frame.id);
+                        editorEngine.frameEvent.handleWindowResized();
                     },
                     onDomProcessed: (data: { layerMap: Record<string, any>; rootNode: any }) => {
                         editorEngine.frameEvent.handleDomProcessed(frame.id, data);
