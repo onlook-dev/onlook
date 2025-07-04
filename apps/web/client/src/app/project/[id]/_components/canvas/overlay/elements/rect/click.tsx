@@ -112,6 +112,18 @@ export const ClickRect = ({
         const patternId = `margin-pattern-${nanoid()}`;
         const maskId = `margin-mask-${nanoid()}`;
 
+        const checkMarginAuto = (side: string) => {
+            const marginSide = styles?.defined?.[`margin-${side}`];
+            const margin = styles?.defined?.['margin'];
+            const isMarginNumber = marginSide && /^\d+/.test(marginSide)
+
+            if (isMarginNumber) {
+                return false;
+            }
+
+            return marginSide === 'auto' || margin === 'auto';
+        };
+
         return (
             <>
                 <defs>
@@ -157,7 +169,7 @@ export const ClickRect = ({
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {original.top}
+                        {checkMarginAuto('top') ? 'auto' : original.top}
                     </text>
                 )}
                 {original.bottom > 0 && (
@@ -169,7 +181,7 @@ export const ClickRect = ({
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {original.bottom}
+                        {checkMarginAuto('bottom') ? 'auto' : original.bottom}
                     </text>
                 )}
                 {original.left > 0 && (
@@ -181,7 +193,7 @@ export const ClickRect = ({
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {original.left}
+                        {checkMarginAuto('left') ? 'auto' : original.left}
                     </text>
                 )}
                 {original.right > 0 && (
@@ -193,7 +205,7 @@ export const ClickRect = ({
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {original.right}
+                        {checkMarginAuto('right') ? 'auto' : original.right}
                     </text>
                 )}
             </>
@@ -296,45 +308,6 @@ export const ClickRect = ({
                     </text>
                 )}
             </>
-        );
-    };
-
-    const renderDimensionLabels = () => {
-        const rectColor = isComponent ? colors.purple[500] : colors.red[500];
-        const displayWidth = parseFloat(styles?.computed.width ?? '0').toFixed(0);
-        const displayHeight = parseFloat(styles?.computed.height ?? '0').toFixed(0);
-        const text = `${displayWidth} × ${displayHeight}`;
-
-        // Constants from showDimensions
-        const padding = { top: 2, bottom: 2, left: 4, right: 4 };
-        const radius = 2;
-
-        // Assuming text width is roughly 80px and height is 16px (you may want to measure this dynamically)
-        const rectWidth = 80 + padding.left + padding.right;
-        const rectHeight = 16 + padding.top + padding.bottom;
-        const rectX = (width - rectWidth) / 2;
-        const rectY = height;
-
-        // Path for rounded rectangle
-        const path =
-            rectWidth > width
-                ? `M${rectX + radius},${rectY} q-${radius},0 -${radius},${radius} v${rectHeight - 2 * radius} q0,${radius} ${radius},${radius} h${rectWidth - 2 * radius} q${radius},0 ${radius},-${radius} v-${rectHeight - 2 * radius} q0,-${radius} -${radius},-${radius} z`
-                : `M${rectX},${rectY} v${rectHeight - radius} q0,${radius} ${radius},${radius} h${rectWidth - 2 * radius} q${radius},0 ${radius},-${radius} v-${rectHeight - radius} z`;
-
-        return (
-            <g>
-                <path d={path} fill={rectColor} />
-                <text
-                    x={width / 2}
-                    y={rectY + rectHeight / 2}
-                    fill="white"
-                    fontSize="12"
-                    textAnchor="middle"
-                    dominantBaseline="middle"
-                >
-                    {text}
-                </text>
-            </g>
         );
     };
 
