@@ -1783,6 +1783,9 @@ var LANGUAGE_DISPLAY_NAMES = {
   ["zh" /* Chinese */]: "中文",
   ["ko" /* Korean */]: "한국어"
 };
+// script/api/dom.ts
+var import_debounce = __toESM(require_debounce(), 1);
+
 // script/helpers/dom.ts
 function getHtmlElement(domId) {
   return document.querySelector(`[${"data-odid" /* DATA_ONLOOK_DOM_ID */}="${domId}"]`);
@@ -1828,6 +1831,18 @@ function getInstanceId(node) {
   return node.getAttribute("data-oiid" /* DATA_ONLOOK_INSTANCE_ID */);
 }
 
+// script/api/events/publish.ts
+function publishDomProcessed(layerMap, rootNode) {
+  if (!penpalParent)
+    return;
+  penpalParent.onDomProcessed({
+    layerMap: Object.fromEntries(layerMap),
+    rootNode
+  }).catch((error) => {
+    console.error("Failed to send DOM processed event:", error);
+  });
+}
+
 // script/api/state.ts
 function setFrameId(frameId) {
   window._onlookFrameId = frameId;
@@ -1844,20 +1859,7 @@ function getFrameId() {
   return frameId;
 }
 
-// script/api/events/publish.ts
-function publishDomProcessed(layerMap, rootNode) {
-  if (!penpalParent)
-    return;
-  penpalParent.onDomProcessed({
-    layerMap: Object.fromEntries(layerMap),
-    rootNode
-  }).catch((error) => {
-    console.error("Failed to send DOM processed event:", error);
-  });
-}
-
 // script/api/dom.ts
-var import_debounce = __toESM(require_debounce(), 1);
 function processDomDebounced(root = document.body) {
   const frameId = getFrameId();
   if (!frameId) {
@@ -2193,7 +2195,10 @@ function groupElements(parent2, container, children) {
     removeIdsFromChildElement(element);
   });
   const domEl = getDomElement(containerEl, true);
-  return domEl;
+  return {
+    domEl,
+    newMap: buildLayerTree(containerEl)
+  };
 }
 function ungroupElements(parent2, container) {
   const parentEl = getHtmlElement(parent2.domId);
@@ -12368,8 +12373,7 @@ var cssManager = CSSManager.getInstance();
 // script/api/style/update.ts
 function updateStyle(domId, change) {
   cssManager.updateStyle(domId, change.updated);
-  const domEl = getElementByDomId(domId, true);
-  return domEl;
+  return getElementByDomId(domId, true);
 }
 // script/api/elements/dom/image.ts
 function insertImage(domId, image) {
@@ -12474,7 +12478,11 @@ function insertElement(element, location) {
       assertNever(location);
   }
   const domEl = getDomElement(newEl, true);
-  return domEl;
+  const newMap = buildLayerTree(newEl);
+  return {
+    domEl,
+    newMap
+  };
 }
 function createElement(element) {
   const newEl = document.createElement(element.tagName);
@@ -12523,7 +12531,11 @@ function removeElement(location) {
   if (elementToRemove) {
     const domEl = getDomElement(elementToRemove, true);
     elementToRemove.style.display = "none";
-    return domEl;
+    const newMap = targetEl.parentElement ? buildLayerTree(targetEl.parentElement) : null;
+    return {
+      domEl,
+      newMap
+    };
   } else {
     console.warn(`No element found to remove at the specified location`);
     return null;
@@ -12577,7 +12589,11 @@ function moveElement(domId, newIndex) {
     return null;
   }
   const domEl = getDomElement(movedEl, true);
-  return domEl;
+  const newMap = movedEl.parentElement ? buildLayerTree(movedEl.parentElement) : null;
+  return {
+    domEl,
+    newMap
+  };
 }
 function getElementIndex(domId) {
   const el = getHtmlElement(domId);
@@ -12926,7 +12942,10 @@ function editText(domId, content) {
   }
   prepareElementForEditing(el);
   updateTextContent(el, content);
-  return getDomElement(el, true);
+  return {
+    domEl: getDomElement(el, true),
+    newMap: buildLayerTree(el)
+  };
 }
 function stopEditingText(domId) {
   const el = getHtmlElement(domId);
@@ -17294,13 +17313,24 @@ function setTheme(theme) {
 }
 
 // script/api/index.ts
-var preloadMethods = {
+function withTryCatch(fn) {
+  return (...args) => {
+    try {
+      return fn(...args);
+    } catch (error) {
+      console.error(`Error in ${fn.name}:`, error);
+      return null;
+    }
+  };
+}
+var rawMethods = {
   processDom,
   setFrameId,
   getComputedStyleByDomId,
   updateElementInstance,
   getFirstOnlookElement,
   captureScreenshot,
+  buildLayerTree,
   getElementAtLoc,
   getElementByDomId,
   getElementIndex,
@@ -17335,6 +17365,7 @@ var preloadMethods = {
   removeImage,
   handleBodyReady
 };
+var preloadMethods = Object.fromEntries(Object.entries(rawMethods).map(([key, fn]) => [key, withTryCatch(fn)]));
 
 // script/index.ts
 var penpalParent = null;
@@ -17383,5 +17414,5 @@ export {
   penpalParent
 };
 
-//# debugId=268792775C9EB39564756E2164756E21
+//# debugId=06715304AEA9E71864756E2164756E21
 //# sourceMappingURL=index.js.map

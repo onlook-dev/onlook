@@ -1,15 +1,16 @@
 import { EditorAttributes } from '@onlook/constants';
-import type { DomElement } from '@onlook/models';
+import type { DomElement, LayerNode } from '@onlook/models';
 import type { ActionTarget, GroupContainer } from '@onlook/models/actions';
 import { getHtmlElement } from '../../../helpers';
 import { getOrAssignDomId } from '../../../helpers/ids';
+import { buildLayerTree } from '../../dom';
 import { getDomElement } from '../helpers';
 
 export function groupElements(
     parent: ActionTarget,
     container: GroupContainer,
     children: Array<ActionTarget>,
-): DomElement | null {
+): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | null {
     const parentEl = getHtmlElement(parent.domId);
     if (!parentEl) {
         console.warn('Failed to find parent element', parent.domId);
@@ -48,8 +49,11 @@ export function groupElements(
     });
 
     const domEl = getDomElement(containerEl, true);
-    
-    return domEl;
+
+    return {
+        domEl,
+        newMap: buildLayerTree(containerEl),
+    };
 }
 
 export function ungroupElements(
@@ -63,7 +67,7 @@ export function ungroupElements(
     }
 
     let containerEl: HTMLElement | null;
-    
+
     if (container.domId) {
         containerEl = getHtmlElement(container.domId);
     } else {
@@ -86,7 +90,7 @@ export function ungroupElements(
     containerEl.remove();
 
     const domEl = getDomElement(parentEl, true);
-    
+
     return domEl;
 }
 

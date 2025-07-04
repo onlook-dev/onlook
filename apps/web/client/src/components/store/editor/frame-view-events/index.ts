@@ -1,7 +1,7 @@
-import { makeAutoObservable } from 'mobx';
 import type { LayerNode } from '@onlook/models';
-import type { EditorEngine } from '../engine';
 import { debounce } from 'lodash';
+import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '../engine';
 
 export enum FrameViewEvents {
     DOM_PROCESSED = 'dom-processed',
@@ -30,7 +30,7 @@ export type FrameViewEventPayload = {
 
 export class FrameViewEventHandlerManager {
     private debouncedHandlers: (() => void)[] = [];
-    
+
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
@@ -38,7 +38,7 @@ export class FrameViewEventHandlerManager {
     clear() {
     }
 
-    handleWindowMutated() { 
+    handleWindowMutated() {
         const handler = async () => {
             try {
                 await this.editorEngine.refreshLayers();
@@ -62,19 +62,17 @@ export class FrameViewEventHandlerManager {
         }
     }
 
-    async handleDomProcessed(frameId: string, data: { layerMap: Record<string, LayerNode>; rootNode: LayerNode }): Promise<void> {        
+    async handleDomProcessed(frameId: string, data: { layerMap: Record<string, LayerNode>; rootNode: LayerNode }): Promise<void> {
         try {
             const layerMapConverted = new Map(Object.entries(data.layerMap)) as Map<string, LayerNode>;
-            
+
             const frameData = this.editorEngine.frames.get(frameId);
             if (!frameData) {
                 console.warn('Frame not found for DOM processing');
                 return;
             }
 
-            
             this.editorEngine.ast.setMapRoot(frameId, data.rootNode, layerMapConverted);
-            
             await this.editorEngine.overlay.refresh();
         } catch (error) {
             console.error('Error handling DOM processed:', error);
@@ -95,7 +93,7 @@ export class FrameViewEventHandlerManager {
                 }
             })
         );
-        
+
         const validElements = stillValidElements.filter((el): el is typeof selectedElements[0] => el !== null);
         if (validElements.length !== selectedElements.length) {
             this.editorEngine.elements.click(validElements);

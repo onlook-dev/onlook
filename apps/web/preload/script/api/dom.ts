@@ -1,10 +1,10 @@
 import { EditorAttributes } from '@onlook/constants';
 import type { LayerNode } from '@onlook/models';
+import debounce from 'lodash/debounce';
 import { isValidHtmlElement } from '../helpers/dom';
 import { getInstanceId, getOid, getOrAssignDomId } from '../helpers/ids';
-import { getFrameId } from './state';
 import { publishDomProcessed } from './events/publish';
-import debounce  from 'lodash/debounce';
+import { getFrameId } from './state';
 
 export interface ProcessDomResult {
     rootDomId: string;
@@ -36,7 +36,6 @@ function processDomDebounced(root: HTMLElement = document.body): ProcessDomResul
     }
 
     publishDomProcessed(layerMap, rootNode);
-
     return { rootDomId, layerMap: Array.from(layerMap.entries()) };
 }
 
