@@ -9,7 +9,6 @@ import {
 } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
-import { v4 as uuidv4 } from 'uuid';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 
@@ -36,16 +35,6 @@ export class ChatConversationImpl implements ChatConversation {
             });
         }
         makeAutoObservable(this);
-    }
-
-    static create(projectId: string) {
-        return new ChatConversationImpl({
-            id: uuidv4(),
-            projectId,
-            displayName: null,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        });
     }
 
     static fromJSON(conversation: ChatConversation) {

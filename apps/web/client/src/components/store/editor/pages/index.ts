@@ -1,4 +1,3 @@
-import type { ProjectManager } from '@/components/store/project/manager';
 import { sendAnalytics } from '@/utils/analytics';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
@@ -21,10 +20,10 @@ export class PagesManager {
     private activeRoutesByFrameId: Record<string, string> = {};
     private currentPath = '';
     private groupedRoutes = '';
+    private _isScanning = false;
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
     }
@@ -36,6 +35,10 @@ export class PagesManager {
     get activeRoute(): string | undefined {
         const frame = this.getActiveFrame();
         return frame ? this.activeRoutesByFrameId[frame.frame.id] : undefined;
+    }
+
+    get isScanning() {  
+        return this._isScanning;
     }
 
     private getActiveFrame(): FrameData | undefined {
@@ -125,22 +128,20 @@ export class PagesManager {
 
     async scanPages() {
         try {
-            const projectId = this.projectManager.project?.id;
-
-            if (!projectId) {
-                console.warn('No project ID found');
-                this.setPages([]); // Clears pages when no project
+            if (this._isScanning) {
                 return;
             }
-
+            this._isScanning = true;
             if (this.editorEngine?.sandbox?.session?.session) {
                 try {
                     const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox.session.session);
                     this.setPages(realPages);
+                    this._isScanning = false;
                     return;
                 } catch (error) {
                     console.error('Failed to scan pages from sandbox:', error);
                     this.setPages([]);
+                    this._isScanning = false;
                 }
             } else {
                 console.log('Sandbox session not available');
@@ -149,15 +150,12 @@ export class PagesManager {
         } catch (error) {
             console.error('Failed to scan pages:', error);
             this.setPages([]);
+        } finally {
+            this._isScanning = false;
         }
     }
 
     public async createPage(baseRoute: string, pageName: string): Promise<void> {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            throw new Error('No project ID found');
-        }
-
         const { valid, error } = validateNextJsRoute(pageName);
         if (!valid) {
             throw new Error(error);
@@ -186,11 +184,6 @@ export class PagesManager {
     }
 
     public async renamePage(oldPath: string, newName: string): Promise<void> {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            throw new Error('No project ID found');
-        }
-
         const { valid, error } = validateNextJsRoute(newName);
         if (!valid) {
             throw new Error(error);
@@ -217,11 +210,6 @@ export class PagesManager {
     }
 
     public async duplicatePage(sourcePath: string, targetPath: string): Promise<void> {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            throw new Error('No project ID found');
-        }
-
         const session = this.editorEngine?.sandbox?.session?.session;
         if (!session) {
             throw new Error('No sandbox session available');
@@ -243,11 +231,6 @@ export class PagesManager {
     }
 
     public async deletePage(pageName: string, isDir: boolean): Promise<void> {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            throw new Error('No project ID found');
-        }
-
         const normalizedPath = normalizeRoute(`${pageName}`);
         if (normalizedPath === '' || normalizedPath === '/') {
             throw new Error('Cannot delete root page');
@@ -270,11 +253,6 @@ export class PagesManager {
     }
 
     public async updateMetadataPage(pagePath: string, metadata: PageMetadata) {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            throw new Error('No project ID found');
-        }
-
         if (!doesRouteExist(this.pages, pagePath)) {
             throw new Error('A page with this name does not exist');
         }

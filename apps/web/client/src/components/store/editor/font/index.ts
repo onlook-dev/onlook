@@ -1,6 +1,5 @@
 "use client";
 
-import type { ProjectManager } from '@/components/store/project/manager';
 import type { ParseResult } from '@babel/parser';
 import * as t from '@babel/types';
 import { DefaultSettings } from '@onlook/constants';
@@ -84,13 +83,20 @@ export class FontManager {
     private disposers: Array<() => void> = [];
     private previousFonts: Font[] = [];
 
-    fontConfigPath = normalizePath(DefaultSettings.FONT_CONFIG);
+    private _fontConfigPath: string | null = null;
     tailwindConfigPath = normalizePath(DefaultSettings.TAILWIND_CONFIG);
     fontImportPath = './fonts';
 
+    get fontConfigPath(): string {
+        if (!this._fontConfigPath) {
+            // Fallback to default if not yet determined
+            return normalizePath(DefaultSettings.FONT_CONFIG);
+        }
+        return this._fontConfigPath;
+    }
+
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
 
@@ -118,9 +124,12 @@ export class FontManager {
 
         // React to sandbox connection status
         const sandboxDisposer = reaction(
-            () => this.editorEngine.state.brandTab === BrandTabValue.FONTS && this.editorEngine.sandbox?.session.session,
-            (session) => {
+            () =>
+                this.editorEngine.state.brandTab === BrandTabValue.FONTS &&
+                this.editorEngine.sandbox?.session.session,
+            async (session) => {
                 if (session) {
+                    await this.updateFontConfigPath();
                     this.loadInitialFonts();
                 }
             },
@@ -128,7 +137,9 @@ export class FontManager {
         );
 
         const fontConfigDisposer = reaction(
-            () => this.editorEngine.state.brandTab === BrandTabValue.FONTS && this.editorEngine.sandbox?.readFile(this.fontConfigPath),
+            () =>
+                this.editorEngine.state.brandTab === BrandTabValue.FONTS &&
+                this.editorEngine.sandbox?.readFile(this.fontConfigPath),
             async (contentPromise) => {
                 if (contentPromise) {
                     const content = await contentPromise;
@@ -227,11 +238,6 @@ export class FontManager {
     }
 
     async scanFonts() {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return [];
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -276,11 +282,6 @@ export class FontManager {
     }
 
     async scanExistingFonts(): Promise<Font[] | undefined> {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return [];
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -327,11 +328,6 @@ export class FontManager {
      * 3. Adding the font variable to the appropriate layout file
      */
     async addFont(font: Font) {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return false;
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -427,11 +423,6 @@ export class FontManager {
     }
 
     async removeFont(font: Font) {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return false;
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -485,11 +476,6 @@ export class FontManager {
     }
 
     async setDefaultFont(font: Font) {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return false;
-        }
-
         try {
             const prevDefaultFont = this._defaultFont;
             this._defaultFont = font.id;
@@ -521,11 +507,6 @@ export class FontManager {
             style: string;
         }[],
     ) {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return false;
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -1248,11 +1229,6 @@ export class FontManager {
      * Uses more sophisticated font handling for layout files.
      */
     private async syncFontsWithConfigs() {
-        if (!this.projectManager.project) {
-            console.error('No project provided');
-            return;
-        }
-
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
@@ -1293,6 +1269,19 @@ export class FontManager {
     }
 
     /**
+     * Updates the font config path based on the detected router configuration
+     */
+    private async updateFontConfigPath(): Promise<void> {
+        const routerConfig = await this.detectRouterType();
+        if (routerConfig && routerConfig.type === 'app') {
+            this._fontConfigPath = normalizePath(`${routerConfig.basePath}/fonts.ts`);
+        } else {
+            // For pages router or fallback, use the default
+            this._fontConfigPath = normalizePath(DefaultSettings.FONT_CONFIG);
+        }
+    }
+
+    /**
      * Detects the router type (app or pages) and the base path of the project
      */
     private async detectRouterType(): Promise<{
@@ -1304,22 +1293,37 @@ export class FontManager {
             return null;
         }
 
-        try {
-            // Check for app router (app/layout.tsx)
-            const appFiles = await sandbox
-                .listFilesRecursively('app')
-                .then((files) => files.filter((file) => file.includes('layout.tsx')));
+        const APP_ROUTER_PATHS = ['src/app', 'app'];
+        const PAGES_ROUTER_PATHS = ['src/pages', 'pages'];
 
-            if (appFiles.length > 0) {
-                return { type: 'app', basePath: 'app' };
+        try {
+            // Check for app router (app/layout.tsx or src/app/layout.tsx)
+            for (const appPath of APP_ROUTER_PATHS) {
+                try {
+                    const appFiles = await sandbox
+                        .listFilesRecursively(appPath)
+                        .then((files) => files.filter((file) => file.includes('layout.tsx')));
+
+                    if (appFiles.length > 0) {
+                        return { type: 'app', basePath: appPath };
+                    }
+                } catch (error) {
+                    // Directory doesn't exist, continue checking
+                }
             }
 
-            // Check for pages router (pages/_app.tsx)
-            const pagesFiles = await sandbox
-                .listFilesRecursively('pages')
-                .then((files) => files.filter((file) => file.includes('_app.tsx')));
-            if (pagesFiles.length > 0) {
-                return { type: 'pages', basePath: 'pages' };
+            // Check for pages router (pages/_app.tsx or src/pages/_app.tsx)
+            for (const pagesPath of PAGES_ROUTER_PATHS) {
+                try {
+                    const pagesFiles = await sandbox
+                        .listFilesRecursively(pagesPath)
+                        .then((files) => files.filter((file) => file.includes('_app.tsx')));
+                    if (pagesFiles.length > 0) {
+                        return { type: 'pages', basePath: pagesPath };
+                    }
+                } catch (error) {
+                    // Directory doesn't exist, continue checking
+                }
             }
 
             // Default to app router if we can't determine

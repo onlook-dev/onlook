@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { useStateManager } from '@/components/store/state';
+import { api } from '@/trpc/react';
 import { sendAnalytics } from '@/utils/analytics';
 import {
     FREESTYLE_IP_ADDRESS,
@@ -17,7 +18,7 @@ import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { getValidUrl, isApexDomain } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useState } from 'react';
 import { RecordField } from './record-field';
 
 enum VerificationStatus {
@@ -35,27 +36,17 @@ interface DNSRecord {
 
 export const Verification = observer(() => {
     const editorEngine = useEditorEngine();
-    const domainsManager = useDomainsManager();
-    const projectManager = useProjectManager();
+    const stateManager = useStateManager();
+    const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: createCustomDomain } = api.domain.custom.create.useMutation();
+    const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
+    const { mutateAsync: verifyCustomDomain } = api.domain.verification.verify.useMutation();
 
     const [status, setStatus] = useState(VerificationStatus.NO_DOMAIN);
     const [domain, setDomain] = useState('');
     const [records, setRecords] = useState<DNSRecord[]>([]);
     const [error, setError] = useState<string | null>();
     const [ownedDomains, setOwnedDomains] = useState<string[]>([]);
-
-    const project = projectManager.project;
-    const domains = domainsManager.domains;
-
-    useEffect(() => {
-        if (project) {
-            domainsManager.getDomains(project.id)
-        }
-    }, [editorEngine.state.settingsOpen, project]);
-
-    if (!projectManager.project) {
-        return null;
-    }
 
     function editDomain() {
         setStatus(VerificationStatus.NO_DOMAIN);
@@ -107,10 +98,13 @@ export const Verification = observer(() => {
         setError(null);
 
         // Send verification request to server
-        const response = await domainsManager.createDomainVerification(validDomain);
+        const response = await createDomainVerification({
+            domain: validDomain,
+            projectId: editorEngine.projectId,
+        });
 
-        if (!response.success || !response.verificationCode) {
-            setError(response.message ?? 'Failed to create domain verification');
+        if (!response || !response.verificationCode) {
+            setError('Failed to create domain verification');
             setStatus(VerificationStatus.NO_DOMAIN);
             return;
         }
@@ -123,26 +117,31 @@ export const Verification = observer(() => {
     }
 
     async function verifyDomain() {
-        setStatus(VerificationStatus.LOADING);
-        setError(null);
-        const response = await domainsManager.verifyCustomDomain(domain);
+        // TODO: Implement domain verification
 
-        if (!response.success) {
-            setError(response.message ?? 'Failed to verify domain');
-            setStatus(VerificationStatus.VERIFYING);
-            sendAnalytics('verify domain failed', {
-                domain: domain,
-                error: response.message ?? 'Failed to verify domain',
-            });
-            return;
-        }
+        // setStatus(VerificationStatus.LOADING);
+        // setError(null);
+        // const response = await verifyCustomDomain({
+        //     verificationId: response.verificationId,
+        //     projectId: editorEngine.projectId,
+        // });
 
-        setStatus(VerificationStatus.VERIFIED);
-        setError(null);
-        addCustomDomain(domain);
-        sendAnalytics('verify domain success', {
-            domain: domain,
-        });
+        // if (!response.success) {
+        //     setError(response.message ?? 'Failed to verify domain');
+        //     setStatus(VerificationStatus.VERIFYING);
+        //     sendAnalytics('verify domain failed', {
+        //         domain: domain,
+        //         error: response.message ?? 'Failed to verify domain',
+        //     });
+        //     return;
+        // }
+
+        // setStatus(VerificationStatus.VERIFIED);
+        // setError(null);
+        // addCustomDomain(domain);
+        // sendAnalytics('verify domain success', {
+        //     domain: domain,
+        // });
     }
 
     const handleDomainVerified = () => {
@@ -151,24 +150,16 @@ export const Verification = observer(() => {
         });
 
         setTimeout(() => {
-            editorEngine.state.settingsOpen = false;
+            stateManager.isSettingsModalOpen = false;
             editorEngine.state.publishOpen = true;
         }, 1000);
     };
 
     const addCustomDomain = (url: string) => {
-        sendAnalytics('add custom domain', {
+        createCustomDomain({
             domain: url,
+            projectId: editorEngine.projectId,
         });
-        if (!domainsManager) {
-            setError('Failed to add custom domain');
-            sendAnalytics('add custom domain failed', {
-                domain: url,
-                error: 'domains manager not found',
-            });
-            return;
-        }
-        domainsManager.addCustomDomain(url);
         setStatus(VerificationStatus.VERIFIED);
         setDomain(url);
         setError(null);

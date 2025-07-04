@@ -1,8 +1,6 @@
 'use client';
 
 import { login } from '@/app/login/actions';
-import { useCreateManager } from '@/components/store/create';
-import { useUserManager } from '@/components/store/user';
 import { api as clientApi } from '@/trpc/client';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
@@ -135,8 +133,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     const [connectionError, setConnectionError] = useState<string | null>(null);
 
     // Create manager
-    const createManager = useCreateManager();
-    const userManager = useUserManager();
+    const { data: user } = api.user.get.useQuery();
 
     useEffect(() => {
         checkGitHubConnection();
@@ -219,45 +216,45 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     };
 
     const importRepo = async () => {
-        setIsFinalizing(true);
-        setIsLoadingFiles(true);
-        setFilesError(null);
+        // setIsFinalizing(true);
+        // setIsLoadingFiles(true);
+        // setFilesError(null);
 
-        try {
-            if (!userManager.user?.id) {
-                console.error('No user found');
-                return;
-            }
+        // try {
+        //     if (!user?.id) {
+        //         console.error('No user found');
+        //         return;
+        //     }
 
-            const { sandboxId, previewUrl } = await createManager.createSandboxFromGithub(
-                selectedRepo?.clone_url || '',
-                selectedRepo?.default_branch || '',
-            );
+        //     const { sandboxId, previewUrl } = await createManager.createSandboxFromGithub(
+        //         selectedRepo?.clone_url || '',
+        //         selectedRepo?.default_branch || '',
+        //     );
 
-            const project = await clientApi.project.create.mutate({
-                project: {
-                    name: selectedRepo?.name ?? 'New project',
-                    sandboxId,
-                    sandboxUrl: previewUrl,
-                    description: 'Your new project',
-                },
-                userId: userManager.user.id,
-            });
-            if (!project) {
-                console.error('Failed to create project');
-                return;
-            }
-            // Open the project
-            router.push(`${Routes.PROJECT}/${project.id}`);
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : 'Failed to fetch repository files';
-            setFilesError(errorMessage);
-            console.error('Error fetching repository files:', error);
-        } finally {
-            setIsLoadingFiles(false);
-            setIsFinalizing(false);
-        }
+        //     const project = await clientApi.project.create.mutate({
+        //         project: {
+        //             name: selectedRepo?.name ?? 'New project',
+        //             sandboxId,
+        //             sandboxUrl: previewUrl,
+        //             description: 'Your new project',
+        //         },
+        //         userId: user.id,
+        //     });
+        //     if (!project) {
+        //         console.error('Failed to create project');
+        //         return;
+        //     }
+        //     // Open the project
+        //     router.push(`${Routes.PROJECT}/${project.id}`);
+        // } catch (error) {
+        //     const errorMessage =
+        //         error instanceof Error ? error.message : 'Failed to fetch repository files';
+        //     setFilesError(errorMessage);
+        //     console.error('Error fetching repository files:', error);
+        // } finally {
+        //     setIsLoadingFiles(false);
+        //     setIsFinalizing(false);
+        // }
     };
 
     const validateRepository = async (owner: string, repo: string) => {

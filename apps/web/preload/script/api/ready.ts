@@ -1,9 +1,9 @@
 import { processDom } from './dom.ts';
-import { listenForEvents } from './events/index.ts';
+import { listenForDomChanges } from './events/index.ts';
 import { cssManager } from './style/css-manager.ts';
 
 export function handleBodyReady() {
-    listenForEvents();
+    listenForDomChanges();    
     keepDomUpdated();
     cssManager.injectDefaultStyles();
 }
@@ -18,7 +18,7 @@ function keepDomUpdated() {
 
     const interval = setInterval(() => {
         try {
-            if (processDom()) {
+            if (processDom() !== null) {
                 clearInterval(interval);
                 domUpdateInterval = null;
             }

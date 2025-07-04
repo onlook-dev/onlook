@@ -1,6 +1,6 @@
 'use client';
 
-import { useUserManager } from '@/components/store/user';
+import { useStateManager } from '@/components/store/state';
 import { useGetBackground } from '@/hooks/use-get-background';
 import { transKeys } from '@/i18n/keys';
 import { ProductType, ScheduledSubscriptionAction } from '@onlook/stripe';
@@ -14,14 +14,14 @@ import { ProCard } from './pro-card';
 import { useSubscription } from './use-subscription';
 
 export const SubscriptionModal = observer(() => {
-    const userManager = useUserManager();
+    const state = useStateManager();
     const t = useTranslations();
     const backgroundUrl = useGetBackground('create');
-    const { subscription, refetchSubscription } = useSubscription();
+    const { subscription } = useSubscription();
 
     return (
         <AnimatePresence>
-            {userManager.subscription.isModalOpen && (
+            {state.isSubscriptionModalOpen && (
                 <motion.div
                     className="fixed inset-0 z-99"
                     initial={{ opacity: 0 }}
@@ -40,7 +40,7 @@ export const SubscriptionModal = observer(() => {
                         <div className="absolute inset-0 bg-background/50" />
                         <Button
                             variant="ghost"
-                            onClick={() => userManager.subscription.isModalOpen = false}
+                            onClick={() => state.isSubscriptionModalOpen = false}
                             className="fixed top-8 right-10 text-foreground-secondary"
                         >
                             <Icons.CrossL className="h-4 w-4" />
@@ -58,19 +58,22 @@ export const SubscriptionModal = observer(() => {
                                             <h1 className="text-title2 text-foreground-primary">
                                                 {subscription?.product.type === ProductType.PRO
                                                     ? t(transKeys.pricing.titles.proMember)
-                                                    : t(transKeys.pricing.titles.choosePlan)}
-                                            </h1>
+                                                    : t(transKeys.pricing.titles.choosePlan)
+                                                }
+                                            </h1 >
                                             {subscription?.scheduledChange?.price && (
                                                 <div className="text-foreground-secondary/80 text-balance">
                                                     Your {subscription.scheduledChange.price.monthlyMessageLimit} messages a month plan starts on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                                 </div>
                                             )}
-                                            {subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION && (
-                                                <div className="text-foreground-secondary/80 text-balance">
-                                                    Your subscription will be cancelled on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                                                </div>
-                                            )}
-                                        </div>
+                                            {
+                                                subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION && (
+                                                    <div className="text-foreground-secondary/80 text-balance">
+                                                        Your subscription will be cancelled on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                                                    </div>
+                                                )
+                                            }
+                                        </div >
                                     </motion.div>
                                     <div className="flex gap-4">
                                         <FreeCard
@@ -79,7 +82,7 @@ export const SubscriptionModal = observer(() => {
                                         <ProCard
                                             delay={0.2}
                                         />
-                                    </div>
+                                    </div >
                                     <motion.div
                                         className="flex flex-col gap-2 text-center"
                                         initial={{ opacity: 0, y: 5 }}
@@ -87,7 +90,7 @@ export const SubscriptionModal = observer(() => {
                                         transition={{ delay: 0.3 }}
                                     >
                                         <p className="text-foreground-secondary/60 text-small text-balance">
-                                            {t('pricing.footer.unusedMessages')}
+                                            {t(transKeys.pricing.footer.unusedMessages)}
                                         </p>
                                     </motion.div>
                                 </motion.div>

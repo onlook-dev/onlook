@@ -20,6 +20,7 @@ export const messages = pgTable("messages", {
     snapshots: jsonb("snapshots").$type<ChatSnapshot>().default({}).notNull(),
     context: jsonb("context").$type<ChatMessageContext[]>().default([]).notNull(),
     parts: jsonb("parts").$type<AiMessage['parts']>().default([]).notNull(),
+    commitOid: text("commit_oid"),
 }).enableRLS();
 
 export const messageInsertSchema = createInsertSchema(messages);

@@ -1,12 +1,8 @@
 import type { WatchEvent } from '@codesandbox/sdk';
-import {
-    EXCLUDED_SYNC_DIRECTORIES,
-    JSX_FILE_EXTENSIONS,
-} from '@onlook/constants';
+import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
-import { getContentFromTemplateNode } from '@onlook/parser';
+import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
-import localforage from 'localforage';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
@@ -20,14 +16,16 @@ import { SessionManager } from './session';
 export class SandboxManager {
     readonly session: SessionManager;
     private fileWatcher: FileWatcher | null = null;
-    private fileSync: FileSyncManager = new FileSyncManager();
-    private templateNodeMap: TemplateNodeMapper = new TemplateNodeMapper(localforage);
+    private fileSync: FileSyncManager
+    private templateNodeMap: TemplateNodeMapper
     readonly fileEventBus: FileEventBus = new FileEventBus();
     private isIndexed = false;
     private isIndexing = false;
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
+        this.fileSync = new FileSyncManager(this.editorEngine);
+        this.templateNodeMap = new TemplateNodeMapper(this.editorEngine);
         makeAutoObservable(this);
 
         reaction(
@@ -55,17 +53,18 @@ export class SandboxManager {
 
         this.isIndexing = true;
         const timer = new LogTimer('Sandbox Indexing');
-        
+
         try {
             // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
-            
+
             // Categorize files for optimized processing
-            const { imageFiles, jsxFiles, otherFiles } = this.categorizeFilesForIndexing(allFilePaths);
-            
+            const { imageFiles, jsxFiles, otherFiles } =
+                this.categorizeFilesForIndexing(allFilePaths);
+
             const BATCH_SIZE = 50;
-            
+
             // Track image files first
             if (imageFiles.length > 0) {
                 timer.log(`Tracking ${imageFiles.length} image files`);
@@ -74,7 +73,7 @@ export class SandboxManager {
                     await this.fileSync.trackBinaryFilesBatch(batch);
                 }
             }
-            
+
             // Process JSX files
             if (jsxFiles.length > 0) {
                 timer.log(`Processing ${jsxFiles.length} JSX files in batches of ${BATCH_SIZE}`);
@@ -83,10 +82,12 @@ export class SandboxManager {
                     await this.processJsxFilesBatch(batch);
                 }
             }
-            
+
             // Process other files
             if (otherFiles.length > 0) {
-                timer.log(`Processing ${otherFiles.length} other files in batches of ${BATCH_SIZE}`);
+                timer.log(
+                    `Processing ${otherFiles.length} other files in batches of ${BATCH_SIZE}`,
+                );
                 for (let i = 0; i < otherFiles.length; i += BATCH_SIZE) {
                     const batch = otherFiles.slice(i, i + BATCH_SIZE);
                     await this.processTextFilesBatch(batch);
@@ -119,11 +120,11 @@ export class SandboxManager {
             const currentDir = dirsToProcess.shift()!;
             try {
                 const entries = await this.session.session.fs.readdir(currentDir);
-                
+
                 for (const entry of entries) {
                     const fullPath = `${currentDir}/${entry.name}`;
                     const normalizedPath = normalizePath(fullPath);
-                    
+
                     if (entry.type === 'directory') {
                         // Skip excluded directories
                         if (!excludeDirs.includes(entry.name)) {
@@ -155,7 +156,7 @@ export class SandboxManager {
 
         for (const filePath of filePaths) {
             const normalizedPath = normalizePath(filePath);
-            
+
             if (isImageFile(normalizedPath)) {
                 imageFiles.push(normalizedPath);
             } else {
@@ -173,8 +174,8 @@ export class SandboxManager {
 
     private async processJsxFilesBatch(filePaths: string[]): Promise<void> {
         const fileContents = await this.fileSync.readOrFetchBatch(
-            filePaths, 
-            this.readRemoteFile.bind(this)
+            filePaths,
+            this.readRemoteFile.bind(this),
         );
 
         const mappingPromises = Object.keys(fileContents).map(async (filePath) => {
@@ -189,13 +190,10 @@ export class SandboxManager {
     }
 
     /**
-     * Process text files in parallel batches  
+     * Process text files in parallel batches
      */
     private async processTextFilesBatch(filePaths: string[]): Promise<void> {
-        await this.fileSync.readOrFetchBatch(
-            filePaths, 
-            this.readRemoteFile.bind(this)
-        );
+        await this.fileSync.readOrFetchBatch(filePaths, this.readRemoteFile.bind(this));
     }
 
     private async readRemoteFile(filePath: string): Promise<string | null> {
@@ -318,6 +316,7 @@ export class SandboxManager {
 
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
         const normalizedPath = normalizePath(path);
+
         try {
             return this.fileSync.writeBinary(
                 normalizedPath,
@@ -415,15 +414,48 @@ export class SandboxManager {
     }
 
     async handleFileChange(event: WatchEvent) {
-        for (const path of event.paths) {
-            if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
-                continue;
-            }
-            const normalizedPath = normalizePath(path);
-            const eventType = event.type;
-            if (event.type === 'remove') {
+        const eventType = event.type;
+
+        if (eventType === 'remove') {
+            for (const path of event.paths) {
+                if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
+                    continue;
+                }
+                const normalizedPath = normalizePath(path);
                 await this.fileSync.delete(normalizedPath);
-            } else if (eventType === 'change' || eventType === 'add') {
+
+                this.fileEventBus.publish({
+                    type: eventType,
+                    paths: [normalizedPath],
+                    timestamp: Date.now(),
+                });
+            }
+        } else if (eventType === 'change' || eventType === 'add') {
+            if (event.paths.length === 2) {
+                // This mean rename a file or a folder, move a file or a folder
+                const [oldPath, newPath] = event.paths;
+
+                if (!oldPath || !newPath) {
+                    console.error('Invalid rename event', event);
+                    return;
+                }
+                const oldNormalizedPath = normalizePath(oldPath);
+                const newNormalizedPath = normalizePath(newPath);
+                await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
+
+                this.fileEventBus.publish({
+                    type: 'rename',
+                    paths: [oldPath, newPath],
+                    timestamp: Date.now(),
+                });
+                return;
+            }
+            for (const path of event.paths) {
+                if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
+                    continue;
+                }
+                const normalizedPath = normalizePath(path);
+
                 if (isImageFile(normalizedPath)) {
                     await this.fileSync.trackBinaryFile(normalizedPath);
                 } else {
@@ -440,12 +472,13 @@ export class SandboxManager {
                         await this.processFileForMapping(normalizedPath);
                     }
                 }
+
+                this.fileEventBus.publish({
+                    type: eventType,
+                    paths: [normalizedPath],
+                    timestamp: Date.now(),
+                });
             }
-            this.fileEventBus.publish({
-                type: eventType,
-                paths: [normalizedPath],
-                timestamp: Date.now(),
-            });
         }
     }
 
@@ -465,6 +498,22 @@ export class SandboxManager {
 
     async getTemplateNode(oid: string): Promise<TemplateNode | null> {
         return this.templateNodeMap.getTemplateNode(oid);
+    }
+
+    async getTemplateNodeChild(
+            parentOid: string,
+            child: TemplateNode,
+            index: number,
+        ): Promise<{ instanceId: string; component: string } | null> {
+            
+            const codeBlock = await this.getCodeBlock(parentOid);
+            
+            if (codeBlock == null) {
+                console.error(`Failed to read code block: ${parentOid}`);
+                return null;
+            }
+            
+        return await getTemplateNodeChild(codeBlock, child, index);
     }
 
     async getCodeBlock(oid: string): Promise<string | null> {
@@ -496,7 +545,6 @@ export class SandboxManager {
             const dirPath = getDirName(normalizedPath);
             const fileName = getBaseName(normalizedPath);
             const dirEntries = await this.session.session.fs.readdir(dirPath);
-
             return dirEntries.some((entry: any) => entry.name === fileName);
         } catch (error) {
             console.error(`Error checking file existence ${normalizedPath}:`, error);
@@ -577,6 +625,25 @@ export class SandboxManager {
         }
     }
 
+    async rename(oldPath: string, newPath: string): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for rename');
+            return false;
+        }
+
+        try {
+            const normalizedOldPath = normalizePath(oldPath);
+            const normalizedNewPath = normalizePath(newPath);
+
+            await this.session.session.fs.rename(normalizedOldPath, normalizedNewPath);
+
+            return true;
+        } catch (error) {
+            console.error(`Error renaming file ${oldPath} to ${newPath}:`, error);
+            return false;
+        }
+    }
+
     get isIndexingFiles() {
         return this.isIndexing;
     }
@@ -586,7 +653,7 @@ export class SandboxManager {
         this.fileWatcher = null;
         this.fileSync.clear();
         this.templateNodeMap.clear();
-        this.session.disconnect();
+        this.session.clear();
         this.isIndexed = false;
         this.isIndexing = false;
     }

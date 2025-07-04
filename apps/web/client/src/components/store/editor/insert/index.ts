@@ -13,20 +13,22 @@ import {
     type ActionTarget,
     type InsertElementAction,
     type UpdateStyleAction,
+    type RemoveElementAction,
 } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
-import { createDomId, createOid } from '@onlook/utility';
+import { canHaveBackgroundImage, createDomId, createOid, urlToRelativePath } from '@onlook/utility';
 import type React from 'react';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import { getRelativeMousePositionToFrameView } from '../overlay/utils';
+import type { DomElement } from '@onlook/models';
 
 export class InsertManager {
     isDrawing = false;
     private drawOrigin: ElementPosition | undefined;
 
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     getDefaultProperties(mode: EditorMode): DropElementProperties {
         switch (mode) {
@@ -170,14 +172,14 @@ export class InsertManager {
         const styles: Record<string, string> =
             mode === EditorMode.INSERT_TEXT
                 ? {
-                    width: `${width}px`,
-                    height: `${height}px`,
-                }
+                      width: `${width}px`,
+                      height: `${height}px`,
+                  }
                 : {
-                    width: `${width}px`,
-                    height: `${height}px`,
-                    backgroundColor: colors.blue[100],
-                };
+                      width: `${width}px`,
+                      height: `${height}px`,
+                      backgroundColor: colors.blue[100],
+                  };
 
         const actionElement: ActionElement = {
             domId,
@@ -216,6 +218,7 @@ export class InsertManager {
         frame: FrameData,
         dropPosition: { x: number; y: number },
         imageData: ImageContentData,
+        altKey: boolean = false,
     ) {
         const location = await frame.view.getInsertLocation(dropPosition.x, dropPosition.y);
 
@@ -227,7 +230,7 @@ export class InsertManager {
         const targetElement = await frame.view.getElementAtLoc(
             dropPosition.x,
             dropPosition.y,
-            false,
+            true,
         );
 
         if (!targetElement) {
@@ -235,13 +238,94 @@ export class InsertManager {
             return;
         }
 
-        // TODO: Handle if element is already an image, should update source
-        // TODO: Handle if element has background image, should update style
+        if (targetElement.tagName.toLowerCase() === 'img') {
+            await this.updateImageSource(frame, targetElement, imageData);
+            return;
+        }
+
+        if (altKey && canHaveBackgroundImage(targetElement.tagName)) {
+            const actionElement = await frame.view.getActionElement(targetElement.domId);
+            if (actionElement) {
+                this.updateElementBackgroundAction(frame, actionElement, imageData, targetElement);
+                return;
+            }
+        }
         this.insertImageElement(frame, location, imageData);
     }
 
+    private async updateImageSource(
+        frame: FrameData,
+        targetElement: DomElement,
+        imageData: ImageContentData,
+    ) {
+        const actionElement = await frame.view.getActionElement(targetElement.domId);
+        if (!actionElement) {
+            console.error('Failed to get action element for target');
+            return;
+        }
+
+        const url = imageData.originPath.replace(
+            new RegExp(`^${DefaultSettings.IMAGE_FOLDER}\/`),
+            '',
+        );
+
+        const currentLocation = await frame.view.getActionLocation(targetElement.domId);
+        if (!currentLocation) {
+            console.error('Failed to get current element location');
+            return;
+        }
+
+        const removeAction: RemoveElementAction = {
+            type: 'remove-element',
+            targets: [
+                {
+                    frameId: frame.frame.id,
+                    domId: actionElement.domId,
+                    oid: actionElement.oid,
+                },
+            ],
+            location: currentLocation,
+            element: actionElement,
+            editText: false,
+            pasteParams: null,
+            codeBlock: null,
+        };
+
+        // Create new image element with updated src
+        const updatedImageElement: ActionElement = {
+            ...actionElement,
+            attributes: {
+                ...actionElement.attributes,
+                src: `/${url}`,
+                alt: imageData.fileName,
+            },
+        };
+
+        const insertAction: InsertElementAction = {
+            type: 'insert-element',
+            targets: [
+                {
+                    frameId: frame.frame.id,
+                    domId: actionElement.domId,
+                    oid: actionElement.oid,
+                },
+            ],
+            element: updatedImageElement,
+            location: currentLocation,
+            editText: false,
+            pasteParams: null,
+            codeBlock: null,
+        };
+
+        await this.editorEngine.action.run(removeAction);
+        await this.editorEngine.action.run(insertAction);
+    }
+
     insertImageElement(frame: FrameData, location: ActionLocation, imageData: ImageContentData) {
-        const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
+        const url = imageData.originPath.replace(
+            new RegExp(`^${DefaultSettings.IMAGE_FOLDER}\/`),
+            '',
+        );
         const domId = createDomId();
         const oid = createOid();
 
@@ -254,7 +338,7 @@ export class InsertManager {
                 [EditorAttributes.DATA_ONLOOK_ID]: oid,
                 [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
-                src: `/${prefix}/${imageData.fileName}`,
+                src: `/${url}`,
                 alt: imageData.fileName,
             },
             styles: {
@@ -280,8 +364,34 @@ export class InsertManager {
         frame: FrameData,
         targetElement: ActionElement,
         imageData: ImageContentData,
+        originalElement: DomElement,
     ) {
-        const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
+        const url = imageData.originPath.replace(
+            new RegExp(`^${DefaultSettings.IMAGE_FOLDER}\/`),
+            '',
+        );
+        const originStyles = originalElement.styles?.computed;
+        let original = {};
+        if (originStyles?.backgroundImage) {
+            const backgroundImageValue = originStyles.backgroundImage;
+            if (backgroundImageValue) {
+                original = {
+                    backgroundImage: {
+                        value: urlToRelativePath(backgroundImageValue),
+                        type: StyleChangeType.Value,
+                    },
+                    backgroundSize: {
+                        value: originStyles.backgroundSize,
+                        type: StyleChangeType.Value,
+                    },
+                    backgroundPosition: {
+                        value: originStyles.backgroundPosition,
+                        type: StyleChangeType.Value,
+                    },
+                };
+            }
+        }
+
         const action: UpdateStyleAction = {
             type: 'update-style',
             targets: [
@@ -289,7 +399,7 @@ export class InsertManager {
                     change: {
                         updated: {
                             backgroundImage: {
-                                value: `url('/${prefix}/${imageData.fileName}')`,
+                                value: `url('/${url}')`,
                                 type: StyleChangeType.Value,
                             },
                             backgroundSize: {
@@ -301,7 +411,7 @@ export class InsertManager {
                                 type: StyleChangeType.Value,
                             },
                         },
-                        original: {},
+                        original,
                     },
 
                     domId: targetElement.domId,

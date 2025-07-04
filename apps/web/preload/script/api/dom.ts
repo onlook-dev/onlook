@@ -3,42 +3,44 @@ import type { LayerNode } from '@onlook/models';
 import debounce from 'lodash/debounce';
 import { isValidHtmlElement } from '../helpers/dom';
 import { getInstanceId, getOid, getOrAssignDomId } from '../helpers/ids';
+import { publishDomProcessed } from './events/publish';
 import { getFrameId } from './state';
 
-const processDebounced = debounce(async (root: HTMLElement) => {
-    const frameId = await getFrameId();
+export interface ProcessDomResult {
+    rootDomId: string;
+    layerMap: Array<[string, LayerNode]>;
+}
+
+
+function processDomDebounced(root: HTMLElement = document.body): ProcessDomResult | null {
+    const frameId = getFrameId();
     if (!frameId) {
         console.warn('frameView id not found, skipping dom processing');
-        return false;
+        return null;
     }
     const layerMap = buildLayerTree(root);
     if (!layerMap) {
         console.warn('Error building layer tree, root element is null');
-        return false;
+        return null;
     }
 
     const rootDomId = root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
     if (!rootDomId) {
         console.warn('Root dom id not found');
-        return false;
+        return null;
     }
     const rootNode = layerMap.get(rootDomId);
     if (!rootNode) {
         console.warn('Root node not found');
-        return false;
+        return null;
     }
 
-    return true;
-}, 500);
-
-export function processDom(root: HTMLElement = document.body): boolean {
-    if (!getFrameId()) {
-        console.warn('frameView id not found, skipping dom processing');
-        return false;
-    }
-    processDebounced(root);
-    return true;
+    publishDomProcessed(layerMap, rootNode);
+    return { rootDomId, layerMap: Array.from(layerMap.entries()) };
 }
+
+
+export const processDom = debounce(processDomDebounced, 500);
 
 export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null {
     if (!isValidHtmlElement(root)) {

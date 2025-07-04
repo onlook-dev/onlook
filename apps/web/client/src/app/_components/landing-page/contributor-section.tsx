@@ -181,7 +181,7 @@ export function ContributorSection({
                     Supported by You &<br />
                     {isLoading ? '...' : starCount} other builders
                 </h2>
-                <p className="text-foreground-secondary text-regular text-center mb-8 max-w-xl">Join our mission and be a part of changing<br />the way people craft software</p>
+                <p className="text-foreground-secondary text-regular text-center mb-8 max-w-xl">Join the community building <br /> the open source prompt-to-build app</p>
                 <div className="flex gap-4 flex-col md:flex-row w-full justify-center items-center">
                     <Link
                         href={githubLink}

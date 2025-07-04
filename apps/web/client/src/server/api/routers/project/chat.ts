@@ -22,6 +22,17 @@ const conversationRouter = createTRPCRouter({
             });
             return dbConversations.map((conversation) => toConversation(conversation));
         }),
+    create: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const [conversation] = await ctx.db.insert(conversations).values({
+                projectId: input.projectId,
+            }).returning();
+            if (!conversation) {
+                throw new Error('Failed to create conversation');
+            }
+            return toConversation(conversation);
+        }),
     upsert: protectedProcedure
         .input(z.object({ conversation: conversationInsertSchema }))
         .mutation(async ({ ctx, input }) => {
@@ -57,6 +68,16 @@ const messageRouter = createTRPCRouter({
     upsert: protectedProcedure
         .input(z.object({ message: messageInsertSchema }))
         .mutation(async ({ ctx, input }) => {
+            const conversationId = input.message.conversationId;
+            if (conversationId) {
+                const conversation = await ctx.db.query.conversations.findFirst({
+                    where: eq(conversations.id, conversationId),
+                });
+                if (!conversation) {
+                    throw new Error(`Conversation not found`);
+                }
+            }
+
             const normalizedMessage = {
                 ...input.message,
                 role: input.message.role as ChatMessageRole,
@@ -71,7 +92,6 @@ const messageRouter = createTRPCRouter({
                         ...normalizedMessage,
                     },
                 });
-
         }),
     delete: protectedProcedure
         .input(z.object({ messageIds: z.array(z.string()) }))

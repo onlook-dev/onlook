@@ -1,12 +1,12 @@
 'use client';
 
+import { useGetBackground } from '@/hooks/use-get-background';
 import { MotionCard } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import useResizeObserver from 'use-resize-observer';
-import { NewSelectFolder } from './select-folder';
+import { useProjectCreation } from '../_context';
 import { FinalizingProject } from './finalizing-project';
-import { useProjectCreation } from '../_context/context';
-import { useGetBackground } from '@/hooks/use-get-background';
+import { NewSelectFolder } from './select-folder';
 
 const steps = [<NewSelectFolder />, <FinalizingProject />];
 
