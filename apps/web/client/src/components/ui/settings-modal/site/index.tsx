@@ -68,7 +68,7 @@ export const SiteTab = observer(() => {
                     await editorEngine.image.upload(uploadedFavicon, DefaultSettings.IMAGE_FOLDER);
                     faviconPath = `/${uploadedFavicon.name}`;
                 } catch (error) {
-                    console.log(error);
+                    toast.error('Failed to upload favicon. Please try again.');
                     return;
                 }
                 updatedMetadata.icons = {
