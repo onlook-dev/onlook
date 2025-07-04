@@ -18,13 +18,13 @@ const FREE_TIER = {
     features: [
         'Visual code editor access',
         '5 projects',
-        '10 AI chat messages a day',
+        '5 AI chat messages a day',
         '50 AI messages a month',
         'Limited to 1 screenshot per chat'
     ],
-    defaultSelectValue: '10',
+    defaultSelectValue: 'daily',
     selectValues: [
-        { value: '10', label: '10 Daily Messages' },
+        { value: 'daily', label: '5 Daily Messages' },
     ],
 };
 
