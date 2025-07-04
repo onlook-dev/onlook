@@ -8,21 +8,35 @@ export const env = createEnv({
      */
     server: {
         NODE_ENV: z.enum(['development', 'test', 'production']),
-        ANTHROPIC_API_KEY: z.string(),
         CSB_API_KEY: z.string(),
         SUPABASE_DATABASE_URL: z.string().url(),
         RESEND_API_KEY: z.string().optional(),
-        MORPH_API_KEY: z.string().optional(),
-        RELACE_API_KEY: z.string().optional(),
         FREESTYLE_API_KEY: z.string().optional(),
+
+        // Stripe
         STRIPE_WEBHOOK_SECRET: z.string().optional(),
         STRIPE_SECRET_KEY: z.string().optional(),
+
+        // Apply models
+        MORPH_API_KEY: z.string().optional(),
+        RELACE_API_KEY: z.string().optional(),
+
+        // Bedrock
         AWS_ACCESS_KEY_ID: z.string().optional(),
         AWS_SECRET_ACCESS_KEY: z.string().optional(),
         AWS_REGION: z.string().optional(),
+
+        // Google Vertex AI
         GOOGLE_CLIENT_EMAIL: z.string().optional(),
         GOOGLE_PRIVATE_KEY: z.string().optional(),
         GOOGLE_PRIVATE_KEY_ID: z.string().optional(),
+
+        // Model providers
+        ANTHROPIC_API_KEY: z.string(),
+        GOOGLE_AI_STUDIO_API_KEY: z.string().optional(),
+        OPENAI_API_KEY: z.string().optional(),
+
+        // n8n
         N8N_WEBHOOK_URL: z.string().optional(),
         N8N_API_KEY: z.string().optional(),
     },
@@ -47,28 +61,48 @@ export const env = createEnv({
      */
     runtimeEnv: {
         NODE_ENV: process.env.NODE_ENV,
-        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
         CSB_API_KEY: process.env.CSB_API_KEY,
         RESEND_API_KEY: process.env.RESEND_API_KEY,
+        NEXT_PUBLIC_FEATURE_COLLABORATION: process.env.NEXT_PUBLIC_FEATURE_COLLABORATION,
+
+        // Supabase
         SUPABASE_DATABASE_URL: process.env.SUPABASE_DATABASE_URL,
         NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
         NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
         NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+
+        // Posthog
         NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
         NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-        MORPH_API_KEY: process.env.MORPH_API_KEY,
-        RELACE_API_KEY: process.env.RELACE_API_KEY,
-        NEXT_PUBLIC_FEATURE_COLLABORATION: process.env.NEXT_PUBLIC_FEATURE_COLLABORATION,
+
+        // Hosting
         FREESTYLE_API_KEY: process.env.FREESTYLE_API_KEY,
         NEXT_PUBLIC_HOSTING_DOMAIN: process.env.NEXT_PUBLIC_HOSTING_DOMAIN,
+
+        // Stripe
         STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
         STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+
+        // Apply models
+        MORPH_API_KEY: process.env.MORPH_API_KEY,
+        RELACE_API_KEY: process.env.RELACE_API_KEY,
+
+        // Bedrock
         AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID,
         AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
         AWS_REGION: process.env.AWS_REGION,
+
+        // Google Vertex AI
         GOOGLE_CLIENT_EMAIL: process.env.GOOGLE_CLIENT_EMAIL,
         GOOGLE_PRIVATE_KEY: process.env.GOOGLE_PRIVATE_KEY,
         GOOGLE_PRIVATE_KEY_ID: process.env.GOOGLE_PRIVATE_KEY_ID,
+
+        // Model providers
+        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+        GOOGLE_AI_STUDIO_API_KEY: process.env.GOOGLE_AI_STUDIO_API_KEY,
+        OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+
+        // n8n
         N8N_WEBHOOK_URL: process.env.N8N_WEBHOOK_URL,
         N8N_API_KEY: process.env.N8N_API_KEY,
     },
