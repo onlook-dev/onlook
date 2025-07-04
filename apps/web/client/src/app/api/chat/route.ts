@@ -1,6 +1,6 @@
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
-import { chatToolSet, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
+import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, CLAUDE_MODELS, LLMProvider, type Usage, UsageType } from '@onlook/models';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
@@ -83,8 +83,25 @@ export const getSupabaseUser = async (request: NextRequest) => {
 
 export const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType } = await req.json();
-    const { model, providerOptions } = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET_4);
-    const systemPrompt = chatType === ChatType.CREATE ? getCreatePageSystemPrompt() : getSystemPrompt();
+    const { model, providerOptions } = await initModel({
+        provider: LLMProvider.ANTHROPIC,
+        model: CLAUDE_MODELS.SONNET_4,
+    });
+
+    let systemPrompt: string;
+    switch (chatType) {
+        case ChatType.CREATE:
+            systemPrompt = getCreatePageSystemPrompt();
+            break;
+        case ChatType.ASK:
+            systemPrompt = getAskModeSystemPrompt();
+            break;
+        case ChatType.EDIT:
+        default:
+            systemPrompt = getSystemPrompt();
+            break;
+    }
+    const toolSet = chatType === ChatType.ASK ? askToolSet : buildToolSet;
     const result = streamText({
         model,
         messages: [
@@ -96,7 +113,7 @@ export const streamResponse = async (req: NextRequest) => {
             ...messages,
         ],
         maxSteps,
-        tools: chatToolSet,
+        tools: toolSet,
         toolCallStreaming: true,
         maxTokens: 64000,
         experimental_repairToolCall: async ({ toolCall, tools, parameterSchema, error }) => {

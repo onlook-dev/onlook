@@ -22,6 +22,7 @@ export class Hotkey {
     static readonly OPEN_DEV_TOOL = new Hotkey('mod+shift+i', 'Open Devtool');
     static readonly ADD_AI_CHAT = new Hotkey('mod+shift+l', 'Add to AI chat');
     static readonly NEW_AI_CHAT = new Hotkey('mod+l', 'New AI Chat');
+    static readonly CHAT_MODE_TOGGLE = new Hotkey('mod+period', 'Open Chat Mode Menu');
     static readonly MOVE_LAYER_UP = new Hotkey('shift+arrowup', 'Move Layer Up');
     static readonly MOVE_LAYER_DOWN = new Hotkey('shift+arrowdown', 'Move Layer Down');
     static readonly SHOW_HOTKEYS = new Hotkey('mod+k', 'Show Shortcuts');
@@ -51,7 +52,7 @@ export class Hotkey {
     }
 
     get readableCommand() {
-        const isMac = process.platform === 'darwin';
+        const isMac = typeof navigator !== 'undefined' && navigator.platform.toUpperCase().indexOf('MAC') >= 0;
         return this.command
             .replace('mod', isMac ? '⌘' : 'Ctrl')
             .split('+')
@@ -73,6 +74,9 @@ export class Hotkey {
                 }
                 if (value === 'plus') {
                     return '+';
+                }
+                if (value === 'period') {
+                    return '.';
                 }
                 return capitalizeFirstLetter(value);
             })

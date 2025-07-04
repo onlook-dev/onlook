@@ -227,6 +227,9 @@
                             "placeholder": "Escriba su mensaje...",
                             "tooltip": "Chatee con IA sobre el elemento seleccionado"
                         },
+                        "mode": {
+                            "tooltip": "Cambiar entre modos Construir y Preguntar"
+                        },
                         "controls": {
                             "newChat": "Nuevo Chat",
                             "history": "Historial de Chat"

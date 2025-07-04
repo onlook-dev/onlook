@@ -79,6 +79,15 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
         editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
         editorEngine.chat.conversation.startNewConversation();
     });
+    useHotkeys(
+        Hotkey.CHAT_MODE_TOGGLE.command,
+        () => {
+            editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
+            // Trigger open chat mode menu
+            window.dispatchEvent(new CustomEvent('open-chat-mode-menu'));
+        },
+        { preventDefault: true },
+    );
 
     // Move
     useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => editorEngine.move.moveSelected('up'));
