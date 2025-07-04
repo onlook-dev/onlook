@@ -10,7 +10,6 @@ import { HelpDropdown } from './help-dropdown';
 import { ImagesTab } from './image-tab';
 import { LayersTab } from './layers-tab';
 import { PagesTab } from './page-tab';
-import { WindowsTab } from './windows-tab';
 import { ZoomControls } from './zoom-controls';
 
 const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; disabled?: boolean }[] =
@@ -143,7 +142,6 @@ export const LeftPanel = observer(() => {
                             {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
                             {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
                             {selectedTab === LeftPanelTabValue.IMAGES && <ImagesTab />}
-                            {selectedTab === LeftPanelTabValue.WINDOWS && <WindowsTab />}
                             {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
                         </div>
                     </div>
