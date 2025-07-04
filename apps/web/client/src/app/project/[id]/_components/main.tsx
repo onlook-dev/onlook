@@ -60,7 +60,6 @@ export const Main = observer(() => {
                 >
                     <LeftPanel />
                 </div>
-
                 {/* EditorBar anchored between panels */}
                 <div
                     className="absolute top-10 z-49"

@@ -34,3 +34,32 @@ export function addBase64Prefix(mimeType: string, base64: string): string {
     }
     return `data:${mimeType};base64,${base64}`;
 }
+
+/**
+ * Converts a CSS background-image URL from full URL to relative path
+ * Example: url("https://xxx-3000.csb.app/images/a.jpg") -> url("/images/c.jpg")
+ */
+export function urlToRelativePath(url: string): string {
+    const urlMatch = url.match(/url\s*\(\s*["']?([^"')]+)["']?\s*\)/);
+
+    // If it's not a url() function or no URL found, return as is
+    if (!urlMatch || !urlMatch[1]) {
+        return url;
+    }
+
+    const fullUrl = urlMatch[1];
+
+    // Extract the pathname (e.g., "/images/c.jpg")
+    try {
+        const newUrl = new URL(fullUrl);
+        return `url('${newUrl.pathname}')`;
+    } catch (error) {
+        return url;
+    }
+}
+
+export function canHaveBackgroundImage(tagName: string): boolean {
+    const tag = tagName.toLowerCase();
+    const backgroundElements = ['div', 'section', 'header', 'footer', 'main', 'article', 'aside'];
+    return backgroundElements.includes(tag);
+}

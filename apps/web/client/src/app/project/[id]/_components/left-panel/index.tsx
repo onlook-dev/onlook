@@ -10,7 +10,6 @@ import { HelpDropdown } from './help-dropdown';
 import { ImagesTab } from './image-tab';
 import { LayersTab } from './layers-tab';
 import { PagesTab } from './page-tab';
-import { WindowsTab } from './windows-tab';
 import { ZoomControls } from './zoom-controls';
 
 const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; disabled?: boolean }[] =
@@ -27,11 +26,6 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             label: transKeys.editor.panels.layers.tabs.pages,
         },
         {
-            value: LeftPanelTabValue.WINDOWS,
-            icon: <Icons.Desktop className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.windows.name,
-        },
-        {
             value: LeftPanelTabValue.IMAGES,
             icon: <Icons.Image className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.images,
@@ -40,7 +34,6 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             value: LeftPanelTabValue.LAYERS,
             icon: <Icons.Layers className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.layers,
-            disabled: true,
         },
         {
             value: LeftPanelTabValue.APPS,
@@ -149,7 +142,6 @@ export const LeftPanel = observer(() => {
                             {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
                             {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
                             {selectedTab === LeftPanelTabValue.IMAGES && <ImagesTab />}
-                            {selectedTab === LeftPanelTabValue.WINDOWS && <WindowsTab />}
                             {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
                         </div>
                     </div>

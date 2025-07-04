@@ -7,17 +7,36 @@ import { cn } from '@onlook/ui/utils';
 import { capitalizeFirstLetter } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import DomainTab from './domain';
 import { SettingsTabValue, type SettingTab } from './helpers';
 import { PreferencesTab } from './preferences-tab';
 import { ProjectTab } from './project';
 import { SiteTab } from './site';
 import { VersionsTab } from './versions';
+import { PageTab } from './site/page';
+import type { PageNode } from '@onlook/models';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 
 export const SettingsModalWithProjects = observer(() => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
+    const pagesManager = editorEngine.pages;
+
+    const flattenPages = useMemo(() => {
+        return pagesManager.tree.reduce((acc, page) => {
+            const flattenNode = (node: typeof page) => {
+                if (node.children?.length) {
+                    node.children.forEach((child) => flattenNode(child));
+                } else {
+                    acc.push(node);
+                }
+            };
+            flattenNode(page);
+            return acc;
+        }, [] as PageNode[]);
+    }, [pagesManager.tree]);
+    
     const globalTabs: SettingTab[] = [
         {
             label: SettingsTabValue.PREFERENCES,
@@ -49,7 +68,14 @@ export const SettingsModalWithProjects = observer(() => {
         },
     ];
 
-    const tabs = [...globalTabs, ...projectTabs];
+    const pagesTabs: SettingTab[] = flattenPages.filter((page) => page.path !== '/').map((page) => ({
+        label: page.path,
+        icon: <Icons.File className="mr-2 h-4 min-w-4" />,
+        component: <PageTab metadata={page.metadata} path={page.path} />,
+    }));
+    
+
+    const tabs = [...globalTabs, ...pagesTabs, ...projectTabs];
 
     useEffect(() => {
         if (stateManager.isSettingsModalOpen) {
@@ -119,6 +145,44 @@ export const SettingsModalWithProjects = observer(() => {
                                                 >
                                                     {tab.icon}
                                                     {capitalizeFirstLetter(tab.label.toLowerCase())}
+                                                </Button>
+                                            ))}
+                                        </div>
+                                        <Separator />
+                                        <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
+                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
+                                                Pages Settings
+                                            </p>
+                                            {pagesTabs.map((tab) => (
+                                                <Button
+                                                    key={tab.label}
+                                                    variant="ghost"
+                                                    className={cn(
+                                                        'w-full justify-start px-0 hover:bg-transparent',
+                                                        'truncate',
+                                                        stateManager.settingsTab === tab.label
+                                                            ? 'text-foreground-active'
+                                                            : 'text-muted-foreground',
+                                                    )}
+                                                    onClick={() =>
+                                                        (stateManager.settingsTab = tab.label)
+                                                    }
+                                                >
+                                                    {tab.icon}
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <span className="truncate">
+                                                                {capitalizeFirstLetter(
+                                                                    tab.label.toLowerCase(),
+                                                                )}
+                                                            </span>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            {capitalizeFirstLetter(
+                                                                tab.label.toLowerCase(),
+                                                            )}
+                                                        </TooltipContent>
+                                                    </Tooltip>
                                                 </Button>
                                             ))}
                                         </div>

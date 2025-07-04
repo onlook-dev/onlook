@@ -11,6 +11,7 @@ import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
 import { AuthProvider } from './auth/auth-context';
+import { faqSchema, organizationSchema } from './seo';
 
 export const metadata: Metadata = {
     title: 'Onlook – Cursor for Designers',
@@ -51,6 +52,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
     return (
         <html lang={locale} className={inter.variable} suppressHydrationWarning>
+            <head>
+                <link rel="canonical" href="https://onlook.com/" />
+                <meta name="robots" content="index, follow" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+                />
+            </head>
             <body>
                 <TRPCReactProvider>
                     <FeatureFlagsProvider>

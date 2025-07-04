@@ -28,31 +28,24 @@ export const WindowsTab = observer(() => {
         return emptyState;
     }
 
+    const closeWindowsTab = () => {
+        editorEngine.state.leftPanelTab = null;
+    };
+
     return (
-        <div className={`${WIDTH} flex flex-col gap-3 p-4`}>
-            <div className="flex flex-row gap-1">
-                <Button
-                    variant={'outline'}
-                    className="flex-1 h-fit py-1.5 px-2.5 text-foreground-tertiary items-center"
-                    onClick={() => editorEngine.frames.duplicate(frameData?.frame.id)}
-                >
-                    <Icons.Copy className="mr-2" />
-                    <span className="text-xs">Duplicate</span>
-                </Button>
-                <Button
-                    variant={'outline'}
-                    className="flex-1 h-fit py-1.5 px-2.5 text-foreground-tertiary items-center"
-                    disabled={!editorEngine.frames.canDelete()}
-                    onClick={() => editorEngine.frames.delete(frameData?.frame.id)}
-                >
-                    <Icons.Trash className="mr-2" />
-                    <span className="text-xs">Delete</span>
+        <div className={`${WIDTH} flex flex-col`}>
+            <div className="flex flex-row justify-between items-center px-3 py-2">
+                <p className="text-sm text-foreground-primary">Window Settings</p>
+                <Button onClick={closeWindowsTab} variant="ghost" size="icon" className="hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 w-fit h-fit">
+                    <Icons.CrossL className="h-4 w-4 min-h-4 min-w-4" />
                 </Button>
             </div>
-
-            <FrameDimensions frameId={frameData.frame.id} />
             <Separator />
-            <DeviceSettings frameId={frameData.frame.id} />
+            <div className="flex flex-col gap-2 p-3">
+                <FrameDimensions frameId={frameData.frame.id} />
+                <Separator />
+                <DeviceSettings frameId={frameData.frame.id} />
+            </div>
         </div>
     );
 });

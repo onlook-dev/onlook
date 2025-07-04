@@ -1,15 +1,10 @@
-import { useEditorEngine } from '@/components/store/editor';
 import { Progress } from '@onlook/ui/progress';
-import { observer } from 'mobx-react-lite';
 
-export const LoadingState = observer(() => {
-    const editorEngine = useEditorEngine();
-    const state = editorEngine.hosting.state;
-
+export const LoadingState = ({ message, progress }: { message: string, progress: number }) => {
     return (
         <div className="p-4 flex flex-col gap-2">
-            <p>{state.message}</p>
-            <Progress value={state.progress} className="w-full" />
+            <p>{message}</p>
+            <Progress value={progress} className="w-full" />
         </div>
     );
-});
+};
