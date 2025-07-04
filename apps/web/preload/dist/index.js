@@ -2223,7 +2223,10 @@ function ungroupElements(parent2, container) {
   });
   containerEl.remove();
   const domEl = getDomElement(parentEl, true);
-  return domEl;
+  return {
+    domEl,
+    newMap: buildLayerTree(parentEl)
+  };
 }
 function createContainerElement(target) {
   const containerEl = document.createElement(target.tagName);
@@ -17414,5 +17417,5 @@ export {
   penpalParent
 };
 
-//# debugId=06715304AEA9E71864756E2164756E21
+//# debugId=F6D252B04D910FD264756E2164756E21
 //# sourceMappingURL=index.js.map

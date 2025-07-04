@@ -59,7 +59,7 @@ export function groupElements(
 export function ungroupElements(
     parent: ActionTarget,
     container: GroupContainer,
-): DomElement | null {
+): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | null {
     const parentEl = getHtmlElement(parent.domId);
     if (!parentEl) {
         console.warn(`Parent element not found: ${parent.domId}`);
@@ -91,7 +91,10 @@ export function ungroupElements(
 
     const domEl = getDomElement(parentEl, true);
 
-    return domEl;
+    return {
+        domEl,
+        newMap: buildLayerTree(parentEl),
+    };
 }
 
 function createContainerElement(target: GroupContainer): HTMLElement {
