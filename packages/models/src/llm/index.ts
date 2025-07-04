@@ -3,7 +3,7 @@ export enum LLMProvider {
     BEDROCK = 'bedrock',
     GOOGLE_VERTEX = 'google-vertex',
     OPENAI = 'openai',
-    GOOGLE = 'google',
+    GOOGLE_AI_STUDIO = 'google-ai-studio',
 }
 
 export enum CLAUDE_MODELS {
@@ -41,7 +41,7 @@ interface ModelMapping {
     [LLMProvider.BEDROCK]: CLAUDE_MODELS;
     [LLMProvider.GOOGLE_VERTEX]: CLAUDE_MODELS;
     [LLMProvider.OPENAI]: OPENAI_MODELS;
-    [LLMProvider.GOOGLE]: GEMINI_MODELS;
+    [LLMProvider.GOOGLE_AI_STUDIO]: GEMINI_MODELS;
 }
 
 export type InitialModelPayload = {

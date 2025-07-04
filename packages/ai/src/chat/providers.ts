@@ -7,8 +7,8 @@ import {
     BEDROCK_MODEL_MAP,
     CLAUDE_MODELS,
     GEMINI_MODELS,
-    OPENAI_MODELS,
     LLMProvider,
+    OPENAI_MODELS,
     VERTEX_MODEL_MAP,
     type InitialModelPayload,
 } from '@onlook/models';
@@ -40,7 +40,7 @@ export async function initModel({
                 model: await getOpenAIProvider(model),
                 providerOptions: { openai: { cacheControl: { type: 'ephemeral' } } },
             };
-        case LLMProvider.GOOGLE:
+        case LLMProvider.GOOGLE_AI_STUDIO:
             return {
                 model: await getGoogleProvider(model),
                 providerOptions: { google: { cacheControl: { type: 'ephemeral' } } },
@@ -98,18 +98,18 @@ async function getOpenAIProvider(model: OPENAI_MODELS): Promise<LanguageModelV1>
         throw new Error('OPENAI_API_KEY must be set');
     }
     const openai = createOpenAI({
-        apiKey: process.env.OPENAI_API_KEY!,
+        apiKey: process.env.OPENAI_API_KEY,
     });
 
     return openai(model);
 }
 
 async function getGoogleProvider(model: GEMINI_MODELS): Promise<LanguageModelV1> {
-    if (!process.env.GOOGLE_API_KEY) {
-        throw new Error('GOOGLE_API_KEY must be set');
+    if (!process.env.GOOGLE_AI_STUDIO_API_KEY) {
+        throw new Error('GOOGLE_AI_STUDIO_API_KEY must be set');
     }
     const google = createGoogleGenerativeAI({
-        apiKey: process.env.GOOGLE_API_KEY!,
+        apiKey: process.env.GOOGLE_AI_STUDIO_API_KEY,
     });
     return google(model);
 }
