@@ -67,8 +67,7 @@ export class ChatManager {
             console.error('Failed to add user message');
             return null;
         }
-        // No commit creation for ask mode consultative only.
-        return this.generateStreamMessages(content);
+        return this.generateStreamMessages();
     }
 
     async getFixErrorMessages(): Promise<Message[] | null> {
