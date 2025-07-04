@@ -72,7 +72,6 @@ export function stopEditingText(domId: string): { newContent: string; domEl: Dom
         return null;
     }
     cleanUpElementAfterEditing(el);
-    // publishEditText(getDomElement(el, true));
     return { newContent: extractTextContent(el), domEl: getDomElement(el, true) };
 }
 

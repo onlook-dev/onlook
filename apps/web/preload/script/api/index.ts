@@ -95,7 +95,7 @@ const rawMethods = {
     handleBodyReady,
 }
 
-// Programmatically wrap all methods
+// Wrap all methods in a try/catch to prevent the preload script from crashing
 export const preloadMethods = Object.fromEntries(
     Object.entries(rawMethods).map(([key, fn]) => [key, withTryCatch(fn)])
 ) as typeof rawMethods;
