@@ -75,13 +75,13 @@ export const WebFrameComponent = observer(
                 methods: {
                     getFrameId: () => frame.id,
                     onWindowMutated: () => {
-                        editorEngine.frameViewEventHandler.handleWindowMutated();
+                        editorEngine.frameEvent.handleWindowMutated();
                     },
                     onWindowResized: () => {
-                        editorEngine.frameViewEventHandler.handleWindowResized(frame.id);
+                        editorEngine.frameEvent.handleWindowResized(frame.id);
                     },
                     onDomProcessed: (data: { layerMap: Record<string, any>; rootNode: any }) => {
-                        editorEngine.frameViewEventHandler.handleDomProcessed(frame.id, data);
+                        editorEngine.frameEvent.handleDomProcessed(frame.id, data);
                     },
                 } satisfies PenpalParentMethods,
             });

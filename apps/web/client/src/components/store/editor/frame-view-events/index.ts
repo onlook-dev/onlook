@@ -28,7 +28,7 @@ export type FrameViewEventPayload = {
     args: any;
 };
 
-export class FrameViewEventHandlerManager {
+export class FrameEventManager {
     private debouncedHandlers: (() => void)[] = [];
 
     constructor(private editorEngine: EditorEngine) {

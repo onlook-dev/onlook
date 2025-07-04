@@ -9,7 +9,7 @@ import { IDEManager } from './dev';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
 import { FontManager } from './font';
-import { FrameViewEventHandlerManager } from './frame-view-events';
+import { FrameEventManager } from './frame-view-events';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
@@ -51,7 +51,7 @@ export class EditorEngine {
     readonly font: FontManager = new FontManager(this);
     readonly pages: PagesManager = new PagesManager(this);
     readonly frames: FramesManager = new FramesManager(this);
-    readonly frameViewEventHandler: FrameViewEventHandlerManager = new FrameViewEventHandlerManager(this);
+    readonly frameEvent: FrameEventManager = new FrameEventManager(this);
 
     constructor(projectId: string) {
         this.projectId = projectId;
@@ -81,7 +81,7 @@ export class EditorEngine {
         this.ide.clear();
         this.error.clear();
         this.sandbox.clear();
-        this.frameViewEventHandler.clear();
+        this.frameEvent.clear();
     }
 
     clearUI() {
