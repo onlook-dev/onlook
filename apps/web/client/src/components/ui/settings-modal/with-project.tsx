@@ -68,8 +68,8 @@ export const SettingsModalWithProjects = observer(() => {
         },
     ];
 
-    const pagesTabs: SettingTab[] = flattenPages.map((page) => ({
-        label: page.path === '/' ? 'Home' : page.path,
+    const pagesTabs: SettingTab[] = flattenPages.filter((page) => page.path !== '/').map((page) => ({
+        label: page.path,
         icon: <Icons.File className="mr-2 h-4 min-w-4" />,
         component: <PageTab metadata={page.metadata} path={page.path} />,
     }));
