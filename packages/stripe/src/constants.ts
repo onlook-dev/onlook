@@ -47,6 +47,6 @@ export const FREE_PRODUCT_CONFIG = {
     name: 'Free',
     type: ProductType.FREE,
     stripeProductId: '',
-    dailyLimit: 10,
+    dailyLimit: 5,
     monthlyLimit: 50,
 };

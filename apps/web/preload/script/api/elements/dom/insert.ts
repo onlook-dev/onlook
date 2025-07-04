@@ -1,8 +1,9 @@
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/constants';
-import type { DomElement } from '@onlook/models';
+import type { DomElement, LayerNode } from '@onlook/models';
 import type { ActionElement, ActionLocation } from '@onlook/models/actions';
 import { assertNever, getHtmlElement } from '../../../helpers';
 import { getInstanceId, getOid, getOrAssignDomId } from '../../../helpers/ids';
+import { buildLayerTree } from '../../dom';
 import { cssManager } from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
 
@@ -84,7 +85,7 @@ function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | nul
 export function insertElement(
     element: ActionElement,
     location: ActionLocation,
-): DomElement | undefined {
+): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | undefined {
     const targetEl = getHtmlElement(location.targetDomId);
     if (!targetEl) {
         console.warn(`Target element not found: ${location.targetDomId}`);
@@ -116,8 +117,12 @@ export function insertElement(
             assertNever(location);
     }
 
-    const domEl = getDomElement(newEl, true);
-    return domEl;
+    const domEl = getDomElement(newEl, true)
+    const newMap = buildLayerTree(newEl);
+    return {
+        domEl,
+        newMap,
+    };
 }
 
 export function createElement(element: ActionElement) {
@@ -143,7 +148,7 @@ export function createElement(element: ActionElement) {
     return newEl;
 }
 
-export function removeElement(location: ActionLocation): DomElement | null {
+export function removeElement(location: ActionLocation): { domEl: DomElement, newMap: Map<string, LayerNode> | null } | null {
     const targetEl = getHtmlElement(location.targetDomId);
 
     if (!targetEl) {
@@ -176,7 +181,11 @@ export function removeElement(location: ActionLocation): DomElement | null {
     if (elementToRemove) {
         const domEl = getDomElement(elementToRemove, true);
         elementToRemove.style.display = 'none';
-        return domEl;
+        const newMap = targetEl.parentElement ? buildLayerTree(targetEl.parentElement) : null;
+        return {
+            domEl,
+            newMap,
+        };
     } else {
         console.warn(`No element found to remove at the specified location`);
         return null;

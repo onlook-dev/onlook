@@ -1,7 +1,7 @@
 import type { WatchEvent } from '@codesandbox/sdk';
 import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type TemplateNode } from '@onlook/models';
-import { getContentFromTemplateNode } from '@onlook/parser';
+import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
@@ -498,6 +498,22 @@ export class SandboxManager {
 
     async getTemplateNode(oid: string): Promise<TemplateNode | null> {
         return this.templateNodeMap.getTemplateNode(oid);
+    }
+
+    async getTemplateNodeChild(
+            parentOid: string,
+            child: TemplateNode,
+            index: number,
+        ): Promise<{ instanceId: string; component: string } | null> {
+            
+            const codeBlock = await this.getCodeBlock(parentOid);
+            
+            if (codeBlock == null) {
+                console.error(`Failed to read code block: ${parentOid}`);
+                return null;
+            }
+            
+        return await getTemplateNodeChild(codeBlock, child, index);
     }
 
     async getCodeBlock(oid: string): Promise<string | null> {

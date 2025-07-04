@@ -1,7 +1,8 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useHostingType } from '@/components/store/hosting';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
-import { PublishStatus } from '@onlook/models/hosting';
+import { DeploymentType } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
@@ -11,26 +12,33 @@ export const DangerZone = observer(() => {
     const stateManager = useStateManager();
 
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
-    const hostingManager = editorEngine.hosting;
+    const { unpublish: runUnpublishPreview, isDeploying: isUnpublishingPreview } = useHostingType(DeploymentType.UNPUBLISH_PREVIEW);
+    const { unpublish: runUnpublishCustom, isDeploying: isUnpublishingCustom } = useHostingType(DeploymentType.UNPUBLISH_CUSTOM);
+
     const previewDomain = domains?.preview;
     const customDomain = domains?.published;
 
-    const isUnpublishing = hostingManager?.state.status === PublishStatus.LOADING;
+    const unpublish = async (type: DeploymentType) => {
+        let unpublishResponse: {
+            deploymentId: string;
+        } | null = null;
+        if (type === DeploymentType.UNPUBLISH_PREVIEW) {
+            unpublishResponse = await runUnpublishPreview(editorEngine.projectId);
+        } else {
+            unpublishResponse = await runUnpublishCustom(editorEngine.projectId);
+        }
 
-    const unpublish = async (urls: string[]) => {
-        const success = await hostingManager.unpublish(editorEngine.projectId, urls);
-
-        if (!success) {
+        if (unpublishResponse) {
+            toast.success('Project is being unpublished', {
+                description: 'Deployment ID: ' + unpublishResponse.deploymentId,
+            });
+        } else {
             toast.error('Failed to unpublish project', {
                 description: 'Please try again.',
             });
-        } else {
-            toast.success('Project unpublished', {
-                description: 'Your project is no longer publicly accessible.',
-            });
-            stateManager.isSettingsModalOpen = false;
-            editorEngine.state.publishOpen = true;
         }
+        stateManager.isSettingsModalOpen = false;
+        editorEngine.state.publishOpen = true;
     };
 
     return (
@@ -46,15 +54,15 @@ export const DangerZone = observer(() => {
                     <Button
                         onClick={() => {
                             if (previewDomain) {
-                                unpublish([previewDomain.url]);
+                                unpublish(DeploymentType.UNPUBLISH_PREVIEW);
                             }
                         }}
                         className="ml-auto"
                         size="sm"
                         variant="destructive"
-                        disabled={!previewDomain || isUnpublishing}
+                        disabled={!previewDomain || isUnpublishingPreview}
                     >
-                        {isUnpublishing ? 'Unpublishing...' : 'Unpublish'}
+                        {isUnpublishingPreview ? 'Unpublishing...' : 'Unpublish'}
                     </Button>
                 </div>
                 {customDomain && (
@@ -63,13 +71,13 @@ export const DangerZone = observer(() => {
                             Unpublish from {customDomain.url}
                         </p>
                         <Button
-                            onClick={() => unpublish([customDomain.url])}
+                            onClick={() => unpublish(DeploymentType.UNPUBLISH_CUSTOM)}
                             className="ml-auto"
                             size="sm"
                             variant="destructive"
-                            disabled={!customDomain || isUnpublishing}
+                            disabled={!customDomain || isUnpublishingCustom}
                         >
-                            {isUnpublishing ? 'Unpublishing...' : 'Unpublish'}
+                            {isUnpublishingCustom ? 'Unpublishing...' : 'Unpublish'}
                         </Button>
                     </div>
                 )}
