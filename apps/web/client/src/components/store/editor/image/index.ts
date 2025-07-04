@@ -1,5 +1,4 @@
-import { api } from '@/trpc/client';
-import { COMPRESSION_IMAGE_PRESETS, DefaultSettings } from '@onlook/constants';
+import { DefaultSettings } from '@onlook/constants';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import {
     convertToBase64,
@@ -39,35 +38,8 @@ export class ImageManager {
     async upload(file: File, destinationFolder: string): Promise<void> {
         try {
             const path = `${destinationFolder}/${file.name}`;
-            // Convert file to base64 for tRPC transmission
-            const arrayBuffer = await file.arrayBuffer();
-            const base64Data = btoa(
-                Array.from(new Uint8Array(arrayBuffer))
-                    .map((byte: number) => String.fromCharCode(byte))
-                    .join('')
-            );
-
-            const compressionResult = await api.image.compress.mutate({
-                imageData: base64Data,
-                options: COMPRESSION_IMAGE_PRESETS.highQuality,
-            });
-
-            let finalBuffer: Uint8Array;
-
-            if (compressionResult.success && compressionResult.bufferData) {
-                // Convert base64 buffer data back to Uint8Array
-                const compressedBuffer = atob(compressionResult.bufferData);
-                finalBuffer = new Uint8Array(compressedBuffer.length);
-                for (let i = 0; i < compressedBuffer.length; i++) {
-                    finalBuffer[i] = compressedBuffer.charCodeAt(i);
-                }
-            } else {
-                // Fall back to original if compression failed
-                console.warn('Image compression failed, using original:', compressionResult.error);
-                finalBuffer = new Uint8Array(arrayBuffer);
-            }
-
-            await this.editorEngine.sandbox.writeBinaryFile(path, finalBuffer);
+            const uint8Array = new Uint8Array(await file.arrayBuffer());
+            await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
             this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);

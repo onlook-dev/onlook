@@ -1,7 +1,4 @@
-import { useUserManager } from '@/components/store/user';
-import type { Language } from '@onlook/constants';
-import { LANGUAGE_DISPLAY_NAMES } from '@onlook/constants';
-import { SystemTheme } from '@onlook/models';
+import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -11,18 +8,14 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useLocale } from 'next-intl';
-import { useTheme } from 'next-themes';
 
 export const PreferencesTab = observer(() => {
-    const userManager = useUserManager();
-    const { theme, setTheme } = useTheme();
-    const locale = useLocale();
-
-    const shouldWarnDelete = userManager.settings.settings?.editor?.shouldWarnDelete ?? true;
+    const { data: settings } = api.user.settings.get.useQuery();
+    const { mutate: updateSettings } = api.user.settings.upsert.useMutation();
+    const shouldWarnDelete = settings?.editor?.shouldWarnDelete ?? true;
 
     async function updateDeleteWarning(enabled: boolean) {
-        await userManager.settings.updateEditor({ shouldWarnDelete: enabled });
+        await updateSettings({ shouldWarnDelete: enabled });
     }
 
     return (

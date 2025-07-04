@@ -36,3 +36,32 @@ const computeDevice = (width: number, height: number): string => {
     }
     return matchedDevice;
 };
+
+export const getDeviceType = (name: string): string => {
+    if (name === 'Custom') {
+        return 'Custom';
+    }
+
+    for (const category in DEVICE_OPTIONS) {
+        const devices = DEVICE_OPTIONS[category as keyof typeof DEVICE_OPTIONS];
+
+        if (devices && devices[name]) {
+            switch (category) {
+                case 'Phone':
+                    return 'Phone';
+                case 'Tablet':
+                    return 'Tablet';
+                case 'Laptop':
+                    return 'Laptop';
+                case 'Desktop':
+                    return 'Desktop';
+                case 'Custom':
+                    return 'Custom';
+                default:
+                    return 'Custom';
+            }
+        }
+    }
+
+    return 'Custom';
+};

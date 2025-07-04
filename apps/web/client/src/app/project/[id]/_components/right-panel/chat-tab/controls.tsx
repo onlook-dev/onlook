@@ -9,6 +9,7 @@ import { observer } from 'mobx-react-lite';
 export const ChatControls = observer(() => {
     const editorEngine = useEditorEngine();
     const { isWaiting } = useChatContext();
+    const isStartingNewConversation = editorEngine.chat.conversation.creatingConversation;
 
     const handleNewChat = () => {
         editorEngine.chat.conversation.startNewConversation();
@@ -24,9 +25,9 @@ export const ChatControls = observer(() => {
                         size={'icon'}
                         className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
                         onClick={handleNewChat}
-                        disabled={isWaiting}
+                        disabled={isWaiting || isStartingNewConversation}
                     >
-                        <Icons.Edit className='h-4 w-4' />
+                        {isStartingNewConversation ? <Icons.LoadingSpinner className="h-4 w-4 animate-spin" /> : <Icons.Edit className="h-4 w-4" />}
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">

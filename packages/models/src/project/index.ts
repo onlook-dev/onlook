@@ -1,5 +1,6 @@
 export * from './canvas';
 export * from './command';
+export * from './create';
 export * from './frame';
 export * from './invitation';
 export * from './project';

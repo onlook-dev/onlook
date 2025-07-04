@@ -1,5 +1,6 @@
 import { EditorAttributes } from '@onlook/constants';
 import type { LayerNode } from '@onlook/models';
+import { penpalParent } from '../..';
 import { buildLayerTree } from '../dom';
 
 export function listenForDomMutation() {
@@ -7,52 +8,70 @@ export function listenForDomMutation() {
     const config = { childList: true, subtree: true };
 
     const observer = new MutationObserver((mutationsList) => {
-        let added = new Map<string, LayerNode>();
-        let removed = new Map<string, LayerNode>();
+        let added = new Map();
+        let removed = new Map();
 
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
-                const parent = mutation.target as HTMLElement;
-
-                for (const node of mutation.addedNodes) {
+                // Handle added nodes
+                mutation.addedNodes.forEach((node) => {
                     if (
-                        node.nodeType === Node.TEXT_NODE ||
-                        shouldIgnoreMutatedNode(node as HTMLElement)
+                        node.nodeType === Node.ELEMENT_NODE &&
+                        (node as Element).hasAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID)
                     ) {
-                        continue;
+                        const parent = (node as Element).parentElement;
+                        if (parent) {
+                            const layerMap = buildLayerTree(parent as HTMLElement);
+                            if (layerMap) {
+                                added = new Map([...added, ...layerMap]);
+                            }
+                        }
                     }
-                    const element = node as HTMLElement;
-                    dedupNewElement(element);
-                    const layerMap = buildLayerTree(parent as HTMLElement);
-                    if (layerMap) {
-                        added = new Map([...added, ...layerMap]);
-                    }
-                }
+                });
 
-                for (const node of mutation.removedNodes) {
+                // Handle removed nodes
+                mutation.removedNodes.forEach((node) => {
                     if (
-                        node.nodeType === Node.TEXT_NODE ||
-                        shouldIgnoreMutatedNode(node as HTMLElement)
+                        node.nodeType === Node.ELEMENT_NODE &&
+                        (node as Element).hasAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID)
                     ) {
-                        continue;
+                        const parent = (node as Element).parentElement;
+                        if (parent) {
+                            const layerMap = buildLayerTree(parent as HTMLElement);
+                            if (layerMap) {
+                                removed = new Map([...removed, ...layerMap]);
+                            }
+                        }
                     }
-                    const layerMap = buildLayerTree(parent as HTMLElement);
-                    if (layerMap) {
-                        removed = new Map([...removed, ...layerMap]);
-                    }
-                }
+                });
             }
         }
 
-        // if (added.size > 0 || removed.size > 0) {
-        //     ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATED, {
-        //         added: Object.fromEntries(added),
-        //         removed: Object.fromEntries(removed),
-        //     });
-        // }
+        if (added.size > 0 || removed.size > 0) {
+            if (penpalParent) {
+                penpalParent.onWindowMutated({
+                    added: Object.fromEntries(added),
+                    removed: Object.fromEntries(removed)
+                }).catch((error: Error) => {
+                    console.error('Failed to send window mutation event:', error);
+                });
+            }
+        }
     });
 
     observer.observe(targetNode, config);
+}
+
+export function listenForResize() {
+    function notifyResize() {
+        if (penpalParent) {
+            penpalParent.onWindowResized().catch((error: Error) => {
+                console.error('Failed to send window resize event:', error);
+            });
+        }
+    }
+
+    window.addEventListener('resize', notifyResize);
 }
 
 function shouldIgnoreMutatedNode(node: HTMLElement): boolean {

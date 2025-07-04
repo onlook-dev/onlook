@@ -3,6 +3,8 @@ import { isReactFragment } from '../helpers';
 import { getExistingOid } from '../ids';
 import { type NodePath, type t as T, types as t, traverse } from '../packages';
 import { createTemplateNode } from './helpers';
+import { getOidFromJsxElement } from '../code-edit/helpers';
+import { getAstFromContent } from '../parse';
 
 export function createTemplateNodeMap(ast: T.File, filename: string): Map<string, TemplateNode> {
     const mapping: Map<string, TemplateNode> = new Map();
@@ -199,4 +201,43 @@ export function isNodeElementArray(node: T.CallExpression): boolean {
         t.isIdentifier(node.callee.property) &&
         node.callee.property.name === 'map'
     );
+}
+
+export async function getTemplateNodeChild(
+    parentContent: string,
+    child: TemplateNode,
+    index: number,
+): Promise<{ instanceId: string; component: string } | null> {
+    if (parentContent == null) {
+        console.error(`Failed to read code block: ${parentContent}`);
+        return null;
+    }
+    const ast = getAstFromContent(parentContent);
+    let currentIndex = 0;
+
+    if (!ast) {
+        return null;
+    }
+
+    let res: { instanceId: string; component: string } | null = null;
+    traverse(ast, {
+        JSXElement(path) {
+            if (!path) {
+                return;
+            }
+            const node = path.node;
+            const childName = (node.openingElement.name as T.JSXIdentifier).name;
+            if (childName === child.component) {
+                const instanceId = getOidFromJsxElement(node.openingElement);
+                if (instanceId) {
+                    res = { instanceId, component: child.component };
+                }
+                if (currentIndex === index || index === -1) {
+                    path.stop();
+                }
+                currentIndex++;
+            }
+        },
+    });
+    return res;
 }

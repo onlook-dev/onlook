@@ -1,23 +1,14 @@
 'use client';
 
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
-import { useCreateManager } from '@/components/store/create';
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectManager } from '@/components/store/project';
-import { useUserManager } from '@/components/store/user';
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
-import { SettingsModal } from '@/components/ui/settings-modal';
-import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
-import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
-import { ChatType } from '@onlook/models';
+import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
 import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
-import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { usePanelMeasurements } from '../_hooks/use-panel-measure';
-import { useTabActive } from '../_hooks/use-tab-active';
+import { useStartProject } from '../_hooks/use-start-project';
 import { BottomBar } from './bottom-bar';
 import { Canvas } from './canvas';
 import { EditorBar } from './editor-bar';
@@ -25,105 +16,21 @@ import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
 
-export const Main = observer(({ projectId }: { projectId: string }) => {
+export const Main = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
-    const createManager = useCreateManager();
-    const userManager = useUserManager();
-    const { sendMessages } = useChatContext();
-    const { data: result, isLoading } = api.project.getFullProject.useQuery({ projectId });
+    const { isProjectReady } = useStartProject();
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
-    const { tabState } = useTabActive();
-    const { addSubscription } = useCleanupOnPageChange();
-
-    useEffect(() => {
-        addSubscription('project-main', () => {
-            projectManager.clear();
-            editorEngine.clear();
-        });
-    }, [projectManager, editorEngine, addSubscription]);
-
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,
         rightPanelRef,
     );
 
-    useEffect(() => {
-        const initializeProject = async () => {
-            if (!result) {
-                return;
-            }
-            const { project, userCanvas, frames } = result;
-            projectManager.project = project;
-
-            if (project.sandbox?.id) {
-                if (userManager.user?.id) {
-                    if (!editorEngine.sandbox.session.session) {
-                        await editorEngine.sandbox.session.start(
-                            project.sandbox.id,
-                            userManager.user.id,
-                        );
-                    }
-                } else {
-                    console.error('Initializing project: No user id');
-                }
-            } else {
-                console.error('Initializing project: No sandbox id');
-            }
-
-            editorEngine.canvas.applyCanvas(userCanvas);
-            editorEngine.frames.applyFrames(frames);
-            await editorEngine.chat.conversation.fetchOrCreateConversation(project.id);
-            resumeCreate();
-        };
-
-        initializeProject().catch((error) => {
-            console.error('Error initializing project:', error);
-        });
-    }, [result, userManager.user?.id]);
-
-    const resumeCreate = async () => {
-        const creationData = createManager.pendingCreationData;
-        if (!creationData) return;
-
-        if (projectId !== creationData.project.id) return;
-
-        const messages = await editorEngine.chat.getEditMessages(
-            creationData.prompt,
-            creationData.images,
-        );
-
-        if (!messages) {
-            console.error('Failed to get creation messages');
-            return;
-        }
-        createManager.pendingCreationData = null;
-        sendMessages(messages, ChatType.CREATE);
-    };
-
-    useEffect(() => {
-        if (tabState === 'reactivated') {
-            editorEngine.sandbox.session.reconnect(projectId, userManager.user?.id);
-        }
-    }, [tabState]);
-
-    if (isLoading) {
+    if (!isProjectReady) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2">
                 <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
                 <div className="text-xl">Loading project...</div>
-            </div>
-        );
-    }
-
-    if (!result) {
-        return (
-            <div className="h-screen w-screen flex flex-col items-center justify-center gap-4">
-                <div className="text-xl">Project not found</div>
-                <Link href={Routes.PROJECTS} className="text-sm text-foreground-secondary">
-                    Go to projects
-                </Link>
             </div>
         );
     }
@@ -143,7 +50,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 <Canvas />
 
                 <div className="absolute top-0 w-full">
-                    <TopBar projectId={projectId} />
+                    <TopBar />
                 </div>
 
                 {/* Left Panel */}
@@ -153,7 +60,6 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
                 >
                     <LeftPanel />
                 </div>
-
                 {/* EditorBar anchored between panels */}
                 <div
                     className="absolute top-10 z-49"
@@ -183,7 +89,7 @@ export const Main = observer(({ projectId }: { projectId: string }) => {
 
                 <BottomBar />
             </div>
-            <SettingsModal showProjectTabs={true} />
+            <SettingsModalWithProjects />
             <SubscriptionModal />
         </TooltipProvider>
     );
