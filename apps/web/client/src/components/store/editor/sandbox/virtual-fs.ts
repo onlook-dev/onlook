@@ -1,10 +1,9 @@
-import { Volume } from 'memfs';
-import { type FileOperations, getDirName, getBaseName } from '@onlook/utility';
-import { makeAutoObservable } from 'mobx';
-import localforage from 'localforage';
-import { convertToBase64, convertFromBase64 } from '@onlook/utility';
-import { normalizePath as sandboxNormalizePath } from './helpers';
 import { BINARY_EXTENSIONS } from '@onlook/constants';
+import { type FileOperations, getBaseName, getDirName } from '@onlook/utility';
+import localforage from 'localforage';
+import { Volume } from 'memfs';
+import { makeAutoObservable } from 'mobx';
+import { normalizePath as sandboxNormalizePath } from './helpers';
 
 export interface VirtualFileSystemOptions {
     persistenceKey?: string;
@@ -397,20 +396,6 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
     }
 
     listBinaryFiles(dir: string = ''): string[] {
-        const binaryExtensions = [
-            '.png',
-            '.jpg',
-            '.jpeg',
-            '.gif',
-            '.bmp',
-            '.svg',
-            '.ico',
-            '.webp',
-            '.pdf',
-            '.zip',
-            '.tar',
-            '.gz',
-        ];
         const allFiles = this.listAllFiles();
 
         return allFiles.filter((file) => {
@@ -419,7 +404,7 @@ export class VirtualFileSystem implements VirtualFileSystemInterface {
             }
 
             const ext = file.toLowerCase().substring(file.lastIndexOf('.'));
-            return binaryExtensions.includes(ext);
+            return BINARY_EXTENSIONS.includes(ext);
         });
     }
 
