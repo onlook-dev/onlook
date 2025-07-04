@@ -15,7 +15,6 @@ import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
-import { WindowsToolbar } from './left-panel/windows-tab/toolbar';
 
 export const Main = observer(() => {
     const editorEngine = useEditorEngine();
@@ -61,25 +60,6 @@ export const Main = observer(() => {
                 >
                     <LeftPanel />
                 </div>
-                <div
-                    className="absolute top-10 z-50"
-                    style={{
-                        left: toolbarLeft,
-                        right: toolbarRight,
-                        overflow: 'hidden',
-                        pointerEvents: 'none',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'flex-start',
-                    }}
-                >
-                    <div style={{ pointerEvents: 'auto' }}>
-                        <WindowsToolbar />
-                    </div>
-                </div>
-
-
-
                 {/* EditorBar anchored between panels */}
                 <div
                     className="absolute top-10 z-49"
