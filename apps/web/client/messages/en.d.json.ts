@@ -230,6 +230,9 @@ declare const messages: {
                             "placeholder": "Type your message...",
                             "tooltip": "Chat with AI about the selected element"
                         },
+                        "mode": {
+                            "tooltip": "Switch between Build and Ask modes"
+                        },
                         "controls": {
                             "newChat": "New Chat",
                             "history": "Chat History"
