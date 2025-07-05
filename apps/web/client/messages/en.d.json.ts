@@ -215,6 +215,10 @@ declare const messages: {
                 "insertText": {
                     "name": "Insert Text",
                     "tooltip": "Add a new text element"
+                },
+                "insertWindow": {
+                    "name": "Insert Window",
+                    "tooltip": "Insert a new window"
                 }
             },
             "versionHistory": "Version History"

@@ -34,6 +34,7 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
         !editorEngine.text.isEditing && editorEngine.clearUI();
     });
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.state.editorMode = EditorMode.PAN));
+    useHotkeys(Hotkey.INSERT_WINDOW.command, () => (editorEngine.state.editorMode = EditorMode.INSERT_WINDOW));
     useHotkeys(Hotkey.PREVIEW.command, () => (editorEngine.state.editorMode = EditorMode.PREVIEW));
     useHotkeys(
         Hotkey.INSERT_DIV.command,
