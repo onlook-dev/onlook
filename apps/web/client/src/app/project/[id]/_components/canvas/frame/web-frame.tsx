@@ -8,6 +8,9 @@ import {
     type PenpalChildMethods,
     type PenpalParentMethods,
     type PromisifiedPendpalChildMethods,
+    ConnectionState,
+    ExponentialBackoff,
+    Heartbeat
 } from '@onlook/penpal';
 import { cn } from '@onlook/ui/utils';
 import { debounce } from 'lodash';
@@ -45,6 +48,15 @@ export const WebFrameComponent = observer(
         const zoomLevel = useRef(1);
         const [penpalChild, setPenpalChild] = useState<any>(null);
         const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
+        const [connectionState, setConnectionState] = useState<ConnectionState>(ConnectionState.DISCONNECTED);
+        const heartbeatRef = useRef<Heartbeat | null>(null);
+        const reconnectBackoffRef = useRef<ExponentialBackoff | null>(null);
+        const connectionQuality = useRef({
+            latency: 0,
+            successRate: 1.0,
+            lastSuccessfulConnection: 0,
+            reconnectAttempts: 0
+        });
 
         const reloadIframe = () => {
             const iframe = iframeRef.current;
@@ -55,14 +67,21 @@ export const WebFrameComponent = observer(
 
         const setupPenpalConnection = () => {
             if (!iframeRef.current?.contentWindow) {
-                console.error('No iframe found');
+                console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - No iframe found`);
                 return;
             }
 
-            // Destroy any existing connection before creating a new one
+            setConnectionState(ConnectionState.CONNECTING);
+            connectionQuality.current.reconnectAttempts++;
+
             if (connectionRef.current) {
                 connectionRef.current.destroy();
                 connectionRef.current = null;
+            }
+
+            if (heartbeatRef.current) {
+                heartbeatRef.current.stop();
+                heartbeatRef.current = null;
             }
 
             const messenger = new WindowMessenger({
@@ -86,7 +105,6 @@ export const WebFrameComponent = observer(
                 } satisfies PenpalParentMethods,
             });
 
-            // Store the connection reference
             connectionRef.current = connection;
 
             connection.promise.then((child) => {
@@ -94,14 +112,27 @@ export const WebFrameComponent = observer(
                     console.error(
                         `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
                     );
-                    debouncedReloadIframe();
+                    setConnectionState(ConnectionState.DISCONNECTED);
+                    reconnectBackoffRef.current?.execute();
                     return;
                 }
+                
                 const remote = child as unknown as PenpalChildMethods;
                 setPenpalChild(remote);
+                setConnectionState(ConnectionState.CONNECTED);
+                connectionQuality.current.lastSuccessfulConnection = Date.now();
+                connectionQuality.current.reconnectAttempts = 0;
+                
+                if (reconnectBackoffRef.current) {
+                    reconnectBackoffRef.current.reset();
+                }
+                
                 remote.setFrameId(frame.id);
                 remote.processDom();
-                console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
+                
+                startHeartbeat();
+                
+                console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection established successfully`);
             });
 
             connection.promise.catch((error) => {
@@ -109,8 +140,42 @@ export const WebFrameComponent = observer(
                     `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
                     error,
                 );
-                debouncedReloadIframe();
+                setConnectionState(ConnectionState.DISCONNECTED);
+                reconnectBackoffRef.current?.execute();
             });
+        };
+
+        const startHeartbeat = () => {
+            if (heartbeatRef.current?.isActive()) return;
+            
+            heartbeatRef.current = new Heartbeat(async () => {
+                if (!penpalChild || connectionState !== ConnectionState.CONNECTED) {
+                    return false;
+                }
+                
+                try {
+                    const startTime = Date.now();
+                    await penpalChild.getFrameId();
+                    connectionQuality.current.latency = Date.now() - startTime;
+                    return true;
+                } catch (error) {
+                    console.warn(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Heartbeat failed:`, error);
+                    return false;
+                }
+            }, {
+                interval: 30000,
+                maxFailures: 2,
+                onHealthy: () => {
+                    console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection health restored`);
+                },
+                onUnhealthy: () => {
+                    console.warn(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection unhealthy, triggering reconnection`);
+                    setConnectionState(ConnectionState.DISCONNECTED);
+                    reconnectBackoffRef.current?.execute();
+                }
+            });
+            
+            heartbeatRef.current.start();
         };
 
         useImperativeHandle(ref, () => {
@@ -199,6 +264,18 @@ export const WebFrameComponent = observer(
         }, [penpalChild, frame, iframeRef]);
 
         useEffect(() => {
+            reconnectBackoffRef.current = new ExponentialBackoff(() => {
+                if (connectionState === ConnectionState.RECONNECTING) return;
+                setConnectionState(ConnectionState.RECONNECTING);
+                console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Attempting reconnection`);
+                setupPenpalConnection();
+            }, {
+                initialDelay: 1000,
+                maxDelay: 30000,
+                maxAttempts: 5,
+                backoffFactor: 2
+            });
+
             setupPenpalConnection();
 
             return () => {
@@ -206,13 +283,26 @@ export const WebFrameComponent = observer(
                     connectionRef.current.destroy();
                     connectionRef.current = null;
                 }
+                if (heartbeatRef.current) {
+                    heartbeatRef.current.stop();
+                    heartbeatRef.current = null;
+                }
+                if (reconnectBackoffRef.current) {
+                    reconnectBackoffRef.current.cancel();
+                    reconnectBackoffRef.current = null;
+                }
                 setPenpalChild(null);
+                setConnectionState(ConnectionState.DISCONNECTED);
             };
         }, []);
 
-        const debouncedReloadIframe = debounce(() => {
-            reloadIframe();
-        }, 1000);
+        const handleConnectionError = () => {
+            if (reconnectBackoffRef.current) {
+                reconnectBackoffRef.current.execute();
+            } else {
+                reloadIframe();
+            }
+        };
 
         return (
             <iframe
@@ -224,7 +314,7 @@ export const WebFrameComponent = observer(
                 allow="geolocation; microphone; camera; midi; encrypted-media"
                 style={{ width: frame.dimension.width, height: frame.dimension.height }}
                 onLoad={setupPenpalConnection}
-                onError={debouncedReloadIframe}
+                onError={handleConnectionError}
                 {...props}
             />
         );
