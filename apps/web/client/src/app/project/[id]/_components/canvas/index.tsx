@@ -4,11 +4,12 @@ import { useEditorEngine } from '@/components/store/editor';
 import { EditorAttributes } from '@onlook/constants';
 import { EditorMode } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Frames } from './frames';
 import { HotkeysArea } from './hotkeys';
 import { Overlay } from './overlay';
 import { PanOverlay } from './overlay/pan';
+import DeleteConfirmationModal from './warning-model';
 
 const ZOOM_SENSITIVITY = 0.006;
 const PAN_SENSITIVITY = 0.52;
@@ -24,6 +25,26 @@ export const Canvas = observer(() => {
     const containerRef = useRef<HTMLDivElement>(null);
     const scale = editorEngine.canvas.scale;
     const position = editorEngine.canvas.position;
+
+    const shouldShowDeleteWarning = editorEngine.elements.showDeleteWarning;
+    const [isOpen, setIsOpen] = useState<boolean>(shouldShowDeleteWarning);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    useEffect(() => {
+        setIsOpen(editorEngine.elements.showDeleteWarning);
+    }, [editorEngine.elements.showDeleteWarning]);
+
+    const handleElementDelete = async () => {
+        setIsLoading(true);
+        await editorEngine.elements.delete(true);
+        setIsLoading(false);
+        setIsOpen(false);
+    }
+
+    const handleWarningClose = () => {
+        setIsOpen(false);
+        editorEngine.elements.showDeleteWarning = false;
+    }
 
     const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
         if (event.target !== containerRef.current) {
@@ -172,6 +193,7 @@ export const Canvas = observer(() => {
                         clampPosition(position, scale)
                     }
                 />
+                <DeleteConfirmationModal isOpen={isOpen} handleWarningClose={handleWarningClose} isLoading={isLoading} handleDelete={handleElementDelete} />
             </div>
         </HotkeysArea>
     );

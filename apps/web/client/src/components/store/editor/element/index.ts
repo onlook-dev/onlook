@@ -5,10 +5,12 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import { adaptRectToCanvas } from '../overlay/utils';
+import { api } from '@/trpc/client';
 
 export class ElementsManager {
     private _hovered: DomElement | undefined;
     private _selected: DomElement[] = [];
+    private _showDeleteWarning: boolean = false;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -21,9 +23,17 @@ export class ElementsManager {
     get selected() {
         return this._selected;
     }
+    
+    get showDeleteWarning() {
+        return this._showDeleteWarning;
+    }
 
     set selected(elements: DomElement[]) {
         this._selected = elements;
+    }
+
+    set showDeleteWarning(isShow: boolean) {
+        this._showDeleteWarning = isShow;
     }
 
     mouseover(domEl: DomElement) {
@@ -95,9 +105,14 @@ export class ElementsManager {
         toast.error('Cannot delete element', { description: error });
     }
 
-    async delete() {
+    async delete(confirmDelete: boolean = false) {
         const selected = this.selected;
         if (selected.length === 0) {
+            return;
+        }
+
+        const isShowWarning = await this.checkUserPreference();
+        if(isShowWarning && !confirmDelete){
             return;
         }
 
@@ -137,6 +152,8 @@ export class ElementsManager {
             }
 
             removeAction.codeBlock = codeBlock;
+
+            this.showDeleteWarning = false;
 
             this.editorEngine.action.run(removeAction).catch((err) => {
                 console.error('Error deleting element', err);
@@ -186,6 +203,13 @@ export class ElementsManager {
         return {
             shouldDelete: true,
         };
+    }
+
+    private async checkUserPreference() : Promise<boolean> {
+        const settings = await api.user.settings.get.query();
+        const shouldWarnDelete = settings?.editor?.shouldWarnDelete ?? true;
+        this.showDeleteWarning = shouldWarnDelete;
+        return shouldWarnDelete;
     }
 
     clear() {

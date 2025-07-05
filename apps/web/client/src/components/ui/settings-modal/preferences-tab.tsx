@@ -10,8 +10,13 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 
 export const PreferencesTab = observer(() => {
+    const utils = api.useContext();
     const { data: settings } = api.user.settings.get.useQuery();
-    const { mutate: updateSettings } = api.user.settings.upsert.useMutation();
+    const { mutate: updateSettings } = api.user.settings.upsert.useMutation({
+        onSuccess: () => {
+            utils.user.settings.get.invalidate();
+        }
+    });
     const shouldWarnDelete = settings?.editor?.shouldWarnDelete ?? true;
 
     async function updateDeleteWarning(enabled: boolean) {
