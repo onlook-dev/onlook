@@ -23,7 +23,7 @@ export interface ExponentialBackoffOptions {
 
 export class ExponentialBackoff {
     private attempts = 0;
-    private timeoutId: NodeJS.Timeout | null = null;
+    private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
     constructor(
         private fn: () => void | Promise<void>,
@@ -42,13 +42,14 @@ export class ExponentialBackoff {
             return;
         }
 
+        this.attempts++;
+
         const delay = Math.min(
-            this.options.initialDelay * Math.pow(this.options.backoffFactor!, this.attempts),
+            this.options.initialDelay * Math.pow(this.options.backoffFactor!, this.attempts - 1),
             this.options.maxDelay,
         );
 
         this.timeoutId = setTimeout(async () => {
-            this.attempts++;
             try {
                 await this.fn();
             } catch (error) {
@@ -89,7 +90,7 @@ export interface HeartbeatOptions {
 }
 
 export class Heartbeat {
-    private intervalId: NodeJS.Timeout | null = null;
+    private intervalId: ReturnType<typeof setInterval> | null = null;
     private consecutiveFailures = 0;
     private isRunning = false;
 
