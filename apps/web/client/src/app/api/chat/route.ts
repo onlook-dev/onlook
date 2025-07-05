@@ -83,7 +83,10 @@ export const getSupabaseUser = async (request: NextRequest) => {
 
 export const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType } = await req.json();
-    const { model, providerOptions } = await initModel(LLMProvider.ANTHROPIC, CLAUDE_MODELS.SONNET_4);
+    const { model, providerOptions } = await initModel({
+        provider: LLMProvider.ANTHROPIC,
+        model: CLAUDE_MODELS.SONNET_4,
+    });
 
     let systemPrompt: string;
     switch (chatType) {
@@ -98,9 +101,7 @@ export const streamResponse = async (req: NextRequest) => {
             systemPrompt = getSystemPrompt();
             break;
     }
-
     const toolSet = chatType === ChatType.ASK ? askToolSet : buildToolSet;
-
     const result = streamText({
         model,
         messages: [

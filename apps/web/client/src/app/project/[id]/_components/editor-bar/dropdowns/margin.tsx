@@ -1,5 +1,6 @@
 'use client';
 
+import { useEditorEngine } from "@/components/store/editor";
 import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
@@ -19,6 +20,7 @@ import { SpacingInputs } from "../inputs/spacing-inputs";
 export const Margin = observer(() => {
     const [activeTab, setActiveTab] = useState("all");
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('margin');
+    const editorEngine = useEditorEngine();
 
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'margin-dropdown'
@@ -68,11 +70,25 @@ export const Margin = observer(() => {
             return null;
         }
 
+        const definedStyles = editorEngine.style.selectedStyle?.styles.defined;
+
         // Get all non-zero values
         const nonZeroValues = [top, right, bottom, left].filter(val => val !== 0);
 
+        const isAuto =
+            ['margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'margin']
+                .some(key => definedStyles?.[key] === 'auto');
+
+        if (isAuto && top == bottom && left == right) {
+            return 'auto';
+        }
+
         // If all non-zero values are the same
         if (nonZeroValues.length > 0 && nonZeroValues.every(val => val === nonZeroValues[0])) {
+            if (isAuto) {
+                return 'auto';
+            }
+
             return boxState.margin.unit === 'px' ? `${nonZeroValues[0]}` : `${boxState.margin.value}`;
         }
 
