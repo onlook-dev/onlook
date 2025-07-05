@@ -47,10 +47,14 @@ export const WebFrameComponent = observer(
         const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
 
         const reloadIframe = () => {
-            const iframe = iframeRef.current;
-            if (!iframe) return;
-            iframe.src = iframe.src;
-            setupPenpalConnection();
+            try {
+                const iframe = iframeRef.current;
+                if (!iframe) return;
+                iframe.src = iframe.src;
+                iframe.contentWindow?.location.reload();
+            } catch (error) {
+                console.error('Failed to reload iframe', error);
+            }
         };
 
         const setupPenpalConnection = () => {
