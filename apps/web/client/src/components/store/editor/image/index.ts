@@ -23,16 +23,8 @@ export class ImageManager {
                 if (!isIndexingFiles) {
                     this.scanImages();
                 }
-            }
+            },
         );
-
-        reaction(
-            () => this.editorEngine.sandbox.listBinaryFiles(DefaultSettings.IMAGE_FOLDER),
-            () => {
-                this.scanImages();
-            }
-        );
-
     }
 
     async upload(file: File, destinationFolder: string): Promise<void> {
@@ -50,7 +42,6 @@ export class ImageManager {
     async delete(originPath: string): Promise<void> {
         try {
             await this.editorEngine.sandbox.delete(originPath);
-            this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
@@ -62,7 +53,6 @@ export class ImageManager {
             const basePath = getDirName(originPath);
             const newPath = `${basePath}/${newName}`;
             await this.editorEngine.sandbox.rename(originPath, newPath);
-            this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;
@@ -150,9 +140,7 @@ export class ImageManager {
         this._isScanning = true;
 
         try {
-            const files = this.editorEngine.sandbox.listBinaryFiles(
-                DefaultSettings.IMAGE_FOLDER,
-            );
+            const files = this.editorEngine.sandbox.listBinaryFiles(DefaultSettings.IMAGE_FOLDER);
 
             if (files.length === 0) {
                 this.images = [];
@@ -161,13 +149,11 @@ export class ImageManager {
 
             const imageFiles = files.filter((filePath: string) => isImageFile(filePath));
 
-
             if (imageFiles.length === 0) {
                 return;
             }
 
             this.images = imageFiles;
-
         } catch (error) {
             console.error('Error scanning images:', error);
             this.images = [];
@@ -227,11 +213,13 @@ export class ImageManager {
 
         try {
             // Process all images in parallel
-            const imagePromises = imagePaths.map(path => this.readImageContent(path));
+            const imagePromises = imagePaths.map((path) => this.readImageContent(path));
             const results = await Promise.all(imagePromises);
 
             // Filter out null results
-            const validImages = results.filter((result): result is ImageContentData => result !== null);
+            const validImages = results.filter(
+                (result): result is ImageContentData => result !== null,
+            );
 
             return validImages;
         } catch (error) {

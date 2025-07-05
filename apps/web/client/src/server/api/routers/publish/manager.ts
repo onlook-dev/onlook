@@ -39,6 +39,10 @@ export class PublishManager {
                 await this.session.fs.remove(path, recursive);
                 return true;
             },
+            rename: async (oldPath: string, newPath: string) => {
+                await this.session.fs.rename(oldPath, newPath);
+                return true;
+            },
         };
     }
 

@@ -107,8 +107,6 @@ export const useFolder = () => {
 
             await editorEngine.sandbox.rename(oldPath, newPath);
 
-            editorEngine.image.scanImages();
-
             setRenameState({
                 folderToRename: null,
                 newFolderName: '',
@@ -148,8 +146,6 @@ export const useFolder = () => {
             }
 
             await editorEngine.sandbox.delete(folderPath, true);
-
-            editorEngine.image.scanImages();
 
             setDeleteState({
                 folderToDelete: null,
@@ -208,9 +204,6 @@ export const useFolder = () => {
                 throw new Error('No sandbox session available');
             }
             await editorEngine.sandbox.rename(oldPath, newPath);
-
-            // Refresh images
-            editorEngine.image.scanImages();
 
             setMoveState({
                 folderToMove: null,

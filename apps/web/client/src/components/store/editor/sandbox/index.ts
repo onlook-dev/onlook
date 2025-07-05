@@ -7,24 +7,23 @@ import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
 import { FileEventBus } from './file-event-bus';
-import { FileSyncManager } from './file-sync';
 import { FileWatcher } from './file-watcher';
 import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
+import { VFSSyncManager } from './vfs-sync-manager';
 
 export class SandboxManager {
     readonly session: SessionManager;
+    private templateNodeMap: TemplateNodeMapper;
     private fileWatcher: FileWatcher | null = null;
-    private fileSync: FileSyncManager
-    private templateNodeMap: TemplateNodeMapper
+    private fileSync: VFSSyncManager = new VFSSyncManager();
     readonly fileEventBus: FileEventBus = new FileEventBus();
     private isIndexed = false;
     private isIndexing = false;
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
-        this.fileSync = new FileSyncManager(this.editorEngine);
         this.templateNodeMap = new TemplateNodeMapper(this.editorEngine);
         makeAutoObservable(this);
 
@@ -441,6 +440,7 @@ export class SandboxManager {
                 }
                 const oldNormalizedPath = normalizePath(oldPath);
                 const newNormalizedPath = normalizePath(newPath);
+
                 await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
 
                 this.fileEventBus.publish({
@@ -606,16 +606,6 @@ export class SandboxManager {
 
             // Delete the file using the filesystem API
             await this.session.session.fs.remove(normalizedPath, recursive);
-
-            // Clean up the file sync cache
-            await this.fileSync.delete(normalizedPath);
-
-            // Publish file deletion event
-            this.fileEventBus.publish({
-                type: 'remove',
-                paths: [normalizedPath],
-                timestamp: Date.now(),
-            });
 
             console.log(`Successfully deleted file: ${normalizedPath}`);
             return true;

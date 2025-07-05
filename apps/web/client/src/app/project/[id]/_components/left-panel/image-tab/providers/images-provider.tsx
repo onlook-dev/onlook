@@ -1,13 +1,15 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { createContext, useContext, useMemo, type ReactNode, useCallback, useState, useEffect } from 'react';
-import { observer } from 'mobx-react-lite';
-import { useImageUpload } from '../hooks/use-image-upload';
-import { useImageDelete } from '../hooks/use-image-delete';
-import { useImageRename } from '../hooks/use-image-rename';
-import { useImageMove } from '../hooks/use-image-move';
-import type { FolderNode } from './types';
-import { useFolder } from '../hooks/use-folder';
+import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
 import { DefaultSettings } from '@onlook/constants';
+import { isImageFile } from '@onlook/utility';
+import { observer } from 'mobx-react-lite';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useFolder } from '../hooks/use-folder';
+import { useImageDelete } from '../hooks/use-image-delete';
+import { useImageMove } from '../hooks/use-image-move';
+import { useImageRename } from '../hooks/use-image-rename';
+import { useImageUpload } from '../hooks/use-image-upload';
+import type { FolderNode } from './types';
 
 interface ImagesContextValue {
     folderStructure: FolderNode;
@@ -30,7 +32,7 @@ interface ImagesProviderProps {
 
 export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
     const editorEngine = useEditorEngine();
-    
+    const { addSubscription } = useCleanupOnPageChange();
 
     const deleteOperations = useImageDelete();
     const renameOperations = useImageRename();
@@ -91,11 +93,12 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         setFolderStructure(baseFolderStructure);
     }, [baseFolderStructure]);
 
+
     const triggerFolderStructureUpdate = useCallback(() => {
         setFolderStructure(prev => ({ ...prev }));
     }, []);
 
-    const isOperating = 
+    const isOperating =
         deleteOperations.deleteState.isLoading ||
         renameOperations.renameState.isLoading ||
         uploadOperations.uploadState.isUploading ||
@@ -117,6 +120,15 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
             }, [folderOperations.scanFolderChildren, triggerFolderStructureUpdate]),
         },
     };
+
+    useEffect(() => {
+        const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', (event) => {
+            if (event.paths && event.paths[0] && isImageFile(event.paths[0])) {
+                editorEngine.image.scanImages();
+            }
+        });
+        addSubscription('image-manager', unsubscribe);
+    }, [editorEngine.sandbox.fileEventBus]);
 
     return <ImagesContext.Provider value={value}>{children}</ImagesContext.Provider>;
 });
