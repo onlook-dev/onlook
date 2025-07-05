@@ -14,9 +14,10 @@ import { observer } from 'mobx-react-lite';
 export const ColorBackground = observer(() => {
     const editorEngine = useEditorEngine();
     const initialColor = editorEngine.style.selectedStyle?.styles.computed.backgroundColor;
+    const backgroundImage = editorEngine.style.selectedStyle?.styles.computed.backgroundImage;
 
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'color-background-dropdown' 
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'color-background-dropdown',
     });
 
     const { handleColorUpdate, handleColorUpdateEnd, tempColor } = useColorUpdate({
@@ -25,6 +26,23 @@ export const ColorBackground = observer(() => {
     });
 
     const colorHex = useMemo(() => tempColor?.toHex(), [tempColor]);
+
+    const hasGradient = useMemo(() => {
+        return (
+            backgroundImage &&
+            backgroundImage !== 'none' &&
+            (backgroundImage.includes('linear-gradient') ||
+                backgroundImage.includes('radial-gradient') ||
+                backgroundImage.includes('conic-gradient'))
+        );
+    }, [backgroundImage]);
+
+    const previewStyle = useMemo(() => {
+        if (hasGradient) {
+            return { background: backgroundImage };
+        }
+        return { backgroundColor: colorHex };
+    }, [hasGradient, backgroundImage, colorHex]);
 
     return (
         <div className="flex flex-col gap-2">
@@ -43,10 +61,7 @@ export const ColorBackground = observer(() => {
                             className="flex h-9 w-9 cursor-pointer flex-col items-center justify-center gap-0.5 text-muted-foreground hover:text-foreground border border-border/0 rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-foreground-primary"
                         >
                             <Icons.PaintBucket className="h-2 w-2" />
-                            <div
-                                className="h-[4px] w-6 rounded-full bg-current"
-                                style={{ backgroundColor: colorHex }}
-                            />
+                            <div className="h-[4px] w-6 rounded-full" style={previewStyle} />
                         </Button>
                     </DropdownMenuTrigger>
                 </HoverOnlyTooltip>
