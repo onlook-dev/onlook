@@ -9,6 +9,7 @@ import { ColorPickerContent } from '../inputs/color-picker';
 import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
+import { hasGradient } from '../utils/gradient';
 import { observer } from 'mobx-react-lite';
 
 export const ColorBackground = observer(() => {
@@ -27,22 +28,12 @@ export const ColorBackground = observer(() => {
 
     const colorHex = useMemo(() => tempColor?.toHex(), [tempColor]);
 
-    const hasGradient = useMemo(() => {
-        return (
-            backgroundImage &&
-            backgroundImage !== 'none' &&
-            (backgroundImage.includes('linear-gradient') ||
-                backgroundImage.includes('radial-gradient') ||
-                backgroundImage.includes('conic-gradient'))
-        );
-    }, [backgroundImage]);
-
     const previewStyle = useMemo(() => {
-        if (hasGradient) {
+        if (hasGradient(backgroundImage)) {
             return { background: backgroundImage };
         }
         return { backgroundColor: colorHex };
-    }, [hasGradient, backgroundImage, colorHex]);
+    }, [backgroundImage, colorHex]);
 
     return (
         <div className="flex flex-col gap-2">
@@ -74,6 +65,7 @@ export const ColorBackground = observer(() => {
                         color={tempColor}
                         onChange={handleColorUpdate}
                         onChangeEnd={handleColorUpdateEnd}
+                        backgroundImage={backgroundImage}
                     />
                 </DropdownMenuContent>
             </DropdownMenu>

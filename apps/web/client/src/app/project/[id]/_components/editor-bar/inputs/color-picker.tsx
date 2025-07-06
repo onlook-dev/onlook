@@ -15,6 +15,7 @@ import { Color, toNormalCase, type Palette } from '@onlook/utility';
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { useGradientUpdate } from '../hooks/use-gradient-update';
+import { hasGradient } from '../utils/gradient';
 
 const ColorGroup = ({
     name,
@@ -102,12 +103,14 @@ interface ColorPickerProps {
     color: Color;
     onChange: (color: Color | TailwindColor) => void;
     onChangeEnd: (color: Color | TailwindColor) => void;
+    backgroundImage?: string;
 }
 
 export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     color,
     onChange,
     onChangeEnd,
+    backgroundImage,
 }) => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [palette, setPalette] = useState<Palette>(color.palette);
@@ -123,11 +126,12 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         type: 'linear',
         angle: 90,
         stops: [
-            { id: 'stop-1', color: '#ff6b6b', position: 0 },
-            { id: 'stop-2', color: '#feca57', position: 100 },
+            { id: 'stop-1', color: '#ff6b6b', position: 0, opacity: 100 },
+            { id: 'stop-2', color: '#feca57', position: 100, opacity: 100 },
         ],
     });
     const [selectedStopId, setSelectedStopId] = useState<string>('stop-1');
+    const [activeTab, setActiveTab] = useState<TabValue>(TabValue.BRAND);
 
     const parseGradientFromCSS = useCallback((cssValue: string): GradientState | null => {
         try {
@@ -232,6 +236,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         id: `stop-${index + 1}`,
                         color,
                         position: Math.round(position),
+                        opacity: 100, // Default opacity for parsed gradients
                     });
                 }
             });
@@ -245,47 +250,13 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         }
     }, []);
 
-    useEffect(() => {
-        const selectedElement = editorEngine.elements.selected[0];
-        if (!selectedElement) return;
-
-        const existingBackgroundImage =
-            editorEngine.style.selectedStyle?.styles.computed.backgroundImage;
-        if (
-            existingBackgroundImage &&
-            existingBackgroundImage !== 'none' &&
-            existingBackgroundImage.includes('gradient')
-        ) {
-            const parsed = parseGradientFromCSS(existingBackgroundImage);
-            if (parsed && parsed.stops.length > 0) {
-                setGradientState(parsed);
-                const firstStop = parsed.stops[0];
-                if (firstStop) {
-                    setSelectedStopId(firstStop.id);
-                    onChange(Color.from(firstStop.color));
-                }
-            }
-        } else {
-            const defaultGradient: GradientState = {
-                type: 'linear',
-                angle: 90,
-                stops: [
-                    { id: 'stop-1', color: '#ff6b6b', position: 0 },
-                    { id: 'stop-2', color: '#feca57', position: 100 },
-                ],
-            };
-            setGradientState(defaultGradient);
-            setSelectedStopId('stop-1');
-        }
-    }, [editorEngine.elements.selected, parseGradientFromCSS, onChange]);
-
     const isColorRemoved = (colorToCheck: Color) => colorToCheck.isEqual(Color.from('transparent'));
 
     interface PresetGradient {
         id: string;
         css: string;
         type: GradientState['type'];
-        stops: Array<{ id: string; color: string; position: number }>;
+        stops: Array<{ id: string; color: string; position: number; opacity?: number }>;
     }
 
     const presetGradients: PresetGradient[] = [
@@ -294,8 +265,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             css: 'linear-gradient(45deg, #ff6b6b, #feca57)',
             type: 'linear',
             stops: [
-                { id: '1', color: '#ff6b6b', position: 0 },
-                { id: '2', color: '#feca57', position: 100 },
+                { id: '1', color: '#ff6b6b', position: 0, opacity: 100 },
+                { id: '2', color: '#feca57', position: 100, opacity: 100 },
             ],
         },
         {
@@ -303,8 +274,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             css: 'linear-gradient(45deg, #48cae4, #023e8a)',
             type: 'linear',
             stops: [
-                { id: '1', color: '#48cae4', position: 0 },
-                { id: '2', color: '#023e8a', position: 100 },
+                { id: '1', color: '#48cae4', position: 0, opacity: 100 },
+                { id: '2', color: '#023e8a', position: 100, opacity: 100 },
             ],
         },
         {
@@ -312,8 +283,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             css: 'linear-gradient(45deg, #f72585, #b5179e)',
             type: 'linear',
             stops: [
-                { id: '1', color: '#f72585', position: 0 },
-                { id: '2', color: '#b5179e', position: 100 },
+                { id: '1', color: '#f72585', position: 0, opacity: 100 },
+                { id: '2', color: '#b5179e', position: 100, opacity: 100 },
             ],
         },
         {
@@ -321,8 +292,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             css: 'linear-gradient(90deg, #667eea, #764ba2)',
             type: 'linear',
             stops: [
-                { id: '1', color: '#667eea', position: 0 },
-                { id: '2', color: '#764ba2', position: 100 },
+                { id: '1', color: '#667eea', position: 0, opacity: 100 },
+                { id: '2', color: '#764ba2', position: 100, opacity: 100 },
             ],
         },
         {
@@ -330,8 +301,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             css: 'linear-gradient(135deg, #f093fb, #f5576c)',
             type: 'linear',
             stops: [
-                { id: '1', color: '#f093fb', position: 0 },
-                { id: '2', color: '#f5576c', position: 100 },
+                { id: '1', color: '#f093fb', position: 0, opacity: 100 },
+                { id: '2', color: '#f5576c', position: 100, opacity: 100 },
             ],
         },
         {
@@ -339,8 +310,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             css: 'linear-gradient(180deg, #4facfe, #00f2fe)',
             type: 'linear',
             stops: [
-                { id: '1', color: '#4facfe', position: 0 },
-                { id: '2', color: '#00f2fe', position: 100 },
+                { id: '1', color: '#4facfe', position: 0, opacity: 100 },
+                { id: '2', color: '#00f2fe', position: 100, opacity: 100 },
             ],
         },
         {
@@ -348,9 +319,9 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             css: 'conic-gradient(from 0deg, #ff9a9e, #fecfef, #fecfef)',
             type: 'angular',
             stops: [
-                { id: '1', color: '#ff9a9e', position: 0 },
-                { id: '2', color: '#fecfef', position: 50 },
-                { id: '3', color: '#fecfef', position: 100 },
+                { id: '1', color: '#ff9a9e', position: 0, opacity: 100 },
+                { id: '2', color: '#fecfef', position: 50, opacity: 100 },
+                { id: '3', color: '#fecfef', position: 100, opacity: 100 },
             ],
         },
         {
@@ -358,8 +329,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             css: 'radial-gradient(ellipse 80% 80% at center, #a8edea, #fed6e3)',
             type: 'diamond',
             stops: [
-                { id: '1', color: '#a8edea', position: 0 },
-                { id: '2', color: '#fed6e3', position: 100 },
+                { id: '1', color: '#a8edea', position: 0, opacity: 100 },
+                { id: '2', color: '#fed6e3', position: 100, opacity: 100 },
             ],
         },
         {
@@ -367,8 +338,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             css: 'radial-gradient(circle, #ff6b6b, #feca57)',
             type: 'radial',
             stops: [
-                { id: '1', color: '#ff6b6b', position: 0 },
-                { id: '2', color: '#feca57', position: 100 },
+                { id: '1', color: '#ff6b6b', position: 0, opacity: 100 },
+                { id: '2', color: '#feca57', position: 100, opacity: 100 },
             ],
         },
         {
@@ -376,10 +347,10 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             css: 'conic-gradient(from 0deg, #ff6b6b, #feca57, #48cae4, #ff6b6b)',
             type: 'conic',
             stops: [
-                { id: '1', color: '#ff6b6b', position: 0 },
-                { id: '2', color: '#feca57', position: 33 },
-                { id: '3', color: '#48cae4', position: 66 },
-                { id: '4', color: '#ff6b6b', position: 100 },
+                { id: '1', color: '#ff6b6b', position: 0, opacity: 100 },
+                { id: '2', color: '#feca57', position: 33, opacity: 100 },
+                { id: '3', color: '#48cae4', position: 66, opacity: 100 },
+                { id: '4', color: '#ff6b6b', position: 100, opacity: 100 },
             ],
         },
         {
@@ -488,6 +459,41 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     }, [color]);
 
     useEffect(() => {
+        const selectedElement = editorEngine.elements.selected[0];
+        const computedBackgroundImage = selectedElement
+            ? editorEngine.style.selectedStyle?.styles.computed.backgroundImage
+            : undefined;
+        
+        const activeGradientSource = computedBackgroundImage || backgroundImage;
+        
+        if (hasGradient(activeGradientSource)) {
+            const parsed = parseGradientFromCSS(activeGradientSource!);
+            if (parsed && parsed.stops.length > 0) {
+                setGradientState(parsed);
+                setActiveTab(TabValue.GRADIENT);
+                const firstStop = parsed.stops[0];
+                if (firstStop) {
+                    setSelectedStopId(firstStop.id);
+                    onChange(Color.from(firstStop.color));
+                }
+            } else {
+                setActiveTab(TabValue.GRADIENT);
+            }
+        } else if (selectedElement) {
+            const defaultGradient: GradientState = {
+                type: 'linear',
+                angle: 90,
+                stops: [
+                    { id: 'stop-1', color: '#ff6b6b', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#feca57', position: 100, opacity: 100 },
+                ],
+            };
+            setGradientState(defaultGradient);
+            setSelectedStopId('stop-1');
+        }
+    }, [editorEngine.elements.selected, editorEngine.style.selectedStyle?.styles.computed.backgroundImage, backgroundImage, parseGradientFromCSS, onChange]);
+
+    useEffect(() => {
         (async () => {
             try {
                 await editorEngine.theme.scanConfig();
@@ -527,10 +533,16 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     });
 
     const handleColorSelect = (colorItem: TailwindColor) => {
+        if (hasGradient(backgroundImage)) {
+            editorEngine.style.update('backgroundImage', 'none');
+        }
         onChangeEnd(colorItem);
     };
 
     const handleRemoveColor = () => {
+        if (hasGradient(backgroundImage)) {
+            editorEngine.style.update('backgroundImage', 'none');
+        }
         const removeColorAction: TailwindColor = {
             name: 'remove',
             originalKey: '',
@@ -543,6 +555,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     const handleGradientChange = useCallback(
         (newGradient: GradientState) => {
             setGradientState(newGradient);
+            setActiveTab(TabValue.GRADIENT);
             handleGradientUpdateEnd(newGradient);
         },
         [handleGradientUpdateEnd],
@@ -569,7 +582,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     const handleStopSelect = useCallback(
         (stopId: string) => {
             setSelectedStopId(stopId);
-            // Update the color picker to show the selected stop's color
+            setActiveTab(TabValue.GRADIENT);
             const selectedStop = gradientState.stops.find((s) => s.id === stopId);
             if (selectedStop) {
                 const stopColor = Color.from(selectedStop.color);
@@ -578,6 +591,36 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         },
         [gradientState.stops, onChange],
     );
+
+    const applyPresetGradient = useCallback((preset: PresetGradient) => {
+        try {
+            let angle = 0;
+            if (preset.type === 'linear') {
+                angle = parseInt(preset.css.match(/(\d+)deg/)?.[1] || '90');
+            }
+            
+            const newGradientState: GradientState = {
+                type: preset.type,
+                angle: angle,
+                stops: preset.stops.map((stop, index) => ({
+                    id: `stop-${index + 1}`,
+                    color: stop.color,
+                    position: stop.position,
+                    opacity: stop.opacity ?? 100,
+                })),
+            };
+            setGradientState(newGradientState);
+            setSelectedStopId('stop-1');
+            handleGradientChange(newGradientState);
+
+            const firstStop = newGradientState.stops[0];
+            if (firstStop) {
+                onChange(Color.from(firstStop.color));
+            }
+        } catch (error) {
+            console.error('Error applying preset gradient:', error);
+        }
+    }, [handleGradientChange, onChange]);
 
     function renderPalette() {
         const colors = Object.keys(palette.colors);
@@ -590,13 +633,16 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                 key={level}
                                 className="w-6 h-6 content-center cursor-pointer rounded border-[0.5px] border-foreground-tertiary/50"
                                 style={{ backgroundColor: palette.colors[Number.parseInt(level)] }}
-                                onClick={() =>
+                                onClick={() => {
+                                    if (hasGradient(backgroundImage)) {
+                                        editorEngine.style.update('backgroundImage', 'none');
+                                    }
                                     onChangeEnd(
                                         Color.from(
                                             palette.colors[Number.parseInt(level)] ?? '#000000',
                                         ),
-                                    )
-                                }
+                                    );
+                                }}
                             />
                         ))}
                     </div>
@@ -606,13 +652,16 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                             <div
                                 className="gap-2 hover:bg-background-secondary p-1 flex align-center cursor-pointer rounded-md group"
                                 key={level}
-                                onClick={() =>
+                                onClick={() => {
+                                    if (hasGradient(backgroundImage)) {
+                                        editorEngine.style.update('backgroundImage', 'none');
+                                    }
                                     onChangeEnd(
                                         Color.from(
                                             palette.colors[Number.parseInt(level)] ?? '#000000',
                                         ),
-                                    )
-                                }
+                                    );
+                                }}
                             >
                                 <div
                                     key={level}
@@ -644,36 +693,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                                 key={preset.id}
                                 className="w-6 h-6 content-center cursor-pointer rounded border-[0.5px] border-foreground-tertiary/50"
                                 style={{ background: preset.css }}
-                                onClick={() => {
-                                    try {
-                                        let angle = 0;
-                                        if (preset.type === 'linear') {
-                                            angle = parseInt(
-                                                preset.css.match(/(\d+)deg/)?.[1] || '90',
-                                            );
-                                        }
-                                        
-                                        const newGradientState: GradientState = {
-                                            type: preset.type,
-                                            angle: angle,
-                                            stops: preset.stops.map((stop, index) => ({
-                                                id: `stop-${index + 1}`,
-                                                color: stop.color,
-                                                position: stop.position,
-                                            })),
-                                        };
-                                        setGradientState(newGradientState);
-                                        setSelectedStopId('stop-1');
-                                        handleGradientChange(newGradientState);
-
-                                        const firstStop = newGradientState.stops[0];
-                                        if (firstStop) {
-                                            onChange(Color.from(firstStop.color));
-                                        }
-                                    } catch (error) {
-                                        console.error('Error applying preset gradient:', error);
-                                    }
-                                }}
+                                onClick={() => applyPresetGradient(preset)}
                             />
                         ))}
                     </div>
@@ -683,36 +703,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                             <div
                                 className="gap-2 hover:bg-background-secondary p-1 flex align-center cursor-pointer rounded-md group"
                                 key={preset.id}
-                                onClick={() => {
-                                    try {
-                                        let angle = 0;
-                                        if (preset.type === 'linear') {
-                                            angle = parseInt(
-                                                preset.css.match(/(\d+)deg/)?.[1] || '90',
-                                            );
-                                        }
-                                        
-                                        const newGradientState: GradientState = {
-                                            type: preset.type,
-                                            angle: angle,
-                                            stops: preset.stops.map((stop, index) => ({
-                                                id: `stop-${index + 1}`,
-                                                color: stop.color,
-                                                position: stop.position,
-                                            })),
-                                        };
-                                        setGradientState(newGradientState);
-                                        setSelectedStopId('stop-1');
-                                        handleGradientChange(newGradientState);
-
-                                        const firstStop = newGradientState.stops[0];
-                                        if (firstStop) {
-                                            onChange(Color.from(firstStop.color));
-                                        }
-                                    } catch (error) {
-                                        console.error('Error applying preset gradient:', error);
-                                    }
-                                }}
+                                onClick={() => applyPresetGradient(preset)}
                             >
                                 <div
                                     key={preset.id}
@@ -732,7 +723,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
 
     return (
         <div className="flex flex-col justify-between items-center">
-            <Tabs defaultValue={TabValue.BRAND} className="w-full">
+            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)} className="w-full">
                 <TabsList className="bg-transparent px-2 m-0 gap-2 justify-between w-full">
                     <div className="flex gap-2">
                         <TabsTrigger
@@ -832,6 +823,9 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         color={color}
                         onChange={onChange}
                         onChangeEnd={(val) => {
+                            if (hasGradient(backgroundImage)) {
+                                editorEngine.style.update('backgroundImage', 'none');
+                            }
                             onChangeEnd?.(val);
                             setPalette(val.palette);
                         }}

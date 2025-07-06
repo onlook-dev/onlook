@@ -120,6 +120,7 @@ export interface GradientStop {
     id: string;
     color: string;
     position: number;
+    opacity?: number; // Optional opacity property (0-100), defaults to 100
 }
 
 export interface GradientState {
@@ -143,65 +144,65 @@ const PRESET_GRADIENTS: GradientState[] = [
         type: 'linear',
         angle: 45,
         stops: [
-            { id: '1', color: '#ff6b6b', position: 0 },
-            { id: '2', color: '#feca57', position: 100 },
+            { id: '1', color: '#ff6b6b', position: 0, opacity: 100 },
+            { id: '2', color: '#feca57', position: 100, opacity: 100 },
         ],
     },
     {
         type: 'linear',
         angle: 45,
         stops: [
-            { id: '1', color: '#48cae4', position: 0 },
-            { id: '2', color: '#023e8a', position: 100 },
+            { id: '1', color: '#48cae4', position: 0, opacity: 100 },
+            { id: '2', color: '#023e8a', position: 100, opacity: 100 },
         ],
     },
     {
         type: 'linear',
         angle: 45,
         stops: [
-            { id: '1', color: '#f72585', position: 0 },
-            { id: '2', color: '#b5179e', position: 100 },
+            { id: '1', color: '#f72585', position: 0, opacity: 100 },
+            { id: '2', color: '#b5179e', position: 100, opacity: 100 },
         ],
     },
     {
         type: 'linear',
         angle: 90,
         stops: [
-            { id: '1', color: '#667eea', position: 0 },
-            { id: '2', color: '#764ba2', position: 100 },
+            { id: '1', color: '#667eea', position: 0, opacity: 100 },
+            { id: '2', color: '#764ba2', position: 100, opacity: 100 },
         ],
     },
     {
         type: 'linear',
         angle: 135,
         stops: [
-            { id: '1', color: '#f093fb', position: 0 },
-            { id: '2', color: '#f5576c', position: 100 },
+            { id: '1', color: '#f093fb', position: 0, opacity: 100 },
+            { id: '2', color: '#f5576c', position: 100, opacity: 100 },
         ],
     },
     {
         type: 'linear',
         angle: 180,
         stops: [
-            { id: '1', color: '#4facfe', position: 0 },
-            { id: '2', color: '#00f2fe', position: 100 },
+            { id: '1', color: '#4facfe', position: 0, opacity: 100 },
+            { id: '2', color: '#00f2fe', position: 100, opacity: 100 },
         ],
     },
     {
         type: 'angular',
         angle: 0,
         stops: [
-            { id: '1', color: '#ff9a9e', position: 0 },
-            { id: '2', color: '#fecfef', position: 50 },
-            { id: '3', color: '#fecfef', position: 100 },
+            { id: '1', color: '#ff9a9e', position: 0, opacity: 100 },
+            { id: '2', color: '#fecfef', position: 50, opacity: 100 },
+            { id: '3', color: '#fecfef', position: 100, opacity: 100 },
         ],
     },
     {
         type: 'diamond',
         angle: 0,
         stops: [
-            { id: '1', color: '#a8edea', position: 0 },
-            { id: '2', color: '#fed6e3', position: 100 },
+            { id: '1', color: '#a8edea', position: 0, opacity: 100 },
+            { id: '2', color: '#fed6e3', position: 100, opacity: 100 },
         ],
     },
 ];
@@ -210,7 +211,24 @@ const generateId = () => Math.random().toString(36).slice(2, 11);
 
 export const generateGradientCSS = (gradient: GradientState): string => {
     const sortedStops = [...gradient.stops].sort((a, b) => a.position - b.position);
-    const stopStrings = sortedStops.map((stop) => `${stop.color} ${stop.position}%`);
+
+    // Helper function to apply opacity to color
+    const applyOpacity = (color: string, opacity: number) => {
+        const opacityDecimal = opacity / 100;
+        if (color.startsWith('#') && color.length === 7) {
+            // Convert hex to hex with alpha
+            const alpha = Math.round(opacityDecimal * 255)
+                .toString(16)
+                .padStart(2, '0');
+            return `${color}${alpha}`;
+        }
+        // For other color formats, return as is (opacity should be handled by the color picker)
+        return color;
+    };
+
+    const stopStrings = sortedStops.map(
+        (stop) => `${applyOpacity(stop.color, stop.opacity ?? 100)} ${stop.position}%`,
+    );
 
     switch (gradient.type) {
         case 'linear':
@@ -228,21 +246,25 @@ export const generateGradientCSS = (gradient: GradientState): string => {
                         id: generateId(),
                         color: firstStop.color,
                         position: 100,
+                        opacity: firstStop.opacity ?? 100,
                     });
                 }
             }
             const angularStopStrings = angularStops.map(
-                (stop) => `${stop.color} ${stop.position}%`,
+                (stop) => `${applyOpacity(stop.color, stop.opacity ?? 100)} ${stop.position}%`,
             );
             return `conic-gradient(from ${gradient.angle}deg, ${angularStopStrings.join(', ')})`;
         }
         case 'diamond': {
             if (sortedStops.length < 2) {
                 const singleColor = sortedStops[0]?.color || '#000000';
-                return `radial-gradient(circle, ${singleColor})`;
+                const opacity = sortedStops[0]?.opacity || 100;
+                return `radial-gradient(circle, ${applyOpacity(singleColor, opacity)})`;
             }
 
-            const diamondStopStrings = sortedStops.map((stop) => `${stop.color} ${stop.position}%`);
+            const diamondStopStrings = sortedStops.map(
+                (stop) => `${applyOpacity(stop.color, stop.opacity ?? 100)} ${stop.position}%`,
+            );
             return `radial-gradient(ellipse 80% 80% at center, ${diamondStopStrings.join(', ')})`;
         }
         default:
@@ -254,7 +276,8 @@ const PercentageInput: React.FC<{
     value: number;
     onChange: (value: number) => void;
     className?: string;
-}> = ({ value, onChange, className = '' }) => {
+    onFocus?: () => void;
+}> = ({ value, onChange, className = '', onFocus }) => {
     const [displayValue, setDisplayValue] = useState(value.toFixed(0));
     const [isFocused, setIsFocused] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -300,6 +323,7 @@ const PercentageInput: React.FC<{
 
     const handleFocus = () => {
         setIsFocused(true);
+        onFocus?.(); // Call the onFocus prop if provided
         // Select all text on focus for easier editing
         setTimeout(() => {
             inputRef.current?.select();
@@ -462,6 +486,7 @@ export const Gradient: React.FC<GradientProps> = ({
                 id: generateId(),
                 color: newColor,
                 position: newPosition,
+                opacity: 100,
             };
 
             const updatedStops = [...gradient.stops, newStop];
@@ -726,6 +751,16 @@ export const Gradient: React.FC<GradientProps> = ({
                                 });
                             };
 
+                            const handleOpacityChange = (newOpacity: number) => {
+                                const updatedStops = gradient.stops.map((s) =>
+                                    s.id === stop.id ? { ...s, opacity: newOpacity } : s,
+                                );
+                                onGradientChange({
+                                    ...gradient,
+                                    stops: updatedStops,
+                                });
+                            };
+
                             return (
                                 <div
                                     key={stop.id}
@@ -738,6 +773,7 @@ export const Gradient: React.FC<GradientProps> = ({
                                             value={stop.position}
                                             onChange={handlePositionChange}
                                             className="mr-0.5"
+                                            onFocus={() => onStopSelect(stop.id)}
                                         />
                                         <div className="rounded overflow-hidden flex-1">
                                             <div className="rounded flex items-center gap-[1.5px] flex-1">
@@ -782,18 +818,20 @@ export const Gradient: React.FC<GradientProps> = ({
                                                         </PopoverContent>
                                                     </Popover>
                                                     <span
-                                                        className={`text-xs flex-1 min-w-0 text-left ${
+                                                        className={`text-xs flex-1 min-w-0 text-left cursor-pointer ${
                                                             isSelected
                                                                 ? 'text-foreground-primary'
                                                                 : 'text-foreground-secondary'
                                                         }`}
+                                                        onClick={() => onStopSelect(stop.id)}
                                                     >
                                                         {stop.color.replace('#', '').toUpperCase()}
                                                     </span>
                                                 </div>
                                                 <PercentageInput
-                                                    value={stop.position}
-                                                    onChange={handlePositionChange}
+                                                    value={stop.opacity ?? 100}
+                                                    onChange={handleOpacityChange}
+                                                    onFocus={() => onStopSelect(stop.id)}
                                                 />
                                             </div>
                                         </div>
