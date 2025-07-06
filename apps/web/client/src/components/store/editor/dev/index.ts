@@ -151,13 +151,11 @@ export class IDEManager {
                 ],
             });
             const file = this.openedFiles.find((f) => f.id === this.activeFile!.id);
-            if (file){
+            if (file) {
                 file.isDirty = false;
                 file.savedContent = file.content;
             }
             this.activeFile = { ...this.activeFile, isDirty: false, savedContent: file?.content || '' };
-
-            this.refreshPreviewAfterSave();
         } catch (error) {
             console.error('Error saving file:', error);
         } finally {
