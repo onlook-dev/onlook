@@ -25,8 +25,27 @@ import { useEffect, useMemo, useState } from 'react';
 
 export function Settings({ project }: { project: Project }) {
     const t = useTranslations();
-    const { mutate: deleteProject } = api.project.delete.useMutation();
-    const { mutate: updateProject } = api.project.update.useMutation();
+    const apiUtils = api.useUtils();
+    const { mutate: deleteProject } = api.project.delete.useMutation({
+        onSuccess: () => {
+            apiUtils.project.list.invalidate();
+            setShowDeleteDialog(false);
+        },
+        onError: (error) => {
+            console.error('Failed to delete project:', error);
+            setShowDeleteDialog(false);
+        },
+    });
+    const { mutate: updateProject } = api.project.update.useMutation({
+        onSuccess: () => {
+            apiUtils.project.list.invalidate();
+            setShowRenameDialog(false);
+        },
+        onError: (error) => {
+            console.error('Failed to update project:', error);
+            setShowRenameDialog(false);
+        },
+    });
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
@@ -38,7 +57,6 @@ export function Settings({ project }: { project: Project }) {
 
     const handleDeleteProject = () => {
         deleteProject({ id: project.id });
-        setShowDeleteDialog(false);
     };
 
     const handleRenameProject = () => {
@@ -50,7 +68,6 @@ export function Settings({ project }: { project: Project }) {
                 },
             },
         );
-        setShowRenameDialog(false);
     };
 
     return (
