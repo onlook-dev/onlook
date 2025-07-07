@@ -76,7 +76,7 @@ export class TextEditingManager {
                 throw new Error('No target dom element to edit');
             }
             const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
-            if (!frameData) {
+            if (!frameData?.view) {
                 throw new Error('No frameView found for text editing');
             }
 
@@ -102,7 +102,7 @@ export class TextEditingManager {
             }
 
             const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
-            if (!frameData) {
+            if (!frameData?.view) {
                 throw new Error('No frameView found for end text editing');
             }
 
@@ -163,16 +163,19 @@ export class TextEditingManager {
         try {
             const selected = this.editorEngine.elements.selected;
             if (selected.length === 0) {
+                console.error('No selected elements found');
                 return;
             }
 
             const selectedEl = selected[0];
             if (!selectedEl) {
+                console.error('No selected element found');
                 return;
             }
 
             const frameData = this.editorEngine.frames.get(selectedEl.frameId);
-            if (!frameData) {
+            if (!frameData?.view) {
+                console.error('No frameView found for selected element');
                 return;
             }
 

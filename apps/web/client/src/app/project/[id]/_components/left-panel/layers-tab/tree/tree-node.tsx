@@ -101,12 +101,12 @@ export const TreeNode = memo(
                     node: LayerNode,
                     action: MouseAction,
                 ) => {
-                    const frameView = editorEngine.frames.get(node.frameId);
-                    if (!frameView) {
+                    const frameData = editorEngine.frames.get(node.frameId);
+                    if (!frameData?.view) {
                         console.error('Failed to get frameView');
                         return;
                     }
-                    const el: DomElement = await frameView.view.getElementByDomId(
+                    const el: DomElement = await frameData.view.getElementByDomId(
                         node.domId,
                         action === MouseAction.MOUSE_DOWN,
                     );
@@ -122,7 +122,7 @@ export const TreeNode = memo(
                         case MouseAction.MOUSE_DOWN:
                             if (isWindow) {
                                 editorEngine.clearUI();
-                                editorEngine.frames.select([frameView.frame]);
+                                editorEngine.frames.select([frameData.frame]);
                                 return;
                             }
                             if (e.shiftKey) {

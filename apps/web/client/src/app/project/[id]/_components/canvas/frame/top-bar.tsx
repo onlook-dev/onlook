@@ -64,7 +64,7 @@ export const TopBar = observer(
         };
 
         const handleReload = () => {
-            editorEngine.frames.reload(frame.id);
+            editorEngine.frames.reloadView(frame.id);
         };
 
         const handleClick = () => {

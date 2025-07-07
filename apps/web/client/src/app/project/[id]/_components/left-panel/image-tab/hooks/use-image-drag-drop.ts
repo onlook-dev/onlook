@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react';
+import { useEditorEngine } from '@/components/store/editor';
 import { sendAnalytics } from '@/utils/analytics';
 import { EditorMode, type ImageContentData } from '@onlook/models';
-import { useEditorEngine } from '@/components/store/editor';
+import { useCallback, useState } from 'react';
 import { useImagesContext } from '../providers/images-provider';
 
 export const useImageDragDrop = (currentFolder?: string) => {
@@ -23,11 +23,11 @@ export const useImageDragDrop = (currentFolder?: string) => {
                     .filter((item) => item.type.startsWith('image/'))
                     .map((item) => item.getAsFile())
                     .filter((file): file is File => file !== null);
-    
+
                 if (!currentFolder) {
                     throw new Error('No current folder');
                 }
-    
+
                 for (const file of imageFiles) {
                     await uploadOperations.uploadImage(file, currentFolder);
                 }
@@ -86,6 +86,10 @@ export const useImageDragDrop = (currentFolder?: string) => {
 
             editorEngine.state.editorMode = EditorMode.INSERT_IMAGE;
             for (const frame of editorEngine.frames.getAll()) {
+                if (!frame.view) {
+                    console.error('No frame view found');
+                    continue;
+                }
                 frame.view.style.pointerEvents = 'none';
             }
             sendAnalytics('image drag');
@@ -103,6 +107,10 @@ export const useImageDragDrop = (currentFolder?: string) => {
 
     const onImageDragEnd = useCallback(() => {
         for (const frame of editorEngine.frames.getAll()) {
+            if (!frame.view) {
+                console.error('No frame view found');
+                continue;
+            }
             frame.view.style.pointerEvents = 'auto';
         }
         editorEngine.state.editorMode = EditorMode.DESIGN;

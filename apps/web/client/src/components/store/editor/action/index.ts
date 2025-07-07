@@ -108,6 +108,12 @@ export class ActionManager {
                 original: target.change.original,
                 updated: convertedChange,
             };
+
+            if (!frameData.view) {
+                console.error('No frame view found');
+                continue;
+            }
+
             // cloneDeep is used to avoid the issue of observable values can not pass through the webview
             const domEl = await frameData.view.updateStyle(target.domId, cloneDeep(change));
             if (!domEl) {
@@ -130,7 +136,7 @@ export class ActionManager {
     private async insertElement({ targets, element, editText, location }: InsertElementAction) {
         for (const elementMetadata of targets) {
             const frameData = this.editorEngine.frames.get(elementMetadata.frameId);
-            if (!frameData) {
+            if (!frameData?.view) {
                 console.error('Failed to get frameView');
                 return;
             }
@@ -152,7 +158,7 @@ export class ActionManager {
     private async removeElement({ targets, location }: RemoveElementAction) {
         for (const target of targets) {
             const frameData = this.editorEngine.frames.get(target.frameId);
-            if (!frameData) {
+            if (!frameData?.view) {
                 console.error('Failed to get frameView');
                 return;
             }
@@ -173,7 +179,7 @@ export class ActionManager {
     private async moveElement({ targets, location }: MoveElementAction) {
         for (const target of targets) {
             const frameData = this.editorEngine.frames.get(target.frameId);
-            if (!frameData) {
+            if (!frameData?.view) {
                 console.error('Failed to get frameView');
                 return;
             }
@@ -189,7 +195,7 @@ export class ActionManager {
     private async editText({ targets, newContent }: EditTextAction) {
         for (const target of targets) {
             const frameData = this.editorEngine.frames.get(target.frameId);
-            if (!frameData) {
+            if (!frameData?.view) {
                 console.error('Failed to get frameView');
                 return;
             }
@@ -205,7 +211,7 @@ export class ActionManager {
 
     private async groupElements({ parent, container, children }: GroupElementsAction) {
         const frameData = this.editorEngine.frames.get(parent.frameId);
-        if (!frameData) {
+        if (!frameData?.view) {
             console.error('Failed to get frameView');
             return;
         }
@@ -226,7 +232,7 @@ export class ActionManager {
 
     private async ungroupElements({ parent, container }: UngroupElementsAction) {
         const frameData = this.editorEngine.frames.get(parent.frameId);
-        if (!frameData) {
+        if (!frameData?.view) {
             console.error('Failed to get frameView');
             return;
         }
