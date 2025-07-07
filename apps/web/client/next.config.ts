@@ -13,9 +13,9 @@ const nextConfig: NextConfig = {
     eslint: {
         ignoreDuringBuilds: true,
     },
-    typescript: {
-        ignoreBuildErrors: true,
-    },
+    // typescript: {
+    //     ignoreBuildErrors: true,
+    // },
 };
 
 if (process.env.NODE_ENV === 'development') {
