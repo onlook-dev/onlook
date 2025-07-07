@@ -62,7 +62,10 @@ export const userRouter = createTRPCRouter({
 
             const [user] = await ctx.db.insert(users).values(userData).onConflictDoUpdate({
                 target: [users.id],
-                set: userData,
+                set: {
+                    ...userData,
+                    updatedAt: new Date(),
+                },
             }).returning();
 
             if (!existingUser) {

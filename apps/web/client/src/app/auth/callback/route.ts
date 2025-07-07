@@ -17,13 +17,16 @@ export async function GET(request: Request) {
                 id: data.user.id,
             });
 
-            if (user) {
-                trackUserSignedIn(user.id, {
-                    name: data.user.user_metadata.name,
-                    email: data.user.email,
-                    avatar_url: data.user.user_metadata.avatar_url,
-                });
+            if (!user) {
+                console.error('Failed to upsert user');
+                return NextResponse.redirect(`${origin}/auth/auth-code-error`);
             }
+
+            trackUserSignedIn(data.user.id, {
+                name: data.user.user_metadata.name,
+                email: data.user.email,
+                avatar_url: data.user.user_metadata.avatar_url,
+            });
 
             // Redirect to the redirect page which will handle the return URL
             if (isLocalEnv) {
