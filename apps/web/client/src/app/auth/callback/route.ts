@@ -18,7 +18,7 @@ export async function GET(request: Request) {
             });
 
             if (!user) {
-                console.error('Failed to upsert user');
+                console.error(`Failed to upsert user for id: ${data.user.id}`, { user });
                 return NextResponse.redirect(`${origin}/auth/auth-code-error`);
             }
 
