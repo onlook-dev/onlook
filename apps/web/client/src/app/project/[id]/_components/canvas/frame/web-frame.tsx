@@ -45,6 +45,7 @@ export const WebFrameComponent = observer(
         const zoomLevel = useRef(1);
         const [penpalChild, setPenpalChild] = useState<any>(null);
         const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
+        const isConnecting = useRef(false);
 
         const reloadIframe = () => {
             try {
@@ -62,6 +63,14 @@ export const WebFrameComponent = observer(
                 console.error('No iframe found');
                 return;
             }
+
+            if (isConnecting.current) {
+                console.log(
+                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection already in progress`,
+                );
+                return;
+            }
+            isConnecting.current = true;
 
             // Destroy any existing connection before creating a new one
             if (connectionRef.current) {
@@ -94,6 +103,7 @@ export const WebFrameComponent = observer(
             connectionRef.current = connection;
 
             connection.promise.then((child) => {
+                isConnecting.current = false;
                 if (!child) {
                     console.error(
                         `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
@@ -109,6 +119,7 @@ export const WebFrameComponent = observer(
             });
 
             connection.promise.catch((error) => {
+                isConnecting.current = false;
                 console.error(
                     `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
                     error,
@@ -211,6 +222,7 @@ export const WebFrameComponent = observer(
                     connectionRef.current = null;
                 }
                 setPenpalChild(null);
+                isConnecting.current = false;
             };
         }, []);
 
@@ -219,18 +231,26 @@ export const WebFrameComponent = observer(
         }, 1000);
 
         return (
-            <iframe
-                ref={iframeRef}
-                id={frame.id}
-                className={cn('backdrop-blur-sm transition outline outline-4')}
-                src={frame.url}
-                sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
-                allow="geolocation; microphone; camera; midi; encrypted-media"
-                style={{ width: frame.dimension.width, height: frame.dimension.height }}
-                onLoad={setupPenpalConnection}
-                onError={debouncedReloadIframe}
-                {...props}
-            />
+            <div className="relative">
+                {isConnecting.current && (
+                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 backdrop-blur-sm">
+                        <div className="flex items-center space-x-2 rounded-md bg-background px-4 py-2 shadow-lg">
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent"></div>
+                            <span className="text-sm text-foreground">Connecting...</span>
+                        </div>
+                    </div>
+                )}
+                <iframe
+                    ref={iframeRef}
+                    id={frame.id}
+                    className={cn('backdrop-blur-sm transition outline outline-4')}
+                    src={frame.url}
+                    sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
+                    allow="geolocation; microphone; camera; midi; encrypted-media"
+                    style={{ width: frame.dimension.width, height: frame.dimension.height }}
+                    {...props}
+                />
+            </div>
         );
     }),
 );
