@@ -231,31 +231,42 @@ export const addPreloadScript = (ast: T.File): T.File => {
     return ast;
 };
 
-function addScriptToHead(headElement: any) {
+function addScriptToHead(headElement: T.JSXElement) {
     // Check if Script with our specific src already exists
     let hasOnlookScript = false;
 
     if (headElement.children) {
-        headElement.children.forEach((child: any) => {
-            if (
-                t.isJSXElement(child) &&
-                t.isJSXIdentifier(child.openingElement.name) &&
-                child.openingElement.name.name === 'Script'
-            ) {
-                const srcAttr = child.openingElement.attributes.find((attr: any) => {
-                    return (
-                        t.isJSXAttribute(attr) &&
-                        t.isJSXIdentifier(attr.name) &&
-                        attr.name.name === 'src' &&
-                        t.isStringLiteral(attr.value) &&
-                        attr.value.value.includes(PRELOAD_URL)
+        headElement.children.forEach(
+            (
+                child:
+                    | T.JSXElement
+                    | T.JSXFragment
+                    | T.JSXText
+                    | T.JSXExpressionContainer
+                    | T.JSXSpreadChild,
+            ) => {
+                if (
+                    t.isJSXElement(child) &&
+                    t.isJSXIdentifier(child.openingElement.name) &&
+                    child.openingElement.name.name === 'Script'
+                ) {
+                    const srcAttr = child.openingElement.attributes.find(
+                        (attr: T.JSXAttribute | T.JSXSpreadAttribute) => {
+                            return (
+                                t.isJSXAttribute(attr) &&
+                                t.isJSXIdentifier(attr.name) &&
+                                attr.name.name === 'src' &&
+                                t.isStringLiteral(attr.value) &&
+                                attr.value.value.includes(PRELOAD_URL)
+                            );
+                        },
                     );
-                });
-                if (srcAttr) {
-                    hasOnlookScript = true;
+                    if (srcAttr) {
+                        hasOnlookScript = true;
+                    }
                 }
-            }
-        });
+            },
+        );
     }
 
     if (!hasOnlookScript) {
@@ -282,7 +293,7 @@ function addScriptToHead(headElement: any) {
     }
 }
 
-function createAndAddHeadTag(htmlElement: any) {
+function createAndAddHeadTag(htmlElement: T.JSXElement) {
     // Create the Script JSX element
     const scriptElement = t.jsxElement(
         t.jsxOpeningElement(
