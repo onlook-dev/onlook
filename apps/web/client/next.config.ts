@@ -12,10 +12,7 @@ const nextConfig: NextConfig = {
     // TODO: Remove this once we have a proper ESLint and TypeScript config
     eslint: {
         ignoreDuringBuilds: true,
-    },
-    // typescript: {
-    //     ignoreBuildErrors: true,
-    // },
+    }
 };
 
 if (process.env.NODE_ENV === 'development') {
