@@ -37,7 +37,7 @@ export const TopBar = observer(
                     y: startPositionY + deltaY,
                 };
 
-                editorEngine.frames.updateLocally(frame.id, frame);
+                editorEngine.frames.updateAndSaveToStorage(frame as WebFrame);
             };
 
             const endMove = (e: MouseEvent) => {

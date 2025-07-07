@@ -46,15 +46,6 @@ export class FramesManager {
         return data;
     }
 
-    private async getProjectCanvas() {
-        const canvas = await api.canvas.get.query({ projectId: this.editorEngine.projectId });
-        if (!canvas) {
-            console.error('Canvas not found');
-            return null;
-        }
-        return canvas;
-    }
-
     private updateFrameSelection(id: string, selected: boolean): void {
         const data = this._frameIdToData.get(id);
         if (data) {
@@ -168,11 +159,8 @@ export class FramesManager {
     }
 
     async create(frame: WebFrame) {
-        const canvas = await this.getProjectCanvas();
-        if (!canvas) return;
-
         const success = await api.frame.create.mutate(
-            fromFrame(canvas.id, roundDimensions(frame)),
+            fromFrame(roundDimensions(frame)),
         );
 
         if (success) {
@@ -194,43 +182,27 @@ export class FramesManager {
 
         const frame = data.frame as WebFrame;
         const newFrame: WebFrame = {
+            ...frame,
             id: uuid(),
-            url: frame.url,
-            dimension: { ...frame.dimension },
             position: {
                 x: frame.position.x + frame.dimension.width + 100,
                 y: frame.position.y,
             },
-            type: frame.type,
         };
 
         await this.create(newFrame);
-    }
-
-    updateLocally(id: string, newFrame: Partial<Frame>) {
-
     }
 
     updateAndSaveToStorage = debounce(this.undebouncedUpdateAndSaveToStorage, 1000);
 
     async undebouncedUpdateAndSaveToStorage(frame: WebFrame) {
         try {
-            const dbFrame = await api.frame.get.query({
+            const frameToUpdate = fromFrame(roundDimensions(frame));
+
+            const success = await api.frame.update.mutate({
                 frameId: frame.id,
+                frame: frameToUpdate,
             });
-
-            if (!dbFrame) {
-                console.error('Frame not found in database');
-                return;
-            }
-
-            const canvas = await this.getProjectCanvas();
-            if (!canvas) return;
-
-            const frameToUpdate = fromFrame(canvas.id, roundDimensions(frame));
-            frameToUpdate.id = dbFrame.id;
-
-            const success = await api.frame.update.mutate(frameToUpdate);
 
             if (!success) {
                 console.error('Failed to update frame');

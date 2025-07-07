@@ -10,6 +10,7 @@ export interface Frame {
     position: RectPosition;
     type: FrameType;
     dimension: RectDimension;
+    canvasId: string;
 }
 
 export interface WebFrame extends Frame {
