@@ -49,6 +49,7 @@ export const WebFrameComponent = observer(
 
         const reloadIframe = () => {
             try {
+                console.log('Reloading iframe');
                 const iframe = iframeRef.current;
                 if (!iframe) return;
                 iframe.src = iframe.src;
@@ -161,47 +162,61 @@ export const WebFrameComponent = observer(
                 return Object.assign(iframe, syncMethods) as WebFrameView;
             }
 
+            // Create a wrapper that adds error handling to promisified methods
+            const promisifyMethodWithErrorHandling = (method: any) => {
+                const promisifiedMethod = promisifyMethod(method);
+                return async (...args: any[]) => {
+                    try {
+                        return await promisifiedMethod(...args);
+                    } catch (error) {
+                        console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Method failed:`, error);
+                        debouncedReloadIframe();
+                        throw error;
+                    }
+                };
+            };
+
             const remoteMethods = {
-                processDom: promisifyMethod(penpalChild?.processDom),
-                getElementAtLoc: promisifyMethod(penpalChild?.getElementAtLoc),
-                getElementByDomId: promisifyMethod(penpalChild?.getElementByDomId),
-                setFrameId: promisifyMethod(penpalChild?.setFrameId),
-                getElementIndex: promisifyMethod(penpalChild?.getElementIndex),
-                getComputedStyleByDomId: promisifyMethod(penpalChild?.getComputedStyleByDomId),
-                updateElementInstance: promisifyMethod(penpalChild?.updateElementInstance),
-                getFirstOnlookElement: promisifyMethod(penpalChild?.getFirstOnlookElement),
-                setElementType: promisifyMethod(penpalChild?.setElementType),
-                getElementType: promisifyMethod(penpalChild?.getElementType),
-                getParentElement: promisifyMethod(penpalChild?.getParentElement),
-                getChildrenCount: promisifyMethod(penpalChild?.getChildrenCount),
-                getOffsetParent: promisifyMethod(penpalChild?.getOffsetParent),
-                getActionLocation: promisifyMethod(penpalChild?.getActionLocation),
-                getActionElement: promisifyMethod(penpalChild?.getActionElement),
-                getInsertLocation: promisifyMethod(penpalChild?.getInsertLocation),
-                getRemoveAction: promisifyMethod(penpalChild?.getRemoveAction),
-                getTheme: promisifyMethod(penpalChild?.getTheme),
-                setTheme: promisifyMethod(penpalChild?.setTheme),
-                startDrag: promisifyMethod(penpalChild?.startDrag),
-                drag: promisifyMethod(penpalChild?.drag),
-                dragAbsolute: promisifyMethod(penpalChild?.dragAbsolute),
-                endDragAbsolute: promisifyMethod(penpalChild?.endDragAbsolute),
-                endDrag: promisifyMethod(penpalChild?.endDrag),
-                endAllDrag: promisifyMethod(penpalChild?.endAllDrag),
-                startEditingText: promisifyMethod(penpalChild?.startEditingText),
-                editText: promisifyMethod(penpalChild?.editText),
-                stopEditingText: promisifyMethod(penpalChild?.stopEditingText),
-                updateStyle: promisifyMethod(penpalChild?.updateStyle),
-                insertElement: promisifyMethod(penpalChild?.insertElement),
-                removeElement: promisifyMethod(penpalChild?.removeElement),
-                moveElement: promisifyMethod(penpalChild?.moveElement),
-                groupElements: promisifyMethod(penpalChild?.groupElements),
-                ungroupElements: promisifyMethod(penpalChild?.ungroupElements),
-                insertImage: promisifyMethod(penpalChild?.insertImage),
-                removeImage: promisifyMethod(penpalChild?.removeImage),
-                isChildTextEditable: promisifyMethod(penpalChild?.isChildTextEditable),
-                handleBodyReady: promisifyMethod(penpalChild?.handleBodyReady),
-                captureScreenshot: promisifyMethod(penpalChild?.captureScreenshot),
-                buildLayerTree: promisifyMethod(penpalChild?.buildLayerTree),
+                processDom: promisifyMethodWithErrorHandling(penpalChild?.processDom),
+                getElementAtLoc: promisifyMethodWithErrorHandling(penpalChild?.getElementAtLoc),
+                getElementByDomId: promisifyMethodWithErrorHandling(penpalChild?.getElementByDomId),
+                setFrameId: promisifyMethodWithErrorHandling(penpalChild?.setFrameId),
+                getElementIndex: promisifyMethodWithErrorHandling(penpalChild?.getElementIndex),
+                getComputedStyleByDomId: promisifyMethodWithErrorHandling(penpalChild?.getComputedStyleByDomId),
+                updateElementInstance: promisifyMethodWithErrorHandling(penpalChild?.updateElementInstance),
+                getFirstOnlookElement: promisifyMethodWithErrorHandling(penpalChild?.getFirstOnlookElement),
+                setElementType: promisifyMethodWithErrorHandling(penpalChild?.setElementType),
+                getElementType: promisifyMethodWithErrorHandling(penpalChild?.getElementType),
+                getParentElement: promisifyMethodWithErrorHandling(penpalChild?.getParentElement),
+                getChildrenCount: promisifyMethodWithErrorHandling(penpalChild?.getChildrenCount),
+                getOffsetParent: promisifyMethodWithErrorHandling(penpalChild?.getOffsetParent),
+                getActionLocation: promisifyMethodWithErrorHandling(penpalChild?.getActionLocation),
+                getActionElement: promisifyMethodWithErrorHandling(penpalChild?.getActionElement),
+                getInsertLocation: promisifyMethodWithErrorHandling(penpalChild?.getInsertLocation),
+                getRemoveAction: promisifyMethodWithErrorHandling(penpalChild?.getRemoveAction),
+                getTheme: promisifyMethodWithErrorHandling(penpalChild?.getTheme),
+                setTheme: promisifyMethodWithErrorHandling(penpalChild?.setTheme),
+                startDrag: promisifyMethodWithErrorHandling(penpalChild?.startDrag),
+                drag: promisifyMethodWithErrorHandling(penpalChild?.drag),
+                dragAbsolute: promisifyMethodWithErrorHandling(penpalChild?.dragAbsolute),
+                endDragAbsolute: promisifyMethodWithErrorHandling(penpalChild?.endDragAbsolute),
+                endDrag: promisifyMethodWithErrorHandling(penpalChild?.endDrag),
+                endAllDrag: promisifyMethodWithErrorHandling(penpalChild?.endAllDrag),
+                startEditingText: promisifyMethodWithErrorHandling(penpalChild?.startEditingText),
+                editText: promisifyMethodWithErrorHandling(penpalChild?.editText),
+                stopEditingText: promisifyMethodWithErrorHandling(penpalChild?.stopEditingText),
+                updateStyle: promisifyMethodWithErrorHandling(penpalChild?.updateStyle),
+                insertElement: promisifyMethodWithErrorHandling(penpalChild?.insertElement),
+                removeElement: promisifyMethodWithErrorHandling(penpalChild?.removeElement),
+                moveElement: promisifyMethodWithErrorHandling(penpalChild?.moveElement),
+                groupElements: promisifyMethodWithErrorHandling(penpalChild?.groupElements),
+                ungroupElements: promisifyMethodWithErrorHandling(penpalChild?.ungroupElements),
+                insertImage: promisifyMethodWithErrorHandling(penpalChild?.insertImage),
+                removeImage: promisifyMethodWithErrorHandling(penpalChild?.removeImage),
+                isChildTextEditable: promisifyMethodWithErrorHandling(penpalChild?.isChildTextEditable),
+                handleBodyReady: promisifyMethodWithErrorHandling(penpalChild?.handleBodyReady),
+                captureScreenshot: promisifyMethodWithErrorHandling(penpalChild?.captureScreenshot),
+                buildLayerTree: promisifyMethodWithErrorHandling(penpalChild?.buildLayerTree),
             };
 
             // Register the iframe with the editor engine
@@ -248,6 +263,7 @@ export const WebFrameComponent = observer(
                     sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
                     allow="geolocation; microphone; camera; midi; encrypted-media"
                     style={{ width: frame.dimension.width, height: frame.dimension.height }}
+                    onLoad={setupPenpalConnection}
                     {...props}
                 />
             </div>
