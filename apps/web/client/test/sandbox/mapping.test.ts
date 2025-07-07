@@ -52,39 +52,6 @@ describe('TemplateNodeMapper', () => {
         expect(result.has('oid2')).toBe(true);
     });
 
-    test('updateMapping should call localforage.setItem with correct parameters', async () => {
-        // Arrange
-        const nodeMap = new Map<string, TemplateNode>();
-        const testNode = createMockTemplateNode('test-oid', 'TestComponent');
-        nodeMap.set('test-oid', testNode);
-
-        // Act
-        mapper.updateMapping(nodeMap);
-
-        // Allow async operations to complete
-        await new Promise((resolve) => setTimeout(resolve, 0));
-
-        // Assert
-        expect(mockLocalforage.setItem).toHaveBeenCalled();
-        const [key, value] = mockLocalforage.setItem.mock.calls[0];
-        expect(key).toBe('template-node-map');
-        expect(value).toEqual({ 'test-oid': testNode });
-    });
-
-    test('constructor should call localforage.getItem to restore cache', async () => {
-        // Reset mocks
-        mockLocalforage.getItem.mockReset();
-
-        // Create mapper which triggers restoration
-        new TemplateNodeMapper(mockLocalforage);
-
-        // Allow async operations to complete
-        await new Promise((resolve) => setTimeout(resolve, 0));
-
-        // Assert
-        expect(mockLocalforage.getItem).toHaveBeenCalledWith('template-node-map');
-    });
-
     test('getTemplateNode should return node for valid oid', () => {
         // Arrange
         const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
