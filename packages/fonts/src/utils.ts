@@ -1,6 +1,11 @@
 import { parse, traverse, generate, type t as T, types as t, type NodePath } from '@onlook/parser';
 import type { Font } from '@onlook/models';
-import { createFontFamilyProperty, isPropertyWithName, isThemeProperty } from './helper';
+import {
+    createFontFamilyProperty,
+    isPropertyWithName,
+    isThemeProperty,
+    removeFontsFromClassName,
+} from './helper';
 
 export const extractFontImport = (content: string): Font[] => {
     const ast = parse(content, {
@@ -140,7 +145,15 @@ export function extractFontConfig(
     return fontConfig as Font;
 }
 
-export function extractExistingFontImport(content: string): { code?: string; fonts: Font[] } {
+/*
+    Extract existing fonts declaration in layout file
+    And move them to the font config file
+*/
+
+export function extractExistingFontImport(content: string): {
+    layoutContent?: string;
+    fonts: Font[];
+} {
     try {
         const ast = parse(content, {
             sourceType: 'module',
@@ -196,8 +209,7 @@ export function extractExistingFontImport(content: string): { code?: string; fon
             },
 
             VariableDeclaration(path) {
-                const parentNode = path.parent;
-                if (!t.isExportNamedDeclaration(parentNode)) {
+                if (!path.node.declarations) {
                     return;
                 }
 
@@ -217,9 +229,42 @@ export function extractExistingFontImport(content: string): { code?: string; fon
                         }
 
                         const configArg = declaration.init.arguments[0];
+
                         if (t.isObjectExpression(configArg)) {
                             const fontConfig = extractFontConfig(fontId, fontType, configArg);
+
+                            if (!fontConfig.variable) {
+                                fontConfig.variable = `--font-${fontId}`;
+                            }
+
                             fonts.push(fontConfig);
+                        }
+                        try {
+                            path.remove();
+                            updatedAst = true;
+                        } catch (removeError) {
+                            console.error('Error removing font import:', removeError);
+                        }
+                    }
+                });
+            },
+            JSXOpeningElement(path) {
+                if (!path.node || !t.isJSXIdentifier(path.node.name) || !path.node.attributes) {
+                    return;
+                }
+
+                path.node.attributes.forEach((attr) => {
+                    if (
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name) &&
+                        attr.name.name === 'className'
+                    ) {
+                        try {
+                            if (removeFontsFromClassName(attr, { fontIds: fontVariables })) {
+                                updatedAst = true;
+                            }
+                        } catch (classNameError) {
+                            console.error('Error processing className:', classNameError);
                         }
                     }
                 });
@@ -228,7 +273,7 @@ export function extractExistingFontImport(content: string): { code?: string; fon
 
         if (updatedAst) {
             return {
-                code: generate(ast, {}, content).code,
+                layoutContent: generate(ast, {}, content).code,
                 fonts,
             };
         }
@@ -397,7 +442,18 @@ export function removeFontFromConfigAST(font: Font, content: string) {
         },
     });
 
-    return { removedFont, hasRemainingLocalFonts, fontFilesToDelete, ast };
+    if (!hasRemainingLocalFonts) {
+        // Remove the localFont import if no localFont declarations remain
+        traverse(ast, {
+            ImportDeclaration(path) {
+                if (path.node.source.value === 'next/font/local') {
+                    path.remove();
+                }
+            },
+        });
+    }
+
+    return { removedFont, fontFilesToDelete, ast };
 }
 
 export function removeFontFromThemeAST(fontId: string, content: string) {
