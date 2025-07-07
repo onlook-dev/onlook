@@ -42,9 +42,9 @@ export const WebFrameComponent = observer(
         const editorEngine = useEditorEngine();
         const iframeRef = useRef<HTMLIFrameElement>(null);
         const zoomLevel = useRef(1);
-        const [penpalChild, setPenpalChild] = useState<any>(null);
-        const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
         const isConnecting = useRef(false);
+        const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
+        const [penpalChild, setPenpalChild] = useState<PenpalChildMethods | null>(null);
 
         const undebouncedReloadIframe = () => {
             try {
@@ -235,7 +235,9 @@ export const WebFrameComponent = observer(
         }, [penpalChild, frame, iframeRef]);
 
         useEffect(() => {
-            setupPenpalConnection();
+            if (!connectionRef.current) {
+                setupPenpalConnection();
+            }
 
             return () => {
                 if (connectionRef.current) {
@@ -245,30 +247,20 @@ export const WebFrameComponent = observer(
                 setPenpalChild(null);
                 isConnecting.current = false;
             };
-        }, []);
+        }, [iframeRef.current?.src]);
 
         return (
-            <div className="relative">
-                {isConnecting.current && (
-                    <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/50 backdrop-blur-sm">
-                        <div className="flex items-center space-x-2 rounded-md bg-background px-4 py-2 shadow-lg">
-                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-foreground border-t-transparent"></div>
-                            <span className="text-sm text-foreground">Connecting...</span>
-                        </div>
-                    </div>
-                )}
-                <iframe
-                    ref={iframeRef}
-                    id={frame.id}
-                    className={cn('backdrop-blur-sm transition outline outline-4')}
-                    src={frame.url}
-                    sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
-                    allow="geolocation; microphone; camera; midi; encrypted-media"
-                    style={{ width: frame.dimension.width, height: frame.dimension.height }}
-                    onLoad={setupPenpalConnection}
-                    {...props}
-                />
-            </div>
+            <iframe
+                ref={iframeRef}
+                id={frame.id}
+                className={cn('backdrop-blur-sm transition outline outline-4')}
+                src={frame.url}
+                sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
+                allow="geolocation; microphone; camera; midi; encrypted-media"
+                style={{ width: frame.dimension.width, height: frame.dimension.height }}
+                onLoad={setupPenpalConnection}
+                {...props}
+            />
         );
     }),
 );
