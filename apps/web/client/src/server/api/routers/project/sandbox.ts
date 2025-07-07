@@ -1,4 +1,3 @@
-import { addSetupTask, injectPreloadScript, updatePackageJson } from '@/components/store/editor/pages/helper';
 import { env } from '@/env';
 import { CodeSandbox, type SandboxBrowserSession } from '@codesandbox/sdk';
 import { getSandboxPreviewUrl } from '@onlook/constants';
@@ -86,20 +85,25 @@ export const sandboxRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input }) => {
-            const sandbox = await sdk.sandboxes.create({
-                source: 'git',
-                url: input.repoUrl,
-                branch: input.branch,
-                async setup(session) {
-                    await addSetupTask(session);
-                    await updatePackageJson(session);
-                    await injectPreloadScript(session);
-                    await session.setup.run();
-                },
-            });
+            // const fileOps = new FileOperations(session);
+            // const sandbox = await sdk.sandboxes.create({
+            //     source: 'git',
+            //     url: input.repoUrl,
+            //     branch: input.branch,
+            //     async setup(session) {
+            //         await addSetupTask(session);
+            //         await updatePackageJson(session);
+            //         await injectPreloadScript(session);
+            //         await session.setup.run();
+            //     },
+            // });
+            // return {
+            //     sandboxId: sandbox.id,
+            //     previewUrl: getSandboxPreviewUrl(sandbox.id, 3000),
+            // };
             return {
-                sandboxId: sandbox.id,
-                previewUrl: getSandboxPreviewUrl(sandbox.id, 3000),
+                sandboxId: '123',
+                previewUrl: 'https://sandbox.com',
             };
         }),
 });

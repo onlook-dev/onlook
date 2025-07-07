@@ -156,7 +156,7 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
     }
 };
 
-export const addScriptConfig = (ast: T.File): T.File => {
+export const addPreloadScript = (ast: T.File): T.File => {
     let hasScriptImport = false;
 
     // Check if Script is already imported from next/script
@@ -228,58 +228,37 @@ export const addScriptConfig = (ast: T.File): T.File => {
         createAndAddHeadTag(htmlElement);
     }
 
-    function addScriptToHead(headElement: any) {
-        // Check if Script with our specific src already exists
-        let hasOnlookScript = false;
+    return ast;
+};
 
-        if (headElement.children) {
-            headElement.children.forEach((child: any) => {
-                if (
-                    t.isJSXElement(child) &&
-                    t.isJSXIdentifier(child.openingElement.name) &&
-                    child.openingElement.name.name === 'Script'
-                ) {
-                    const srcAttr = child.openingElement.attributes.find((attr: any) => {
-                        return (
-                            t.isJSXAttribute(attr) &&
-                            t.isJSXIdentifier(attr.name) &&
-                            attr.name.name === 'src' &&
-                            t.isStringLiteral(attr.value) &&
-                            attr.value.value.includes(PRELOAD_URL)
-                        );
-                    });
-                    if (srcAttr) {
-                        hasOnlookScript = true;
-                    }
+function addScriptToHead(headElement: any) {
+    // Check if Script with our specific src already exists
+    let hasOnlookScript = false;
+
+    if (headElement.children) {
+        headElement.children.forEach((child: any) => {
+            if (
+                t.isJSXElement(child) &&
+                t.isJSXIdentifier(child.openingElement.name) &&
+                child.openingElement.name.name === 'Script'
+            ) {
+                const srcAttr = child.openingElement.attributes.find((attr: any) => {
+                    return (
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name) &&
+                        attr.name.name === 'src' &&
+                        t.isStringLiteral(attr.value) &&
+                        attr.value.value.includes(PRELOAD_URL)
+                    );
+                });
+                if (srcAttr) {
+                    hasOnlookScript = true;
                 }
-            });
-        }
-
-        if (!hasOnlookScript) {
-            // Create the Script JSX element
-            const scriptElement = t.jsxElement(
-                t.jsxOpeningElement(
-                    t.jsxIdentifier('Script'),
-                    [
-                        t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                        t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_URL)),
-                    ],
-                    true,
-                ),
-                null,
-                [],
-                true,
-            );
-
-            // Add the Script element as the first child of head
-            if (!headElement.children) {
-                headElement.children = [];
             }
-            headElement.children.unshift(scriptElement);
-        }
+        });
     }
 
-    function createAndAddHeadTag(htmlElement: any) {
+    if (!hasOnlookScript) {
         // Create the Script JSX element
         const scriptElement = t.jsxElement(
             t.jsxOpeningElement(
@@ -295,20 +274,41 @@ export const addScriptConfig = (ast: T.File): T.File => {
             true,
         );
 
-        // Create the head element with the Script as its child
-        const headElement = t.jsxElement(
-            t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
-            t.jsxClosingElement(t.jsxIdentifier('head')),
-            [scriptElement],
-            false,
-        );
-
-        // Add the head element as the first child of html
-        if (!htmlElement.children) {
-            htmlElement.children = [];
+        // Add the Script element as the first child of head
+        if (!headElement.children) {
+            headElement.children = [];
         }
-        htmlElement.children.unshift(headElement);
+        headElement.children.unshift(scriptElement);
     }
+}
 
-    return ast;
-};
+function createAndAddHeadTag(htmlElement: any) {
+    // Create the Script JSX element
+    const scriptElement = t.jsxElement(
+        t.jsxOpeningElement(
+            t.jsxIdentifier('Script'),
+            [
+                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
+                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_URL)),
+            ],
+            true,
+        ),
+        null,
+        [],
+        true,
+    );
+
+    // Create the head element with the Script as its child
+    const headElement = t.jsxElement(
+        t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
+        t.jsxClosingElement(t.jsxIdentifier('head')),
+        [scriptElement],
+        false,
+    );
+
+    // Add the head element as the first child of html
+    if (!htmlElement.children) {
+        htmlElement.children = [];
+    }
+    htmlElement.children.unshift(headElement);
+}

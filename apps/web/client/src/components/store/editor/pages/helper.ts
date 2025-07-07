@@ -1,6 +1,4 @@
 import type { ReaddirEntry, WebSocketSession } from '@codesandbox/sdk';
-import { PRELOAD_URL } from '@onlook/constants';
-import { getLayoutPath } from '@onlook/growth/src/helpers';
 import type { PageMetadata, PageNode } from '@onlook/models';
 import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
@@ -1019,145 +1017,13 @@ async function updateMetadataInFile(
     await session.fs.writeTextFile(filePath, formattedContent);
 }
 
-export const injectPreloadScript = async (session: WebSocketSession) => {
-    const routerType = await detectRouterTypeInSandbox(session);
-
-    if (!routerType || routerType.type !== 'app') {
-        throw new Error('We currently support only Next.js App projects.');
-    }
-
-    const fileExists = async (filePath: string) => {
-        try {
-            const stat = await session.fs.stat(filePath);
-            return stat.type === 'file';
-        } catch (error) {
-            console.error(`[fileExists] Error checking if file exists at ${filePath}:`, error);
-            return false;
-        }
-    };
-
-    const layoutPath = await getLayoutPath('.', fileExists);
-
-    if (!layoutPath) {
-        throw new Error('Layout file not found');
-    }
-
-    const layoutRaw = await session.fs.readFile(layoutPath);
-    const layoutSrc = new TextDecoder().decode(layoutRaw);
-
-    const ast = parse(layoutSrc, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
-
-    let importedScript = false;
-    let foundHead = false;
-    let alreadyInjected = false;
-
-    traverse(ast, {
-        ImportDeclaration(path) {
-            if (path.node.source.value === 'next/script') {
-                importedScript = true;
-            }
-        },
-        JSXElement(path) {
-            const opening = path.node.openingElement;
-
-            if (
-                t.isJSXIdentifier(opening.name, { name: 'Script' }) &&
-                opening.attributes.some(
-                    (attr) =>
-                        t.isJSXAttribute(attr) &&
-                        attr.name.name === 'src' &&
-                        t.isStringLiteral(attr.value) &&
-                        attr.value.value === PRELOAD_URL,
-                )
-            ) {
-                alreadyInjected = true;
-            }
-
-            if (t.isJSXIdentifier(opening.name, { name: 'head' })) {
-                foundHead = true;
-
-                if (!alreadyInjected) {
-                    const scriptElement = t.jsxElement(
-                        t.jsxOpeningElement(
-                            t.jsxIdentifier('Script'),
-                            [
-                                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                                t.jsxAttribute(
-                                    t.jsxIdentifier('src'),
-                                    t.stringLiteral(PRELOAD_URL),
-                                ),
-                            ],
-                            true,
-                        ),
-                        null,
-                        [],
-                        true,
-                    );
-
-                    // Prepend the script to the <head> children
-                    path.node.children.unshift(scriptElement);
-                    alreadyInjected = true;
-                }
-            }
-
-            if (!foundHead && t.isJSXIdentifier(opening.name, { name: 'html' })) {
-                if (!alreadyInjected) {
-                    const scriptInHead = t.jsxElement(
-                        t.jsxOpeningElement(
-                            t.jsxIdentifier('Script'),
-                            [
-                                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                                t.jsxAttribute(
-                                    t.jsxIdentifier('src'),
-                                    t.stringLiteral(PRELOAD_URL),
-                                ),
-                            ],
-                            true,
-                        ),
-                        null,
-                        [],
-                        true,
-                    );
-
-                    const headElement = t.jsxElement(
-                        t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
-                        t.jsxClosingElement(t.jsxIdentifier('head')),
-                        [scriptInHead],
-                        false,
-                    );
-
-                    path.node.children.unshift(headElement);
-                    foundHead = true;
-                    alreadyInjected = true;
-                }
-            }
-        },
-    });
-
-    if (!importedScript) {
-        ast.program.body.unshift(
-            t.importDeclaration(
-                [t.importDefaultSpecifier(t.identifier('Script'))],
-                t.stringLiteral('next/script'),
-            ),
-        );
-    }
-
-    const { code } = generate(ast, {}, layoutSrc);
-
-    await session.fs.writeFile(layoutPath, new TextEncoder().encode(code));
-};
-
 export const addSetupTask = async (session: WebSocketSession) => {
     const tasks = {
-        setupTasks: ['npm install'],
+        setupTasks: ['bun install'],
         tasks: {
             dev: {
                 name: 'Dev Server',
-                command: 'npm run dev',
+                command: 'bun run dev',
                 preview: {
                     port: 3000,
                 },
