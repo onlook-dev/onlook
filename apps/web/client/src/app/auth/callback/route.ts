@@ -13,15 +13,18 @@ export async function GET(request: Request) {
         if (!error) {
             const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === 'development';
-            const user = await api.user.upsert({
+            await api.user.upsert({
                 id: data.user.id,
             });
 
+<<<<<<< HEAD
             if (!user) {
                 console.error(`Failed to upsert user for id: ${data.user.id}`, { user });
                 return NextResponse.redirect(`${origin}/auth/auth-code-error`);
             }
 
+=======
+>>>>>>> 6d47326d (name fallback)
             trackUserSignedIn(data.user.id, {
                 name: data.user.user_metadata.name,
                 email: data.user.email,
