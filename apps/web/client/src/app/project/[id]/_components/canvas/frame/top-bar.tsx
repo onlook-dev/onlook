@@ -13,9 +13,9 @@ export const TopBar = observer(
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const topBarRef = useRef<HTMLDivElement>(null);
         const urlRef = useRef<HTMLDivElement>(null);
-        const topBarWidth = (topBarRef.current?.clientWidth ?? 0) * editorEngine.canvas.scale;
-        const urlWidth = (urlRef.current?.clientWidth ?? 0) * editorEngine.canvas.scale;
-        const shouldShowExternalLink = (topBarWidth - urlWidth) > 300;
+        const topBarWidth = (topBarRef.current?.clientWidth ?? 0);
+        const urlWidth = (urlRef.current?.clientWidth ?? 0);
+        const shouldShowExternalLink = ((topBarWidth - urlWidth) * editorEngine.canvas.scale) > 250;
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault();
@@ -37,7 +37,7 @@ export const TopBar = observer(
                     y: startPositionY + deltaY,
                 };
 
-                editorEngine.frames.updateLocally(frame.id, frame);
+                editorEngine.frames.updateAndSaveToStorage(frame);
             };
 
             const endMove = (e: MouseEvent) => {
@@ -112,6 +112,7 @@ export const TopBar = observer(
                         transform: `scale(${1 / editorEngine.canvas.scale})`,
                         transformOrigin: 'right center',
                         opacity: shouldShowExternalLink ? 1 : 0,
+                        pointerEvents: shouldShowExternalLink ? 'auto' : 'none',
                     }}
                 >
                     <Button variant="ghost" size="icon">

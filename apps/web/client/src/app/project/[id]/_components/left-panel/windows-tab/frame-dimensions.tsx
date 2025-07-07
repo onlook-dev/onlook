@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings, DEVICE_OPTIONS, Orientation } from '@onlook/constants';
-import type { WindowMetadata } from '@onlook/models';
+import type { WebFrame, WindowMetadata } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -42,7 +42,7 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
         const newMetadata = computeWindowMetadata(width.toString(), height.toString());
         setMetadata(newMetadata);
         const newFrame = { ...frameData.frame, dimension: { width, height } };
-        editorEngine.frames.updateLocally(frameId, newFrame);
+        editorEngine.frames.updateAndSaveToStorage(newFrame as WebFrame);
     };
 
     const handleDimensionInput = (

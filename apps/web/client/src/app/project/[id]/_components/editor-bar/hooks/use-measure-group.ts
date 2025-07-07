@@ -26,7 +26,7 @@ export const useMeasureGroup = ({ availableWidth = 0, count = 0 }: { availableWi
 
         const OVERFLOW_BUTTON_WIDTH = 32;
         const SEPARATOR_WIDTH = 8;
-        const BUFFER_WIDTH = 16;
+        const BUFFER_WIDTH = 10;
         let used = 0;
         let count = 0;
 

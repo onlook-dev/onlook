@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { DEVICE_OPTIONS, Orientation } from '@onlook/constants';
-import type { WindowMetadata } from '@onlook/models';
+import type { WebFrame, WindowMetadata } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger } from '@onlook/ui/select';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -45,6 +45,8 @@ export const DeviceSelector = observer(() => {
         setMetadata(computeWindowMetadata(frameData?.frame.dimension.width.toString() ?? '0', frameData?.frame.dimension.height.toString() ?? '0'));
     }, [frameData?.frame.dimension.width, frameData?.frame.dimension.height]);
 
+    if (!frameData) return null;
+
     const deviceType = useMemo(() => getDeviceType(metadata.device), [metadata.device]);
 
     const [device, setDevice] = useState(() => {
@@ -59,8 +61,6 @@ export const DeviceSelector = observer(() => {
         return 'Custom:Custom';
     });
 
-    if (!frameData) return null;
-
     const handleDeviceChange = (value: string) => {
         setDevice(value);
         const [category, deviceName] = value.split(':');
@@ -73,8 +73,11 @@ export const DeviceSelector = observer(() => {
         ) {
             const [w, h] = DEVICE_OPTIONS[category][deviceName].split('x').map(Number);
             if (typeof w === 'number' && !isNaN(w) && typeof h === 'number' && !isNaN(h)) {
-                frameData.frame.dimension.width = w;
-                frameData.frame.dimension.height = h;
+                frameData.frame.dimension = {
+                    width: w,
+                    height: h,
+                };
+                editorEngine.frames.updateAndSaveToStorage(frameData.frame as WebFrame);
             }
         }
     };
