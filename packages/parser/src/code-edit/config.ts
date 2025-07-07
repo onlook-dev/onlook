@@ -1,4 +1,4 @@
-import { CUSTOM_OUTPUT_DIR, JS_FILE_EXTENSIONS } from '@onlook/constants';
+import { CUSTOM_OUTPUT_DIR, JS_FILE_EXTENSIONS, PRELOAD_URL } from '@onlook/constants';
 import { type FileOperations } from '@onlook/utility';
 import { genASTParserOptionsByFileExtension } from '../helpers';
 import { generate, parse, type t as T, types as t, traverse } from '../packages';
@@ -262,12 +262,7 @@ export const addScriptConfig = (ast: T.File): T.File => {
                     t.jsxIdentifier('Script'),
                     [
                         t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                        t.jsxAttribute(
-                            t.jsxIdentifier('src'),
-                            t.stringLiteral(
-                                'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js',
-                            ),
-                        ),
+                        t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_URL)),
                     ],
                     true,
                 ),
@@ -291,12 +286,7 @@ export const addScriptConfig = (ast: T.File): T.File => {
                 t.jsxIdentifier('Script'),
                 [
                     t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                    t.jsxAttribute(
-                        t.jsxIdentifier('src'),
-                        t.stringLiteral(
-                            'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js',
-                        ),
-                    ),
+                    t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_URL)),
                 ],
                 true,
             ),

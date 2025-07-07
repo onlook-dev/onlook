@@ -85,11 +85,6 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                 }
             } catch (error) {
                 console.error('Error handling mouse event:', error);
-                if (action !== MouseAction.MOVE) {
-                    toast.error('Failed to handle mouse event. Try using AI or code editor.', {
-                        description: error instanceof Error ? error.message : 'Unknown error',
-                    });
-                }
                 return;
             }
         },

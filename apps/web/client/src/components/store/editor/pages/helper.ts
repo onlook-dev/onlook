@@ -1,6 +1,7 @@
 import type { ReaddirEntry, WebSocketSession } from '@codesandbox/sdk';
+import { PRELOAD_URL } from '@onlook/constants';
 import type { PageMetadata, PageNode } from '@onlook/models';
-import { generate, parse, types as t, traverse, type NodePath, type t as T } from '@onlook/parser';
+import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
 import { formatContent } from '../sandbox/helpers';
 
@@ -271,8 +272,8 @@ const scanAppDirectory = async (
             name: isDynamicRoute
                 ? currentDir
                 : parentPath
-                  ? getBaseName(parentPath)
-                  : ROOT_PAGE_NAME,
+                    ? getBaseName(parentPath)
+                    : ROOT_PAGE_NAME,
             path: cleanPath,
             children: [],
             isActive: false,
@@ -1021,10 +1022,7 @@ export const injectPreloadScript = async (session: WebSocketSession) => {
     await addSetupTask(session);
     await updatePackageJson(session);
 
-    // Step 3: Inject script tag
     const routerType = await detectRouterTypeInSandbox(session);
-    const preLoadScript =
-        'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js';
 
     if (!routerType || routerType.type !== 'app') {
         throw new Error('We currently support only Next.js App projects.');
@@ -1059,7 +1057,7 @@ export const injectPreloadScript = async (session: WebSocketSession) => {
                         t.isJSXAttribute(attr) &&
                         attr.name.name === 'src' &&
                         t.isStringLiteral(attr.value) &&
-                        attr.value.value === preLoadScript,
+                        attr.value.value === PRELOAD_URL,
                 )
             ) {
                 alreadyInjected = true;
@@ -1076,7 +1074,7 @@ export const injectPreloadScript = async (session: WebSocketSession) => {
                                 t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
                                 t.jsxAttribute(
                                     t.jsxIdentifier('src'),
-                                    t.stringLiteral(preLoadScript),
+                                    t.stringLiteral(PRELOAD_URL),
                                 ),
                             ],
                             true,
@@ -1101,7 +1099,7 @@ export const injectPreloadScript = async (session: WebSocketSession) => {
                                 t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
                                 t.jsxAttribute(
                                     t.jsxIdentifier('src'),
-                                    t.stringLiteral(preLoadScript),
+                                    t.stringLiteral(PRELOAD_URL),
                                 ),
                             ],
                             true,
