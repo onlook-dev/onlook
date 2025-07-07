@@ -13,13 +13,14 @@ export const useStartProject = () => {
     const editorEngine = useEditorEngine();
     const [isProjectReady, setIsProjectReady] = useState(false);
     const [isSandboxLoading, setIsSandboxLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     const { tabState } = useTabActive();
-    const { data: user, isLoading: isUserLoading } = api.user.get.useQuery();
-    const { data: project, isLoading: isProjectLoading } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: canvasWithFrames, isLoading: isCanvasLoading } = api.canvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
-    const { data: conversations, isLoading: isConversationsLoading } = api.chat.conversation.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: creationRequest, isLoading: isCreationRequestLoading } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
+    const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
+    const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.canvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
+    const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation();
 
     const { sendMessages } = useChatContext();
@@ -118,5 +119,9 @@ export const useStartProject = () => {
         setIsProjectReady(allQueriesResolved);
     }, [isUserLoading, isProjectLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading, isSandboxLoading]);
 
-    return { isProjectReady };
+    useEffect(() => {
+        setError(userError?.message ?? projectError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
+    }, [userError, projectError, canvasError, conversationsError, creationRequestError]);
+
+    return { isProjectReady, error };
 }

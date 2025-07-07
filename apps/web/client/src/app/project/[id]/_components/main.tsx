@@ -3,9 +3,11 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
+import { useRouter } from 'next/navigation';
 import { useRef } from 'react';
 import { usePanelMeasurements } from '../_hooks/use-panel-measure';
 import { useStartProject } from '../_hooks/use-start-project';
@@ -18,13 +20,30 @@ import { TopBar } from './top-bar';
 
 export const Main = observer(() => {
     const editorEngine = useEditorEngine();
-    const { isProjectReady } = useStartProject();
+    const router = useRouter();
+    const { isProjectReady, error } = useStartProject();
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,
         rightPanelRef,
     );
+
+    if (error) {
+        return (
+            <div className="h-screen w-screen flex items-center justify-center gap-2 flex-col">
+                <div className="flex flex-row items-center justify-center gap-2">
+                    <Icons.ExclamationTriangle className="h-6 w-6 text-foreground-primary" />
+                    <div className="text-xl">Error starting project: {error}</div>
+                </div>
+                <Button onClick={() => {
+                    router.push('/');
+                }}>
+                    Go to home
+                </Button>
+            </div>
+        );
+    }
 
     if (!isProjectReady) {
         return (
