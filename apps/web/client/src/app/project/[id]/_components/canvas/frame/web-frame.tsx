@@ -51,7 +51,7 @@ export const WebFrameComponent = observer(
                 const iframe = iframeRef.current;
                 if (!iframe) return;
                 iframe.src = iframe.src;
-                iframe.contentWindow?.location.reload();
+                // iframe.contentWindow?.location.reload();
             } catch (error) {
                 console.error('Failed to reload iframe', error);
             }

@@ -13,9 +13,9 @@ export const TopBar = observer(
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const topBarRef = useRef<HTMLDivElement>(null);
         const urlRef = useRef<HTMLDivElement>(null);
-        const topBarWidth = (topBarRef.current?.clientWidth ?? 0) * editorEngine.canvas.scale;
-        const urlWidth = (urlRef.current?.clientWidth ?? 0) * editorEngine.canvas.scale;
-        const shouldShowExternalLink = (topBarWidth - urlWidth) > 200;
+        const topBarWidth = (topBarRef.current?.clientWidth ?? 0);
+        const urlWidth = (urlRef.current?.clientWidth ?? 0);
+        const shouldShowExternalLink = ((topBarWidth - urlWidth) * editorEngine.canvas.scale) > 250;
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault();

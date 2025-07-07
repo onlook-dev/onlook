@@ -37,15 +37,6 @@ export class FramesManager {
         makeAutoObservable(this);
     }
 
-    private validateFrameData(id: string, operation: string): FrameData | null {
-        const data = this._frameIdToData.get(id);
-        if (!data) {
-            console.error(`Frame not found for ${operation}`, id);
-            return null;
-        }
-        return data;
-    }
-
     private updateFrameSelection(id: string, selected: boolean): void {
         const data = this._frameIdToData.get(id);
         if (data) {
@@ -131,10 +122,12 @@ export class FramesManager {
     }
 
     reloadView(id: string) {
-        const frameData = this.validateFrameData(id, 'reload');
-        if (!frameData) return;
-
-        frameData.view?.reload();
+        const frameData = this.get(id);
+        if (!frameData?.view) {
+            console.error('Frame view not found for reload', id);
+            return;
+        }
+        frameData.view.reload();
     }
 
     async delete(id: string) {
@@ -143,15 +136,18 @@ export class FramesManager {
             return;
         }
 
-        const data = this.validateFrameData(id, 'delete');
-        if (!data) return;
+        const frameData = this.get(id);
+        if (!frameData?.view) {
+            console.error('Frame not found for delete', id);
+            return;
+        }
 
         const success = await api.frame.delete.mutate({
-            frameId: data.frame.id,
+            frameId: frameData.frame.id,
         });
 
         if (success) {
-            this.disposeFrame(data.frame.id);
+            this.disposeFrame(frameData.frame.id);
             this._frameIdToData.delete(id);
         } else {
             console.error('Failed to delete frame');
@@ -171,16 +167,19 @@ export class FramesManager {
     }
 
     async duplicate(id: string) {
-        const data = this.validateFrameData(id, 'duplicate');
-        if (!data) return;
-
-        // Force to webframe for now, later we can support other frame types
-        if (data.frame.type !== FrameType.WEB) {
-            console.error('No handler for this frame type', data.frame.type);
+        const frameData = this.get(id);
+        if (!frameData?.view) {
+            console.error('Frame view not found for duplicate', id);
             return;
         }
 
-        const frame = data.frame as WebFrame;
+        // Force to webframe for now, later we can support other frame types
+        if (frameData.frame.type !== FrameType.WEB) {
+            console.error('No handler for this frame type', frameData.frame.type);
+            return;
+        }
+
+        const frame = frameData.frame as WebFrame;
         const newFrame: WebFrame = {
             ...frame,
             id: uuid(),
