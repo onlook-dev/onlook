@@ -1,5 +1,7 @@
 import { callUserWebhook } from '@/utils/n8n/webhook';
 import { toUser, userInsertSchema, users, type User } from '@onlook/db';
+import { extractNames } from '@onlook/utility';
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -11,11 +13,13 @@ export const userRouter = createTRPCRouter({
         const user = await ctx.db.query.users.findFirst({
             where: eq(users.id, authUser.id),
         });
+
+        const { displayName, firstName, lastName } = getUserName(authUser);
         const userData = user ? toUser({
             id: user.id,
-            firstName: user.firstName ?? authUser.user_metadata.first_name,
-            lastName: user.lastName ?? authUser.user_metadata.last_name,
-            displayName: user.displayName ?? authUser.user_metadata.display_name,
+            firstName: user.firstName ?? firstName,
+            lastName: user.lastName ?? lastName,
+            displayName: user.displayName ?? displayName,
             email: user.email ?? authUser.email,
             avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
             createdAt: user.createdAt ?? new Date(authUser.created_at ?? Date.now()),
@@ -54,10 +58,13 @@ export const userRouter = createTRPCRouter({
                     throw new Error('Failed to create user');
                 }
                 const authUser = ctx.user;
+
+                const { firstName, lastName, displayName } = getUserName(authUser);
+
                 await callUserWebhook({
                     email: user.email,
-                    firstName: user.firstName ?? authUser.user_metadata.first_name ?? authUser.user_metadata.name,
-                    lastName: user.lastName ?? authUser.user_metadata.last_name,
+                    firstName: user.firstName ?? firstName,
+                    lastName: user.lastName ?? lastName,
                     source: 'web beta',
                     subscribed: false,
                 });
@@ -66,3 +73,13 @@ export const userRouter = createTRPCRouter({
         }),
     settings: userSettingsRouter,
 });
+
+function getUserName(authUser: SupabaseUser) {
+    const displayName: string | undefined = authUser.user_metadata.name;
+    const { firstName, lastName } = extractNames(displayName ?? '');
+    return {
+        displayName: displayName ?? '',
+        firstName,
+        lastName,
+    };
+}
