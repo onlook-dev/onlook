@@ -17,8 +17,8 @@ export const users = pgTable('users', {
     displayName: text('display_name'),
     avatarUrl: text('avatar_url'),
     email: text('email'),
-    createdAt: timestamp('created_at').notNull().defaultNow(),
-    updatedAt: timestamp('updated_at').notNull().defaultNow(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }).enableRLS();
 
 export const usersRelations = relations(users, ({ many, one }) => ({

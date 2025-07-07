@@ -245,7 +245,7 @@ export const addScriptConfig = (ast: T.File): T.File => {
                             t.isJSXIdentifier(attr.name) &&
                             attr.name.name === 'src' &&
                             t.isStringLiteral(attr.value) &&
-                            attr.value.value.includes('onlook-dev/web')
+                            attr.value.value.includes(PRELOAD_URL)
                         );
                     });
                     if (srcAttr) {
