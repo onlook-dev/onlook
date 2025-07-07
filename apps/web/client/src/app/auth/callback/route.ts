@@ -15,18 +15,15 @@ export async function GET(request: Request) {
             const isLocalEnv = process.env.NODE_ENV === 'development';
             const user = await api.user.upsert({
                 id: data.user.id,
-                firstName: data.user.user_metadata?.first_name,
-                lastName: data.user.user_metadata?.last_name,
-                displayName: data.user.user_metadata?.display_name,
-                email: data.user.email,
-                avatarUrl: data.user.user_metadata?.avatar_url,
             });
 
-            trackUserSignedIn(user.id, {
-                name: data.user.user_metadata.name,
-                email: data.user.email,
-                avatar_url: data.user.user_metadata.avatar_url,
-            });
+            if (user) {
+                trackUserSignedIn(user.id, {
+                    name: data.user.user_metadata.name,
+                    email: data.user.email,
+                    avatar_url: data.user.user_metadata.avatar_url,
+                });
+            }
 
             // Redirect to the redirect page which will handle the return URL
             if (isLocalEnv) {

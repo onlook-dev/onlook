@@ -42,34 +42,40 @@ export const userRouter = createTRPCRouter({
     }),
     upsert: protectedProcedure
         .input(userInsertSchema)
-        .mutation(async ({ ctx, input }): Promise<User> => {
+        .mutation(async ({ ctx, input }): Promise<User | null> => {
+            const authUser = ctx.user;
+
             const existingUser = await ctx.db.query.users.findFirst({
                 where: eq(users.id, input.id),
             });
-            if (existingUser) {
-                const [user] = await ctx.db.update(users).set(input).where(eq(users.id, input.id)).returning();
-                if (!user) {
-                    throw new Error('Failed to update user');
-                }
-                return user;
-            } else {
-                const [user] = await ctx.db.insert(users).values(input).returning();
-                if (!user) {
-                    throw new Error('Failed to create user');
-                }
-                const authUser = ctx.user;
 
-                const { firstName, lastName, displayName } = getUserName(authUser);
+            const { firstName, lastName, displayName } = getUserName(authUser);
 
+            const userData = {
+                id: input.id,
+                firstName: input.firstName ?? firstName,
+                lastName: input.lastName ?? lastName,
+                displayName: input.displayName ?? displayName,
+                email: input.email ?? authUser.email,
+                avatarUrl: input.avatarUrl ?? authUser.user_metadata.avatarUrl,
+            };
+
+            const [user] = await ctx.db.insert(users).values(userData).onConflictDoUpdate({
+                target: [users.id],
+                set: userData,
+            }).returning();
+
+            if (!existingUser) {
                 await callUserWebhook({
-                    email: user.email,
-                    firstName: user.firstName ?? firstName,
-                    lastName: user.lastName ?? lastName,
+                    email: userData.email,
+                    firstName: userData.firstName,
+                    lastName: userData.lastName,
                     source: 'web beta',
                     subscribed: false,
                 });
-                return user;
             }
+
+            return user ?? null;
         }),
     settings: userSettingsRouter,
 });
