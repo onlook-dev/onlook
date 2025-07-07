@@ -1,8 +1,6 @@
+import { PRELOAD_URL } from '@onlook/constants';
 import { describe, expect, test } from 'bun:test';
 import { addScriptConfig, getAstFromContent, getContentFromAst } from 'src';
-
-const SCRIPT_TAG =
-    '<Script type="module" src="https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js" />';
 
 const baseImport = 'import React from "react";\n';
 
@@ -17,15 +15,15 @@ describe('addScriptConfig', () => {
         const resultAst = addScriptConfig(ast);
         const result = await getContentFromAst(resultAst);
         expect(result).toMatch(importScriptRegex);
-        expect(result).toContain(SCRIPT_TAG);
+        expect(result).toContain(PRELOAD_URL);
         // Should only be one Script import
         expect(result.match(importScriptRegex)?.length).toBe(1);
         // Should only be one Script tag in head
-        expect(result.match(new RegExp(SCRIPT_TAG, 'g'))?.length).toBe(1);
+        expect(result.match(new RegExp(PRELOAD_URL, 'g'))?.length).toBe(1);
     });
 
     test('does not duplicate Script if already present', async () => {
-        const code = `${baseImport}import Script from 'next/script';\nexport default function Document() {\n  return (\n    <html>\n      <head>\n        <title>Test</title>\n        ${SCRIPT_TAG}\n      </head>\n      <body>\n        <main />\n      </body>\n    </html>\n  );\n}`;
+        const code = `${baseImport}import Script from 'next/script';\nexport default function Document() {\n  return (\n    <html>\n      <head>\n        <title>Test</title>\n        <Script type="module" src="${PRELOAD_URL}" />\n      </head>\n      <body>\n        <main />\n      </body>\n    </html>\n  );\n}`;
         const ast = getAstFromContent(code);
         if (!ast) throw new Error('Failed to parse input code');
         const resultAst = addScriptConfig(ast);
@@ -33,7 +31,7 @@ describe('addScriptConfig', () => {
         // Should not add another import
         expect(result.match(importScriptRegex)?.length).toBe(1);
         // Should not add another Script tag
-        expect(result.match(new RegExp(SCRIPT_TAG, 'g'))?.length).toBe(1);
+        expect(result.match(new RegExp(PRELOAD_URL, 'g'))?.length).toBe(1);
     });
 
     test('creates <head> with Script if only <html> exists', async () => {
@@ -43,6 +41,6 @@ describe('addScriptConfig', () => {
         const resultAst = addScriptConfig(ast);
         const result = await getContentFromAst(resultAst);
         expect(result).toContain('<head>');
-        expect(result).toContain(SCRIPT_TAG);
+        expect(result).toContain(PRELOAD_URL);
     });
 });

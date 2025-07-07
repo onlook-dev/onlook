@@ -1,4 +1,4 @@
-import { injectPreloadScript } from '@/components/store/editor/pages/helper';
+import { addSetupTask, injectPreloadScript, updatePackageJson } from '@/components/store/editor/pages/helper';
 import { env } from '@/env';
 import { CodeSandbox, type SandboxBrowserSession } from '@codesandbox/sdk';
 import { getSandboxPreviewUrl } from '@onlook/constants';
@@ -91,6 +91,8 @@ export const sandboxRouter = createTRPCRouter({
                 url: input.repoUrl,
                 branch: input.branch,
                 async setup(session) {
+                    await addSetupTask(session);
+                    await updatePackageJson(session);
                     await injectPreloadScript(session);
                     await session.setup.run();
                 },

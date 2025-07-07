@@ -1,5 +1,6 @@
 import type { ReaddirEntry, WebSocketSession } from '@codesandbox/sdk';
 import { PRELOAD_URL } from '@onlook/constants';
+import { getLayoutPath } from '@onlook/growth/src/helpers';
 import type { PageMetadata, PageNode } from '@onlook/models';
 import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
@@ -1019,16 +1020,28 @@ async function updateMetadataInFile(
 }
 
 export const injectPreloadScript = async (session: WebSocketSession) => {
-    await addSetupTask(session);
-    await updatePackageJson(session);
-
     const routerType = await detectRouterTypeInSandbox(session);
 
     if (!routerType || routerType.type !== 'app') {
         throw new Error('We currently support only Next.js App projects.');
     }
 
-    const layoutPath = './src/app/layout.tsx';
+    const fileExists = async (filePath: string) => {
+        try {
+            const stat = await session.fs.stat(filePath);
+            return stat.type === 'file';
+        } catch (error) {
+            console.error(`[fileExists] Error checking if file exists at ${filePath}:`, error);
+            return false;
+        }
+    };
+
+    const layoutPath = await getLayoutPath('.', fileExists);
+
+    if (!layoutPath) {
+        throw new Error('Layout file not found');
+    }
+
     const layoutRaw = await session.fs.readFile(layoutPath);
     const layoutSrc = new TextDecoder().decode(layoutRaw);
 
@@ -1138,7 +1151,7 @@ export const injectPreloadScript = async (session: WebSocketSession) => {
     await session.fs.writeFile(layoutPath, new TextEncoder().encode(code));
 };
 
-const addSetupTask = async (session: WebSocketSession) => {
+export const addSetupTask = async (session: WebSocketSession) => {
     const tasks = {
         setupTasks: ['npm install'],
         tasks: {
@@ -1158,7 +1171,7 @@ const addSetupTask = async (session: WebSocketSession) => {
     );
 };
 
-const updatePackageJson = async (session: WebSocketSession) => {
+export const updatePackageJson = async (session: WebSocketSession) => {
     const pkgRaw = await session.fs.readFile('./package.json');
     const pkgJson = JSON.parse(new TextDecoder().decode(pkgRaw));
 
