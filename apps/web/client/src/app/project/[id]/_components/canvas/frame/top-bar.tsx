@@ -5,11 +5,17 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
+import { useRef } from 'react';
 
 export const TopBar = observer(
     ({ frame }: { frame: WebFrame }) => {
         const editorEngine = useEditorEngine();
         const isSelected = editorEngine.frames.isSelected(frame.id);
+        const topBarRef = useRef<HTMLDivElement>(null);
+        const urlRef = useRef<HTMLDivElement>(null);
+        const topBarWidth = (topBarRef.current?.clientWidth ?? 0) * editorEngine.canvas.scale;
+        const urlWidth = (urlRef.current?.clientWidth ?? 0) * editorEngine.canvas.scale;
+        const shouldShowExternalLink = (topBarWidth - urlWidth) > 300;
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault();
@@ -67,6 +73,7 @@ export const TopBar = observer(
 
         return (
             <div
+                ref={topBarRef}
                 className={
                     cn(
                         'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
@@ -91,7 +98,9 @@ export const TopBar = observer(
                     <Button variant="ghost" size="icon" className="cursor-pointer" onClick={handleReload}>
                         <Icons.Reload />
                     </Button>
-                    <div className="text-small overflow-hidden text-ellipsis whitespace-nowrap">
+                    <div
+                        ref={urlRef}
+                        className="text-small overflow-hidden text-ellipsis whitespace-nowrap">
                         {frame.url}
                     </div>
                 </div>
@@ -102,7 +111,7 @@ export const TopBar = observer(
                     style={{
                         transform: `scale(${1 / editorEngine.canvas.scale})`,
                         transformOrigin: 'right center',
-                        opacity: editorEngine.canvas.scale < 0.20 ? 0 : 1,
+                        opacity: shouldShowExternalLink ? 1 : 0,
                     }}
                 >
                     <Button variant="ghost" size="icon">

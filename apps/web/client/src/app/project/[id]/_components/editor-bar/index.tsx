@@ -83,11 +83,12 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
         if (selectedTag === TAG_CATEGORIES.TEXT) {
             return <TextSelected availableWidth={availableWidth} />;
         }
-        if (selectedTag === TAG_CATEGORIES.DIV) {
-            return <DivSelected availableWidth={availableWidth} />;
-        }
-        return null;
+        return <DivSelected availableWidth={availableWidth} />;
     };
+
+    if (!selectedElement && !selectedFrame) {
+        return null;
+    }
 
     return (
         <DropdownManagerProvider>
