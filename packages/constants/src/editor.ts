@@ -70,3 +70,6 @@ export const DefaultSettings = {
 };
 
 export const DEFAULT_COLOR_NAME = 'DEFAULT';
+
+export const PRELOAD_URL =
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js';

@@ -3,6 +3,7 @@ import type { PageMetadata, PageNode } from '@onlook/models';
 import { generate, parse, types as t, traverse, type NodePath, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
 import { formatContent } from '../sandbox/helpers';
+import { PRELOAD_URL } from '@onlook/constants';
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     children,
@@ -1023,8 +1024,7 @@ export const injectPreloadScript = async (session: WebSocketSession) => {
 
     // Step 3: Inject script tag
     const routerType = await detectRouterTypeInSandbox(session);
-    const preLoadScript =
-        'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js';
+    const preLoadScript = PRELOAD_URL;
 
     if (!routerType || routerType.type !== 'app') {
         throw new Error('We currently support only Next.js App projects.');
