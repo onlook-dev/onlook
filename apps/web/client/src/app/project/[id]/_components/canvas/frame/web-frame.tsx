@@ -46,7 +46,7 @@ export const WebFrameComponent = observer(
         const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
         const isConnecting = useRef(false);
 
-        const reloadIframe = () => {
+        const undebouncedReloadIframe = () => {
             try {
                 const iframe = iframeRef.current;
                 if (!iframe) return;
@@ -56,6 +56,13 @@ export const WebFrameComponent = observer(
                 console.error('Failed to reload iframe', error);
             }
         };
+
+        const reloadIframe = debounce(() => {
+            undebouncedReloadIframe();
+        }, 1000, {
+            leading: true,
+        });
+
 
         const setupPenpalConnection = () => {
             if (!iframeRef.current?.contentWindow) {
@@ -107,7 +114,7 @@ export const WebFrameComponent = observer(
                     console.error(
                         `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
                     );
-                    debouncedReloadIframe();
+                    reloadIframe();
                     return;
                 }
                 const remote = child as unknown as PenpalChildMethods;
@@ -123,7 +130,7 @@ export const WebFrameComponent = observer(
                     `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
                     error,
                 );
-                debouncedReloadIframe();
+                reloadIframe();
             });
         };
 
@@ -136,7 +143,7 @@ export const WebFrameComponent = observer(
                     return method(...args);
                 } catch (error) {
                     console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Method failed:`, error);
-                    debouncedReloadIframe();
+                    reloadIframe();
                     throw error;
                 }
             };
@@ -239,10 +246,6 @@ export const WebFrameComponent = observer(
                 isConnecting.current = false;
             };
         }, []);
-
-        const debouncedReloadIframe = debounce(() => {
-            reloadIframe();
-        }, 1000);
 
         return (
             <div className="relative">
