@@ -17,3 +17,4 @@ export * from './sandbox/';
 export * from './style/';
 export * from './usage/';
 export * from './user/';
+export * from './font/';

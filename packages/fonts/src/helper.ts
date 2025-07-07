@@ -1,5 +1,6 @@
-import type { Font } from '@onlook/models';
+import type { Font, RawFont } from '@onlook/models';
 import { types as t, type NodePath, type t as T } from '@onlook/parser';
+import { camelCase } from 'lodash';
 
 const FONT_WEIGHT_REGEX =
     /font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)/;
@@ -329,4 +330,31 @@ export function isValidLocalFontDeclaration(declarator: T.VariableDeclarator, fo
         declarator.init.arguments.length > 0 &&
         t.isObjectExpression(declarator.init.arguments[0])
     );
+}
+
+export function convertRawFont(font: RawFont): Font {
+    return {
+        ...font,
+        weight: font.weights,
+        styles: font.styles || [],
+        variable: `--font-${font.id}`,
+    };
+}
+
+export function declareFont(font: Font): T.ExportNamedDeclaration {
+    const fontName = camelCase(font.id);
+    const importName = font.family.replace(/\s+/g, '_');
+    // Create the AST nodes for the new font
+    const fontConfigObject = createFontConfigAst(font);
+
+    const fontDeclaration = t.variableDeclaration('const', [
+        t.variableDeclarator(
+            t.identifier(fontName),
+            t.callExpression(t.identifier(importName), [fontConfigObject]),
+        ),
+    ]);
+
+    const exportDeclaration = t.exportNamedDeclaration(fontDeclaration, []);
+
+    return exportDeclaration;
 }
