@@ -1,4 +1,3 @@
-import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import type { LayerNode, TemplateNode } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -89,6 +88,11 @@ export class AstManager {
 
         if (templateNode.coreElementType) {
             node.coreElementType = templateNode.coreElementType;
+        }
+
+        if (!frame.view) {
+            console.error('No frame view found');
+            return;
         }
 
         frame.view.setElementType(
@@ -183,12 +187,12 @@ export class AstManager {
     }
 
     updateElementInstance(frameId: string, domId: string, instanceId: string, component: string) {
-        const frame = this.editorEngine.frames.get(frameId);
-        if (!frame) {
-            console.warn('Failed to updateElementInstanceId: Frame not found');
+        const frameData = this.editorEngine.frames.get(frameId);
+        if (!frameData?.view) {
+            console.error('Failed to updateElementInstanceId: Frame view not found');
             return;
         }
-        frame.view.updateElementInstance(domId, instanceId, component);
+        frameData.view.updateElementInstance(domId, instanceId, component);
     }
 
     clear() {

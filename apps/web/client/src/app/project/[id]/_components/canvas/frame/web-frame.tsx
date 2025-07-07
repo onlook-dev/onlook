@@ -226,7 +226,7 @@ export const WebFrameComponent = observer(
             };
 
             // Register the iframe with the editor engine
-            editorEngine.frames.register(frame, iframe as WebFrameView);
+            editorEngine.frames.registerView(frame, iframe as WebFrameView);
 
             return Object.assign(iframe, {
                 ...syncMethods,

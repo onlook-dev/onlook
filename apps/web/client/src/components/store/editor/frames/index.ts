@@ -1,23 +1,35 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
 import { api } from '@/trpc/client';
-import { sendAnalytics } from '@/utils/analytics';
 import { fromFrame } from '@onlook/db';
 import { FrameType, type Frame, type WebFrame } from '@onlook/models';
+import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
-import { FrameImpl } from './frame';
 
 export interface FrameData {
     frame: Frame;
-    view: WebFrameView;
+    view: WebFrameView | null;
     selected: boolean;
 }
 
+function roundDimensions(frame: WebFrame): WebFrame {
+    return {
+        ...frame,
+        position: {
+            x: Math.round(frame.position.x),
+            y: Math.round(frame.position.y),
+        },
+        dimension: {
+            width: Math.round(frame.dimension.width),
+            height: Math.round(frame.dimension.height),
+        },
+    };
+}
+
 export class FramesManager {
-    private frameIdToData = new Map<string, FrameData>();
+    private _frameIdToData = new Map<string, FrameData>();
     private disposers: Array<() => void> = [];
-    private _frames: FrameImpl[] = [];
 
     constructor(
         private editorEngine: EditorEngine,
@@ -26,21 +38,12 @@ export class FramesManager {
     }
 
     private validateFrameData(id: string, operation: string): FrameData | null {
-        const data = this.frameIdToData.get(id);
+        const data = this._frameIdToData.get(id);
         if (!data) {
             console.error(`Frame not found for ${operation}`, id);
             return null;
         }
         return data;
-    }
-
-    private validateFrame(id: string, operation: string): FrameImpl | null {
-        const frame = this.frames.find((f) => f.id === id);
-        if (!frame) {
-            console.error(`Frame not found for ${operation}`, id);
-            return null;
-        }
-        return frame;
     }
 
     private async getProjectCanvas() {
@@ -53,55 +56,45 @@ export class FramesManager {
     }
 
     private updateFrameSelection(id: string, selected: boolean): void {
-        const data = this.frameIdToData.get(id);
+        const data = this._frameIdToData.get(id);
         if (data) {
             data.selected = selected;
-            this.frameIdToData.set(id, data);
+            this._frameIdToData.set(id, data);
         }
     }
 
-    private trackFrameAction(action: 'created' | 'deleted' | 'duplicate'): void {
-        sendAnalytics(`window ${action}`);
-    }
-
     applyFrames(frames: Frame[]) {
-        this.frames = frames.map((frame) => FrameImpl.fromJSON(frame));
-    }
-
-    get frames() {
-        return this._frames;
-    }
-
-    set frames(frames: FrameImpl[]) {
-        this._frames = frames;
+        for (const frame of frames) {
+            this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
+        }
     }
 
     get selected(): FrameData[] {
-        return Array.from(this.frameIdToData.values()).filter((w) => w.selected);
+        return Array.from(this._frameIdToData.values()).filter((w) => w.selected);
     }
 
     getAll(): FrameData[] {
-        return Array.from(this.frameIdToData.values());
+        return Array.from(this._frameIdToData.values());
     }
 
     get(id: string): FrameData | undefined {
-        return this.frameIdToData.get(id);
+        return this._frameIdToData.get(id);
     }
 
-    register(frame: Frame, view: WebFrameView) {
-        this.frameIdToData.set(frame.id, { frame, view, selected: false });
+    registerView(frame: Frame, view: WebFrameView) {
+        this._frameIdToData.set(frame.id, { frame, view, selected: false });
     }
 
     deregister(frame: Frame) {
-        this.frameIdToData.delete(frame.id);
+        this._frameIdToData.delete(frame.id);
     }
 
     deregisterAll() {
-        this.frameIdToData.clear();
+        this._frameIdToData.clear();
     }
 
     isSelected(id: string) {
-        return this.frameIdToData.get(id)?.selected ?? false;
+        return this._frameIdToData.get(id)?.selected ?? false;
     }
 
     select(frames: Frame[]) {
@@ -119,14 +112,14 @@ export class FramesManager {
     }
 
     deselectAll() {
-        for (const [id] of this.frameIdToData) {
+        for (const [id] of this._frameIdToData) {
             this.updateFrameSelection(id, false);
         }
         this.notify();
     }
 
     private notify() {
-        this.frameIdToData = new Map(this.frameIdToData);
+        this._frameIdToData = new Map(this._frameIdToData);
     }
 
     clear() {
@@ -136,28 +129,21 @@ export class FramesManager {
     }
 
     disposeFrame(frameId: string) {
-        this.frameIdToData.delete(frameId);
+        this._frameIdToData.delete(frameId);
         this.editorEngine?.ast?.mappings?.remove(frameId);
     }
 
-    reloadAll() {
+    reloadAllViews() {
         for (const frameData of this.getAll()) {
-            frameData.view.reload();
+            frameData.view?.reload();
         }
     }
 
-    reload(id: string) {
+    reloadView(id: string) {
         const frameData = this.validateFrameData(id, 'reload');
         if (!frameData) return;
 
-        frameData.view.reload();
-    }
-
-    screenshot(id: string) {
-        const frameData = this.validateFrameData(id, 'screenshot');
-        if (!frameData) return;
-
-        // frameData.view.screenshot();
+        frameData.view?.reload();
     }
 
     async delete(id: string) {
@@ -175,8 +161,7 @@ export class FramesManager {
 
         if (success) {
             this.disposeFrame(data.frame.id);
-            this.frames = this.frames.filter((f) => f.id !== id);
-            this.trackFrameAction('deleted');
+            this._frameIdToData.delete(id);
         } else {
             console.error('Failed to delete frame');
         }
@@ -187,12 +172,11 @@ export class FramesManager {
         if (!canvas) return;
 
         const success = await api.frame.create.mutate(
-            fromFrame(canvas.id, this.roundDimensions(frame)),
+            fromFrame(canvas.id, roundDimensions(frame)),
         );
 
         if (success) {
-            this.frames.push(FrameImpl.fromJSON(frame));
-            this.trackFrameAction('created');
+            this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
         } else {
             console.error('Failed to create frame');
         }
@@ -221,21 +205,15 @@ export class FramesManager {
         };
 
         await this.create(newFrame);
-        this.trackFrameAction('duplicate');
     }
 
     updateLocally(id: string, newFrame: Partial<Frame>) {
-        const frame = this.validateFrame(id, 'save');
-        if (!frame) return;
 
-
-        const frameImpl = this.validateFrame(id, 'update');
-        if (!frameImpl) return;
-
-        frameImpl.update(newFrame);
     }
 
-    async updateAndSaveToStorage(frame: WebFrame) {
+    updateAndSaveToStorage = debounce(this.undebouncedUpdateAndSaveToStorage, 1000);
+
+    async undebouncedUpdateAndSaveToStorage(frame: WebFrame) {
         try {
             const dbFrame = await api.frame.get.query({
                 frameId: frame.id,
@@ -249,7 +227,7 @@ export class FramesManager {
             const canvas = await this.getProjectCanvas();
             if (!canvas) return;
 
-            const frameToUpdate = fromFrame(canvas.id, this.roundDimensions(frame));
+            const frameToUpdate = fromFrame(canvas.id, roundDimensions(frame));
             frameToUpdate.id = dbFrame.id;
 
             const success = await api.frame.update.mutate(frameToUpdate);
@@ -285,19 +263,5 @@ export class FramesManager {
         for (const frame of this.selected) {
             this.delete(frame.frame.id);
         }
-    }
-
-    roundDimensions(frame: WebFrame): WebFrame {
-        return {
-            ...frame,
-            position: {
-                x: Math.round(frame.position.x),
-                y: Math.round(frame.position.y),
-            },
-            dimension: {
-                width: Math.round(frame.dimension.width),
-                height: Math.round(frame.dimension.height),
-            },
-        };
     }
 }

@@ -28,8 +28,8 @@ export class ElementsManager {
 
     mouseover(domEl: DomElement) {
         const frameData = this.editorEngine.frames.get(domEl.frameId);
-        if (!frameData) {
-            console.error('Frame data not found');
+        if (!frameData?.view) {
+            console.error('No frame view found');
             return;
         }
         if (this._hovered?.domId && this._hovered.domId === domEl.domId) {
@@ -70,6 +70,10 @@ export class ElementsManager {
                 continue;
             }
             const { view } = frameData;
+            if (!view) {
+                console.error('No frame view found');
+                continue;
+            }
             const adjustedRect = adaptRectToCanvas(domEl.rect, view);
             const isComponent = !!domEl.instanceId;
             this.editorEngine.overlay.state.addClickRect(
@@ -104,8 +108,8 @@ export class ElementsManager {
         for (const selectedEl of selected) {
             const frameId = selectedEl.frameId;
             const frameData = this.editorEngine.frames.get(frameId);
-            if (!frameData) {
-                console.error('Frame data not found');
+            if (!frameData?.view) {
+                console.error('No frame view found');
                 return;
             }
             const { shouldDelete, error } = await this.shouldDelete(selectedEl, frameData);
@@ -154,6 +158,14 @@ export class ElementsManager {
         const instanceId = selectedEl.instanceId;
 
         if (!instanceId) {
+            if (!frameData.view) {
+                console.error('No frame view found');
+                return {
+                    shouldDelete: false,
+                    error: 'No frame view found',
+                };
+            }
+
             const result = await frameData.view.getElementType(selectedEl.domId);
             const { dynamicType, coreType } = result;
 

@@ -1,6 +1,7 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import { DefaultSettings, EditorAttributes } from '@onlook/constants';
 import type {
+    DomElement,
     DropElementProperties,
     ElementPosition,
     ImageContentData,
@@ -12,8 +13,8 @@ import {
     type ActionLocation,
     type ActionTarget,
     type InsertElementAction,
-    type UpdateStyleAction,
     type RemoveElementAction,
+    type UpdateStyleAction,
 } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
 import { colors } from '@onlook/ui/tokens';
@@ -22,13 +23,12 @@ import type React from 'react';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 import { getRelativeMousePositionToFrameView } from '../overlay/utils';
-import type { DomElement } from '@onlook/models';
 
 export class InsertManager {
     isDrawing = false;
     private drawOrigin: ElementPosition | undefined;
 
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) { }
 
     getDefaultProperties(mode: EditorMode): DropElementProperties {
         switch (mode) {
@@ -172,14 +172,14 @@ export class InsertManager {
         const styles: Record<string, string> =
             mode === EditorMode.INSERT_TEXT
                 ? {
-                      width: `${width}px`,
-                      height: `${height}px`,
-                  }
+                    width: `${width}px`,
+                    height: `${height}px`,
+                }
                 : {
-                      width: `${width}px`,
-                      height: `${height}px`,
-                      backgroundColor: colors.blue[100],
-                  };
+                    width: `${width}px`,
+                    height: `${height}px`,
+                    backgroundColor: colors.blue[100],
+                };
 
         const actionElement: ActionElement = {
             domId,
@@ -220,6 +220,11 @@ export class InsertManager {
         imageData: ImageContentData,
         altKey: boolean = false,
     ) {
+        if (!frame.view) {
+            console.error('No frame view found');
+            return;
+        }
+
         const location = await frame.view.getInsertLocation(dropPosition.x, dropPosition.y);
 
         if (!location) {
@@ -258,6 +263,11 @@ export class InsertManager {
         targetElement: DomElement,
         imageData: ImageContentData,
     ) {
+        if (!frame.view) {
+            console.error('No frame view found');
+            return;
+        }
+
         const actionElement = await frame.view.getActionElement(targetElement.domId);
         if (!actionElement) {
             console.error('Failed to get action element for target');
@@ -428,6 +438,11 @@ export class InsertManager {
         dropPosition: { x: number; y: number },
         properties: DropElementProperties,
     ) {
+        if (!frame.view) {
+            console.error('No frame view found');
+            return;
+        }
+
         const location = await frame.view.getInsertLocation(dropPosition.x, dropPosition.y);
 
         if (!location) {

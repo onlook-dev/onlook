@@ -52,7 +52,10 @@ export class FrameEventManager {
         const stillValidElements = await Promise.all(
             selectedElements.map(async (el) => {
                 const frameData = this.editorEngine.frames.get(el.frameId);
-                if (!frameData) return null;
+                if (!frameData?.view) {
+                    console.error('No frame view found');
+                    return null;
+                }
                 try {
                     const domEl = await frameData.view.getElementByDomId(el.domId, false);
                     return domEl ? el : null;
