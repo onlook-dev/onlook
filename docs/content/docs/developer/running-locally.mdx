@@ -13,7 +13,7 @@ These are the prerequisites for running Onlook locally.
 
 - [Bun](https://bun.sh) - Enables running the monorepo
 - [Docker](https://docs.docker.com/get-started/get-docker/) - Enables running the Supabase backend
-- [Node with `nvm`](https://github.com/nvm-sh/nvm) – Required by Next.js (tested version: `v20.16.0`)
+- [Node](https://nodejs.org/en/download/) – Minimum version `v20.16.0` or latest
 
 ## Setup
 
@@ -111,9 +111,14 @@ Codesandbox may ask you to confirm to proceed. You can click the button by switc
 
 #### Refreshing pages
 
-If you encounter issues with reloading pages and being unauthenticated then check your node version, install a more recent version, re-install node dependencies and restart the project.
+If you encounter issues with reloading pages and being unauthenticated then check your node version, install a more recent version, re-install dependencies and restart the project.
+Minimum version `v20.16.0` or latest is recommended.
 
-Version `v20.11.0` of Node has shown this issue in the past.
+Avoid version `v20.11.0` of Node as it has shown this issue in the past.
+
+```bash
+node --version
+```
 
 ## What's Next?
 
