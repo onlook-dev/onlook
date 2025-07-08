@@ -2,13 +2,12 @@
 
 import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Carousel } from './carousel';
 import { ProjectInfo } from './info';
 
-export const SelectProject = observer(() => {
+export const SelectProject = () => {
     const { data: fetchedProjects, refetch, isLoading } = api.project.list.useQuery();
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
     const [direction, setDirection] = useState(0);
@@ -64,4 +63,4 @@ export const SelectProject = observer(() => {
             )}
         </div>
     );
-});
+};
