@@ -21,7 +21,7 @@ export const OverflowMenu = ({ isOpen, onOpenChange, overflowGroups, visibleCoun
     return (
         <>
             {visibleCount > 0 && <InputSeparator />}
-            <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+            <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"
