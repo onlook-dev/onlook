@@ -290,6 +290,10 @@ export function validateFontImportAndExport(
     importName: string,
     fontName: string,
 ): { hasGoogleFontImport: boolean; hasImportName: boolean; hasFontExport: boolean } {
+    if (!content) {
+        return { hasGoogleFontImport: false, hasImportName: false, hasFontExport: false };
+    }
+
     const ast = parse(content, {
         sourceType: 'module',
         plugins: ['typescript', 'jsx'],
