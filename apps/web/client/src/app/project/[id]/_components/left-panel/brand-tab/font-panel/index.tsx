@@ -144,15 +144,29 @@ const FontPanel = observer(() => {
                     <div className="flex flex-col gap-1 pt-6 pb-3 border-b border-border">
                         {/* System Fonts Header */}
                         <div className="px-4">
-                            <h3 className="text-sm font-normal text-muted-foreground">
-                                Added fonts
-                            </h3>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-normal text-muted-foreground">
+                                    Added fonts
+                                </h3>
+                                {fontManager.isScanning && (
+                                    <Icons.LoadingSpinner className="h-3 w-3 animate-spin text-muted-foreground" />
+                                )}
+                            </div>
                         </div>
 
                         {/* System Font List */}
                         <div className="px-4">
                             <div className="flex flex-col divide-y divide-border">
-                                {!fontManager.fonts.length ? (
+                                {fontManager.isScanning ? (
+                                    <div className="flex justify-center items-center border-dashed border-default border-2 rounded-lg h-20 my-2">
+                                        <div className="flex items-center gap-2">
+                                            <Icons.LoadingSpinner className="h-4 w-4 animate-spin text-muted-foreground" />
+                                            <span className="text-sm text-muted-foreground">
+                                                Scanning fonts...
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : !fontManager.fonts.length ? (
                                     <div className="flex justify-center items-center border-dashed border-default border-2 rounded-lg h-20 my-2">
                                         <span className="text-sm text-muted-foreground">
                                             No fonts added
