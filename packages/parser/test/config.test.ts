@@ -43,4 +43,20 @@ describe('addScriptConfig', () => {
         expect(result).toContain('<head>');
         expect(result).toContain(PRELOAD_URL);
     });
+
+    test('handles self-closing <head /> tag', async () => {
+        const code = `${baseImport}export default function Document() {\n  return (\n    <html>\n      <head />\n      <body>\n        <main />\n      </body>\n    </html>\n  );\n}`;
+        const ast = getAstFromContent(code);
+        if (!ast) throw new Error('Failed to parse input code');
+        const resultAst = injectPreloadScript(ast);
+        const result = await getContentFromAst(resultAst);
+        expect(result).toMatch(importScriptRegex);
+        expect(result).toContain(PRELOAD_URL);
+        // Should only be one Script import
+        expect(result.match(importScriptRegex)?.length).toBe(1);
+        // Should only be one Script tag in head
+        expect(result.match(new RegExp(PRELOAD_URL, 'g'))?.length).toBe(1);
+        // should not contain self-closing head
+        expect(result).not.toContain('<head />');
+    });
 });

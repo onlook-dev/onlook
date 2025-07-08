@@ -285,6 +285,11 @@ function addScriptToHead(headElement: T.JSXElement) {
             true,
         );
 
+        if (headElement.openingElement.selfClosing) {
+            headElement.openingElement.selfClosing = false;
+            headElement.closingElement = t.jsxClosingElement(headElement.openingElement.name);
+        }
+
         // Add the Script element as the first child of head
         if (!headElement.children) {
             headElement.children = [];
