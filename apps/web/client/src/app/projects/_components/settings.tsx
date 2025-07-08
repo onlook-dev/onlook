@@ -23,7 +23,7 @@ import { cn } from '@onlook/ui/utils';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
-export function Settings({ project }: { project: Project }) {
+export function Settings({ project, refetch }: { project: Project; refetch: () => void }) {
     const t = useTranslations();
     const { mutate: deleteProject } = api.project.delete.useMutation();
     const { mutate: updateProject } = api.project.update.useMutation();
@@ -36,9 +36,10 @@ export function Settings({ project }: { project: Project }) {
         setProjectName(project.name);
     }, [project.name]);
 
-    const handleDeleteProject = () => {
-        deleteProject({ id: project.id });
+    const handleDeleteProject = async () => {
+        await deleteProject({ id: project.id });
         setShowDeleteDialog(false);
+        refetch();
     };
 
     const handleRenameProject = () => {

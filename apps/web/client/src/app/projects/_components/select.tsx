@@ -9,7 +9,7 @@ import { Carousel } from './carousel';
 import { ProjectInfo } from './info';
 
 export const SelectProject = observer(() => {
-    const { data: fetchedProjects, isLoading } = api.project.list.useQuery();
+    const { data: fetchedProjects, refetch, isLoading } = api.project.list.useQuery();
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
@@ -57,7 +57,7 @@ export const SelectProject = observer(() => {
                     </div>
                     <div className="w-2/5 flex flex-col justify-center items-start p-4 mr-10 gap-6">
                         {projects[currentProjectIndex] && (
-                            <ProjectInfo project={projects[currentProjectIndex]} direction={direction} />
+                            <ProjectInfo project={projects[currentProjectIndex]} direction={direction} refetch={refetch} />
                         )}
                     </div>
                 </>
