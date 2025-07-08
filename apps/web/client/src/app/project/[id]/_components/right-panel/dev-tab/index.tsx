@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { CodeRange, EditorFile } from '@/components/store/editor/dev';
 import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
-import { useCleanupOnPageChange } from '@/hooks/use-subscription-cleanup';
 import { EditorView } from '@codemirror/view';
 import { Button } from '@onlook/ui/button';
 import {
@@ -25,7 +24,6 @@ import { FolderModal } from './folder-modal';
 
 export const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const { addSubscription } = useCleanupOnPageChange();
     const ide = editorEngine.ide;
     const [isFilesVisible, setIsFilesVisible] = useState(true);
     const [fileModalOpen, setFileModalOpen] = useState(false);
@@ -211,10 +209,10 @@ export const DevTab = observer(() => {
 
         const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', handleFileEvent);
 
-        // Use the subscription cleanup hook
-        addSubscription('dev-tab', unsubscribe);
-
-    }, [editorEngine.sandbox, ide.activeFile, addSubscription]);
+        return () => {
+            unsubscribe();
+        };
+    }, [editorEngine.sandbox, ide.activeFile]);
 
     // Load files when sandbox becomes connected
     useEffect(() => {
