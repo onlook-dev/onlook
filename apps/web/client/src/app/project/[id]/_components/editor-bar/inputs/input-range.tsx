@@ -127,7 +127,7 @@ export const InputRange = ({
                         }}
                     />
 
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer">
                             {unit === 'px' ? '' : unit}
                         </DropdownMenuTrigger>

@@ -136,7 +136,7 @@ export const BrandPalletGroup = ({
                     </span>
                 )}
                 {!isDefaultPalette && (
-                    <DropdownMenu>
+                    <DropdownMenu modal={false}>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
@@ -205,7 +205,7 @@ export const BrandPalletGroup = ({
                                             style={{ backgroundColor: getColorValue(color) }}
                                         />
                                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 [&[data-state=open]]:opacity-100">
-                                            <DropdownMenu>
+                                            <DropdownMenu modal={false}>
                                                 <DropdownMenuTrigger asChild>
                                                     <Button
                                                         variant="ghost"

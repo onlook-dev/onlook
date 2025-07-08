@@ -4,13 +4,13 @@ import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
-import { ColorPickerContent } from '../inputs/color-picker';
 import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
+import { ColorPickerContent } from '../inputs/color-picker';
 import { hasGradient } from '../utils/gradient';
-import { observer } from 'mobx-react-lite';
 
 export const ColorBackground = observer(() => {
     const editorEngine = useEditorEngine();
@@ -37,7 +37,7 @@ export const ColorBackground = observer(() => {
 
     return (
         <div className="flex flex-col gap-2">
-            <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+            <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
                 <HoverOnlyTooltip
                     content="Background Color"
                     side="bottom"

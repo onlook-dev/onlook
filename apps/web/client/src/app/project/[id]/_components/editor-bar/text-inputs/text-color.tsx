@@ -3,18 +3,18 @@
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { observer } from 'mobx-react-lite';
 import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
+import { useTextControl } from '../hooks/use-text-control';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { ColorPickerContent } from '../inputs/color-picker';
-import { useTextControl } from '../hooks/use-text-control';
-import { observer } from 'mobx-react-lite';
 
 export const TextColor = observer(
     () => {
         const { handleTextColorChange, textState } = useTextControl();
-        const { isOpen, onOpenChange } = useDropdownControl({ 
-            id: 'text-color-dropdown' 
+        const { isOpen, onOpenChange } = useDropdownControl({
+            id: 'text-color-dropdown'
         });
 
         const { handleColorUpdate, handleColorUpdateEnd, tempColor } = useColorUpdate({
@@ -24,7 +24,7 @@ export const TextColor = observer(
         });
 
         return (
-            <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+            <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
                 <HoverOnlyTooltip
                     content="Text Color"
                     side="bottom"

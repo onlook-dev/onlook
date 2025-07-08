@@ -7,20 +7,20 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
+import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
-import { observer } from "mobx-react-lite";
 
 export const Padding = observer(() => {
     const [activeTab, setActiveTab] = useState('all');
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('padding');
-    
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'padding-dropdown' 
+
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'padding-dropdown'
     });
     const getPaddingIcon = () => {
         const top = boxState.paddingTop.num ?? 0;
@@ -31,7 +31,7 @@ export const Padding = observer(() => {
         if (top === 0 && right === 0 && bottom === 0 && left === 0) {
             return Icons.PaddingEmpty;
         }
-        
+
         const allSame = top === right && right === bottom && bottom === left && top !== 0;
         if (allSame) {
             return Icons.PaddingFull;
@@ -69,7 +69,7 @@ export const Padding = observer(() => {
 
         // Get all non-zero values
         const nonZeroValues = [top, right, bottom, left].filter(val => val !== 0);
-        
+
         // If all non-zero values are the same
         if (nonZeroValues.length > 0 && nonZeroValues.every(val => val === nonZeroValues[0])) {
             return boxState.padding.unit === 'px' ? `${nonZeroValues[0]}` : `${boxState.padding.value}`;
@@ -85,7 +85,7 @@ export const Padding = observer(() => {
 
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Padding" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button

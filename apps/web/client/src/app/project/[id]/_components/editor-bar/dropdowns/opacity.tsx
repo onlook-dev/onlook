@@ -3,10 +3,10 @@
 import { useEditorEngine } from "@/components/store/editor";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
 import { Input } from "@onlook/ui/input";
+import { observer } from "mobx-react-lite";
 import { useEffect, useRef, useState } from "react";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
-import { observer } from "mobx-react-lite";
 
 const OPACITY_PRESETS = [100, 80, 75, 50, 25, 10, 0];
 
@@ -42,9 +42,9 @@ const useOpacityControl = () => {
 export const Opacity = observer(() => {
     const { opacity, handleOpacityChange } = useOpacityControl();
     const inputRef = useRef<HTMLInputElement>(null);
-    
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'opacity-dropdown' 
+
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'opacity-dropdown'
     });
 
     const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +61,7 @@ export const Opacity = observer(() => {
     };
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Layer Opacity" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <div className="text-muted-foreground border-border/0 group h-8 rounded-lg hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white" onClick={handleInputAreaClick}>

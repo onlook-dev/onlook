@@ -1,6 +1,5 @@
 'use client';
 
-import * as React from "react";
 import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
@@ -76,10 +75,10 @@ export const Radius = observer(() => {
         const bottomRight = boxState.borderBottomRightRadius.num ?? 0;
         const bottomLeft = boxState.borderBottomLeftRadius.num ?? 0;
 
-        if(boxState.borderRadius.num === 9999){
+        if (boxState.borderRadius.num === 9999) {
             return 'Full';
         }
-        
+
         // If all are zero, return null
         if (topLeft === 0 && topRight === 0 && bottomRight === 0 && bottomLeft === 0) {
             return null;
@@ -87,7 +86,7 @@ export const Radius = observer(() => {
 
         // Get all non-zero values
         const nonZeroValues = [topLeft, topRight, bottomRight, bottomLeft].filter(val => val !== 0);
-        
+
         // If all non-zero values are the same
         if (nonZeroValues.length > 0 && nonZeroValues.every(val => val === nonZeroValues[0])) {
             return boxState.borderRadius.unit === 'px' ? `${nonZeroValues[0]}` : `${boxState.borderRadius.value}`;
@@ -99,12 +98,9 @@ export const Radius = observer(() => {
 
     const RadiusIcon = getRadiusIcon();
     const radiusValue = getRadiusDisplay();
-    const hasRadius = radiusValue !== null;
-
-    
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Radius" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
@@ -112,7 +108,7 @@ export const Radius = observer(() => {
                         size="toolbar"
                         className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border gap-1 flex cursor-pointer items-center border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
                     >
-                         <RadiusIcon className="h-4 min-h-4 w-4 min-w-4" />
+                        <RadiusIcon className="h-4 min-h-4 w-4 min-w-4" />
                         {radiusValue && (
                             <span className="text-small text-white">{radiusValue}</span>
                         )}

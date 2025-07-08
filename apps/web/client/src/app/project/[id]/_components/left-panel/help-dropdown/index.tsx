@@ -21,7 +21,7 @@ export const HelpDropdown = observer(() => {
     const t = useTranslations();
 
     return (
-        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen} modal={false}>
             <DropdownMenuTrigger asChild>
                 <button className="w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 text-muted-foreground hover:text-foreground">
                     <Icons.QuestionMarkCircled className="w-5 h-5" />

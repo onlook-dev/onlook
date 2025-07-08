@@ -14,12 +14,12 @@ export const Height = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
         useDimensionControl('height');
 
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'height-dropdown' 
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'height-dropdown'
     });
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
