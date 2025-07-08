@@ -85,4 +85,53 @@ export default function Document() {
         expect(result.match(importScriptRegex)?.length).toBe(1);
         expect(result.match(new RegExp(PRELOAD_SCRIPT_SRC, 'g'))?.length).toBe(1);
     });
+
+    test('removes deprecated script', async () => {
+        const code = `${baseImport}import Script from 'next/script';
+export default function Document() {
+  return (
+    <html lang="en" suppressHydrationWarning data-oid="o7v_4be">
+      <head data-oid="795jc-7">
+        <Script
+          type="module"
+          src="https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js"
+          data-oid="m4pfglr"
+        />
+
+        <Script
+          type="module"
+          src="https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js"
+          data-oid="yujojk-"
+        />
+      </head>
+      <body
+        className={'h-screen antialiased'}
+        data-oid="lb.txaa"
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+          data-oid="3tbrd3_"
+        >
+          <Navbar data-oid="ctrg0y3" />
+          <main className="" data-oid="j990_9w">
+            {children}
+          </main>
+          <Footer data-oid="j7nr0na" />
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}`;
+        const ast = getAstFromContent(code);
+        if (!ast) throw new Error('Failed to parse input code');
+        const resultAst = injectPreloadScript(ast);
+        const result = await getContentFromAst(resultAst);
+        expect(result).not.toContain(DEPRECATED_PRELOAD_SCRIPT_SRC);
+        expect(result).toContain(PRELOAD_SCRIPT_SRC);
+        expect(result.match(importScriptRegex)?.length).toBe(1);
+        expect(result.match(new RegExp(PRELOAD_SCRIPT_SRC, 'g'))?.length).toBe(1);
+    });
 });

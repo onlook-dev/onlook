@@ -221,6 +221,7 @@ export const injectPreloadScript = (ast: T.File): T.File => {
                         attr.value.value.includes(DEPRECATED_PRELOAD_SCRIPT_SRC),
                 )
             ) {
+                console.log('removing deprecated script');
                 path.remove();
                 return;
             }
