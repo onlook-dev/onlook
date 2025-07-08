@@ -2,14 +2,13 @@
 
 import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Carousel } from './carousel';
 import { ProjectInfo } from './info';
 
-export const SelectProject = observer(() => {
-    const { data: fetchedProjects, isLoading } = api.project.list.useQuery();
+export const SelectProject = () => {
+    const { data: fetchedProjects, refetch, isLoading } = api.project.list.useQuery();
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
     const [direction, setDirection] = useState(0);
 
@@ -57,11 +56,11 @@ export const SelectProject = observer(() => {
                     </div>
                     <div className="w-2/5 flex flex-col justify-center items-start p-4 mr-10 gap-6">
                         {projects[currentProjectIndex] && (
-                            <ProjectInfo project={projects[currentProjectIndex]} direction={direction} />
+                            <ProjectInfo project={projects[currentProjectIndex]} direction={direction} refetch={refetch} />
                         )}
                     </div>
                 </>
             )}
         </div>
     );
-});
+};
