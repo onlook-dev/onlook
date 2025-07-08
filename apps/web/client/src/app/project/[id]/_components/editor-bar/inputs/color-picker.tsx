@@ -12,9 +12,9 @@ import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Color, toNormalCase, type Palette } from '@onlook/utility';
-import { useEffect, useRef, useState, useCallback } from 'react';
-import { HoverOnlyTooltip } from '../hover-tooltip';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGradientUpdate } from '../hooks/use-gradient-update';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 import { hasGradient } from '../utils/gradient';
 
 const ColorGroup = ({
@@ -168,18 +168,18 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             } else if (conicMatch && conicMatch[1]) {
                 const params = conicMatch[1];
                 const angleMatch = params.match(/from\s+(\d+)deg/);
-                
+
                 if (angleMatch && angleMatch[1]) {
                     angle = parseInt(angleMatch[1]);
                     stopsString = params.replace(/^from\s+\d+deg,?\s*/, '');
                 } else {
                     stopsString = params;
                 }
-                
+
                 // Parse stops first to check for angular pattern
                 const stopMatches = stopsString.split(/,(?![^()]*\))/);
                 const tempStops: { color: string; position: number }[] = [];
-                
+
                 stopMatches.forEach((stop, index) => {
                     const trimmed = stop.trim();
                     const match = trimmed.match(
@@ -193,22 +193,22 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         tempStops.push({ color, position });
                     }
                 });
-                
+
                 // Check if it's an angular gradient (has duplicate end color at 100%)
                 const firstStop = tempStops[0];
                 const lastStop = tempStops[tempStops.length - 1];
-                const isAngular = tempStops.length >= 3 && 
-                    firstStop && lastStop && 
-                    firstStop.color === lastStop.color && 
+                const isAngular = tempStops.length >= 3 &&
+                    firstStop && lastStop &&
+                    firstStop.color === lastStop.color &&
                     Math.abs(lastStop.position - 100) < 1;
-                
+
                 if (isAngular) {
                     type = 'angular';
                     // Remove the duplicate end color for angular gradients
                     tempStops.pop();
                     // Reconstruct stopsString without the duplicate
-                    stopsString = tempStops.map(stop => 
-                        stop.position === Math.round(stop.position) 
+                    stopsString = tempStops.map(stop =>
+                        stop.position === Math.round(stop.position)
                             ? `${stop.color} ${Math.round(stop.position)}%`
                             : `${stop.color} ${stop.position}%`
                     ).join(', ');
@@ -463,9 +463,9 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         const computedBackgroundImage = selectedElement
             ? editorEngine.style.selectedStyle?.styles.computed.backgroundImage
             : undefined;
-        
+
         const activeGradientSource = computedBackgroundImage || backgroundImage;
-        
+
         if (hasGradient(activeGradientSource)) {
             const parsed = parseGradientFromCSS(activeGradientSource!);
             if (parsed && parsed.stops.length > 0) {
@@ -542,6 +542,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     const handleRemoveColor = () => {
         if (hasGradient(backgroundImage)) {
             editorEngine.style.update('backgroundImage', 'none');
+            return;
         }
         const removeColorAction: TailwindColor = {
             name: 'remove',
@@ -598,7 +599,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             if (preset.type === 'linear') {
                 angle = parseInt(preset.css.match(/(\d+)deg/)?.[1] || '90');
             }
-            
+
             const newGradientState: GradientState = {
                 type: preset.type,
                 angle: angle,
@@ -754,19 +755,17 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         disabled={isColorRemoved(color)}
                     >
                         <button
-                            className={`p-1 rounded transition-colors ${
-                                isColorRemoved(color)
+                            className={`p-1 rounded transition-colors ${isColorRemoved(color)
                                     ? 'bg-background-secondary'
                                     : 'hover:bg-background-tertiary'
-                            }`}
+                                }`}
                             onClick={handleRemoveColor}
                         >
                             <Icons.SquareX
-                                className={`h-4 w-4 ${
-                                    isColorRemoved(color)
+                                className={`h-4 w-4 ${isColorRemoved(color)
                                         ? 'text-foreground-primary'
                                         : 'text-foreground-tertiary'
-                                }`}
+                                    }`}
                             />
                         </button>
                     </HoverOnlyTooltip>
@@ -864,11 +863,10 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                     <div className="flex flex-row items-center justify-between w-full px-2 py-1">
                         <span className="text-foreground-secondary text-small">Presets</span>
                         <button
-                            className={`px-1 py-1 text-xs transition-colors w-6 h-6 flex items-center justify-center rounded ${
-                                viewMode === 'grid'
+                            className={`px-1 py-1 text-xs transition-colors w-6 h-6 flex items-center justify-center rounded ${viewMode === 'grid'
                                     ? 'text-foreground-secondary hover:text-foreground-primary hover:bg-background-hover'
                                     : 'text-foreground-primary bg-background-secondary'
-                            }`}
+                                }`}
                             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                             title="Toggle view mode"
                         >

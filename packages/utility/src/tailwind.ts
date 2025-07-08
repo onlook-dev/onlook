@@ -1,5 +1,4 @@
 // @ts-nocheck
-
 export interface ResultCode {
     selectorName: string;
     resultVal: string;

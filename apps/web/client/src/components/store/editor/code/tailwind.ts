@@ -1,42 +1,14 @@
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { StyleChangeType, type StyleChange } from '@onlook/models/style';
 import { CssToTailwindTranslator, propertyMap } from '@onlook/utility';
-import { twMerge, type ClassNameValue } from 'tailwind-merge';
-
-export const customTwMerge = (...classLists: ClassNameValue[]): string => {
-    const classes: string[] = [];
-
-    const process = (c: ClassNameValue) => {
-        if (!c) return;
-        if (typeof c === 'string') {
-            classes.push(c);
-        } else if (Array.isArray(c)) {
-            c.forEach(process);
-        } else if (typeof c === 'object') {
-            Object.keys(c).forEach((key) => {
-                if ((c as Record<string, any>)[key]) {
-                    classes.push(key);
-                }
-            });
-        }
-    };
-
-    classLists.forEach(process);
-
-    const all = classes.join(' ').split(/\s+/).filter(Boolean);
-    const bgClasses = all.filter((c) => c.startsWith('bg-'));
-    const latestBgClass = bgClasses.pop();
-    const otherClasses = all.filter((c) => !c.startsWith('bg-'));
-
-    return twMerge(otherClasses.join(' '), latestBgClass);
-};
+import { twMerge } from 'tailwind-merge';
 
 export function addTailwindToRequest(
     request: CodeDiffRequest,
     styles: Record<string, StyleChange>,
 ): void {
     const newClasses = getTailwindClasses(request.oid, styles);
-    request.attributes['className'] = customTwMerge(request.attributes['className'] || '', newClasses);
+    request.attributes['className'] = twMerge(request.attributes['className'] || '', newClasses);
 }
 
 export function getTailwindClasses(oid: string, styles: Record<string, StyleChange>): string[] {

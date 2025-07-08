@@ -18,6 +18,7 @@ export * from './screenshot';
 export * from './string';
 export * from './tailwind';
 export * from './time';
+export * from './tw-merge';
 export * from './unit';
 export * from './urls';
 export * from './window-metadata';
