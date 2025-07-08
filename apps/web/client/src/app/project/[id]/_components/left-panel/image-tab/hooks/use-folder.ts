@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { WebSocketSession } from '@codesandbox/sdk';
+import type { SandboxSession } from '@codesandbox/sdk';
 import { useCallback, useState } from 'react';
 import type { FolderNode } from '../providers/types';
 
@@ -228,7 +228,7 @@ export const useFolder = () => {
         }
     }, [moveState, editorEngine]);
 
-    const moveFolderContents = async (folder: FolderNode, newPath: string, session: WebSocketSession) => {
+    const moveFolderContents = async (folder: FolderNode, newPath: string, session: SandboxSession) => {
         const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
         const gitkeepContent = '# This folder was created by Onlook\n';
         await session.fs.writeTextFile(gitkeepPath, gitkeepContent);
@@ -247,7 +247,7 @@ export const useFolder = () => {
         }
     };
 
-    const moveSubfolder = async (subfolder: FolderNode, newParentPath: string, session: WebSocketSession) => {
+    const moveSubfolder = async (subfolder: FolderNode, newParentPath: string, session: SandboxSession) => {
         const newSubfolderPath = `${newParentPath}/${subfolder.name}`;
         await moveFolderContents(subfolder, newSubfolderPath, session);
     };

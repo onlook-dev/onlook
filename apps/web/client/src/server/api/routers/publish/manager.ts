@@ -1,4 +1,4 @@
-import { WebSocketSession } from '@codesandbox/sdk';
+import type { SandboxSession } from '@codesandbox/sdk';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import type { deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
@@ -12,7 +12,7 @@ import type { z } from 'zod';
 
 export class PublishManager {
     constructor(
-        private readonly session: WebSocketSession,
+        private readonly session: SandboxSession,
     ) { }
 
     private get fileOps(): FileOperations {
@@ -338,7 +338,7 @@ export class PublishManager {
                 if (binaryContent) {
                     const base64String = btoa(
                         Array.from(binaryContent)
-                            .map((byte: number) => String.fromCharCode(byte))
+                            .map((byte: any) => String.fromCharCode(byte))
                             .join(''),
                     );
 

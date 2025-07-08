@@ -1,4 +1,4 @@
-import type { ReaddirEntry, WebSocketSession } from '@codesandbox/sdk';
+import type { ReaddirEntry, SandboxSession } from '@codesandbox/sdk';
 import type { PageMetadata, PageNode } from '@onlook/models';
 import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
@@ -194,7 +194,7 @@ const extractMetadata = async (content: string): Promise<PageMetadata | undefine
 };
 
 const scanAppDirectory = async (
-    session: WebSocketSession,
+    session: SandboxSession,
     dir: string,
     parentPath: string = '',
 ): Promise<PageNode[]> => {
@@ -312,7 +312,7 @@ const scanAppDirectory = async (
 };
 
 const scanPagesDirectory = async (
-    session: WebSocketSession,
+    session: SandboxSession,
     dir: string,
     parentPath: string = '',
 ): Promise<PageNode[]> => {
@@ -417,7 +417,7 @@ const scanPagesDirectory = async (
     return nodes;
 };
 
-export const scanPagesFromSandbox = async (session: WebSocketSession): Promise<PageNode[]> => {
+export const scanPagesFromSandbox = async (session: SandboxSession): Promise<PageNode[]> => {
     if (!session) {
         throw new Error('No sandbox session available');
     }
@@ -468,7 +468,7 @@ export const scanPagesFromSandbox = async (session: WebSocketSession): Promise<P
 };
 
 const detectRouterTypeInSandbox = async (
-    session: WebSocketSession,
+    session: SandboxSession,
 ): Promise<{ type: 'app' | 'pages'; basePath: string } | null> => {
     // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
@@ -520,7 +520,7 @@ const detectRouterTypeInSandbox = async (
 };
 
 // checks if file/directory exists
-const pathExists = async (session: WebSocketSession, filePath: string): Promise<boolean> => {
+const pathExists = async (session: SandboxSession, filePath: string): Promise<boolean> => {
     try {
         await session.fs.readdir(getDirName(filePath));
         const dirEntries = await session.fs.readdir(getDirName(filePath));
@@ -532,7 +532,7 @@ const pathExists = async (session: WebSocketSession, filePath: string): Promise<
 };
 
 const cleanupEmptyFolders = async (
-    session: WebSocketSession,
+    session: SandboxSession,
     folderPath: string,
 ): Promise<void> => {
     while (folderPath && folderPath !== getDirName(folderPath)) {
@@ -553,7 +553,7 @@ const cleanupEmptyFolders = async (
 };
 
 const getUniqueDir = async (
-    session: WebSocketSession,
+    session: SandboxSession,
     basePath: string,
     dirName: string,
     maxAttempts = 100,
@@ -575,15 +575,8 @@ const getUniqueDir = async (
     throw new Error(`Unable to find available directory name for ${dirName}`);
 };
 
-const createDirectory = async (session: WebSocketSession, dirPath: string): Promise<void> => {
-    // Creates a temporary file to ensure directory structure exists, then remove it
-    const tempFile = joinPath(dirPath, '.temp');
-    await session.fs.writeTextFile(tempFile, '');
-    await session.fs.remove(tempFile);
-};
-
 export const createPageInSandbox = async (
-    session: WebSocketSession,
+    session: SandboxSession,
     pagePath: string,
 ): Promise<void> => {
     try {
@@ -620,7 +613,7 @@ export const createPageInSandbox = async (
 };
 
 export const deletePageInSandbox = async (
-    session: WebSocketSession,
+    session: SandboxSession,
     pagePath: string,
     isDir: boolean,
 ): Promise<void> => {
@@ -666,7 +659,7 @@ export const deletePageInSandbox = async (
 };
 
 export const renamePageInSandbox = async (
-    session: WebSocketSession,
+    session: SandboxSession,
     oldPath: string,
     newName: string,
 ): Promise<void> => {
@@ -709,7 +702,7 @@ export const renamePageInSandbox = async (
 };
 
 export const duplicatePageInSandbox = async (
-    session: WebSocketSession,
+    session: SandboxSession,
     sourcePath: string,
     targetPath: string,
 ): Promise<void> => {
@@ -774,7 +767,7 @@ export const duplicatePageInSandbox = async (
 };
 
 export const updatePageMetadataInSandbox = async (
-    session: WebSocketSession,
+    session: SandboxSession,
     pagePath: string,
     metadata: PageMetadata,
 ): Promise<void> => {
@@ -820,7 +813,7 @@ export const updatePageMetadataInSandbox = async (
 };
 
 async function updateMetadataInFile(
-    session: WebSocketSession,
+    session: SandboxSession,
     filePath: string,
     metadata: PageMetadata,
 ) {
@@ -1017,7 +1010,7 @@ async function updateMetadataInFile(
     await session.fs.writeTextFile(filePath, formattedContent);
 }
 
-export const addSetupTask = async (session: WebSocketSession) => {
+export const addSetupTask = async (session: SandboxSession) => {
     const tasks = {
         setupTasks: ['bun install'],
         tasks: {
@@ -1037,7 +1030,7 @@ export const addSetupTask = async (session: WebSocketSession) => {
     );
 };
 
-export const updatePackageJson = async (session: WebSocketSession) => {
+export const updatePackageJson = async (session: SandboxSession) => {
     const pkgRaw = await session.fs.readFile('./package.json');
     const pkgJson = JSON.parse(new TextDecoder().decode(pkgRaw));
 

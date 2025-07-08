@@ -1,11 +1,10 @@
 import { env } from "@/env";
-import { CodeSandbox, type SandboxBrowserSession } from "@codesandbox/sdk";
+import { CodeSandbox, type SandboxSession } from "@codesandbox/sdk";
 
 const sdk = new CodeSandbox(env.CSB_API_KEY);
 
-export async function forkBuildSandbox(sandboxId: string, userId: string, deploymentId: string): Promise<SandboxBrowserSession> {
+export async function forkBuildSandbox(sandboxId: string, userId: string, deploymentId: string): Promise<{ session: SandboxSession, sandboxId: string }> {
     const sandbox = await sdk.sandboxes.create({
-        source: 'template',
         id: sandboxId,
         title: 'Deployment Fork of ' + sandboxId,
         description: 'Forked sandbox for deployment',
