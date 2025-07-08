@@ -23,7 +23,6 @@ export class CreateManager {
             }
             const config = {
                 title: `Prompted project - ${userId}`,
-                description: prompt,
                 tags: ['prompt', userId],
             };
 
