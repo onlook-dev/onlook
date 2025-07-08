@@ -211,6 +211,7 @@ export const injectPreloadScript = (ast: T.File): T.File => {
     // First pass: Look for existing head tag and html element
     traverse(ast, {
         JSXElement(path) {
+            // Remove deprecated script
             if (
                 t.isJSXIdentifier(path.node.openingElement.name, { name: 'Script' }) &&
                 path.node.openingElement.attributes.some(
@@ -221,10 +222,11 @@ export const injectPreloadScript = (ast: T.File): T.File => {
                         attr.value.value.includes(DEPRECATED_PRELOAD_SCRIPT_SRC),
                 )
             ) {
-                console.log('removing deprecated script');
                 path.remove();
                 return;
             }
+
+            // If head tag found, add Script to it
             if (
                 t.isJSXOpeningElement(path.node.openingElement) &&
                 t.isJSXIdentifier(path.node.openingElement.name)
