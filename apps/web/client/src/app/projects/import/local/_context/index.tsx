@@ -88,7 +88,6 @@ export const ProjectCreationProvider = ({
                 },
                 config: {
                     title: `Imported project - ${user.id}`,
-                    description: 'Your new project',
                     tags: ['imported', 'local', user.id],
                 },
             });
