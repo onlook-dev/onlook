@@ -1,4 +1,9 @@
-import { CUSTOM_OUTPUT_DIR, JS_FILE_EXTENSIONS, PRELOAD_URL } from '@onlook/constants';
+import {
+    CUSTOM_OUTPUT_DIR,
+    DEPRECATED_PRELOAD_SCRIPT_SRC,
+    JS_FILE_EXTENSIONS,
+    PRELOAD_SCRIPT_SRC,
+} from '@onlook/constants';
 import { type FileOperations } from '@onlook/utility';
 import { genASTParserOptionsByFileExtension } from '../helpers';
 import { generate, parse, type t as T, types as t, traverse } from '../packages';
@@ -156,7 +161,7 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
     }
 };
 
-export const addPreloadScript = (ast: T.File): T.File => {
+export const injectPreloadScript = (ast: T.File): T.File => {
     let hasScriptImport = false;
 
     // Check if Script is already imported from next/script
@@ -206,6 +211,22 @@ export const addPreloadScript = (ast: T.File): T.File => {
     // First pass: Look for existing head tag and html element
     traverse(ast, {
         JSXElement(path) {
+            // Remove deprecated script
+            if (
+                t.isJSXIdentifier(path.node.openingElement.name, { name: 'Script' }) &&
+                path.node.openingElement.attributes.some(
+                    (attr) =>
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name, { name: 'src' }) &&
+                        t.isStringLiteral(attr.value) &&
+                        attr.value.value.includes(DEPRECATED_PRELOAD_SCRIPT_SRC),
+                )
+            ) {
+                path.remove();
+                return;
+            }
+
+            // If head tag found, add Script to it
             if (
                 t.isJSXOpeningElement(path.node.openingElement) &&
                 t.isJSXIdentifier(path.node.openingElement.name)
@@ -257,7 +278,7 @@ function addScriptToHead(headElement: T.JSXElement) {
                                 t.isJSXIdentifier(attr.name) &&
                                 attr.name.name === 'src' &&
                                 t.isStringLiteral(attr.value) &&
-                                attr.value.value.includes(PRELOAD_URL)
+                                attr.value.value.includes(PRELOAD_SCRIPT_SRC)
                             );
                         },
                     );
@@ -276,7 +297,7 @@ function addScriptToHead(headElement: T.JSXElement) {
                 t.jsxIdentifier('Script'),
                 [
                     t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                    t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_URL)),
+                    t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
                 ],
                 true,
             ),
@@ -284,6 +305,11 @@ function addScriptToHead(headElement: T.JSXElement) {
             [],
             true,
         );
+
+        if (headElement.openingElement.selfClosing) {
+            headElement.openingElement.selfClosing = false;
+            headElement.closingElement = t.jsxClosingElement(headElement.openingElement.name);
+        }
 
         // Add the Script element as the first child of head
         if (!headElement.children) {
@@ -300,7 +326,7 @@ function createAndAddHeadTag(htmlElement: T.JSXElement) {
             t.jsxIdentifier('Script'),
             [
                 t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_URL)),
+                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
             ],
             true,
         ),
