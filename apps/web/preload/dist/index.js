@@ -1885,13 +1885,25 @@ function processDomDebounced(root = document.body) {
   return { rootDomId, layerMap: Array.from(layerMap.entries()) };
 }
 var processDom = import_debounce.default(processDomDebounced, 500);
+var FILTER_CONDITIONS = [
+  (element) => {
+    const parent2 = element.parentElement;
+    return parent2 && parent2.tagName.toLowerCase().includes("svg");
+  }
+];
 function buildLayerTree(root) {
   if (!isValidHtmlElement(root)) {
     return null;
   }
   const layerMap = new Map;
   const treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
-    acceptNode: (node) => isValidHtmlElement(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+    acceptNode: (node) => {
+      const element = node;
+      if (FILTER_CONDITIONS.some((condition) => condition(element))) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return isValidHtmlElement(element) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+    }
   });
   const rootLayerNode = processNode(root);
   rootLayerNode.children = [];
@@ -17417,5 +17429,5 @@ export {
   penpalParent
 };
 
-//# debugId=24CC7E56470B217C64756E2164756E21
+//# debugId=505BC4D7ECAA05C764756E2164756E21
 //# sourceMappingURL=index.js.map

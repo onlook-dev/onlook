@@ -42,6 +42,14 @@ function processDomDebounced(root: HTMLElement = document.body): ProcessDomResul
 
 export const processDom = debounce(processDomDebounced, 500);
 
+// Filter conditions for nodes to skip in layer tree
+const FILTER_CONDITIONS = [
+    (element: HTMLElement) => {
+        const parent = element.parentElement;
+        return parent && parent.tagName.toLowerCase().includes('svg');
+    },
+];
+
 export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null {
     if (!isValidHtmlElement(root)) {
         return null;
@@ -49,10 +57,18 @@ export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null
 
     const layerMap = new Map<string, LayerNode>();
     const treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
-        acceptNode: (node: Node) =>
-            isValidHtmlElement(node as HTMLElement)
+        acceptNode: (node: Node) => {
+            const element = node as HTMLElement;
+            
+            // Check if element matches any filter condition
+            if (FILTER_CONDITIONS.some(condition => condition(element))) {
+                return NodeFilter.FILTER_REJECT;
+            }
+            
+            return isValidHtmlElement(element)
                 ? NodeFilter.FILTER_ACCEPT
-                : NodeFilter.FILTER_SKIP,
+                : NodeFilter.FILTER_SKIP;
+        }
     });
 
     // Process root node
