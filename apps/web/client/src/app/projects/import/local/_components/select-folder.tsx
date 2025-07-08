@@ -347,10 +347,9 @@ export const NewSelectFolder = () => {
                             w-full h-20 rounded-lg bg-gray-900 border border-gray rounded-lg m-0
                             flex flex-col items-center justify-center gap-4
                             duration-200 cursor-pointer
-                            ${
-                                isDragging
-                                    ? 'border-blue-400 bg-blue-50'
-                                    : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
+                            ${isDragging
+                                ? 'border-blue-400 bg-blue-50'
+                                : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
                             }
                             ${isUploading ? 'pointer-events-none opacity-50' : ''}
                         `}
