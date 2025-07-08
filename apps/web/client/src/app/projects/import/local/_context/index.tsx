@@ -6,7 +6,7 @@ import { Routes } from '@/utils/constants';
 import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { SandboxTemplates, Templates } from '@onlook/constants';
-import { addPreloadScript, generate, parse } from '@onlook/parser';
+import { generate, injectPreloadScript, parse } from '@onlook/parser';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
@@ -280,7 +280,7 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
                             sourceType: 'module',
                             plugins: ['jsx', 'typescript'],
                         });
-                        const modifiedAst = addPreloadScript(ast);
+                        const modifiedAst = injectPreloadScript(ast);
                         content = generate(modifiedAst, {}, content).code;
                     } catch (parseError) {
                         console.warn(

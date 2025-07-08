@@ -1,10 +1,13 @@
+import { LAYOUT_FILE_CONDITIONS } from '@onlook/constants';
 import type { TemplateNode } from '@onlook/models';
 import {
     addOidsToAst,
     createTemplateNodeMap,
     getAstFromContent,
     getContentFromAst,
+    injectPreloadScript,
 } from '@onlook/parser';
+import { isTargetFile } from '@onlook/utility/src/path';
 import localforage from 'localforage';
 import type { EditorEngine } from '../engine';
 
@@ -61,6 +64,10 @@ export class TemplateNodeMapper {
         if (!ast) {
             console.error(`Failed to get ast for file ${file}`);
             return;
+        }
+
+        if (isTargetFile(file, LAYOUT_FILE_CONDITIONS)) {
+            injectPreloadScript(ast);
         }
 
         const { ast: astWithIds, modified } = addOidsToAst(ast);

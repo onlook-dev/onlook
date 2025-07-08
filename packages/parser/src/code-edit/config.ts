@@ -156,7 +156,7 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
     }
 };
 
-export const addPreloadScript = (ast: T.File): T.File => {
+export const injectPreloadScript = (ast: T.File): T.File => {
     let hasScriptImport = false;
 
     // Check if Script is already imported from next/script
