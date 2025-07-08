@@ -16,7 +16,7 @@ export const TextAlignSelector = observer(
     () => {
         const { handleTextAlignChange, textState } = useTextControl();
         return (
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
                 <HoverOnlyTooltip
                     content="Text Align"
                     side="bottom"

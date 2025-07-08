@@ -30,9 +30,9 @@ export const Display = observer(() => {
     const [layoutType, setLayoutType] = useState(
         editorEngine.style.selectedStyle?.styles.computed.display ?? 'block',
     );
-    
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'display-dropdown' 
+
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'display-dropdown'
     });
 
     useEffect(() => {
@@ -40,7 +40,7 @@ export const Display = observer(() => {
     }, [editorEngine.style.selectedStyle?.styles.computed.display]);
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Display" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button

@@ -98,7 +98,7 @@ export const FontFamily = ({
                         </Button>
                     )}
                     {showDropdown && (
-                        <DropdownMenu>
+                        <DropdownMenu modal={false}>
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     variant="ghost"

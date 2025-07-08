@@ -5,10 +5,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/
 import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
 import { useTextControl } from '../hooks/use-text-control';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputColor } from '../inputs/input-color';
 import { InputIcon } from '../inputs/input-icon';
 import { InputRadio } from '../inputs/input-radio';
-import { HoverOnlyTooltip } from '../hover-tooltip';
 
 export const AdvancedTypography = () => {
     const {
@@ -39,7 +39,7 @@ export const AdvancedTypography = () => {
     ];
 
     return (
-        <DropdownMenu open={open} onOpenChange={setOpen}>
+        <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
             <HoverOnlyTooltip
                 content="Advanced Typography"
                 side="bottom"

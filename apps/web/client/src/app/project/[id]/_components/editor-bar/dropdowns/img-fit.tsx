@@ -17,7 +17,7 @@ export const ImgFit = () => {
     useEffect(() => {
         setObjectFit(
             (editorEngine.style.selectedStyle?.styles.computed.objectFit as ObjectFitValue) ??
-                'fill',
+            'fill',
         );
     }, [editorEngine.style.selectedStyle?.styles.computed.objectFit]);
 
@@ -27,7 +27,7 @@ export const ImgFit = () => {
     };
 
     return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
@@ -38,8 +38,8 @@ export const ImgFit = () => {
                         {objectFit === 'cover'
                             ? 'Cover'
                             : objectFit === 'contain'
-                              ? 'Contain'
-                              : 'Fill'}
+                                ? 'Contain'
+                                : 'Fill'}
                     </span>
                 </Button>
             </DropdownMenuTrigger>
@@ -50,31 +50,28 @@ export const ImgFit = () => {
                         <div className="flex gap-1">
                             <button
                                 onClick={() => handleFitChange('cover')}
-                                className={`flex-1 text-sm px-3 py-1 rounded-md ${
-                                    objectFit === 'cover'
+                                className={`flex-1 text-sm px-3 py-1 rounded-md ${objectFit === 'cover'
                                         ? 'bg-background-tertiary/20 text-white'
                                         : 'text-muted-foreground hover:bg-background-tertiary/10'
-                                }`}
+                                    }`}
                             >
                                 Cover
                             </button>
                             <button
                                 onClick={() => handleFitChange('contain')}
-                                className={`flex-1 text-sm px-3 py-1 rounded-md ${
-                                    objectFit === 'contain'
+                                className={`flex-1 text-sm px-3 py-1 rounded-md ${objectFit === 'contain'
                                         ? 'bg-background-tertiary/20 text-white'
                                         : 'text-muted-foreground hover:bg-background-tertiary/10'
-                                }`}
+                                    }`}
                             >
                                 Contain
                             </button>
                             <button
                                 onClick={() => handleFitChange('fill')}
-                                className={`flex-1 text-sm px-3 py-1 rounded-md ${
-                                    objectFit === 'fill'
+                                className={`flex-1 text-sm px-3 py-1 rounded-md ${objectFit === 'fill'
                                         ? 'bg-background-tertiary/20 text-white'
                                         : 'text-muted-foreground hover:bg-background-tertiary/10'
-                                }`}
+                                    }`}
                             >
                                 Fill
                             </button>

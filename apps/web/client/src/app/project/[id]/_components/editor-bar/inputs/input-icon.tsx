@@ -52,7 +52,7 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
                     className="w-full bg-transparent text-sm text-white focus:outline-none uppercase hover:text-white"
                 />
 
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                     <DropdownMenuTrigger className="text-[12px] text-muted-foreground focus:outline-none cursor-pointer hover:text-white transition-colors">
                         {unitValue === 'px' ? '' : unitValue}
                     </DropdownMenuTrigger>

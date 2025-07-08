@@ -9,10 +9,10 @@ import { Icons } from '@onlook/ui/icons';
 import { toNormalCase } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useTextControl } from '../../hooks/use-text-control';
-import { FontFamily } from './font-family';
-import { HoverOnlyTooltip } from '../../hover-tooltip';
 import { useDropdownControl } from '../../hooks/use-dropdown-manager';
+import { useTextControl } from '../../hooks/use-text-control';
+import { HoverOnlyTooltip } from '../../hover-tooltip';
+import { FontFamily } from './font-family';
 
 export const FontFamilySelector = observer(() => {
     const editorEngine = useEditorEngine();
@@ -50,7 +50,7 @@ export const FontFamilySelector = observer(() => {
     };
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={(v) => {
+        <DropdownMenu open={isOpen} modal={false} onOpenChange={(v) => {
             onOpenChange(v);
             if (!v) editorEngine.state.brandTab = null;
         }}>
