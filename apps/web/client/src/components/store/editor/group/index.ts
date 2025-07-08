@@ -164,6 +164,11 @@ export class GroupManager {
         }
 
         // Container is the selected element
+        if (!frame.view) {
+            console.error('No frame view found');
+            return null;
+        }
+
         const actionContainer = await frame.view.getActionElement(selectedEl.domId);
 
         if (!actionContainer) {

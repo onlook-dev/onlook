@@ -8,6 +8,7 @@ import { toast } from '@onlook/ui/sonner';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { UrlSection } from './url';
+import stripAnsi from 'strip-ansi';
 
 export const PreviewDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
@@ -117,7 +118,7 @@ export const PreviewDomainSection = observer(() => {
                 <UrlSection url={domain.url} isCopyable={true} />
                 {deployment?.status === DeploymentStatus.FAILED ? (
                     <div className="w-full flex flex-col gap-2">
-                        <p className="text-red-500 max-h-20 overflow-y-auto">{deployment?.error}</p>
+                        <p className="text-red-500 max-h-20 overflow-y-auto">{stripAnsi(deployment?.error)}</p>
                         <Button
                             variant="outline"
                             className="w-full rounded-md p-3"

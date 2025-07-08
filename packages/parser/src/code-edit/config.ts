@@ -1,4 +1,9 @@
-import { CUSTOM_OUTPUT_DIR, JS_FILE_EXTENSIONS } from '@onlook/constants';
+import {
+    CUSTOM_OUTPUT_DIR,
+    DEPRECATED_PRELOAD_SCRIPT_SRC,
+    JS_FILE_EXTENSIONS,
+    PRELOAD_SCRIPT_SRC,
+} from '@onlook/constants';
 import { type FileOperations } from '@onlook/utility';
 import { genASTParserOptionsByFileExtension } from '../helpers';
 import { generate, parse, type t as T, types as t, traverse } from '../packages';
@@ -156,7 +161,7 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
     }
 };
 
-export const addScriptConfig = (ast: T.File): T.File => {
+export const injectPreloadScript = (ast: T.File): T.File => {
     let hasScriptImport = false;
 
     // Check if Script is already imported from next/script
@@ -206,6 +211,22 @@ export const addScriptConfig = (ast: T.File): T.File => {
     // First pass: Look for existing head tag and html element
     traverse(ast, {
         JSXElement(path) {
+            // Remove deprecated script
+            if (
+                t.isJSXIdentifier(path.node.openingElement.name, { name: 'Script' }) &&
+                path.node.openingElement.attributes.some(
+                    (attr) =>
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name, { name: 'src' }) &&
+                        t.isStringLiteral(attr.value) &&
+                        attr.value.value.includes(DEPRECATED_PRELOAD_SCRIPT_SRC),
+                )
+            ) {
+                path.remove();
+                return;
+            }
+
+            // If head tag found, add Script to it
             if (
                 t.isJSXOpeningElement(path.node.openingElement) &&
                 t.isJSXIdentifier(path.node.openingElement.name)
@@ -228,75 +249,55 @@ export const addScriptConfig = (ast: T.File): T.File => {
         createAndAddHeadTag(htmlElement);
     }
 
-    function addScriptToHead(headElement: any) {
-        // Check if Script with our specific src already exists
-        let hasOnlookScript = false;
+    return ast;
+};
 
-        if (headElement.children) {
-            headElement.children.forEach((child: any) => {
+function addScriptToHead(headElement: T.JSXElement) {
+    // Check if Script with our specific src already exists
+    let hasOnlookScript = false;
+
+    if (headElement.children) {
+        headElement.children.forEach(
+            (
+                child:
+                    | T.JSXElement
+                    | T.JSXFragment
+                    | T.JSXText
+                    | T.JSXExpressionContainer
+                    | T.JSXSpreadChild,
+            ) => {
                 if (
                     t.isJSXElement(child) &&
                     t.isJSXIdentifier(child.openingElement.name) &&
                     child.openingElement.name.name === 'Script'
                 ) {
-                    const srcAttr = child.openingElement.attributes.find((attr: any) => {
-                        return (
-                            t.isJSXAttribute(attr) &&
-                            t.isJSXIdentifier(attr.name) &&
-                            attr.name.name === 'src' &&
-                            t.isStringLiteral(attr.value) &&
-                            attr.value.value.includes('onlook-dev/web')
-                        );
-                    });
+                    const srcAttr = child.openingElement.attributes.find(
+                        (attr: T.JSXAttribute | T.JSXSpreadAttribute) => {
+                            return (
+                                t.isJSXAttribute(attr) &&
+                                t.isJSXIdentifier(attr.name) &&
+                                attr.name.name === 'src' &&
+                                t.isStringLiteral(attr.value) &&
+                                attr.value.value.includes(PRELOAD_SCRIPT_SRC)
+                            );
+                        },
+                    );
                     if (srcAttr) {
                         hasOnlookScript = true;
                     }
                 }
-            });
-        }
-
-        if (!hasOnlookScript) {
-            // Create the Script JSX element
-            const scriptElement = t.jsxElement(
-                t.jsxOpeningElement(
-                    t.jsxIdentifier('Script'),
-                    [
-                        t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                        t.jsxAttribute(
-                            t.jsxIdentifier('src'),
-                            t.stringLiteral(
-                                'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js',
-                            ),
-                        ),
-                    ],
-                    true,
-                ),
-                null,
-                [],
-                true,
-            );
-
-            // Add the Script element as the first child of head
-            if (!headElement.children) {
-                headElement.children = [];
-            }
-            headElement.children.unshift(scriptElement);
-        }
+            },
+        );
     }
 
-    function createAndAddHeadTag(htmlElement: any) {
+    if (!hasOnlookScript) {
         // Create the Script JSX element
         const scriptElement = t.jsxElement(
             t.jsxOpeningElement(
                 t.jsxIdentifier('Script'),
                 [
                     t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                    t.jsxAttribute(
-                        t.jsxIdentifier('src'),
-                        t.stringLiteral(
-                            'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js',
-                        ),
-                    ),
+                    t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
                 ],
                 true,
             ),
@@ -305,20 +306,46 @@ export const addScriptConfig = (ast: T.File): T.File => {
             true,
         );
 
-        // Create the head element with the Script as its child
-        const headElement = t.jsxElement(
-            t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
-            t.jsxClosingElement(t.jsxIdentifier('head')),
-            [scriptElement],
-            false,
-        );
-
-        // Add the head element as the first child of html
-        if (!htmlElement.children) {
-            htmlElement.children = [];
+        if (headElement.openingElement.selfClosing) {
+            headElement.openingElement.selfClosing = false;
+            headElement.closingElement = t.jsxClosingElement(headElement.openingElement.name);
         }
-        htmlElement.children.unshift(headElement);
-    }
 
-    return ast;
-};
+        // Add the Script element as the first child of head
+        if (!headElement.children) {
+            headElement.children = [];
+        }
+        headElement.children.unshift(scriptElement);
+    }
+}
+
+function createAndAddHeadTag(htmlElement: T.JSXElement) {
+    // Create the Script JSX element
+    const scriptElement = t.jsxElement(
+        t.jsxOpeningElement(
+            t.jsxIdentifier('Script'),
+            [
+                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
+                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
+            ],
+            true,
+        ),
+        null,
+        [],
+        true,
+    );
+
+    // Create the head element with the Script as its child
+    const headElement = t.jsxElement(
+        t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
+        t.jsxClosingElement(t.jsxIdentifier('head')),
+        [scriptElement],
+        false,
+    );
+
+    // Add the head element as the first child of html
+    if (!htmlElement.children) {
+        htmlElement.children = [];
+    }
+    htmlElement.children.unshift(headElement);
+}

@@ -1,6 +1,6 @@
 import type { ReaddirEntry, WebSocketSession } from '@codesandbox/sdk';
 import type { PageMetadata, PageNode } from '@onlook/models';
-import { generate, parse, types as t, traverse, type NodePath, type t as T } from '@onlook/parser';
+import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
 import { formatContent } from '../sandbox/helpers';
 
@@ -271,8 +271,8 @@ const scanAppDirectory = async (
             name: isDynamicRoute
                 ? currentDir
                 : parentPath
-                  ? getBaseName(parentPath)
-                  : ROOT_PAGE_NAME,
+                    ? getBaseName(parentPath)
+                    : ROOT_PAGE_NAME,
             path: cleanPath,
             children: [],
             isActive: false,
@@ -1017,136 +1017,13 @@ async function updateMetadataInFile(
     await session.fs.writeTextFile(filePath, formattedContent);
 }
 
-export const injectPreloadScript = async (session: WebSocketSession) => {
-    await addSetupTask(session);
-    await updatePackageJson(session);
-
-    // Step 3: Inject script tag
-    const routerType = await detectRouterTypeInSandbox(session);
-    const preLoadScript =
-        'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js';
-
-    if (!routerType || routerType.type !== 'app') {
-        throw new Error('We currently support only Next.js App projects.');
-    }
-
-    const layoutPath = './src/app/layout.tsx';
-    const layoutRaw = await session.fs.readFile(layoutPath);
-    const layoutSrc = new TextDecoder().decode(layoutRaw);
-
-    const ast = parse(layoutSrc, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
-
-    let importedScript = false;
-    let foundHead = false;
-    let alreadyInjected = false;
-
-    traverse(ast, {
-        ImportDeclaration(path) {
-            if (path.node.source.value === 'next/script') {
-                importedScript = true;
-            }
-        },
-        JSXElement(path) {
-            const opening = path.node.openingElement;
-
-            if (
-                t.isJSXIdentifier(opening.name, { name: 'Script' }) &&
-                opening.attributes.some(
-                    (attr) =>
-                        t.isJSXAttribute(attr) &&
-                        attr.name.name === 'src' &&
-                        t.isStringLiteral(attr.value) &&
-                        attr.value.value === preLoadScript,
-                )
-            ) {
-                alreadyInjected = true;
-            }
-
-            if (t.isJSXIdentifier(opening.name, { name: 'head' })) {
-                foundHead = true;
-
-                if (!alreadyInjected) {
-                    const scriptElement = t.jsxElement(
-                        t.jsxOpeningElement(
-                            t.jsxIdentifier('Script'),
-                            [
-                                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                                t.jsxAttribute(
-                                    t.jsxIdentifier('src'),
-                                    t.stringLiteral(preLoadScript),
-                                ),
-                            ],
-                            true,
-                        ),
-                        null,
-                        [],
-                        true,
-                    );
-
-                    // Prepend the script to the <head> children
-                    path.node.children.unshift(scriptElement);
-                    alreadyInjected = true;
-                }
-            }
-
-            if (!foundHead && t.isJSXIdentifier(opening.name, { name: 'html' })) {
-                if (!alreadyInjected) {
-                    const scriptInHead = t.jsxElement(
-                        t.jsxOpeningElement(
-                            t.jsxIdentifier('Script'),
-                            [
-                                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                                t.jsxAttribute(
-                                    t.jsxIdentifier('src'),
-                                    t.stringLiteral(preLoadScript),
-                                ),
-                            ],
-                            true,
-                        ),
-                        null,
-                        [],
-                        true,
-                    );
-
-                    const headElement = t.jsxElement(
-                        t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
-                        t.jsxClosingElement(t.jsxIdentifier('head')),
-                        [scriptInHead],
-                        false,
-                    );
-
-                    path.node.children.unshift(headElement);
-                    foundHead = true;
-                    alreadyInjected = true;
-                }
-            }
-        },
-    });
-
-    if (!importedScript) {
-        ast.program.body.unshift(
-            t.importDeclaration(
-                [t.importDefaultSpecifier(t.identifier('Script'))],
-                t.stringLiteral('next/script'),
-            ),
-        );
-    }
-
-    const { code } = generate(ast, {}, layoutSrc);
-
-    await session.fs.writeFile(layoutPath, new TextEncoder().encode(code));
-};
-
-const addSetupTask = async (session: WebSocketSession) => {
+export const addSetupTask = async (session: WebSocketSession) => {
     const tasks = {
-        setupTasks: ['npm install'],
+        setupTasks: ['bun install'],
         tasks: {
             dev: {
                 name: 'Dev Server',
-                command: 'npm run dev',
+                command: 'bun run dev',
                 preview: {
                     port: 3000,
                 },
@@ -1160,7 +1037,7 @@ const addSetupTask = async (session: WebSocketSession) => {
     );
 };
 
-const updatePackageJson = async (session: WebSocketSession) => {
+export const updatePackageJson = async (session: WebSocketSession) => {
     const pkgRaw = await session.fs.readFile('./package.json');
     const pkgJson = JSON.parse(new TextDecoder().decode(pkgRaw));
 

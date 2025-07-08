@@ -1,6 +1,5 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
-import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { adaptRectToCanvas } from '../overlay/utils';
@@ -68,9 +67,6 @@ export class TextEditingManager {
             );
         } catch (error) {
             console.error('Error starting text edit:', error);
-            toast.error('Failed to edit text. Try using AI or code editor.', {
-                description: error instanceof Error ? error.message : 'Unknown error',
-            });
         }
     }
 
@@ -80,7 +76,7 @@ export class TextEditingManager {
                 throw new Error('No target dom element to edit');
             }
             const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
-            if (!frameData) {
+            if (!frameData?.view) {
                 throw new Error('No frameView found for text editing');
             }
 
@@ -95,9 +91,6 @@ export class TextEditingManager {
             await this.handleEditedText(domEl, newContent, frameData.view);
         } catch (error) {
             console.error('Error editing text:', error);
-            toast.error('Failed to edit text', {
-                description: error instanceof Error ? error.message : 'Unknown error',
-            });
         }
     }
 
@@ -109,7 +102,7 @@ export class TextEditingManager {
             }
 
             const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
-            if (!frameData) {
+            if (!frameData?.view) {
                 throw new Error('No frameView found for end text editing');
             }
 
@@ -126,9 +119,6 @@ export class TextEditingManager {
             await this.clean();
         } catch (error) {
             console.error('Error ending text edit:', error);
-            toast.error('Failed to end text editing', {
-                description: error instanceof Error ? error.message : 'Unknown error',
-            });
         }
     }
 
@@ -162,9 +152,6 @@ export class TextEditingManager {
             await this.editorEngine.overlay.refresh();
         } catch (error) {
             console.error('Error handling edited text:', error);
-            toast.error('Failed to handle edited text', {
-                description: error instanceof Error ? error.message : 'Unknown error',
-            });
         }
     }
 
@@ -176,16 +163,19 @@ export class TextEditingManager {
         try {
             const selected = this.editorEngine.elements.selected;
             if (selected.length === 0) {
+                console.error('No selected elements found');
                 return;
             }
 
             const selectedEl = selected[0];
             if (!selectedEl) {
+                console.error('No selected element found');
                 return;
             }
 
             const frameData = this.editorEngine.frames.get(selectedEl.frameId);
-            if (!frameData) {
+            if (!frameData?.view) {
+                console.error('No frameView found for selected element');
                 return;
             }
 

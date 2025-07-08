@@ -8,11 +8,13 @@ import { useEffect, useState } from 'react';
 export function ThemeGroup({ frameData }: { frameData: any }) {
     const [theme, setTheme] = useState<SystemTheme>(SystemTheme.SYSTEM);
     useEffect(() => {
-        if (frameData) {
-            frameData.view.getTheme().then((theme: SystemTheme) => {
-                setTheme(theme);
-            });
+        if (!frameData?.view) {
+            console.error('No frame view found');
+            return;
         }
+        frameData.view.getTheme().then((theme: SystemTheme) => {
+            setTheme(theme);
+        });
     }, [frameData]);
 
     async function changeTheme(newTheme: SystemTheme) {

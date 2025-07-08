@@ -1,5 +1,4 @@
-import type { FrameImpl, WebFrameImpl } from '@/components/store/editor/frames/frame';
-import { FrameType } from '@onlook/models';
+import { FrameType, type Frame, type WebFrame } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
 import { GestureScreen } from './gesture';
@@ -8,7 +7,7 @@ import { RightClickMenu } from './right-click';
 import { TopBar } from './top-bar';
 import { WebFrameComponent, type WebFrameView } from './web-frame';
 
-export const FrameView = observer(({ frame }: { frame: FrameImpl }) => {
+export const FrameView = observer(({ frame }: { frame: Frame }) => {
     const webFrameRef = useRef<WebFrameView>(null);
     return (
         <div
@@ -16,14 +15,14 @@ export const FrameView = observer(({ frame }: { frame: FrameImpl }) => {
             style={{ transform: `translate(${frame.position.x}px, ${frame.position.y}px)` }}
         >
             <RightClickMenu>
-                <TopBar frame={frame as WebFrameImpl} />
+                <TopBar frame={frame as WebFrame} />
             </RightClickMenu>
             <div className="relative">
                 <ResizeHandles frame={frame} />
                 {frame.type === FrameType.WEB && (
-                    <WebFrameComponent frame={frame as WebFrameImpl} ref={webFrameRef} />
+                    <WebFrameComponent frame={frame as WebFrame} ref={webFrameRef} />
                 )}
-                <GestureScreen frame={frame as WebFrameImpl} />
+                <GestureScreen frame={frame as WebFrame} />
             </div>
         </div>
     );

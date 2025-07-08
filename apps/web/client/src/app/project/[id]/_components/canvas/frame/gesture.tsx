@@ -21,7 +21,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const getRelativeMousePosition = useCallback(
         (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
             const frameData = getFrameData();
-            if (!frameData) {
+            if (!frameData?.view) {
                 return { x: 0, y: 0 };
             }
             return getRelativeMousePositionToFrameView(e, frameData.view);
@@ -33,8 +33,8 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
         async (e: React.MouseEvent<HTMLDivElement>, action: MouseAction) => {
             try {
                 const frameData = getFrameData();
-                if (!frameData) {
-                    throw new Error('Frame data not found');
+                if (!frameData?.view) {
+                    throw new Error('Frame view not found');
                 }
                 const pos = getRelativeMousePosition(e);
                 const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(
@@ -85,11 +85,6 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
                 }
             } catch (error) {
                 console.error('Error handling mouse event:', error);
-                if (action !== MouseAction.MOVE) {
-                    toast.error('Failed to handle mouse event. Try using AI or code editor.', {
-                        description: error instanceof Error ? error.message : 'Unknown error',
-                    });
-                }
                 return;
             }
         },

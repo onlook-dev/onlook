@@ -1,23 +1,35 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
 import { api } from '@/trpc/client';
-import { sendAnalytics } from '@/utils/analytics';
 import { fromFrame } from '@onlook/db';
 import { FrameType, type Frame, type WebFrame } from '@onlook/models';
+import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
-import { FrameImpl } from './frame';
 
 export interface FrameData {
     frame: Frame;
-    view: WebFrameView;
+    view: WebFrameView | null;
     selected: boolean;
 }
 
+function roundDimensions(frame: WebFrame): WebFrame {
+    return {
+        ...frame,
+        position: {
+            x: Math.round(frame.position.x),
+            y: Math.round(frame.position.y),
+        },
+        dimension: {
+            width: Math.round(frame.dimension.width),
+            height: Math.round(frame.dimension.height),
+        },
+    };
+}
+
 export class FramesManager {
-    private frameIdToData = new Map<string, FrameData>();
+    private _frameIdToData = new Map<string, FrameData>();
     private disposers: Array<() => void> = [];
-    private _frames: FrameImpl[] = [];
 
     constructor(
         private editorEngine: EditorEngine,
@@ -25,83 +37,46 @@ export class FramesManager {
         makeAutoObservable(this);
     }
 
-    private validateFrameData(id: string, operation: string): FrameData | null {
-        const data = this.frameIdToData.get(id);
-        if (!data) {
-            console.error(`Frame not found for ${operation}`, id);
-            return null;
-        }
-        return data;
-    }
-
-    private validateFrame(id: string, operation: string): FrameImpl | null {
-        const frame = this.frames.find((f) => f.id === id);
-        if (!frame) {
-            console.error(`Frame not found for ${operation}`, id);
-            return null;
-        }
-        return frame;
-    }
-
-    private async getProjectCanvas() {
-        const canvas = await api.canvas.get.query({ projectId: this.editorEngine.projectId });
-        if (!canvas) {
-            console.error('Canvas not found');
-            return null;
-        }
-        return canvas;
-    }
-
     private updateFrameSelection(id: string, selected: boolean): void {
-        const data = this.frameIdToData.get(id);
+        const data = this._frameIdToData.get(id);
         if (data) {
             data.selected = selected;
-            this.frameIdToData.set(id, data);
+            this._frameIdToData.set(id, data);
         }
-    }
-
-    private trackFrameAction(action: 'created' | 'deleted' | 'duplicate'): void {
-        sendAnalytics(`window ${action}`);
     }
 
     applyFrames(frames: Frame[]) {
-        this.frames = frames.map((frame) => FrameImpl.fromJSON(frame));
-    }
-
-    get frames() {
-        return this._frames;
-    }
-
-    set frames(frames: FrameImpl[]) {
-        this._frames = frames;
+        for (const frame of frames) {
+            this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
+        }
     }
 
     get selected(): FrameData[] {
-        return Array.from(this.frameIdToData.values()).filter((w) => w.selected);
+        return Array.from(this._frameIdToData.values()).filter((w) => w.selected);
     }
 
     getAll(): FrameData[] {
-        return Array.from(this.frameIdToData.values());
+        return Array.from(this._frameIdToData.values());
     }
 
     get(id: string): FrameData | undefined {
-        return this.frameIdToData.get(id);
+        return this._frameIdToData.get(id);
     }
 
-    register(frame: Frame, view: WebFrameView) {
-        this.frameIdToData.set(frame.id, { frame, view, selected: false });
+    registerView(frame: Frame, view: WebFrameView) {
+        this._frameIdToData.set(frame.id, { frame, view, selected: false });
     }
 
     deregister(frame: Frame) {
-        this.frameIdToData.delete(frame.id);
+        this._frameIdToData.delete(frame.id);
     }
 
     deregisterAll() {
-        this.frameIdToData.clear();
+        this._frameIdToData.clear();
     }
 
     isSelected(id: string) {
-        return this.frameIdToData.get(id)?.selected ?? false;
+        return this._frameIdToData.get(id)?.selected ?? false;
     }
 
     select(frames: Frame[]) {
@@ -119,14 +94,14 @@ export class FramesManager {
     }
 
     deselectAll() {
-        for (const [id] of this.frameIdToData) {
+        for (const [id] of this._frameIdToData) {
             this.updateFrameSelection(id, false);
         }
         this.notify();
     }
 
     private notify() {
-        this.frameIdToData = new Map(this.frameIdToData);
+        this._frameIdToData = new Map(this._frameIdToData);
     }
 
     clear() {
@@ -136,28 +111,23 @@ export class FramesManager {
     }
 
     disposeFrame(frameId: string) {
-        this.frameIdToData.delete(frameId);
+        this._frameIdToData.delete(frameId);
         this.editorEngine?.ast?.mappings?.remove(frameId);
     }
 
-    reloadAll() {
+    reloadAllViews() {
         for (const frameData of this.getAll()) {
-            frameData.view.reload();
+            frameData.view?.reload();
         }
     }
 
-    reload(id: string) {
-        const frameData = this.validateFrameData(id, 'reload');
-        if (!frameData) return;
-
+    reloadView(id: string) {
+        const frameData = this.get(id);
+        if (!frameData?.view) {
+            console.error('Frame view not found for reload', id);
+            return;
+        }
         frameData.view.reload();
-    }
-
-    screenshot(id: string) {
-        const frameData = this.validateFrameData(id, 'screenshot');
-        if (!frameData) return;
-
-        // frameData.view.screenshot();
     }
 
     async delete(id: string) {
@@ -166,93 +136,72 @@ export class FramesManager {
             return;
         }
 
-        const data = this.validateFrameData(id, 'delete');
-        if (!data) return;
+        const frameData = this.get(id);
+        if (!frameData?.view) {
+            console.error('Frame not found for delete', id);
+            return;
+        }
 
         const success = await api.frame.delete.mutate({
-            frameId: data.frame.id,
+            frameId: frameData.frame.id,
         });
 
         if (success) {
-            this.disposeFrame(data.frame.id);
-            this.frames = this.frames.filter((f) => f.id !== id);
-            this.trackFrameAction('deleted');
+            this.disposeFrame(frameData.frame.id);
+            this._frameIdToData.delete(id);
         } else {
             console.error('Failed to delete frame');
         }
     }
 
     async create(frame: WebFrame) {
-        const canvas = await this.getProjectCanvas();
-        if (!canvas) return;
-
         const success = await api.frame.create.mutate(
-            fromFrame(canvas.id, this.roundDimensions(frame)),
+            fromFrame(roundDimensions(frame)),
         );
 
         if (success) {
-            this.frames.push(FrameImpl.fromJSON(frame));
-            this.trackFrameAction('created');
+            this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
         } else {
             console.error('Failed to create frame');
         }
     }
 
     async duplicate(id: string) {
-        const data = this.validateFrameData(id, 'duplicate');
-        if (!data) return;
-
-        // Force to webframe for now, later we can support other frame types
-        if (data.frame.type !== FrameType.WEB) {
-            console.error('No handler for this frame type', data.frame.type);
+        const frameData = this.get(id);
+        if (!frameData?.view) {
+            console.error('Frame view not found for duplicate', id);
             return;
         }
 
-        const frame = data.frame as WebFrame;
+        // Force to webframe for now, later we can support other frame types
+        if (frameData.frame.type !== FrameType.WEB) {
+            console.error('No handler for this frame type', frameData.frame.type);
+            return;
+        }
+
+        const frame = frameData.frame as WebFrame;
         const newFrame: WebFrame = {
+            ...frame,
             id: uuid(),
-            url: frame.url,
-            dimension: { ...frame.dimension },
             position: {
                 x: frame.position.x + frame.dimension.width + 100,
                 y: frame.position.y,
             },
-            type: frame.type,
         };
 
         await this.create(newFrame);
-        this.trackFrameAction('duplicate');
     }
 
-    updateLocally(id: string, newFrame: Partial<Frame>) {
-        const frame = this.validateFrame(id, 'save');
-        if (!frame) return;
+    updateAndSaveToStorage = debounce(this.undebouncedUpdateAndSaveToStorage, 1000);
 
-
-        const frameImpl = this.validateFrame(id, 'update');
-        if (!frameImpl) return;
-
-        frameImpl.update(newFrame);
-    }
-
-    async updateAndSaveToStorage(frame: WebFrame) {
+    async undebouncedUpdateAndSaveToStorage(frame: WebFrame) {
         try {
-            const dbFrame = await api.frame.get.query({
+            const frameToUpdate = fromFrame(roundDimensions(frame));
+
+            const success = await api.frame.update.mutate({
                 frameId: frame.id,
+                frame: frameToUpdate,
             });
-
-            if (!dbFrame) {
-                console.error('Frame not found in database');
-                return;
-            }
-
-            const canvas = await this.getProjectCanvas();
-            if (!canvas) return;
-
-            const frameToUpdate = fromFrame(canvas.id, this.roundDimensions(frame));
-            frameToUpdate.id = dbFrame.id;
-
-            const success = await api.frame.update.mutate(frameToUpdate);
 
             if (!success) {
                 console.error('Failed to update frame');
@@ -285,19 +234,5 @@ export class FramesManager {
         for (const frame of this.selected) {
             this.delete(frame.frame.id);
         }
-    }
-
-    roundDimensions(frame: WebFrame): WebFrame {
-        return {
-            ...frame,
-            position: {
-                x: Math.round(frame.position.x),
-                y: Math.round(frame.position.y),
-            },
-            dimension: {
-                width: Math.round(frame.dimension.width),
-                height: Math.round(frame.dimension.height),
-            },
-        };
     }
 }

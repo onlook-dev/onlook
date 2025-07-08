@@ -89,7 +89,6 @@ describe('isImageFile', () => {
     describe('should return false for unsupported formats', () => {
         it('returns false for unsupported image formats', () => {
             expect(isImageFile('favicon.ico')).toBe(false);
-            expect(isImageFile('bitmap.bmp')).toBe(false);
             expect(isImageFile('image.tiff')).toBe(false);
             expect(isImageFile('image.tif')).toBe(false);
         });

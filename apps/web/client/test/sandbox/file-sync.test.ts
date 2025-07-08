@@ -11,8 +11,12 @@ describe('FileSyncManager', async () => {
     let fileSyncManager: FileSyncManager;
     let mockReadFile: any;
     let mockWriteFile: any;
+    let mockEditorEngine: any;
 
     beforeEach(async () => {
+        mockEditorEngine = mock(() => ({
+            projectId: 'test-project',
+        }));
         // Create mock file operations
         mockReadFile = mock(async (path: string) => {
             // Return mock content based on file path
@@ -30,7 +34,7 @@ describe('FileSyncManager', async () => {
         });
 
         // Create FileSyncManager instance
-        fileSyncManager = new FileSyncManager();
+        fileSyncManager = new FileSyncManager(mockEditorEngine);
 
         // Wait for initialization to complete
         await new Promise((resolve) => setTimeout(resolve, 10));

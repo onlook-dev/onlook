@@ -46,16 +46,15 @@ export const frameRouter = createTRPCRouter({
             return false;
         }
     }),
-    update: protectedProcedure.input(frameUpdateSchema).mutation(async ({ ctx, input }) => {
+    update: protectedProcedure.input(z.object({
+        frameId: z.string(),
+        frame: frameUpdateSchema,
+    })).mutation(async ({ ctx, input }) => {
         try {
-            if (!input.id) {
-                throw new Error('Frame ID is required');
-            }
-            const normalizedInput = {
-                ...input,
-                type: input.type as FrameType,
-            };
-            await ctx.db.update(frames).set(normalizedInput).where(eq(frames.id, input.id));
+            await ctx.db.update(frames).set({
+                ...input.frame,
+                type: input.frame.type as FrameType,
+            }).where(eq(frames.id, input.frameId));
             return true;
         } catch (error) {
             console.error('Error updating frame', error);

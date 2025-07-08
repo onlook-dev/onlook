@@ -86,6 +86,10 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
         return <DivSelected availableWidth={availableWidth} />;
     };
 
+    if (!selectedElement && !selectedFrame) {
+        return null;
+    }
+
     return (
         <DropdownManagerProvider>
             <motion.div

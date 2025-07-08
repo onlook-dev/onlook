@@ -1,5 +1,7 @@
 import { callUserWebhook } from '@/utils/n8n/webhook';
 import { toUser, userInsertSchema, users, type User } from '@onlook/db';
+import { extractNames } from '@onlook/utility';
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -11,11 +13,13 @@ export const userRouter = createTRPCRouter({
         const user = await ctx.db.query.users.findFirst({
             where: eq(users.id, authUser.id),
         });
+
+        const { displayName, firstName, lastName } = getUserName(authUser);
         const userData = user ? toUser({
             id: user.id,
-            firstName: user.firstName ?? authUser.user_metadata.first_name,
-            lastName: user.lastName ?? authUser.user_metadata.last_name,
-            displayName: user.displayName ?? authUser.user_metadata.display_name,
+            firstName: user.firstName ?? firstName,
+            lastName: user.lastName ?? lastName,
+            displayName: user.displayName ?? displayName,
             email: user.email ?? authUser.email,
             avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
             createdAt: user.createdAt ?? new Date(authUser.created_at ?? Date.now()),
@@ -38,31 +42,53 @@ export const userRouter = createTRPCRouter({
     }),
     upsert: protectedProcedure
         .input(userInsertSchema)
-        .mutation(async ({ ctx, input }): Promise<User> => {
+        .mutation(async ({ ctx, input }): Promise<User | null> => {
+            const authUser = ctx.user;
+
             const existingUser = await ctx.db.query.users.findFirst({
                 where: eq(users.id, input.id),
             });
-            if (existingUser) {
-                const [user] = await ctx.db.update(users).set(input).where(eq(users.id, input.id)).returning();
-                if (!user) {
-                    throw new Error('Failed to update user');
-                }
-                return user;
-            } else {
-                const [user] = await ctx.db.insert(users).values(input).returning();
-                if (!user) {
-                    throw new Error('Failed to create user');
-                }
-                const authUser = ctx.user;
+
+            const { firstName, lastName, displayName } = getUserName(authUser);
+
+            const userData = {
+                id: input.id,
+                firstName: input.firstName ?? firstName,
+                lastName: input.lastName ?? lastName,
+                displayName: input.displayName ?? displayName,
+                email: input.email ?? authUser.email,
+                avatarUrl: input.avatarUrl ?? authUser.user_metadata.avatarUrl,
+            };
+
+            const [user] = await ctx.db.insert(users).values(userData).onConflictDoUpdate({
+                target: [users.id],
+                set: {
+                    ...userData,
+                    updatedAt: new Date(),
+                },
+            }).returning();
+
+            if (!existingUser) {
                 await callUserWebhook({
-                    email: user.email,
-                    firstName: user.firstName ?? authUser.user_metadata.first_name ?? authUser.user_metadata.name,
-                    lastName: user.lastName ?? authUser.user_metadata.last_name,
+                    email: userData.email,
+                    firstName: userData.firstName,
+                    lastName: userData.lastName,
                     source: 'web beta',
                     subscribed: false,
                 });
-                return user;
             }
+
+            return user ?? null;
         }),
     settings: userSettingsRouter,
 });
+
+function getUserName(authUser: SupabaseUser) {
+    const displayName: string | undefined = authUser.user_metadata.name ?? authUser.user_metadata.display_name ?? authUser.user_metadata.full_name ?? authUser.user_metadata.first_name ?? authUser.user_metadata.last_name ?? authUser.user_metadata.given_name ?? authUser.user_metadata.family_name;
+    const { firstName, lastName } = extractNames(displayName ?? '');
+    return {
+        displayName: displayName ?? '',
+        firstName,
+        lastName,
+    };
+}

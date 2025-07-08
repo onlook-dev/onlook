@@ -37,7 +37,7 @@ export class PagesManager {
         return frame ? this.activeRoutesByFrameId[frame.frame.id] : undefined;
     }
 
-    get isScanning() {  
+    get isScanning() {
         return this._isScanning;
     }
 
@@ -273,9 +273,9 @@ export class PagesManager {
     }
 
     async navigateTo(path: string) {
-        const frameView = this.getActiveFrame();
+        const frameData = this.getActiveFrame();
 
-        if (!frameView) {
+        if (!frameData?.view) {
             console.warn('No frameView available');
             return;
         }
@@ -298,7 +298,7 @@ export class PagesManager {
         }
 
         try {
-            const currentUrl = frameView.view.src;
+            const currentUrl = frameData.view.src;
             const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
 
             if (!baseUrl) {
@@ -306,9 +306,9 @@ export class PagesManager {
                 return;
             }
 
-            await frameView.view.loadURL(`${baseUrl}${path}`);
-            this.setActivePath(frameView.frame.id, originalPath);
-            await frameView.view.processDom();
+            await frameData.view.loadURL(`${baseUrl}${path}`);
+            this.setActivePath(frameData.frame.id, originalPath);
+            await frameData.view.processDom();
 
             sendAnalytics('page navigate');
         } catch (error) {
@@ -325,13 +325,14 @@ export class PagesManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.get(frameId);
-        if (!frameView) {
+        const frameData = this.editorEngine.frames.get(frameId);
+        if (!frameData?.view) {
+            console.error('No frame view found');
             return;
         }
 
         try {
-            const url = frameView.view.src;
+            const url = frameData.view.src;
             if (!url) {
                 return;
             }
