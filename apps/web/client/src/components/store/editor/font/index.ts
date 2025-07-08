@@ -104,14 +104,14 @@ export class FontManager {
 
         // React to sandbox connection status
         const sandboxDisposer = reaction(
-            () => this.editorEngine.sandbox?.isIndexingFiles,
-            async (isIndexingFiles) => {                
+            () => this.editorEngine.sandbox.isIndexingFiles,
+            async (isIndexingFiles) => {
                 if (!isIndexingFiles) {
                     await this.updateFontConfigPath();
                     this.setupFontConfigFileWatcher(); 
-                    await this.loadInitialFonts();
-                    await this.scanFonts();
+
                     await this.syncFontsWithConfigs();
+                    await this.loadInitialFonts();
                 }
             },
         );
@@ -526,7 +526,7 @@ export class FontManager {
 
         try {
             // Search using FlexSearch
-            const searchResults = await this._fontSearchIndex.search(query, {
+            const searchResults = this._fontSearchIndex.search(query, {
                 limit: 20,
                 suggest: true,
                 enrich: true,
