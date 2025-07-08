@@ -24,16 +24,8 @@ export const FontFamilySelector = observer(() => {
     });
 
     useEffect(() => {
-        if (!isOpen) return;
-        (async () => {
-            try {
-                const fonts = await editorEngine.font.scanFonts();
-                setFonts(fonts);
-            } catch (error) {
-                console.error('Failed to scan fonts:', error);
-            }
-        })();
-    }, [isOpen]);
+        setFonts(editorEngine.font.fonts);
+    }, [editorEngine.font.fonts]);
 
     // Filter fonts by search
     const filteredFonts = fonts.filter((font) =>

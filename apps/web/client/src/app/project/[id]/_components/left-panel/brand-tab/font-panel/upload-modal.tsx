@@ -5,6 +5,7 @@ import {
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useState, useRef } from 'react';
 import type { FontFile } from './font-files';
@@ -15,9 +16,10 @@ interface UploadModalProps {
     isOpen: boolean;
     onOpenChange: (open: boolean) => void;
     onUpload: (fonts: FontFile[]) => void;
+    isUploading?: boolean;
 }
 
-const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalProps) => {
+const UploadModal = observer(({ isOpen, onOpenChange, onUpload, isUploading = false }: UploadModalProps) => {
     const [fontFiles, setFontFiles] = useState<FontFile[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -98,10 +100,15 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
         }
     };
 
-    const handleSave = () => {
-        onUpload(fontFiles);
-        onOpenChange(false);
-        setFontFiles([]);
+    const handleSave = async () => {
+        try {
+            await onUpload(fontFiles);
+            onOpenChange(false);
+            setFontFiles([]);
+        } catch (error) {
+            // Don't close modal if upload fails
+            console.error('Upload failed:', error);
+        }
     };
 
     const handleCancel = () => {
@@ -116,7 +123,7 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
                     <AlertDialogTitle className="text-left text-base font-medium">
                         Upload a font
                     </AlertDialogTitle>
-                    <Button variant="ghost" className="h-8 w-8 p-0" onClick={handleCancel}>
+                    <Button variant="ghost" className="h-8 w-8 p-0" onClick={handleCancel} disabled={isUploading}>
                         <svg
                             width="15"
                             height="15"
@@ -199,16 +206,23 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload }: UploadModalPro
 
                 {fontFiles.length > 0 && (
                     <AlertDialogFooter className="sm:justify-end border-t px-6 pb-4 pt-4 mt-0 space-x-2">
-                        <Button variant="ghost" onClick={handleCancel} className="text-sm">
+                        <Button variant="ghost" onClick={handleCancel} disabled={isUploading} className="text-sm">
                             Cancel
                         </Button>
                         <Button
                             variant="default"
                             onClick={handleSave}
-                            disabled={fontFiles.length === 0}
+                            disabled={fontFiles.length === 0 || isUploading}
                             className="rounded-md text-sm"
                         >
-                            Save font files
+                            {isUploading ? (
+                                <>
+                                    <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />
+                                    Uploading...
+                                </>
+                            ) : (
+                                'Save font files'
+                            )}
                         </Button>
                     </AlertDialogFooter>
                 )}
