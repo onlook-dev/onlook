@@ -1,8 +1,9 @@
-import { ProcessedFileType, type NextJsProjectValidation, type ProcessedFile } from '@/app/projects/types';
 import {
-    IGNORED_UPLOAD_DIRECTORIES,
-    IGNORED_UPLOAD_FILES
-} from '@onlook/constants';
+    ProcessedFileType,
+    type NextJsProjectValidation,
+    type ProcessedFile,
+} from '@/app/projects/types';
+import { IGNORED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
@@ -20,8 +21,14 @@ declare module 'react' {
 }
 
 export const NewSelectFolder = () => {
-    const { projectData, setProjectData, prevStep, nextStep, resetProjectData, validateNextJsProject } =
-        useProjectCreation();
+    const {
+        projectData,
+        setProjectData,
+        prevStep,
+        nextStep,
+        resetProjectData,
+        validateNextJsProject,
+    } = useProjectCreation();
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
@@ -29,7 +36,9 @@ export const NewSelectFolder = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const extractProjectName = (files: ProcessedFile[]): string | null => {
-        const packageJsonFile = files.find((f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT);
+        const packageJsonFile = files.find(
+            (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT,
+        );
 
         if (packageJsonFile) {
             try {
@@ -44,7 +53,6 @@ export const NewSelectFolder = () => {
     };
 
     const handleClickUpload = () => {
-        setIsUploading(true);
         fileInputRef.current?.click();
     };
 
@@ -87,7 +95,9 @@ export const NewSelectFolder = () => {
             }
 
             // Determine if file is binary
-            const type = isBinaryFile(file.name) ? ProcessedFileType.BINARY : ProcessedFileType.TEXT;
+            const type = isBinaryFile(file.name)
+                ? ProcessedFileType.BINARY
+                : ProcessedFileType.TEXT;
             try {
                 if (type === ProcessedFileType.BINARY) {
                     processedFile = {
@@ -100,7 +110,7 @@ export const NewSelectFolder = () => {
                         path: relativePath,
                         content: await file.text(),
                         type: ProcessedFileType.TEXT,
-                    }
+                    };
                 }
 
                 processedFiles.push(processedFile);
@@ -372,7 +382,6 @@ export const NewSelectFolder = () => {
                         type="file"
                         style={{ display: 'none' }}
                         onChange={handleFileInputChange}
-                        accept=".js,.jsx,.ts,.tsx,.json,.md,.txt,.css,.scss,.less,.html,.svg,.png,.jpg,.jpeg,.gif,.ico"
                         directory=""
                         webkitdirectory=""
                     />
