@@ -1,4 +1,9 @@
-import { CUSTOM_OUTPUT_DIR, JS_FILE_EXTENSIONS, PRELOAD_URL } from '@onlook/constants';
+import {
+    CUSTOM_OUTPUT_DIR,
+    DEPRECATED_PRELOAD_SCRIPT_SRC,
+    JS_FILE_EXTENSIONS,
+    PRELOAD_SCRIPT_SRC,
+} from '@onlook/constants';
 import { type FileOperations } from '@onlook/utility';
 import { genASTParserOptionsByFileExtension } from '../helpers';
 import { generate, parse, type t as T, types as t, traverse } from '../packages';
@@ -207,6 +212,19 @@ export const injectPreloadScript = (ast: T.File): T.File => {
     traverse(ast, {
         JSXElement(path) {
             if (
+                t.isJSXIdentifier(path.node.openingElement.name, { name: 'Script' }) &&
+                path.node.openingElement.attributes.some(
+                    (attr) =>
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name, { name: 'src' }) &&
+                        t.isStringLiteral(attr.value) &&
+                        attr.value.value.includes(DEPRECATED_PRELOAD_SCRIPT_SRC),
+                )
+            ) {
+                path.remove();
+                return;
+            }
+            if (
                 t.isJSXOpeningElement(path.node.openingElement) &&
                 t.isJSXIdentifier(path.node.openingElement.name)
             ) {
@@ -257,7 +275,7 @@ function addScriptToHead(headElement: T.JSXElement) {
                                 t.isJSXIdentifier(attr.name) &&
                                 attr.name.name === 'src' &&
                                 t.isStringLiteral(attr.value) &&
-                                attr.value.value.includes(PRELOAD_URL)
+                                attr.value.value.includes(PRELOAD_SCRIPT_SRC)
                             );
                         },
                     );
@@ -276,7 +294,7 @@ function addScriptToHead(headElement: T.JSXElement) {
                 t.jsxIdentifier('Script'),
                 [
                     t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                    t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_URL)),
+                    t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
                 ],
                 true,
             ),
@@ -305,7 +323,7 @@ function createAndAddHeadTag(htmlElement: T.JSXElement) {
             t.jsxIdentifier('Script'),
             [
                 t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_URL)),
+                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
             ],
             true,
         ),
