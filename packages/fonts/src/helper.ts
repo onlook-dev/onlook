@@ -188,6 +188,13 @@ export function removeFontsFromClassName(
                             FONT_WEIGHT_REGEX.test(match) ? match : '',
                         );
                     }
+
+                    // Clean up extra commas and spaces after font removal
+                    combinedStatic = combinedStatic
+                        .replace(/,\s*,+/g, ',') // Replace multiple commas with single comma
+                        .replace(/^\s*,+\s*|\s*,+\s*$/g, '') // Remove leading/trailing commas
+                        .replace(/\s+/g, ' ') // Normalize multiple spaces
+                        .trim();
                 } catch (regexError) {
                     console.error('Error processing font class regex:', regexError);
                 }
