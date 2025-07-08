@@ -45,7 +45,6 @@ export const sandboxRouter = createTRPCRouter({
                 }),
                 config: z.object({
                     title: z.string().optional(),
-                    description: z.string().optional(),
                     tags: z.array(z.string()).optional(),
                 }).optional(),
             }),
@@ -57,7 +56,6 @@ export const sandboxRouter = createTRPCRouter({
 
                 // Metadata
                 title: input.config?.title,
-                description: input.config?.description,
                 tags: input.config?.tags,
             });
 
