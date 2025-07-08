@@ -28,7 +28,11 @@ const FontPanel = observer(() => {
     };
 
     const handleFontUpload = async (fonts: FontFile[]) => {
-        await fontManager.uploadFonts(fonts);
+        try {
+            await fontManager.uploadFonts(fonts);
+        } catch (error) {
+            console.error('Font upload failed:', error);
+        }
     };
 
     const performSearch = useCallback(
@@ -264,6 +268,7 @@ const FontPanel = observer(() => {
                 isOpen={isUploadModalOpen}
                 onOpenChange={setIsUploadModalOpen}
                 onUpload={handleFontUpload}
+                isUploading={fontManager.isUploading}
             />
         </div>
     );

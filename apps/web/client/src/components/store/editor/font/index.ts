@@ -11,14 +11,17 @@ import {
     createTemplateLiteralWithFont,
     declareFont,
     extractExistingFontImport,
+    createFontConfig,
     extractFontImport,
     FAMILIES,
     findFontClass,
+    getTargetElementsByType,
     isPropertyWithName,
     isThemeProperty,
     isValidLocalFontDeclaration,
     removeFontFromConfigAST,
     removeFontFromThemeAST,
+    removeFontImportFromFile,
     removeFontsFromClassName,
     validateFontImportAndExport,
 } from '@onlook/fonts';
@@ -54,6 +57,7 @@ export class FontManager {
     private _currentFontIndex = 0;
     private _batchSize = 20;
     private _isFetching = false;
+    private _isUploading = false;
     private _fontSearchIndex: FlexSearch.Document;
     private _allFontFamilies: RawFont[] = FAMILIES as RawFont[];
     private disposers: Array<() => void> = [];
@@ -371,17 +375,9 @@ if (!file || file.type === 'binary') {
             }
 
             let codeDiff: CodeDiff | null = null;
+            const targetElements = getTargetElementsByType(routerConfig.type);
 
-            if (routerConfig.type === 'app') {
-                codeDiff = await this.updateFontInLayout(layoutPath, font, ['html']);
-            } else {
-                codeDiff = await this.updateFontInLayout(layoutPath, font, [
-                    'div',
-                    'main',
-                    'section',
-                    'body',
-                ]);
-            }
+            codeDiff = await this.updateFontInLayout(layoutPath, font, targetElements);
 
             if (codeDiff) {
                 // await this.editorEngine.history.push({
@@ -407,8 +403,15 @@ if (!file || file.type === 'binary') {
             style: string;
         }[],
     ) {
-
+        this._isUploading = true;
         try {
+            const routerConfig = await this.detectRouterType();
+
+            if (!routerConfig?.basePath) {
+                console.error('Could not get base path');
+                return false;
+            }
+
             // Read the current font configuration file
             const { ast, content } = (await this.readFontConfigFile()) ?? {};
             if (!ast || !content) {
@@ -417,41 +420,13 @@ if (!file || file.type === 'binary') {
             }
 
             // Check if the localFont import already exists
-            let hasLocalFontImport = false;
-            traverse(ast, {
-                ImportDeclaration(path) {
-                    if (path.node.source.value === 'next/font/local') {
-                        hasLocalFontImport = true;
-                    }
-                },
-            });
-
+            const hasLocalFontImport = this.isLocalFontImportExists(ast);
             // Extract the base font name from the first file
             const baseFontName = fontFiles[0]?.name.split('.')[0] ?? 'customFont';
             const fontName = camelCase(`custom-${baseFontName}`);
 
             // Check if this font name already exists
-            let fontNameExists = false;
-            let existingFontNode: t.ExportNamedDeclaration | null = null;
-
-            traverse(ast, {
-                ExportNamedDeclaration(path) {
-                    if (
-                        path.node.declaration &&
-                        t.isVariableDeclaration(path.node.declaration) &&
-                        path.node.declaration.declarations.some(
-                            (declaration) =>
-                                t.isIdentifier(declaration.id) && declaration.id.name === fontName,
-                        )
-                    ) {
-                        fontNameExists = true;
-                        existingFontNode = path.node;
-                    }
-                },
-            });
-
-            // Make sure the fonts directory exists (this is handled by sandbox in our case)
-            const fontsDir = 'fonts';
+            const { fontNameExists, existingFontNode } = this.isFontNameExists(ast, fontName);
 
             // Save font files and prepare font configuration
             const fontConfigs = await Promise.all(
@@ -460,7 +435,7 @@ if (!file || file.type === 'binary') {
                     const style = fontFile.style.toLowerCase();
                     const fileName = getFontFileName(baseFontName, weight, style);
                     const filePath = pathModule.join(
-                        fontsDir,
+                        DefaultSettings.FONT_FOLDER,
                         `${fileName}.${fontFile.file.name.split('.').pop()}`,
                     );
 
@@ -469,7 +444,7 @@ if (!file || file.type === 'binary') {
                     await this.editorEngine.sandbox.writeBinaryFile(filePath, buffer);
 
                     return {
-                        path: filePath,
+                        path: `fonts/${fileName}.${fontFile.file.name.split('.').pop()}`,
                         weight,
                         style,
                     };
@@ -477,9 +452,9 @@ if (!file || file.type === 'binary') {
             );
 
             // Create array elements for the src property
-            const srcArrayElements = fontConfigs.map((config) =>
+            const fontsSrc = fontConfigs.map((config) =>
                 t.objectExpression([
-                    t.objectProperty(t.identifier('path'), t.stringLiteral(`../${config.path}`)),
+                    t.objectProperty(t.identifier('path'), t.stringLiteral(config.path)),
                     t.objectProperty(t.identifier('weight'), t.stringLiteral(config.weight)),
                     t.objectProperty(t.identifier('style'), t.stringLiteral(config.style)),
                 ]),
@@ -487,67 +462,9 @@ if (!file || file.type === 'binary') {
 
             if (fontNameExists && existingFontNode) {
                 // Merge new font configurations with existing ones
-                traverse(ast, {
-                    ExportNamedDeclaration(path) {
-                        if (path.node === existingFontNode && path.node.declaration) {
-                            const declaration = path.node.declaration;
-                            if (
-                                t.isVariableDeclaration(declaration) &&
-                                declaration.declarations.length > 0
-                            ) {
-                                const declarator = declaration.declarations[0];
-                                if (
-                                    declarator &&
-                                    isValidLocalFontDeclaration(declarator, fontName)
-                                ) {
-                                    // @ts-ignore
-                                    const configObject = declarator.init?.arguments[0] as t.ObjectExpression;
-                                    const srcProp = configObject.properties.find((prop) =>
-                                        isPropertyWithName(prop, 'src'),
-                                    );
-                                    if (
-                                        srcProp &&
-                                        t.isObjectProperty(srcProp) &&
-                                        t.isArrayExpression(srcProp.value)
-                                    ) {
-                                        srcProp.value.elements.push(...srcArrayElements);
-                                    }
-                                }
-                            }
-                        }
-                    },
-                });
+                this.mergeFontConfig(ast, existingFontNode, fontName, fontsSrc);
             } else {
-                // Create a new font configuration
-                const fontConfigObject = t.objectExpression([
-                    t.objectProperty(t.identifier('src'), t.arrayExpression(srcArrayElements)),
-                    t.objectProperty(
-                        t.identifier('variable'),
-                        t.stringLiteral(
-                            `--font-${fontName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}`,
-                        ),
-                    ),
-                    t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
-                    t.objectProperty(
-                        t.identifier('fallback'),
-                        t.arrayExpression([
-                            t.stringLiteral('system-ui'),
-                            t.stringLiteral('sans-serif'),
-                        ]),
-                    ),
-                    t.objectProperty(t.identifier('preload'), t.booleanLiteral(true)),
-                ]);
-
-                const fontDeclaration = t.variableDeclaration('const', [
-                    t.variableDeclarator(
-                        t.identifier(fontName),
-                        t.callExpression(t.identifier('localFont'), [fontConfigObject]),
-                    ),
-                ]);
-
-                const exportDeclaration = t.exportNamedDeclaration(fontDeclaration, []);
-
-                ast.program.body.push(exportDeclaration);
+                createFontConfig(ast, fontName, fontsSrc);
 
                 if (!hasLocalFontImport) {
                     const importDeclaration = t.importDeclaration(
@@ -568,6 +485,8 @@ if (!file || file.type === 'binary') {
         } catch (error) {
             console.error('Error uploading fonts:', error);
             return false;
+        } finally {
+            this._isUploading = false;
         }
     }
 
@@ -677,6 +596,10 @@ if (!file || file.type === 'binary') {
         return this._isFetching;
     }
 
+    get isUploading() {
+        return this._isUploading;
+    }
+
     get currentFontIndex() {
         return this._currentFontIndex;
     }
@@ -694,6 +617,7 @@ if (!file || file.type === 'binary') {
         this._lastDefaultFont = null;
         this._currentFontIndex = 0;
         this._isFetching = false;
+        this._isUploading = false;
 
         // Clean up file watcher
         this.cleanupFontConfigFileWatcher();
@@ -853,25 +777,16 @@ if (!file || file.type === 'binary') {
      */
     private async addFontVariableToLayout(fontId: string): Promise<boolean> {
         try {
-            const routerConfig = await this.detectRouterType();
-            if (!routerConfig) {
+            const { layoutPath, routerConfig } = (await this.getLayoutPath()) ?? {};
+
+            if (!layoutPath || !routerConfig) {
+                console.error('Could not get layout path or router config');
                 return false;
             }
 
             const fontName = camelCase(fontId);
-
-            if (routerConfig.type === 'app') {
-                const layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
-                await this.addFontVariableToElement(layoutPath, fontName, ['html']);
-            } else {
-                const appPath = pathModule.join(routerConfig.basePath, '_app.tsx');
-                await this.addFontVariableToElement(appPath, fontName, [
-                    'div',
-                    'main',
-                    'section',
-                    'body',
-                ]);
-            }
+            const targetElements = getTargetElementsByType(routerConfig.type);
+            await this.addFontVariableToElement(layoutPath, fontName, targetElements);
             return true;
         } catch (error) {
             console.error(`Error adding font variable to layout:`, error);
@@ -889,37 +804,30 @@ if (!file || file.type === 'binary') {
         }
 
         try {
-            const routerConfig = await this.detectRouterType();
-            if (!routerConfig) {
+            const { layoutPath, routerConfig } = (await this.getLayoutPath()) ?? {};
+
+            if (!layoutPath || !routerConfig) {
+                console.error('Could not get layout path or router config');
                 return false;
             }
 
-            let layoutPath: string;
-            let targetElements: string[] = [];
+            const targetElements = getTargetElementsByType(routerConfig.type);
 
-            if (routerConfig.type === 'app') {
-                layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
-                targetElements = ['html'];
-            } else {
-                layoutPath = pathModule.join(routerConfig.basePath, '_app.tsx');
-                targetElements = ['div', 'main', 'section', 'body'];
-            }
-
-            const normalizedFilePath = normalizePath(layoutPath);
-
-            const file = await sandbox.readFile(normalizedFilePath);
+            const file = await sandbox.readFile(layoutPath);
             if (!file || file.type === 'binary') {
-                console.error(`Failed to read file: ${normalizedFilePath}`);
+                console.error(`Failed to read file: ${layoutPath}`);
                 return false;
             }
             const content = file.content;
-
+            
             let updatedAst = false;
             let ast: ParseResult<t.File> | null = null;
             const fontName = camelCase(fontId);
 
+            // Traverse the className attributes in the layout file
+            // and remove the font variable from the className attributes
             await this.traverseClassName(
-                normalizedFilePath,
+                layoutPath,
                 targetElements,
                 async (classNameAttr, currentAst) => {
                     ast = currentAst;
@@ -935,39 +843,16 @@ if (!file || file.type === 'binary') {
 
             if (updatedAst && ast) {
                 // Remove the font import if it exists
-                const importRegex = new RegExp(
-                    `import\\s*{([^}]*)}\\s*from\\s*['"]${this.fontImportPath}['"]`,
+                const newContent = removeFontImportFromFile(
+                    this.fontImportPath,
+                    fontName,
+                    content,
+                    ast,
                 );
-                const importMatch = content.match(importRegex);
-
-                let newContent = generate(ast).code;
-
-                if (importMatch?.[1]) {
-                    const currentImports = importMatch[1];
-                    const newImports = currentImports
-                        .split(',')
-                        .map((imp) => imp.trim())
-                        .filter((imp) => {
-                            const importName = imp.split(' as ')[0]?.trim();
-                            return importName !== fontName;
-                        })
-                        .join(', ');
-
-                    if (newImports) {
-                        newContent = newContent.replace(
-                            importRegex,
-                            `import { ${newImports} } from '${this.fontImportPath}'`,
-                        );
-                    } else {
-                        // Remove the entire import statement including the semicolon and optional newline
-                        newContent = newContent.replace(
-                            new RegExp(`${importRegex.source};?\\n?`),
-                            '',
-                        );
-                    }
+                if (!newContent) {
+                    return false;
                 }
-
-                return await sandbox.writeFile(normalizedFilePath, newContent);
+                return await sandbox.writeFile(layoutPath, newContent);
             }
             return false;
         } catch (error) {
@@ -1077,17 +962,9 @@ if (!file || file.type === 'binary') {
                 console.error('Could not get layout path or router config');
                 return null;
             }
-            
-            if (routerConfig.type === 'app') {
-                return await this.detectCurrentFont(layoutPath, ['html']);
-            } else {
-                return await this.detectCurrentFont(layoutPath, [
-                    'div',
-                    'main',
-                    'section',
-                    'body',
-                ]);
-            }
+
+            const targetElements = getTargetElementsByType(routerConfig.type);
+            return await this.detectCurrentFont(layoutPath, targetElements);
         } catch (error) {
             console.error('Error getting current font:', error);
             return null;
@@ -1377,6 +1254,7 @@ if (!file || file.type === 'binary') {
         }
 
         try {
+
             const file = await sandbox.readFile(filePath);
             if (!file || file.type === 'binary') {
                 console.error(`Failed to read file: ${filePath}`);
@@ -1495,6 +1373,11 @@ export default config;
         }
     }
 
+    /**
+     * Gets the layout path and router config
+     * @returns The layout path and router config already normalized
+     */
+
     private async getLayoutPath(): Promise<
         | { layoutPath: string; routerConfig: { type: 'app' | 'pages'; basePath: string } }
         | undefined
@@ -1520,7 +1403,7 @@ export default config;
             layoutPath = pathModule.join(routerConfig.basePath, '_app.tsx');
         }
 
-        return { layoutPath, routerConfig };
+        return { layoutPath: normalizePath(layoutPath), routerConfig };
     }
 
     private async readFontConfigFile(): Promise<
@@ -1574,7 +1457,72 @@ export default config;
             },
         });
     }
+    private isLocalFontImportExists(ast: ParseResult<t.File>): boolean {
+        return ast.program.body.some((node) => {
+            if (t.isImportDeclaration(node)) {
+                return node.source.value === 'next/font/local';
+            }
+        });
+    }
+    private isFontNameExists(
+        ast: ParseResult<t.File>,
+        fontName: string,
+    ): { fontNameExists: boolean; existingFontNode: t.ExportNamedDeclaration | null } {
+        let fontNameExists = false;
+        let existingFontNode: t.ExportNamedDeclaration | null = null;
 
+        traverse(ast, {
+            ExportNamedDeclaration(path) {
+                if (
+                    path.node.declaration &&
+                    t.isVariableDeclaration(path.node.declaration) &&
+                    path.node.declaration.declarations.some(
+                        (declaration) =>
+                            t.isIdentifier(declaration.id) && declaration.id.name === fontName,
+                    )
+                ) {
+                    fontNameExists = true;
+                    existingFontNode = path.node;
+                }
+            },
+        });
+        return { fontNameExists, existingFontNode };
+    }
+    private mergeFontConfig(
+        ast: ParseResult<t.File>,
+        fontNode: t.ExportNamedDeclaration,
+        fontName: string,
+        fontsSrc: t.ObjectExpression[],
+    ): void {
+        traverse(ast, {
+            ExportNamedDeclaration(path) {
+                if (path.node === fontNode && path.node.declaration) {
+                    const declaration = path.node.declaration;
+                    if (
+                        t.isVariableDeclaration(declaration) &&
+                        declaration.declarations.length > 0
+                    ) {
+                        const declarator = declaration.declarations[0];
+                        if (declarator && isValidLocalFontDeclaration(declarator, fontName)) {
+                            // @ts-ignore
+                            const configObject = declarator.init?.arguments[0] as t.ObjectExpression;
+                            const srcProp = configObject.properties.find((prop) =>
+                                isPropertyWithName(prop, 'src'),
+                            );
+                            if (
+                                srcProp &&
+                                t.isObjectProperty(srcProp) &&
+                                t.isArrayExpression(srcProp.value)
+                            ) {
+                                srcProp.value.elements.push(...fontsSrc);
+                            }
+                        }
+                    }
+                }
+            },
+        });
+    }
+ 
     private cleanupFontConfigFileWatcher(): void {
         if (this.fontConfigFileWatcher) {
             this.fontConfigFileWatcher();

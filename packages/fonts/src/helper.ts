@@ -1,5 +1,5 @@
 import type { Font, RawFont } from '@onlook/models';
-import { types as t, type NodePath, type t as T } from '@onlook/parser';
+import { generate, types as t, type NodePath, type t as T } from '@onlook/parser';
 import { camelCase } from 'lodash';
 
 const FONT_WEIGHT_REGEX =
@@ -357,4 +357,80 @@ export function declareFont(font: Font): T.ExportNamedDeclaration {
     const exportDeclaration = t.exportNamedDeclaration(fontDeclaration, []);
 
     return exportDeclaration;
+}
+
+export function removeFontImportFromFile(
+    fontImportPath: string,
+    fontName: string,
+    fileContent: string,
+    ast: T.File,
+): string | null {
+    const importRegex = new RegExp(`import\\s*{([^}]*)}\\s*from\\s*['"]${fontImportPath}['"]`);
+    const importMatch = fileContent.match(importRegex);
+
+    let newContent = generate(ast).code;
+
+    if (importMatch?.[1]) {
+        const currentImports = importMatch[1];
+        const newImports = currentImports
+            .split(',')
+            .map((imp) => imp.trim())
+            .filter((imp) => {
+                const importName = imp.split(' as ')[0]?.trim();
+                return importName !== fontName;
+            })
+            .join(', ');
+
+        if (newImports) {
+            newContent = newContent.replace(
+                importRegex,
+                `import { ${newImports} } from '${fontImportPath}'`,
+            );
+        } else {
+            // Remove the entire import statement including the semicolon and optional newline
+            newContent = newContent.replace(new RegExp(`${importRegex.source};?\\n?`), '');
+        }
+    } else {
+        console.error('No import found');
+        return null;
+    }
+    return newContent;
+}
+
+export function getTargetElementsByType(type: string): string[] {
+    if (type === 'app') return ['html'];
+    return ['div', 'main', 'section', 'body'];
+}
+
+export function createFontConfig(
+    ast: T.File,
+    fontName: string,
+    fontsSrc: T.ObjectExpression[],
+): T.File {
+    // Create a new font configuration
+    const fontConfigObject = t.objectExpression([
+        t.objectProperty(t.identifier('src'), t.arrayExpression(fontsSrc)),
+        t.objectProperty(
+            t.identifier('variable'),
+            t.stringLiteral(`--font-${fontName.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}`),
+        ),
+        t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
+        t.objectProperty(
+            t.identifier('fallback'),
+            t.arrayExpression([t.stringLiteral('system-ui'), t.stringLiteral('sans-serif')]),
+        ),
+        t.objectProperty(t.identifier('preload'), t.booleanLiteral(true)),
+    ]);
+
+    const fontDeclaration = t.variableDeclaration('const', [
+        t.variableDeclarator(
+            t.identifier(fontName),
+            t.callExpression(t.identifier('localFont'), [fontConfigObject]),
+        ),
+    ]);
+
+    const exportDeclaration = t.exportNamedDeclaration(fontDeclaration, []);
+
+    ast.program.body.push(exportDeclaration);
+    return ast;
 }
