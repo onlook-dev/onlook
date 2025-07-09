@@ -430,7 +430,6 @@ export const scanPagesFromSandbox = async (session: WebSocketSession): Promise<P
         try {
             const entries = await session.fs.readdir(appPath);
             if (entries && entries.length > 0) {
-                console.log(`Found App Router at: ${appPath}`);
                 routerConfig = { type: 'app', basePath: appPath };
                 break;
             }
@@ -484,7 +483,6 @@ const detectRouterTypeInSandbox = async (
                 );
 
                 if (hasLayout) {
-                    console.log(`Found App Router at: ${appPath}`);
                     return { type: 'app', basePath: appPath };
                 }
             }
@@ -573,13 +571,6 @@ const getUniqueDir = async (
     }
 
     throw new Error(`Unable to find available directory name for ${dirName}`);
-};
-
-const createDirectory = async (session: WebSocketSession, dirPath: string): Promise<void> => {
-    // Creates a temporary file to ensure directory structure exists, then remove it
-    const tempFile = joinPath(dirPath, '.temp');
-    await session.fs.writeTextFile(tempFile, '');
-    await session.fs.remove(tempFile);
 };
 
 export const createPageInSandbox = async (

@@ -1,5 +1,5 @@
 import { LAYOUT_FILE_CONDITIONS } from '@onlook/constants';
-import type { TemplateNode } from '@onlook/models';
+import type { SandboxFile, TemplateNode } from '@onlook/models';
 import {
     addOidsToAst,
     createTemplateNodeMap,
@@ -17,34 +17,39 @@ export class TemplateNodeMapper {
     }
 
     async processFileForMapping(
-        file: string,
-        readFile: (path: string) => Promise<string | null>,
+        filePath: string,
+        readFile: (path: string) => Promise<SandboxFile | null>,
         writeFile: (path: string, content: string) => Promise<boolean>,
     ) {
-        const content = await readFile(file);
-        if (!content) {
-            console.error(`Failed to read file ${file}`);
+        const file = await readFile(filePath);
+        if (!file) {
+            console.error(`Failed to read file ${filePath}`);
             return;
         }
 
-        const ast = getAstFromContent(content);
+        if (file.type === 'binary') {
+            console.error(`Binary files are not supported for mapping`);
+            return;
+        }
+
+        const ast = getAstFromContent(file.content);
         if (!ast) {
-            console.error(`Failed to get ast for file ${file}`);
+            console.error(`Failed to get ast for file ${filePath}`);
             return;
         }
 
-        if (isTargetFile(file, LAYOUT_FILE_CONDITIONS)) {
+        if (isTargetFile(filePath, LAYOUT_FILE_CONDITIONS)) {
             injectPreloadScript(ast);
         }
 
         const { ast: astWithIds, modified } = addOidsToAst(ast);
-        const templateNodeMap = createTemplateNodeMap(astWithIds, file);
+        const templateNodeMap = createTemplateNodeMap(astWithIds, filePath);
         this.updateMapping(templateNodeMap);
 
         // Write the file if it has changed
         if (modified) {
             const contentWithIds = await getContentFromAst(astWithIds);
-            await writeFile(file, contentWithIds);
+            await writeFile(filePath, contentWithIds);
         }
     }
 

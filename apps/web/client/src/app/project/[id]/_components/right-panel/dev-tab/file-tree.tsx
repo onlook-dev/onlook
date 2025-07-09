@@ -8,6 +8,7 @@ import { nanoid } from 'nanoid';
 import path from 'path';
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
+import useResizeObserver from 'use-resize-observer';
 import { FileTreeNode } from './file-tree-node';
 import { FileTreeRow } from './file-tree-row';
 
@@ -26,19 +27,8 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
     const [treeData, setTreeData] = useState<FileNode[]>([]);
     const treeRef = useRef<TreeApi<FileNode>>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const [filesWidth, setFilesWidth] = useState(250);
-    const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (!containerRef.current) return;
-        const resizeObserver = new ResizeObserver(entries => {
-            for (const entry of entries) {
-                setFilesWidth(entry.contentRect.width);
-            }
-        });
-        resizeObserver.observe(containerRef.current);
-        return () => resizeObserver.disconnect();
-    }, []);
+    const { ref: containerRef, width: filesWidth } = useResizeObserver();
+    const { ref: treeContainerRef, height: filesHeight } = useResizeObserver();
 
     // Convert flat file paths to tree structure
     const buildFileTree = useMemo(() => (files: string[]): FileNode[] => {
@@ -198,9 +188,9 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
     const filesTreeDimensions = useMemo(
         () => ({
             width: filesWidth ?? 250,
-            height: 1000,
+            height: filesHeight ?? 300,
         }),
-        [filesWidth],
+        [filesWidth, filesHeight],
     );
 
     const handleRefresh = async () => {
@@ -267,7 +257,7 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
                         </Tooltip>
                     </div>
                 </div>
-                <div className="min-w-full h-full overflow-x-auto text-xs w-full h-full px-2 flex-1">
+                <div ref={treeContainerRef} className="min-w-full h-full overflow-x-auto text-xs w-full h-full px-2 flex-1">
                     {isLoading ? (
                         <div className="flex flex-col justify-center items-center h-full text-sm text-foreground/50">
                             <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>

@@ -99,13 +99,18 @@ async function handleEditFileTool(
     if (!exists) {
         throw new Error('File does not exist');
     }
-    const originalContent = await editorEngine.sandbox.readFile(args.path);
+    const originalFile = await editorEngine.sandbox.readFile(args.path);
 
-    if (!originalContent) {
+    if (!originalFile) {
         throw new Error('Error reading file');
     }
+
+    if (originalFile.type === 'binary') {
+        throw new Error('Binary files are not supported for editing');
+    }
+
     const updatedContent = await api.code.applyDiff.mutate({
-        originalCode: originalContent,
+        originalCode: originalFile.content,
         updateSnippet: args.content,
         instruction: args.instruction,
     });
