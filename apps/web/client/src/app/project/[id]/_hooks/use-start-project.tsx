@@ -34,13 +34,12 @@ export const useStartProject = () => {
     const startSandbox = async (project: Project) => {
         try {
             await editorEngine.sandbox.session.start(project.sandbox.id);
+            setIsSandboxLoading(false);
         } catch (error) {
             console.error('Failed to start sandbox', error);
             toast.error('Failed to start sandbox', {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
-        } finally {
-            setIsSandboxLoading(false);
         }
     }
 
