@@ -196,12 +196,12 @@ export default function Folder() {
                         </div>
 
                         <FolderDropdownMenu
-                            folder={currentFolder || folderStructure}
+                            folder={currentFolder ?? folderStructure}
                             handleRenameFolder={() =>
-                                handleRenameFolder(currentFolder || folderStructure)
+                                handleRenameFolder(currentFolder ?? folderStructure)
                             }
                             handleDeleteFolder={() =>
-                                handleDeleteFolder(currentFolder || folderStructure)
+                                handleDeleteFolder(currentFolder ?? folderStructure)
                             }
                             handleMoveToFolder={handleMoveToFolder}
                             className="bg-gray-700"
@@ -237,7 +237,7 @@ export default function Folder() {
                     variant="default"
                     size="icon"
                     className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                    onClick={() => handleCreateFolder(currentFolder || undefined)}
+                    onClick={() => handleCreateFolder(currentFolder)}
                 >
                     <Icons.DirectoryPlus className="h-4 w-4" />
                 </Button>
