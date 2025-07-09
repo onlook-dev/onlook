@@ -43,7 +43,7 @@ const user0 = {
 
 const project0 = {
     id: uuidv4(),
-    name: 'Test Project',
+    name: 'Preload Script Test',
     sandboxId: '3f5rf6',
     sandboxUrl: 'http://localhost:8084',
     previewImgUrl: null,
@@ -54,38 +54,14 @@ const project0 = {
     description: 'Test Project Description',
 } satisfies Project;
 
-const project1 = {
-    id: uuidv4(),
-    name: 'Test Project 1',
-    sandboxId: '3f5rf6',
-    sandboxUrl: 'https://3f5rf6-8084.csb.app',
-    previewImgUrl: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    description: 'Test Project 1 Description',
-    previewImgPath: null,
-    previewImgBucket: null,
-} satisfies Project;
-
 const canvas0 = createDefaultCanvas(project0.id);
-const canvas1 = createDefaultCanvas(project1.id);
 const frame0 = createDefaultFrame(canvas0.id, project0.sandboxUrl);
-const frame1 = createDefaultFrame(canvas1.id, project1.sandboxUrl);
 const userCanvas0 = createDefaultUserCanvas(user0.id, canvas0.id);
-const userCanvas1 = createDefaultUserCanvas(user0.id, canvas1.id);
 
 const conversation0 = {
     id: uuidv4(),
     projectId: project0.id,
     displayName: 'Test Conversation',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-} satisfies Conversation;
-
-const conversation1 = {
-    id: uuidv4(),
-    projectId: project1.id,
-    displayName: 'Test Conversation 1',
     createdAt: new Date(),
     updatedAt: new Date(),
 } satisfies Conversation;
@@ -149,7 +125,7 @@ const message2 = {
 
 const message3 = {
     id: uuidv4(),
-    conversationId: conversation1.id,
+    conversationId: conversation0.id,
     role: ChatMessageRole.USER,
     content: 'Test message 3',
     commitOid: null,
@@ -162,7 +138,7 @@ const message3 = {
 
 const message4 = {
     id: uuidv4(),
-    conversationId: conversation1.id,
+    conversationId: conversation0.id,
     role: ChatMessageRole.ASSISTANT,
     content: 'Test message 4',
     createdAt: new Date(),
@@ -178,23 +154,18 @@ export const seedDb = async () => {
 
     await db.transaction(async (tx) => {
         await tx.insert(users).values(user0);
-        await tx.insert(projects).values([project0, project1]);
+        await tx.insert(projects).values([project0]);
         await tx.insert(userProjects).values([
             {
                 userId: user0.id,
                 projectId: project0.id,
                 role: ProjectRole.OWNER,
             },
-            {
-                userId: user0.id,
-                projectId: project1.id,
-                role: ProjectRole.OWNER,
-            },
         ]);
-        await tx.insert(canvases).values([canvas0, canvas1]);
-        await tx.insert(userCanvases).values([userCanvas0, userCanvas1]);
-        await tx.insert(frames).values([frame0, frame1]);
-        await tx.insert(conversations).values([conversation0, conversation1]);
+        await tx.insert(canvases).values([canvas0]);
+        await tx.insert(userCanvases).values([userCanvas0]);
+        await tx.insert(frames).values([frame0]);
+        await tx.insert(conversations).values([conversation0]);
         await tx.insert(messages).values([message0, message1, message2, message3, message4]);
     });
 

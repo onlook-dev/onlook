@@ -1888,7 +1888,13 @@ var processDom = import_debounce.default(processDomDebounced, 500);
 var FILTER_CONDITIONS = [
   (element) => {
     const parent2 = element.parentElement;
-    return parent2 && parent2.tagName.toLowerCase().includes("svg");
+    return parent2 && parent2.tagName.toLowerCase() === "svg";
+  },
+  (element) => {
+    return element.tagName.toLowerCase() === "next-route-announcer";
+  },
+  (element) => {
+    return element.tagName.toLowerCase() === "nextjs-portal";
   }
 ];
 function buildLayerTree(root) {
@@ -17429,5 +17435,5 @@ export {
   penpalParent
 };
 
-//# debugId=505BC4D7ECAA05C764756E2164756E21
+//# debugId=1B141CFD31E78FE164756E2164756E21
 //# sourceMappingURL=index.js.map
