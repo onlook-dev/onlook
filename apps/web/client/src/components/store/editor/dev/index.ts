@@ -1,6 +1,6 @@
 import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config';
 import { BINARY_EXTENSIONS } from '@onlook/constants';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import path from 'path';
 import type { EditorEngine } from '../engine';
@@ -33,6 +33,10 @@ export class IDEManager {
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+
+        reaction(() => this.editorEngine.sandbox.files, (files) => {
+            this.files = files;
+        });
     }
 
     private isSandboxReady() {
