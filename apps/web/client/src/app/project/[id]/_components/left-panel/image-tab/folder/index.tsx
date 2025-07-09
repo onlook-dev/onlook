@@ -1,20 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
-import { FolderList } from './folder-list';
-import { ImageList } from '../image-list';
-import { type FolderNode } from '../providers/types';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { TooltipTrigger } from '@onlook/ui/tooltip';
-import { TooltipContent } from '@onlook/ui/tooltip';
-import { Tooltip } from '@onlook/ui/tooltip';
-import { TooltipPortal } from '@onlook/ui/tooltip';
 import { Input } from '@onlook/ui/input';
-import { useImageSearch } from '../hooks/use-image-search';
 import { Separator } from '@onlook/ui/separator';
-import { useImagesContext } from '../providers/images-provider';
-import { useFolderImages } from '../hooks/use-folder-images';
-import { FolderDropdownMenu } from './folder-dropdown-menu';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { isEqual } from 'lodash';
+import { useEffect, useRef, useState } from 'react';
+import { useFolderImages } from '../hooks/use-folder-images';
+import { useImageSearch } from '../hooks/use-image-search';
+import { ImageList } from '../image-list';
+import { useImagesContext } from '../providers/images-provider';
+import { type FolderNode } from '../providers/types';
+import { FolderDropdownMenu } from './folder-dropdown-menu';
+import { FolderList } from './folder-list';
 import FolderCreateModal from './modal/folder-create-modal';
 
 interface FolderPathItem {
@@ -147,7 +144,7 @@ export default function Folder() {
 
     const canGoBack = folderPath.length > 0 || currentFolder !== folderStructure;
     const isAnyOperationLoading = isOperating || isFolderOperating;
-    const showCreateButton = currentFolder === folderStructure && currentFolder.children.size === 0;
+    const showCreateButton = !!currentFolder && currentFolder === folderStructure && currentFolder.children.size === 0;
 
     return (
         <div className="flex flex-col gap-2 h-full">
