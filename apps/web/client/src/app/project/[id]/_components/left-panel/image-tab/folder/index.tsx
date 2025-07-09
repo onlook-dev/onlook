@@ -144,7 +144,7 @@ export default function Folder() {
 
     const canGoBack = folderPath.length > 0 || currentFolder !== folderStructure;
     const isAnyOperationLoading = isOperating || isFolderOperating;
-    const showCreateButton = !!currentFolder && currentFolder === folderStructure && currentFolder?.children?.size === 0;
+    const showCreateButton = !!currentFolder && currentFolder === folderStructure && currentFolder.children.size === 0;
 
     return (
         <div className="flex flex-col gap-2 h-full">
