@@ -48,7 +48,6 @@ export const WebFrameComponent = observer(
 
         const undebouncedReloadIframe = () => {
             try {
-                console.error('Reloading iframe');
                 const iframe = iframeRef.current;
                 if (!iframe) return;
                 iframe.src = iframe.src;
