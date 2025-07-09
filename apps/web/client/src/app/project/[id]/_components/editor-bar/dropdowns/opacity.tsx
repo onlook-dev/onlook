@@ -33,7 +33,7 @@ const useOpacityControl = () => {
         // Convert percentage to decimal (e.g., 50 -> 0.5)
         const opacityDecimal = value / 100;
         const action = editorEngine.style.getUpdateStyleAction({ opacity: opacityDecimal.toString() });
-        editorEngine.action.updateStyle(action);
+        void editorEngine.action.updateStyle(action);
     };
 
     return { opacity, handleOpacityChange };
@@ -55,8 +55,8 @@ export const Opacity = observer(() => {
         handleOpacityChange(value);
     };
 
-    // Focus input when clicking anywhere in the input area
     const handleInputAreaClick = () => {
+        onOpenChange(true);
         inputRef.current?.focus();
     };
 
@@ -64,19 +64,19 @@ export const Opacity = observer(() => {
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <HoverOnlyTooltip content="Layer Opacity" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
-                    <div className="text-muted-foreground border-border/0 group h-8 rounded-lg hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white" onClick={handleInputAreaClick}>
+                    <div className={`mr-1 text-muted-foreground group h-8 rounded-lg hover:bg-background-tertiary/20 hover:border-border ${isOpen ? 'bg-background-tertiary/20 border-border' : 'border-transparent'} flex items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-within:ring-1 focus-within:ring-border focus-within:bg-background-tertiary/20 focus-within:border-border focus-within:text-white`} onClick={handleInputAreaClick}>
                         <Input
                             ref={inputRef}
                             type="number"
                             min={0}
                             max={100}
                             value={opacity}
+                            data-state={isOpen ? 'open' : 'closed'}
                             onChange={onInputChange}
-                            className="w-14 text-left text-small focus:text-foreground-primary !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary cursor-pointer transition-colors duration-150 hover"
+                            className="w-14 text-left text-small focus:text-foreground-primary focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary transition-colors duration-150 hover"
                             aria-label="Opacity percentage"
-                            onClick={e => e.stopPropagation()} // Prevents dropdown from closing when clicking input
                         />
-                        <span className="pr-2 text-muted-foreground text-xs pointer-events-none select-none bg-transparent group-hover:text-foreground-primary transition-colors duration-150">
+                        <span className="pr-2 cursor-text text-muted-foreground text-xs pointer-events-none select-none bg-transparent group-hover:text-foreground-primary transition-colors duration-150">
                             %
                         </span>
                     </div>
