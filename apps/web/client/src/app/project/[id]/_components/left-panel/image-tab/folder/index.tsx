@@ -1,3 +1,4 @@
+import { DefaultSettings } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -278,7 +279,7 @@ export default function Folder() {
                     </div>
                 </div>
             ) : (
-                <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath || ''} />
+                <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath ?? DefaultSettings.IMAGE_FOLDER} />
             )}
 
             <FolderCreateModal
