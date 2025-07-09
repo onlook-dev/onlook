@@ -1,4 +1,4 @@
-import type { WebSocketSession } from '@codesandbox/sdk';
+import type { SandboxSession } from '@codesandbox/sdk';
 import { deployments, deploymentUpdateSchema, previewDomains, projects, publishedDomains, type Deployment } from '@onlook/db';
 import { type db as DrizzleDb } from '@onlook/db/src/client';
 import {
@@ -108,7 +108,7 @@ export async function publishInBackground({
         urls: deploymentUrls,
     });
 
-    const { session, sandboxId: forkedSandboxId }: { session: WebSocketSession, sandboxId: string } = await forkBuildSandbox(sandboxId, userId, deploymentId);
+    const { session, sandboxId: forkedSandboxId }: { session: SandboxSession, sandboxId: string } = await forkBuildSandbox(sandboxId, userId, deploymentId);
 
     try {
         updateDeployment(db, deploymentId, {
