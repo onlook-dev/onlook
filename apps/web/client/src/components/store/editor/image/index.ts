@@ -160,7 +160,6 @@ export class ImageManager {
         } finally {
             this._isScanning = false;
         }
-        console.log('imagePaths', this._imagePaths);
     }
 
     clear() {
