@@ -48,6 +48,7 @@ export const WebFrameComponent = observer(
 
         const undebouncedReloadIframe = () => {
             try {
+                console.error('Reloading iframe');
                 const iframe = iframeRef.current;
                 if (!iframe) return;
                 iframe.src = iframe.src;
@@ -56,12 +57,9 @@ export const WebFrameComponent = observer(
             }
         };
 
-        const reloadIframe = debounce(() => {
-            undebouncedReloadIframe();
-        }, 1000, {
+        const reloadIframe = debounce(undebouncedReloadIframe, 1000, {
             leading: true,
         });
-
 
         const setupPenpalConnection = () => {
             if (!iframeRef.current?.contentWindow) {

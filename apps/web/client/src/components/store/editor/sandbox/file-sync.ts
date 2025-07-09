@@ -1,23 +1,12 @@
-import { convertToBase64 } from '@onlook/utility';
-import localforage from 'localforage';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
 
 export class FileSyncManager {
     private cache: Map<string, string>;
     private binaryCache: Map<string, Uint8Array>;
-    private storageKey
-    private binaryStorageKey
 
-    constructor(
-        private readonly editorEngine: EditorEngine,
-    ) {
+    constructor() {
         this.cache = new Map();
         this.binaryCache = new Map();
-        this.storageKey = 'file-cache-' + this.editorEngine.projectId;
-        this.binaryStorageKey = 'binary-file-cache-' + this.editorEngine.projectId;
-
-        this.restoreFromLocalStorage();
         makeAutoObservable(this);
     }
 
@@ -33,7 +22,6 @@ export class FileSyncManager {
     async trackBinaryFile(filePath: string) {
         if (!this.hasBinary(filePath)) {
             this.binaryCache.set(filePath, new Uint8Array(0));
-            await this.saveToLocalStorage();
         }
     }
 
@@ -151,18 +139,15 @@ export class FileSyncManager {
 
     async updateBinaryCache(filePath: string, content: Uint8Array): Promise<void> {
         this.binaryCache.set(filePath, content);
-        await this.saveToLocalStorage();
     }
 
     async updateCache(filePath: string, content: string): Promise<void> {
         this.cache.set(filePath, content);
-        await this.saveToLocalStorage();
     }
 
     async delete(filePath: string) {
         this.binaryCache.delete(filePath);
         this.cache.delete(filePath);
-        await this.saveToLocalStorage();
     }
 
     async rename(oldPath: string, newPath: string) {
@@ -210,10 +195,6 @@ export class FileSyncManager {
             this.cache.set(newKey, content);
             this.cache.delete(oldKey);
         }
-
-        if (hasChanges) {
-            await this.saveToLocalStorage();
-        }
     }
 
     listAllFiles() {
@@ -225,57 +206,6 @@ export class FileSyncManager {
 
     listBinaryFiles(dir: string) {
         return Array.from(this.binaryCache.keys()).filter(filePath => filePath.startsWith(dir));
-    }
-
-    private async restoreFromLocalStorage() {
-        try {
-            // Restore text cache
-            const storedCache = await localforage.getItem<Record<string, string>>(this.storageKey);
-            if (storedCache) {
-                Object.entries(storedCache).forEach(([key, value]) => {
-                    this.cache.set(key, value);
-                });
-            }
-
-            // Restore binary cache
-            const storedBinaryCache = await localforage.getItem<Record<string, string>>(this.binaryStorageKey);
-            if (storedBinaryCache) {
-                Object.entries(storedBinaryCache).forEach(([key, base64Value]) => {
-                    // Convert base64 back to Uint8Array
-                    const binaryString = atob(base64Value);
-                    const bytes = Uint8Array.from(binaryString, char => char.charCodeAt(0));
-                    this.binaryCache.set(key, bytes);
-                });
-            }
-        } catch (error) {
-            console.error('Error restoring from localForage:', error);
-        }
-    }
-
-    private async saveToLocalStorage() {
-        try {
-            // Save text cache
-            const cacheObject = Object.fromEntries(this.cache.entries());
-            await localforage.setItem(this.storageKey, cacheObject);
-
-            // Save binary cache (convert Uint8Array to base64)
-            const binaryCacheObject: Record<string, string> = {};
-            this.binaryCache.forEach((value, key) => {
-                binaryCacheObject[key] = convertToBase64(value);
-            });
-            await localforage.setItem(this.binaryStorageKey, binaryCacheObject);
-        } catch (error) {
-            console.error('Error saving to localForage:', error);
-        }
-    }
-
-    private async clearLocalStorage() {
-        try {
-            await localforage.removeItem(this.storageKey);
-            await localforage.removeItem(this.binaryStorageKey);
-        } catch (error) {
-            console.error('Error clearing localForage:', error);
-        }
     }
 
     async syncFromRemote(
@@ -296,7 +226,6 @@ export class FileSyncManager {
         this.binaryCache.clear();
         this.cache = new Map();
         this.binaryCache = new Map();
-        await this.clearLocalStorage();
     }
 
     /**
@@ -327,7 +256,6 @@ export class FileSyncManager {
                 results[result.path] = result.content;
             }
         }
-
         return results;
     }
 
@@ -338,8 +266,6 @@ export class FileSyncManager {
         for (const { path, content } of entries) {
             this.cache.set(path, content);
         }
-
-        await this.saveToLocalStorage();
     }
 
     /**
@@ -349,8 +275,6 @@ export class FileSyncManager {
         for (const { path, content } of entries) {
             this.binaryCache.set(path, content);
         }
-
-        await this.saveToLocalStorage();
     }
 
     /**
@@ -366,8 +290,5 @@ export class FileSyncManager {
             }
         }
 
-        if (hasChanges) {
-            await this.saveToLocalStorage();
-        }
     }
 }

@@ -24,8 +24,8 @@ export class SandboxManager {
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
-        this.fileSync = new FileSyncManager(this.editorEngine);
-        this.templateNodeMap = new TemplateNodeMapper(this.editorEngine);
+        this.fileSync = new FileSyncManager();
+        this.templateNodeMap = new TemplateNodeMapper();
         makeAutoObservable(this);
 
         reaction(
@@ -34,8 +34,6 @@ export class SandboxManager {
                 this.isIndexed = false;
                 if (session) {
                     this.index();
-                } else {
-                    this.fileSync.clear();
                 }
             },
         );
@@ -298,6 +296,10 @@ export class SandboxManager {
         );
     }
 
+    get files() {
+        return this.fileSync.listAllFiles();
+    }
+
     listAllFiles() {
         return this.fileSync.listAllFiles();
     }
@@ -501,18 +503,18 @@ export class SandboxManager {
     }
 
     async getTemplateNodeChild(
-            parentOid: string,
-            child: TemplateNode,
-            index: number,
-        ): Promise<{ instanceId: string; component: string } | null> {
-            
-            const codeBlock = await this.getCodeBlock(parentOid);
-            
-            if (codeBlock == null) {
-                console.error(`Failed to read code block: ${parentOid}`);
-                return null;
-            }
-            
+        parentOid: string,
+        child: TemplateNode,
+        index: number,
+    ): Promise<{ instanceId: string; component: string } | null> {
+
+        const codeBlock = await this.getCodeBlock(parentOid);
+
+        if (codeBlock == null) {
+            console.error(`Failed to read code block: ${parentOid}`);
+            return null;
+        }
+
         return await getTemplateNodeChild(codeBlock, child, index);
     }
 
