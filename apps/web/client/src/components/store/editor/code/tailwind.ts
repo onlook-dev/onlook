@@ -52,7 +52,7 @@ export function createCSSRuleString(oid: string, styles: Record<string, StyleCha
     const cssString = Object.entries(styles)
         .map(
             ([property, value]) =>
-                `${property.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value.value.trim().toLowerCase()};`,
+                `${property.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value.value.trim()};`,
         )
         .join(' ');
     return `${oid} { ${cssString} }`;

@@ -8,7 +8,7 @@ import { Icons } from '@onlook/ui/icons';
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { debounce } from 'lodash';
 
-const UNITS = ['PX', '%', 'EM', 'REM'];
+const UNITS = ['px', '%', 'em', 'rem'];
 
 interface InputRangeProps {
     value: number;
@@ -138,7 +138,7 @@ export const InputRange = ({
                                     onClick={() => onUnitChange?.(unitOption)}
                                     className="text-[12px] text-center px-2"
                                 >
-                                    {unitOption}
+                                    {unitOption.toUpperCase()}
                                 </DropdownMenuItem>
                             ))}
                         </DropdownMenuContent>

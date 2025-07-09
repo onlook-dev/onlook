@@ -10,7 +10,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { useInputControl } from '../hooks/use-input-control';
 
-const UNITS = ['PX', '%', 'EM', 'REM'];
+const UNITS = ['px', '%', 'em', 'rem'];
 
 const OPTION_OVERRIDES: Record<string, string | undefined> = {
     Fit: 'Hug',
@@ -29,7 +29,7 @@ interface InputDropdownProps {
 
 export const InputDropdown = ({
     value,
-    unit = 'PX',
+    unit = 'px',
     dropdownValue = 'Hug',
     dropdownOptions = ['Hug'],
     onChange,
@@ -60,7 +60,7 @@ export const InputDropdown = ({
                                 onClick={() => onUnitChange?.(unitOption)}
                                 className="text-sm w-full h-9 flex justify-center items-center text-center px-2 hover:bg-background-tertiary/70 hover:text-white transition-colors"
                             >
-                                {unitOption}
+                                {unitOption.toUpperCase()}
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>
