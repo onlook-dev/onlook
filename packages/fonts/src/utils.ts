@@ -229,6 +229,7 @@ export function extractExistingFontImport(content: string): {
                         }
 
                         const configArg = declaration.init.arguments[0];
+                        fontVariables.push(fontId);
 
                         if (t.isObjectExpression(configArg)) {
                             const fontConfig = extractFontConfig(fontId, fontType, configArg);
