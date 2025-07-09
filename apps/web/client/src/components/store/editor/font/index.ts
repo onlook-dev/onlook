@@ -103,20 +103,19 @@ export class FontManager {
         });
 
         // React to sandbox connection status
-        const sandboxDisposer = reaction(
-            () => this.editorEngine.sandbox.isIndexingFiles,
-            async (isIndexingFiles) => {
-                if (!isIndexingFiles) {
+        reaction(
+            () => this.editorEngine.sandbox.isIndexedFiles,            
+            async (isIndexedFiles) => {
+                if (isIndexedFiles) {
                     await this.updateFontConfigPath();
                     this.setupFontConfigFileWatcher(); 
 
                     await this.syncFontsWithConfigs();
                     await this.loadInitialFonts();
+                    await this.getDefaultFont();
                 }
             },
         );
-
-        this.disposers.push(sandboxDisposer);
     }
 
     private async loadInitialFonts() {
@@ -613,12 +612,8 @@ export class FontManager {
         this._isUploading = false;
         this._isScanning = false;
 
-        // Clean up file watcher
-        this.cleanupFontConfigFileWatcher();
-
-        // Clean up all reactions
-        this.disposers.forEach((disposer) => disposer());
-        this.disposers = [];
+        // // Clean up file watcher
+        // this.cleanupFontConfigFileWatcher();
     }
 
     /**
@@ -646,7 +641,7 @@ export class FontManager {
 
         if (importMatch?.[1]) {
             const currentImports = importMatch[1];
-            if (!currentImports.includes(fontName)) {
+            if (currentImports && !currentImports.includes(fontName)) {
                 const newImports = cleanComma(currentImports.trim() + `, ${fontName}`);
 
                 newContent = newContent.replace(
@@ -959,7 +954,13 @@ export class FontManager {
             }
 
             const targetElements = getTargetElementsByType(routerConfig.type);
-            return await this.detectCurrentFont(layoutPath, targetElements);
+            const defaultFont = await this.detectCurrentFont(layoutPath, targetElements);
+
+            if (defaultFont) {
+                this._defaultFont = defaultFont;
+            }
+
+            return defaultFont;
         } catch (error) {
             console.error('Error getting current font:', error);
             return null;
@@ -1260,7 +1261,7 @@ export class FontManager {
             });
 
             traverse(ast, {
-                JSXOpeningElement(path) {
+                async JSXOpeningElement(path) {
                     if (
                         !t.isJSXIdentifier(path.node.name) ||
                         !targetElements.includes(path.node.name.name)
@@ -1281,10 +1282,10 @@ export class FontManager {
                             t.stringLiteral(''),
                         );
                         path.node.attributes.push(newClassNameAttr);
-                        callback(newClassNameAttr, ast);
+                        await callback(newClassNameAttr, ast);
                         return;
                     }
-                    callback(classNameAttr, ast);
+                    await callback(classNameAttr, ast);
                 },
             });
         } catch (error) {
