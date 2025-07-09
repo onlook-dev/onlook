@@ -1,3 +1,4 @@
+import { UNITS } from '@onlook/constants';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -5,10 +6,8 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { useEffect, useRef, useState, useMemo } from 'react';
 import { debounce } from 'lodash';
-
-const UNITS = ['px', '%', 'em', 'rem'];
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface InputRangeProps {
     value: number;
