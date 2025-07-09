@@ -70,45 +70,9 @@ export class ImageManager {
     }
 
     async paste(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {
+        console.log('paste image');
         return;
-        // const targets = this.getTargets();
-        // if (!targets || targets.length === 0) {
-        //     return;
-        // }
-
-        // try {
-        //     const response = await fetch(base64Image);
-        //     const blob = await response.blob();
-        //     const file = new File([blob], 'image', { type: mimeType });
-        //     const compressedBase64 = await compressImage(file);
-        //     if (!compressedBase64) {
-        //         console.error('Failed to compress image');
-        //         return;
-        //     }
-        //     base64Image = compressedBase64;
-        // } catch (error) {
-        //     console.error('Error compressing image:', error);
-        //     return;
-        // }
-
-        // const fileName = `${nanoid(4)}.${mime.getExtension(mimeType)}`;
-        // const action: InsertImageAction = {
-        //     type: 'insert-image',
-        //     targets: targets,
-        //     image: {
-        //         content: base64Image,
-        //         fileName: fileName,
-        //         mimeType: mimeType,
-        //     },
-        // };
-
-        // this.editorEngine.action.run(action);
-        // setTimeout(() => {
-        //     this.scanImages();
-        // }, 2000);
-        // sendAnalytics('image insert', { mimeType });
     }
-
 
     search(name: string) {
         return this.imagePaths.find((img) => name.includes(img));
