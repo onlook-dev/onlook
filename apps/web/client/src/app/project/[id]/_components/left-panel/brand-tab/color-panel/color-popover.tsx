@@ -75,6 +75,7 @@ export const ColorPopover = ({
                         color={editedColor}
                         onChange={handleColorChange}
                         onChangeEnd={handleColorChange}
+                        isCreatingNewColor
                     />
                 </div>
             </PopoverContent>
