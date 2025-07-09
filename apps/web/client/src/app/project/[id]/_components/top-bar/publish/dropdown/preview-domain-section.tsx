@@ -104,6 +104,10 @@ export const PreviewDomainSection = observer(() => {
                 <Button disabled={isCreatingDomain} onClick={createBaseDomain} className="w-full rounded-md p-3">
                     {isCreatingDomain ? 'Creating domain...' : 'Publish my site'}
                 </Button>
+                
+                <p className="text-sm text-muted-foreground text-center mt-2">
+                    Publish now, add your custom domain next.
+                </p>
             </>
         );
     };

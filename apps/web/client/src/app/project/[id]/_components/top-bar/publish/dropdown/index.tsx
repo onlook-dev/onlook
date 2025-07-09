@@ -1,4 +1,6 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { useHostingType } from '@/components/store/hosting';
+import { api } from '@/trpc/react';
 import { DeploymentType } from '@onlook/models';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
@@ -8,11 +10,14 @@ import { LoadingState } from './loading';
 import { PreviewDomainSection } from './preview-domain-section';
 
 export const PublishDropdown = observer(() => {
+    const editorEngine = useEditorEngine();
+    const { data: previewDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
     const { deployment: previewDeployment, isDeploying: isPreviewDeploying } = useHostingType(DeploymentType.PREVIEW);
     const { deployment: customDeployment, isDeploying: isCustomDeploying } = useHostingType(DeploymentType.CUSTOM);
 
     const isDeploying = isPreviewDeploying || isCustomDeploying;
     const deployment = previewDeployment || customDeployment;
+    const hasPublishedSite = !!previewDomain?.url;
 
     return (
         <div className="rounded-md flex flex-col text-foreground-secondary">
@@ -21,8 +26,12 @@ export const PublishDropdown = observer(() => {
             ) : (
                 <>
                     <PreviewDomainSection />
-                    <Separator />
-                    <CustomDomainSection />
+                    {hasPublishedSite && (
+                        <>
+                            <Separator />
+                            <CustomDomainSection />
+                        </>
+                    )}
                     <Separator />
                     <AdvancedSettingsSection />
                 </>
