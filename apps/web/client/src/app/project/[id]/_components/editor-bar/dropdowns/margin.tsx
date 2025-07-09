@@ -10,53 +10,94 @@ import {
 import { Icons } from "@onlook/ui/icons";
 import { cn } from "@onlook/ui/utils";
 import { observer } from "mobx-react-lite";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 
+
+export enum MarginTab {
+    ALL = "all",
+    INDIVIDUAL = "individual"
+}
+
+const SIDE_ORDER = ['top', 'right', 'bottom', 'left'] as const; // !!!! DO NOT CHANGE THE ORDER !!!!
+
+const MARGIN_ICON_MAP: Record<string, typeof Icons.MarginEmpty> = {
+    'TRBL': Icons.MarginFull,
+    'TRB': Icons.MarginTRB,
+    'TRL': Icons.MarginTRL,
+    'TBL': Icons.MarginBLT,
+    'RBL': Icons.MarginRBL,
+    'TR': Icons.MarginTR,
+    'TB': Icons.MarginTB,
+    'TL': Icons.MarginTL,
+    'RB': Icons.MarginRB,
+    'RL': Icons.MarginRL,
+    'BL': Icons.MarginBL,
+    'T': Icons.MarginT,
+    'R': Icons.MarginR,
+    'B': Icons.MarginB,
+    'L': Icons.MarginL,
+};
+
 export const Margin = observer(() => {
-    const [activeTab, setActiveTab] = useState("all");
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('margin');
     const editorEngine = useEditorEngine();
-
+    
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'margin-dropdown'
     });
+    
+    
+    const areAllMarginsEqual = useMemo((): boolean => {
+        const margins = {
+            top: boxState.marginTop.num ?? 0,
+            right: boxState.marginRight.num ?? 0,
+            bottom: boxState.marginBottom.num ?? 0,
+            left: boxState.marginLeft.num ?? 0,
+        };
+        
+        const values = Object.values(margins);
+        
+        return values.every(val => val === values[0]);
+    }, [boxState.marginTop.num, boxState.marginRight.num, boxState.marginBottom.num, boxState.marginLeft.num]);
+    
+    const [activeTab, setActiveTab] = useState<MarginTab>(areAllMarginsEqual ? MarginTab.ALL : MarginTab.INDIVIDUAL);
+    
     const getMarginIcon = () => {
-        const top = boxState.marginTop.num ?? 0;
-        const right = boxState.marginRight.num ?? 0;
-        const bottom = boxState.marginBottom.num ?? 0;
-        const left = boxState.marginLeft.num ?? 0;
+        const margins = {
+            top: boxState.marginTop.num ?? 0,
+            right: boxState.marginRight.num ?? 0,
+            bottom: boxState.marginBottom.num ?? 0,
+            left: boxState.marginLeft.num ?? 0,
+        };
 
-        if (top === 0 && right === 0 && bottom === 0 && left === 0) {
+        const values = Object.values(margins);
+        const nonZeroValues = values.filter(val => val > 0);
+        
+        // All zero
+        if (nonZeroValues.length === 0) {
             return Icons.MarginEmpty;
         }
 
-        const allSame = top === right && right === bottom && bottom === left && top !== 0;
+        // All same non-zero values
+        const allSame = nonZeroValues.length === 4 && 
+                        nonZeroValues.every(val => val === nonZeroValues[0]);
         if (allSame) {
             return Icons.MarginFull;
         }
 
-        if (top && right && bottom && left) return Icons.MarginFull;
-        if (top && right && bottom) return Icons.MarginTRB;
-        if (top && right && left) return Icons.MarginTRL;
-        if (top && bottom && left) return Icons.MarginBLT;
-        if (right && bottom && left) return Icons.MarginRBL;
-        if (top && right) return Icons.MarginTR;
-        if (top && bottom) return Icons.MarginTB;
-        if (top && left) return Icons.MarginTL;
-        if (right && bottom) return Icons.MarginRB;
-        if (right && left) return Icons.MarginRL;
-        if (bottom && left) return Icons.MarginBL;
-        if (top) return Icons.MarginT;
-        if (right) return Icons.MarginR;
-        if (bottom) return Icons.MarginB;
-        if (left) return Icons.MarginL;
+        // Create a pattern string for active sides in consistent order (T-R-B-L)
+        const activeSides = SIDE_ORDER
+            .filter(side => margins[side] > 0)
+            .map(side => side.charAt(0).toUpperCase())
+            .join('');
 
-        return Icons.MarginEmpty;
+
+        return MARGIN_ICON_MAP[activeSides] ?? Icons.MarginEmpty;
     };
 
     const getMarginDisplay = () => {
@@ -131,17 +172,17 @@ export const Margin = observer(() => {
             >
                 <div className="mb-3 flex items-center gap-2">
                     <button
-                        onClick={() => setActiveTab("all")}
-                        className={`flex-1 cursor-pointer rounded-md px-4 py-1.5 text-sm transition-colors ${activeTab === "all"
+                        onClick={() => setActiveTab(MarginTab.ALL)}
+                        className={`flex-1 cursor-pointer rounded-md px-4 py-1.5 text-sm transition-colors ${activeTab === MarginTab.ALL
                             ? "bg-background-active/50 text-foreground-primary"
                             : "text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover"
                             }`}
                     >
-                        All sides
+                        {areAllMarginsEqual ? "All sides" : "Mixed"}
                     </button>
                     <button
-                        onClick={() => setActiveTab("individual")}
-                        className={`flex-1 cursor-pointer rounded-md px-4 py-1.5 text-sm transition-colors ${activeTab === "individual"
+                        onClick={() => setActiveTab(MarginTab.INDIVIDUAL)}
+                        className={`flex-1 cursor-pointer rounded-md px-4 py-1.5 text-sm transition-colors ${activeTab === MarginTab.INDIVIDUAL
                             ? "bg-background-active/50 text-foreground-primary"
                             : "text-muted-foreground hover:bg-background-tertiary/20 hover:text-foreground-hover"
                             }`}
@@ -149,7 +190,7 @@ export const Margin = observer(() => {
                         Individual
                     </button>
                 </div>
-                {activeTab === "all" ? (
+                {activeTab === MarginTab.ALL ? (
                     <InputRange
                         value={boxState.margin.num ?? 0}
                         onChange={(value) => handleBoxChange('margin', value.toString())}
