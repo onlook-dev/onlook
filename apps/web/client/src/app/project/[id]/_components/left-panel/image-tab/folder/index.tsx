@@ -1,20 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
-import { FolderList } from './folder-list';
-import { ImageList } from '../image-list';
-import { type FolderNode } from '../providers/types';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { TooltipTrigger } from '@onlook/ui/tooltip';
-import { TooltipContent } from '@onlook/ui/tooltip';
-import { Tooltip } from '@onlook/ui/tooltip';
-import { TooltipPortal } from '@onlook/ui/tooltip';
 import { Input } from '@onlook/ui/input';
-import { useImageSearch } from '../hooks/use-image-search';
 import { Separator } from '@onlook/ui/separator';
-import { useImagesContext } from '../providers/images-provider';
-import { useFolderImages } from '../hooks/use-folder-images';
-import { FolderDropdownMenu } from './folder-dropdown-menu';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { isEqual } from 'lodash';
+import { useEffect, useRef, useState } from 'react';
+import { useFolderImages } from '../hooks/use-folder-images';
+import { useImageSearch } from '../hooks/use-image-search';
+import { ImageList } from '../image-list';
+import { useImagesContext } from '../providers/images-provider';
+import { type FolderNode } from '../providers/types';
+import { FolderDropdownMenu } from './folder-dropdown-menu';
+import { FolderList } from './folder-list';
 import FolderCreateModal from './modal/folder-create-modal';
 
 interface FolderPathItem {
@@ -240,7 +237,7 @@ export default function Folder() {
                     variant="default"
                     size="icon"
                     className="p-2 w-fit h-fit text-foreground-primary border-border-primary hover:border-border-onlook bg-background-secondary hover:bg-background-onlook border"
-                    onClick={() => handleCreateFolder(currentFolder ?? undefined)}
+                    onClick={() => handleCreateFolder(currentFolder)}
                 >
                     <Icons.DirectoryPlus className="h-4 w-4" />
                 </Button>

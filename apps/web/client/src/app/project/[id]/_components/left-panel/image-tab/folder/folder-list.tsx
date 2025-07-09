@@ -1,12 +1,12 @@
-import { memo } from 'react';
-import FolderTab from './folder-tab';
-import type { FolderNode } from '../providers/types';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import FolderDeleteModal from './modal/folder-delete-modal';
-import FolderRenameModal from './modal/folder-rename-modal';
+import { memo } from 'react';
 import { useImagesContext } from '../providers/images-provider';
+import type { FolderNode } from '../providers/types';
+import FolderTab from './folder-tab';
+import FolderDeleteModal from './modal/folder-delete-modal';
 import FolderMoveModal from './modal/folder-move-modal';
+import FolderRenameModal from './modal/folder-rename-modal';
 
 interface FolderListProps {
     items: FolderNode[];
@@ -57,7 +57,7 @@ export const FolderList = memo(
                         variant="default"
                         size="icon"
                         className="p-2.5 w-full h-fit gap-2 bg-gray-800 hover:bg-gray-700 text-white font-normal"
-                        onClick={() => handleCreateFolder(folder || undefined)}
+                        onClick={() => handleCreateFolder(folder)}
                         disabled={isOperating}
                     >
                         <Icons.DirectoryPlus className="h-4 w-4" />

@@ -279,7 +279,7 @@ export const useFolder = () => {
         });
     }, []);
 
-    const handleCreateFolder = useCallback((parentFolder?: FolderNode) => {
+    const handleCreateFolder = useCallback((parentFolder: FolderNode | null) => {
         setCreateState({
             isCreating: true,
             isLoading: false,
