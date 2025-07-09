@@ -75,4 +75,4 @@ ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_product_id_products_id
 ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_price_id_prices_id_fk" FOREIGN KEY ("price_id") REFERENCES "public"."prices"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_scheduled_price_id_prices_id_fk" FOREIGN KEY ("scheduled_price_id") REFERENCES "public"."prices"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "usage_records" ADD CONSTRAINT "usage_records_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-DROP TYPE "public"."status";
+DROP TYPE IF EXISTS "public"."status";
