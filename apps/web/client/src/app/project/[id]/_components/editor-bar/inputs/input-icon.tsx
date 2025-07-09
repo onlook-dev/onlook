@@ -1,3 +1,4 @@
+import { UNITS } from '@onlook/constants';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,8 +9,6 @@ import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
 import { useInputControl } from '../hooks/use-input-control';
 
-const UNITS = ['px', '%', 'rem', 'vw', 'vh'];
-type Unit = (typeof UNITS)[number];
 
 type IconType =
     | 'LeftSide'
@@ -23,10 +22,10 @@ type IconType =
 
 interface InputIconProps {
     value: number;
-    unit?: Unit;
+    unit?: string;
     icon?: IconType;
     onChange?: (value: number) => void;
-    onUnitChange?: (unit: Unit) => void;
+    onUnitChange?: (unit: string) => void;
 }
 
 export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: InputIconProps) => {

@@ -1,5 +1,6 @@
 'use client';
 
+import { UNITS } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -9,8 +10,6 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { useInputControl } from '../hooks/use-input-control';
-
-const UNITS = ['px', '%', 'em', 'rem'];
 
 const OPTION_OVERRIDES: Record<string, string | undefined> = {
     Fit: 'Hug',
