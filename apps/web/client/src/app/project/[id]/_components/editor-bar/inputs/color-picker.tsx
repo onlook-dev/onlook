@@ -104,6 +104,7 @@ interface ColorPickerProps {
     onChange: (color: Color | TailwindColor) => void;
     onChangeEnd: (color: Color | TailwindColor) => void;
     backgroundImage?: string;
+    isCreatingNewColor?: boolean;
 }
 
 export const ColorPickerContent: React.FC<ColorPickerProps> = ({
@@ -111,6 +112,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     onChange,
     onChangeEnd,
     backgroundImage,
+    isCreatingNewColor,
 }) => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [palette, setPalette] = useState<Palette>(color.palette);
@@ -131,31 +133,34 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         ],
     });
     const [selectedStopId, setSelectedStopId] = useState<string>('stop-1');
-    const [activeTab, setActiveTab] = useState<TabValue>(TabValue.BRAND);
+    const [activeTab, setActiveTab] = useState<TabValue>(
+        isCreatingNewColor ? TabValue.CUSTOM : TabValue.BRAND,
+    );
+
 
     const parseGradientFromCSS = useCallback((cssValue: string): GradientState | null => {
         try {
             const normalized = cssValue.trim();
 
-            const linearMatch = normalized.match(/linear-gradient\(([^)]+)\)/);
-            const radialMatch = normalized.match(/radial-gradient\(([^)]+)\)/);
-            const conicMatch = normalized.match(/conic-gradient\(([^)]+)\)/);
+            const linearMatch = /linear-gradient\(([^)]+)\)/.exec(normalized);
+            const radialMatch = /radial-gradient\(([^)]+)\)/.exec(normalized);
+            const conicMatch = /conic-gradient\(([^)]+)\)/.exec(normalized);
 
             let type: GradientState['type'] = 'linear';
             let angle = 90;
             let stopsString = '';
 
-            if (linearMatch && linearMatch[1]) {
+            if (linearMatch?.[1]) {
                 type = 'linear';
                 const params = linearMatch[1];
-                const angleMatch = params.match(/(\d+)deg/);
-                if (angleMatch && angleMatch[1]) {
+                const angleMatch = /(\d+)deg/.exec(params);
+                if (angleMatch?.[1]) {
                     angle = parseInt(angleMatch[1]);
                     stopsString = params.replace(/^\d+deg,?\s*/, '');
                 } else {
                     stopsString = params;
                 }
-            } else if (radialMatch && radialMatch[1]) {
+            } else if (radialMatch?.[1]) {
                 const params = radialMatch[1];
                 // Check if it's a diamond gradient (ellipse 80% 80% pattern)
                 if (params.includes('ellipse 80% 80%')) {
@@ -165,11 +170,11 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                     type = 'radial';
                     stopsString = params.replace(/^(circle|ellipse).*?,?\s*/, '');
                 }
-            } else if (conicMatch && conicMatch[1]) {
+            } else if (conicMatch?.[1]) {
                 const params = conicMatch[1];
-                const angleMatch = params.match(/from\s+(\d+)deg/);
+                const angleMatch = /from\s+(\d+)deg/.exec(params);
 
-                if (angleMatch && angleMatch[1]) {
+                if (angleMatch?.[1]) {
                     angle = parseInt(angleMatch[1]);
                     stopsString = params.replace(/^from\s+\d+deg,?\s*/, '');
                 } else {
@@ -182,10 +187,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
 
                 stopMatches.forEach((stop, index) => {
                     const trimmed = stop.trim();
-                    const match = trimmed.match(
-                        /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/,
-                    );
-                    if (match && match[1]) {
+                    const match = /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/.exec(trimmed);
+                    if (match?.[1]) {
                         const color = match[1];
                         const position = match[2]
                             ? parseFloat(match[2])
@@ -208,8 +211,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                     tempStops.pop();
                     // Reconstruct stopsString without the duplicate
                     stopsString = tempStops.map(stop =>
-                        stop.position === Math.round(stop.position)
-                            ? `${stop.color} ${Math.round(stop.position)}%`
+                            stop.position === Math.round(stop.position)
+                                ? `${stop.color} ${Math.round(stop.position)}%`
                             : `${stop.color} ${stop.position}%`
                     ).join(', ');
                 } else {
@@ -224,10 +227,8 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
 
             stopMatches.forEach((stop, index) => {
                 const trimmed = stop.trim();
-                const match = trimmed.match(
-                    /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/,
-                );
-                if (match && match[1]) {
+                const match = /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/.exec(trimmed);
+                if (match?.[1]) {
                     const color = match[1];
                     const position = match[2]
                         ? parseFloat(match[2])
@@ -597,7 +598,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         try {
             let angle = 0;
             if (preset.type === 'linear') {
-                angle = parseInt(preset.css.match(/(\d+)deg/)?.[1] || '90');
+                angle = parseInt((/(\d+)deg/.exec(preset.css))?.[1] ?? '90');
             }
 
             const newGradientState: GradientState = {
@@ -724,98 +725,110 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
 
     return (
         <div className="flex flex-col justify-between items-center">
-            <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabValue)} className="w-full">
-                <TabsList className="bg-transparent px-2 m-0 gap-2 justify-between w-full">
-                    <div className="flex gap-2">
-                        <TabsTrigger
-                            value={TabValue.BRAND}
-                            className="bg-transparent text-xs p-1 hover:text-foreground-primary"
-                        >
-                            Brand
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value={TabValue.CUSTOM}
-                            className="bg-transparent text-xs p-1 hover:text-foreground-primary"
-                        >
-                            Custom
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value={TabValue.GRADIENT}
-                            className="bg-transparent text-xs p-1 hover:text-foreground-primary"
-                        >
-                            Gradient
-                        </TabsTrigger>
-                    </div>
+            <Tabs
+                value={activeTab}
+                onValueChange={(value) => setActiveTab(value as TabValue)}
+                className="w-full"
+            >
+                {!isCreatingNewColor && (
+                    <TabsList className="bg-transparent px-2 m-0 gap-2 justify-between w-full">
+                        <div className="flex gap-2">
+                            <TabsTrigger
+                                value={TabValue.BRAND}
+                                className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                            >
+                                Brand
+                            </TabsTrigger>
 
-                    <HoverOnlyTooltip
-                        content="Remove Background Color"
-                        side="bottom"
-                        className="mt-1"
-                        hideArrow
-                        disabled={isColorRemoved(color)}
-                    >
-                        <button
-                            className={`p-1 rounded transition-colors ${isColorRemoved(color)
-                                    ? 'bg-background-secondary'
-                                    : 'hover:bg-background-tertiary'
-                                }`}
-                            onClick={handleRemoveColor}
-                        >
-                            <Icons.SquareX
-                                className={`h-4 w-4 ${isColorRemoved(color)
-                                        ? 'text-foreground-primary'
-                                        : 'text-foreground-tertiary'
-                                    }`}
-                            />
-                        </button>
-                    </HoverOnlyTooltip>
-                </TabsList>
-
-                <TabsContent value={TabValue.BRAND} className="p-0 m-0 text-xs">
-                    <div className="border-b border-t">
-                        <div className="relative">
-                            <Icons.MagnifyingGlass className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                            <Input
-                                ref={inputRef}
-                                type="text"
-                                placeholder="Search colors"
-                                className="text-xs pl-7 pr-8 rounded-none border-none"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                            />
-                            {searchQuery && (
-                                <button
-                                    className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
-                                    onClick={() => setSearchQuery('')}
-                                >
-                                    <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
-                                </button>
-                            )}
+                            <TabsTrigger
+                                value={TabValue.CUSTOM}
+                                className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                            >
+                                Custom
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value={TabValue.GRADIENT}
+                                className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                            >
+                                Gradient
+                            </TabsTrigger>
                         </div>
-                    </div>
-                    <div className="flex flex-col gap-1 overflow-y-auto max-h-96 px-2 mt-2">
-                        {filteredColorGroups.map(([name, colors]) => (
-                            <ColorGroup
-                                key={name}
-                                name={name}
-                                colors={colors}
-                                onColorSelect={handleColorSelect}
-                                selectedColor={color}
-                            />
-                        ))}
-                        {filteredColorDefaults.map(([name, colors]) => (
-                            <ColorGroup
-                                key={name}
-                                name={name}
-                                colors={colors}
-                                onColorSelect={handleColorSelect}
-                                isDefault
-                                selectedColor={color}
-                            />
-                        ))}
-                    </div>
-                </TabsContent>
+                        {!isCreatingNewColor && (
+                            <HoverOnlyTooltip
+                                content="Remove Background Color"
+                                side="bottom"
+                                className="mt-1"
+                                hideArrow
+                                disabled={isColorRemoved(color)}
+                            >
+                                <button
+                                    className={`p-1 rounded transition-colors ${
+                                        isColorRemoved(color)
+                                            ? 'bg-background-secondary'
+                                            : 'hover:bg-background-tertiary'
+                                    }`}
+                                    onClick={handleRemoveColor}
+                                >
+                                    <Icons.SquareX
+                                        className={`h-4 w-4 ${
+                                            isColorRemoved(color)
+                                                ? 'text-foreground-primary'
+                                                : 'text-foreground-tertiary'
+                                        }`}
+                                    />
+                                </button>
+                            </HoverOnlyTooltip>
+                        )}
+                    </TabsList>
+                )}
+
+                {!isCreatingNewColor && (
+                    <TabsContent value={TabValue.BRAND} className="p-0 m-0 text-xs">
+                        <div className="border-b border-t">
+                            <div className="relative">
+                                <Icons.MagnifyingGlass className="absolute left-2.5 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                                <Input
+                                    ref={inputRef}
+                                    type="text"
+                                    placeholder="Search colors"
+                                    className="text-xs pl-7 pr-8 rounded-none border-none"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                />
+                                {searchQuery && (
+                                    <button
+                                        className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
+                                        onClick={() => setSearchQuery('')}
+                                    >
+                                        <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                        <div className="flex flex-col gap-1 overflow-y-auto max-h-96 px-2 mt-2">
+                            {filteredColorGroups.map(([name, colors]) => (
+                                <ColorGroup
+                                    key={name}
+                                    name={name}
+                                    colors={colors}
+                                    onColorSelect={handleColorSelect}
+                                    selectedColor={color}
+                                />
+                            ))}
+                            {filteredColorDefaults.map(([name, colors]) => (
+                                <ColorGroup
+                                    key={name}
+                                    name={name}
+                                    colors={colors}
+                                    onColorSelect={handleColorSelect}
+                                    isDefault
+                                    selectedColor={color}
+                                />
+                            ))}
+                        </div>
+                    </TabsContent>
+                )}
 
                 <TabsContent value={TabValue.CUSTOM} className="p-0 m-0">
                     <ColorPicker
@@ -849,35 +862,42 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         {renderPalette()}
                     </div>
                 </TabsContent>
-                <TabsContent value={TabValue.GRADIENT} className="p-0 m-0">
-                    <Gradient
-                        gradient={gradientState}
-                        onGradientChange={handleGradientChange}
-                        onStopColorChange={handleStopColorChange}
-                        onStopSelect={handleStopSelect}
-                        selectedStopId={selectedStopId}
-                        className="border-b border-border"
-                        showPresets={false}
-                    />
+                {!isCreatingNewColor && (
+                    <TabsContent value={TabValue.GRADIENT} className="p-0 m-0">
+                        <Gradient
+                            gradient={gradientState}
+                            onGradientChange={handleGradientChange}
+                            onStopColorChange={handleStopColorChange}
+                            onStopSelect={handleStopSelect}
+                            selectedStopId={selectedStopId}
+                            className="border-b border-border"
+                            showPresets={false}
+                        />
 
-                    <div className="flex flex-row items-center justify-between w-full px-2 py-1">
-                        <span className="text-foreground-secondary text-small">Presets</span>
-                        <button
-                            className={`px-1 py-1 text-xs transition-colors w-6 h-6 flex items-center justify-center rounded ${viewMode === 'grid'
-                                    ? 'text-foreground-secondary hover:text-foreground-primary hover:bg-background-hover'
-                                    : 'text-foreground-primary bg-background-secondary'
+                        <div className="flex flex-row items-center justify-between w-full px-2 py-1">
+                            <span className="text-foreground-secondary text-small">Presets</span>
+                            <button
+                                className={`px-1 py-1 text-xs transition-colors w-6 h-6 flex items-center justify-center rounded ${
+                                    viewMode === 'grid'
+                                        ? 'text-foreground-secondary hover:text-foreground-primary hover:bg-background-hover'
+                                        : 'text-foreground-primary bg-background-secondary'
                                 }`}
-                            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                            title="Toggle view mode"
-                        >
-                            {viewMode === 'grid' ? <Icons.ViewGrid className="w-3 h-3" /> : <Icons.ViewHorizontal className="w-3 h-3" />}
-                        </button>
-                    </div>
-                    <Separator />
-                    <div className="h-28 px-1 overflow-hidden overflow-y-auto">
-                        {renderPresets()}
-                    </div>
-                </TabsContent>
+                                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                                title="Toggle view mode"
+                            >
+                                {viewMode === 'grid' ? (
+                                    <Icons.ViewGrid className="w-3 h-3" />
+                                ) : (
+                                    <Icons.ViewHorizontal className="w-3 h-3" />
+                                )}
+                            </button>
+                        </div>
+                        <Separator />
+                        <div className="h-28 px-1 overflow-hidden overflow-y-auto">
+                            {renderPresets()}
+                        </div>
+                    </TabsContent>
+                )}
             </Tabs>
         </div>
     );
