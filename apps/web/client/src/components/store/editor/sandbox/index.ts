@@ -15,10 +15,11 @@ import { SessionManager } from './session';
 
 export class SandboxManager {
     readonly session: SessionManager;
+    readonly fileEventBus: FileEventBus = new FileEventBus();
+
     private fileWatcher: FileWatcher | null = null;
     private fileSync: FileSyncManager
     private templateNodeMap: TemplateNodeMapper
-    readonly fileEventBus: FileEventBus = new FileEventBus();
     private isIndexed = false;
     private isIndexing = false;
 
@@ -264,21 +265,8 @@ export class SandboxManager {
         );
     }
 
-    get files() {
-        return this.fileSync.listAllFiles();
-    }
-
-    listAllFiles() {
-        return this.fileSync.listAllFiles();
-    }
-
-    listFiles(dir: string) {
-        return this.session.session?.fs.readdir(dir);
-    }
-
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-
         try {
             return this.fileSync.write(
                 normalizedPath,
@@ -289,6 +277,18 @@ export class SandboxManager {
             console.error(`Error writing binary file ${normalizedPath}:`, error);
             return false;
         }
+    }
+
+    get files() {
+        return this.fileSync.listAllFiles();
+    }
+
+    listAllFiles() {
+        return this.fileSync.listAllFiles();
+    }
+
+    listFiles(dir: string) {
+        return this.session.session?.fs.readdir(dir);
     }
 
     async listFilesRecursively(

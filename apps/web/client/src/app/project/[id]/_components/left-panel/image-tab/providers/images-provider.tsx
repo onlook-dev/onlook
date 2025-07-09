@@ -1,13 +1,13 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { createContext, useContext, useMemo, type ReactNode, useCallback, useState, useEffect } from 'react';
-import { observer } from 'mobx-react-lite';
-import { useImageUpload } from '../hooks/use-image-upload';
-import { useImageDelete } from '../hooks/use-image-delete';
-import { useImageRename } from '../hooks/use-image-rename';
-import { useImageMove } from '../hooks/use-image-move';
-import type { FolderNode } from './types';
-import { useFolder } from '../hooks/use-folder';
 import { DefaultSettings } from '@onlook/constants';
+import { observer } from 'mobx-react-lite';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useFolder } from '../hooks/use-folder';
+import { useImageDelete } from '../hooks/use-image-delete';
+import { useImageMove } from '../hooks/use-image-move';
+import { useImageRename } from '../hooks/use-image-rename';
+import { useImageUpload } from '../hooks/use-image-upload';
+import type { FolderNode } from './types';
 
 interface ImagesContextValue {
     folderStructure: FolderNode;
@@ -30,8 +30,6 @@ interface ImagesProviderProps {
 
 export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
     const editorEngine = useEditorEngine();
-    
-
     const deleteOperations = useImageDelete();
     const renameOperations = useImageRename();
     const uploadOperations = useImageUpload();
@@ -50,7 +48,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
 
         const root = createFolderNode(DefaultSettings.IMAGE_FOLDER, '', '');
 
-        editorEngine.image.assets.forEach((image) => {
+        editorEngine.image.imagePaths.forEach((image) => {
             if (!image) return;
 
             let pathParts = image.split('/');
@@ -68,7 +66,6 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
                 if (!part) return;
 
                 currentPath = currentPath ? `${currentPath}/${part}` : part;
-
                 if (!currentNode.children.has(part)) {
                     currentNode.children.set(
                         part,
@@ -83,7 +80,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         });
 
         return root;
-    }, [editorEngine.image.assets]);
+    }, [editorEngine.image.imagePaths]);
 
     const [folderStructure, setFolderStructure] = useState<FolderNode>(baseFolderStructure);
 
@@ -95,7 +92,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         setFolderStructure(prev => ({ ...prev }));
     }, []);
 
-    const isOperating = 
+    const isOperating =
         deleteOperations.deleteState.isLoading ||
         renameOperations.renameState.isLoading ||
         uploadOperations.uploadState.isUploading ||

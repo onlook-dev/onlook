@@ -1,4 +1,3 @@
-import type { ReaddirEntry } from '@codesandbox/sdk';
 import { DefaultSettings } from '@onlook/constants';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import {
@@ -12,7 +11,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 export class ImageManager {
-    private images: string[] = [];
+    private _imagePaths: string[] = [];
     private _isScanning = false;
 
     constructor(private editorEngine: EditorEngine) {
@@ -26,14 +25,14 @@ export class ImageManager {
                 }
             }
         );
+    }
 
-        reaction(
-            () => this.editorEngine.sandbox.files,
-            () => {
-                this.scanImages();
-            }
-        );
+    get imagePaths() {
+        return this._imagePaths;
+    }
 
+    get isScanning() {
+        return this._isScanning;
     }
 
     async upload(file: File, destinationFolder: string): Promise<void> {
@@ -70,7 +69,7 @@ export class ImageManager {
         }
     }
 
-    async insert(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {
+    async paste(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {
         return;
         // const targets = this.getTargets();
         // if (!targets || targets.length === 0) {
@@ -110,16 +109,9 @@ export class ImageManager {
         // sendAnalytics('image insert', { mimeType });
     }
 
-    get assets() {
-        return this.images;
-    }
 
-    get isScanning() {
-        return this._isScanning;
-    }
-
-    find(url: string) {
-        return this.images.find((img) => url.includes(img));
+    search(name: string) {
+        return this.imagePaths.find((img) => name.includes(img));
     }
 
     remove() {
@@ -152,35 +144,27 @@ export class ImageManager {
         this._isScanning = true;
 
         try {
-            const files = await this.editorEngine.sandbox.listFiles(DefaultSettings.IMAGE_FOLDER);
-
+            const files = await this.editorEngine.sandbox.listFilesRecursively(DefaultSettings.IMAGE_FOLDER);
             if (!files) {
+                console.error('No files found in image folder');
                 return;
             }
-
             if (files.length === 0) {
-                this.images = [];
+                this._imagePaths = [];
                 return;
             }
-
-            const imageFiles = files.filter((file: ReaddirEntry) => isImageFile(file.name));
-
-            if (imageFiles.length === 0) {
-                return;
-            }
-
-            this.images = imageFiles.map((file: ReaddirEntry) => file.name);
-
+            this._imagePaths = files.filter((file: string) => isImageFile(file))
         } catch (error) {
             console.error('Error scanning images:', error);
-            this.images = [];
+            this._imagePaths = [];
         } finally {
             this._isScanning = false;
         }
+        console.log('imagePaths', this._imagePaths);
     }
 
     clear() {
-        this.images = [];
+        this._imagePaths = [];
     }
 
     /**
