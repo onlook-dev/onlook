@@ -64,7 +64,6 @@ ALTER TABLE "custom_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "preview_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "published_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "auth"."users" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ALTER COLUMN "status" SET DATA TYPE "public"."verification_request_status";--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ALTER COLUMN "status" SET DEFAULT 'active';--> statement-breakpoint
 ALTER TABLE "messages" ADD COLUMN "commit_oid" text;--> statement-breakpoint
