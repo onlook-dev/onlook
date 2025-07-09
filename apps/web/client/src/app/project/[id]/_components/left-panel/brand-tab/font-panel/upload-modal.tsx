@@ -194,14 +194,13 @@ const UploadModal = observer(({ isOpen, onOpenChange, onUpload, isUploading = fa
                         />
                     </div>
 
-                    <div className="flex-1">
                         <FontFiles
                             fontFiles={fontFiles}
                             onWeightChange={handleWeightChange}
                             onStyleChange={handleStyleChange}
                             onRemoveFont={handleRemoveFont}
                         />
-                    </div>
+        
                 </div>
 
                 {fontFiles.length > 0 && (

@@ -188,9 +188,6 @@ export function removeFontsFromClassName(
                             FONT_WEIGHT_REGEX.test(match) ? match : '',
                         );
                     }
-
-                    // Clean up extra commas and spaces after font removal
-                    combinedStatic = cleanComma(combinedStatic);
                 } catch (regexError) {
                     console.error('Error processing font class regex:', regexError);
                 }
@@ -385,9 +382,10 @@ export function removeFontImportFromFile(
             .join(', ');
 
         if (newImports) {
+            const formattedNewImports = cleanComma(newImports);
             newContent = newContent.replace(
                 importRegex,
-                `import { ${newImports} } from '${fontImportPath}'`,
+                `import { ${formattedNewImports} } from '${fontImportPath}'`,
             );
         } else {
             // Remove the entire import statement including the semicolon and optional newline
