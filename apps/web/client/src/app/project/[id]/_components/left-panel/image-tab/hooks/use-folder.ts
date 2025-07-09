@@ -321,9 +321,7 @@ export const useFolder = () => {
             // Create the folder with a .gitkeep file
             const gitkeepPath = `${newFolderPath}/.gitkeep`.replace(/\\/g, '/');
             const gitkeepContent = '# This folder was created by Onlook\n';
-            await session.fs.writeTextFile(gitkeepPath, gitkeepContent);
-
-            await editorEngine.sandbox.updateFileCache(gitkeepPath, gitkeepContent);
+            await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
             if (createState.parentFolder) {
                 await scanFolderChildren(createState.parentFolder);
             }

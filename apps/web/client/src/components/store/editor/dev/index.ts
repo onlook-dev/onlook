@@ -1,5 +1,5 @@
 import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config';
-import { BINARY_EXTENSIONS } from '@onlook/constants';
+import { convertToBase64 } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import path from 'path';
@@ -68,27 +68,25 @@ export class IDEManager {
         }
         this.isLoading = true;
         try {
-
-            const ext = path.extname(filePath).toLocaleLowerCase();
             let content = "";
             let isBinary = false;
 
-            if (BINARY_EXTENSIONS.includes(ext)) {
-                const binaryContent = await this.editorEngine.sandbox.readBinaryFile(filePath);
-                if (binaryContent) {
-                    const base64String = btoa(
-                        Array.from(binaryContent)
-                            .map((byte: number) => String.fromCharCode(byte))
-                            .join(''),
-                    );
-                    content = base64String;
-                    isBinary = true;
+            const foundFile = await this.editorEngine.sandbox.readFile(filePath);
+            if (!foundFile) {
+                return null;
+            }
+
+            if (foundFile.type === 'binary') {
+                let binaryContent = foundFile.content;
+                if (!binaryContent) {
+                    return null;
                 }
+
+                const base64String = convertToBase64(binaryContent);
+                content = base64String;
+                isBinary = true;
             } else {
-                const readFileContent = await this.editorEngine.sandbox.readFile(filePath);
-                if (readFileContent) {
-                    content = readFileContent;
-                }
+                content = foundFile.content;
             }
 
             const fileName = filePath.split('/').pop() || '';
@@ -141,15 +139,19 @@ export class IDEManager {
         }
         this.isLoading = true;
         try {
-            const originalContent = await this.editorEngine.sandbox.readFile(
+            const originalFile = await this.editorEngine.sandbox.readFile(
                 this.activeFile.path,
             );
+            if (!originalFile || originalFile.type === 'binary') {
+                console.error('Error reading file');
+                return;
+            }
             this.editorEngine.action.run({
                 type: 'write-code',
                 diffs: [
                     {
                         path: this.activeFile.path,
-                        original: originalContent || '',
+                        original: originalFile.content || '',
                         generated: this.activeFile.content,
                     },
                 ],
@@ -211,8 +213,8 @@ export class IDEManager {
             console.error('File not found');
             return;
         }
-        const content = await this.editorEngine.sandbox.readFile(path);
-        if (content == null) {
+        const foundFile = await this.editorEngine.sandbox.readFile(path);
+        if (!foundFile || foundFile.type === 'binary') {
             console.error('Content is null');
             return;
         }
@@ -221,7 +223,7 @@ export class IDEManager {
             console.error('File not found');
             return;
         }
-        const updated: EditorFile = { ...file, content };
+        const updated: EditorFile = { ...file, content: foundFile.content };
         this.openedFiles.splice(index, 1, updated);
         if (this.activeFile && this.activeFile.id === file.id) {
             this.activeFile = updated;
@@ -280,13 +282,17 @@ export class IDEManager {
                 console.error('No path found');
                 return;
             }
-            const originalContent = await this.editorEngine.sandbox.readFile(path);
+            const originalFile = await this.editorEngine.sandbox.readFile(path);
+            if (!originalFile || originalFile.type === 'binary') {
+                console.error('Error reading file');
+                return;
+            }
             const file = this.openedFiles.find((f) => f.id === id);
             if (file) file.isDirty = false;
             this.activeFile = {
                 ...this.activeFile,
                 isDirty: false,
-                content: originalContent || '',
+                content: originalFile.content || '',
             };
         } catch (error) {
             console.error('Error discarding file:', error);

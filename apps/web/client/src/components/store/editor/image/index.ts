@@ -1,3 +1,4 @@
+import type { ReaddirEntry } from '@codesandbox/sdk';
 import { DefaultSettings } from '@onlook/constants';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import {
@@ -27,7 +28,7 @@ export class ImageManager {
         );
 
         reaction(
-            () => this.editorEngine.sandbox.listBinaryFiles(DefaultSettings.IMAGE_FOLDER),
+            () => this.editorEngine.sandbox.files,
             () => {
                 this.scanImages();
             }
@@ -142,7 +143,8 @@ export class ImageManager {
 
         return targets;
     }
-    scanImages() {
+
+    async scanImages() {
         if (this._isScanning) {
             return;
         }
@@ -150,23 +152,24 @@ export class ImageManager {
         this._isScanning = true;
 
         try {
-            const files = this.editorEngine.sandbox.listBinaryFiles(
-                DefaultSettings.IMAGE_FOLDER,
-            );
+            const files = await this.editorEngine.sandbox.listFiles(DefaultSettings.IMAGE_FOLDER);
+
+            if (!files) {
+                return;
+            }
 
             if (files.length === 0) {
                 this.images = [];
                 return;
             }
 
-            const imageFiles = files.filter((filePath: string) => isImageFile(filePath));
-
+            const imageFiles = files.filter((file: ReaddirEntry) => isImageFile(file.name));
 
             if (imageFiles.length === 0) {
                 return;
             }
 
-            this.images = imageFiles;
+            this.images = imageFiles.map((file: ReaddirEntry) => file.name);
 
         } catch (error) {
             console.error('Error scanning images:', error);
@@ -192,8 +195,8 @@ export class ImageManager {
             }
 
             // Read the binary file using the sandbox
-            const binaryData = await this.editorEngine.sandbox.readBinaryFile(imagePath);
-            if (!binaryData) {
+            const file = await this.editorEngine.sandbox.readFile(imagePath);
+            if (!file || file.type === 'text' || !file.content) {
                 console.warn(`Failed to read binary data for ${imagePath}`);
                 return null;
             }
@@ -202,7 +205,7 @@ export class ImageManager {
             const mimeType = getMimeType(imagePath);
 
             // Convert binary data to base64
-            const base64Data = convertToBase64(binaryData);
+            const base64Data = convertToBase64(file.content);
             const content = `data:${mimeType};base64,${base64Data}`;
 
             return {
