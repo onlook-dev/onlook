@@ -1,6 +1,6 @@
-import { useCallback, useState } from 'react';
-import { type ImageContentData } from '@onlook/models';
 import { useEditorEngine } from '@/components/store/editor';
+import { type ImageContentData } from '@onlook/models';
+import { useCallback, useState } from 'react';
 import type { FolderNode } from '../providers/types';
 
 interface MoveImageState {
@@ -12,7 +12,7 @@ interface MoveImageState {
 
 export const useImageMove = () => {
     const editorEngine = useEditorEngine();
-    
+
     const [moveState, setMoveState] = useState<MoveImageState>({
         targetFolder: null,
         imageToMove: null,
@@ -49,9 +49,9 @@ export const useImageMove = () => {
         try {
             const fileName = image.fileName;
             const currentPath = image.originPath;
-            
+
             // Construct new path based on target folder
-            const newPath = targetFolder.fullPath 
+            const newPath = targetFolder.fullPath
                 ? `${targetFolder.fullPath}/${fileName}`
                 : `${fileName}`;
 
@@ -71,11 +71,7 @@ export const useImageMove = () => {
             }
 
             await editorEngine.sandbox.copy(currentPath, newPath);
-            
             await editorEngine.sandbox.delete(currentPath);
-            
-            await editorEngine.sandbox.updateFileCache(newPath, '');
-
             editorEngine.image.scanImages();
 
             setMoveState({

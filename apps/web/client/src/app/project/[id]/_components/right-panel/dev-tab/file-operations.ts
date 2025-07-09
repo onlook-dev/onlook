@@ -87,11 +87,7 @@ export const createFileInSandbox = async (session: WebSocketSession, filePath: s
         if (!session) {
             throw new Error('No sandbox session available');
         }
-
-        await session.fs.writeTextFile(filePath, content);
-
-        // update cache to include the new file
-        await sandboxManager.updateFileCache(filePath, content);
+        await sandboxManager.writeFile(filePath, content);
     } catch (error) {
         console.error('Error creating file:', error);
         throw error;
@@ -109,10 +105,8 @@ export const createFolderInSandbox = async (session: WebSocketSession, folderPat
         // the empty directory is discoverable and tracked by Git
         const gitkeepPath = `${folderPath}/.gitkeep`.replace(/\\/g, '/');
         const gitkeepContent = '# This folder was created by Onlook\n';
-        await session.fs.writeTextFile(gitkeepPath, gitkeepContent);
+        await sandboxManager.writeFile(gitkeepPath, gitkeepContent);
 
-        // update cache to include the new folder
-        await sandboxManager.updateFileCache(gitkeepPath, gitkeepContent);
     } catch (error) {
         console.error('Error creating folder:', error);
         throw error;

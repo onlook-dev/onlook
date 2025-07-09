@@ -689,28 +689,15 @@ export class ThemeManager {
                 return null;
             }
 
-            const configContent = await this.editorEngine.sandbox.readFile(configPath);
-            if (!configContent) {
-                console.log('Could not read Tailwind config file');
-                return null;
-            }
-
-            const cssContent = await this.editorEngine.sandbox.readFile(cssPath);
-            if (!cssContent) {
-                console.log('Could not read CSS file');
-                return {
-                    configPath,
-                    configContent: extractColorsFromTailwindConfig(configContent),
-                    cssPath,
-                    cssContent: extractTailwindCssVariables(''),
-                };
-            }
-
+            const configFile = await this.editorEngine.sandbox.readFile(configPath);
+            const cssFile = await this.editorEngine.sandbox.readFile(cssPath);
+            const configContent = configFile && configFile.type === 'text' ? extractColorsFromTailwindConfig(configFile.content) : '';
+            const cssContent = cssFile && cssFile.type === 'text' ? extractTailwindCssVariables(cssFile.content) : '';
             return {
                 configPath,
-                configContent: extractColorsFromTailwindConfig(configContent),
+                configContent,
                 cssPath,
-                cssContent: extractTailwindCssVariables(cssContent),
+                cssContent,
             };
         } catch (error) {
             console.error('Error scanning Tailwind config:', error);
@@ -977,11 +964,15 @@ export class ThemeManager {
             return null;
         }
 
+        if (files[configPath].type === 'binary' || files[cssPath].type === 'binary') {
+            throw new Error('Config or CSS file is a binary file');
+        }
+
         return {
             configPath,
             cssPath,
-            configContent: files[configPath],
-            cssContent: files[cssPath],
+            configContent: files[configPath].content,
+            cssContent: files[cssPath].content,
         };
     }
 
@@ -1151,16 +1142,15 @@ export class ThemeManager {
     async updateClassReferences(replacements: ClassReplacement[]): Promise<void> {
         const sourceFiles = this.editorEngine.sandbox.listAllFiles();
         const filesToUpdate = sourceFiles.filter((file) => file.endsWith('.tsx')) as string[];
-        const contents = await this.editorEngine.sandbox.readFiles(filesToUpdate);
 
         await Promise.all(
             filesToUpdate.map(async (file) => {
-                const content = contents[file];
-                if (!content) {
+                const foundFile = await this.editorEngine.sandbox.readFile(file);
+                if (!foundFile || foundFile.type === 'binary') {
                     return;
                 }
 
-                const ast = parse(content, {
+                const ast = parse(foundFile.content, {
                     sourceType: 'module',
                     plugins: ['typescript', 'jsx'],
                 });
@@ -1204,7 +1194,7 @@ export class ThemeManager {
 
                 if (updates.size > 0) {
                     transformAst(ast, updates);
-                    const output = generate(ast, { retainLines: true }, content).code;
+                    const output = generate(ast, { retainLines: true }, foundFile.content).code;
                     await this.editorEngine.sandbox.writeFile(file, output);
                 }
             }),
