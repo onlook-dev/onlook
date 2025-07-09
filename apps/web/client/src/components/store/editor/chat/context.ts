@@ -67,18 +67,18 @@ export class ChatContext {
         return imageContext;
     }
 
-    private async getFileContext(fileNames: Set<string>): Promise<FileMessageContext[]> {
+    private async getFileContext(filePaths: Set<string>): Promise<FileMessageContext[]> {
         const fileContext: FileMessageContext[] = [];
-        for (const fileName of fileNames) {
-            const fileContent = await this.editorEngine.sandbox.readFile(fileName);
-            if (fileContent === null) {
+        for (const filePath of filePaths) {
+            const file = await this.editorEngine.sandbox.readFile(filePath);
+            if (file === null || file.type === 'binary') {
                 continue;
             }
             fileContext.push({
                 type: MessageContextType.FILE,
-                displayName: fileName,
-                path: fileName,
-                content: fileContent,
+                displayName: filePath,
+                path: filePath,
+                content: file.content,
             });
         }
         return fileContext;
@@ -169,12 +169,12 @@ export class ChatContext {
         try {
             const pagePaths = ['./app/page.tsx', './src/app/page.tsx'];
             for (const pagePath of pagePaths) {
-                const content = await this.editorEngine.sandbox.readFile(pagePath);
-                if (content) {
+                const file = await this.editorEngine.sandbox.readFile(pagePath);
+                if (file && file.type === 'text') {
                     const defaultPageContext: FileMessageContext = {
                         type: MessageContextType.FILE,
                         path: pagePath,
-                        content,
+                        content: file.content,
                         displayName: pagePath.split('/').pop() || 'page.tsx',
                     }
                     return defaultPageContext

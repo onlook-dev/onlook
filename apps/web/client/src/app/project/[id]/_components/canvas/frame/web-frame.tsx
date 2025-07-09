@@ -56,12 +56,9 @@ export const WebFrameComponent = observer(
             }
         };
 
-        const reloadIframe = debounce(() => {
-            undebouncedReloadIframe();
-        }, 1000, {
+        const reloadIframe = debounce(undebouncedReloadIframe, 1000, {
             leading: true,
         });
-
 
         const setupPenpalConnection = () => {
             if (!iframeRef.current?.contentWindow) {

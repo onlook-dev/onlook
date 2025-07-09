@@ -136,7 +136,7 @@ export class CopyManager {
                     reader.readAsDataURL(blob);
                     reader.onloadend = async () => {
                         const base64data = reader.result as string;
-                        await this.editorEngine.image.insert(base64data, imageType);
+                        await this.editorEngine.image.paste(base64data, imageType);
                     };
                     return true;
                 }
