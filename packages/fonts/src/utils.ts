@@ -253,6 +253,10 @@ export function extractExistingFontImport(content: string): {
                     return;
                 }
 
+                if (!fonts.length) {
+                    return;
+                }
+
                 path.node.attributes.forEach((attr) => {
                     if (
                         t.isJSXAttribute(attr) &&

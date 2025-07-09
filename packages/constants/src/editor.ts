@@ -53,7 +53,7 @@ export const DefaultSettings = {
     },
     IMAGE_FOLDER: 'public',
     IMAGE_DIMENSION: { width: '100px', height: '100px' },
-    FONT_FOLDER: 'public/fonts',
+    FONT_FOLDER: 'fonts',
     FONT_CONFIG: 'app/fonts.ts',
     TAILWIND_CONFIG: 'tailwind.config.ts',
     CHAT_SETTINGS: {

@@ -23,7 +23,7 @@ import {
     removeFontImportFromFile,
     removeFontsFromClassName,
     validateFontImportAndExport,
-    cleanComma,
+    cleanComma
 } from '@onlook/fonts';
 import { type FontConfig, type FontUploadFile, type RawFont } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
@@ -109,8 +109,6 @@ export class FontManager {
                 if (isIndexedFiles) {
                     await this.updateFontConfigPath();
                     this.setupFontConfigFileWatcher(); 
-
-                    await this.syncFontsWithConfigs();
                     await this.loadInitialFonts();
                     await this.getDefaultFont();
                 }
@@ -202,7 +200,7 @@ export class FontManager {
      */
     async scanExistingFonts(): Promise<Font[] | undefined> {
         try {
-            const { layoutPath } = (await this.getLayoutPath()) ?? {};
+            const { layoutPath } = (await this.getRootLayoutPath()) ?? {};
             if (!layoutPath) {
                 console.log('Could not get layout path');
                 return [];
@@ -349,7 +347,7 @@ export class FontManager {
             this._defaultFont = font.id;
             this._lastDefaultFont = prevDefaultFont;
 
-            const { layoutPath, routerConfig } = (await this.getLayoutPath()) ?? {};
+            const { layoutPath, routerConfig } = (await this.getRootLayoutPath()) ?? {};
 
             if (!layoutPath || !routerConfig) {
                 console.error('Could not get layout path or router config');
@@ -359,7 +357,7 @@ export class FontManager {
             let codeDiff: CodeDiff | null = null;
             const targetElements = getTargetElementsByType(routerConfig.type);
 
-            codeDiff = await this.updateFontInLayout(layoutPath, font, targetElements);
+            codeDiff = await this.updateDefaultFontInRootLayout(layoutPath, font, targetElements);
 
             if (codeDiff) {
                 // await this.editorEngine.history.push({
@@ -386,8 +384,10 @@ export class FontManager {
                 return false;
             }
 
-            const { ast, content } = (await this.readFontConfigFile()) ?? {};
-            if (!ast || !content) {
+            await this.existingOrCreateConfigFile();
+
+            const fontConfig = await this.readFontConfigFile();
+            if (!fontConfig) {
                 console.error('Failed to read font config file');
                 return false;
             }
@@ -395,9 +395,11 @@ export class FontManager {
             const baseFontName = fontFiles[0]?.name.split('.')[0] ?? 'customFont';
             const fontName = camelCase(`custom-${baseFontName}`);
 
+            const { ast } = fontConfig;
+
             const { fontNameExists, existingFontNode } = this.isFontNameExists(ast, fontName);
 
-            const fontConfigs = await this.processFontFiles(fontFiles, baseFontName);
+            const fontConfigs = await this.processFontFiles(fontFiles, baseFontName, routerConfig.basePath);
             const fontsSrc = this.createFontSrcObjects(fontConfigs);
 
             await this.updateAstWithFontConfig(
@@ -410,7 +412,6 @@ export class FontManager {
 
             const { code } = generate(ast);
             await this.editorEngine.sandbox.writeFile(this.fontConfigPath, code);
-            await this.scanFonts();
 
             return true;
         } catch (error) {
@@ -421,13 +422,14 @@ export class FontManager {
         }
     }
 
-    private async processFontFiles(fontFiles: FontUploadFile[], baseFontName: string) {
+    private async processFontFiles(fontFiles: FontUploadFile[], baseFontName: string, basePath: string) {
         return Promise.all(
             fontFiles.map(async (fontFile) => {
                 const weight = fontFile.weight;
                 const style = fontFile.style.toLowerCase();
                 const fileName = getFontFileName(baseFontName, weight, style);
                 const filePath = pathModule.join(
+                    basePath,
                     DefaultSettings.FONT_FOLDER,
                     `${fileName}.${fontFile.file.name.split('.').pop()}`,
                 );
@@ -436,7 +438,7 @@ export class FontManager {
                 await this.editorEngine.sandbox.writeBinaryFile(filePath, buffer);
 
                 return {
-                    path: `fonts/${fileName}.${fontFile.file.name.split('.').pop()}`,
+                    path: `./fonts/${fileName}.${fontFile.file.name.split('.').pop()}`,
                     weight,
                     style,
                 };
@@ -613,7 +615,7 @@ export class FontManager {
         this._isScanning = false;
 
         // // Clean up file watcher
-        // this.cleanupFontConfigFileWatcher();
+        this.cleanupFontConfigFileWatcher();
     }
 
     /**
@@ -767,7 +769,7 @@ export class FontManager {
      */
     private async addFontVariableToLayout(fontId: string): Promise<boolean> {
         try {
-            const { layoutPath, routerConfig } = (await this.getLayoutPath()) ?? {};
+            const { layoutPath, routerConfig } = (await this.getRootLayoutPath()) ?? {};
 
             if (!layoutPath || !routerConfig) {
                 console.error('Could not get layout path or router config');
@@ -794,7 +796,7 @@ export class FontManager {
         }
 
         try {
-            const { layoutPath, routerConfig } = (await this.getLayoutPath()) ?? {};
+            const { layoutPath, routerConfig } = (await this.getRootLayoutPath()) ?? {};
 
             if (!layoutPath || !routerConfig) {
                 console.error('Could not get layout path or router config');
@@ -852,9 +854,9 @@ export class FontManager {
     }
 
     /**
-     * Updates the font in a layout file by modifying className attributes
+     * Updates the default font in a layout file by modifying className attributes
      */
-    private async updateFontInLayout(
+    private async updateDefaultFontInRootLayout(
         filePath: string,
         font: Font,
         targetElements: string[],
@@ -912,7 +914,6 @@ export class FontManager {
 
         return result;
     }
-
     /**
      * Detects the current font being used in a layout file
      */
@@ -946,7 +947,7 @@ export class FontManager {
      */
     private async getDefaultFont(): Promise<string | null> {
         try {
-            const { layoutPath, routerConfig } = (await this.getLayoutPath()) ?? {};
+            const { layoutPath, routerConfig } = (await this.getRootLayoutPath()) ?? {};
 
             if (!layoutPath || !routerConfig) {
                 console.error('Could not get layout path or router config');
@@ -988,9 +989,11 @@ export class FontManager {
                 (currFont) => !this.previousFonts.some((prevFont) => currFont.id === prevFont.id),
             );
 
-            for (const font of removedFonts) {
-                await this.removeFontFromTailwindConfig(font);
-                await this.removeFontVariableFromLayout(font.id);
+            if (removedFonts.length > 0) {
+                for (const font of removedFonts) {
+                    await this.removeFontFromTailwindConfig(font);
+                    await this.removeFontVariableFromLayout(font.id);
+                }
             }
 
             if (addedFonts.length > 0) {
@@ -1261,7 +1264,7 @@ export class FontManager {
             });
 
             traverse(ast, {
-                async JSXOpeningElement(path) {
+                JSXOpeningElement(path) {
                     if (
                         !t.isJSXIdentifier(path.node.name) ||
                         !targetElements.includes(path.node.name.name)
@@ -1282,10 +1285,10 @@ export class FontManager {
                             t.stringLiteral(''),
                         );
                         path.node.attributes.push(newClassNameAttr);
-                        await callback(newClassNameAttr, ast);
+                        callback(newClassNameAttr, ast);
                         return;
                     }
-                    await callback(classNameAttr, ast);
+                    callback(classNameAttr, ast);
                 },
             });
         } catch (error) {
@@ -1373,11 +1376,11 @@ export default config;
     }
 
     /**
-     * Gets the layout path and router config
-     * @returns The layout path and router config already normalized
+     * Gets the root layout path and router config
+     * @returns The root layout path and router config already normalized
      */
 
-    private async getLayoutPath(): Promise<
+    private async getRootLayoutPath(): Promise<
         | { layoutPath: string; routerConfig: { type: 'app' | 'pages'; basePath: string } }
         | undefined
     > {
