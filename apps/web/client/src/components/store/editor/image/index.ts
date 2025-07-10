@@ -37,7 +37,7 @@ export class ImageManager {
 
     async upload(file: File, destinationFolder: string): Promise<void> {
         try {
-            const path = `${destinationFolder}/${file.name}`;
+            const path = `${DefaultSettings.IMAGE_FOLDER}/${destinationFolder}/${file.name}`;
             const uint8Array = new Uint8Array(await file.arrayBuffer());
             await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
             await this.scanImages();
@@ -118,6 +118,8 @@ export class ImageManager {
                 return;
             }
             this._imagePaths = files.filter((file: string) => isImageFile(file))
+            console.log('files', files);
+            console.log('imagePaths', this._imagePaths);
         } catch (error) {
             console.error('Error scanning images:', error);
             this._imagePaths = [];

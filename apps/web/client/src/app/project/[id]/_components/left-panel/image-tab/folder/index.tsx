@@ -12,7 +12,8 @@ import { useImagesContext } from '../providers/images-provider';
 import { type FolderNode } from '@onlook/models';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import { FolderList } from './folder-list';
-import FolderCreateModal from './modal/folder-create-modal';
+import { FolderCreateModal } from './modal/folder-create-modal';
+import { findFolderInStructureByPath } from '@onlook/utility';
 
 interface FolderPathItem {
     folder: FolderNode;
@@ -22,8 +23,8 @@ interface FolderPathItem {
 export default function Folder() {
     const inputRef = useRef<HTMLInputElement>(null);
     const breadcrumbsRef = useRef<HTMLDivElement>(null);
-    const { uploadOperations, isOperating, folderStructure, folderOperations } = useImagesContext();
-    const [currentFolder, setCurrentFolder] = useState<FolderNode | null>(null);
+    const { uploadOperations, isOperating, rootFolderStructure, folderOperations } = useImagesContext();
+    const [currentFolder, setCurrentFolder] = useState<FolderNode>(rootFolderStructure);
     const [folderPath, setFolderPath] = useState<FolderPathItem[]>([]);
 
     const { folderImagesState, loadFolderImages } = useFolderImages();
@@ -33,27 +34,18 @@ export default function Folder() {
             imageAssets: folderImagesState.images,
         });
 
-    const {
-        createState,
-        handleCreateFolder,
-        isOperating: isFolderOperating,
-        scanFolderChildren,
-        handleCreateFolderInputChange,
-        handleCreateModalToggle,
-        onCreateFolder,
-    } = folderOperations;
+    const { handleCreateFolder, isOperating: isFolderOperating } = folderOperations;
 
     const handleSelectFolder = async (folder: FolderNode) => {
         if (currentFolder) {
             setFolderPath((prev) => [...prev, { folder: currentFolder, name: currentFolder.name }]);
         }
-        setCurrentFolder(folder);
+        const folderWithChildren = await folderOperations.scanFolderChildren(folder);
 
-        // Scan for empty child folders when selecting a folder
-        try {
-            await scanFolderChildren(folder);
-        } catch (error) {
-            console.error('Error scanning folder children:', error);
+        if (folderWithChildren) {
+            setCurrentFolder(folderWithChildren);
+        } else {
+            setCurrentFolder(folder);
         }
     };
 
@@ -65,13 +57,13 @@ export default function Folder() {
                 setFolderPath((prev) => prev.slice(0, -1));
             }
         } else {
-            setCurrentFolder(folderStructure);
+            setCurrentFolder(rootFolderStructure);
         }
     };
 
     const handleBreadcrumbClick = (index: number) => {
         if (index === -1) {
-            setCurrentFolder(folderStructure);
+            setCurrentFolder(rootFolderStructure);
             setFolderPath([]);
         } else {
             const targetFolder = folderPath[index];
@@ -82,50 +74,30 @@ export default function Folder() {
         }
     };
 
-    const findFolderInStructure = (folder: FolderNode, target: FolderNode): FolderNode | null => {
-        if (folder.fullPath === target.fullPath) {
-            return folder;
-        }
-        if (folder.children) {
-            for (const child of folder.children.values()) {
-                const found = findFolderInStructure(child, target);
-                if (found) return found;
-            }
-        }
-        return null;
-    };
-
-    useEffect(() => {
-        if (currentFolder && currentFolder !== folderStructure) {
-            const updatedCurrentFolder = findFolderInStructure(folderStructure, currentFolder);
-
-            if (!updatedCurrentFolder) {
-                setCurrentFolder(folderStructure);
-                setFolderPath([]);
-            } else if (!isEqual(updatedCurrentFolder, currentFolder)) {
-                setCurrentFolder(updatedCurrentFolder);
-                void loadFolderImages(updatedCurrentFolder);
-            }
-        } else {
-            setCurrentFolder(folderStructure);
-            setFolderPath([]);
-        }
-    }, [folderStructure, currentFolder, loadFolderImages]);
-
     useEffect(() => {
         if (currentFolder) {
-            void loadFolderImages(currentFolder);
+            loadFolderImages(currentFolder);
         }
-    }, [currentFolder, loadFolderImages]);
+    }, [currentFolder]);
 
-    // Scan root folder for empty directories on initial load
     useEffect(() => {
-        if (folderStructure && (currentFolder === folderStructure || !currentFolder)) {
-            scanFolderChildren(folderStructure).catch((error) => {
-                console.error('Error scanning root folder children:', error);
-            });
-        }
-    }, [folderStructure, currentFolder, scanFolderChildren]);
+        const handleFolderOperations = async () => {   
+            // Update current folder when structure changes
+            const updatedFolder = findFolderInStructureByPath(
+                rootFolderStructure,
+                currentFolder?.fullPath ?? '',
+            );
+
+            if (!updatedFolder) {
+                setCurrentFolder(rootFolderStructure);
+                setFolderPath([]);
+            } else if (!isEqual(updatedFolder, currentFolder)) {
+                setCurrentFolder(updatedFolder);
+            }
+        };
+
+        handleFolderOperations();
+    }, [rootFolderStructure]);
 
     // Auto-scroll breadcrumbs to the right when folder path changes
     useEffect(() => {
@@ -141,9 +113,13 @@ export default function Folder() {
         }
     };
 
-    const canGoBack = folderPath.length > 0 || currentFolder !== folderStructure;
+    const canGoBack = folderPath.length > 0 || currentFolder !== rootFolderStructure;
     const isAnyOperationLoading = isOperating || isFolderOperating;
-    const showCreateButton = !!currentFolder && currentFolder === folderStructure && (currentFolder.children?.size ?? 0) === 0;
+
+    const showCreateButton =
+        !!currentFolder &&
+        currentFolder === rootFolderStructure &&
+        (currentFolder.children?.size ?? 0) === 0;
 
     return (
         <div className="flex flex-col gap-2 h-full">
@@ -183,7 +159,7 @@ export default function Folder() {
                                     </div>
                                 ))}
 
-                                {currentFolder && currentFolder !== folderStructure && (
+                                {currentFolder && currentFolder !== rootFolderStructure && (
                                     <div className="flex items-center gap-1">
                                         <Icons.ChevronRight className="h-3 w-3 text-gray-400" />
                                         <span className="font-medium text-white whitespace-nowrap">
@@ -272,19 +248,10 @@ export default function Folder() {
                     </div>
                 </div>
             ) : (
-                <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath ?? ''} />
+                <ImageList images={filteredImages} currentFolder={currentFolder.fullPath} />
             )}
 
-            <FolderCreateModal
-                isOpen={createState.isCreating}
-                toggleOpen={handleCreateModalToggle}
-                onCreate={onCreateFolder}
-                folderName={createState.newFolderName}
-                onNameChange={handleCreateFolderInputChange}
-                isLoading={createState.isLoading}
-                error={createState.error}
-                parentFolder={createState.parentFolder}
-            />
+            <FolderCreateModal />
         </div>
     );
 }

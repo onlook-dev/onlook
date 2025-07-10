@@ -36,7 +36,7 @@ export const FolderList = memo(
                             onSelect={() => onSelectFolder(item)}
                             isDisabled={isOperating}
                         />
-                    ))}s
+                    ))}
                 </div>
 
                 {showCreateButton && (
@@ -60,5 +60,3 @@ export const FolderList = memo(
         );
     },
 );
-
-FolderList.displayName = 'FolderList';

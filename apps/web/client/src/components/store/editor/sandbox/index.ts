@@ -205,6 +205,8 @@ export class SandboxManager {
 
         try {
             if (isImageFile(filePath)) {
+                console.log('reading image file', filePath);
+
                 const content = await this.session.session.fs.readFile(filePath);
                 return this.fileSync.getFileFromContent(filePath, content);
             } else {
@@ -243,7 +245,7 @@ export class SandboxManager {
     }
 
     async readFiles(paths: string[]): Promise<Record<string, SandboxFile>> {
-        const results: Map<string, SandboxFile> = new Map();
+        const results = new Map<string, SandboxFile>();
         for (const path of paths) {
             const file = await this.readFile(path);
             if (!file) {

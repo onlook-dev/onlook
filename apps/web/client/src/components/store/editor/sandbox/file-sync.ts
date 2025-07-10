@@ -34,7 +34,7 @@ export class FileSyncManager {
         if (!newFile) {
             return null;
         }
-        this.updateCache(newFile);
+        await this.updateCache(newFile);
         return newFile;
     }
 
@@ -45,7 +45,7 @@ export class FileSyncManager {
     ) {
         try {
             const newFile = this.getFileFromContent(filePath, content);
-            this.updateCache(newFile);
+            await this.updateCache(newFile);
             return await writeFile(filePath, content);
         } catch (error) {
             console.error(`Error writing file ${filePath}:`, error);
@@ -81,7 +81,7 @@ export class FileSyncManager {
             return;
         }
 
-        this.updateCache({
+        await this.updateCache({
             type,
             path: filePath,
             content: null
@@ -109,7 +109,7 @@ export class FileSyncManager {
         filePaths: string[],
         readFile: (path: string) => Promise<SandboxFile | null>,
     ): Promise<Record<string, SandboxFile>> {
-        const results: Map<string, SandboxFile> = new Map();
+        const results = new Map<string, SandboxFile>();
         const promises = filePaths.map(async (filePath) => {
             try {
                 const content = await this.readOrFetch(filePath, readFile);
@@ -146,7 +146,7 @@ export class FileSyncManager {
      */
     async writeEmptyFilesBatch(filePaths: string[], type: 'binary'): Promise<void> {
         for (const filePath of filePaths) {
-            this.writeEmptyFile(filePath, type);
+            await this.writeEmptyFile(filePath, type);
         }
     }
 

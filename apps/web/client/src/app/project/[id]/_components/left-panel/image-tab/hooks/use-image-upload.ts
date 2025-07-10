@@ -18,7 +18,7 @@ export const useImageUpload = () => {
                 setUploadState({ isUploading: false, error: 'Please select a valid image file' });
                 return;
             }
-            try {
+            try {                
                 await editorEngine.image.upload(file, destinationFolder);
                 setUploadState({ isUploading: false, error: null });
             } catch (error) {

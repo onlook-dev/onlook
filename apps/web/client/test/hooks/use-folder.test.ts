@@ -19,7 +19,7 @@ describe('useFolder hook logic', () => {
             const rootFolder = createBaseFolder([]);
             
             expect(rootFolder.name).toBe('public');
-            expect(rootFolder.fullPath).toBe('');
+            expect(rootFolder.fullPath).toBe('public');
             expect(rootFolder.images).toEqual([]);
             expect(rootFolder.children?.size).toBe(0);
         });

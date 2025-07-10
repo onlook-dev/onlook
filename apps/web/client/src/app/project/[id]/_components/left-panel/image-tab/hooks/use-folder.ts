@@ -6,6 +6,8 @@ import {
     validateFolderRename,
     validateFolderMove,
     validateFolderCreate,
+    getParentPath,
+    findFolderInStructureByPath
 } from '@onlook/utility';
 
 interface FolderState {
@@ -33,8 +35,14 @@ interface CreateFolderState extends FolderState {
     parentFolder: FolderNode | null;
 }
 
-export const useFolder = () => {
+interface UseFolderOptions {
+    onFolderStructureUpdate?: (folderStructure: FolderNode) => void;
+    rootFolderStructure?: FolderNode;
+}
+
+export const useFolder = (options: UseFolderOptions = {}) => {
     const editorEngine = useEditorEngine();
+    const { onFolderStructureUpdate, rootFolderStructure } = options;
 
     const [renameState, setRenameState] = useState<RenameFolderState>({
         folderToRename: null,
@@ -116,7 +124,7 @@ export const useFolder = () => {
 
             await editorEngine.sandbox.rename(oldPath, newPath);
 
-            void editorEngine.image.scanImages();
+            await updateFolderStructure(newPath);
 
             setRenameState({
                 folderToRename: null,
@@ -132,7 +140,7 @@ export const useFolder = () => {
             }));
             console.error('Folder rename error:', error);
         }
-    }, [renameState, editorEngine]);
+    }, [renameState, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
 
     const handleDeleteFolder = useCallback((folder: FolderNode) => {
         setDeleteState({
@@ -152,7 +160,7 @@ export const useFolder = () => {
 
             await editorEngine.sandbox.delete(folderPath, true);
 
-            await editorEngine.image.scanImages();
+            await updateFolderStructure(folderPath);
 
             setDeleteState({
                 folderToDelete: null,
@@ -167,7 +175,7 @@ export const useFolder = () => {
             }));
             console.error('Folder delete error:', error);
         }
-    }, [deleteState.folderToDelete, editorEngine]);
+    }, [deleteState.folderToDelete, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
 
     const handleMoveToFolder = useCallback((folder: FolderNode, targetFolder: FolderNode) => {
         setMoveState({
@@ -222,8 +230,8 @@ export const useFolder = () => {
             }
             await editorEngine.sandbox.rename(oldPath, newPath);
 
-            // Refresh images
-            void editorEngine.image.scanImages();
+            await updateFolderStructure(newPath);
+            await updateFolderStructure(oldPath);
 
             setMoveState({
                 folderToMove: null,
@@ -239,7 +247,7 @@ export const useFolder = () => {
             }));
             console.error('Folder move error:', error);
         }
-    }, [moveState, editorEngine]);
+    }, [moveState, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
 
     const moveFolderContents = async (folder: FolderNode, newPath: string) => {
         const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
@@ -312,7 +320,7 @@ export const useFolder = () => {
         }));
     }, []);
 
-    const onCreateFolder = useCallback(async () => {
+    const onCreateFolder = useCallback(async (): Promise<boolean> => {
         const validation = validateFolderCreate(
             createState.newFolderName,
             createState.parentFolder?.fullPath,
@@ -323,7 +331,7 @@ export const useFolder = () => {
                 ...prev,
                 error: validation.error ?? 'Invalid folder name',
             }));
-            return;
+            return false;
         }
 
         setCreateState((prev) => ({ ...prev, isLoading: true }));
@@ -339,10 +347,10 @@ export const useFolder = () => {
             // Create the folder with a .gitkeep file to make it visible in the sandbox
             const gitkeepPath = `${newFolderPath}/.gitkeep`.replace(/\\/g, '/');
             const gitkeepContent = '# This folder was created by Onlook\n';
-            await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
-            if (createState.parentFolder) {
-                await scanFolderChildren(createState.parentFolder);
-            }
+            const success = await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
+
+            // Update folder structure after successful create
+            await updateFolderStructure(newFolderPath);
 
             setCreateState({
                 isCreating: false,
@@ -351,14 +359,17 @@ export const useFolder = () => {
                 newFolderName: '',
                 parentFolder: null,
             });
+
+            return success;
         } catch (error) {
             setCreateState((prev) => ({
                 ...prev,
                 error: error instanceof Error ? error.message : 'Failed to create folder',
                 isLoading: false,
             }));
+            return false;
         }
-    }, [createState, editorEngine]);
+    }, [createState, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
 
     const handleCreateModalToggle = useCallback(() => {
         setCreateState({
@@ -371,41 +382,114 @@ export const useFolder = () => {
     }, []);
 
     const scanFolderChildren = useCallback(
-        async (folder: FolderNode): Promise<void> => {
+        async (folder: FolderNode): Promise<FolderNode | null> => {
             if (!editorEngine.sandbox.session?.session) {
                 console.warn('No session available for folder scanning');
-                return;
+                return null;
             }
+
             try {
                 const folderPathToScan = folder.fullPath;
                 const entries = await editorEngine.sandbox.readDir(folderPathToScan);
 
-                if (folder.children) {
-                    const existingChildNames = new Set(folder.children.keys());
+                // Create a new folder object to maintain immutability
+                const updatedFolder: FolderNode = {
+                    ...folder,
+                    children: new Map(folder.children ?? new Map()),
+                };
 
-                    for (const entry of entries) {
-                        if (entry.type === 'directory' && !existingChildNames.has(entry.name)) {
-                            // Create new folder node for empty directory
-                            const childPath = folder.fullPath
-                                ? `${folder.fullPath}/${entry.name}`
-                                : entry.name;
-                            const newFolderNode: FolderNode = {
-                                name: entry.name,
-                                fullPath: childPath,
-                                images: [],
-                                children: new Map(),
-                            };
+                // Process directory entries
+                for (const entry of entries) {
+                    if (entry.type === 'directory' && !updatedFolder.children?.has(entry.name)) {
+                        const childPath = folder.fullPath
+                            ? `${folder.fullPath}/${entry.name}`
+                            : entry.name;
 
-                            folder.children.set(entry.name, newFolderNode);
+                        const newFolderNode: FolderNode = {
+                            name: entry.name,
+                            fullPath: childPath,
+                            images: [],
+                            children: new Map(),
+                        };
+
+                        updatedFolder.children?.set(entry.name, newFolderNode);
+                    }
+                }
+                
+
+                // Remove directories that no longer exist
+                if (updatedFolder.children) {
+                    for (const [childName] of updatedFolder.children) {
+                        const childExists = entries.some(
+                            entry => entry.type === 'directory' && entry.name === childName
+                        );
+                        if (!childExists) {
+                            updatedFolder.children.delete(childName);
                         }
                     }
                 }
+
+                return  updatedFolder ;
             } catch (error) {
                 console.error('Error scanning folder children:', error);
+                return null;
             }
         },
         [editorEngine],
     );
+
+    /**
+     * Updates the folder structure by re-scanning the parent folder's children.
+     * 
+     * Key requirement: Whenever a folder is updated (renamed, moved, deleted, or created),
+     * we need to re-scan the children of its parent folder to reflect the changes
+     * in the rootFolderStructure. This ensures the UI stays in sync with the actual
+     * file system state.
+     * 
+     * @param folderPath - The path of the folder that was affected by an operation
+     */
+    const updateFolderStructure = useCallback(async (folderPath: string) => {
+        if (!onFolderStructureUpdate || !rootFolderStructure) {
+            console.warn('Missing required dependencies for folder structure update');
+            return;
+        }
+
+        try {
+            // Get the parent path of the affected folder
+            const parentPath = getParentPath(folderPath);
+            
+            // Find the parent node in the current structure
+            const parentNode = findFolderInStructureByPath(rootFolderStructure, parentPath);
+            
+            if (parentNode) {
+                // Re-scan the parent folder to get updated children
+                // This is the key point: we need to re-scan the parent's children
+                // to reflect any changes (new folders, deleted folders, renamed folders)
+                const updatedParent = await scanFolderChildren(parentNode);
+                
+                if (updatedParent) {
+                    // Update the folder structure with the scanned changes
+                    // This will add/remove/update children in the parent folder
+                    onFolderStructureUpdate(updatedParent);
+                } else {
+                    console.log('No changes detected in parent folder');
+                }
+            } else if (folderPath === rootFolderStructure.fullPath || parentPath === '') {
+                // If we're updating the root folder itself or the parent is empty (root level)
+                const updatedRoot = await scanFolderChildren(rootFolderStructure);
+                
+                if (updatedRoot) {
+                    onFolderStructureUpdate(updatedRoot);
+                } else {
+                    console.log('No changes detected in root folder');
+                }
+            } else {
+                console.warn('Parent folder not found for path:', folderPath, 'Parent path:', parentPath);
+            }
+        } catch (error) {
+            console.error('Error updating folder structure:', error);
+        }
+    }, [scanFolderChildren, onFolderStructureUpdate, rootFolderStructure]);
 
     // Check if any operation is loading
     const isOperating =

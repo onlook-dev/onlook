@@ -218,3 +218,84 @@ export const validateFileMove = (
 
     return { isValid: true, newPath };
 };
+
+/**
+ * Finds a folder in a folder structure by path
+ */
+export const findFolderInStructureByPath = (
+    folder: FolderNode,
+    targetPath: string,
+): FolderNode | null => {
+    if (folder.fullPath === targetPath) {
+        return folder;
+    }
+    if (folder.children) {
+        for (const child of folder.children.values()) {
+            const found = findFolderInStructureByPath(child, targetPath);
+            if (found) return found;
+        }
+    }
+    return null;
+};
+
+/**
+ * Replaces an existing folder in the folder structure with a new folder
+ */
+export const replaceFolderInStructure = (
+    rootFolder: FolderNode,
+    targetPath: string,
+    newFolder: FolderNode,
+): FolderNode | null => {
+    // If we're replacing the root folder itself
+    if (rootFolder.fullPath === targetPath) {
+        return newFolder;
+    }
+
+    // Find the parent path and folder name
+    const parentPath = getParentPath(targetPath);
+    const folderName = getFolderName(targetPath);
+
+    // Find the parent folder
+    const parentFolder = findFolderInStructureByPath(rootFolder, parentPath);
+    if (!parentFolder || !parentFolder.children) {
+        return null; // Parent not found or has no children
+    }
+
+    // Check if the target folder exists in the parent
+    if (!parentFolder.children.has(folderName)) {
+        return null; // Target folder doesn't exist
+    }
+
+    // Create a deep copy of the structure to maintain immutability
+    const clonedRoot = cloneFolderStructure(rootFolder);
+    const clonedParent = findFolderInStructureByPath(clonedRoot, parentPath);
+
+    if (!clonedParent || !clonedParent.children) {
+        return null;
+    }
+
+    // Replace the folder in the cloned structure
+    clonedParent.children.set(folderName, newFolder);
+
+    return clonedRoot;
+};
+
+/**
+ * Creates a deep copy of a folder structure
+ */
+const cloneFolderStructure = (folder: FolderNode): FolderNode => {
+    const clonedChildren = new Map<string, FolderNode>();
+
+    if (folder.children) {
+        for (const [key, child] of folder.children) {
+            clonedChildren.set(key, cloneFolderStructure(child));
+        }
+    }
+
+    return {
+        name: folder.name,
+        fullPath: folder.fullPath,
+        images: [...folder.images], // Shallow copy of images array
+        children: clonedChildren,
+    };
+};
