@@ -42,7 +42,7 @@ async function detectRouterType(sandbox: MockSandbox): Promise<RouterConfig | nu
                     .listFilesRecursively(pagesPath)
                     .then((files) => files.filter((file) => file.includes('_app.tsx')));
                 if (pagesFiles.length > 0) {
-                    return { type: 'pages', basePath: pagesPath };
+                    return { type: RouterType.PAGES, basePath: pagesPath };
                 }
             } catch (error) {
                 // Directory doesn't exist, continue checking
@@ -50,7 +50,7 @@ async function detectRouterType(sandbox: MockSandbox): Promise<RouterConfig | nu
         }
 
         // Default to app router if we can't determine
-        return { type: 'app', basePath: 'app' };
+        return { type: RouterType.APP, basePath: 'app' };
     } catch (error) {
         console.error('Error detecting router type:', error);
         return null;
@@ -93,7 +93,7 @@ describe('Router Detection', () => {
         const result = await detectRouterType(mockSandbox);
 
         expect(result).toEqual({
-            type: 'app',
+            type: RouterType.APP,
             basePath: 'src/app'
         });
     });
@@ -104,7 +104,7 @@ describe('Router Detection', () => {
         const result = await detectRouterType(mockSandbox);
 
         expect(result).toEqual({
-            type: 'pages',
+            type: RouterType.PAGES,
             basePath: 'pages'
         });
     });
@@ -115,7 +115,7 @@ describe('Router Detection', () => {
         const result = await detectRouterType(mockSandbox);
 
         expect(result).toEqual({
-            type: 'pages',
+            type: RouterType.PAGES,
             basePath: 'src/pages'
         });
     });
@@ -126,7 +126,7 @@ describe('Router Detection', () => {
         const result = await detectRouterType(mockSandbox);
 
         expect(result).toEqual({
-            type: 'app',
+            type: RouterType.APP,
             basePath: 'app'
         });
     });
@@ -138,7 +138,7 @@ describe('Router Detection', () => {
         const result = await detectRouterType(mockSandbox);
 
         expect(result).toEqual({
-            type: 'app',
+            type: RouterType.APP,
             basePath: 'app'
         });
     });

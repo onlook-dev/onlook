@@ -61,13 +61,12 @@ export class FontManager {
     private _isScanning = false;
     private _fontSearchIndex: FlexSearch.Document;
     private _allFontFamilies: RawFont[] = FAMILIES as RawFont[];
-    private disposers: Array<() => void> = [];
+    private _fontConfigPath: string | null = null;
+
+    private tailwindConfigPath = normalizePath(DefaultSettings.TAILWIND_CONFIG);
+    private fontImportPath = './fonts';
     private previousFonts: Font[] = [];
     private fontConfigFileWatcher: (() => void) | null = null;
-
-    private _fontConfigPath: string | null = null;
-    tailwindConfigPath = normalizePath(DefaultSettings.TAILWIND_CONFIG);
-    fontImportPath = './fonts';
 
     get fontConfigPath(): string {
         if (!this._fontConfigPath) {
