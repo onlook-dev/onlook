@@ -2,15 +2,16 @@
 
 import type { ParseResult } from '@babel/parser';
 import * as t from '@babel/types';
-import { DefaultSettings, RouterType,  type RouterConfig } from '@onlook/constants';
+import { DefaultSettings, RouterType, type RouterConfig } from '@onlook/constants';
 import {
+    cleanComma,
     convertRawFont,
+    createFontConfig,
     createFontFamilyProperty,
     createStringLiteralWithFont,
     createTemplateLiteralWithFont,
     declareFont,
     extractExistingFontImport,
-    createFontConfig,
     extractFontImport,
     FAMILIES,
     findFontClass,
@@ -22,8 +23,7 @@ import {
     removeFontFromThemeAST,
     removeFontImportFromFile,
     removeFontsFromClassName,
-    validateFontImportAndExport,
-    cleanComma
+    validateFontImportAndExport
 } from '@onlook/fonts';
 import { type FontConfig, type FontUploadFile, type RawFont } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
@@ -104,7 +104,7 @@ export class FontManager {
 
         // React to sandbox connection status
         reaction(
-            () => this.editorEngine.sandbox.isIndexedFiles,            
+            () => this.editorEngine.sandbox.isIndexed,
             async (isIndexedFiles) => {
                 if (isIndexedFiles) {
                     await this.updateFontConfigPath();
@@ -817,7 +817,7 @@ export class FontManager {
                 return false;
             }
             const content = file.content;
-            
+
             let updatedAst = false;
             let ast: ParseResult<t.File> | null = null;
             const fontName = camelCase(fontId);
@@ -1388,9 +1388,9 @@ export default config;
 
     private async readFontConfigFile(): Promise<
         | {
-              ast: ParseResult<t.File>;
-              content: string;
-          }
+            ast: ParseResult<t.File>;
+            content: string;
+        }
         | undefined
     > {
         const sandbox = this.editorEngine.sandbox;

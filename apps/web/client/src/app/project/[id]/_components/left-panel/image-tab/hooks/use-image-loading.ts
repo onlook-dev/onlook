@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
 import { useEditorEngine } from '@/components/store/editor';
+import { useMemo } from 'react';
 
 interface OperationStates {
     uploadState: { isUploading: boolean };
@@ -16,14 +16,14 @@ export const useImageLoading = ({ uploadState, deleteState, renameState }: Opera
             deleteState.isLoading ||
             renameState.isLoading ||
             editorEngine.image.isScanning ||
-            editorEngine.sandbox.isIndexingFiles
+            editorEngine.sandbox.isIndexing
         );
     }, [
         uploadState.isUploading,
         deleteState.isLoading,
         renameState.isLoading,
         editorEngine.image.isScanning,
-        editorEngine.sandbox.isIndexingFiles,
+        editorEngine.sandbox.isIndexing,
     ]);
 
     return {

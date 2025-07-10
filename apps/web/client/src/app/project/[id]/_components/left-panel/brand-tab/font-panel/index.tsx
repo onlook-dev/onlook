@@ -6,6 +6,7 @@ import { Input } from '@onlook/ui/input';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { FontFamily } from './font-family';
 import type { FontFile } from './font-files';
 import UploadModal from './upload-modal';
@@ -32,6 +33,9 @@ const FontPanel = observer(() => {
             await fontManager.uploadFonts(fonts);
         } catch (error) {
             console.error('Font upload failed:', error);
+            toast.error('Failed to upload fonts', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         }
     };
 
@@ -43,6 +47,9 @@ const FontPanel = observer(() => {
                     await fontManager.searchFonts(value);
                 } catch (error) {
                     console.error('Failed to search fonts:', error);
+                    toast.error('Failed to search fonts', {
+                        description: error instanceof Error ? error.message : 'Unknown error',
+                    });
                 } finally {
                     setIsLoading(false);
                 }
@@ -86,6 +93,9 @@ const FontPanel = observer(() => {
             await fontManager.fetchNextFontBatch();
         } catch (error) {
             console.error('Failed to load more fonts:', error);
+            toast.error('Failed to load more fonts', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         } finally {
             setIsLoading(false);
         }

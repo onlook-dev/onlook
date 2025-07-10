@@ -1,10 +1,8 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
-import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import Folder from './folder';
 import { ImagesProvider, useImagesContext } from './providers/images-provider';
-import { useImageDragDrop } from './hooks/use-image-drag-drop';
-import { useEditorEngine } from '@/components/store/editor';
 
 export const ImagesTab = observer(() => {
     return (
@@ -17,7 +15,7 @@ export const ImagesTab = observer(() => {
 const ImagesTabContent = observer(() => {
     const { renameOperations, uploadOperations, isOperating } = useImagesContext();
     const editorEngine = useEditorEngine();
-    const isIndexing = editorEngine.sandbox.isIndexingFiles;
+    const isIndexing = editorEngine.sandbox.isIndexing;
 
     const { renameState } = renameOperations;
 
