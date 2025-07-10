@@ -8,6 +8,7 @@ import { AdvancedSettingsSection } from './advanced-settings';
 import { CustomDomainSection } from './custom-domain-section';
 import { LoadingState } from './loading';
 import { PreviewDomainSection } from './preview-domain-section';
+import { Button } from '@onlook/ui/button';
 
 export const PublishDropdown = observer(() => {
     const editorEngine = useEditorEngine();
@@ -33,7 +34,18 @@ export const PublishDropdown = observer(() => {
                         </>
                     )}
                     <Separator />
-                    <AdvancedSettingsSection />
+                    <div className="flex flex-row items-center justify-between px-4 pb-2 pt-2 gap-2">
+                        <AdvancedSettingsSection />
+                        {hasPublishedSite && (
+                            <Button
+                                variant="outline"
+                                className="rounded-md p-3 ml-2"
+                                disabled
+                            >
+                                View Site
+                            </Button>
+                        )}
+                    </div>
                 </>
             )}
         </div>

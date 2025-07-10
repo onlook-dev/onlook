@@ -22,7 +22,6 @@ export const AdvancedSettingsSection = () => {
         >
             <Icons.Gear className="h-4 w-4" />
             Advanced Settings
-            <Icons.ChevronRight className="ml-auto h-3 w-3" />
         </Button>
     );
 };

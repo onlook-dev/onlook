@@ -7,6 +7,12 @@ import { TriggerButton } from './trigger-button';
 export const PublishButton = observer(() => {
     const editorEngine = useEditorEngine();
 
+    // To view the publish modal UI without publishing:
+    // 1. Open browser dev tools console
+    // 2. Run: window.editorEngine.state.publishOpen = true
+    // 3. The modal will open and you can inspect the UI
+    // 4. To close: window.editorEngine.state.publishOpen = false
+
     return (
         <DropdownMenu
             modal={false}
@@ -16,7 +22,7 @@ export const PublishButton = observer(() => {
             }}
         >
             <TriggerButton />
-            <DropdownMenuContent align="end" className="w-96 p-0 text-sm">
+            <DropdownMenuContent align="end" className="w-[425px] p-0 text-sm">
                 <PublishDropdown />
             </DropdownMenuContent>
         </DropdownMenu>

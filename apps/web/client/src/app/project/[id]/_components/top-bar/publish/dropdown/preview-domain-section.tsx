@@ -9,6 +9,7 @@ import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { UrlSection } from './url';
 import stripAnsi from 'strip-ansi';
+import { Icons } from '@onlook/ui/icons';
 
 export const PreviewDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
@@ -16,6 +17,9 @@ export const PreviewDomainSection = observer(() => {
     const { data: domain, refetch: refetchDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
     const { deployment, publish: runPublish, isDeploying } = useHostingType(DeploymentType.PREVIEW);
+
+    // DEMO: Always show the error UI for non-domain publishing errors
+    const demoNonDomainError = true; // Set to true to always show error for demo
 
     const createBaseDomain = async (): Promise<void> => {
         const previewDomain = await createPreviewDomain({ projectId: editorEngine.projectId });
@@ -69,7 +73,7 @@ export const PreviewDomainSection = observer(() => {
             <>
                 <div className="flex items-center w-full">
                     <h3 className="">
-                        Base Domain
+                       Publish
                     </h3>
                     {deployment && deployment?.status === DeploymentStatus.COMPLETED && (
                         <div className="ml-auto flex items-center gap-2">
@@ -80,7 +84,8 @@ export const PreviewDomainSection = observer(() => {
                     )}
                     {deployment?.status === DeploymentStatus.FAILED && (
                         <div className="ml-auto flex items-center gap-2">
-                            <p className="text-red-500">Error</p>
+                            <span className="text-red-500">Error</span>
+                            <span className="text-foreground-secondary">• Try again or fix with AI Chat</span>
                         </div>
                     )}
                     {isDeploying && (
@@ -114,22 +119,41 @@ export const PreviewDomainSection = observer(() => {
 
     const renderActionSection = () => {
         if (!domain?.url) {
+            console.warn('No domain URL found:', domain);
             return 'Something went wrong';
         }
+
+        console.log('Domain URL being passed to UrlSection:', domain.url);
 
         return (
             <div className="w-full flex flex-col gap-2">
                 <UrlSection url={domain.url} isCopyable={true} />
-                {deployment?.status === DeploymentStatus.FAILED ? (
+                {demoNonDomainError ? (
                     <div className="w-full flex flex-col gap-2">
-                        <p className="text-red-500 max-h-20 overflow-y-auto">{stripAnsi(deployment?.error)}</p>
-                        <Button
-                            variant="outline"
-                            className="w-full rounded-md p-3"
-                            onClick={retry}
-                        >
-                            Try Updating Again
-                        </Button>
+                        <p className="text-red-500 max-h-20 overflow-y-auto">
+                            {stripAnsi(deployment?.error) || 'The site failed to update – Error Code 432 The site failed to update – Error Code 432 update – Error Code 432update – Error Code 432 Error Code 432 Error Code 432 Error Cod...'}
+                        </p>
+                        <div className="flex flex-row w-full gap-2">
+                            <div className="flex-1">
+                                <Button
+                                    variant="outline"
+                                    className="w-full rounded-md p-3"
+                                    onClick={retry}
+                                >
+                                    Try Updating Again
+                                </Button>
+                            </div>
+                            <div className="flex-1">
+                                <Button
+                                    variant="outline"
+                                    className="w-full rounded-md p-3 border-amber-400 text-amber-400 hover:bg-amber-400/10 flex items-center justify-center gap-2"
+                                    // onClick for Fix with AI will be added later
+                                >
+                                    <Icons.MagicWand className="h-4 w-4 mr-2" />
+                                    Fix with AI Chat
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 ) : (
                     <Button

@@ -1,5 +1,6 @@
 import { env } from '@/env';
 import { previewDomains, publishedDomains, toDomainInfoFromPreview } from '@onlook/db';
+import { HOSTING_DOMAIN } from '@onlook/constants';
 import { HostingProvider } from '@onlook/models';
 import { getValidSubdomain } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
@@ -22,7 +23,8 @@ export const previewRouter = createTRPCRouter({
     })).mutation(async ({ ctx, input }) => {
         // Check if the domain is already taken by another project
         // This should never happen, but just in case
-        const domain = `${getValidSubdomain(input.projectId)}.${env.NEXT_PUBLIC_HOSTING_DOMAIN}`;
+        const hostingDomain = env.NEXT_PUBLIC_HOSTING_DOMAIN || HOSTING_DOMAIN;
+        const domain = `${getValidSubdomain(input.projectId)}.${hostingDomain}`;
 
         const existing = await ctx.db.query.previewDomains.findFirst({
             where: and(eq(previewDomains.fullDomain, domain), ne(previewDomains.projectId, input.projectId)),
