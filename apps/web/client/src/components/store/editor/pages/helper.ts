@@ -2,6 +2,7 @@ import type { ReaddirEntry, WebSocketSession } from '@codesandbox/sdk';
 import type { PageMetadata, PageNode } from '@onlook/models';
 import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
+import type { SandboxManager } from '../sandbox';
 import { formatContent } from '../sandbox/helpers';
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
@@ -194,7 +195,7 @@ const extractMetadata = async (content: string): Promise<PageMetadata | undefine
 };
 
 const scanAppDirectory = async (
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
     dir: string,
     parentPath: string = '',
 ): Promise<PageNode[]> => {
@@ -202,7 +203,7 @@ const scanAppDirectory = async (
     let entries;
 
     try {
-        entries = await session.fs.readdir(dir);
+        entries = await sandboxManager.listFiles(dir);
     } catch (error) {
         console.error(`Error reading directory ${dir}:`, error);
         return nodes;
@@ -236,8 +237,12 @@ const scanAppDirectory = async (
         // Extract metadata from both page and layout files
         let pageMetadata: PageMetadata | undefined;
         try {
-            const pageContent = await session.fs.readTextFile(`${dir}/${pageFile.name}`);
-            pageMetadata = await extractMetadata(pageContent);
+            const file = await sandboxManager.readFile(`${dir}/${pageFile.name}`);
+            if (!file || file.type !== 'text') {
+                throw new Error(`File ${dir}/${pageFile.name} not found or is not a text file`);
+            }
+            pageMetadata = await extractMetadata(file.content as string);
+
         } catch (error) {
             console.error(`Error reading page file ${dir}/${pageFile.name}:`, error);
         }
@@ -253,8 +258,11 @@ const scanAppDirectory = async (
         let layoutMetadata: PageMetadata | undefined;
         if (layoutFile) {
             try {
-                const layoutContent = await session.fs.readTextFile(`${dir}/${layoutFile.name}`);
-                layoutMetadata = await extractMetadata(layoutContent);
+                const file = await sandboxManager.readFile(`${dir}/${layoutFile.name}`);
+                if (!file || file.type !== 'text') {
+                    throw new Error(`File ${dir}/${layoutFile.name} not found or is not a text file`);
+                }
+                layoutMetadata = await extractMetadata(file.content as string);
             } catch (error) {
                 console.error(`Error reading layout file ${dir}/${layoutFile.name}:`, error);
             }
@@ -291,7 +299,7 @@ const scanAppDirectory = async (
         const relativePath = joinPath(parentPath, entry.name);
 
         if (entry.type === 'directory') {
-            const children = await scanAppDirectory(session, fullPath, relativePath);
+            const children = await scanAppDirectory(sandboxManager, fullPath, relativePath);
             if (children.length > 0) {
                 const dirPath = relativePath.replace(/\\/g, '/');
                 const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
@@ -312,7 +320,7 @@ const scanAppDirectory = async (
 };
 
 const scanPagesDirectory = async (
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
     dir: string,
     parentPath: string = '',
 ): Promise<PageNode[]> => {
@@ -320,7 +328,7 @@ const scanPagesDirectory = async (
     let entries: ReaddirEntry[];
 
     try {
-        entries = await session.fs.readdir(dir);
+        entries = await sandboxManager.listFiles(dir);
     } catch (error) {
         console.error(`Error reading directory ${dir}:`, error);
         return nodes;
@@ -361,8 +369,11 @@ const scanPagesDirectory = async (
             // Extract metadata from the page file
             let metadata: PageMetadata | undefined;
             try {
-                const fileContent = await session.fs.readTextFile(`${dir}/${entry.name}`);
-                metadata = await extractMetadata(fileContent);
+                const file = await sandboxManager.readFile(`${dir}/${entry.name}`);
+                if (!file || file.type !== 'text') {
+                    throw new Error(`File ${dir}/${entry.name} not found or is not a text file`);
+                }
+                metadata = await extractMetadata(file.content as string);
             } catch (error) {
                 console.error(`Error reading file ${dir}/${entry.name}:`, error);
             }
@@ -397,7 +408,7 @@ const scanPagesDirectory = async (
         const relativePath = joinPath(parentPath, dirNameForPath);
 
         if (entry.type === 'directory') {
-            const children = await scanPagesDirectory(session, fullPath, relativePath);
+            const children = await scanPagesDirectory(sandboxManager, fullPath, relativePath);
             if (children.length > 0) {
                 const dirPath = relativePath.replace(/\\/g, '/');
                 const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
@@ -417,10 +428,7 @@ const scanPagesDirectory = async (
     return nodes;
 };
 
-export const scanPagesFromSandbox = async (session: WebSocketSession): Promise<PageNode[]> => {
-    if (!session) {
-        throw new Error('No sandbox session available');
-    }
+export const scanPagesFromSandbox = async (sandboxManager: SandboxManager): Promise<PageNode[]> => {
 
     // Detect router configuration
     let routerConfig: { type: 'app' | 'pages'; basePath: string } | null = null;
@@ -428,7 +436,7 @@ export const scanPagesFromSandbox = async (session: WebSocketSession): Promise<P
     // Check for App Router first (Next.js 13+)
     for (const appPath of APP_ROUTER_PATHS) {
         try {
-            const entries = await session.fs.readdir(appPath);
+            const entries = await sandboxManager.listFiles(appPath);
             if (entries && entries.length > 0) {
                 routerConfig = { type: 'app', basePath: appPath };
                 break;
@@ -442,7 +450,7 @@ export const scanPagesFromSandbox = async (session: WebSocketSession): Promise<P
     if (!routerConfig) {
         for (const pagesPath of PAGES_ROUTER_PATHS) {
             try {
-                const entries = await session.fs.readdir(pagesPath);
+                const entries = await sandboxManager.listFiles(pagesPath);
                 if (entries && entries.length > 0) {
                     console.log(`Found Pages Router at: ${pagesPath}`);
                     routerConfig = { type: 'pages', basePath: pagesPath };
@@ -460,19 +468,19 @@ export const scanPagesFromSandbox = async (session: WebSocketSession): Promise<P
     }
 
     if (routerConfig.type === 'app') {
-        return await scanAppDirectory(session, routerConfig.basePath);
+        return await scanAppDirectory(sandboxManager, routerConfig.basePath);
     } else {
-        return await scanPagesDirectory(session, routerConfig.basePath);
+        return await scanPagesDirectory(sandboxManager, routerConfig.basePath);
     }
 };
 
 const detectRouterTypeInSandbox = async (
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
 ): Promise<{ type: 'app' | 'pages'; basePath: string } | null> => {
     // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
         try {
-            const entries = await session.fs.readdir(appPath);
+            const entries = await sandboxManager.listFiles(appPath);
             if (entries && entries.length > 0) {
                 // Check for layout file (required for App Router)
                 const hasLayout = entries.some(
@@ -494,7 +502,7 @@ const detectRouterTypeInSandbox = async (
     // Check for Pages Router if App Router not found
     for (const pagesPath of PAGES_ROUTER_PATHS) {
         try {
-            const entries = await session.fs.readdir(pagesPath);
+            const entries = await sandboxManager.listFiles(pagesPath);
             if (entries && entries.length > 0) {
                 // Check for index file (common in Pages Router)
                 const hasIndex = entries.some(
@@ -518,10 +526,10 @@ const detectRouterTypeInSandbox = async (
 };
 
 // checks if file/directory exists
-const pathExists = async (session: WebSocketSession, filePath: string): Promise<boolean> => {
+const pathExists = async (sandboxManager: SandboxManager, filePath: string): Promise<boolean> => {
     try {
-        await session.fs.readdir(getDirName(filePath));
-        const dirEntries = await session.fs.readdir(getDirName(filePath));
+        await sandboxManager.listFiles(getDirName(filePath));
+        const dirEntries = await sandboxManager.listFiles(getDirName(filePath));
         const fileName = getBaseName(filePath);
         return dirEntries.some((entry: any) => entry.name === fileName);
     } catch (error) {
@@ -530,15 +538,15 @@ const pathExists = async (session: WebSocketSession, filePath: string): Promise<
 };
 
 const cleanupEmptyFolders = async (
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
     folderPath: string,
 ): Promise<void> => {
     while (folderPath && folderPath !== getDirName(folderPath)) {
         try {
-            const entries = await session.fs.readdir(folderPath);
+            const entries = await sandboxManager.listFiles(folderPath);
             if (entries.length === 0) {
                 // Delete empty directory using remove method
-                await session.fs.remove(folderPath);
+                await sandboxManager.delete(folderPath);
                 folderPath = getDirName(folderPath);
             } else {
                 break;
@@ -551,7 +559,7 @@ const cleanupEmptyFolders = async (
 };
 
 const getUniqueDir = async (
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
     basePath: string,
     dirName: string,
     maxAttempts = 100,
@@ -563,7 +571,7 @@ const getUniqueDir = async (
 
     while (counter <= maxAttempts) {
         const fullPath = joinPath(basePath, uniquePath);
-        if (!(await pathExists(session, fullPath))) {
+        if (!(await pathExists(sandboxManager, fullPath))) {
             return uniquePath;
         }
         uniquePath = `${baseName}-copy-${counter}`;
@@ -574,11 +582,11 @@ const getUniqueDir = async (
 };
 
 export const createPageInSandbox = async (
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
     pagePath: string,
 ): Promise<void> => {
     try {
-        const routerConfig = await detectRouterTypeInSandbox(session);
+        const routerConfig = await detectRouterTypeInSandbox(sandboxManager);
 
         if (!routerConfig) {
             throw new Error('Could not detect Next.js router type');
@@ -597,11 +605,11 @@ export const createPageInSandbox = async (
         const fullPath = joinPath(routerConfig.basePath, normalizedPagePath);
         const pageFilePath = joinPath(fullPath, 'page.tsx');
 
-        if (await pathExists(session, pageFilePath)) {
+        if (await pathExists(sandboxManager, pageFilePath)) {
             throw new Error('Page already exists at this path');
         }
 
-        await session.fs.writeTextFile(pageFilePath, DEFAULT_PAGE_CONTENT);
+        await sandboxManager.writeFile(pageFilePath, DEFAULT_PAGE_CONTENT);
 
         console.log(`Created page at: ${pageFilePath}`);
     } catch (error) {
@@ -611,12 +619,12 @@ export const createPageInSandbox = async (
 };
 
 export const deletePageInSandbox = async (
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
     pagePath: string,
     isDir: boolean,
 ): Promise<void> => {
     try {
-        const routerConfig = await detectRouterTypeInSandbox(session);
+        const routerConfig = await detectRouterTypeInSandbox(sandboxManager);
 
         if (!routerConfig) {
             throw new Error('Could not detect Next.js router type');
@@ -633,20 +641,20 @@ export const deletePageInSandbox = async (
 
         const fullPath = joinPath(routerConfig.basePath, normalizedPath);
 
-        if (!(await pathExists(session, fullPath))) {
+        if (!(await pathExists(sandboxManager, fullPath))) {
             throw new Error('Selected page not found');
         }
 
         if (isDir) {
             // Delete entire directory
-            await session.fs.remove(fullPath, true);
+            await sandboxManager.delete(fullPath, true);
         } else {
             // Delete just the page.tsx file
             const pageFilePath = joinPath(fullPath, 'page.tsx');
-            await session.fs.remove(pageFilePath);
+            await sandboxManager.delete(pageFilePath);
 
             // Clean up empty parent directories
-            await cleanupEmptyFolders(session, fullPath);
+            await cleanupEmptyFolders(sandboxManager, fullPath);
         }
 
         console.log(`Deleted: ${fullPath}`);
@@ -657,12 +665,12 @@ export const deletePageInSandbox = async (
 };
 
 export const renamePageInSandbox = async (
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
     oldPath: string,
     newName: string,
 ): Promise<void> => {
     try {
-        const routerConfig = await detectRouterTypeInSandbox(session);
+        const routerConfig = await detectRouterTypeInSandbox(sandboxManager);
 
         if (!routerConfig || routerConfig.type !== 'app') {
             throw new Error('Page renaming is only supported for App Router projects.');
@@ -682,15 +690,15 @@ export const renamePageInSandbox = async (
         const parentDir = getDirName(oldFullPath);
         const newFullPath = joinPath(parentDir, newName);
 
-        if (!(await pathExists(session, oldFullPath))) {
+        if (!(await pathExists(sandboxManager, oldFullPath))) {
             throw new Error(`Source page not found: ${oldFullPath}`);
         }
 
-        if (await pathExists(session, newFullPath)) {
+        if (await pathExists(sandboxManager, newFullPath)) {
             throw new Error(`Target path already exists: ${newFullPath}`);
         }
 
-        await session.fs.rename(oldFullPath, newFullPath);
+        await sandboxManager.rename(oldFullPath, newFullPath);
 
         console.log(`Renamed page from ${oldFullPath} to ${newFullPath}`);
     } catch (error) {
@@ -700,12 +708,12 @@ export const renamePageInSandbox = async (
 };
 
 export const duplicatePageInSandbox = async (
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
     sourcePath: string,
     targetPath: string,
 ): Promise<void> => {
     try {
-        const routerConfig = await detectRouterTypeInSandbox(session);
+        const routerConfig = await detectRouterTypeInSandbox(sandboxManager);
 
         if (!routerConfig || routerConfig.type !== 'app') {
             throw new Error('Page duplication is only supported for App Router projects.');
@@ -717,18 +725,18 @@ export const duplicatePageInSandbox = async (
         if (isRootPath) {
             const sourcePageFile = joinPath(routerConfig.basePath, 'page.tsx');
             const targetDir = await getUniqueDir(
-                session,
+                sandboxManager,
                 routerConfig.basePath,
                 ROOT_PAGE_COPY_NAME,
             );
             const targetDirPath = joinPath(routerConfig.basePath, targetDir);
             const targetPageFile = joinPath(targetDirPath, 'page.tsx');
 
-            if (await pathExists(session, targetDirPath)) {
+            if (await pathExists(sandboxManager, targetDirPath)) {
                 throw new Error('Target path already exists');
             }
 
-            await session.fs.copy(sourcePageFile, targetPageFile);
+            await sandboxManager.copy(sourcePageFile, targetPageFile);
 
             console.log(`Duplicated root page to: ${targetPageFile}`);
             return;
@@ -736,17 +744,17 @@ export const duplicatePageInSandbox = async (
 
         // Handle non-root pages
         const normalizedSourcePath = sourcePath.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
-        const normalizedTargetPath = await getUniqueDir(session, routerConfig.basePath, targetPath);
+        const normalizedTargetPath = await getUniqueDir(sandboxManager, routerConfig.basePath, targetPath);
 
         const sourceFull = joinPath(routerConfig.basePath, normalizedSourcePath);
         const targetFull = joinPath(routerConfig.basePath, normalizedTargetPath);
 
-        if (await pathExists(session, targetFull)) {
+        if (await pathExists(sandboxManager, targetFull)) {
             throw new Error('Target path already exists');
         }
 
         // Check if source is a directory or file
-        const sourceEntries = await session.fs.readdir(getDirName(sourceFull));
+        const sourceEntries = await sandboxManager.listFiles(getDirName(sourceFull));
         const sourceEntry = sourceEntries.find(
             (entry: any) => entry.name === getBaseName(sourceFull),
         );
@@ -755,7 +763,7 @@ export const duplicatePageInSandbox = async (
             throw new Error('Source page not found');
         }
 
-        await session.fs.copy(sourceFull, targetFull, true);
+        await sandboxManager.copy(sourceFull, targetFull, true);
 
         console.log(`Duplicated page from ${sourceFull} to ${targetFull}`);
     } catch (error) {
@@ -765,11 +773,11 @@ export const duplicatePageInSandbox = async (
 };
 
 export const updatePageMetadataInSandbox = async (
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
     pagePath: string,
     metadata: PageMetadata,
 ): Promise<void> => {
-    const routerConfig = await detectRouterTypeInSandbox(session);
+    const routerConfig = await detectRouterTypeInSandbox(sandboxManager);
 
     if (!routerConfig) {
         throw new Error('Could not detect Next.js router type');
@@ -782,41 +790,49 @@ export const updatePageMetadataInSandbox = async (
     const fullPath = joinPath(routerConfig.basePath, pagePath);
     const pageFilePath = joinPath(fullPath, 'page.tsx');
     // check if page.tsx exists
-    const pageExists = await pathExists(session, pageFilePath);
+    const pageExists = await pathExists(sandboxManager, pageFilePath);
 
     if (!pageExists) {
         throw new Error('Page not found');
     }
 
-    const pageContent = await session.fs.readTextFile(pageFilePath);
+    const file = await sandboxManager.readFile(pageFilePath);
+    if (!file || file.type !== 'text') {
+        throw new Error('Page file not found or is not a text file');
+    }
+    const pageContent = file.content as string;
     const hasUseClient =
         pageContent.includes("'use client'") || pageContent.includes('"use client"');
 
     if (hasUseClient) {
         // check if layout.tsx exists
         const layoutFilePath = joinPath(fullPath, 'layout.tsx');
-        const layoutExists = await pathExists(session, layoutFilePath);
+        const layoutExists = await pathExists(sandboxManager, layoutFilePath);
 
         if (layoutExists) {
-            await updateMetadataInFile(session, layoutFilePath, metadata);
+            await updateMetadataInFile(sandboxManager, layoutFilePath, metadata);
         } else {
             // create layout.tsx
             // Create new layout file with metadata
             const layoutContent = `import type { Metadata } from 'next';\n\nexport const metadata: Metadata = ${JSON.stringify(metadata, null, 2)};\n\n${DEFAULT_LAYOUT_CONTENT}`;
-            await session.fs.writeTextFile(layoutFilePath, layoutContent);
+            await sandboxManager.writeFile(layoutFilePath, layoutContent);
         }
     } else {
-        await updateMetadataInFile(session, pageFilePath, metadata);
+        await updateMetadataInFile(sandboxManager, pageFilePath, metadata);
     }
 };
 
 async function updateMetadataInFile(
-    session: WebSocketSession,
+    sandboxManager: SandboxManager,
     filePath: string,
     metadata: PageMetadata,
 ) {
     // Read the current file content
-    const content = await session.fs.readTextFile(filePath);
+    const file = await sandboxManager.readFile(filePath);
+    if (!file || file.type !== 'text') {
+        throw new Error('File not found or is not a text file');
+    }
+    const content = file.content
 
     // Parse the file content using Babel
     const ast = parse(content, {
@@ -1005,7 +1021,7 @@ async function updateMetadataInFile(
     const formattedContent = await formatContent(filePath, code);
 
     // Write the updated content back to the file
-    await session.fs.writeTextFile(filePath, formattedContent);
+    await sandboxManager.writeFile(filePath, formattedContent);
 }
 
 export const addSetupTask = async (session: WebSocketSession) => {

@@ -1,4 +1,4 @@
-export interface BaseSandboxFile {
+interface BaseSandboxFile {
     type: 'text' | 'binary';
     path: string;
     content: string | Uint8Array | null;

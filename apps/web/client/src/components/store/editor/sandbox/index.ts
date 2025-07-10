@@ -1,4 +1,4 @@
-import type { WatchEvent } from '@codesandbox/sdk';
+import type { ReaddirEntry, WatchEvent } from '@codesandbox/sdk';
 import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
@@ -287,8 +287,8 @@ export class SandboxManager {
         return this.fileSync.listAllFiles();
     }
 
-    listFiles(dir: string) {
-        return this.session.session?.fs.readdir(dir);
+    listFiles(dir: string): Promise<ReaddirEntry[]> {
+        return this.session.session?.fs.readdir(dir) ?? Promise.resolve([]);
     }
 
     async listFilesRecursively(
