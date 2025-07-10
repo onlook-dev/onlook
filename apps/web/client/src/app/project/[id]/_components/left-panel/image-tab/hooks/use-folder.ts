@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { WebSocketSession } from '@codesandbox/sdk';
 import { useCallback, useState } from 'react';
 import type { FolderNode } from '../providers/types';
 
@@ -228,10 +227,10 @@ export const useFolder = () => {
         }
     }, [moveState, editorEngine]);
 
-    const moveFolderContents = async (folder: FolderNode, newPath: string, session: WebSocketSession) => {
+    const moveFolderContents = async (folder: FolderNode, newPath: string) => {
         const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
         const gitkeepContent = '# This folder was created by Onlook\n';
-        await session.fs.writeTextFile(gitkeepPath, gitkeepContent);
+        await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
 
         for (const image of folder.images) {
             if (image) {
@@ -243,13 +242,13 @@ export const useFolder = () => {
         }
 
         for (const [, subfolder] of folder.children) {
-            await moveSubfolder(subfolder, newPath, session);
+            await moveSubfolder(subfolder, newPath);
         }
     };
 
-    const moveSubfolder = async (subfolder: FolderNode, newParentPath: string, session: WebSocketSession) => {
+    const moveSubfolder = async (subfolder: FolderNode, newParentPath: string) => {
         const newSubfolderPath = `${newParentPath}/${subfolder.name}`;
-        await moveFolderContents(subfolder, newSubfolderPath, session);
+        await moveFolderContents(subfolder, newSubfolderPath);
     };
 
     // Modal toggle handlers
@@ -361,8 +360,7 @@ export const useFolder = () => {
         try {
 
             const folderPathToScan = folder.fullPath
-            const entries = await editorEngine.sandbox.session.session.fs.readdir(folderPathToScan);
-
+            const entries = await editorEngine.sandbox.readDir(folderPathToScan);
             const existingChildNames = new Set(folder.children.keys());
 
             for (const entry of entries) {
