@@ -22,7 +22,7 @@ export const TextAlignSelector = observer(
         });
         
         return (
-            <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+            <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
                 <HoverOnlyTooltip
                     content="Text Align"
                     side="bottom"

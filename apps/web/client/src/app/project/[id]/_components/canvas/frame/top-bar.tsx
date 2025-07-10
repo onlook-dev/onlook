@@ -33,24 +33,17 @@ export const TopBar = observer(
                 const deltaX = (e.clientX - startX) / scale;
                 const deltaY = (e.clientY - startY) / scale;
 
-                frame.position = {
+                const newPosition = {
                     x: startPositionX + deltaX,
                     y: startPositionY + deltaY,
                 };
 
-                editorEngine.frames.updateAndSaveToStorage(frame);
+                editorEngine.frames.updateAndSaveToStorage(frame.id, { position: newPosition });
             };
 
             const endMove = (e: MouseEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
-
-                const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
-                const moved = deltaX !== 0 || deltaY !== 0;
-                if (moved) {
-                    editorEngine.frames.updateAndSaveToStorage(frame);
-                }
                 window.removeEventListener('mousemove', handleMove);
                 window.removeEventListener('mouseup', endMove);
             };

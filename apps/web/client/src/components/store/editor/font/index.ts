@@ -261,14 +261,14 @@ export class FontManager {
                 return [];
             }
 
-            const content = (await this.editorEngine.sandbox?.readFile(this.fontConfigPath)) ?? '';
-            if (!content) {
+            const file = await this.editorEngine.sandbox?.readFile(this.fontConfigPath);
+            if (!file || file.type === 'binary') {
                 this._fonts = [];
                 return [];
             }
 
             try {
-                const fonts = extractFontImport(content);
+                const fonts = extractFontImport(file.content);
                 this._fonts = fonts;
                 return fonts;
             } catch (parseError) {
@@ -304,13 +304,13 @@ export class FontManager {
                 layoutPath = pathModule.join(routerConfig.basePath, '_app.tsx');
             }
 
-            const content = await sandbox.readFile(normalizePath(layoutPath));
-            if (!content) {
+            const file = await sandbox.readFile(normalizePath(layoutPath));
+            if (!file || file.type === 'binary') {
                 console.log(`Layout file is empty or doesn't exist: ${layoutPath}`);
                 return [];
             }
 
-            const { fonts, code } = extractExistingFontImport(content);
+            const { fonts, code } = extractExistingFontImport(file.content);
             if (code) {
                 await sandbox.writeFile(normalizePath(layoutPath), code);
             }
@@ -335,7 +335,12 @@ export class FontManager {
         }
 
         try {
-            const content = (await sandbox.readFile(this.fontConfigPath)) ?? '';
+            const file = await sandbox.readFile(this.fontConfigPath);
+            if (!file || file.type === 'binary') {
+                console.error('Font config file is empty or doesn\'t exist');
+                return false;
+            }
+            const content = file.content;
 
             // Convert the font family to the import name format (Pascal case, no spaces)
             const importName = font.family.replace(/\s+/g, '_');
@@ -430,10 +435,12 @@ export class FontManager {
         }
 
         try {
-            const content = await sandbox.readFile(this.fontConfigPath);
-            if (!content) {
+            const file = await sandbox.readFile(this.fontConfigPath);
+            if (!file || file.type === 'binary') {
+                console.error('Font config file is empty or doesn\'t exist');
                 return false;
             }
+            const content = file.content;
 
             const { removedFont, hasRemainingLocalFonts, ast } = removeFontFromConfigAST(
                 font,
@@ -515,7 +522,12 @@ export class FontManager {
 
         try {
             // Read the current font configuration file
-            const content = (await sandbox.readFile(this.fontConfigPath)) ?? '';
+            const file = await sandbox.readFile(this.fontConfigPath);
+            if (!file || file.type === 'binary') {
+                console.error('Font config file is empty or doesn\'t exist');
+                return false;
+            }
+            const content = file.content;
 
             // Parse the file content using Babel
             const ast = parse(content, {
@@ -862,11 +874,12 @@ export class FontManager {
         const normalizedFilePath = normalizePath(filePath);
 
         try {
-            const content = await sandbox.readFile(normalizedFilePath);
-            if (!content) {
+            const file = await sandbox.readFile(normalizedFilePath);
+            if (!file || file.type === 'binary') {
                 console.error(`Failed to read file: ${filePath}`);
                 return;
             }
+            const content = file.content;
             let updatedAst = false;
             let targetElementFound = false;
 
@@ -1010,10 +1023,12 @@ export class FontManager {
 
             const normalizedFilePath = normalizePath(layoutPath);
 
-            const content = (await sandbox.readFile(normalizedFilePath)) ?? '';
-            if (!content) {
+            const file = await sandbox.readFile(normalizedFilePath);
+            if (!file || file.type === 'binary') {
+                console.error(`Failed to read file: ${normalizedFilePath}`);
                 return false;
             }
+            const content = file.content;
 
             let updatedAst = false;
             let ast: ParseResult<t.File> | null = null;
@@ -1096,11 +1111,12 @@ export class FontManager {
 
         const normalizedFilePath = normalizePath(filePath);
 
-        const content = await sandbox.readFile(normalizedFilePath);
-        if (!content) {
+        const file = await sandbox.readFile(normalizedFilePath);
+        if (!file || file.type === 'binary') {
             console.error(`Failed to read file: ${filePath}`);
             return null;
         }
+        const content = file.content;
 
         await this.traverseClassName(normalizedFilePath, targetElements, (classNameAttr, ast) => {
             if (t.isStringLiteral(classNameAttr.value)) {
@@ -1348,11 +1364,13 @@ export class FontManager {
                 return false;
             }
 
-            const content = await sandbox.readFile(this.tailwindConfigPath);
-            if (!content) {
+            const file = await sandbox.readFile(this.tailwindConfigPath);
+            if (!file || file.type === 'binary') {
+                console.error('Tailwind config file is empty or doesn\'t exist');
                 return false;
             }
 
+            const content = file.content;
             const code = removeFontFromThemeAST(font.id, content);
 
             if (!code) {
@@ -1379,10 +1397,13 @@ export class FontManager {
                 return false;
             }
 
-            const content = await sandbox.readFile(this.tailwindConfigPath);
-            if (!content) {
+            const file = await sandbox.readFile(this.tailwindConfigPath);
+            if (!file || file.type === 'binary') {
+                console.error('Tailwind config file is empty or doesn\'t exist');
                 return false;
             }
+
+            const content = file.content;
 
             // Parse the Tailwind config
             const ast = parse(content, {
@@ -1489,12 +1510,12 @@ export class FontManager {
         }
 
         try {
-            const content = await sandbox.readFile(filePath);
-            if (!content) {
+            const file = await sandbox.readFile(filePath);
+            if (!file || file.type === 'binary') {
                 console.error(`Failed to read file: ${filePath}`);
                 return;
             }
-
+            const content = file.content;
             const ast = parse(content, {
                 sourceType: 'module',
                 plugins: ['typescript', 'jsx'],

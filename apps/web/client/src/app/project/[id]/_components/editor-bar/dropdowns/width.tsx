@@ -15,12 +15,12 @@ export const Width = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
         useDimensionControl('width');
 
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'width-dropdown' 
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'width-dropdown'
     });
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Width" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton

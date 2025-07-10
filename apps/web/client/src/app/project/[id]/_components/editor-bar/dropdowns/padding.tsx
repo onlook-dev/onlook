@@ -7,13 +7,13 @@ import {
     DropdownMenuTrigger,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { useMemo, useState } from "react";
+import { observer } from "mobx-react-lite";
+import { useState, useMemo } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
-import { observer } from "mobx-react-lite";
 import { ToolbarButton } from "../toolbar-button";
 
 
@@ -46,9 +46,9 @@ const PADDING_ICON_MAP: Record<string, typeof Icons.PaddingEmpty> = {
 
 export const Padding = observer(() => {
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('padding');
-    
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'padding-dropdown' 
+
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'padding-dropdown'
     });
     
     
@@ -85,7 +85,8 @@ export const Padding = observer(() => {
 
         // All same non-zero values
         const allSame = nonZeroValues.length === 4 && 
-                        nonZeroValues.every(val => val === nonZeroValues[0]);
+                        nonZeroValues.every(val => val === nonZeroValues[0]) &&
+                        nonZeroValues[0] !== 0;
         if (allSame) {
             return Icons.PaddingFull;
         }
@@ -113,7 +114,7 @@ export const Padding = observer(() => {
 
         // Get all non-zero values
         const nonZeroValues = [top, right, bottom, left].filter(val => val !== 0);
-        
+
         // If all non-zero values are the same
         if (nonZeroValues.length > 0 && nonZeroValues.every(val => val === nonZeroValues[0])) {
             return boxState.padding.unit === 'px' ? `${nonZeroValues[0]}` : `${boxState.padding.value}`;
@@ -128,7 +129,7 @@ export const Padding = observer(() => {
 
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Padding" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton

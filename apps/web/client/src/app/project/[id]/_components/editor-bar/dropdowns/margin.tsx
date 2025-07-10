@@ -147,8 +147,8 @@ export const Margin = observer(() => {
     const MarginIcon = getMarginIcon();
     const marginValue = getMarginDisplay();
 
-    return (    
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+    return (
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Margin" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton

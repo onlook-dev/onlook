@@ -103,9 +103,9 @@ export const isImageFile = (fileName: string): boolean => {
     return IMAGE_EXTENSIONS.includes(mimeType);
 };
 
-export const convertToBase64 = (file: Uint8Array): string => {
+export const convertToBase64 = (content: Uint8Array): string => {
     return btoa(
-        Array.from(file)
+        Array.from(content)
             .map((byte: number) => String.fromCharCode(byte))
             .join(''),
     );

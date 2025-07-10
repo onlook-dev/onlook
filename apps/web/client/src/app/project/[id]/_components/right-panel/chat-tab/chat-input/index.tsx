@@ -19,12 +19,17 @@ import { type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
 
-export const ChatInput = observer(() => {
+export const ChatInput = observer(({
+    inputValue,
+    setInputValue,
+}: {
+    inputValue: string;
+    setInputValue: React.Dispatch<React.SetStateAction<string>>;
+}) => {
     const { sendMessages, stop, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const [inputValue, setInputValue] = useState('');
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);

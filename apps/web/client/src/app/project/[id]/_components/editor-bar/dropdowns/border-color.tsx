@@ -34,7 +34,7 @@ export const BorderColor = observer(() => {
     }
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip
                 content="Border Color"
                 side="bottom"

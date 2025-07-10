@@ -11,9 +11,9 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { convertFontWeight } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { useTextControl } from '../../hooks/use-text-control';
 import { HoverOnlyTooltip } from '../../hover-tooltip';
-import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { ToolbarButton } from '../../toolbar-button';
 
 export const FontWeightSelector = observer(
@@ -24,7 +24,7 @@ export const FontWeightSelector = observer(
         });
 
         return (
-            <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+            <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
                 <HoverOnlyTooltip
                     content="Font Weight"
                     side="bottom"

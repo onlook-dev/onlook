@@ -1,5 +1,6 @@
 'use client';
 
+import { UNITS } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -9,8 +10,6 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { useInputControl } from '../hooks/use-input-control';
-
-const UNITS = ['PX', '%', 'EM', 'REM'];
 
 const OPTION_OVERRIDES: Record<string, string | undefined> = {
     Fit: 'Hug',
@@ -29,7 +28,7 @@ interface InputDropdownProps {
 
 export const InputDropdown = ({
     value,
-    unit = 'PX',
+    unit = 'px',
     dropdownValue = 'Hug',
     dropdownOptions = ['Hug'],
     onChange,
@@ -49,7 +48,7 @@ export const InputDropdown = ({
                     className="w-[32px] bg-transparent text-sm text-white focus:outline-none text-left"
                     aria-label="Value input"
                 />
-                <DropdownMenu>
+                <DropdownMenu modal={false}>
                     <DropdownMenuTrigger className="text-sm text-muted-foreground focus:outline-none cursor-pointer hover:text-white transition-colors">
                         {unit}
                     </DropdownMenuTrigger>
@@ -60,13 +59,13 @@ export const InputDropdown = ({
                                 onClick={() => onUnitChange?.(unitOption)}
                                 className="text-sm w-full h-9 flex justify-center items-center text-center px-2 hover:bg-background-tertiary/70 hover:text-white transition-colors"
                             >
-                                {unitOption}
+                                {unitOption.toUpperCase()}
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"

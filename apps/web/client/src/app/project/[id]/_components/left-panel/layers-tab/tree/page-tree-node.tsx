@@ -25,11 +25,12 @@ interface PageTreeNodeProps {
 }
 
 export const PageTreeNode: React.FC<PageTreeNodeProps> = observer(({ node, style }) => {
-    const hasChildren = node.data.children && node.data.children.length > 0;
     const editorEngine = useEditorEngine();
-    const isActive = !hasChildren && editorEngine.pages.isNodeActive(node.data);
     const [showModal, setShowModal] = useState(false);
     const [modalMode, setModalMode] = useState<'create' | 'rename'>('create');
+
+    const hasChildren = node.data.children && node.data.children.length > 0;
+    const isActive = !hasChildren && editorEngine.pages.isNodeActive(node.data);
 
     const getBaseName = (fullPath: string) => {
         return fullPath.split('/').pop() ?? '';

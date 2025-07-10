@@ -134,7 +134,7 @@ export class PagesManager {
             this._isScanning = true;
             if (this.editorEngine?.sandbox?.session?.session) {
                 try {
-                    const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox.session.session);
+                    const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox);
                     this.setPages(realPages);
                     this._isScanning = false;
                     return;
@@ -167,13 +167,8 @@ export class PagesManager {
             throw new Error('This page already exists');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
-        if (!session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
-            await createPageInSandbox(session, normalizedPath);
+            await createPageInSandbox(this.editorEngine.sandbox, normalizedPath);
             await this.scanPages();
             sendAnalytics('page create');
         } catch (error) {
@@ -193,13 +188,8 @@ export class PagesManager {
             throw new Error('A page with this name already exists');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
-        if (!session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
-            await renamePageInSandbox(session, oldPath, newName);
+            await renamePageInSandbox(this.editorEngine.sandbox, oldPath, newName);
             await this.scanPages();
             sendAnalytics('page rename');
         } catch (error) {
@@ -210,14 +200,9 @@ export class PagesManager {
     }
 
     public async duplicatePage(sourcePath: string, targetPath: string): Promise<void> {
-        const session = this.editorEngine?.sandbox?.session?.session;
-        if (!session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
             await duplicatePageInSandbox(
-                session,
+                this.editorEngine.sandbox,
                 normalizeRoute(sourcePath),
                 normalizeRoute(targetPath)
             );
@@ -236,13 +221,8 @@ export class PagesManager {
             throw new Error('Cannot delete root page');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
-        if (!session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
-            await deletePageInSandbox(session, normalizedPath, isDir);
+            await deletePageInSandbox(this.editorEngine.sandbox, normalizedPath, isDir);
             await this.scanPages();
             sendAnalytics('page delete');
         } catch (error) {
@@ -257,13 +237,8 @@ export class PagesManager {
             throw new Error('A page with this name does not exist');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
-        if (!session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
-            await updatePageMetadataInSandbox(session, pagePath, metadata);
+            await updatePageMetadataInSandbox(this.editorEngine.sandbox, pagePath, metadata);
             await this.scanPages();
         } catch (error) {
             console.error('Failed to update metadata:', error);

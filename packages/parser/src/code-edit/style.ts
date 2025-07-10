@@ -1,5 +1,5 @@
+import { customTwMerge } from '@onlook/utility';
 import { type t as T, types as t } from '../packages';
-import { twMerge } from 'tailwind-merge';
 
 export function addClassToNode(node: T.JSXElement, className: string): void {
     const openingElement = node.openingElement;
@@ -9,7 +9,7 @@ export function addClassToNode(node: T.JSXElement, className: string): void {
 
     if (classNameAttr) {
         if (t.isStringLiteral(classNameAttr.value)) {
-            classNameAttr.value.value = twMerge(classNameAttr.value.value, className);
+            classNameAttr.value.value = customTwMerge(classNameAttr.value.value, className);
         } else if (
             t.isJSXExpressionContainer(classNameAttr.value) &&
             t.isCallExpression(classNameAttr.value.expression)

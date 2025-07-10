@@ -5,19 +5,21 @@ import { Button } from '@onlook/ui/button';
 import { ToolbarButton } from '../toolbar-button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
-import { ColorPickerContent } from '../inputs/color-picker';
 import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
-import { observer } from 'mobx-react-lite';
+import { ColorPickerContent } from '../inputs/color-picker';
+import { hasGradient } from '../utils/gradient';
 
 export const ColorBackground = observer(() => {
     const editorEngine = useEditorEngine();
     const initialColor = editorEngine.style.selectedStyle?.styles.computed.backgroundColor;
+    const backgroundImage = editorEngine.style.selectedStyle?.styles.computed.backgroundImage;
 
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'color-background-dropdown' 
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'color-background-dropdown',
     });
 
     const { handleColorUpdate, handleColorUpdateEnd, tempColor } = useColorUpdate({
@@ -27,9 +29,16 @@ export const ColorBackground = observer(() => {
 
     const colorHex = useMemo(() => tempColor?.toHex(), [tempColor]);
 
+    const previewStyle = useMemo(() => {
+        if (hasGradient(backgroundImage)) {
+            return { background: backgroundImage };
+        }
+        return { backgroundColor: colorHex };
+    }, [backgroundImage, colorHex]);
+
     return (
         <div className="flex flex-col gap-2">
-            <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+            <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
                 <HoverOnlyTooltip
                     content="Background Color"
                     side="bottom"
@@ -43,10 +52,7 @@ export const ColorBackground = observer(() => {
                             className="flex w-10 flex-col items-center justify-center gap-0.5"
                         >
                             <Icons.PaintBucket className="h-2 w-2" />
-                            <div
-                                className="h-[4px] w-6 rounded-full bg-current"
-                                style={{ backgroundColor: colorHex }}
-                            />
+                            <div className="h-[4px] w-6 rounded-full" style={previewStyle} />
                         </ToolbarButton>
                     </DropdownMenuTrigger>
                 </HoverOnlyTooltip>
@@ -59,6 +65,7 @@ export const ColorBackground = observer(() => {
                         color={tempColor}
                         onChange={handleColorUpdate}
                         onChangeEnd={handleColorUpdateEnd}
+                        backgroundImage={backgroundImage}
                     />
                 </DropdownMenuContent>
             </DropdownMenu>

@@ -44,7 +44,7 @@ export const AdvancedTypography = () => {
     ];
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip
                 content="Advanced Typography"
                 side="bottom"

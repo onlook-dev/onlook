@@ -1,15 +1,14 @@
-import type React from 'react';
-import { useState, useEffect, useCallback } from 'react';
-import { ColorSlider } from './ColorSlider';
-import { SVPicker } from './SVPicker';
-import tw from 'tailwind-styled-components';
-import { twMerge } from 'tailwind-merge';
-import { Color } from '@onlook/utility';
-import { mod } from '@onlook/utility';
-import { DraftableInput } from '../draftable-input';
 import styled from '@emotion/styled';
+import { Color, mod } from '@onlook/utility';
+import type React from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import tw from 'tailwind-styled-components';
+import { cn } from '../../utils';
+import { DraftableInput } from '../draftable-input';
 import { InputGroup } from '../input-group';
+import { ColorSlider } from './ColorSlider';
 import EyeDropperButton from './EyeDropperButton';
+import { SVPicker } from './SVPicker';
 
 const Input = tw(DraftableInput)`
   outline-0 w-full h-6 bg-background-onlook/70 rounded focus:ring-1 ring-inset ring-foreground-active text-foreground-primary placeholder:text-foreground-disabled text-center
@@ -270,7 +269,7 @@ export const ColorPicker: React.FC<{
     );
 
     return (
-        <div className={twMerge('w-[224px] flex flex-col gap-1.5 p-2', className)}>
+        <div className={cn('w-[224px] flex flex-col gap-1.5 p-2', className)}>
             <SVPicker
                 width={208}
                 height={160}

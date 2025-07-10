@@ -4,7 +4,7 @@ import type { deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
-import { isBinaryFile, isEmptyString, isNullOrUndefined, LogTimer, updateGitignore, type FileOperations } from '@onlook/utility';
+import { convertToBase64, isBinaryFile, isEmptyString, isNullOrUndefined, LogTimer, updateGitignore, type FileOperations } from '@onlook/utility';
 import {
     type FreestyleFile,
 } from 'freestyle-sandboxes';
@@ -336,11 +336,7 @@ export class PublishManager {
                 const binaryContent = await this.session.fs.readFile(fullPath);
 
                 if (binaryContent) {
-                    const base64String = btoa(
-                        Array.from(binaryContent)
-                            .map((byte: number) => String.fromCharCode(byte))
-                            .join(''),
-                    );
+                    const base64String = convertToBase64(binaryContent);
 
                     return {
                         path: relativePath,

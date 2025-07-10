@@ -3,7 +3,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { useTextControl } from '../../hooks/use-text-control';
 import { HoverOnlyTooltip } from '../../hover-tooltip';
@@ -16,9 +16,9 @@ export const FontSizeSelector = observer(
         const inputRef = useRef<HTMLInputElement>(null);
         const { handleFontSizeChange, textState } = useTextControl();
         const [inputValue, setInputValue] = useState(textState.fontSize.toString());
-        
-        const { isOpen, onOpenChange } = useDropdownControl({ 
-            id: 'font-size-dropdown' 
+
+        const { isOpen, onOpenChange } = useDropdownControl({
+            id: 'font-size-dropdown'
         });
 
         // Update local input value when textState.fontSize changes externally
@@ -81,7 +81,7 @@ export const FontSizeSelector = observer(
         };
 
         return (
-            <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+            <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
                 <HoverOnlyTooltip
                     content="Font Size"
                     side="bottom"
