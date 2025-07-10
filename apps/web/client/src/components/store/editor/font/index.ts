@@ -108,10 +108,16 @@ export class FontManager {
             async (isIndexedFiles) => {
                 if (isIndexedFiles) {
                     await this.updateFontConfigPath();
-                    this.setupFontConfigFileWatcher(); 
                     await this.loadInitialFonts();
                     await this.getDefaultFont();
                 }
+            },
+        );
+
+        reaction(
+            () => this.editorEngine.sandbox.readFile(this.fontConfigPath),
+            async () => {
+                await this.syncFontsWithConfigs();
             },
         );
     }
@@ -1291,31 +1297,6 @@ export class FontManager {
         } catch (error) {
             console.error(`Error traversing className in ${filePath}:`, error);
         }
-    }
-
-    /**
-     * Sets up file watcher for the font config file
-     */
-    private setupFontConfigFileWatcher(): void {
-
-        this.cleanupFontConfigFileWatcher();
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            return;
-        }
-
-        this.fontConfigFileWatcher = sandbox.fileEventBus.subscribe('*', async (event) => {
-            const normalizedFontConfigPath = normalizePath(this.fontConfigPath);
-            const affectsFont = event.paths.some(
-                (path) => normalizePath(path) === normalizedFontConfigPath,
-            );
-
-            if (!affectsFont) {
-                return;
-            }
-
-            await this.syncFontsWithConfigs();
-        });
     }
 
     private async createNewTailwindConfigFile(): Promise<void> {

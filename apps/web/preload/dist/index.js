@@ -5047,9 +5047,13 @@ export {
 };
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 //# debugId=42EC3DA97884598964756E2164756E21
 =======
 //# debugId=7AB273697E2189B064756E2164756E21
 >>>>>>> 91bc3644 (improve upload fonts)
 >>>>>>> 6bdf276a (improve upload fonts)
+=======
+//# debugId=D773FAD3D262279764756E2164756E21
+>>>>>>> 418244b8 (fix updates)
 //# sourceMappingURL=index.js.map
