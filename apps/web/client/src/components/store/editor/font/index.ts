@@ -2,7 +2,7 @@
 
 import type { ParseResult } from '@babel/parser';
 import * as t from '@babel/types';
-import { DefaultSettings } from '@onlook/constants';
+import { DefaultSettings, RouterType,  type RouterConfig } from '@onlook/constants';
 import {
     convertRawFont,
     createFontFamilyProperty,
@@ -1020,7 +1020,7 @@ export class FontManager {
         const routerConfig = await this.detectRouterType();
 
         if (routerConfig) {
-            if (routerConfig.type === 'app') {
+            if (routerConfig.type === RouterType.APP) {
                 this._fontConfigPath = normalizePath(`${routerConfig.basePath}/fonts.ts`);
             } else {
                 // For pages router, place fonts.ts in the appropriate directory
@@ -1041,10 +1041,7 @@ export class FontManager {
     /**
      * Detects the router type (app or pages) and the base path of the project
      */
-    private async detectRouterType(): Promise<{
-        type: 'app' | 'pages';
-        basePath: string;
-    } | null> {
+    private async detectRouterType(): Promise<RouterConfig | null> {
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             return null;
@@ -1062,7 +1059,7 @@ export class FontManager {
                         .then((files) => files.filter((file) => file.includes('layout.tsx')));
 
                     if (appFiles.length > 0) {
-                        return { type: 'app', basePath: appPath };
+                        return { type: RouterType.APP, basePath: appPath };
                     }
                 } catch (error) {
                     // Directory doesn't exist, continue checking
@@ -1076,7 +1073,7 @@ export class FontManager {
                         .listFilesRecursively(pagesPath)
                         .then((files) => files.filter((file) => file.includes('_app.tsx')));
                     if (pagesFiles.length > 0) {
-                        return { type: 'pages', basePath: pagesPath };
+                        return { type: RouterType.PAGES, basePath: pagesPath };
                     }
                 } catch (error) {
                     // Directory doesn't exist, continue checking
@@ -1084,7 +1081,7 @@ export class FontManager {
             }
 
             // Default to app router if we can't determine
-            return { type: 'app', basePath: 'app' };
+            return { type: RouterType.APP, basePath: 'app' };
         } catch (error) {
             console.error('Error detecting router type:', error);
             return null;
@@ -1381,7 +1378,7 @@ export default config;
      */
 
     private async getRootLayoutPath(): Promise<
-        | { layoutPath: string; routerConfig: { type: 'app' | 'pages'; basePath: string } }
+        | { layoutPath: string; routerConfig: RouterConfig }
         | undefined
     > {
         const sandbox = this.editorEngine.sandbox;
@@ -1399,7 +1396,7 @@ export default config;
         // Determine the layout file path based on router type
         let layoutPath: string;
 
-        if (routerConfig.type === 'app') {
+        if (routerConfig.type === RouterType.APP) {
             layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
         } else {
             layoutPath = pathModule.join(routerConfig.basePath, '_app.tsx');
