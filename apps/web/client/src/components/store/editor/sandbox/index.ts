@@ -287,7 +287,7 @@ export class SandboxManager {
         return this.fileSync.listAllFiles();
     }
 
-    listFiles(dir: string): Promise<ReaddirEntry[]> {
+    readDir(dir: string): Promise<ReaddirEntry[]> {
         return this.session.session?.fs.readdir(dir) ?? Promise.resolve([]);
     }
 

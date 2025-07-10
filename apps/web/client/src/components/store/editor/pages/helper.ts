@@ -1,4 +1,4 @@
-import type { ReaddirEntry, WebSocketSession } from '@codesandbox/sdk';
+import type { ReaddirEntry } from '@codesandbox/sdk';
 import type { PageMetadata, PageNode } from '@onlook/models';
 import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
@@ -203,7 +203,7 @@ const scanAppDirectory = async (
     let entries;
 
     try {
-        entries = await sandboxManager.listFiles(dir);
+        entries = await sandboxManager.readDir(dir);
     } catch (error) {
         console.error(`Error reading directory ${dir}:`, error);
         return nodes;
@@ -328,7 +328,7 @@ const scanPagesDirectory = async (
     let entries: ReaddirEntry[];
 
     try {
-        entries = await sandboxManager.listFiles(dir);
+        entries = await sandboxManager.readDir(dir);
     } catch (error) {
         console.error(`Error reading directory ${dir}:`, error);
         return nodes;
@@ -436,7 +436,7 @@ export const scanPagesFromSandbox = async (sandboxManager: SandboxManager): Prom
     // Check for App Router first (Next.js 13+)
     for (const appPath of APP_ROUTER_PATHS) {
         try {
-            const entries = await sandboxManager.listFiles(appPath);
+            const entries = await sandboxManager.readDir(appPath);
             if (entries && entries.length > 0) {
                 routerConfig = { type: 'app', basePath: appPath };
                 break;
@@ -450,7 +450,7 @@ export const scanPagesFromSandbox = async (sandboxManager: SandboxManager): Prom
     if (!routerConfig) {
         for (const pagesPath of PAGES_ROUTER_PATHS) {
             try {
-                const entries = await sandboxManager.listFiles(pagesPath);
+                const entries = await sandboxManager.readDir(pagesPath);
                 if (entries && entries.length > 0) {
                     console.log(`Found Pages Router at: ${pagesPath}`);
                     routerConfig = { type: 'pages', basePath: pagesPath };
@@ -480,7 +480,7 @@ const detectRouterTypeInSandbox = async (
     // Check for App Router
     for (const appPath of APP_ROUTER_PATHS) {
         try {
-            const entries = await sandboxManager.listFiles(appPath);
+            const entries = await sandboxManager.readDir(appPath);
             if (entries && entries.length > 0) {
                 // Check for layout file (required for App Router)
                 const hasLayout = entries.some(
@@ -502,7 +502,7 @@ const detectRouterTypeInSandbox = async (
     // Check for Pages Router if App Router not found
     for (const pagesPath of PAGES_ROUTER_PATHS) {
         try {
-            const entries = await sandboxManager.listFiles(pagesPath);
+            const entries = await sandboxManager.readDir(pagesPath);
             if (entries && entries.length > 0) {
                 // Check for index file (common in Pages Router)
                 const hasIndex = entries.some(
@@ -528,8 +528,8 @@ const detectRouterTypeInSandbox = async (
 // checks if file/directory exists
 const pathExists = async (sandboxManager: SandboxManager, filePath: string): Promise<boolean> => {
     try {
-        await sandboxManager.listFiles(getDirName(filePath));
-        const dirEntries = await sandboxManager.listFiles(getDirName(filePath));
+        await sandboxManager.readDir(getDirName(filePath));
+        const dirEntries = await sandboxManager.readDir(getDirName(filePath));
         const fileName = getBaseName(filePath);
         return dirEntries.some((entry: any) => entry.name === fileName);
     } catch (error) {
@@ -543,7 +543,7 @@ const cleanupEmptyFolders = async (
 ): Promise<void> => {
     while (folderPath && folderPath !== getDirName(folderPath)) {
         try {
-            const entries = await sandboxManager.listFiles(folderPath);
+            const entries = await sandboxManager.readDir(folderPath);
             if (entries.length === 0) {
                 // Delete empty directory using remove method
                 await sandboxManager.delete(folderPath);
@@ -754,7 +754,7 @@ export const duplicatePageInSandbox = async (
         }
 
         // Check if source is a directory or file
-        const sourceEntries = await sandboxManager.listFiles(getDirName(sourceFull));
+        const sourceEntries = await sandboxManager.readDir(getDirName(sourceFull));
         const sourceEntry = sourceEntries.find(
             (entry: any) => entry.name === getBaseName(sourceFull),
         );
@@ -1024,7 +1024,7 @@ async function updateMetadataInFile(
     await sandboxManager.writeFile(filePath, formattedContent);
 }
 
-export const addSetupTask = async (session: WebSocketSession) => {
+export const addSetupTask = async (sandboxManager: SandboxManager) => {
     const tasks = {
         setupTasks: ['bun install'],
         tasks: {
@@ -1038,22 +1038,26 @@ export const addSetupTask = async (session: WebSocketSession) => {
             },
         },
     };
-    await session.fs.writeFile(
+    const content = JSON.stringify(tasks, null, 2);
+    await sandboxManager.writeFile(
         './.codesandbox/tasks.json',
-        new TextEncoder().encode(JSON.stringify(tasks, null, 2)),
+        content,
     );
 };
 
-export const updatePackageJson = async (session: WebSocketSession) => {
-    const pkgRaw = await session.fs.readFile('./package.json');
-    const pkgJson = JSON.parse(new TextDecoder().decode(pkgRaw));
+export const updatePackageJson = async (sandboxManager: SandboxManager) => {
+    const file = await sandboxManager.readFile('./package.json');
+    if (!file || file.type !== 'text') {
+        throw new Error('Package.json not found or is not a text file');
+    }
+    const pkgJson = JSON.parse(file.content);
 
     pkgJson.scripts = pkgJson.scripts || {};
     pkgJson.scripts.dev = 'next dev';
 
-    await session.fs.writeFile(
+    await sandboxManager.writeFile(
         './package.json',
-        new TextEncoder().encode(JSON.stringify(pkgJson, null, 2)),
+        JSON.stringify(pkgJson, null, 2),
     );
 };
 

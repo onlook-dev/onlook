@@ -360,8 +360,7 @@ export const useFolder = () => {
         try {
 
             const folderPathToScan = folder.fullPath
-            const entries = await editorEngine.sandbox.session.session.fs.readdir(folderPathToScan);
-
+            const entries = await editorEngine.sandbox.readDir(folderPathToScan);
             const existingChildNames = new Set(folder.children.keys());
 
             for (const entry of entries) {
