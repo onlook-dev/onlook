@@ -19,9 +19,9 @@ export class ImageManager {
 
         reaction(
             () => this.editorEngine.sandbox.isIndexingFiles,
-            (isIndexingFiles) => {
+            async (isIndexingFiles) => {
                 if (!isIndexingFiles) {
-                    this.scanImages();
+                    await this.scanImages();
                 }
             }
         );

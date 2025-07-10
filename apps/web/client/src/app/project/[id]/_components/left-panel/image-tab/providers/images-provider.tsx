@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { DefaultSettings } from '@onlook/constants';
 import { observer } from 'mobx-react-lite';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useFolder } from '../hooks/use-folder';
 import { useImageDelete } from '../hooks/use-image-delete';
 import { useImageMove } from '../hooks/use-image-move';
@@ -47,10 +46,6 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         setFolderStructure(baseFolderStructure);
     }, [baseFolderStructure]);
 
-    const triggerFolderStructureUpdate = useCallback(() => {
-        setFolderStructure(prev => ({ ...prev }));
-    }, []);
-
     const isOperating =
         deleteOperations.deleteState.isLoading ||
         renameOperations.renameState.isLoading ||
@@ -59,19 +54,13 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         folderOperations.isOperating;
 
     const value: ImagesContextValue = {
-        folderStructure: folderStructure.children.get(DefaultSettings.IMAGE_FOLDER) ?? folderStructure,
+        folderStructure,
         isOperating,
         deleteOperations,
         renameOperations,
         uploadOperations,
         moveOperations,
-        folderOperations: {
-            ...folderOperations,
-            scanFolderChildren: useCallback(async (folder: FolderNode) => {
-                await folderOperations.scanFolderChildren(folder);
-                triggerFolderStructureUpdate();
-            }, [folderOperations.scanFolderChildren, triggerFolderStructureUpdate]),
-        },
+        folderOperations
     };
 
     return <ImagesContext.Provider value={value}>{children}</ImagesContext.Provider>;

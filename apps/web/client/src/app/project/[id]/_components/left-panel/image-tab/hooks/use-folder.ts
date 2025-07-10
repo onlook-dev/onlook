@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useCallback, useState } from 'react';
 import type { FolderNode } from '@onlook/models';
-import { 
+import {
     createBaseFolder,
     validateFolderRename,
     validateFolderMove,
@@ -84,8 +84,11 @@ export const useFolder = () => {
     const onRenameFolder = useCallback(async () => {
         if (!renameState.folderToRename) return;
 
-        const validation = validateFolderRename(renameState.folderToRename.fullPath, renameState.newFolderName);
-        
+        const validation = validateFolderRename(
+            renameState.folderToRename.fullPath,
+            renameState.newFolderName,
+        );
+
         if (!validation.isValid) {
             setRenameState((prev) => ({
                 ...prev,
@@ -145,13 +148,7 @@ export const useFolder = () => {
         setDeleteState((prev) => ({ ...prev, isLoading: true }));
 
         try {
-            const folderPath = `${deleteState.folderToDelete.fullPath}`;
-
-            for (const image of deleteState.folderToDelete.images) {
-                if (image) {
-                    await editorEngine.sandbox.delete(image);
-                }
-            }
+            const folderPath = deleteState.folderToDelete.fullPath;
 
             await editorEngine.sandbox.delete(folderPath, true);
 
@@ -172,7 +169,6 @@ export const useFolder = () => {
         }
     }, [deleteState.folderToDelete, editorEngine]);
 
-
     const handleMoveToFolder = useCallback((folder: FolderNode, targetFolder: FolderNode) => {
         setMoveState({
             folderToMove: folder,
@@ -191,8 +187,11 @@ export const useFolder = () => {
             return;
         }
 
-        const validation = validateFolderMove(moveState.folderToMove.fullPath, moveState.targetFolder.fullPath);
-        
+        const validation = validateFolderMove(
+            moveState.folderToMove.fullPath,
+            moveState.targetFolder.fullPath,
+        );
+
         if (!validation.isValid) {
             setMoveState((prev) => ({
                 ...prev,
@@ -208,8 +207,12 @@ export const useFolder = () => {
             const oldPath = folderToMove.fullPath;
             const newPath = validation.newPath!;
 
-            if(oldPath === newPath) {
-                setMoveState((prev) => ({ ...prev, error: 'Cannot move folder to the same path', isLoading: false }));
+            if (oldPath === newPath) {
+                setMoveState((prev) => ({
+                    ...prev,
+                    error: 'Cannot move folder to the same path',
+                    isLoading: false,
+                }));
                 return;
             }
 
@@ -243,17 +246,19 @@ export const useFolder = () => {
         const gitkeepContent = '# This folder was created by Onlook\n';
         await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
 
-                    for (const image of folder.images) {
-                if (image) {
-                    const fileName = image.split('/').pop() ?? '';
-                    const newImagePath = `${newPath}/${fileName}`;
-                    await editorEngine.sandbox.copy(image, newImagePath);
-                    await editorEngine.sandbox.delete(image);
-                }
+        for (const image of folder.images) {
+            if (image) {
+                const fileName = image.split('/').pop() ?? '';
+                const newImagePath = `${newPath}/${fileName}`;
+                await editorEngine.sandbox.copy(image, newImagePath);
+                await editorEngine.sandbox.delete(image);
             }
+        }
 
-        for (const [, subfolder] of folder.children) {
-            await moveSubfolder(subfolder, newPath);
+        if (folder.children) {
+            for (const [, subfolder] of folder.children) {
+                await moveSubfolder(subfolder, newPath);
+            }
         }
     };
 
@@ -308,8 +313,11 @@ export const useFolder = () => {
     }, []);
 
     const onCreateFolder = useCallback(async () => {
-        const validation = validateFolderCreate(createState.newFolderName, createState.parentFolder?.fullPath);
-        
+        const validation = validateFolderCreate(
+            createState.newFolderName,
+            createState.parentFolder?.fullPath,
+        );
+
         if (!validation.isValid) {
             setCreateState((prev) => ({
                 ...prev,
@@ -328,12 +336,12 @@ export const useFolder = () => {
                 throw new Error('No sandbox session available');
             }
 
-            // Create the folder with a .gitkeep file
+            // Create the folder with a .gitkeep file to make it visible in the sandbox
             const gitkeepPath = `${newFolderPath}/.gitkeep`.replace(/\\/g, '/');
             const gitkeepContent = '# This folder was created by Onlook\n';
             await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
             if (createState.parentFolder) {
-                void scanFolderChildren(createState.parentFolder);
+                await scanFolderChildren(createState.parentFolder);
             }
 
             setCreateState({
@@ -362,39 +370,49 @@ export const useFolder = () => {
         });
     }, []);
 
-    const scanFolderChildren = useCallback(async (folder: FolderNode): Promise<void> => {
-        if (!editorEngine.sandbox.session?.session) {
-            console.warn('No session available for folder scanning');
-            return;
-        }
-        try {
-
-            const folderPathToScan = folder.fullPath
-            const entries = await editorEngine.sandbox.readDir(folderPathToScan);
-            const existingChildNames = new Set(folder.children.keys());
-
-            for (const entry of entries) {
-                if (entry.type === 'directory' && !existingChildNames.has(entry.name)) {
-                    // Create new folder node for empty directory
-                    const childPath = folder.fullPath ? `${folder.fullPath}/${entry.name}` : entry.name;
-                    const newFolderNode: FolderNode = {
-                        name: entry.name,
-                        path: childPath,
-                        fullPath: childPath,
-                        images: [],
-                        children: new Map(),
-                    };
-
-                    folder.children.set(entry.name, newFolderNode);
-                }
+    const scanFolderChildren = useCallback(
+        async (folder: FolderNode): Promise<void> => {
+            if (!editorEngine.sandbox.session?.session) {
+                console.warn('No session available for folder scanning');
+                return;
             }
-        } catch (error) {
-            console.error('Error scanning folder children:', error);
-        }
-    }, [editorEngine]);
+            try {
+                const folderPathToScan = folder.fullPath;
+                const entries = await editorEngine.sandbox.readDir(folderPathToScan);
+
+                if (folder.children) {
+                    const existingChildNames = new Set(folder.children.keys());
+
+                    for (const entry of entries) {
+                        if (entry.type === 'directory' && !existingChildNames.has(entry.name)) {
+                            // Create new folder node for empty directory
+                            const childPath = folder.fullPath
+                                ? `${folder.fullPath}/${entry.name}`
+                                : entry.name;
+                            const newFolderNode: FolderNode = {
+                                name: entry.name,
+                                fullPath: childPath,
+                                images: [],
+                                children: new Map(),
+                            };
+
+                            folder.children.set(entry.name, newFolderNode);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error scanning folder children:', error);
+            }
+        },
+        [editorEngine],
+    );
 
     // Check if any operation is loading
-    const isOperating = renameState.isLoading || deleteState.isLoading || moveState.isLoading || createState.isLoading;
+    const isOperating =
+        renameState.isLoading ||
+        deleteState.isLoading ||
+        moveState.isLoading ||
+        createState.isLoading;
 
     return {
         // Rename operations

@@ -3,37 +3,24 @@ import { Icons } from '@onlook/ui/icons';
 import { memo } from 'react';
 import { useImagesContext } from '../providers/images-provider';
 import FolderTab from './folder-tab';
-import FolderDeleteModal from './modal/folder-delete-modal';
-import FolderMoveModal from './modal/folder-move-modal';
-import FolderRenameModal from './modal/folder-rename-modal';
+import { FolderDeleteModal } from './modal/folder-delete-modal';
+import { FolderMoveModal } from './modal/folder-move-modal';
+import { FolderRenameModal } from './modal/folder-rename-modal';
 import type { FolderNode } from '@onlook/models';
 
 interface FolderListProps {
-    items: FolderNode[];
+    childFolders: FolderNode[];
     onSelectFolder: (folder: FolderNode) => void;
     folder: FolderNode | null;
     showCreateButton: boolean;
 }
 
 export const FolderList = memo(
-    ({ items, onSelectFolder, folder, showCreateButton }: FolderListProps) => {
+    ({ childFolders, onSelectFolder, folder, showCreateButton }: FolderListProps) => {
         const { folderOperations } = useImagesContext();
-        const {
-            renameState,
-            deleteState,
-            moveState,
-            handleRenameInputChange,
-            onRenameFolder,
-            handleRenameModalToggle,
-            onDeleteFolder,
-            handleDeleteModalToggle,
-            handleCreateFolder,
-            isOperating,
-            handleMoveModalToggle,
-            onMoveFolder,
-        } = folderOperations;
+        const { handleCreateFolder, isOperating } = folderOperations;
 
-        if (!items.length) {
+        if (!childFolders.length) {
             return null;
         }
 
@@ -41,15 +28,15 @@ export const FolderList = memo(
             <div className="flex flex-col gap-2 max-h-[30vh]">
                 <p className="text-sm text-gray-200 font-medium">Folders</p>
                 <div className="flex flex-col space-y-1 flex-1 overflow-y-auto">
-                    {items.map((item, index) => (
+                    {childFolders.map((item, index) => (
                         <FolderTab
-                            key={item.path || index}
+                            key={item.fullPath || index}
                             folder={item}
                             totalItems={item.images.length}
                             onSelect={() => onSelectFolder(item)}
                             isDisabled={isOperating}
                         />
-                    ))}
+                    ))}s
                 </div>
 
                 {showCreateButton && (
@@ -66,32 +53,12 @@ export const FolderList = memo(
                 )}
 
                 {/* Folder Operation Modals */}
-                <FolderRenameModal
-                    isOpen={!!renameState.folderToRename}
-                    toggleOpen={handleRenameModalToggle}
-                    onRename={onRenameFolder}
-                    currentName={renameState.newFolderName}
-                    onNameChange={handleRenameInputChange}
-                    isLoading={renameState.isLoading}
-                    error={renameState.error}
-                />
-
-                <FolderDeleteModal
-                    isOpen={!!deleteState.folderToDelete}
-                    toggleOpen={handleDeleteModalToggle}
-                    onDelete={onDeleteFolder}
-                    isLoading={deleteState.isLoading}
-                    folder={deleteState.folderToDelete}
-                />
-                <FolderMoveModal
-                    isOpen={!!moveState.folderToMove && !!moveState.targetFolder}
-                    toggleOpen={handleMoveModalToggle}
-                    onMove={onMoveFolder}
-                    isLoading={moveState.isLoading}
-                    folder={moveState.folderToMove}
-                    targetFolder={moveState.targetFolder}
-                />
+                <FolderRenameModal />
+                <FolderDeleteModal />
+                <FolderMoveModal />
             </div>
         );
     },
 );
+
+FolderList.displayName = 'FolderList';

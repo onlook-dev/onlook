@@ -1,4 +1,3 @@
-import { DefaultSettings } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -37,9 +36,6 @@ export default function Folder() {
     const {
         createState,
         handleCreateFolder,
-        handleRenameFolder,
-        handleDeleteFolder,
-        handleMoveToFolder,
         isOperating: isFolderOperating,
         scanFolderChildren,
         handleCreateFolderInputChange,
@@ -87,12 +83,14 @@ export default function Folder() {
     };
 
     const findFolderInStructure = (folder: FolderNode, target: FolderNode): FolderNode | null => {
-        if (folder && target && folder.fullPath === target.fullPath) {
+        if (folder.fullPath === target.fullPath) {
             return folder;
         }
-        for (const child of folder.children.values()) {
-            const found = findFolderInStructure(child, target);
-            if (found) return found;
+        if (folder.children) {
+            for (const child of folder.children.values()) {
+                const found = findFolderInStructure(child, target);
+                if (found) return found;
+            }
         }
         return null;
     };
@@ -106,7 +104,7 @@ export default function Folder() {
                 setFolderPath([]);
             } else if (!isEqual(updatedCurrentFolder, currentFolder)) {
                 setCurrentFolder(updatedCurrentFolder);
-                loadFolderImages(updatedCurrentFolder);
+                void loadFolderImages(updatedCurrentFolder);
             }
         } else {
             setCurrentFolder(folderStructure);
@@ -116,7 +114,7 @@ export default function Folder() {
 
     useEffect(() => {
         if (currentFolder) {
-            loadFolderImages(currentFolder);
+            void loadFolderImages(currentFolder);
         }
     }, [currentFolder, loadFolderImages]);
 
@@ -145,7 +143,7 @@ export default function Folder() {
 
     const canGoBack = folderPath.length > 0 || currentFolder !== folderStructure;
     const isAnyOperationLoading = isOperating || isFolderOperating;
-    const showCreateButton = !!currentFolder && currentFolder === folderStructure && currentFolder.children.size === 0;
+    const showCreateButton = !!currentFolder && currentFolder === folderStructure && (currentFolder.children?.size ?? 0) === 0;
 
     return (
         <div className="flex flex-col gap-2 h-full">
@@ -196,18 +194,13 @@ export default function Folder() {
                             </div>
                         </div>
 
-                        <FolderDropdownMenu
-                            folder={currentFolder ?? folderStructure}
-                            handleRenameFolder={() =>
-                                handleRenameFolder(currentFolder ?? folderStructure)
-                            }
-                            handleDeleteFolder={() =>
-                                handleDeleteFolder(currentFolder ?? folderStructure)
-                            }
-                            handleMoveToFolder={handleMoveToFolder}
-                            className="bg-gray-700"
-                            alwaysVisible={true}
-                        />
+                        {currentFolder && (
+                            <FolderDropdownMenu
+                                folder={currentFolder}
+                                className="bg-gray-700"
+                                alwaysVisible={true}
+                            />
+                        )}
                     </div>
                     <Separator />
                 </>
@@ -264,7 +257,7 @@ export default function Folder() {
 
             {/* Folder Content */}
             <FolderList
-                items={Array.from(currentFolder?.children.values() || [])}
+                childFolders={Array.from(currentFolder?.children?.values() ?? [])}
                 folder={currentFolder}
                 showCreateButton={showCreateButton}
                 onSelectFolder={handleSelectFolder}
@@ -279,7 +272,7 @@ export default function Folder() {
                     </div>
                 </div>
             ) : (
-                <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath} />
+                <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath ?? ''} />
             )}
 
             <FolderCreateModal

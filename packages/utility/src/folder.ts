@@ -4,9 +4,8 @@ import type { FolderNode } from '@onlook/models';
 /**
  * Creates a folder node with the given properties
  */
-export const createFolderNode = (name: string, path: string, fullPath: string): FolderNode => ({
+export const createFolderNode = (name: string, fullPath: string): FolderNode => ({
     name,
-    path,
     fullPath,
     images: [],
     children: new Map(),
@@ -17,7 +16,7 @@ export const createFolderNode = (name: string, path: string, fullPath: string): 
  * This is the core logic extracted from the useFolder hook
  */
 export const createBaseFolder = (imagePaths: string[]): FolderNode => {
-    const root = createFolderNode(DefaultSettings.IMAGE_FOLDER, '', '');
+    const root = createFolderNode(DefaultSettings.IMAGE_FOLDER, '');
 
     if (imagePaths.length === 0) {
         return root;
@@ -54,11 +53,11 @@ export const createBaseFolder = (imagePaths: string[]): FolderNode => {
             if (!part) continue;
 
             currentPath = currentPath ? `${currentPath}/${part}` : part;
-            if (!currentNode.children.has(part)) {
-                currentNode.children.set(part, createFolderNode(part, currentPath, currentPath));
+            if (!currentNode.children?.has(part)) {
+                currentNode.children?.set(part, createFolderNode(part, currentPath));
             }
 
-            currentNode = currentNode.children.get(part)!;
+            currentNode = currentNode.children?.get(part) ?? createFolderNode(part, currentPath);
         }
 
         currentNode.images.push(image);
@@ -135,24 +134,6 @@ export const validateFolderCreate = (
     const newPath = parentPath ? `${parentPath}/${trimmedName}` : trimmedName;
 
     return { isValid: true, newPath };
-};
-
-/**
- * Simulates folder scanning for testing
- */
-export const simulateFolderScan = (
-    entries: Array<{ name: string; type: string }>,
-    existingChildren: Set<string>,
-): string[] => {
-    const newFolders: string[] = [];
-
-    for (const entry of entries) {
-        if (entry.type === 'directory' && !existingChildren.has(entry.name)) {
-            newFolders.push(entry.name);
-        }
-    }
-
-    return newFolders;
 };
 
 /**

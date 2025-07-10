@@ -2,7 +2,6 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import type { FolderNode } from '@onlook/models';
-import { useImagesContext } from '../providers/images-provider';
 
 interface FolderTabProps {
     folder: FolderNode;
@@ -18,8 +17,6 @@ export default function FolderTab({
     isDisabled
 }: FolderTabProps) {
 
-    const { folderStructure, folderOperations } = useImagesContext();  
-    const { moveState, handleRenameFolder, handleDeleteFolder, handleMoveToFolder } = folderOperations;
     return (
         <div 
             onClick={onSelect} 
@@ -38,12 +35,7 @@ export default function FolderTab({
             
             <FolderDropdownMenu
                 folder={folder}
-                handleRenameFolder={() => handleRenameFolder(folder)}
-                handleDeleteFolder={() => handleDeleteFolder(folder)}
-                handleMoveToFolder={handleMoveToFolder}
                 isDisabled={isDisabled}
-                folderStructure={folderStructure}
-                selectedTargetFolder={moveState.targetFolder}
             />
         </div>
     );

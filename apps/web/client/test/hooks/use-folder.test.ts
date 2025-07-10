@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, mock, test } from 'bun:test';
 import type { FolderNode } from '@onlook/models';
 import { 
     createBaseFolder,
@@ -6,22 +6,12 @@ import {
     validateFolderRename,
     validateFolderMove,
     validateFolderCreate,
-    simulateFolderScan,
     generateNewFolderPath,
     getFolderName,
     getParentPath,
     isChildPath,
     normalizePath
 } from '@onlook/utility';
-
-// Helper function to create a test folder node
-const createTestFolder = (name: string, fullPath: string, images: string[] = []): FolderNode => ({
-    name,
-    path: fullPath,
-    fullPath,
-    images,
-    children: new Map(),
-});
 
 describe('useFolder hook logic', () => {
     describe('createBaseFolder', () => {
@@ -31,7 +21,7 @@ describe('useFolder hook logic', () => {
             expect(rootFolder.name).toBe('public');
             expect(rootFolder.fullPath).toBe('');
             expect(rootFolder.images).toEqual([]);
-            expect(rootFolder.children.size).toBe(0);
+            expect(rootFolder.children?.size).toBe(0);
         });
 
         test('should create folder structure from image paths', () => {
@@ -46,14 +36,14 @@ describe('useFolder hook logic', () => {
             
             expect(rootFolder.name).toBe('public');
             expect(rootFolder.images).toContain('public/logo.svg');
-            expect(rootFolder.children.has('images')).toBe(true);
-            expect(rootFolder.children.has('icons')).toBe(true);
+            expect(rootFolder.children?.has('images')).toBe(true);
+            expect(rootFolder.children?.has('icons')).toBe(true);
             
-            const imagesFolder = rootFolder.children.get('images')!;
+            const imagesFolder = rootFolder.children?.get('images')!;
             expect(imagesFolder.images).toContain('public/images/photo1.jpg');
             expect(imagesFolder.images).toContain('public/images/photo2.jpg');
             
-            const iconsFolder = rootFolder.children.get('icons')!;
+            const iconsFolder = rootFolder.children?.get('icons')!;
             expect(iconsFolder.images).toContain('public/icons/icon1.png');
         });
 
@@ -66,13 +56,13 @@ describe('useFolder hook logic', () => {
             
             const rootFolder = createBaseFolder(imagePaths);
             
-            const assetsFolder = rootFolder.children.get('assets')!;
+            const assetsFolder = rootFolder.children?.get('assets')!;
             expect(assetsFolder).toBeDefined();
             
-            const imagesFolder = assetsFolder.children.get('images')!;
+            const imagesFolder = assetsFolder.children?.get('images')!;
             expect(imagesFolder).toBeDefined();
             
-            const galleryFolder = imagesFolder.children.get('gallery')!;
+            const galleryFolder = imagesFolder.children?.get('gallery')!;
             expect(galleryFolder).toBeDefined();
             expect(galleryFolder.images).toContain('public/assets/images/gallery/photo1.jpg');
         });
@@ -85,7 +75,7 @@ describe('useFolder hook logic', () => {
             
             const rootFolder = createBaseFolder(imagePaths);
             
-            const imagesFolder = rootFolder.children.get('images')!;
+            const imagesFolder = rootFolder.children?.get('images')!;
             expect(imagesFolder.images).toContain('public//images//photo1.jpg');
             expect(imagesFolder.images).toContain('public/images/photo2.jpg');
         });
@@ -150,10 +140,10 @@ describe('useFolder hook logic', () => {
             
             const rootFolder = createBaseFolder(imagePaths);
             
-            const veryFolder = rootFolder.children.get('very')!;
+            const veryFolder = rootFolder.children?.get('very')!;
             expect(veryFolder).toBeDefined();
             
-            const deepFolder = veryFolder.children.get('deep')!;
+            const deepFolder = veryFolder.children?.get('deep')!;
             expect(deepFolder).toBeDefined();
             
             // Navigate to the deepest level
@@ -161,7 +151,7 @@ describe('useFolder hook logic', () => {
             const pathSegments = ['nested', 'folder', 'structure'];
             
             for (const segment of pathSegments) {
-                current = current.children.get(segment)!;
+                current = current.children?.get(segment)!;
                 expect(current).toBeDefined();
             }
             
@@ -174,7 +164,7 @@ describe('useFolder hook logic', () => {
             expect(rootFolder.name).toBe('public');
             expect(rootFolder.fullPath).toBe('');
             
-            expect(rootFolder.children.has('public')).toBe(false);
+            expect(rootFolder.children?.has('public')).toBe(false);
             expect(rootFolder.images).toContain('public/image.jpg');
         });
 
@@ -183,7 +173,7 @@ describe('useFolder hook logic', () => {
             
             expect(rootFolder.name).toBe('public');
             expect(rootFolder.fullPath).toBe('');
-            expect(rootFolder.children.size).toBe(0);
+            expect(rootFolder.children?.size).toBe(0);
         });
     });
 
@@ -284,47 +274,6 @@ describe('useFolder hook logic', () => {
         });
     });
 
-    describe('folder scanning logic', () => {
-        test('should scan folder children successfully', () => {
-            const entries = [
-                { name: 'subfolder1', type: 'directory' },
-                { name: 'subfolder2', type: 'directory' },
-                { name: 'file.txt', type: 'file' }
-            ];
-            const existingChildren = new Set<string>();
-            
-            const newFolders = simulateFolderScan(entries, existingChildren);
-            
-            expect(newFolders).toContain('subfolder1');
-            expect(newFolders).toContain('subfolder2');
-            expect(newFolders).not.toContain('file.txt');
-            expect(newFolders.length).toBe(2);
-        });
-
-        test('should not add existing children', () => {
-            const entries = [
-                { name: 'existing', type: 'directory' },
-                { name: 'new', type: 'directory' }
-            ];
-            const existingChildren = new Set(['existing']);
-            
-            const newFolders = simulateFolderScan(entries, existingChildren);
-            
-            expect(newFolders).not.toContain('existing');
-            expect(newFolders).toContain('new');
-            expect(newFolders.length).toBe(1);
-        });
-
-        test('should handle empty entries', () => {
-            const entries: Array<{ name: string; type: string }> = [];
-            const existingChildren = new Set<string>();
-            
-            const newFolders = simulateFolderScan(entries, existingChildren);
-            
-            expect(newFolders.length).toBe(0);
-        });
-    });
-
     describe('utility functions', () => {
         test('should generate correct paths for different operations', () => {
             expect(generateNewFolderPath('public/old', 'new', 'rename')).toBe('public/new');
@@ -368,9 +317,9 @@ describe('useFolder hook logic', () => {
             const rootFolder = createBaseFolder(imagePaths);
             
             // Should still create structure, even with malformed paths
-            expect(rootFolder.children.has('normal')).toBe(true);
-            expect(rootFolder.children.has('multiple')).toBe(true);
-            expect(rootFolder.children.has('.')).toBe(true);
+            expect(rootFolder.children?.has('normal')).toBe(true);
+            expect(rootFolder.children?.has('multiple')).toBe(true);
+            expect(rootFolder.children?.has('.')).toBe(true);
         });
 
         test('should handle very deep nesting', () => {
@@ -379,7 +328,7 @@ describe('useFolder hook logic', () => {
             
             let current = rootFolder;
             for (let i = 0; i < 20; i++) {
-                current = current.children.get('level')!;
+                current = current.children?.get('level')!;
                 expect(current).toBeDefined();
             }
             
