@@ -15,6 +15,8 @@ import {
     TERMINAL_COMMAND_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_PARAMETERS
 } from '@onlook/ai';
+import type { SandboxFile } from '@onlook/models';
+import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
 import { z } from 'zod';
 
@@ -76,11 +78,29 @@ async function handleReadFilesTool(
     args: z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ) {
-    const result = await editorEngine.sandbox.readFiles(args.paths);
-    if (!result) {
+    const records: Record<string, SandboxFile> = await editorEngine.sandbox.readFiles(args.paths);
+    if (!records) {
         throw new Error('Error reading files');
     }
-    return result;
+
+    const files = Object.values(records).map((file) => {
+        if (file.type === 'text') {
+            return {
+                path: file.path,
+                content: file.content,
+                type: file.type,
+            };
+        } else {
+            const base64Content = file.content ? convertToBase64(file.content) : null;
+            return {
+                path: file.path,
+                content: base64Content,
+                type: file.type,
+            };
+        }
+    });
+
+    return files;
 }
 
 async function handleReadStyleGuideTool(editorEngine: EditorEngine) {
