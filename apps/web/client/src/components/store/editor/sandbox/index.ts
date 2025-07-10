@@ -20,8 +20,8 @@ export class SandboxManager {
     private fileWatcher: FileWatcher | null = null;
     private fileSync: FileSyncManager
     private templateNodeMap: TemplateNodeMapper
-    private isIndexed = false;
-    private isIndexing = false;
+    private _isIndexed = false;
+    private _isIndexing = false;
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
@@ -32,7 +32,7 @@ export class SandboxManager {
         reaction(
             () => this.session.session,
             (session) => {
-                this.isIndexed = false;
+                this._isIndexed = false;
                 if (session) {
                     this.index();
                 }
@@ -40,8 +40,16 @@ export class SandboxManager {
         );
     }
 
+    get isIndexed() {
+        return this._isIndexed;
+    }
+
+    get isIndexing() {
+        return this._isIndexing;
+    }
+
     async index(force = false) {
-        if (this.isIndexing || (this.isIndexed && !force)) {
+        if (this._isIndexing || (this._isIndexed && !force)) {
             return;
         }
 
@@ -50,7 +58,7 @@ export class SandboxManager {
             return;
         }
 
-        this.isIndexing = true;
+        this._isIndexing = true;
         const timer = new LogTimer('Sandbox Indexing');
 
         try {
@@ -74,13 +82,13 @@ export class SandboxManager {
             }
 
             await this.watchFiles();
-            this.isIndexed = true;
+            this._isIndexed = true;
             timer.log('Indexing completed successfully');
         } catch (error) {
             console.error('Error during indexing:', error);
             throw error;
         } finally {
-            this.isIndexing = false;
+            this._isIndexing = false;
         }
     }
 
@@ -632,21 +640,13 @@ export class SandboxManager {
         }
     }
 
-    get isIndexingFiles() {
-        return this.isIndexing;
-    }
-
-    get isIndexedFiles() {
-        return this.isIndexed;
-    }
-
     clear() {
         this.fileWatcher?.dispose();
         this.fileWatcher = null;
         this.fileSync.clear();
         this.templateNodeMap.clear();
         this.session.clear();
-        this.isIndexed = false;
-        this.isIndexing = false;
+        this._isIndexed = false;
+        this._isIndexing = false;
     }
 }

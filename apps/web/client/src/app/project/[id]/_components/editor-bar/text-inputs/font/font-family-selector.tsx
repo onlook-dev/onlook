@@ -22,8 +22,7 @@ export const FontFamilySelector = observer(() => {
         id: 'font-family-dropdown',
     });
 
-    // Filter fonts by search
-    const filteredFonts =  editorEngine.font.fonts.filter((font) =>
+    const filteredFonts = editorEngine.font.fonts.filter((font) =>
         font.family.toLowerCase().includes(search.toLowerCase()),
     );
 
