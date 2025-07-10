@@ -61,8 +61,6 @@ export const Opacity = observer(() => {
         inputRef.current?.focus();
     };
 
-    console.log({isOpen});
-
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Layer Opacity" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
