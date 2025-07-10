@@ -19,6 +19,7 @@ describe('SandboxManager', () => {
     let mockSession: any;
     let mockWatcher: any;
     let mockFileSync: any;
+    let mockEditorEngine: any;
 
     beforeEach(() => {
         mockGetItem.mockClear();
@@ -100,7 +101,10 @@ describe('SandboxManager', () => {
             },
         };
 
-        sandboxManager = new SandboxManager();
+        mockEditorEngine = {
+        };
+
+        sandboxManager = new SandboxManager(mockEditorEngine);
     });
 
     afterEach(() => {
@@ -129,8 +133,7 @@ describe('SandboxManager', () => {
             },
         };
 
-        const testManager = new SandboxManager();
-        testManager.init(testMockSession);
+        const testManager = new SandboxManager(mockEditorEngine);
 
         const files = await testManager.listFilesRecursively(
             './',
@@ -202,8 +205,7 @@ describe('SandboxManager', () => {
             },
         };
 
-        const errorManager = new SandboxManager();
-        errorManager.init(errorSession);
+        const errorManager = new SandboxManager(mockEditorEngine);
 
         // We need to create a custom fileSync mock that returns null for this test
         const errorFileSync = {
