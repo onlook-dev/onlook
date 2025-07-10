@@ -22,6 +22,7 @@ export class SandboxManager {
     private templateNodeMap: TemplateNodeMapper
     private isIndexed = false;
     private isIndexing = false;
+    private trackedDirectories: string[] = [];
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
@@ -54,9 +55,8 @@ export class SandboxManager {
         const timer = new LogTimer('Sandbox Indexing');
 
         try {
-            // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
-            timer.log(`File discovery completed - ${allFilePaths.length} files found`);
+            timer.log(`File discovery completed - ${allFilePaths.length} files and ${this.trackedDirectories.length} directories found`);
 
             // Categorize files for optimized processing
             const { imageFiles, jsxFiles, otherFiles } =
@@ -107,14 +107,17 @@ export class SandboxManager {
     }
 
     /**
-     * Optimized flat file discovery - similar to hosting manager approach
+     * Returns file paths, directories tracked as side effect in this.trackedDirectories
      */
     private async getAllFilePathsFlat(rootDir: string, excludeDirs: string[]): Promise<string[]> {
         if (!this.session.session) {
             throw new Error('No session available for file discovery');
         }
 
-        const allPaths: string[] = [];
+        const allFilePaths = {
+            files: [] as string[],
+            directories: [] as string[],
+        };
         const dirsToProcess = [rootDir];
 
         while (dirsToProcess.length > 0) {
@@ -129,10 +132,12 @@ export class SandboxManager {
                     if (entry.type === 'directory') {
                         // Skip excluded directories
                         if (!excludeDirs.includes(entry.name)) {
+                            // Track the directory path
+                            allFilePaths.directories.push(normalizedPath);
                             dirsToProcess.push(normalizedPath);
                         }
                     } else if (entry.type === 'file') {
-                        allPaths.push(normalizedPath);
+                        allFilePaths.files.push(normalizedPath);
                     }
                 }
             } catch (error) {
@@ -140,7 +145,8 @@ export class SandboxManager {
             }
         }
 
-        return allPaths;
+        this.trackedDirectories = allFilePaths.directories;
+        return allFilePaths.files;
     }
 
     /**
@@ -283,8 +289,21 @@ export class SandboxManager {
         return this.fileSync.listAllFiles();
     }
 
+    get directories() {
+        return this.trackedDirectories;
+    }
+
     listAllFiles() {
         return this.fileSync.listAllFiles();
+    }
+
+    listAllDirectories() {
+        return this.trackedDirectories;
+    }
+
+    isDirectoryTracked(path: string): boolean {
+        const normalizedPath = normalizePath(path);
+        return this.trackedDirectories.includes(normalizedPath);
     }
 
     readDir(dir: string): Promise<ReaddirEntry[]> {
