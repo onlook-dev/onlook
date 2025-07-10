@@ -15,6 +15,8 @@ import {
     TERMINAL_COMMAND_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_PARAMETERS
 } from '@onlook/ai';
+import type { SandboxFile } from '@onlook/models';
+import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
 import { z } from 'zod';
 
@@ -64,26 +66,52 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
 async function handleListFilesTool(
     args: z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
-) {
+): Promise<{ path: string; type: 'file' | 'directory' }[]> {
     const result = await editorEngine.sandbox.readDir(args.path);
     if (!result) {
         throw new Error('Error listing files');
     }
-    return result;
+    return result.map((file) => ({
+        path: file.name,
+        type: file.type,
+    }));
 }
 
 async function handleReadFilesTool(
     args: z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
-) {
-    const result = await editorEngine.sandbox.readFiles(args.paths);
-    if (!result) {
+): Promise<{ path: string; content: string; type: 'text' | 'binary' }[]> {
+    const records: Record<string, SandboxFile> = await editorEngine.sandbox.readFiles(args.paths);
+    if (!records) {
         throw new Error('Error reading files');
     }
-    return result;
+
+    const files = Object.values(records).map((file) => {
+        if (file.type === 'text') {
+            return {
+                path: file.path,
+                content: file.content,
+                type: file.type,
+            };
+        } else {
+            const base64Content = file.content ? convertToBase64(file.content) : '';
+            return {
+                path: file.path,
+                content: base64Content,
+                type: file.type,
+            };
+        }
+    });
+
+    return files;
 }
 
-async function handleReadStyleGuideTool(editorEngine: EditorEngine) {
+async function handleReadStyleGuideTool(editorEngine: EditorEngine): Promise<{
+    configPath: string;
+    cssPath: string;
+    configContent: string;
+    cssContent: string;
+}> {
     const result = await editorEngine.theme.initializeTailwindColorContent();
     if (!result) {
         throw new Error('Style guide files not found');
@@ -128,7 +156,7 @@ async function handleEditFileTool(
 async function handleCreateFileTool(
     args: z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
-) {
+): Promise<string> {
     const exists = await editorEngine.sandbox.fileExists(args.path);
     if (exists) {
         throw new Error('File already exists');
@@ -143,6 +171,10 @@ async function handleCreateFileTool(
 async function handleTerminalCommandTool(
     args: z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
-) {
+): Promise<{
+    output: string;
+    success: boolean;
+    error: string | null;
+}> {
     return await editorEngine.sandbox.session.runCommand(args.command);
 }
