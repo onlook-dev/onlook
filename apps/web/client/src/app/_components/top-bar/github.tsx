@@ -4,7 +4,8 @@ import { Icons } from '@onlook/ui/icons';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
-const DEFAULT_STAR_COUNT = '19.5k';
+const DEFAULT_STAR_COUNT = 20550;
+const DEFAULT_CONTRIBUTORS_COUNT = 90;
 
 const formatStarCount = (count: number): string => {
     if (count >= 1000) {
@@ -13,28 +14,52 @@ const formatStarCount = (count: number): string => {
     return count.toString();
 };
 
-export function GitHubButton() {
-    const [starCount, setStarCount] = useState<string>(DEFAULT_STAR_COUNT);
+export function useGitHubStats() {
+    const [raw, setRaw] = useState<number | null>(DEFAULT_STAR_COUNT);
+    const [formatted, setFormatted] = useState<string>(formatStarCount(DEFAULT_STAR_COUNT));
+    const [contributors, setContributors] = useState<number>(DEFAULT_CONTRIBUTORS_COUNT);
 
     useEffect(() => {
-        const fetchStarCount = async () => {
+        const fetchStats = async () => {
             try {
-                const response = await fetch('https://api.github.com/repos/onlook-dev/onlook');
-                const data = await response.json();
-                setStarCount(formatStarCount(data.stargazers_count));
+                // Stars
+                const repoResponse = await fetch('https://api.github.com/repos/onlook-dev/onlook');
+                const repoData = await repoResponse.json();
+                setRaw(repoData.stargazers_count);
+                setFormatted(formatStarCount(repoData.stargazers_count));
+
+                // Contributors (use the Link header for pagination)
+                const contribResponse = await fetch('https://api.github.com/repos/onlook-dev/onlook/contributors?per_page=1&anon=true');
+                const linkHeader = contribResponse.headers.get('Link');
+                if (linkHeader) {
+                    const match = linkHeader.match(/&page=(\d+)>; rel="last"/);
+                    if (match) {
+                        setContributors(Number(match[1]));
+                    }
+                } else {
+                    // fallback: count the single returned contributor
+                    const contribData = await contribResponse.json();
+                    setContributors(Array.isArray(contribData) ? contribData.length : DEFAULT_CONTRIBUTORS_COUNT);
+                }
             } catch (error) {
-                console.error('Failed to fetch star count:', error);
-                setStarCount(DEFAULT_STAR_COUNT);
+                console.error('Failed to fetch GitHub stats:', error);
+                setRaw(DEFAULT_STAR_COUNT);
+                setFormatted(formatStarCount(DEFAULT_STAR_COUNT));
+                setContributors(DEFAULT_CONTRIBUTORS_COUNT);
             }
         };
-
-        fetchStarCount();
+        fetchStats();
     }, []);
 
+    return { raw, formatted, contributors };
+}
+
+export function GitHubButton() {
+    const { formatted } = useGitHubStats();
     return (
-        <Link href="https://github.com/onlook-dev/onlook" className="flex items-center gap-1.5 text-small hover:opacity-80">
+        <a href="https://github.com/onlook-dev/onlook" className="flex items-center gap-1.5 text-small hover:opacity-80" target="_blank" rel="noopener noreferrer">
             <Icons.GitHubLogo className="h-5 w-5" />
-            <span className="transition-all duration-300">{starCount}</span>
-        </Link>
+            <span className="transition-all duration-300">{formatted}</span>
+        </a>
     );
 }
