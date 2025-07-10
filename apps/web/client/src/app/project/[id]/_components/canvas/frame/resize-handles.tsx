@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings } from '@onlook/constants';
-import type { Frame, WebFrame } from '@onlook/models';
+import type { Frame } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import type { MouseEvent } from 'react';
@@ -63,8 +63,7 @@ export const ResizeHandles = observer(({ frame }: { frame: Frame }) => {
                 newHeight = Math.max(newHeight, minHeight);
             }
 
-            frame.dimension = { width: Math.round(newWidth), height: Math.round(newHeight) };
-            editorEngine.frames.updateAndSaveToStorage(frame as WebFrame);
+            editorEngine.frames.updateAndSaveToStorage(frame.id, { dimension: { width: Math.round(newWidth), height: Math.round(newHeight) } });
             editorEngine.overlay.undebouncedRefresh();
         };
 

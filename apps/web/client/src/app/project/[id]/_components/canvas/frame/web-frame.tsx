@@ -161,8 +161,7 @@ export const WebFrameComponent = observer(
                     iframe.style.transformOrigin = 'top left';
                 },
                 loadURL: (url: string) => {
-                    frame.url = url;
-                    editorEngine.frames.updateAndSaveToStorage(frame);
+                    editorEngine.frames.updateAndSaveToStorage(frame.id, { url });
                 },
                 canGoForward: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
                 canGoBack: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
