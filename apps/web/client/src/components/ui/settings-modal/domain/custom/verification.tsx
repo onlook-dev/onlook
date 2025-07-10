@@ -38,6 +38,8 @@ export const Verification = observer(() => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
     const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: verification } = api.domain.verification.get.useQuery({ projectId: editorEngine.projectId });
+
     const { mutateAsync: createCustomDomain } = api.domain.custom.create.useMutation();
     const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
     const { mutateAsync: verifyCustomDomain } = api.domain.verification.verify.useMutation();
