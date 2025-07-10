@@ -118,13 +118,3 @@ export const COMPRESSION_IMAGE_PRESETS = {
         effort: 6,
     },
 } as const;
-
-export enum RouterType {
-    APP = 'app',
-    PAGES = 'pages',
-}
-
-export type RouterConfig = {
-    type: RouterType;
-    basePath: string;
-};

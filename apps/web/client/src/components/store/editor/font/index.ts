@@ -2,7 +2,7 @@
 
 import type { ParseResult } from '@babel/parser';
 import * as t from '@babel/types';
-import { DefaultSettings, RouterType, type RouterConfig } from '@onlook/constants';
+import { DefaultSettings } from '@onlook/constants';
 import {
     cleanComma,
     convertRawFont,
@@ -25,7 +25,7 @@ import {
     removeFontsFromClassName,
     validateFontImportAndExport
 } from '@onlook/fonts';
-import { type FontConfig, type FontUploadFile, type RawFont } from '@onlook/models';
+import { RouterType, type FontConfig, type FontUploadFile, type RawFont, type RouterConfig } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
 import { generate, parse, traverse, type NodePath } from '@onlook/parser';
 import { getFontFileName } from '@onlook/utility';
