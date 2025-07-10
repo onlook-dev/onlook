@@ -1,4 +1,5 @@
-import { describe, expect, mock, test, beforeEach } from 'bun:test';
+import { RouterConfig, RouterType } from '@onlook/models';
+import { beforeEach, describe, expect, test } from 'bun:test';
 
 // Mock the FontManager class to test router detection
 class MockSandbox {
@@ -14,10 +15,7 @@ class MockSandbox {
 }
 
 // Simplified version of the detectRouterType logic for testing
-async function detectRouterType(sandbox: MockSandbox): Promise<{
-    type: 'app' | 'pages';
-    basePath: string;
-} | null> {
+async function detectRouterType(sandbox: MockSandbox): Promise<RouterConfig | null> {
     const APP_ROUTER_PATHS = ['src/app', 'app'];
     const PAGES_ROUTER_PATHS = ['src/pages', 'pages'];
 
@@ -30,7 +28,7 @@ async function detectRouterType(sandbox: MockSandbox): Promise<{
                     .then((files) => files.filter((file) => file.includes('layout.tsx')));
 
                 if (appFiles.length > 0) {
-                    return { type: 'app', basePath: appPath };
+                    return { type: RouterType.APP, basePath: appPath };
                 }
             } catch (error) {
                 // Directory doesn't exist, continue checking
@@ -70,7 +68,7 @@ describe('Router Detection', () => {
         mockSandbox.setFiles('app', ['layout.tsx', 'page.tsx']);
 
         const result = await detectRouterType(mockSandbox);
-        
+
         expect(result).toEqual({
             type: 'app',
             basePath: 'app'
@@ -81,7 +79,7 @@ describe('Router Detection', () => {
         mockSandbox.setFiles('src/app', ['layout.tsx', 'page.tsx']);
 
         const result = await detectRouterType(mockSandbox);
-        
+
         expect(result).toEqual({
             type: 'app',
             basePath: 'src/app'
@@ -93,7 +91,7 @@ describe('Router Detection', () => {
         mockSandbox.setFiles('app', ['layout.tsx']);
 
         const result = await detectRouterType(mockSandbox);
-        
+
         expect(result).toEqual({
             type: 'app',
             basePath: 'src/app'
@@ -104,7 +102,7 @@ describe('Router Detection', () => {
         mockSandbox.setFiles('pages', ['_app.tsx', 'index.tsx']);
 
         const result = await detectRouterType(mockSandbox);
-        
+
         expect(result).toEqual({
             type: 'pages',
             basePath: 'pages'
@@ -115,7 +113,7 @@ describe('Router Detection', () => {
         mockSandbox.setFiles('src/pages', ['_app.tsx', 'index.tsx']);
 
         const result = await detectRouterType(mockSandbox);
-        
+
         expect(result).toEqual({
             type: 'pages',
             basePath: 'src/pages'
@@ -126,7 +124,7 @@ describe('Router Detection', () => {
         // No files set, should default to app router
 
         const result = await detectRouterType(mockSandbox);
-        
+
         expect(result).toEqual({
             type: 'app',
             basePath: 'app'
@@ -138,7 +136,7 @@ describe('Router Detection', () => {
         mockSandbox.setFiles('pages', ['_app.tsx']);
 
         const result = await detectRouterType(mockSandbox);
-        
+
         expect(result).toEqual({
             type: 'app',
             basePath: 'app'
