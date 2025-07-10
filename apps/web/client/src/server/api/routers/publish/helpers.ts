@@ -1,5 +1,5 @@
 import type { WebSocketSession } from '@codesandbox/sdk';
-import { deployments, deploymentUpdateSchema, previewDomains, projects, publishedDomains, type Deployment } from '@onlook/db';
+import { deployments, deploymentUpdateSchema, previewDomains, projectCustomDomains, projects, type Deployment } from '@onlook/db';
 import { type db as DrizzleDb } from '@onlook/db/src/client';
 import {
     DeploymentStatus,
@@ -163,8 +163,8 @@ export async function getProjectUrls(db: typeof DrizzleDb, projectId: string, ty
         }
         urls = foundPreviewDomains.map(domain => domain.fullDomain);
     } else if (type === DeploymentType.CUSTOM) {
-        const foundCustomDomains = await db.query.publishedDomains.findMany({
-            where: eq(publishedDomains.projectId, projectId),
+        const foundCustomDomains = await db.query.projectCustomDomains.findMany({
+            where: eq(projectCustomDomains.projectId, projectId),
         });
         if (!foundCustomDomains || foundCustomDomains.length === 0) {
             throw new TRPCError({
