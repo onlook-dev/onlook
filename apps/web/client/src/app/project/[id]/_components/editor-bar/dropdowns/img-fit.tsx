@@ -5,11 +5,18 @@ import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
+import { useDropdownControl } from '../hooks/use-dropdown-manager';
+import { HoverOnlyTooltip } from '../hover-tooltip';
+import { ToolbarButton } from '../toolbar-button';
 
 type ObjectFitValue = 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
 
 export const ImgFit = () => {
     const editorEngine = useEditorEngine();
+    const { isOpen, onOpenChange } = useDropdownControl({ 
+        id: 'img-fit-dropdown' 
+    });
+    
     const [objectFit, setObjectFit] = useState<ObjectFitValue>(
         (editorEngine.style.selectedStyle?.styles.computed.objectFit as ObjectFitValue) ?? 'fill',
     );
@@ -27,22 +34,30 @@ export const ImgFit = () => {
     };
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border px-3 focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                >
-                    <Icons.Image className="h-4 w-4 min-h-4 min-w-4" />
-                    <span className="text-sm">
-                        {objectFit === 'cover'
-                            ? 'Cover'
-                            : objectFit === 'contain'
-                              ? 'Contain'
-                              : 'Fill'}
-                    </span>
-                </Button>
-            </DropdownMenuTrigger>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+            <HoverOnlyTooltip
+                content="Image Fit"
+                side="bottom"
+                className="mt-1"
+                hideArrow
+                disabled={isOpen}
+            >
+                <DropdownMenuTrigger asChild>
+                    <ToolbarButton
+                        isOpen={isOpen}
+                        className="flex items-center gap-2 px-3"
+                    >
+                        <Icons.Image className="h-4 w-4 min-h-4 min-w-4" />
+                        <span className="text-sm">
+                            {objectFit === 'cover'
+                                ? 'Cover'
+                                : objectFit === 'contain'
+                                  ? 'Contain'
+                                  : 'Fill'}
+                        </span>
+                    </ToolbarButton>
+                </DropdownMenuTrigger>
+            </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="min-w-[120px] mt-2 p-1 rounded-lg">
                 <div className="p-2 space-y-2">
                     <div className="space-y-1">

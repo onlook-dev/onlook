@@ -10,17 +10,26 @@ import {
 import { Icons } from "@onlook/ui/icons";
 import { cn } from "@onlook/ui/utils";
 import { observer } from "mobx-react-lite";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
+import { ToolbarButton } from "../toolbar-button";
 
 
 export enum MarginTab {
     ALL = "all",
     INDIVIDUAL = "individual"
+}
+
+export enum MarginSide {
+    TOP = 'top',
+    RIGHT = 'right',
+    BOTTOM = 'bottom',
+    LEFT = 'left',
+    AUTO = 'auto',
 }
 
 const SIDE_ORDER = ['top', 'right', 'bottom', 'left'] as const; // !!!! DO NOT CHANGE THE ORDER !!!!
@@ -66,7 +75,7 @@ export const Margin = observer(() => {
     }, [boxState.marginTop.num, boxState.marginRight.num, boxState.marginBottom.num, boxState.marginLeft.num]);
     
     const [activeTab, setActiveTab] = useState<MarginTab>(areAllMarginsEqual ? MarginTab.ALL : MarginTab.INDIVIDUAL);
-    
+
     const getMarginIcon = () => {
         const margins = {
             top: boxState.marginTop.num ?? 0,
@@ -78,12 +87,10 @@ export const Margin = observer(() => {
         const values = Object.values(margins);
         const nonZeroValues = values.filter(val => val > 0);
         
-        // All zero
         if (nonZeroValues.length === 0) {
             return Icons.MarginEmpty;
         }
 
-        // All same non-zero values
         const allSame = nonZeroValues.length === 4 && 
                         nonZeroValues.every(val => val === nonZeroValues[0]);
         if (allSame) {
@@ -139,31 +146,20 @@ export const Margin = observer(() => {
 
     const MarginIcon = getMarginIcon();
     const marginValue = getMarginDisplay();
-    const hasMargin = marginValue !== null;
 
-    return (
+    return (    
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <HoverOnlyTooltip content="Margin" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="toolbar"
-                        className={cn(
-                            "gap-1 flex cursor-pointer items-center border hover:border focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0",
-                            hasMargin
-                                ? "bg-background-tertiary/20 text-white border-border"
-                                : "text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border hover:text-white",
-                            "data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border data-[state=open]:text-white"
-                        )}
+                    <ToolbarButton
+                        isOpen={isOpen}
+                        className="gap-1 flex items-center min-w-10"
                     >
                         <MarginIcon className="h-4 min-h-4 w-4 min-w-4" />
                         {marginValue && (
-                            <span className="text-small text-white">{marginValue}</span>
+                            <span className="text-small data-[state=open]:text-white">{marginValue}</span>
                         )}
-
-
-
-                    </Button>
+                    </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent

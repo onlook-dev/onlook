@@ -7,7 +7,6 @@ import { useEffect, useRef, useState } from "react";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
 import { observer } from "mobx-react-lite";
-import { ToolbarButton } from "../toolbar-button";
 
 const OPACITY_PRESETS = [100, 80, 75, 50, 25, 10, 0];
 
@@ -61,32 +60,26 @@ export const Opacity = observer(() => {
         inputRef.current?.focus();
     };
 
-    console.log({isOpen});
-
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <HoverOnlyTooltip content="Layer Opacity" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
-                    <ToolbarButton
-                        isOpen={isOpen}
-                        className="mr-1 group h-8 flex items-center gap-1"
-                        onClick={handleInputAreaClick}
-                    >
+                    <div className={`mr-1 text-muted-foreground group h-8 rounded-lg hover:bg-background-tertiary/20 hover:border-border ${isOpen ? 'bg-background-tertiary/20 border-border' : 'border-transparent'} flex items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none focus-within:ring-1 focus-within:ring-border focus-within:bg-background-tertiary/20 focus-within:border-border focus-within:text-white`} onClick={handleInputAreaClick}>
                         <Input
                             ref={inputRef}
                             type="number"
                             min={0}
                             max={100}
-                            data-state={isOpen ? 'open' : 'closed'}
                             value={opacity}
+                            data-state={isOpen ? 'open' : 'closed'}
                             onChange={onInputChange}
-                            className="w-14 text-left data-[state=open]:text-white text-small focus:text-foreground-primary focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary transition-colors duration-150 hover"
+                            className="w-14 text-left text-small focus:text-foreground-primary focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary transition-colors duration-150 hover"
                             aria-label="Opacity percentage"
                         />
                         <span className="pr-2 cursor-text text-muted-foreground text-xs pointer-events-none select-none bg-transparent group-hover:text-foreground-primary transition-colors duration-150">
                             %
                         </span>
-                    </ToolbarButton>
+                    </div>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent align="center" className="mt-1 w-[70px] min-w-[40px] rounded-lg p-1 text-foreground-tertiary">

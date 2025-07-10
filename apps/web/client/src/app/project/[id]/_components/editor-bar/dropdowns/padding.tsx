@@ -14,6 +14,7 @@ import { HoverOnlyTooltip } from "../hover-tooltip";
 import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 import { observer } from "mobx-react-lite";
+import { ToolbarButton } from "../toolbar-button";
 
 
 export enum PaddingTab {
@@ -130,16 +131,15 @@ export const Padding = observer(() => {
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <HoverOnlyTooltip content="Padding" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="toolbar"
-                        className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border gap-1 flex cursor-pointer items-center border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                    <ToolbarButton
+                        isOpen={isOpen}
+                        className="gap-1 flex items-center min-w-10"
                     >
                         <PaddingIcon className="h-4 min-h-4 w-4 min-w-4" />
                         {paddingValue && (
-                            <span className="text-small text-white">{paddingValue}</span>
+                            <span className="text-small data-[state=open]:text-white">{paddingValue}</span>
                         )}
-                    </Button>
+                    </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="w-[280px] mt-1 p-3 rounded-lg">

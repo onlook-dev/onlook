@@ -13,6 +13,7 @@ import { useTextControl } from '../../hooks/use-text-control';
 import { FontFamily } from './font-family';
 import { HoverOnlyTooltip } from '../../hover-tooltip';
 import { useDropdownControl } from '../../hooks/use-dropdown-manager';
+import { ToolbarButton } from '../../toolbar-button';
 
 export const FontFamilySelector = observer(() => {
     const editorEngine = useEditorEngine();
@@ -25,7 +26,7 @@ export const FontFamilySelector = observer(() => {
 
     useEffect(() => {
         if (!isOpen) return;
-        (async () => {
+        void (async () => {
             try {
                 const fonts = await editorEngine.font.scanFonts();
                 setFonts(fonts);
@@ -62,16 +63,15 @@ export const FontFamilySelector = observer(() => {
                 disabled={isOpen}
             >
                 <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="toolbar"
-                        className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                    <ToolbarButton
+                        isOpen={isOpen}
+                        className="flex items-center gap-2 px-3"
                         aria-label="Font Family Selector"
                     >
                         <span className="truncate text-sm">
                             {toNormalCase(textState.fontFamily) || 'Sans Serif'}
                         </span>
-                    </Button>
+                    </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent

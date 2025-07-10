@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -8,6 +7,7 @@ import { useRef, useState, useEffect } from 'react';
 import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { useTextControl } from '../../hooks/use-text-control';
 import { HoverOnlyTooltip } from '../../hover-tooltip';
+import { ToolbarButton } from '../../toolbar-button';
 
 const FONT_SIZES = [12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72, 96];
 
@@ -90,34 +90,35 @@ export const FontSizeSelector = observer(
                     disabled={isOpen}
                 >
                     <div className="flex items-center gap-0.5">
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
+                        <ToolbarButton
                             onClick={() => adjustFontSize(-1)}
-                            className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-9 w-9 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
+                            className="px-2 min-w-9"
                         >
                             <Icons.Minus className="h-4 w-4" />
-                        </Button>
+                        </ToolbarButton>
                         <DropdownMenuTrigger asChild>
-                            <input
-                                ref={inputRef}
-                                type="number"
-                                value={inputValue}
-                                onChange={handleInputChange}
-                                onKeyDown={handleInputKeyDown}
-                                onBlur={handleInputBlur}
+                            <ToolbarButton
+                                isOpen={isOpen}
+                                className="max-w-[40px] min-w-[40px] px-1 w-10"
                                 onClick={handleInputClick}
-                                className="border-border/0 text-muted-foreground hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border focus:bg-background-tertiary/20 focus:ring-border h-9 max-w-[40px] min-w-[40px] [appearance:textfield] rounded-lg border px-1 text-center text-sm hover:border hover:text-white focus:ring-1 focus:outline-none data-[state=open]:border data-[state=open]:text-white [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                            />
+                            >
+                                <input
+                                    ref={inputRef}
+                                    type="number"
+                                    value={inputValue}
+                                    onChange={handleInputChange}
+                                    onKeyDown={handleInputKeyDown}
+                                    onBlur={handleInputBlur}
+                                    className="w-full bg-transparent text-center text-sm focus:outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                                />
+                            </ToolbarButton>
                         </DropdownMenuTrigger>
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
+                        <ToolbarButton
                             onClick={() => adjustFontSize(1)}
-                            className="border-border/0 hover:bg-background-tertiary/20 hover:border-border text-muted-foreground data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border h-9 w-9 cursor-pointer rounded-lg border px-2 hover:border hover:text-white data-[state=open]:border data-[state=open]:text-white"
+                            className="px-2 min-w-9"
                         >
                             <Icons.Plus className="h-4 w-4" />
-                        </Button>
+                        </ToolbarButton>
                     </div>
                 </HoverOnlyTooltip>
                 <DropdownMenuContent

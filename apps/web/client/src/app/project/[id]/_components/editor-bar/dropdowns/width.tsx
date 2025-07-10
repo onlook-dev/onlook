@@ -9,6 +9,7 @@ import { useDimensionControl } from '../hooks/use-dimension-control';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputDropdown } from '../inputs/input-dropdown';
+import { ToolbarButton } from '../toolbar-button';
 
 export const Width = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
@@ -22,16 +23,15 @@ export const Width = observer(() => {
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
             <HoverOnlyTooltip content="Width" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="toolbar"
-                        className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                    <ToolbarButton
+                        isOpen={isOpen}
+                        className="flex items-center gap-1"
                     >
                         <Icons.Width className="h-4 w-4 min-h-4 min-w-4" />
                         <span className="text-small">
                             {dimensionState.width.value}
                         </span>
-                    </Button>
+                    </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="w-[260px] mt-1 p-3 rounded-lg space-y-3">
