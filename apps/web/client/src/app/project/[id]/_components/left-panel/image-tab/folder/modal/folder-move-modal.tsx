@@ -8,8 +8,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import type { FolderNode } from '../../providers/types';
-
+import type { FolderNode } from '@onlook/models';
 
 export default function FolderMoveModal({
     onMove,
@@ -46,7 +45,7 @@ export default function FolderMoveModal({
                     <AlertDialogDescription>
                         {folder && targetFolder && (
                             <>
-                                Are you sure you want to move "{folder.name}" to "{targetFolder.name || 'root'}" folder?
+                                Are you sure you want to move &quot;{folder.name}&quot; to &quot;{targetFolder.name || 'root'}&quot; folder?
                                 <span className="block mt-2 text-sm">
                                     This will move the folder to the selected folder location.
                                 </span>

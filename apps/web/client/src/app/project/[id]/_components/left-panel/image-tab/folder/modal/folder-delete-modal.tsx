@@ -8,7 +8,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import type { FolderNode } from '../../providers/types';
+import type { FolderNode } from '@onlook/models';
 
 export default function FolderDeleteModal({
     onDelete,
@@ -54,7 +54,7 @@ export default function FolderDeleteModal({
                     <AlertDialogDescription>
                         {folder && (
                             <>
-                                Are you sure you want to delete the folder "{folder.name}"?
+                                Are you sure you want to delete the folder &quot;{folder.name}&quot;?
                                 {totalItems > 0 && (
                                     <span className="block mt-2 text-red-600">
                                         This will permanently delete {totalItems} item{totalItems !== 1 ? 's' : ''} 

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useEditorEngine } from '@/components/store/editor';
-import type { ImageContentData } from '@onlook/models';
-import type { FolderNode } from '../providers/types';
+import type { ImageContentData, FolderNode } from '@onlook/models';
 
 interface FolderImagesState {
     isLoading: boolean;

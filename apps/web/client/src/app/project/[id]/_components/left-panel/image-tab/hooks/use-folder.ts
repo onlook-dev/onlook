@@ -1,6 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useCallback, useState } from 'react';
-import type { FolderNode } from '../providers/types';
+import type { FolderNode } from '@onlook/models';
+import { 
+    createBaseFolder,
+    validateFolderRename,
+    validateFolderMove,
+    validateFolderCreate,
+} from '@onlook/utility';
 
 interface FolderState {
     isLoading: boolean;
@@ -76,15 +82,19 @@ export const useFolder = () => {
     }, []);
 
     const onRenameFolder = useCallback(async () => {
-        if (!renameState.folderToRename || !renameState.newFolderName.trim()) {
+        if (!renameState.folderToRename) return;
+
+        const validation = validateFolderRename(renameState.folderToRename.fullPath, renameState.newFolderName);
+        
+        if (!validation.isValid) {
             setRenameState((prev) => ({
                 ...prev,
-                error: 'Folder name cannot be empty',
+                error: validation.error ?? 'Invalid folder name',
             }));
             return;
         }
 
-        if (renameState.newFolderName === renameState.folderToRename.name) {
+        if (validation.error === 'Name unchanged') {
             setRenameState({
                 folderToRename: null,
                 newFolderName: '',
@@ -97,16 +107,13 @@ export const useFolder = () => {
         setRenameState((prev) => ({ ...prev, isLoading: true }));
 
         try {
-            const { folderToRename, newFolderName } = renameState;
+            const { folderToRename } = renameState;
             const oldPath = folderToRename.fullPath;
-            const parentPath = oldPath.includes('/')
-                ? oldPath.substring(0, oldPath.lastIndexOf('/'))
-                : '';
-            const newPath = parentPath ? `${parentPath}/${newFolderName}` : newFolderName;
+            const newPath = validation.newPath!;
 
             await editorEngine.sandbox.rename(oldPath, newPath);
 
-            editorEngine.image.scanImages();
+            void editorEngine.image.scanImages();
 
             setRenameState({
                 folderToRename: null,
@@ -148,7 +155,7 @@ export const useFolder = () => {
 
             await editorEngine.sandbox.delete(folderPath, true);
 
-            editorEngine.image.scanImages();
+            await editorEngine.image.scanImages();
 
             setDeleteState({
                 folderToDelete: null,
@@ -184,11 +191,12 @@ export const useFolder = () => {
             return;
         }
 
-        // Prevent moving folder into itself or its children
-        if (moveState.targetFolder.fullPath.startsWith(moveState.folderToMove.fullPath)) {
+        const validation = validateFolderMove(moveState.folderToMove.fullPath, moveState.targetFolder.fullPath);
+        
+        if (!validation.isValid) {
             setMoveState((prev) => ({
                 ...prev,
-                error: 'Cannot move folder into itself or its children',
+                error: validation.error ?? 'Invalid move operation',
             }));
             return;
         }
@@ -196,11 +204,14 @@ export const useFolder = () => {
         setMoveState((prev) => ({ ...prev, isLoading: true }));
 
         try {
-            const { folderToMove, targetFolder } = moveState;
+            const { folderToMove } = moveState;
             const oldPath = folderToMove.fullPath;
-            const newPath = targetFolder.fullPath
-                ? `${targetFolder.fullPath}/${folderToMove.name}`
-                : folderToMove.name;
+            const newPath = validation.newPath!;
+
+            if(oldPath === newPath) {
+                setMoveState((prev) => ({ ...prev, error: 'Cannot move folder to the same path', isLoading: false }));
+                return;
+            }
 
             const session = editorEngine.sandbox.session?.session;
             if (!session) {
@@ -209,7 +220,7 @@ export const useFolder = () => {
             await editorEngine.sandbox.rename(oldPath, newPath);
 
             // Refresh images
-            editorEngine.image.scanImages();
+            void editorEngine.image.scanImages();
 
             setMoveState({
                 folderToMove: null,
@@ -232,14 +243,14 @@ export const useFolder = () => {
         const gitkeepContent = '# This folder was created by Onlook\n';
         await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
 
-        for (const image of folder.images) {
-            if (image) {
-                const fileName = image.split('/').pop();
-                const newImagePath = `${newPath}/${fileName}`;
-                await editorEngine.sandbox.copy(image, newImagePath);
-                await editorEngine.sandbox.delete(image);
+                    for (const image of folder.images) {
+                if (image) {
+                    const fileName = image.split('/').pop() ?? '';
+                    const newImagePath = `${newPath}/${fileName}`;
+                    await editorEngine.sandbox.copy(image, newImagePath);
+                    await editorEngine.sandbox.delete(image);
+                }
             }
-        }
 
         for (const [, subfolder] of folder.children) {
             await moveSubfolder(subfolder, newPath);
@@ -284,7 +295,7 @@ export const useFolder = () => {
             isLoading: false,
             error: null,
             newFolderName: '',
-            parentFolder: parentFolder || null,
+            parentFolder: parentFolder ?? null,
         });
     }, []);
 
@@ -297,10 +308,12 @@ export const useFolder = () => {
     }, []);
 
     const onCreateFolder = useCallback(async () => {
-        if (!createState.newFolderName.trim()) {
+        const validation = validateFolderCreate(createState.newFolderName, createState.parentFolder?.fullPath);
+        
+        if (!validation.isValid) {
             setCreateState((prev) => ({
                 ...prev,
-                error: 'Folder name cannot be empty',
+                error: validation.error ?? 'Invalid folder name',
             }));
             return;
         }
@@ -308,9 +321,7 @@ export const useFolder = () => {
         setCreateState((prev) => ({ ...prev, isLoading: true }));
 
         try {
-            const folderName = createState.newFolderName.trim();
-            const parentPath = createState.parentFolder?.fullPath || '';
-            const newFolderPath = parentPath ? `${parentPath}/${folderName}` : folderName;
+            const newFolderPath = validation.newPath!;
 
             const session = editorEngine.sandbox.session?.session;
             if (!session) {
@@ -322,7 +333,7 @@ export const useFolder = () => {
             const gitkeepContent = '# This folder was created by Onlook\n';
             await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
             if (createState.parentFolder) {
-                await scanFolderChildren(createState.parentFolder);
+                void scanFolderChildren(createState.parentFolder);
             }
 
             setCreateState({
@@ -352,11 +363,10 @@ export const useFolder = () => {
     }, []);
 
     const scanFolderChildren = useCallback(async (folder: FolderNode): Promise<void> => {
-        if (!editorEngine.sandbox.session.session) {
+        if (!editorEngine.sandbox.session?.session) {
             console.warn('No session available for folder scanning');
             return;
         }
-
         try {
 
             const folderPathToScan = folder.fullPath
@@ -412,6 +422,7 @@ export const useFolder = () => {
         handleCreateFolderInputChange,
         onCreateFolder,
         handleCreateModalToggle,
+        createBaseFolder,
 
         // Folder scanning
         scanFolderChildren,

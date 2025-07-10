@@ -40,7 +40,7 @@ export class ImageManager {
             const path = `${destinationFolder}/${file.name}`;
             const uint8Array = new Uint8Array(await file.arrayBuffer());
             await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;
@@ -50,7 +50,7 @@ export class ImageManager {
     async delete(originPath: string): Promise<void> {
         try {
             await this.editorEngine.sandbox.delete(originPath);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
@@ -62,7 +62,7 @@ export class ImageManager {
             const basePath = getDirName(originPath);
             const newPath = `${basePath}/${newName}`;
             await this.editorEngine.sandbox.rename(originPath, newPath);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;

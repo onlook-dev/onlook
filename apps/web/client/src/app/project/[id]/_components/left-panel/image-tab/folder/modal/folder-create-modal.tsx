@@ -12,7 +12,7 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { cn } from '@onlook/ui/utils';
-import type { FolderNode } from '../../providers/types';
+import type { FolderNode } from '@onlook/models';
 
 const FolderCreateModal = observer(
     ({

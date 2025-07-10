@@ -34,7 +34,6 @@ export const useImageUpload = () => {
 
     const handleUploadFile = useCallback(
         async (e: React.ChangeEvent<HTMLInputElement>, destinationFolder: string) => {
-            console.log('handleUploadFile', destinationFolder);
             const files = Array.from(e.target.files ?? []);
             const imageFiles = files.filter((file) => file.type.startsWith('image/'));
 

@@ -1,7 +1,7 @@
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
-import type { FolderNode } from '../providers/types';
+import type { FolderNode } from '@onlook/models';
 import { useImagesContext } from '../providers/images-provider';
 
 interface FolderTabProps {

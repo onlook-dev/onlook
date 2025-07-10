@@ -10,7 +10,7 @@ import { useFolderImages } from '../hooks/use-folder-images';
 import { useImageSearch } from '../hooks/use-image-search';
 import { ImageList } from '../image-list';
 import { useImagesContext } from '../providers/images-provider';
-import { type FolderNode } from '../providers/types';
+import { type FolderNode } from '@onlook/models';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import { FolderList } from './folder-list';
 import FolderCreateModal from './modal/folder-create-modal';
@@ -279,7 +279,7 @@ export default function Folder() {
                     </div>
                 </div>
             ) : (
-                <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath ?? DefaultSettings.IMAGE_FOLDER} />
+                <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath} />
             )}
 
             <FolderCreateModal

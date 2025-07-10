@@ -2,11 +2,11 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { memo } from 'react';
 import { useImagesContext } from '../providers/images-provider';
-import type { FolderNode } from '../providers/types';
 import FolderTab from './folder-tab';
 import FolderDeleteModal from './modal/folder-delete-modal';
 import FolderMoveModal from './modal/folder-move-modal';
 import FolderRenameModal from './modal/folder-rename-modal';
+import type { FolderNode } from '@onlook/models';
 
 interface FolderListProps {
     items: FolderNode[];
