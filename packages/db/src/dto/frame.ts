@@ -30,3 +30,16 @@ export const fromFrame = (frame: WebFrame): DbFrame => {
         height: frame.dimension.height.toString(),
     };
 };
+
+export const fromPartialFrame = (frame: Partial<WebFrame>): Partial<DbFrame> => {
+    return {
+        id: frame.id,
+        url: frame.url,
+        type: frame.type as FrameType,
+        x: frame.position?.x.toString(),
+        y: frame.position?.y.toString(),
+        canvasId: frame.canvasId,
+        width: frame.dimension?.width.toString(),
+        height: frame.dimension?.height.toString(),
+    };
+};

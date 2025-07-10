@@ -1,6 +1,6 @@
 import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
 import { api } from '@/trpc/client';
-import { fromFrame } from '@onlook/db';
+import { fromFrame, fromPartialFrame } from '@onlook/db';
 import { FrameType, type Frame, type WebFrame } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
@@ -192,14 +192,22 @@ export class FramesManager {
         await this.create(newFrame);
     }
 
-    updateAndSaveToStorage = debounce(this.undebouncedUpdateAndSaveToStorage, 1000);
+    async updateAndSaveToStorage(frameId: string, frame: Partial<WebFrame>) {
+        const existingFrame = this.get(frameId);
+        if (existingFrame) {
+            const newFrame = { ...existingFrame.frame, ...frame };
+            this._frameIdToData.set(frameId, { ...existingFrame, frame: newFrame });
+        }
+        this.saveToStorage(frameId, frame);
+    }
 
-    async undebouncedUpdateAndSaveToStorage(frame: WebFrame) {
+    saveToStorage = debounce(this.undebouncedSaveToStorage, 1000);
+
+    async undebouncedSaveToStorage(frameId: string, frame: Partial<WebFrame>) {
         try {
-            const frameToUpdate = fromFrame(roundDimensions(frame));
-
+            const frameToUpdate = fromPartialFrame(frame);
             const success = await api.frame.update.mutate({
-                frameId: frame.id,
+                frameId,
                 frame: frameToUpdate,
             });
 
