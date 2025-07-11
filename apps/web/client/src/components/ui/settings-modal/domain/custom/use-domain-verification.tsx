@@ -23,6 +23,7 @@ interface DomainVerificationContextType {
     ownedDomains: string[];
     createVerificationRequest: () => Promise<void>;
     removeVerificationRequest: () => Promise<void>;
+    verifyVerificationRequest: () => Promise<void>;
 }
 
 const DomainVerificationContext = createContext<DomainVerificationContextType | undefined>(undefined);
@@ -39,7 +40,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     const { data: verification, refetch: refetchVerification } = api.domain.verification.getActive.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
     const { mutateAsync: removeDomainVerification } = api.domain.verification.remove.useMutation();
-    // const { mutateAsync: verifyCustomDomain } = api.domain.verification.verify.useMutation();
+    const { mutateAsync: verifyDomain } = api.domain.verification.verify.useMutation();
 
     useEffect(() => {
         if (verification === undefined) {
@@ -83,12 +84,28 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
         setVerificationState(VerificationState.INPUTTING_DOMAIN);
     };
 
+    const verifyVerificationRequest = async () => {
+        if (!verification) {
+            setError('No verification request to verify');
+            return;
+        }
+        const verified = await verifyDomain({
+            verificationId: verification.id,
+        });
+        if (!verified) {
+            setError('Failed to verify domain');
+            return;
+        }
+        await refetchVerification();
+        setVerificationState(VerificationState.VERIFIED);
+    };
     return (
         <DomainVerificationContext.Provider value={{
             domainInput,
             setDomainInput,
             createVerificationRequest,
             removeVerificationRequest,
+            verifyVerificationRequest,
             customDomain: customDomain ?? null,
             verification: verification ?? null,
             verificationState,

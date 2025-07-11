@@ -1,9 +1,10 @@
 import { FREESTYLE_IP_ADDRESS, FRESTYLE_CUSTOM_HOSTNAME } from '@onlook/constants';
-import { customDomains, customDomainVerification, type CustomDomain, type CustomDomainVerification } from '@onlook/db';
+import { customDomains, customDomainVerification, projectCustomDomains, type CustomDomain, type CustomDomainVerification } from '@onlook/db';
 import type { DrizzleDb } from '@onlook/db/src/client';
 import { VerificationRequestStatus, type AVerificationRecord } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { and, eq, or } from 'drizzle-orm';
+import type { HandleVerifyDomainResponse } from 'freestyle-sandboxes';
 import { parse } from 'psl';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -44,71 +45,47 @@ export const verificationRouter = createTRPCRouter({
             updatedAt: new Date(),
         }).where(eq(customDomainVerification.id, input.verificationId));
     }),
-    // verify: protectedProcedure.input(z.object({
-    //     verificationId: z.string(),
-    //     projectId: z.string(),
-    // })).mutation(async ({ ctx, input }) => {
-    //     const verification = await ctx.db.query.customDomainVerification.findFirst({
-    //         where: and(eq(customDomainVerification.freestyleVerificationId, input.verificationId), eq(customDomainVerification.projectId, input.projectId)),
-    //     });
-    //     if (!verification) {
-    //         throw new TRPCError({
-    //             code: 'NOT_FOUND',
-    //             message: 'Verification request not found',
-    //         });
-    //     }
+    verify: protectedProcedure.input(z.object({
+        verificationId: z.string(),
+    })).mutation(async ({ ctx, input }): Promise<boolean> => {
+        const verification = await ctx.db.query.customDomainVerification.findFirst({
+            where: and(
+                eq(customDomainVerification.id, input.verificationId),
+                eq(customDomainVerification.status, VerificationRequestStatus.PENDING),
+            ),
+        });
+        if (!verification) {
+            throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: 'Verification request not found',
+            });
+        }
+        const domain = await verifyFreestyleDomain(verification.freestyleVerificationId);
 
-    //     if (verification.status === VerificationRequestStatus.USED) {
-    //         throw new TRPCError({
-    //             code: 'BAD_REQUEST',
-    //             message: 'Domain already verified',
-    //         });
-    //     }
+        if (!domain) {
+            return false;
+        }
 
-    //     if (verification.status === VerificationRequestStatus.EXPIRED) {
-    //         throw new TRPCError({
-    //             code: 'BAD_REQUEST',
-    //             message: 'Verification request expired',
-    //         });
-    //     }
+        await ctx.db
+            .transaction(
+                async (tx) => {
+                    await tx.update(customDomains).set({
+                        verified: true,
+                    }).where(eq(customDomains.id, verification.domainId));
 
-    //     const sdk = initializeFreestyleSdk();
-    //     const res: {
-    //         domain?: string;
-    //         message?: string;
-    //     } = await sdk.verifyDomainVerificationRequest(input.verificationId);
-    //     if (res.message) {
-    //         throw new TRPCError({
-    //             code: 'INTERNAL_SERVER_ERROR',
-    //             message: res.message,
-    //         });
-    //     }
+                    await tx.insert(projectCustomDomains).values({
+                        projectId: verification.projectId,
+                        fullDomain: domain,
+                        domainId: verification.domainId,
+                    });
 
-    //     const domain = res.domain;
-
-    //     if (!domain) {
-    //         throw new TRPCError({
-    //             code: 'INTERNAL_SERVER_ERROR',
-    //             message: 'Domain not found',
-    //         });
-    //     }
-
-    //     await ctx.db
-    //         .transaction(
-    //             async (tx) => {
-    //                 await tx.update(customDomains).set({
-    //                     verified: true,
-    //                 }).where(eq(customDomains.id, verification.domainId));
-
-    //                 await tx.insert(projectCustomDomains).values({
-    //                     projectId: verification.projectId,
-    //                     fullDomain: domain,
-    //                     domainId: verification.domainId,
-    //                 });
-    //             },
-    //         );
-    //     return res;
-    // }),
+                    await tx.update(customDomainVerification).set({
+                        status: VerificationRequestStatus.VERIFIED,
+                    }).where(eq(customDomainVerification.id, verification.id));
+                },
+            );
+        return true;
+    }),
 });
 
 async function getCustomDomain(db: DrizzleDb, domain: string): Promise<{ customDomain: CustomDomain, subdomain: string | null }> {
@@ -211,4 +188,31 @@ function getARecords(subdomain: string | null): AVerificationRecord[] {
             verified: false,
         },
     ];
+}
+
+const verifyFreestyleDomain = async (verificationId: string): Promise<string | null> => {
+    try {
+        const sdk = initializeFreestyleSdk();
+        const res: HandleVerifyDomainResponse = await sdk.verifyDomainVerificationRequest(verificationId);
+        if (!res.domain) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Failed to verify domain',
+            });
+        }
+
+        const domain = res.domain;
+
+        if (!domain) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Domain not found',
+            });
+        }
+
+        return domain;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
 }

@@ -7,37 +7,17 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useDomainVerification, VerificationState } from './use-domain-verification';
+import { useState } from 'react';
+import { useDomainVerification } from './use-domain-verification';
 
 export const ConfigureHeader = observer(() => {
-    const { verificationState } = useDomainVerification();
+    const [isLoading, setIsLoading] = useState(false);
+    const { verifyVerificationRequest } = useDomainVerification();
 
     async function verifyDomain() {
-        // TODO: Implement domain verification
-
-        // setStatus(VerificationStatus.LOADING);
-        // setError(null);
-        // const response = await verifyCustomDomain({
-        //     verificationId: response.verificationId,
-        //     projectId: editorEngine.projectId,
-        // });
-
-        // if (!response.success) {
-        //     setError(response.message ?? 'Failed to verify domain');
-        //     setStatus(VerificationStatus.VERIFYING);
-        //     sendAnalytics('verify domain failed', {
-        //         domain: domain,
-        //         error: response.message ?? 'Failed to verify domain',
-        //     });
-        //     return;
-        // }
-
-        // setStatus(VerificationStatus.VERIFIED);
-        // setError(null);
-        // addCustomDomain(domain);
-        // sendAnalytics('verify domain success', {
-        //     domain: domain,
-        // });
+        setIsLoading(true);
+        await verifyVerificationRequest();
+        setIsLoading(false);
     }
 
     return (
@@ -54,9 +34,9 @@ export const ConfigureHeader = observer(() => {
                     size="sm"
                     className="h-8 px-3 text-sm"
                     onClick={verifyDomain}
-                    disabled={verificationState === VerificationState.VERIFYING}
+                    disabled={isLoading}
                 >
-                    {verificationState === VerificationState.VERIFYING && (
+                    {isLoading && (
                         <Icons.LoadingSpinner className="h-4 w-4 animate-spin mr-2" />
                     )}
                     Verify Setup
