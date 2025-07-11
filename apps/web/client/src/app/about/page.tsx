@@ -524,7 +524,7 @@ export default function AboutPage() {
                                 {...getBlurAnimationProps(0.1)}
                             >
                                 <ButtonLink href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack" target="_blank" rel="noopener noreferrer" rightIcon={<span className="ml-2">→</span>}>
-                                    Take a leap of faith in yourself
+                                    Take the leap
                                 </ButtonLink>
                             </motion.div>
                         </div>
