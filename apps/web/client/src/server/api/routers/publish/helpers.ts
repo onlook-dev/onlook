@@ -1,6 +1,6 @@
 import type { WebSocketSession } from '@codesandbox/sdk';
 import { deployments, deploymentUpdateSchema, previewDomains, projectCustomDomains, projects, type Deployment } from '@onlook/db';
-import { type db as DrizzleDb } from '@onlook/db/src/client';
+import type { DrizzleDb } from '@onlook/db/src/client';
 import {
     DeploymentStatus,
     DeploymentType,
@@ -57,7 +57,7 @@ export const deployFreestyle = async (
     return result;
 }
 
-export async function createDeployment(db: typeof DrizzleDb, projectId: string, type: DeploymentType, userId: string): Promise<Deployment> {
+export async function createDeployment(db: DrizzleDb, projectId: string, type: DeploymentType, userId: string): Promise<Deployment> {
     const [deployment] = await db.insert(deployments).values({
         id: randomUUID(),
         projectId,
@@ -78,7 +78,6 @@ export async function createDeployment(db: typeof DrizzleDb, projectId: string, 
     return deployment;
 }
 
-// New function to handle background publishing
 export async function publishInBackground({
     deploymentId,
     userId,
@@ -91,65 +90,107 @@ export async function publishInBackground({
 }: {
     deploymentId: string;
     userId: string;
-    db: typeof DrizzleDb;
+    db: DrizzleDb;
     projectId: string;
     type: DeploymentType;
     buildScript: string;
     buildFlags: string;
     envVars: Record<string, string>;
 }) {
-    const deploymentUrls = await getProjectUrls(db, projectId, type);
-    const sandboxId = await getSandboxId(db, projectId);
-
-    updateDeployment(db, deploymentId, {
-        status: DeploymentStatus.IN_PROGRESS,
-        message: 'Creating build environment...',
-        progress: 10,
-        urls: deploymentUrls,
-    });
-
-    const { session, sandboxId: forkedSandboxId }: { session: WebSocketSession, sandboxId: string } = await forkBuildSandbox(sandboxId, userId, deploymentId);
-
     try {
-        updateDeployment(db, deploymentId, {
-            status: DeploymentStatus.IN_PROGRESS,
-            message: 'Creating optimized build...',
-            progress: 20,
-            sandboxId: forkedSandboxId,
-        });
-
-        const publishManager = new PublishManager(session);
-        const files = await publishManager.publish({
-            skipBadge: false,
-            buildScript,
-            buildFlags,
-            envVars,
-            updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
-        });
+        const deploymentUrls = await getProjectUrls(db, projectId, type);
+        const sandboxId = await getSandboxId(db, projectId);
 
         updateDeployment(db, deploymentId, {
             status: DeploymentStatus.IN_PROGRESS,
-            message: 'Deploying build...',
-            progress: 80,
-        });
-
-        await deployFreestyle({
-            files,
+            message: 'Creating build environment...',
+            progress: 10,
             urls: deploymentUrls,
-            envVars,
         });
 
+        const { session, sandboxId: forkedSandboxId }: { session: WebSocketSession, sandboxId: string } = await forkBuildSandbox(sandboxId, userId, deploymentId);
+
+        try {
+            updateDeployment(db, deploymentId, {
+                status: DeploymentStatus.IN_PROGRESS,
+                message: 'Creating optimized build...',
+                progress: 20,
+                sandboxId: forkedSandboxId,
+            });
+
+            const publishManager = new PublishManager(session);
+            const files = await publishManager.publish({
+                skipBadge: false,
+                buildScript,
+                buildFlags,
+                envVars,
+                updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
+            });
+
+            updateDeployment(db, deploymentId, {
+                status: DeploymentStatus.IN_PROGRESS,
+                message: 'Deploying build...',
+                progress: 80,
+            });
+
+            await deployFreestyle({
+                files,
+                urls: deploymentUrls,
+                envVars,
+            });
+
+            updateDeployment(db, deploymentId, {
+                status: DeploymentStatus.COMPLETED,
+                message: 'Deployment Success!',
+                progress: 100,
+            });
+        } finally {
+            await session.disconnect();
+        }
+    } catch (error) {
         updateDeployment(db, deploymentId, {
-            status: DeploymentStatus.COMPLETED,
-            message: 'Deployment Success!',
+            status: DeploymentStatus.FAILED,
+            error: error instanceof Error ? error.message : 'Unknown error',
             progress: 100,
         });
-    } finally {
-        await session.disconnect();
     }
 }
 
-export async function getProjectUrls(db: typeof DrizzleDb, projectId: string, type: DeploymentType): Promise<string[]> {
+export const unpublishInBackground = async (db: DrizzleDb, deployment: Deployment, urls: string[]) => {
+    if (!deployment) {
+        throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Deployment not found',
+        });
+    }
+    updateDeployment(db, deployment.id, {
+        status: DeploymentStatus.IN_PROGRESS,
+        message: 'Unpublishing project...',
+        progress: 20,
+    });
+
+    try {
+        await deployFreestyle({
+            files: {},
+            urls,
+            envVars: {},
+        });
+
+        updateDeployment(db, deployment.id, {
+            status: DeploymentStatus.COMPLETED,
+            message: 'Project unpublished',
+            progress: 100,
+        });
+    } catch (error) {
+        updateDeployment(db, deployment.id, {
+            status: DeploymentStatus.FAILED,
+            error: error instanceof Error ? error.message : 'Unknown error',
+            progress: 100,
+        });
+    }
+}
+
+export async function getProjectUrls(db: DrizzleDb, projectId: string, type: DeploymentType): Promise<string[]> {
     let urls: string[] = [];
     if (type === DeploymentType.PREVIEW) {
         const foundPreviewDomains = await db.query.previewDomains.findMany({
@@ -182,7 +223,7 @@ export async function getProjectUrls(db: typeof DrizzleDb, projectId: string, ty
     return urls;
 }
 
-export async function getSandboxId(db: typeof DrizzleDb, projectId: string): Promise<string> {
+export async function getSandboxId(db: DrizzleDb, projectId: string): Promise<string> {
     const project = await db.query.projects.findFirst({
         where: eq(projects.id, projectId),
     });
@@ -195,7 +236,7 @@ export async function getSandboxId(db: typeof DrizzleDb, projectId: string): Pro
     return project.sandboxId;
 }
 
-export async function updateDeployment(db: typeof DrizzleDb, deploymentId: string, deployment: z.infer<typeof deploymentUpdateSchema>) {
+export async function updateDeployment(db: DrizzleDb, deploymentId: string, deployment: z.infer<typeof deploymentUpdateSchema>) {
     try {
         await db.update(deployments).set({
             ...deployment,
