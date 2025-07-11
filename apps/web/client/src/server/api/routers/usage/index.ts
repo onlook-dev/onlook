@@ -25,9 +25,9 @@ export const usageRouter = createTRPCRouter({
         // if no subscription then user is on a free plan
         if (!subscription) {
             const dayStart = startOfDay(now);
-            const dayEnd = add(now, { days: 1});
+            const dayEnd = add(dayStart, { days: 1});
             const monthStart = startOfMonth(now);
-            const monthEnd = add(now, { months: 1});
+            const monthEnd = add(monthStart, { months: 1});
 
             // Count records from current day
             const lastDayCount = await db
