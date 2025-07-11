@@ -6,6 +6,7 @@ import {
     DeploymentType,
     HostingProvider
 } from '@onlook/models';
+import { assertNever } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
 import { randomUUID } from 'crypto';
 import { eq } from 'drizzle-orm';
@@ -178,7 +179,7 @@ export const unpublishInBackground = async (db: DrizzleDb, deployment: Deploymen
 
         updateDeployment(db, deployment.id, {
             status: DeploymentStatus.COMPLETED,
-            message: 'Project unpublished',
+            message: 'Project unpublished!',
             progress: 100,
         });
     } catch (error) {
@@ -192,7 +193,7 @@ export const unpublishInBackground = async (db: DrizzleDb, deployment: Deploymen
 
 export async function getProjectUrls(db: DrizzleDb, projectId: string, type: DeploymentType): Promise<string[]> {
     let urls: string[] = [];
-    if (type === DeploymentType.PREVIEW) {
+    if (type === DeploymentType.PREVIEW || type === DeploymentType.UNPUBLISH_PREVIEW) {
         const foundPreviewDomains = await db.query.previewDomains.findMany({
             where: eq(previewDomains.projectId, projectId),
         });
@@ -203,7 +204,7 @@ export async function getProjectUrls(db: DrizzleDb, projectId: string, type: Dep
             });
         }
         urls = foundPreviewDomains.map(domain => domain.fullDomain);
-    } else if (type === DeploymentType.CUSTOM) {
+    } else if (type === DeploymentType.CUSTOM || type === DeploymentType.UNPUBLISH_CUSTOM) {
         const foundCustomDomains = await db.query.projectCustomDomains.findMany({
             where: eq(projectCustomDomains.projectId, projectId),
         });
@@ -215,10 +216,7 @@ export async function getProjectUrls(db: DrizzleDb, projectId: string, type: Dep
         }
         urls = foundCustomDomains.map(domain => domain.fullDomain);
     } else {
-        throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Invalid publish type',
-        });
+        assertNever(type);
     }
     return urls;
 }

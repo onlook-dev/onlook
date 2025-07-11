@@ -2,6 +2,7 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
+import { type Deployment } from '@onlook/db';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
@@ -15,7 +16,7 @@ interface PublishParams {
 
 interface HostingContextValue {
     // State for each deployment type
-    deployments: Record<DeploymentType, any>;
+    deployments: Record<DeploymentType, Deployment | null>;
     isDeploying: (type: DeploymentType) => boolean;
 
     // Operations
@@ -162,9 +163,13 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
         unpublishPreviewQuery.refetch();
         unpublishCustomQuery.refetch();
     };
-
     const value: HostingContextValue = {
-        deployments,
+        deployments: {
+            preview: deployments.preview ?? null,
+            custom: deployments.custom ?? null,
+            unpublish_preview: deployments.unpublish_preview ?? null,
+            unpublish_custom: deployments.unpublish_custom ?? null
+        },
         isDeploying,
         publish,
         unpublish,
