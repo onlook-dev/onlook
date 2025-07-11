@@ -69,7 +69,7 @@ export class SandboxManager {
                 timer.log(`Tracking ${imageFiles.length} image files`);
                 for (let i = 0; i < imageFiles.length; i += BATCH_SIZE) {
                     const batch = imageFiles.slice(i, i + BATCH_SIZE);
-                    await this.fileSync.writeEmptyFilesBatch(batch, 'binary');
+                    this.fileSync.writeEmptyFilesBatch(batch, 'binary');
                 }
             }
 
@@ -419,7 +419,7 @@ export class SandboxManager {
                 const normalizedPath = normalizePath(path);
 
                 if (isImageFile(normalizedPath)) {
-                    await this.fileSync.writeEmptyFile(normalizedPath, 'binary');
+                    this.fileSync.writeEmptyFile(normalizedPath, 'binary');
                 } else {
                     const content = await this.readRemoteFile(normalizedPath);
                     if (content === null) {

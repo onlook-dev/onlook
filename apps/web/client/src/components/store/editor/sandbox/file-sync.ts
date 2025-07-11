@@ -34,7 +34,7 @@ export class FileSyncManager {
         if (!newFile) {
             return null;
         }
-        await this.updateCache(newFile);
+        this.updateCache(newFile);
         return newFile;
     }
 
@@ -45,7 +45,7 @@ export class FileSyncManager {
     ) {
         try {
             const newFile = this.getFileFromContent(filePath, content);
-            await this.updateCache(newFile);
+            this.updateCache(newFile);
             return await writeFile(filePath, content);
         } catch (error) {
             console.error(`Error writing file ${filePath}:`, error);
@@ -53,7 +53,7 @@ export class FileSyncManager {
         }
     }
 
-    async updateCache(file: SandboxFile): Promise<void> {
+    updateCache(file: SandboxFile): void {
         this.cache.set(file.path, file);
     }
 
@@ -76,12 +76,12 @@ export class FileSyncManager {
         return Array.from(this.cache.keys());
     }
 
-    async writeEmptyFile(filePath: string, type: 'binary') {
+    writeEmptyFile(filePath: string, type: 'binary') {
         if (this.has(filePath)) {
             return;
         }
 
-        await this.updateCache({
+        this.updateCache({
             type,
             path: filePath,
             content: null
@@ -144,9 +144,9 @@ export class FileSyncManager {
     /**
      * Track multiple binary files at once
      */
-    async writeEmptyFilesBatch(filePaths: string[], type: 'binary'): Promise<void> {
+    writeEmptyFilesBatch(filePaths: string[], type: 'binary'): void {
         for (const filePath of filePaths) {
-            await this.writeEmptyFile(filePath, type);
+            this.writeEmptyFile(filePath, type);
         }
     }
 

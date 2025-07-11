@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useEditorEngine } from '@/components/store/editor';
 import type { ImageContentData, FolderNode } from '@onlook/models';
+import { isImageFile } from '@onlook/utility';
 
 interface FolderImagesState {
     isLoading: boolean;
@@ -65,7 +66,7 @@ export const useFolderImages = () => {
             return;
         }
 
-        const allImagePaths = folder.images.filter(Boolean);
+        const allImagePaths = folder.images.filter(image => isImageFile(image));
 
         if (allImagePaths.length > 0) {
             await readImagesContent(allImagePaths);
