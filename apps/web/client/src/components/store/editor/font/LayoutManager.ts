@@ -1,6 +1,6 @@
 import type { ParseResult } from '@babel/parser';
 import * as t from '@babel/types';
-import { RouterType } from '@onlook/constants';
+import { RouterType } from '@onlook/models';
 import {
     createStringLiteralWithFont,
     createTemplateLiteralWithFont,

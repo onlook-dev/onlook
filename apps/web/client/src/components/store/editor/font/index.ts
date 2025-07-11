@@ -1,7 +1,6 @@
 'use client';
 
-import { RouterType } from '@onlook/constants';
-import type { FontUploadFile } from '@onlook/models';
+import { RouterType, type FontUploadFile } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
 import { makeAutoObservable, reaction } from 'mobx';
 import { normalizePath } from '../sandbox/helpers';
