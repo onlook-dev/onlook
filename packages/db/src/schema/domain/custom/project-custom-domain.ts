@@ -6,7 +6,6 @@ import { customDomains } from './domain';
 export const PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME = 'project_custom_domain_project';
 
 export const projectCustomDomains = pgTable('project_custom_domains', {
-    id: uuid('id').primaryKey().defaultRandom(),
     domainId: uuid('domain_id').references(() => customDomains.id),
     projectId: uuid('project_id').references(() => projects.id),
     fullDomain: text('full_domain').notNull().unique(),

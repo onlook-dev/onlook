@@ -1,5 +1,5 @@
 import { env } from '@/env';
-import { previewDomains, publishedDomains, toDomainInfoFromPreview } from '@onlook/db';
+import { previewDomains, projectCustomDomains, toDomainInfoFromPreview } from '@onlook/db';
 import { HostingProvider } from '@onlook/models';
 import { getValidSubdomain } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
@@ -90,10 +90,10 @@ export const previewRouter = createTRPCRouter({
                     });
                 }
             } else if (input.type === 'custom') {
-                const custom = await ctx.db.query.publishedDomains.findFirst({
+                const custom = await ctx.db.query.projectCustomDomains.findFirst({
                     where: and(
-                        eq(publishedDomains.projectId, input.projectId),
-                        inArray(publishedDomains.fullDomain, input.config.domains),
+                        eq(projectCustomDomains.projectId, input.projectId),
+                        inArray(projectCustomDomains.fullDomain, input.config.domains),
                     ),
                 });
                 if (!custom) {

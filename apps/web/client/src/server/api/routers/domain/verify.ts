@@ -1,6 +1,7 @@
-import { FRESTYLE_CUSTOM_HOSTNAME } from '@onlook/constants';
+import { FREESTYLE_IP_ADDRESS, FRESTYLE_CUSTOM_HOSTNAME } from '@onlook/constants';
 import { customDomains, customDomainVerification, type CustomDomain, type CustomDomainVerification } from '@onlook/db';
 import type { DrizzleDb } from '@onlook/db/src/client';
+import { VerificationRequestStatus, type AVerificationRecord } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import { parse } from 'psl';
@@ -9,11 +10,14 @@ import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { initializeFreestyleSdk } from './freestyle';
 
 export const verificationRouter = createTRPCRouter({
-    get: protectedProcedure.input(z.object({
+    getPending: protectedProcedure.input(z.object({
         projectId: z.string(),
     })).query(async ({ ctx, input }) => {
-        const verification = await ctx.db.query.customDomainVerification.findMany({
-            where: eq(customDomainVerification.projectId, input.projectId),
+        const verification = await ctx.db.query.customDomainVerification.findFirst({
+            where: and(
+                eq(customDomainVerification.projectId, input.projectId),
+                eq(customDomainVerification.status, VerificationRequestStatus.PENDING),
+            ),
         });
         return verification;
     }),
@@ -21,12 +25,12 @@ export const verificationRouter = createTRPCRouter({
         domain: z.string(),
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
-        const customDomain = await getCustomDomain(ctx.db, input.domain);
+        const { customDomain, subdomain } = await getCustomDomain(ctx.db, input.domain);
         const existingVerification = await getVerification(ctx.db, input.projectId, customDomain.id);
         if (existingVerification) {
             return existingVerification;
         }
-        const verification = await createDomainVerification(ctx.db, input.domain, input.projectId, customDomain.id);
+        const verification = await createDomainVerification(ctx.db, input.domain, input.projectId, customDomain.id, subdomain);
         return verification;
     }),
     // verify: protectedProcedure.input(z.object({
@@ -96,7 +100,7 @@ export const verificationRouter = createTRPCRouter({
     // }),
 });
 
-async function getCustomDomain(db: DrizzleDb, domain: string): Promise<CustomDomain> {
+async function getCustomDomain(db: DrizzleDb, domain: string): Promise<{ customDomain: CustomDomain, subdomain: string | null }> {
     const parsedDomain = parse(domain);
     if (parsedDomain.error) {
         throw new TRPCError({
@@ -113,6 +117,7 @@ async function getCustomDomain(db: DrizzleDb, domain: string): Promise<CustomDom
     }
 
     const apexDomain = parsedDomain.domain;
+    const subdomain = parsedDomain.subdomain;
 
     const [customDomain] = await db
         .insert(customDomains)
@@ -134,7 +139,7 @@ async function getCustomDomain(db: DrizzleDb, domain: string): Promise<CustomDom
         });
     }
 
-    return customDomain;
+    return { customDomain, subdomain };
 }
 
 async function getVerification(db: DrizzleDb, projectId: string, customDomainId: string) {
@@ -147,7 +152,7 @@ async function getVerification(db: DrizzleDb, projectId: string, customDomainId:
     return verification;
 }
 
-async function createDomainVerification(db: DrizzleDb, domain: string, projectId: string, customDomainId: string): Promise<CustomDomainVerification> {
+async function createDomainVerification(db: DrizzleDb, domain: string, projectId: string, customDomainId: string, subdomain: string | null): Promise<CustomDomainVerification> {
     const sdk = initializeFreestyleSdk();
     const { id: freestyleVerificationId, verificationCode } = await sdk.createDomainVerificationRequest(domain);
     const [verification] = await db.insert(customDomainVerification).values({
@@ -160,6 +165,7 @@ async function createDomainVerification(db: DrizzleDb, domain: string, projectId
             value: verificationCode,
             verified: false,
         },
+        aRecords: getARecords(subdomain),
     }).returning();
     if (!verification) {
         throw new TRPCError({
@@ -168,4 +174,29 @@ async function createDomainVerification(db: DrizzleDb, domain: string, projectId
         });
     }
     return verification;
-}   
+}
+
+function getARecords(subdomain: string | null): AVerificationRecord[] {
+    if (!subdomain) {
+        return [{
+            type: 'A',
+            name: '@',
+            value: FREESTYLE_IP_ADDRESS,
+            verified: false,
+        }, {
+            type: 'A',
+            name: 'www',
+            value: FREESTYLE_IP_ADDRESS,
+            verified: false,
+        }];
+    }
+
+    return [
+        {
+            type: 'A',
+            name: subdomain,
+            value: FREESTYLE_IP_ADDRESS,
+            verified: false,
+        },
+    ];
+}

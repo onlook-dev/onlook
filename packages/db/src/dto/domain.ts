@@ -9,10 +9,11 @@ export const toDomainInfoFromPreview = (previewDomain: PreviewDomain): DomainInf
     };
 };
 
-export const toDomainInfoFromPublished = (publishedDomain: ProjectCustomDomain): DomainInfo => {
+// TODO: Fix
+export const toDomainInfoFromPublished = (projectCustomDomain: ProjectCustomDomain): DomainInfo => {
     return {
-        url: publishedDomain.fullDomain,
+        url: projectCustomDomain.fullDomain,
         type: DomainType.CUSTOM,
-        publishedAt: publishedDomain.updatedAt.toISOString(),
+        publishedAt: projectCustomDomain.createdAt.toISOString(),
     };
 };

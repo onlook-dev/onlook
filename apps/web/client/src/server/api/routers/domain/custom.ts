@@ -1,4 +1,4 @@
-import { publishedDomains, toDomainInfoFromPublished } from '@onlook/db';
+import { projectCustomDomains, toDomainInfoFromPublished } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -7,8 +7,8 @@ export const customRouter = createTRPCRouter({
     get: protectedProcedure.input(z.object({
         projectId: z.string(),
     })).query(async ({ ctx, input }) => {
-        const customDomain = await ctx.db.query.publishedDomains.findFirst({
-            where: eq(publishedDomains.projectId, input.projectId),
+        const customDomain = await ctx.db.query.projectCustomDomains.findFirst({
+            where: eq(projectCustomDomains.projectId, input.projectId),
         });
         return customDomain ? toDomainInfoFromPublished(customDomain) : null;
     }),
@@ -16,7 +16,7 @@ export const customRouter = createTRPCRouter({
         domain: z.string(),
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
-        const [customDomain] = await ctx.db.insert(publishedDomains).values({
+        const [customDomain] = await ctx.db.insert(projectCustomDomains).values({
             projectId: input.projectId,
             fullDomain: input.domain,
         }).returning();
@@ -26,6 +26,6 @@ export const customRouter = createTRPCRouter({
         domain: z.string(),
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
-        await ctx.db.delete(publishedDomains).where(eq(publishedDomains.fullDomain, input.domain));
+        await ctx.db.delete(projectCustomDomains).where(eq(projectCustomDomains.fullDomain, input.domain));
     }),
 });
