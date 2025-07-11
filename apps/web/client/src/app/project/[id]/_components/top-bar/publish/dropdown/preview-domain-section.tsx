@@ -7,13 +7,13 @@ import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { UrlSection } from './url';
 import stripAnsi from 'strip-ansi';
+import { UrlSection } from './url';
 
 export const PreviewDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: domain, refetch: refetchDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: previewDomain, refetch: refetchPreviewDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
     const { deployment, publish: runPublish, isDeploying } = useHostingType(DeploymentType.PREVIEW);
 
@@ -24,7 +24,7 @@ export const PreviewDomainSection = observer(() => {
             toast.error('Failed to create preview domain');
             return;
         }
-        await refetchDomain();
+        await refetchPreviewDomain();
         publish();
     };
 
@@ -52,7 +52,7 @@ export const PreviewDomainSection = observer(() => {
     };
 
     const retry = () => {
-        if (!domain?.url) {
+        if (!previewDomain?.url) {
             console.error(`No preview domain info found`);
             return;
         }
@@ -61,7 +61,7 @@ export const PreviewDomainSection = observer(() => {
     };
 
     const renderDomain = () => {
-        if (!domain) {
+        if (!previewDomain) {
             return 'Something went wrong';
         }
 
@@ -109,13 +109,13 @@ export const PreviewDomainSection = observer(() => {
     };
 
     const renderActionSection = () => {
-        if (!domain?.url) {
+        if (!previewDomain?.url) {
             return 'Something went wrong';
         }
 
         return (
             <div className="w-full flex flex-col gap-2">
-                <UrlSection url={domain.url} isCopyable={true} />
+                <UrlSection url={previewDomain.url} isCopyable={true} />
                 {deployment?.status === DeploymentStatus.FAILED ? (
                     <div className="w-full flex flex-col gap-2">
                         <p className="text-red-500 max-h-20 overflow-y-auto">{stripAnsi(deployment?.error)}</p>
@@ -143,7 +143,7 @@ export const PreviewDomainSection = observer(() => {
 
     return (
         <div className="p-4 flex flex-col items-center gap-2">
-            {domain?.url
+            {previewDomain?.url
                 ? renderDomain()
                 : renderNoDomain()}
         </div>

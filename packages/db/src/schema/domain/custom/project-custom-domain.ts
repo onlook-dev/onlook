@@ -6,10 +6,11 @@ import { customDomains } from './domain';
 export const PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME = 'project_custom_domain_project';
 
 export const projectCustomDomains = pgTable('project_custom_domains', {
+    fullDomain: text('full_domain').notNull().unique(),
     customDomainId: uuid('custom_domain_id').notNull().references(() => customDomains.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
-    fullDomain: text('full_domain').notNull().unique(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [primaryKey({ columns: [table.customDomainId, table.projectId] })],
 ).enableRLS();
 
