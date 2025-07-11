@@ -1,5 +1,4 @@
-import type { Font } from '@onlook/models';
-import { types as t, type NodePath, type t as T } from '@onlook/parser';
+import { types as t, type t as T } from '@onlook/parser';
 
 const FONT_WEIGHT_REGEX =
     /font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)/;
@@ -258,75 +257,4 @@ export function removeFontsFromClassName(
         console.error('Error in removeFontsFromClassName:', error);
         return false;
     }
-}
-
-export function createFontConfigAst(font: Font) {
-    return t.objectExpression([
-        t.objectProperty(
-            t.identifier('subsets'),
-            t.arrayExpression(font.subsets.map((s) => t.stringLiteral(s))),
-        ),
-        t.objectProperty(
-            t.identifier('weight'),
-            t.arrayExpression((font.weight ?? []).map((w) => t.stringLiteral(w))),
-        ),
-        t.objectProperty(
-            t.identifier('style'),
-            t.arrayExpression((font.styles ?? []).map((s) => t.stringLiteral(s))),
-        ),
-        t.objectProperty(t.identifier('variable'), t.stringLiteral(font.variable)),
-        t.objectProperty(t.identifier('display'), t.stringLiteral('swap')),
-    ]);
-}
-
-export function isThemeProperty(path: NodePath<T.ObjectProperty>) {
-    return (
-        t.isIdentifier(path.node.key) &&
-        path.node.key.name === 'theme' &&
-        path.parent.type === 'ObjectExpression'
-    );
-}
-
-export function isPropertyWithName(
-    prop: T.ObjectMethod | T.ObjectProperty | T.SpreadElement,
-    key: string,
-) {
-    return t.isObjectProperty(prop) && t.isIdentifier(prop.key) && prop.key.name === key;
-}
-
-export function createFontFamilyProperty(font: Font) {
-    return t.objectProperty(
-        t.identifier('fontFamily'),
-        t.objectExpression([
-            t.objectProperty(
-                t.identifier(font.id),
-                t.arrayExpression([
-                    t.stringLiteral(`var(${font.variable})`),
-                    t.stringLiteral('sans-serif'),
-                ]),
-            ),
-        ]),
-    );
-}
-/**
- * Checks if a variable declaration is a valid local font declaration
- * Has a declaration id with the same name as the font name
- * Has a localFont call expression as the initializer
- * Has an object expression as the argument of the localFont call
- * @param declarator The variable declaration to check
- * @param fontName The name of the font to check for
- * @returns true if the declaration is a valid local font declaration, false otherwise
- */
-
-export function isValidLocalFontDeclaration(declarator: T.VariableDeclarator, fontName: string) {
-    return (
-        t.isIdentifier(declarator.id) &&
-        declarator.id.name === fontName &&
-        declarator.init &&
-        t.isCallExpression(declarator.init) &&
-        t.isIdentifier(declarator.init.callee) &&
-        declarator.init.callee.name === 'localFont' &&
-        declarator.init.arguments.length > 0 &&
-        t.isObjectExpression(declarator.init.arguments[0])
-    );
 }
