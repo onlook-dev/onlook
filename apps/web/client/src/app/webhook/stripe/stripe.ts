@@ -1,186 +1,331 @@
-import { prices, subscriptions, type NewSubscription } from '@onlook/db';
+import { prices, rateLimits, subscriptions, users, type NewSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { ScheduledSubscriptionAction } from '@onlook/stripe';
-import { eq } from "drizzle-orm";
-import Stripe from "stripe";
+import { and, eq } from 'drizzle-orm';
+import Stripe from 'stripe';
+import { v4 as uuid } from 'uuid';
 
-export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.CheckoutSessionCompletedEvent, stripe: Stripe) => {
-    const session = receivedEvent.data.object
+function extractIdsFromEvent(
+    event:
+        | Stripe.CustomerSubscriptionCreatedEvent
+        | Stripe.CustomerSubscriptionUpdatedEvent
+        | Stripe.CustomerSubscriptionDeletedEvent,
+) {
+    const stripeSubscription = event.data.object;
+    const stripeSubscriptionId = stripeSubscription.id;
+    const stripeSubscriptionItemId = stripeSubscription.items.data[0]?.id;
+    const stripePriceId = stripeSubscription.items.data[0]?.price?.id;
+    const stripeCustomerId = stripeSubscription.customer?.toString();
+    const currentPeriodStart = stripeSubscription.items.data[0]?.current_period_start;
+    const currentPeriodEnd = stripeSubscription.items.data[0]?.current_period_end;
 
-    const userId = session.metadata?.user_id
-    if (!userId) {
-        throw new Error('No user ID found')
+    console.log('stripeSubscription.items.data', stripeSubscription.items.data);
+
+    // validation
+    if (!stripeSubscriptionId) {
+        throw new Error('No subscription ID found');
+    }
+    if (!stripeSubscriptionItemId) {
+        throw new Error('No subscription item ID found');
+    }
+    if (!stripePriceId) {
+        throw new Error('No price ID found');
+    }
+    if (!currentPeriodStart) {
+        throw new Error('No current period start found');
+    }
+    if (!currentPeriodEnd) {
+        throw new Error('No current period end found');
+    }
+    if (!stripeCustomerId) {
+        throw new Error('No customer ID found');
     }
 
-    const expandedSession = await stripe.checkout.sessions.retrieve(
-        session.id,
-        {
-            expand: ['line_items', 'subscription'],
-        }
-    );
+    return {
+        stripeSubscription,
+        stripeSubscriptionId,
+        stripeSubscriptionItemId,
+        stripePriceId,
+        stripeCustomerId,
+        currentPeriodStart: new Date(currentPeriodStart * 1000),
+        currentPeriodEnd: new Date(currentPeriodEnd * 1000),
+    };
+}
 
-    const priceId = expandedSession.line_items?.data[0]?.price?.id
-    if (!priceId) {
-        throw new Error('No price ID found')
-    }
+export const handleSubscriptionCreated = async (
+    receivedEvent: Stripe.CustomerSubscriptionCreatedEvent,
+) => {
+    const {
+        stripeSubscriptionId,
+        stripeSubscriptionItemId,
+        stripePriceId,
+        stripeCustomerId,
+        currentPeriodStart,
+        currentPeriodEnd,
+    } = extractIdsFromEvent(receivedEvent);
 
     const price = await db.query.prices.findFirst({
-        where: eq(prices.stripePriceId, priceId),
-    })
+        where: eq(prices.stripePriceId, stripePriceId),
+    });
+
     if (!price) {
-        throw new Error(`No price found for price ID: ${priceId}`)
+        throw new Error(`No price found for price ID: ${stripePriceId}`);
     }
 
-    const customerId = session.customer?.toString()
-    if (!customerId) {
-        throw new Error('No customer ID found')
-    }
+    const user = await db.query.users.findFirst({
+        where: eq(users.stripeCustomerId, stripeCustomerId),
+    });
 
-    const expandedSubscription = await stripe.subscriptions.retrieve(session.subscription as string, {
-        expand: ['items'],
-    })
-    const subscriptionId = expandedSubscription.id
-    if (!subscriptionId) {
-        throw new Error('No subscription ID found')
-    }
-    const subscriptionItemId = expandedSubscription.items.data[0]?.id
-    if (!subscriptionItemId) {
-        throw new Error('No subscription item ID found')
+    if (!user) {
+        throw new Error(`No user found for customer ID: ${stripeCustomerId}`);
     }
 
     // Update or create subscription
-    const [data] = await db.insert(subscriptions).values({
-        userId: userId,
-        priceId: price.id,
-        productId: price.productId,
-        status: 'active',
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscriptionId,
-        stripeSubscriptionItemId: subscriptionItemId,
-    }).onConflictDoUpdate({
-        target: [subscriptions.stripeSubscriptionItemId],
-        set: {
-            priceId: price.id,
-            productId: price.productId,
-            status: 'active',
-            updatedAt: new Date(),
-            stripeSubscriptionId: subscriptionId,
-            stripeSubscriptionItemId: subscriptionItemId,
+    const [sub, rateLimit] = await db.transaction(async (tx) => {
+        // If it does not exist then we create it and we create the rate limit.
+        // The cases have to be separated because the code would otherwise add additional rate limits.
+        const [data] = await tx
+            .insert(subscriptions)
+            .values({
+                userId: user.id,
+                priceId: price.id,
+                productId: price.productId,
+                status: 'active',
+                stripeCustomerId,
+                stripeSubscriptionId: stripeSubscriptionId,
+                stripeSubscriptionItemId: stripeSubscriptionItemId,
+                stripeCurrentPeriodStart: currentPeriodStart,
+                stripeCurrentPeriodEnd: currentPeriodEnd,
+            })
+            .onConflictDoUpdate({
+                target: [subscriptions.stripeSubscriptionItemId],
+                set: {
+                    // Left in case there are concurrent webhook requests for the same subscription
+                    status: 'active',
+                },
+            })
+            .returning();
+
+        if (!data) {
+            console.error('[[handleCheckoutSessionCompleted]] No subscription was upserted.');
+            throw new Error('No subscription was upserted.');
         }
-    }).returning()
 
-    console.log("Checkout session completed: ", data)
-    return new Response(JSON.stringify({ ok: true }), { status: 200 })
-}
+        const [rateLimit] = await tx
+            .insert(rateLimits)
+            .values({
+                subscriptionId: data.id,
+                max: price.monthlyMessageLimit,
+                left: price.monthlyMessageLimit,
+                startedAt: currentPeriodStart,
+                endedAt: currentPeriodEnd,
+                carryOverKey: uuid(),
+                carryOverTotal: 0,
+                stripeSubscriptionItemId,
+            })
+            .returning();
 
-export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSubscriptionDeletedEvent) => {
-    const subscriptionId = receivedEvent.data.object.id
-    if (!subscriptionId) {
-        throw new Error('No subscription ID found')
-    }
+        return [data, rateLimit];
+    });
 
-    const res = await db.update(subscriptions).set({
-        status: 'canceled',
-        endedAt: new Date(),
-        scheduledPriceId: null,
-        scheduledChangeAt: null,
-        stripeSubscriptionScheduleId: null,
-    }).where(eq(subscriptions.stripeSubscriptionId, subscriptionId))
+    console.log('Checkout session completed: ', sub, rateLimit);
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+};
 
-    console.log("Subscription cancelled: ", res)
-    return new Response(JSON.stringify({ ok: true }), { status: 200 })
-}
+export const handleSubscriptionDeleted = async (
+    receivedEvent: Stripe.CustomerSubscriptionDeletedEvent,
+) => {
+    const { stripeSubscriptionId } = extractIdsFromEvent(receivedEvent);
 
-export const handleInvoicePaid = async (receivedEvent: Stripe.InvoicePaidEvent) => {
-    const invoice = receivedEvent.data.object
-    if (invoice.parent?.type !== 'subscription_details') {
-        throw new Error('Invoice is not a subscription details')
-    }
+    const res = await db
+        .update(subscriptions)
+        .set({
+            status: 'canceled',
+            endedAt: new Date(),
+            scheduledPriceId: null,
+            scheduledChangeAt: null,
+            stripeSubscriptionScheduleId: null,
+        })
+        .where(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId));
 
-    const stripeSubscriptionId = invoice.parent.subscription_details?.subscription.toString()
-    if (!stripeSubscriptionId) {
-        throw new Error('No subscription ID found')
-    }
+    console.log('Subscription cancelled: ', res);
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+};
 
-    const sub = await db.query.subscriptions.findFirst({
+export const handleSubscriptionUpdated = async (
+    receivedEvent: Stripe.CustomerSubscriptionUpdatedEvent,
+) => {
+    const {
+        stripeSubscriptionItemId,
+        stripeSubscriptionId,
+        stripePriceId,
+        currentPeriodStart,
+        currentPeriodEnd,
+    } = extractIdsFromEvent(receivedEvent);
+    const stripeSubscription = receivedEvent.data.object;
+
+    const subscription = await db.query.subscriptions.findFirst({
         where: eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId),
     });
 
-    if (!sub) {
-        throw new Error('Subscription not found')
-    }
-
-    const newPrice = await db.query.prices.findFirst({
-        where: eq(prices.id, sub.scheduledPriceId!),
-    });
-
-    if (!newPrice) throw new Error('Scheduled price not found');
-
-    // Update the subscription to the new price
-    await db.update(subscriptions).set({
-        priceId: newPrice.id,
-        scheduledPriceId: null,
-        scheduledChangeAt: null,
-        updatedAt: new Date(),
-    }).where(eq(subscriptions.id, sub.id));
-
-    return new Response(JSON.stringify({ ok: true }), { status: 200 })
-}
-
-export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSubscriptionUpdatedEvent) => {
-    const stripeSubscription = receivedEvent.data.object
-    const stripeSubscriptionId = stripeSubscription.id
-
-    if (!stripeSubscriptionId) {
-        throw new Error('No subscription ID found')
-    }
-
-    const stripeSubscriptionItemId = stripeSubscription.items.data[0]?.id
-    if (!stripeSubscriptionItemId) {
-        throw new Error('No subscription item ID found')
-    }
-
-    const subscription = await db.query.subscriptions.findFirst({
-        where: eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId),
-    });
-
     if (!subscription) {
-        throw new Error('Subscription not found')
-    }
-
-    const updates: Partial<NewSubscription> = {
-        updatedAt: new Date(),
-        stripeSubscriptionScheduleId: stripeSubscription.schedule?.toString(),
-    }
-
-    const stripePriceId = receivedEvent.data.object.items.data[0]?.price?.id
-    if (!stripePriceId) {
-        throw new Error('No price ID found')
+        throw new Error('Subscription not found');
     }
 
     const price = await db.query.prices.findFirst({
         where: eq(prices.stripePriceId, stripePriceId),
-    })
+    });
     if (!price) {
-        throw new Error(`No price found for price ID: ${stripePriceId}`)
+        throw new Error(`No price found for updated price ID: ${stripePriceId}`);
     }
 
+    const currentPriceId = subscription.priceId;
+    const currentPrice = await db.query.prices.findFirst({
+        where: eq(prices.id, currentPriceId),
+    });
+
+    if (!currentPrice) {
+        throw new Error(`No price found for current price ID: ${currentPriceId}`);
+    }
+
+    const isTierIncrease =
+        currentPrice?.id !== price.id &&
+        price.monthlyMessageLimit > currentPrice.monthlyMessageLimit;
+
+    let renew = false;
+    console.log(
+        '=====> 1',
+        isTierIncrease,
+        currentPeriodStart,
+        subscription.stripeCurrentPeriodStart,
+        '-------',
+        currentPeriodEnd,
+        subscription.stripeCurrentPeriodEnd,
+    );
     // Update subscription if price changed
-    if (price.id !== subscription.priceId) {
-        console.log('Price changed from ', subscription.priceId, ' to ', price.id)
-        updates.priceId = price.id
-        updates.scheduledPriceId = null
-        updates.scheduledChangeAt = null
+    if (isTierIncrease) {
+        await db.transaction(async (tx) => {
+            await tx
+                .update(subscriptions)
+                // this call is solely to update the priceId
+                // there is another call below in the case where
+                .set({
+                    priceId: price.id,
+                })
+                .where(eq(subscriptions.id, subscription.id));
+
+            // This is important because a subscription may be upgraded to a higher tier without prorating.
+            // In the case of a pro-rated tier increase, the system creates a new rate limit with the delta.
+            const isProRated =
+                isTierIncrease && +currentPeriodEnd === +subscription.stripeCurrentPeriodEnd;
+            const tierIncrease = price.monthlyMessageLimit - currentPrice.monthlyMessageLimit;
+            console.log('=====> 2', isProRated, tierIncrease);
+            if (isProRated) {
+                await tx.insert(rateLimits).values({
+                    subscriptionId: subscription.id,
+                    max: tierIncrease,
+                    left: tierIncrease,
+                    startedAt: currentPeriodStart,
+                    endedAt: currentPeriodEnd,
+                    carryOverKey: uuid(),
+                    carryOverTotal: 0,
+                    stripeSubscriptionItemId,
+                });
+            } else {
+                // If it is not pro-rated, then it is a completely new period.
+                // Therefore, it should behave similarly to a renewal: credits need to be carried over.
+                renew = true;
+            }
+        });
+    } else if (
+        stripeSubscription.status === 'active' &&
+        +currentPeriodEnd !== +subscription.stripeCurrentPeriodEnd
+    ) {
+        // Based on the doc/dashboard, it is not possible to programmatically update the current period start and end.
+        // If it is updated then the subscription is renewed.
+        // Creating a new invoice may trigger this block to run; unless the invoice includes an upgrade.
+        renew = true;
     }
 
-    // Handle scheduled cancellation
+    if (renew) {
+        await db.transaction(async (tx) => {
+            // Carry-over the credits from the previous period.
+            const rates = await tx.query.rateLimits.findMany({
+                where: and(
+                    eq(rateLimits.subscriptionId, subscription.id),
+                    eq(rateLimits.stripeSubscriptionItemId, subscription.stripeSubscriptionItemId),
+                ),
+            });
+
+            for (const rate of rates) {
+                await tx
+                    .update(rateLimits)
+                    .set({
+                        endedAt: currentPeriodStart,
+                    })
+                    .where(eq(rateLimits.id, rate.id));
+
+                // Here you can decide the logic for the carry-over.
+                // Example, you may want to carry over 100% of the credits on the first carry-over,
+                // and 50% of the credits on the next carry-overs.
+                // const max = rate.carryOverTotal === 0 ? rate.left : rate.left * 0.50;
+                const max = rate.left;
+
+                // For now, we only carry over the credits on the first carry-over.
+                // In the future, we may want to carry over the credits on the next carry-overs.
+                if (rate.carryOverTotal === 0) {
+                    await tx.insert(rateLimits).values({
+                        subscriptionId: subscription.id,
+                        max,
+                        left: max,
+                        startedAt: currentPeriodStart,
+                        endedAt: currentPeriodEnd,
+                        carryOverKey: rate.carryOverKey,
+                        carryOverTotal: rate.carryOverTotal + 1,
+                        stripeSubscriptionItemId,
+                    });
+                }
+            }
+
+            // Create a new rate limit for the new period.
+            await tx.insert(rateLimits).values({
+                subscriptionId: subscription.id,
+                max: price.monthlyMessageLimit,
+                left: price.monthlyMessageLimit,
+                startedAt: currentPeriodStart,
+                endedAt: currentPeriodEnd,
+                carryOverKey: uuid(),
+                carryOverTotal: 0,
+                stripeSubscriptionItemId,
+            });
+
+            await tx
+                .update(subscriptions)
+                .set({
+                    status: 'active',
+                    stripeSubscriptionItemId,
+                    stripeCurrentPeriodStart: currentPeriodStart,
+                    stripeCurrentPeriodEnd: currentPeriodEnd,
+                })
+                .where(eq(subscriptions.id, subscription.id));
+        });
+    }
+
     if (stripeSubscription.cancel_at) {
-        console.log('Subscription cancellation scheduled at ', stripeSubscription.cancel_at)
-        updates.scheduledAction = ScheduledSubscriptionAction.CANCELLATION
-        updates.scheduledChangeAt = new Date(stripeSubscription.cancel_at * 1000)
+        const cancelAt = new Date(stripeSubscription.cancel_at * 1000);
+        await db.transaction(async (tx) => {
+            await tx
+                .update(subscriptions)
+                .set({
+                    priceId: price.id,
+                    scheduledAction: ScheduledSubscriptionAction.CANCELLATION,
+                    scheduledChangeAt: cancelAt,
+                    stripeSubscriptionItemId,
+                })
+                .where(eq(subscriptions.id, subscription.id));
+        });
+        console.log('Subscription cancellation scheduled at ', stripeSubscription.cancel_at);
     }
 
-    await db.update(subscriptions).set(updates).where(eq(subscriptions.id, subscription.id));
-
-    return new Response(JSON.stringify({ ok: true }), { status: 200 })
-}
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+};
