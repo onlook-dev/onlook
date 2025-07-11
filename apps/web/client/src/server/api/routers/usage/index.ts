@@ -27,7 +27,7 @@ export const usageRouter = createTRPCRouter({
             const dayStart = startOfDay(now);
             const dayEnd = add(now, { days: 1});
             const monthStart = startOfMonth(now);
-            const monthEnd = add(now, { days: 1});
+            const monthEnd = add(now, { months: 1});
 
             // Count records from current day
             const lastDayCount = await db
