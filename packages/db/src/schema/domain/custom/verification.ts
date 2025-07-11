@@ -8,12 +8,13 @@ export const verificationRequestStatus = pgEnum('verification_request_status', V
 
 export const customDomainVerification = pgTable('custom_domain_verification', {
     id: uuid('id').primaryKey().defaultRandom(),
-    domainId: uuid('domain_id').references(() => customDomains.id).notNull(),
+    customDomainId: uuid('custom_domain_id').references(() => customDomains.id).notNull(),
     projectId: uuid('project_id').references(() => projects.id).notNull(),
 
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 
+    fullDomain: text('full_domain').notNull(),
     freestyleVerificationId: text('freestyle_verification_id').notNull(),
     txtRecord: jsonb('txt_record').notNull().$type<TxtVerificationRecord>(),
     aRecords: jsonb('a_records').notNull().$type<AVerificationRecord[]>().default([]),
@@ -22,7 +23,7 @@ export const customDomainVerification = pgTable('custom_domain_verification', {
 
 export const customDomainVerificationRelations = relations(customDomainVerification, ({ one }) => ({
     customDomain: one(customDomains, {
-        fields: [customDomainVerification.domainId],
+        fields: [customDomainVerification.customDomainId],
         references: [customDomains.id],
     }),
 }));

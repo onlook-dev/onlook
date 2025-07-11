@@ -12,16 +12,6 @@ export const customRouter = createTRPCRouter({
         });
         return customDomain ? toDomainInfoFromPublished(customDomain) : null;
     }),
-    create: protectedProcedure.input(z.object({
-        domain: z.string(),
-        projectId: z.string(),
-    })).mutation(async ({ ctx, input }) => {
-        const [customDomain] = await ctx.db.insert(projectCustomDomains).values({
-            projectId: input.projectId,
-            fullDomain: input.domain,
-        }).returning();
-        return customDomain ? toDomainInfoFromPublished(customDomain) : null;
-    }),
     remove: protectedProcedure.input(z.object({
         domain: z.string(),
         projectId: z.string(),

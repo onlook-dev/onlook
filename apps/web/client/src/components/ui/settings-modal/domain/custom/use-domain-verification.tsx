@@ -32,7 +32,6 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     const editorEngine = useEditorEngine();
     const ownedDomains: string[] = [];
 
-    const [domainInput, setDomainInput] = useState('');
     const [verificationState, setVerificationState] = useState(VerificationState.INPUTTING_DOMAIN);
     const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +40,8 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
     const { mutateAsync: removeDomainVerification } = api.domain.verification.remove.useMutation();
     const { mutateAsync: verifyDomain } = api.domain.verification.verify.useMutation();
+
+    const [domainInput, setDomainInput] = useState(verification?.fullDomain ?? '');
 
     useEffect(() => {
         if (verification === undefined) {

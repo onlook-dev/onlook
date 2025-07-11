@@ -23,6 +23,9 @@ export const verificationRouter = createTRPCRouter({
                     eq(customDomainVerification.status, VerificationRequestStatus.VERIFIED),
                 ),
             ),
+            with: {
+                customDomain: true,
+            },
         });
         return verification ?? null;
     }),
@@ -79,12 +82,12 @@ export const verificationRouter = createTRPCRouter({
                 async (tx) => {
                     await tx.update(customDomains).set({
                         verified: true,
-                    }).where(eq(customDomains.id, verification.domainId));
+                    }).where(eq(customDomains.id, verification.customDomainId));
 
                     await tx.insert(projectCustomDomains).values({
                         projectId: verification.projectId,
                         fullDomain: domain,
-                        domainId: verification.domainId,
+                        customDomainId: verification.customDomainId,
                     });
 
                     await tx.update(customDomainVerification).set({
@@ -144,7 +147,7 @@ async function getCustomDomain(db: DrizzleDb, domain: string): Promise<{ customD
 async function getVerification(db: DrizzleDb, projectId: string, customDomainId: string) {
     const verification = await db.query.customDomainVerification.findFirst({
         where: and(
-            eq(customDomainVerification.domainId, customDomainId),
+            eq(customDomainVerification.customDomainId, customDomainId),
             eq(customDomainVerification.projectId, projectId),
             eq(customDomainVerification.status, VerificationRequestStatus.PENDING),
         ),
@@ -156,7 +159,8 @@ async function createDomainVerification(db: DrizzleDb, domain: string, projectId
     const sdk = initializeFreestyleSdk();
     const { id: freestyleVerificationId, verificationCode } = await sdk.createDomainVerificationRequest(domain);
     const [verification] = await db.insert(customDomainVerification).values({
-        domainId: customDomainId,
+        customDomainId,
+        fullDomain: domain,
         projectId,
         freestyleVerificationId,
         txtRecord: {
