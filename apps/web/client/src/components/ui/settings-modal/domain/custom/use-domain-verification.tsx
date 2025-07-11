@@ -25,6 +25,7 @@ interface DomainVerificationContextType {
     createVerificationRequest: () => Promise<void>;
     removeVerificationRequest: () => Promise<void>;
     verifyVerificationRequest: () => Promise<void>;
+    removeVerifiedDomain: (domain: string) => Promise<void>;
 }
 
 const DomainVerificationContext = createContext<DomainVerificationContextType | undefined>(undefined);
@@ -42,6 +43,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     const { mutateAsync: verifyDomain } = api.domain.verification.verify.useMutation();
     const { data: ownedDomains = [] } = api.domain.custom.getOwnedDomains.useQuery();
     const { mutateAsync: verifyOwnedDomain } = api.domain.verification.verifyOwnedDomain.useMutation();
+    const { mutateAsync: removeProjectCustomDomain } = api.domain.custom.remove.useMutation();
     const [domainInput, setDomainInput] = useState(verification?.fullDomain ?? '');
 
     useEffect(() => {
@@ -142,6 +144,24 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
         }
     };
 
+    const removeVerifiedDomain = async (domain: string) => {
+        try {
+            const res = await removeProjectCustomDomain({
+                domain,
+                projectId: editorEngine.projectId,
+            });
+            if (!res) {
+                setError('Failed to remove verified domain');
+                return;
+            }
+            await refetchVerification();
+            setVerificationState(VerificationState.INPUTTING_DOMAIN);
+            setError(null);
+        } catch (error) {
+            setError(`Failed to remove verified domain: ${error}`);
+        }
+    };
+
     return (
         <DomainVerificationContext.Provider value={{
             domainInput,
@@ -155,6 +175,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             error,
             ownedDomains,
             reuseDomain,
+            removeVerifiedDomain,
         }}>
             {children}
         </DomainVerificationContext.Provider>

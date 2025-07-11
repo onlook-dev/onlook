@@ -1,4 +1,5 @@
-import { projectCustomDomains, toDomainInfoFromPublished, userProjects } from '@onlook/db';
+import { customDomainVerification, projectCustomDomains, ProjectCustomDomainStatus, toDomainInfoFromPublished, userProjects } from '@onlook/db';
+import { VerificationRequestStatus } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -16,8 +17,23 @@ export const customRouter = createTRPCRouter({
     remove: protectedProcedure.input(z.object({
         domain: z.string(),
         projectId: z.string(),
-    })).mutation(async ({ ctx, input }) => {
-        await ctx.db.delete(projectCustomDomains).where(eq(projectCustomDomains.fullDomain, input.domain));
+    })).mutation(async ({ ctx, input }): Promise<boolean> => {
+        try {
+            await ctx.db.transaction(async (tx) => {
+                await tx.update(customDomainVerification).set({
+                    status: VerificationRequestStatus.CANCELLED,
+                }).where(eq(customDomainVerification.fullDomain, input.domain));
+                await tx.update(projectCustomDomains).set({
+                    status: ProjectCustomDomainStatus.CANCELLED,
+                }).where(eq(projectCustomDomains.fullDomain, input.domain));
+            });
+            return true;
+        } catch (error) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: `Failed to remove domain: ${error}`,
+            });
+        }
     }),
     getOwnedDomains: protectedProcedure.query(async ({ ctx }): Promise<string[]> => {
         const user = ctx.user;

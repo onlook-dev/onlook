@@ -1,5 +1,5 @@
 import { observer } from 'mobx-react-lite';
-import { ConfigureHeader, VerifiedHeader } from './headers';
+import { ConfigureHeader } from './headers';
 import { NoDomainInput } from './no-domain-input';
 import { DnsRecords } from './record-field';
 import { useDomainVerification, VerificationState } from './use-domain-verification';
@@ -16,7 +16,6 @@ export const Verification = observer(() => {
                     <DnsRecords />
                 </>
             )}
-            {verificationState === VerificationState.VERIFIED && <VerifiedHeader />}
             {error && <p className="text-sm text-red-500 whitespace-pre-wrap">{error}</p>}
         </div>
     );
