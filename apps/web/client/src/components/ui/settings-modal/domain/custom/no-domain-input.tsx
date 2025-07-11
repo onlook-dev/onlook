@@ -82,28 +82,26 @@ export const NoDomainInput = () => {
 };
 
 export const ExistingDomains = () => {
-    const { ownedDomains, verificationState } = useDomainVerification();
+    const [isLoading, setIsLoading] = useState(false);
+    const { ownedDomains, verificationState, reuseDomain } = useDomainVerification();
 
     if (ownedDomains.length === 0 || verificationState !== VerificationState.INPUTTING_DOMAIN) {
         return null;
     }
 
-    const addExistingDomain = (url: string) => {
-        // createCustomDomain({
-        //     domain: url,
-        //     projectId: editorEngine.projectId,
-        // });
-        // setStatus(VerificationStatus.VERIFIED);
-        // setDomain(url);
-        // setError(null);
-        // handleDomainVerified();
-        // sendAnalytics('add custom domain success', {
-        //     domain: url,
-        // });
+    const addExistingDomain = async (url: string) => {
+        setIsLoading(true);
+        await reuseDomain(url);
+        setIsLoading(false);
     };
 
     return (
         <div className="flex flex-col gap-2 flex-1">
+            {ownedDomains.length > 0 && (
+                <p className="text-small text-muted-foreground">
+                    You previously used these domains:
+                </p>
+            )}
             {ownedDomains.map((domain) => (
                 <div
                     key={domain}
@@ -117,8 +115,12 @@ export const ExistingDomains = () => {
                         onClick={() => {
                             addExistingDomain(domain);
                         }}
+                        disabled={isLoading}
                     >
-                        Use Domain
+                        {isLoading && (
+                            <Icons.LoadingSpinner className="h-4 w-4 animate-spin mr-2" />
+                        )}
+                        Reuse Domain
                     </Button>
                 </div>
             ))}

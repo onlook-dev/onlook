@@ -1,4 +1,5 @@
-import { projectCustomDomains, toDomainInfoFromPublished } from '@onlook/db';
+import { projectCustomDomains, toDomainInfoFromPublished, userProjects } from '@onlook/db';
+import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -17,5 +18,30 @@ export const customRouter = createTRPCRouter({
         projectId: z.string(),
     })).mutation(async ({ ctx, input }) => {
         await ctx.db.delete(projectCustomDomains).where(eq(projectCustomDomains.fullDomain, input.domain));
+    }),
+    getOwnedDomains: protectedProcedure.query(async ({ ctx }): Promise<string[]> => {
+        const user = ctx.user;
+        if (!user) {
+            throw new TRPCError({
+                code: 'UNAUTHORIZED',
+                message: 'Unauthorized',
+            });
+        }
+
+        const foundUserProjects = await ctx.db.query.userProjects.findMany({
+            where: eq(userProjects.userId, user.id),
+            with: {
+                project: {
+                    with: {
+                        projectCustomDomains: true,
+                    },
+                }
+            },
+        });
+
+        const ownedDomains = foundUserProjects.flatMap(
+            userProject => userProject.project.projectCustomDomains.map(domain => domain.fullDomain),
+        );
+        return ownedDomains;
     }),
 });

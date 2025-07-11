@@ -21,6 +21,7 @@ interface DomainVerificationContextType {
     verificationState: VerificationState;
     error: string | null;
     ownedDomains: string[];
+    reuseDomain: (domain: string) => Promise<void>;
     createVerificationRequest: () => Promise<void>;
     removeVerificationRequest: () => Promise<void>;
     verifyVerificationRequest: () => Promise<void>;
@@ -30,7 +31,6 @@ const DomainVerificationContext = createContext<DomainVerificationContextType | 
 
 export const DomainVerificationProvider = ({ children }: { children: ReactNode }) => {
     const editorEngine = useEditorEngine();
-    const ownedDomains: string[] = [];
 
     const [verificationState, setVerificationState] = useState(VerificationState.INPUTTING_DOMAIN);
     const [error, setError] = useState<string | null>(null);
@@ -40,7 +40,8 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
     const { mutateAsync: removeDomainVerification } = api.domain.verification.remove.useMutation();
     const { mutateAsync: verifyDomain } = api.domain.verification.verify.useMutation();
-
+    const { data: ownedDomains = [] } = api.domain.custom.getOwnedDomains.useQuery();
+    const { mutateAsync: verifyOwnedDomain } = api.domain.verification.verifyOwnedDomain.useMutation();
     const [domainInput, setDomainInput] = useState(verification?.fullDomain ?? '');
 
     useEffect(() => {
@@ -71,6 +72,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             return;
         }
         await refetchVerification();
+        setError(null);
     };
 
     const removeVerificationRequest = async () => {
@@ -83,6 +85,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
         });
         await refetchVerification();
         setVerificationState(VerificationState.INPUTTING_DOMAIN);
+        setError(null);
     };
 
     const verifyVerificationRequest = async () => {
@@ -104,6 +107,25 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
         setVerificationState(VerificationState.VERIFIED);
         setError(null);
     };
+
+    const reuseDomain = async (domain: string) => {
+        setError(null);
+        const {
+            success,
+            failureReason,
+        } = await verifyOwnedDomain({
+            fullDomain: domain,
+            projectId: editorEngine.projectId,
+        });
+        if (!success || failureReason) {
+            setError(failureReason ?? 'Failed to reuse domain');
+            return;
+        }
+        await refetchVerification();
+        setVerificationState(VerificationState.VERIFIED);
+        setError(null);
+    };
+
     return (
         <DomainVerificationContext.Provider value={{
             domainInput,
@@ -116,6 +138,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             verificationState,
             error,
             ownedDomains,
+            reuseDomain,
         }}>
             {children}
         </DomainVerificationContext.Provider>

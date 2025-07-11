@@ -1,11 +1,11 @@
 import { FREESTYLE_IP_ADDRESS, FRESTYLE_CUSTOM_HOSTNAME } from '@onlook/constants';
-import { customDomains, customDomainVerification, projectCustomDomains, type CustomDomain, type CustomDomainVerification } from '@onlook/db';
+import { customDomains, customDomainVerification, projectCustomDomains, userProjects, type CustomDomain, type CustomDomainVerification } from '@onlook/db';
 import type { DrizzleDb } from '@onlook/db/src/client';
 import { VerificationRequestStatus, type AVerificationRecord } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { promises as dns } from 'dns';
 import { and, eq, or } from 'drizzle-orm';
-import type { HandleVerifyDomainResponse } from 'freestyle-sandboxes';
+import { type HandleVerifyDomainError, type HandleVerifyDomainResponse } from 'freestyle-sandboxes';
 import { parse } from 'psl';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -100,7 +100,70 @@ export const verificationRouter = createTRPCRouter({
             failureReason: null,
         };
     }),
+    verifyOwnedDomain: protectedProcedure.input(z.object({
+        fullDomain: z.string(),
+        projectId: z.string(),
+    })).mutation(async ({ ctx, input }): Promise<{
+        success: boolean;
+        failureReason: string | null;
+    }> => {
+        const user = ctx.user;
+        if (!user) {
+            throw new TRPCError({
+                code: 'UNAUTHORIZED',
+                message: 'Unauthorized',
+            });
+        }
+        const ownsDomain = await ensureUserOwnsDomain(ctx.db, user.id, input.fullDomain);
+        if (!ownsDomain) {
+            return {
+                success: false,
+                failureReason: 'User does not own domain',
+            };
+        }
+        const { customDomain, subdomain } = await getCustomDomain(ctx.db, input.fullDomain);
+        const verifiedDomain = await verifyFreestyleDomainWithCustomDomain(customDomain.apexDomain);
+        if (!verifiedDomain) {
+            return {
+                success: false,
+                failureReason: 'Failed to verify domain with Freestyle hosting provider. Please contact support as this is likely an issue with Freestyle.',
+            };
+        }
+        const [projectCustomDomain] = await ctx.db.insert(projectCustomDomains).values({
+            projectId: input.projectId,
+            fullDomain: verifiedDomain,
+            customDomainId: customDomain.id,
+        });
+        if (!projectCustomDomain) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Failed to create project custom domain',
+            });
+        }
+        return {
+            success: true,
+            failureReason: null,
+        };
+    }),
 });
+
+const ensureUserOwnsDomain = async (db: DrizzleDb, userId: string, domain: string): Promise<boolean> => {
+    const foundUserProjects = await db.query.userProjects.findMany({
+        where: eq(userProjects.userId, userId),
+        with: {
+            project: {
+                with: {
+                    projectCustomDomains: true,
+                },
+            }
+        },
+    });
+
+    const ownedDomains = foundUserProjects.flatMap(
+        userProject => userProject.project.projectCustomDomains.map(domain => domain.fullDomain),
+    );
+    return ownedDomains.includes(domain);
+};
 
 async function getCustomDomain(db: DrizzleDb, domain: string): Promise<{ customDomain: CustomDomain, subdomain: string | null }> {
     const parsedDomain = parse(domain);
@@ -232,6 +295,32 @@ const verifyFreestyleDomain = async (verificationId: string): Promise<string | n
     }
 }
 
+const verifyFreestyleDomainWithCustomDomain = async (domain: string): Promise<string | null> => {
+    try {
+        const sdk = initializeFreestyleSdk();
+        const res = await sdk.verifyDomain(domain) as HandleVerifyDomainResponse & HandleVerifyDomainError & { domain: string | null, message: string | null };
+        if (!res.domain) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: res.message ?? 'Failed to verify domain',
+            });
+        }
+
+        const verifiedDomain = res.domain;
+        if (!verifiedDomain) {
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: 'Domain not found',
+            });
+        }
+
+        return verifiedDomain;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
 const getFailureReason = async (verification: CustomDomainVerification): Promise<string> => {
     const errors: string[] = [];
     const txtRecord = verification.txtRecord;
@@ -269,6 +358,7 @@ const getFailureReason = async (verification: CustomDomainVerification): Promise
         }
     }
 
+    errors.push('DNS records may take up to 24 hours to update');
     return errors.join('\n\n');
 };
 
