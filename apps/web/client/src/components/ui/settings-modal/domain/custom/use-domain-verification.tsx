@@ -102,6 +102,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
         }
         await refetchVerification();
         setVerificationState(VerificationState.VERIFIED);
+        setError(null);
     };
     return (
         <DomainVerificationContext.Provider value={{

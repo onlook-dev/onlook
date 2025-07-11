@@ -235,7 +235,7 @@ const verifyFreestyleDomain = async (verificationId: string): Promise<string | n
 const getFailureReason = async (verification: CustomDomainVerification): Promise<string> => {
     const errors: string[] = [];
     const txtRecord = verification.txtRecord;
-    const txtRecordResponse = await isTxtRecordPresent(txtRecord.name, txtRecord.value);
+    const txtRecordResponse = await isTxtRecordPresent(verification.fullDomain, txtRecord.name, txtRecord.value);
 
     if (!txtRecordResponse.isPresent) {
         let txtError = `TXT Record Missing:\n`;
@@ -253,7 +253,7 @@ const getFailureReason = async (verification: CustomDomainVerification): Promise
 
     const aRecords = verification.aRecords;
     for (const aRecord of aRecords) {
-        const aRecordResponse = await isARecordPresent(aRecord.name, aRecord.value);
+        const aRecordResponse = await isARecordPresent(verification.fullDomain, aRecord.value);
         if (!aRecordResponse.isPresent) {
             let aError = `A Record Missing:\n`;
             aError += `    Expected:\n`;
@@ -272,12 +272,21 @@ const getFailureReason = async (verification: CustomDomainVerification): Promise
     return errors.join('\n\n');
 };
 
-export async function isTxtRecordPresent(name: string, expectedValue: string): Promise<{
+export async function isTxtRecordPresent(fullDomain: string, name: string, expectedValue: string): Promise<{
     isPresent: boolean;
     foundRecords: string[];
 }> {
     try {
-        const records = await dns.resolveTxt(name);
+        const parsedDomain = parse(fullDomain);
+        if (parsedDomain.error) {
+            return {
+                isPresent: false,
+                foundRecords: [],
+            };
+        }
+
+        const domain = parsedDomain.domain ?? fullDomain;
+        const records = await dns.resolveTxt(`${name}.${domain}`);
         const foundRecords = records.map(entry => entry.join(''));
         return {
             isPresent: foundRecords.includes(expectedValue),
