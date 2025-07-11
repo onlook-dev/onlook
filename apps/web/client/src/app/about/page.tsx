@@ -7,8 +7,8 @@ import { vujahdayScript } from '../fonts';
 import { ButtonLink } from '../_components/button-link';
 import { useGitHubStats } from '../_components/top-bar/github';
 import { useParallaxCursor } from '../../hooks/use-parallax-cursor';
-import { motion, useInView } from 'framer-motion';
-import { useRef, useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 export default function AboutPage() {
     const { raw: starCount, contributors } = useGitHubStats();
@@ -27,37 +27,17 @@ export default function AboutPage() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
     
-    // Refs for each section
-    const heroRef = useRef(null);
-    const foundersRef = useRef(null);
-    const headquartersRef = useRef(null);
-    const valuesRef = useRef(null);
-    const lookForRef = useRef(null);
-    const processRef = useRef(null);
-    
-    // In view states with responsive delay
-    const heroInView = useInView(heroRef, { once: true, margin: "-100px 0px -100px 0px", amount: 0.3 });
-    const foundersInView = useInView(foundersRef, { once: true, margin: "-100px 0px -100px 0px", amount: 0.3 });
-    const headquartersInView = useInView(headquartersRef, { 
-        once: true, 
-        margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
-        amount: isMobile ? 0.1 : 0.3 
-    });
-    const valuesInView = useInView(valuesRef, { once: true, margin: "-100px 0px -100px 0px", amount: 0.3 });
-    const lookForInView = useInView(lookForRef, { once: true, margin: "-100px 0px -100px 0px", amount: 0.3 });
-    const processInView = useInView(processRef, { once: true, margin: "-100px 0px -100px 0px", amount: 0.3 });
-
-    
     return (
         <WebsiteLayout showFooter={true}>
             <main className="bg-background text-foreground-primary">
                 {/* Hero Section */}
-                <section ref={heroRef} className="py-64 bg-black text-foreground-primary">
+                <section className="py-64 bg-black text-foreground-primary">
                     <div className="max-w-6xl mx-auto px-8">
                         <motion.h1
                             className="text-6xl font-light leading-tight mb-24 text-left"
                             initial={{ opacity: 0, filter: "blur(4px)" }}
-                            animate={heroInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                            whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                            viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                             transition={{ duration: 0.6, ease: "easeOut" }}
                             style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                         >
@@ -68,7 +48,8 @@ export default function AboutPage() {
                         <motion.div
                             className="block lg:hidden mb-24"
                             initial={{ opacity: 0, filter: "blur(4px)" }}
-                            animate={heroInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                            whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                            viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                             transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
                             style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                         >
@@ -95,7 +76,8 @@ export default function AboutPage() {
                             <motion.div
                                 className=" max-w-lg text-left"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={heroInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -109,7 +91,8 @@ export default function AboutPage() {
                             <motion.div
                                 className="flex flex-col mt-12 lg:mt-0 hidden lg:block md:w-[340px] md:ml-auto"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={heroInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -137,13 +120,14 @@ export default function AboutPage() {
 
             
                 {/* Meet the Founders Section */}
-                <section ref={foundersRef} className="py-48">
+                <section className="py-48">
                     <div className="max-w-6xl mx-auto px-8">
                         <div className="text-left mb-24">
                             <motion.h2
                                 className="text-7xl font-light leading-tight mb-12 text-left"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={foundersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -152,7 +136,8 @@ export default function AboutPage() {
                             <motion.p
                                 className="text-lg md:text-large font-light text-foreground-secondary max-w-xl mt-8 mb-12 text-balance"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={foundersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -161,7 +146,8 @@ export default function AboutPage() {
                             <motion.div
                                 className="flex justify-start mt-8"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={foundersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -175,7 +161,8 @@ export default function AboutPage() {
                             <motion.div
                                 className="flex gap-8 items-start rounded-2xl"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={foundersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -201,7 +188,8 @@ export default function AboutPage() {
                             <motion.div
                                 className="flex gap-8 items-start rounded-2xl"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={foundersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.9, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -224,21 +212,19 @@ export default function AboutPage() {
                                 </div>
                             </motion.div>
                         </div>
-                        <div className="text-left mt-24">
-                            
-                        </div>
                     </div>
                 </section>
 
                 {/* Creative Headquarters Section */}
-                <section ref={headquartersRef} className="relative w-full min-h-[80vh] bg-black flex flex-col items-center justify-center py-20 md:py-80 overflow-x-clip">
+                <section className="relative w-full min-h-[80vh] bg-black flex flex-col items-center justify-center py-20 md:py-80 overflow-x-clip">
                     <div className="w-full mx-auto flex flex-col gap-16 md:gap-36 px-3 md:px-0">
                         {/* Title Section */}
                         <div className="flex max-w-5xl mx-auto flex-col md:flex-row items-center justify-between w-full relative">
                             <motion.div
                                 className="pl-0 md:pl-12 mb-12 md:mb-0 w-full pl-4"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={headquartersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -255,7 +241,8 @@ export default function AboutPage() {
                                     transform: `translate(${parallax.x * 60}px, ${parallax.y * 45}px)`
                                 }}
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={headquartersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
                             />
                         </div>
@@ -263,40 +250,62 @@ export default function AboutPage() {
                         {/* Mobile Image Gallery - Creative Layout */}
                         <div className="md:hidden w-full">
                             {/* Mobile Grid Layout */}
-                            <motion.div
-                                className="grid grid-cols-1 gap-4 mb-4"
-                                initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={headquartersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
-                                transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
-                                style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                            >
+                            <div className="grid grid-cols-1 gap-4 mb-4">
                                 {/* Top row - 2 images */}
                                 <div className="space-y-4">
-                                    <img 
+                                    <motion.img 
                                         src="/assets/about-office-1.png" 
                                         alt="Office space" 
                                         className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
+                                        initial={{ opacity: 0, filter: "blur(4px)" }}
+                                        whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                        viewport={{ 
+                                            once: true, 
+                                            margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
+                                            amount: isMobile ? 0.1 : 0.3 
+                                        }}
+                                        transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
+                                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                     />
-                                    <img 
+                                    <motion.img 
                                         src="/assets/about-office-3.png" 
                                         alt="Office space" 
                                         className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
+                                        initial={{ opacity: 0, filter: "blur(4px)" }}
+                                        whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                        viewport={{ 
+                                            once: true, 
+                                            margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
+                                            amount: isMobile ? 0.1 : 0.3 
+                                        }}
+                                        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                     />
                                 </div>
                                 <div className="space-y-4">
-                                    <img 
+                                    <motion.img 
                                         src="/assets/about-office-2.png" 
                                         alt="Office space" 
                                         className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
+                                        initial={{ opacity: 0, filter: "blur(4px)" }}
+                                        whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                        viewport={{ 
+                                            once: true, 
+                                            margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
+                                            amount: isMobile ? 0.1 : 0.3 
+                                        }}
+                                        transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+                                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                     />
                                 </div>
-                            </motion.div>
+                            </div>
                             
                             {/* Earn your stake text after third image */}
                             <motion.div
                                 className="flex flex-col items-start justify-center text-white text-left px-12 py-48 mb-4"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={headquartersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -307,24 +316,36 @@ export default function AboutPage() {
                             </motion.div>
                             
                             {/* Bottom centered image */}
-                            <motion.div
-                                className="flex flex-col justify-center gap-4"
-                                initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={headquartersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
-                                transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-                                style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                            >
-                                <img 
+                            <div className="flex flex-col justify-center gap-4">
+                                <motion.img 
                                     src="/assets/about-office-5.png" 
                                     alt="Office space" 
                                     className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
+                                    initial={{ opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ 
+                                        once: true, 
+                                        margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
+                                        amount: isMobile ? 0.1 : 0.3 
+                                    }}
+                                    transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+                                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                 />
-                                <img 
-                                        src="/assets/about-office-4.png" 
-                                        alt="Office space" 
+                                <motion.img 
+                                    src="/assets/about-office-4.png" 
+                                    alt="Office space" 
                                     className="w-full h-100 object-cover transition-transform duration-300 ease-out pointer-events-none select-none" 
+                                    initial={{ opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ 
+                                        once: true, 
+                                        margin: isMobile ? "-50px 0px -50px 0px" : "-100px 0px -100px 0px", 
+                                        amount: isMobile ? 0.1 : 0.3 
+                                    }}
+                                    transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
+                                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                 />
-                            </motion.div>
+                            </div>
                         </div>
 
                         {/* Desktop Layout - Hidden on Mobile */}
@@ -339,13 +360,15 @@ export default function AboutPage() {
                                         transform: `translate(${parallax.x * -50}px, ${parallax.y * 80}px)`
                                     }}
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={headquartersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
                                 />
                                 <motion.div
                                     className="flex flex-col items-start justify-center text-white text-regular text-left min-w-[400px] px-8 relative left-24"
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={headquartersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
                                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                 >
@@ -362,7 +385,8 @@ export default function AboutPage() {
                                         transform: `translate(${parallax.x * 55}px, ${parallax.y * -40}px)`
                                     }}
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={headquartersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
                                 />
                             </div>
@@ -374,13 +398,18 @@ export default function AboutPage() {
                                         transform: `translate(${parallax.x * -70}px, ${parallax.y * 60}px)`
                                     }}
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={headquartersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
                                 >
-                                    <img
+                                    <motion.img
                                         src="/assets/about-office-4.png"
                                         alt="Office space"
                                         className="w-full h-full object-cover pointer-events-none select-none"
+                                        initial={{ opacity: 0, filter: "blur(4px)" }}
+                                        whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                        viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
+                                        transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
                                     />
                                 </motion.div>
                                 <motion.img 
@@ -390,7 +419,8 @@ export default function AboutPage() {
                                     style={{
                                         transform: `translate(${parallax.x * 65}px, ${parallax.y * -65}px)`                                    }}
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={headquartersInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
                                 />
                             </div>
@@ -402,12 +432,13 @@ export default function AboutPage() {
 
 
                 {/* Values Section */}
-                <section ref={valuesRef} className="py-60 bg-black text-foreground-primary">
+                <section className="py-60 bg-black text-foreground-primary">
                     <div className="max-w-6xl mx-auto px-8">
                         <motion.h2
                             className="text-7xl font-light leading-tight mb-20 text-left"
                             initial={{ opacity: 0, filter: "blur(4px)" }}
-                            animate={valuesInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                            whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                            viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                             transition={{ duration: 0.6, ease: "easeOut" }}
                             style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                         >
@@ -418,7 +449,8 @@ export default function AboutPage() {
                             <motion.div
                                 className="flex flex-col items-start text-left"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={valuesInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -430,7 +462,8 @@ export default function AboutPage() {
                             <motion.div
                                 className="flex flex-col items-start text-left"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={valuesInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -442,7 +475,8 @@ export default function AboutPage() {
                             <motion.div
                                 className="flex flex-col items-start text-left"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={valuesInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -454,7 +488,8 @@ export default function AboutPage() {
                             <motion.div
                                 className="flex flex-col items-start text-left"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={valuesInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -466,7 +501,8 @@ export default function AboutPage() {
                         <motion.div
                             className="flex justify-start"
                             initial={{ opacity: 0, filter: "blur(4px)" }}
-                            animate={valuesInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                            whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                            viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                             transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
                             style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                         >
@@ -478,12 +514,13 @@ export default function AboutPage() {
                 </section>
 
                 {/* What we look for Section */}
-                <section ref={lookForRef} className="py-56 bg-black text-foreground-primary">
+                <section className="py-56 bg-black text-foreground-primary">
                     <div className="max-w-6xl mx-auto px-8">
                         <motion.h2
                             className="text-7xl font-light leading-tight mb-20 text-left"
                             initial={{ opacity: 0, filter: "blur(4px)" }}
-                            animate={lookForInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                            whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                            viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                             transition={{ duration: 0.6, ease: "easeOut" }}
                             style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                         >
@@ -494,34 +531,37 @@ export default function AboutPage() {
                             <motion.div
                                 className="flex flex-col items-start text-left"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={lookForInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
                                 <h3 className="text-title3 font-normal mb-4">Commitment</h3>
-                                <p className="text-foreground-secondary text-regular font-light text-balance">Have you put real time into something you cared about? We're looking for builders who've made long-term bets on themselves.</p>
+                                <p className="text-foreground-secondary text-lg md:text-large font-light text-balance">Have you put real time into something you cared about? We're looking for builders who've made long-term bets on themselves.</p>
                             </motion.div>
                             {/* Passion */}
                             <motion.div
                                 className="flex flex-col items-start text-left"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={lookForInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
                                 <h3 className="text-title3 font-normal mb-4">Passion</h3>
-                                <p className="text-foreground-secondary text-regular font-light text-balance">We're allergic to apathy. We want people who give a damn about design, devtools, or AI – and have receipts.</p>
+                                <p className="text-foreground-secondary text-lg md:text-large font-light text-balance">We're allergic to apathy. We want people who give a damn about design, devtools, or AI – and have receipts.</p>
                             </motion.div>
                             {/* Excellence */}
                             <motion.div
                                 className="flex flex-col items-start text-left"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={lookForInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
                                 <h3 className="text-title3 font-normal mb-4">Excellence</h3>
-                                <p className="text-foreground-secondary text-regular font-light text-balance">Bring something rare. We want people who are world-class at something and won't compromise.</p>
+                                <p className="text-foreground-secondary text-lg md:text-large font-light text-balance">Bring something rare. We want people who are world-class at something and won't compromise.</p>
                             </motion.div>
                         </div>
                     </div>
@@ -529,14 +569,15 @@ export default function AboutPage() {
 
 
                 {/* Our Process Section */}
-                <section ref={processRef}  className="py-56 bg-black text-foreground-primary">
+                <section className="py-56 bg-black text-foreground-primary">
                     <div className="max-w-6xl mx-auto px-8 flex flex-col md:flex-row justify-between gap-32">
                         {/* Left: Title and CTA */}
                         <div className="flex flex-col items-start justify-start mb-16 md:mb-0">
                             <motion.h2
                                 className="text-7xl font-light leading-tight mb-12 text-left"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={processInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -544,7 +585,8 @@ export default function AboutPage() {
                             </motion.h2>
                             <motion.div
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={processInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             >
@@ -559,7 +601,8 @@ export default function AboutPage() {
                             <motion.div
                                 className="absolute left-0 top-2 bottom-22 w-px bg-foreground-primary/20 z-0"
                                 initial={{ opacity: 0, filter: "blur(4px)" }}
-                                animate={processInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
                                 style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                             />
@@ -570,84 +613,90 @@ export default function AboutPage() {
                                 <motion.div
                                     className="flex flex-row items-start mb-16 relative"
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={processInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
                                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                 >
                                     <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
                                     <div className="ml-12">
-                                        <div className="mb-1 text-lg">Apply directly</div>
-                                        <div className="text-foreground-secondary text-regular text-balance">Send in your application and a link to a project you've made. For extra initative, tackle an issue on GitHub and add it in your application.</div>
+                                        <div className="mb-3 text-title3 md:text-lg">Apply directly</div>
+                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Send in your application and a link to a project you've made. For extra initative, tackle an issue on GitHub and add it in your application.</div>
                                     </div>
                                 </motion.div>
                                 {/* Step 2: Screening call */}
                                 <motion.div
                                     className="flex flex-row items-start mb-16 relative"
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={processInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
                                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                 >
                                     <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
                                     <div className="ml-12">
-                                        <div className="mb-1 text-lg">Screening call with each of the Founders</div>
-                                        <div className="text-foreground-secondary text-regular text-balance">Walk us through your history, share your experience, and help us understand who you are.</div>
+                                        <div className="mb-3 text-title3 md:text-lg">Screening call with each of the Founders</div>
+                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Walk us through your history, share your experience, and help us understand who you are.</div>
                                     </div>
                                 </motion.div>
                                 {/* Step 3: Technical interview */}
                                 <motion.div
                                     className="flex flex-row items-start mb-16 relative"
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={processInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
                                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                 >
                                     <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
                                     <div className="ml-12">
-                                        <div className="mb-1 text-lg">Technical interview</div>
-                                        <div className="text-foreground-secondary text-regular text-balance">We'll ask about the projects you've built and do a deep-dive into your implementation and the decisions you've made.</div>
+                                        <div className="mb-3 text-title3 md:text-lg">Technical interview</div>
+                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">We'll ask about the projects you've built and do a deep-dive into your implementation and the decisions you've made.</div>
                                     </div>
                                 </motion.div>
                                 {/* Step 4: Two reference calls */}
                                 <motion.div
                                     className="flex flex-row items-start mb-16 relative"
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={processInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
                                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                 >
                                     <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
                                     <div className="ml-12">
-                                        <div className="mb-1 text-lg">Two reference calls</div>
-                                        <div className="text-foreground-secondary text-regular text-balance">Connect us with trusted managers or colleagues who can vouch for your work.</div>
+                                        <div className="mb-3 text-title3 md:text-lg">Reference calls</div>
+                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Connect us with trusted managers or colleagues who can vouch for your work.</div>
                                     </div>
                                 </motion.div>
                                 {/* Step 5: Paid work trial */}
                                 <motion.div
                                     className="flex flex-row items-start mb-16 relative"
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={processInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
                                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                 >
                                     <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
                                     <div className="ml-12">
-                                        <div className="mb-1 text-lg">Paid work trial</div>
-                                        <div className="text-foreground-secondary text-regular text-balance">Collaborate with us on a problem and get a feel for what it's like to work with the team at Onlook.</div>
+                                        <div className="mb-3 text-title3 md:text-lg">Paid work trial</div>
+                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Collaborate with us on a problem and get a feel for what it's like to work with the team at Onlook.</div>
                                     </div>
                                 </motion.div>
                                 {/* Step 6: Offer */}
                                 <motion.div
                                     className="flex flex-row items-start relative"
                                     initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    animate={processInView ? { opacity: 1, filter: "blur(0px)" } : { opacity: 0, filter: "blur(4px)" }}
+                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
                                     transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
                                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                                 >
                                     <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
                                     <div className="ml-12">
-                                        <div className="mb-1 text-lg">Offer</div>
-                                        <div className="text-foreground-secondary text-regular text-balance">Sign and become a full-time member of the Odyssey. Pick up your laptop, put on your jacket, and get ready to craft a beloved design tool.</div>
+                                        <div className="mb-3 text-title3 md:text-lg">Offer</div>
+                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Sign and become a full-time member of the Odyssey. Pick up your laptop, put on your jacket, and get ready to craft a beloved design tool.</div>
                                     </div>
                                 </motion.div>
                             </div>
