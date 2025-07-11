@@ -3,7 +3,6 @@ import { jsonb, pgEnum, pgTable, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { projects } from './project';
 
-
 export const projectCreateStatus = pgEnum('project_create_status', ProjectCreateRequestStatus);
 
 export const projectCreateRequests = pgTable(

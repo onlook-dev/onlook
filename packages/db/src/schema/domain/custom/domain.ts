@@ -1,7 +1,4 @@
-import { relations } from 'drizzle-orm';
 import { boolean, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { projectCustomDomains } from './project-custom-domain';
-import { customDomainVerification } from './verification';
 
 export const customDomains = pgTable('custom_domains', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -10,10 +7,5 @@ export const customDomains = pgTable('custom_domains', {
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }).enableRLS();
-
-export const customDomainRelations = relations(customDomains, ({ many }) => ({
-    projectCustomDomains: many(projectCustomDomains),
-    verificationRequests: many(customDomainVerification),
-}));
 
 export type CustomDomain = typeof customDomains.$inferSelect;

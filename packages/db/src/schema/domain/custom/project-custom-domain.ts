@@ -12,7 +12,7 @@ export enum ProjectCustomDomainStatus {
 
 export const projectCustomDomainStatusEnum = pgEnum('project_custom_domain_status', ProjectCustomDomainStatus);
 
-export const projectCustomDomains = pgTable('project_custom_domains', {
+export const published_domains = pgTable('published_domains', {
     fullDomain: text('full_domain').notNull(),
     customDomainId: uuid('custom_domain_id').notNull().references(() => customDomains.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     projectId: uuid('project_id').notNull().references(() => projects.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
@@ -22,16 +22,16 @@ export const projectCustomDomains = pgTable('project_custom_domains', {
 }, (table) => [primaryKey({ columns: [table.customDomainId, table.projectId] })],
 ).enableRLS();
 
-export const projectCustomDomainRelation = relations(projectCustomDomains, ({ one }) => ({
+export const projectCustomDomainRelation = relations(published_domains, ({ one }) => ({
     customDomain: one(customDomains, {
-        fields: [projectCustomDomains.customDomainId],
+        fields: [published_domains.customDomainId],
         references: [customDomains.id],
     }),
     project: one(projects, {
-        fields: [projectCustomDomains.projectId],
+        fields: [published_domains.projectId],
         references: [projects.id],
         relationName: PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME,
     }),
 }));
 
-export type ProjectCustomDomain = typeof projectCustomDomains.$inferSelect;
+export type ProjectCustomDomain = typeof published_domains.$inferSelect;
