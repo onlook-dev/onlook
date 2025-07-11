@@ -8,7 +8,7 @@ import { ButtonLink } from '../_components/button-link';
 import { useGitHubStats } from '../_components/top-bar/github';
 import { useParallaxCursor } from '../../hooks/use-parallax-cursor';
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 
 export default function AboutPage() {
     const { raw: starCount, contributors } = useGitHubStats();
@@ -25,6 +25,27 @@ export default function AboutPage() {
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+    
+    // Timeline line dynamic positioning
+    const timelineContainerRef = useRef<HTMLDivElement>(null);
+    const firstSquareRef = useRef<HTMLDivElement>(null);
+    const lastSquareRef = useRef<HTMLDivElement>(null);
+    const [lineStyle, setLineStyle] = useState<{ top: number; height: number }>({ top: 0, height: 0 });
+
+    useLayoutEffect(() => {
+        function updateLine() {
+            if (!timelineContainerRef.current || !firstSquareRef.current || !lastSquareRef.current) return;
+            const containerRect = timelineContainerRef.current.getBoundingClientRect();
+            const firstRect = firstSquareRef.current.getBoundingClientRect();
+            const lastRect = lastSquareRef.current.getBoundingClientRect();
+            const top = firstRect.top + firstRect.height / 2 - containerRect.top;
+            const bottom = lastRect.top + lastRect.height / 2 - containerRect.top;
+            setLineStyle({ top, height: bottom - top });
+        }
+        updateLine();
+        window.addEventListener('resize', updateLine);
+        return () => window.removeEventListener('resize', updateLine);
     }, []);
     
     return (
@@ -597,108 +618,110 @@ export default function AboutPage() {
                         </div>
                         {/* Right: Timeline */}
                         <div className="relative max-w-[500px]">
-                            {/* Timeline vertical line (left-aligned) */}
-                            <motion.div
-                                className="absolute left-0 top-2 bottom-22 w-px bg-foreground-primary/20 z-0"
-                                initial={{ opacity: 0, filter: "blur(4px)" }}
-                                whileInView={{ opacity: 1, filter: "blur(0px)" }}
-                                viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
-                                transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
-                                style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                            />
-                            {/* Vertical shimmer overlay */}
-                            <div className="absolute left-0 top-2 bottom-22 w-px bg-gradient-to-b from-transparent via-white/60 to-transparent bg-[length:100%_200%] animate-shimmer-vertical z-10" />
-                            <div className="relative z-10 flex flex-col gap-0">
-                                {/* Step 1: Apply directly */}
-                                <motion.div
-                                    className="flex flex-row items-start mb-16 relative"
-                                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
-                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
-                                    transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-                                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                                >
-                                    <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
-                                    <div className="ml-12">
-                                        <div className="mb-3 text-title3 md:text-lg">Apply directly</div>
-                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Send in your application and a link to a project you've made. For extra initiative, tackle an issue on GitHub and add it in your application.</div>
-                                    </div>
-                                </motion.div>
-                                {/* Step 2: Screening call */}
-                                <motion.div
-                                    className="flex flex-row items-start mb-16 relative"
-                                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
-                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
-                                    transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-                                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                                >
-                                    <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
-                                    <div className="ml-12">
-                                        <div className="mb-3 text-title3 md:text-lg">Screening call with each of the Founders</div>
-                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Walk us through your history, share your experience, and help us understand who you are.</div>
-                                    </div>
-                                </motion.div>
-                                {/* Step 3: Technical interview */}
-                                <motion.div
-                                    className="flex flex-row items-start mb-16 relative"
-                                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
-                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
-                                    transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-                                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                                >
-                                    <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
-                                    <div className="ml-12">
-                                        <div className="mb-3 text-title3 md:text-lg">Technical interview</div>
-                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">We'll ask about the projects you've built and do a deep-dive into your implementation and the decisions you've made.</div>
-                                    </div>
-                                </motion.div>
-                                {/* Step 4: Two reference calls */}
-                                <motion.div
-                                    className="flex flex-row items-start mb-16 relative"
-                                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
-                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
-                                    transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
-                                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                                >
-                                    <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
-                                    <div className="ml-12">
-                                        <div className="mb-3 text-title3 md:text-lg">Reference calls</div>
-                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Connect us with trusted managers or colleagues who can vouch for your work.</div>
-                                    </div>
-                                </motion.div>
-                                {/* Step 5: Paid work trial */}
-                                <motion.div
-                                    className="flex flex-row items-start mb-16 relative"
-                                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
-                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
-                                    transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-                                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                                >
-                                    <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
-                                    <div className="ml-12">
-                                        <div className="mb-3 text-title3 md:text-lg">Paid work trial</div>
-                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Collaborate with us on a problem and get a feel for what it's like to work with the team at Onlook.</div>
-                                    </div>
-                                </motion.div>
-                                {/* Step 6: Offer */}
-                                <motion.div
-                                    className="flex flex-row items-start relative"
-                                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                                    whileInView={{ opacity: 1, filter: "blur(0px)" }}
-                                    viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
-                                    transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
-                                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                                >
-                                    <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
-                                    <div className="ml-12">
-                                        <div className="mb-3 text-title3 md:text-lg">Offer</div>
-                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Sign and become a full-time member of the Odyssey. Pick up your laptop, put on your jacket, and get ready to craft a beloved design tool.</div>
-                                    </div>
-                                </motion.div>
+                            {/* Timeline vertical line and steps container */}
+                            <div className="relative flex flex-col" ref={timelineContainerRef}>
+                                {/* Timeline vertical line (dynamically positioned) */}
+                                <div
+                                    className="absolute left-0 w-px bg-foreground-primary/20 z-0"
+                                    style={{ top: lineStyle.top, height: lineStyle.height }}
+                                />
+                                {/* Vertical shimmer overlay */}
+                                <div
+                                    className="absolute left-0 w-px bg-gradient-to-b from-transparent via-white/60 to-transparent bg-[length:100%_200%] animate-shimmer-vertical z-10"
+                                    style={{ top: lineStyle.top, height: lineStyle.height }}
+                                />
+                                <div className="relative z-10 flex flex-col gap-0">
+                                    {/* Step 1: Apply directly */}
+                                    <motion.div
+                                        className="flex flex-row items-start mb-16 relative"
+                                        initial={{ opacity: 0, filter: "blur(4px)" }}
+                                        whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                        viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
+                                        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                                    >
+                                        <div ref={firstSquareRef} className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
+                                        <div className="ml-12">
+                                            <div className="mb-3 text-title3 md:text-lg">Apply directly</div>
+                                            <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Send in your application and a link to a project you've made. For extra initiative, tackle an issue on GitHub and add it in your application.</div>
+                                        </div>
+                                    </motion.div>
+                                    {/* Step 2: Screening call */}
+                                    <motion.div
+                                        className="flex flex-row items-start mb-16 relative"
+                                        initial={{ opacity: 0, filter: "blur(4px)" }}
+                                        whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                        viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
+                                        transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+                                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                                    >
+                                        <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
+                                        <div className="ml-12">
+                                            <div className="mb-3 text-title3 md:text-lg">Screening call with each of the Founders</div>
+                                            <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Walk us through your history, share your experience, and help us understand who you are.</div>
+                                        </div>
+                                    </motion.div>
+                                    {/* Step 3: Technical interview */}
+                                    <motion.div
+                                        className="flex flex-row items-start mb-16 relative"
+                                        initial={{ opacity: 0, filter: "blur(4px)" }}
+                                        whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                        viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
+                                        transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+                                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                                    >
+                                        <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
+                                        <div className="ml-12">
+                                            <div className="mb-3 text-title3 md:text-lg">Technical interview</div>
+                                            <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">We'll ask about the projects you've built and do a deep-dive into your implementation and the decisions you've made.</div>
+                                        </div>
+                                    </motion.div>
+                                    {/* Step 4: Two reference calls */}
+                                    <motion.div
+                                        className="flex flex-row items-start mb-16 relative"
+                                        initial={{ opacity: 0, filter: "blur(4px)" }}
+                                        whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                        viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
+                                        transition={{ duration: 0.6, delay: 0.5, ease: "easeOut" }}
+                                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                                    >
+                                        <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
+                                        <div className="ml-12">
+                                            <div className="mb-3 text-title3 md:text-lg">Reference calls</div>
+                                            <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Connect us with trusted managers or colleagues who can vouch for your work.</div>
+                                        </div>
+                                    </motion.div>
+                                    {/* Step 5: Paid work trial */}
+                                    <motion.div
+                                        className="flex flex-row items-start mb-16 relative"
+                                        initial={{ opacity: 0, filter: "blur(4px)" }}
+                                        whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                        viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
+                                        transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+                                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                                    >
+                                        <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
+                                        <div className="ml-12">
+                                            <div className="mb-3 text-title3 md:text-lg">Paid work trial</div>
+                                            <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Collaborate with us on a problem and get a feel for what it's like to work with the team at Onlook.</div>
+                                        </div>
+                                    </motion.div>
+                                    {/* Step 6: Offer */}
+                                    <motion.div
+                                        className="flex flex-row items-start relative"
+                                        initial={{ opacity: 0, filter: "blur(4px)" }}
+                                        whileInView={{ opacity: 1, filter: "blur(0px)" }}
+                                        viewport={{ once: true, margin: "-100px 0px -100px 0px", amount: 0.3 }}
+                                        transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
+                                        style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                                    >
+                                        <div ref={lastSquareRef} className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
+                                        <div className="ml-12">
+                                            <div className="mb-3 text-title3 md:text-lg">Offer</div>
+                                            <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Sign and become a full-time member of the Odyssey. Pick up your laptop, put on your jacket, and get ready to craft a beloved design tool.</div>
+                                        </div>
+                                    </motion.div>
+                                </div>
                             </div>
                         </div>
                     </div>
