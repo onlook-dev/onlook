@@ -621,7 +621,7 @@ export default function AboutPage() {
                                     <div className="w-3 h-3 bg-foreground-tertiary absolute left-0 top-2 transform -translate-x-1/2" />
                                     <div className="ml-12">
                                         <div className="mb-3 text-title3 md:text-lg">Apply directly</div>
-                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Send in your application and a link to a project you've made. For extra initative, tackle an issue on GitHub and add it in your application.</div>
+                                        <div className="text-foreground-secondary text-lg md:text-large font-light text-balance">Send in your application and a link to a project you've made. For extra initiative, tackle an issue on GitHub and add it in your application.</div>
                                     </div>
                                 </motion.div>
                                 {/* Step 2: Screening call */}
