@@ -81,9 +81,7 @@ function BlurInElement({ children, delay = 0, className = "" }: {
                 transition: { 
                     duration: 0.6, 
                     delay, 
-                    ease: "easeOut",
-                    // Force Safari to complete the animation
-                    type: "tween"
+                    ease: "easeOut"
                 }
             };
         }
