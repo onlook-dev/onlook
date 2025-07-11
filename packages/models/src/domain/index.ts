@@ -6,6 +6,7 @@ export enum DomainType {
 export enum VerificationRequestStatus {
     PENDING = 'pending',
     VERIFIED = 'verified',
+    CANCELLED = 'cancelled',
 }
 
 export interface DomainInfo {

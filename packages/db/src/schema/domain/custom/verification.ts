@@ -15,7 +15,7 @@ export const customDomainVerification = pgTable('custom_domain_verification', {
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 
     freestyleVerificationId: text('freestyle_verification_id').notNull(),
-    txtRecord: text('txt_record').notNull().$type<TxtVerificationRecord>(),
+    txtRecord: jsonb('txt_record').notNull().$type<TxtVerificationRecord>(),
     aRecords: jsonb('a_records').notNull().$type<AVerificationRecord[]>().default([]),
     status: verificationRequestStatus('status').default(VerificationRequestStatus.PENDING).notNull(),
 }).enableRLS();

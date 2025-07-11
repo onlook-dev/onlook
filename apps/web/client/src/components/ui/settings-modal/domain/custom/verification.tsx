@@ -1,5 +1,3 @@
-import { useEditorEngine } from '@/components/store/editor';
-import { useStateManager } from '@/components/store/state';
 import type { VerificationRecord } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
@@ -11,13 +9,11 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { observer } from 'mobx-react-lite';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { RecordField } from './record-field';
 import { useDomainVerification, VerificationState } from './use-domain-verification';
 
 export const Verification = observer(() => {
-    const editorEngine = useEditorEngine();
-    const stateManager = useStateManager();
     const { domainInput, setDomainInput, customDomain, verification, verificationState, error } = useDomainVerification();
 
     // function validateDomain(): string | false {
@@ -57,16 +53,18 @@ export const Verification = observer(() => {
     return (
         <div className="space-y-4">
             <NoDomainInput />
-            {verificationState === VerificationState.VERIFYING && <ConfigureHeader />}
+            {(verificationState === VerificationState.VERIFICATION_CREATED || verificationState === VerificationState.VERIFYING) && <ConfigureHeader />}
+            {(verificationState === VerificationState.VERIFICATION_CREATED || verificationState === VerificationState.VERIFYING) && <DnsRecords />}
             {verificationState === VerificationState.VERIFIED && <VerifiedHeader />}
-            {verificationState === VerificationState.VERIFIED && <DnsRecords />}
+
             {error && <p className="text-sm text-red-500">{error}</p>}
         </div>
     );
 });
 
-export const NoDomainInput = observer(() => {
-    const { domainInput, setDomainInput, customDomain, verification, verificationState, ownedDomains, createVerification } = useDomainVerification();
+export const NoDomainInput = () => {
+    const [isLoading, setIsLoading] = useState(false);
+    const { domainInput, setDomainInput, customDomain, verification, verificationState, ownedDomains, createVerificationRequest, removeVerificationRequest } = useDomainVerification();
 
     function getInputButtonText() {
         switch (verificationState) {
@@ -79,9 +77,21 @@ export const NoDomainInput = observer(() => {
         }
     }
 
-    async function editDomain() {
-        // TODO: Implement domain edit
-    }
+    const handleEnter = async () => {
+        setIsLoading(true);
+        await createVerificationRequest();
+        setIsLoading(false);
+    };
+
+    const handleButtonClick = async () => {
+        setIsLoading(true);
+        if (verificationState === VerificationState.INPUTTING_DOMAIN) {
+            await createVerificationRequest();
+        } else {
+            await removeVerificationRequest();
+        }
+        setIsLoading(false);
+    };
 
     return (
         <div className="space-y-2">
@@ -103,26 +113,20 @@ export const NoDomainInput = observer(() => {
                             onChange={(e) => setDomainInput(e.target.value)}
                             placeholder="example.com"
                             className="bg-background placeholder:text-muted-foreground"
-                            onKeyDown={(e) => {
+                            onKeyDown={async (e) => {
                                 if (e.key === 'Enter') {
-                                    createVerification();
+                                    handleEnter();
                                 }
                             }}
                         />
                         <Button
-                            onClick={() => {
-                                if (verificationState === VerificationState.INPUTTING_DOMAIN) {
-                                    createVerification();
-                                } else {
-                                    editDomain();
-                                }
-                            }}
+                            onClick={handleButtonClick}
                             variant="secondary"
                             size="sm"
                             className="h-9 text-smallPlus"
-                            disabled={verificationState === VerificationState.VERIFYING}
+                            disabled={isLoading}
                         >
-                            {verificationState === VerificationState.VERIFYING && (
+                            {isLoading && (
                                 <Icons.LoadingSpinner className="h-4 w-4 animate-spin mr-2" />
                             )}
                             {getInputButtonText()}
@@ -133,7 +137,7 @@ export const NoDomainInput = observer(() => {
             </div>
         </div>
     );
-});
+};
 
 export const ExistingDomains = () => {
     const { ownedDomains, verificationState } = useDomainVerification();

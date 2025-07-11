@@ -21,7 +21,8 @@ interface DomainVerificationContextType {
     verificationState: VerificationState;
     error: string | null;
     ownedDomains: string[];
-    createVerification: () => Promise<void>;
+    createVerificationRequest: () => Promise<void>;
+    removeVerificationRequest: () => Promise<void>;
 }
 
 const DomainVerificationContext = createContext<DomainVerificationContextType | undefined>(undefined);
@@ -37,15 +38,16 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
     const { data: verification, refetch: refetchVerification } = api.domain.verification.getPending.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
+    const { mutateAsync: removeDomainVerification } = api.domain.verification.remove.useMutation();
     // const { mutateAsync: verifyCustomDomain } = api.domain.verification.verify.useMutation();
 
     useEffect(() => {
         if (verification) {
-            setVerificationState(VerificationState.VERIFIED);
+            setVerificationState(VerificationState.VERIFICATION_CREATED);
         }
     }, [verification]);
 
-    const createVerification = async () => {
+    const createVerificationRequest = async () => {
         setVerificationState(VerificationState.CREATING_VERIFICATION);
         setError(null);
         const verificationRequest = await createDomainVerification({
@@ -60,11 +62,24 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
         await refetchVerification();
     };
 
+    const removeVerificationRequest = async () => {
+        if (!verification) {
+            setError('No verification request to remove');
+            return;
+        }
+        await removeDomainVerification({
+            verificationId: verification.id,
+        });
+        await refetchVerification();
+        setVerificationState(VerificationState.INPUTTING_DOMAIN);
+    };
+
     return (
         <DomainVerificationContext.Provider value={{
             domainInput,
             setDomainInput,
-            createVerification,
+            createVerificationRequest,
+            removeVerificationRequest,
             customDomain: customDomain ?? null,
             verification: verification ?? null,
             verificationState,

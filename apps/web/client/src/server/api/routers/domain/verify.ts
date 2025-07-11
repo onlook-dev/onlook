@@ -12,19 +12,19 @@ import { initializeFreestyleSdk } from './freestyle';
 export const verificationRouter = createTRPCRouter({
     getPending: protectedProcedure.input(z.object({
         projectId: z.string(),
-    })).query(async ({ ctx, input }) => {
+    })).query(async ({ ctx, input }): Promise<CustomDomainVerification | null> => {
         const verification = await ctx.db.query.customDomainVerification.findFirst({
             where: and(
                 eq(customDomainVerification.projectId, input.projectId),
                 eq(customDomainVerification.status, VerificationRequestStatus.PENDING),
             ),
         });
-        return verification;
+        return verification ?? null;
     }),
     create: protectedProcedure.input(z.object({
         domain: z.string(),
         projectId: z.string(),
-    })).mutation(async ({ ctx, input }) => {
+    })).mutation(async ({ ctx, input }): Promise<CustomDomainVerification> => {
         const { customDomain, subdomain } = await getCustomDomain(ctx.db, input.domain);
         const existingVerification = await getVerification(ctx.db, input.projectId, customDomain.id);
         if (existingVerification) {
@@ -32,6 +32,13 @@ export const verificationRouter = createTRPCRouter({
         }
         const verification = await createDomainVerification(ctx.db, input.domain, input.projectId, customDomain.id, subdomain);
         return verification;
+    }),
+    remove: protectedProcedure.input(z.object({
+        verificationId: z.string(),
+    })).mutation(async ({ ctx, input }) => {
+        await ctx.db.update(customDomainVerification).set({
+            status: VerificationRequestStatus.CANCELLED,
+        }).where(eq(customDomainVerification.id, input.verificationId));
     }),
     // verify: protectedProcedure.input(z.object({
     //     verificationId: z.string(),
@@ -146,7 +153,8 @@ async function getVerification(db: DrizzleDb, projectId: string, customDomainId:
     const verification = await db.query.customDomainVerification.findFirst({
         where: and(
             eq(customDomainVerification.domainId, customDomainId),
-            eq(customDomainVerification.projectId, projectId)
+            eq(customDomainVerification.projectId, projectId),
+            eq(customDomainVerification.status, VerificationRequestStatus.PENDING),
         ),
     });
     return verification;
