@@ -8,7 +8,7 @@ import { and, eq } from 'drizzle-orm';
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { deploymentRouter } from './deployment';
-import { createDeployment, deployFreestyle, getProjectUrls, publishInBackground, updateDeployment } from './helpers.ts';
+import { createDeployment, getProjectUrls, publishInBackground, unpublishInBackground } from './helpers/index.ts';
 
 export const publishRouter = createTRPCRouter({
     deployment: deploymentRouter,
@@ -54,13 +54,7 @@ export const publishRouter = createTRPCRouter({
             buildScript,
             buildFlags,
             envVars,
-        }).catch(error => {
-            console.error(`Publish job ${deployment.id} failed:`, error);
-            updateDeployment(ctx.db, deployment.id, {
-                status: DeploymentStatus.FAILED,
-                error: error instanceof Error ? error.message : 'Unknown error',
-            });
-        });
+        })
 
         return { deploymentId: deployment.id };
     }),
@@ -73,25 +67,11 @@ export const publishRouter = createTRPCRouter({
         const userId = ctx.user.id;
         const deployment = await createDeployment(ctx.db, projectId, type, userId);
         const urls = await getProjectUrls(ctx.db, projectId, type);
-
-        updateDeployment(ctx.db, deployment.id, {
-            status: DeploymentStatus.IN_PROGRESS,
-            message: 'Unpublishing project...',
-            progress: 20,
-        });
-
-        await deployFreestyle({
-            files: {},
+        unpublishInBackground(
+            ctx.db,
+            deployment,
             urls,
-            envVars: {},
-        });
-
-        updateDeployment(ctx.db, deployment.id, {
-            status: DeploymentStatus.COMPLETED,
-            message: 'Project unpublished',
-            progress: 100,
-        });
-
+        );
         return { deploymentId: deployment.id };
     }),
 });
