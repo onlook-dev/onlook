@@ -52,10 +52,12 @@ function BlurInElement({ children, delay = 0, className = "" }: {
         const isSafari = /safari/.test(userAgent) && !/chrome/.test(userAgent);
         const isFirefox = /firefox/.test(userAgent);
         const isMobile = /mobile|android|iphone|ipad/.test(userAgent);
+        const isMobileSafari = isSafari && isMobile;
 
-        // Disable blur on mobile Safari, older browsers, and Firefox for better performance
-        // Firefox can have performance issues with blur filters in some cases
-        if ((isSafari && isMobile) || isFirefox || !blurSupported) {
+        // Disable blur on mobile Safari (has animation completion issues), Firefox, and unsupported browsers
+        // Mobile Safari blur animations can start but not resolve properly
+        // Desktop Safari can handle blur animations with proper configuration
+        if (isMobileSafari || isFirefox || !blurSupported) {
             setSupportsBlur(false);
         } else {
             setSupportsBlur(blurSupported);
@@ -79,7 +81,7 @@ function BlurInElement({ children, delay = 0, className = "" }: {
                 transition: { 
                     duration: 0.6, 
                     delay, 
-                    ease: "easeOut" 
+                    ease: "easeOut"
                 }
             };
         }
