@@ -19,8 +19,6 @@ function extractIdsFromEvent(
     const currentPeriodStart = stripeSubscription.items.data[0]?.current_period_start;
     const currentPeriodEnd = stripeSubscription.items.data[0]?.current_period_end;
 
-    console.log('stripeSubscription.items.data', stripeSubscription.items.data);
-
     // validation
     if (!stripeSubscriptionId) {
         throw new Error('No subscription ID found');
