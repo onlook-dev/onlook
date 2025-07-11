@@ -269,6 +269,10 @@ const config = {
                     '0%': { backgroundPosition: '100% 0' },
                     '100%': { backgroundPosition: '-100% 0' },
                 },
+                'shimmer-vertical': {
+                    '0%': { backgroundPosition: '0 100%' },
+                    '100%': { backgroundPosition: '0 -100%' },
+                },
             },
             animation: {
                 'accordion-down': 'accordion-down 0.2s ease-out',
@@ -279,6 +283,7 @@ const config = {
                 wiggle: 'wiggle 0.5s cubic-bezier(0.25, 1, 0.5, 1) 7s infinite',
                 shine: 'shine var(--duration) infinite linear',
                 shimmer: 'shimmer 1.5s linear infinite',
+                'shimmer-vertical': 'shimmer-vertical 2s linear infinite',
             },
         },
     },
