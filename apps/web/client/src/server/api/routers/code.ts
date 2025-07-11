@@ -51,7 +51,7 @@ export const codeRouter = createTRPCRouter({
                     onlyMainContent: input.onlyMainContent,
                     ...(input.includeTags && { includeTags: input.includeTags }),
                     ...(input.excludeTags && { excludeTags: input.excludeTags }),
-                    ...(input.waitFor && { waitFor: input.waitFor }),
+                    ...(input.waitFor !== undefined && { waitFor: input.waitFor }),
                 });
 
                 if (!result.success) {
