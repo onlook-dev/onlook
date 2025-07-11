@@ -105,7 +105,7 @@ export const handleSubscriptionCreated = async (
             .returning();
 
         if (!data) {
-            console.error('[[handleCheckoutSessionCompleted]] No subscription was upserted.');
+            console.error('[[handleSubscriptionCreated]] No subscription was upserted.');
             throw new Error('No subscription was upserted.');
         }
 

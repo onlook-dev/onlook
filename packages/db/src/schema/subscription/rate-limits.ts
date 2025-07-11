@@ -29,7 +29,7 @@ export const rateLimits = pgTable('rate_limits', {
     // The number of requests left to make within the time period.
     left: integer('left').notNull().default(0),
 
-    // This key identifies the rate limit that is being carried overtime.
+    // This key identifies the rate limit that is carried over.
     // Useful for analytics and debugging and possibly displaying to the user.
     carryOverKey: uuid('carry_over_key').notNull(),
     // Track the number of times this rate limit has been carried over.
