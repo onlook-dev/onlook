@@ -35,7 +35,7 @@ function BlurInElement({ children, delay = 0, className = "" }: {
         // Check browser capabilities for blur filter performance
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        let blurSupported = true;
+        let blurSupported = false; // Default to false, only enable if explicitly supported
         
         if (ctx) {
             // Test if blur filter is supported and performant
