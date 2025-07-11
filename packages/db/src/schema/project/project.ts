@@ -1,11 +1,11 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
+import { PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME, projectCustomDomains } from '../domain';
+import { PREVIEW_DOMAIN_PROJECT_RELATION_NAME, previewDomains } from '../domain/preview';
 import { userProjects } from '../user';
 import { canvases } from './canvas';
 import { conversations, PROJECT_CONVERSATION_RELATION_NAME } from './chat/conversation';
-import { PUBLISHED_DOMAIN_PROJECT_RELATION_NAME, publishedDomains } from './domain';
-import { PREVIEW_DOMAIN_PROJECT_RELATION_NAME, previewDomains } from './domain/preview';
 import { projectInvitations } from './invitation';
 import { projectSettings } from './settings';
 
@@ -41,8 +41,8 @@ export const projectRelations = relations(projects, ({ one, many }) => ({
         relationName: PROJECT_CONVERSATION_RELATION_NAME,
     }),
     projectInvitations: many(projectInvitations),
-    publishedDomains: many(publishedDomains, {
-        relationName: PUBLISHED_DOMAIN_PROJECT_RELATION_NAME,
+    projectCustomDomains: many(projectCustomDomains, {
+        relationName: PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME,
     }),
     previewDomains: many(previewDomains, {
         relationName: PREVIEW_DOMAIN_PROJECT_RELATION_NAME,

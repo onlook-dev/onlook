@@ -1,19 +1,17 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useHostingType } from '@/components/store/hosting';
-import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
-import { DeploymentType } from '@onlook/models/hosting';
+import { DeploymentStatus, DeploymentType } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
 
 export const DangerZone = observer(() => {
     const editorEngine = useEditorEngine();
-    const stateManager = useStateManager();
 
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
-    const { unpublish: runUnpublishPreview, isDeploying: isUnpublishingPreview } = useHostingType(DeploymentType.UNPUBLISH_PREVIEW);
-    const { unpublish: runUnpublishCustom, isDeploying: isUnpublishingCustom } = useHostingType(DeploymentType.UNPUBLISH_CUSTOM);
+    const { deployment: unpublishPreviewDeployment, unpublish: runUnpublishPreview } = useHostingType(DeploymentType.UNPUBLISH_PREVIEW);
+    const { deployment: unpublishCustomDeployment, unpublish: runUnpublishCustom } = useHostingType(DeploymentType.UNPUBLISH_CUSTOM);
 
     const previewDomain = domains?.preview;
     const customDomain = domains?.published;
@@ -37,8 +35,6 @@ export const DangerZone = observer(() => {
                 description: 'Please try again.',
             });
         }
-        stateManager.isSettingsModalOpen = false;
-        editorEngine.state.publishOpen = true;
     };
 
     return (
@@ -60,9 +56,9 @@ export const DangerZone = observer(() => {
                         className="ml-auto"
                         size="sm"
                         variant="destructive"
-                        disabled={!previewDomain || isUnpublishingPreview}
+                        disabled={!previewDomain || unpublishPreviewDeployment?.status === DeploymentStatus.IN_PROGRESS}
                     >
-                        {isUnpublishingPreview ? 'Unpublishing...' : 'Unpublish'}
+                        {unpublishPreviewDeployment?.status === DeploymentStatus.IN_PROGRESS ? 'Unpublishing...' : 'Unpublish'}
                     </Button>
                 </div>
                 {customDomain && (
@@ -75,9 +71,9 @@ export const DangerZone = observer(() => {
                             className="ml-auto"
                             size="sm"
                             variant="destructive"
-                            disabled={!customDomain || isUnpublishingCustom}
+                            disabled={!customDomain || unpublishCustomDeployment?.status === DeploymentStatus.IN_PROGRESS}
                         >
-                            {isUnpublishingCustom ? 'Unpublishing...' : 'Unpublish'}
+                            {unpublishCustomDeployment?.status === DeploymentStatus.IN_PROGRESS ? 'Unpublishing...' : 'Unpublish'}
                         </Button>
                     </div>
                 )}
