@@ -6,7 +6,13 @@ import { type HandleVerifyDomainError, type HandleVerifyDomainResponse } from 'f
 import { initializeFreestyleSdk } from '../../freestyle';
 import { getARecords } from './records';
 
-export const createDomainVerification = async (db: DrizzleDb, domain: string, projectId: string, customDomainId: string, subdomain: string | null): Promise<CustomDomainVerification> => {
+export const createDomainVerification = async (
+    db: DrizzleDb,
+    domain: string,
+    projectId: string,
+    customDomainId: string,
+    subdomain: string | null,
+): Promise<CustomDomainVerification> => {
     const sdk = initializeFreestyleSdk();
     const { id: freestyleVerificationId, verificationCode } = await sdk.createDomainVerificationRequest(domain);
     const [verification] = await db.insert(customDomainVerification).values({
@@ -30,7 +36,6 @@ export const createDomainVerification = async (db: DrizzleDb, domain: string, pr
     }
     return verification;
 }
-
 
 export const verifyFreestyleDomain = async (verificationId: string): Promise<string | null> => {
     try {
@@ -58,7 +63,6 @@ export const verifyFreestyleDomain = async (verificationId: string): Promise<str
         return null;
     }
 }
-
 
 export const verifyFreestyleDomainWithCustomDomain = async (domain: string): Promise<string | null> => {
     try {
