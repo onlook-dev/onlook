@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,7 +7,7 @@ import {
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
 import { observer } from "mobx-react-lite";
-import { useState, useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
@@ -16,14 +15,12 @@ import { InputRange } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 import { ToolbarButton } from "../toolbar-button";
 
-
 export enum PaddingTab {
     ALL = "all",
     INDIVIDUAL = "individual"
 }
 
 export const SIDE_ORDER = ['top', 'right', 'bottom', 'left'] as const; // !!!! DO NOT CHANGE THE ORDER !!!!
-
 
 const PADDING_ICON_MAP: Record<string, typeof Icons.PaddingEmpty> = {
     'TRBL': Icons.PaddingFull,
@@ -43,15 +40,13 @@ const PADDING_ICON_MAP: Record<string, typeof Icons.PaddingEmpty> = {
     'L': Icons.PaddingLeft,
 };
 
-
 export const Padding = observer(() => {
     const { boxState, handleBoxChange, handleUnitChange, handleIndividualChange } = useBoxControl('padding');
 
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'padding-dropdown'
     });
-    
-    
+
     const areAllPaddingsEqual = useMemo((): boolean => {
         const paddings = {
             top: boxState.paddingTop.num ?? 0,
@@ -59,14 +54,14 @@ export const Padding = observer(() => {
             bottom: boxState.paddingBottom.num ?? 0,
             left: boxState.paddingLeft.num ?? 0,
         };
-        
+
         const values = Object.values(paddings);
-        
+
         return values.every(val => val === values[0]);
     }, [boxState.paddingTop.num, boxState.paddingRight.num, boxState.paddingBottom.num, boxState.paddingLeft.num]);
-    
+
     const [activeTab, setActiveTab] = useState<PaddingTab>(areAllPaddingsEqual ? PaddingTab.ALL : PaddingTab.INDIVIDUAL);
-    
+
     const getPaddingIcon = () => {
         const paddings = {
             top: boxState.paddingTop.num ?? 0,
@@ -77,16 +72,16 @@ export const Padding = observer(() => {
 
         const values = Object.values(paddings);
         const nonZeroValues = values.filter(val => val > 0);
-        
+
         // All zero
         if (nonZeroValues.length === 0) {
             return Icons.PaddingEmpty;
         }
 
         // All same non-zero values
-        const allSame = nonZeroValues.length === 4 && 
-                        nonZeroValues.every(val => val === nonZeroValues[0]) &&
-                        nonZeroValues[0] !== 0;
+        const allSame = nonZeroValues.length === 4 &&
+            nonZeroValues.every(val => val === nonZeroValues[0]) &&
+            nonZeroValues[0] !== 0;
         if (allSame) {
             return Icons.PaddingFull;
         }
@@ -126,7 +121,6 @@ export const Padding = observer(() => {
 
     const PaddingIcon = getPaddingIcon();
     const paddingValue = getPaddingDisplay();
-
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
