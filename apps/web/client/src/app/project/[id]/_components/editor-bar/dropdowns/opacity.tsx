@@ -78,6 +78,7 @@ export const Opacity = observer(() => {
                             data-state={isOpen ? 'open' : 'closed'}
                             value={opacity}
                             onChange={onInputChange}
+                            onClick={(e) => e.stopPropagation()}
                             className="w-14 text-left data-[state=open]:text-white text-small focus:text-foreground-primary focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary transition-colors duration-150 hover"
                             aria-label="Opacity percentage"
                         />

@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 
 interface DropdownManagerContextType {
     openDropdownId: string | null;
@@ -96,6 +96,7 @@ export const useDropdownControl = ({ id, onOpenChange, isOverflow = false }: Use
     const [isOpen, setIsOpen] = useState(false);
 
     const handleOpenChange = useCallback((open: boolean) => {
+        console.error(open, id);
         if (open) {
             openDropdown(id);
             setIsOpen(true);
@@ -106,26 +107,27 @@ export const useDropdownControl = ({ id, onOpenChange, isOverflow = false }: Use
         onOpenChange?.(open);
     }, [id, openDropdown, closeDropdown, onOpenChange]);
 
-    const handleClose = useCallback(() => {
+    const onOpenChangeRef = useRef(onOpenChange);
+    onOpenChangeRef.current = onOpenChange;
+
+    const stableHandleClose = useCallback(() => {
         if (isOverflow) return;
         setIsOpen(false);
-        onOpenChange?.(false);
-    }, [onOpenChange, isOverflow]);
+        onOpenChangeRef.current?.(false);
+    }, [isOverflow]);
 
-    // Register/unregister the dropdown
-    React.useEffect(() => {
-        registerDropdown(id, handleClose);
+    useEffect(() => {
+        registerDropdown(id, stableHandleClose);
         return () => unregisterDropdown(id);
-    }, [id, registerDropdown, unregisterDropdown, handleClose]);
+    }, [id, registerDropdown, unregisterDropdown, stableHandleClose]);
 
-    // Sync with global state
-    React.useEffect(() => {
+    useEffect(() => {
         const shouldBeOpen = openDropdownId === id;
-        if (!isOverflow && isOpen !== shouldBeOpen) {
+        if (!isOverflow && shouldBeOpen !== isOpen) {
             setIsOpen(shouldBeOpen);
-            onOpenChange?.(shouldBeOpen);
+            onOpenChangeRef.current?.(shouldBeOpen);
         }
-    }, [openDropdownId, id, isOpen, onOpenChange]);
+    }, [openDropdownId, id, isOverflow]);
 
     return {
         isOpen,
