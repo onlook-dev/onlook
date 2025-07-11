@@ -3,6 +3,7 @@ import { api } from '@/trpc/react';
 import type { CustomDomainVerification } from '@onlook/db/src/schema/domain/custom/verification';
 import { VerificationRequestStatus, type DomainInfo } from '@onlook/models';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { toast } from 'sonner';
 
 export enum VerificationState {
     INPUTTING_DOMAIN = 'inputting_domain',
@@ -36,7 +37,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     const [verificationState, setVerificationState] = useState(VerificationState.INPUTTING_DOMAIN);
     const [error, setError] = useState<string | null>(null);
 
-    const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: customDomain, refetch: refetchCustomDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
     const { data: verification, refetch: refetchVerification } = api.domain.verification.getActive.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
     const { mutateAsync: removeDomainVerification } = api.domain.verification.remove.useMutation();
@@ -114,8 +115,12 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
                 setError(failureReason ?? 'Failed to verify domain');
                 return;
             }
-            await refetchVerification();
+            await Promise.all([
+                refetchVerification(),
+                refetchCustomDomain(),
+            ]);
             setVerificationState(VerificationState.VERIFIED);
+            toast.success('Domain verified');
             setError(null);
         } catch (error) {
             setError(error instanceof Error ? error.message : 'Failed to verify domain');
