@@ -69,9 +69,7 @@ export class SandboxManager {
                 timer.log(`Tracking ${imageFiles.length} image files`);
                 for (let i = 0; i < imageFiles.length; i += BATCH_SIZE) {
                     const batch = imageFiles.slice(i, i + BATCH_SIZE);
-                    for (const filePath of batch) {
-                        await this.fileSync.writeEmptyFile(filePath, 'binary');
-                    }
+                    await this.fileSync.writeEmptyFilesBatch(batch, 'binary');
                 }
             }
 

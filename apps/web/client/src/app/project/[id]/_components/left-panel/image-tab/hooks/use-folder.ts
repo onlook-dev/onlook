@@ -124,8 +124,6 @@ export const useFolder = (options: UseFolderOptions = {}) => {
 
             await editorEngine.sandbox.rename(oldPath, newPath);
 
-            await updateFolderStructure(newPath);
-
             setRenameState({
                 folderToRename: null,
                 newFolderName: '',
@@ -159,8 +157,6 @@ export const useFolder = (options: UseFolderOptions = {}) => {
             const folderPath = deleteState.folderToDelete.fullPath;
 
             await editorEngine.sandbox.delete(folderPath, true);
-
-            await updateFolderStructure(folderPath);
 
             setDeleteState({
                 folderToDelete: null,
@@ -229,9 +225,6 @@ export const useFolder = (options: UseFolderOptions = {}) => {
                 throw new Error('No sandbox session available');
             }
             await editorEngine.sandbox.rename(oldPath, newPath);
-
-            await updateFolderStructure(newPath);
-            await updateFolderStructure(oldPath);
 
             setMoveState({
                 folderToMove: null,
@@ -349,9 +342,6 @@ export const useFolder = (options: UseFolderOptions = {}) => {
             const gitkeepContent = '# This folder was created by Onlook\n';
             const success = await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
 
-            // Update folder structure after successful create
-            await updateFolderStructure(newFolderPath);
-
             setCreateState({
                 isCreating: false,
                 isLoading: false,
@@ -437,60 +427,6 @@ export const useFolder = (options: UseFolderOptions = {}) => {
         },
         [editorEngine],
     );
-
-    /**
-     * Updates the folder structure by re-scanning the parent folder's children.
-     * 
-     * Key requirement: Whenever a folder is updated (renamed, moved, deleted, or created),
-     * we need to re-scan the children of its parent folder to reflect the changes
-     * in the rootFolderStructure. This ensures the UI stays in sync with the actual
-     * file system state.
-     * 
-     * @param folderPath - The path of the folder that was affected by an operation
-     */
-    const updateFolderStructure = useCallback(async (folderPath: string) => {
-        if (!onFolderStructureUpdate || !rootFolderStructure) {
-            console.warn('Missing required dependencies for folder structure update');
-            return;
-        }
-
-        try {
-            // Get the parent path of the affected folder
-            const parentPath = getParentPath(folderPath);
-            
-            // Find the parent node in the current structure
-            const parentNode = findFolderInStructureByPath(rootFolderStructure, parentPath);
-            
-            if (parentNode) {
-                // Re-scan the parent folder to get updated children
-                // This is the key point: we need to re-scan the parent's children
-                // to reflect any changes (new folders, deleted folders, renamed folders)
-                const updatedParent = await scanFolderChildren(parentNode);
-                
-                if (updatedParent) {
-                    // Update the folder structure with the scanned changes
-                    // This will add/remove/update children in the parent folder
-                    onFolderStructureUpdate(updatedParent);
-                } else {
-                    console.log('No changes detected in parent folder');
-                }
-            } else if (folderPath === rootFolderStructure.fullPath || parentPath === '') {
-                // If we're updating the root folder itself or the parent is empty (root level)
-                const updatedRoot = await scanFolderChildren(rootFolderStructure);
-                
-                if (updatedRoot) {
-                    onFolderStructureUpdate(updatedRoot);
-                } else {
-                    console.log('No changes detected in root folder');
-                }
-            } else {
-                console.warn('Parent folder not found for path:', folderPath, 'Parent path:', parentPath);
-            }
-        } catch (error) {
-            console.error('Error updating folder structure:', error);
-        }
-    }, [scanFolderChildren, onFolderStructureUpdate, rootFolderStructure]);
-
     // Check if any operation is loading
     const isOperating =
         renameState.isLoading ||

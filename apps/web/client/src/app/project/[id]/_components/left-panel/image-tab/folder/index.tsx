@@ -40,13 +40,7 @@ export default function Folder() {
         if (currentFolder) {
             setFolderPath((prev) => [...prev, { folder: currentFolder, name: currentFolder.name }]);
         }
-        const folderWithChildren = await folderOperations.scanFolderChildren(folder);
-
-        if (folderWithChildren) {
-            setCurrentFolder(folderWithChildren);
-        } else {
-            setCurrentFolder(folder);
-        }
+        setCurrentFolder(folder);
     };
 
     const handleGoBack = () => {

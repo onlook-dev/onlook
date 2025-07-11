@@ -13,6 +13,7 @@ import {
     findFolderInStructureByPath,
     replaceFolderInStructure,
 } from '@onlook/utility';
+import { DefaultSettings } from '@onlook/constants';
 
 interface ImagesContextValue {
     rootFolderStructure: FolderNode;
@@ -41,10 +42,10 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
     const uploadOperations = useImageUpload();
     const moveOperations = useImageMove();
 
-    const imagePaths = editorEngine.image.imagePaths;
+    const folderPaths = editorEngine.sandbox.files.filter(file => file.startsWith(DefaultSettings.IMAGE_FOLDER));
 
     // Create initial folder structure from image assets
-    const baseFolderStructure = useMemo(() => createBaseFolder(imagePaths), [imagePaths]);
+    const baseFolderStructure = useMemo(() => createBaseFolder(folderPaths), [folderPaths]);
 
     const [rootFolderStructure, setRootFolderStructure] = useState<FolderNode>(baseFolderStructure);
 
