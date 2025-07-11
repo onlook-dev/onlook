@@ -35,13 +35,15 @@ function BlurInElement({ children, delay = 0, className = "" }: {
         // Check browser capabilities for blur filter performance
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
+        let blurSupported = true;
+        
         if (ctx) {
             // Test if blur filter is supported and performant
             try {
                 ctx.filter = 'blur(1px)';
-                setSupportsBlur(true);
+                blurSupported = true;
             } catch {
-                setSupportsBlur(false);
+                blurSupported = false;
             }
         }
 
@@ -51,11 +53,14 @@ function BlurInElement({ children, delay = 0, className = "" }: {
         const isFirefox = /firefox/.test(userAgent);
         const isMobile = /mobile|android|iphone|ipad/.test(userAgent);
 
-        // Disable blur on mobile Safari and older browsers for better performance
-        if ((isSafari && isMobile) || !supportsBlur) {
+        // Disable blur on mobile Safari, older browsers, and Firefox for better performance
+        // Firefox can have performance issues with blur filters in some cases
+        if ((isSafari && isMobile) || isFirefox || !blurSupported) {
             setSupportsBlur(false);
+        } else {
+            setSupportsBlur(blurSupported);
         }
-    }, [supportsBlur]);
+    }, []);
 
     // Use transform-based animation for better performance
     const animationProps = useMemo(() => {
@@ -420,7 +425,7 @@ export default function AboutPage() {
                             {/* Resilience */}
                             <BlurInElement delay={0.2}>
                                 <div className="flex flex-col items-start text-left">
-                                    <Illustrations.AboutResiliance className="w-20 h-20 mb-6 text-foreground-primary" />
+                                    <Illustrations.AboutResilience className="w-20 h-20 mb-6 text-foreground-primary" />
                                     <h3 className="text-xl font-normal mb-2">Resilience</h3>
                                     <p className="text-foreground-secondary text-lg md:text-large font-light text-balance">Enduring challenges without losing momentum – grit, stamina, and drive.</p>
                                 </div>
