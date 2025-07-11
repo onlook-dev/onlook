@@ -48,16 +48,7 @@ export const verifyFreestyleDomain = async (verificationId: string): Promise<str
             });
         }
 
-        const domain = res.domain;
-
-        if (!domain) {
-            throw new TRPCError({
-                code: 'INTERNAL_SERVER_ERROR',
-                message: 'Domain not found',
-            });
-        }
-
-        return domain;
+        return res.domain;
     } catch (error) {
         console.error(error);
         return null;

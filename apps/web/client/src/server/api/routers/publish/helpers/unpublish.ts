@@ -38,5 +38,6 @@ export const unpublishInBackground = async (db: DrizzleDb, deployment: Deploymen
             error: error instanceof Error ? error.message : 'Unknown error',
             progress: 100,
         });
+        throw error;
     }
 }

@@ -84,5 +84,6 @@ export async function publishInBackground({
             error: error instanceof Error ? error.message : 'Unknown error',
             progress: 100,
         });
+        throw error;
     }
 }
