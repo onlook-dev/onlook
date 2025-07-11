@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import type { CustomDomainVerification } from '@onlook/db/src/schema/domain/custom/verification';
-import type { DomainInfo } from '@onlook/models';
+import { VerificationRequestStatus, type DomainInfo } from '@onlook/models';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 export enum VerificationState {
@@ -36,14 +36,23 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     const [error, setError] = useState<string | null>(null);
 
     const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: verification, refetch: refetchVerification } = api.domain.verification.getPending.useQuery({ projectId: editorEngine.projectId });
+    const { data: verification, refetch: refetchVerification } = api.domain.verification.getActive.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createDomainVerification } = api.domain.verification.create.useMutation();
     const { mutateAsync: removeDomainVerification } = api.domain.verification.remove.useMutation();
     // const { mutateAsync: verifyCustomDomain } = api.domain.verification.verify.useMutation();
 
     useEffect(() => {
-        if (verification) {
+        if (verification === undefined) {
+            return;
+        }
+        if (verification === null) {
+            setVerificationState(VerificationState.INPUTTING_DOMAIN);
+            return;
+        }
+        if (verification.status === VerificationRequestStatus.PENDING) {
             setVerificationState(VerificationState.VERIFICATION_CREATED);
+        } else if (verification.status === VerificationRequestStatus.VERIFIED) {
+            setVerificationState(VerificationState.VERIFIED);
         }
     }, [verification]);
 

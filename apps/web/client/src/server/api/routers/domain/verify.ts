@@ -3,20 +3,23 @@ import { customDomains, customDomainVerification, type CustomDomain, type Custom
 import type { DrizzleDb } from '@onlook/db/src/client';
 import { VerificationRequestStatus, type AVerificationRecord } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, or } from 'drizzle-orm';
 import { parse } from 'psl';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { initializeFreestyleSdk } from './freestyle';
 
 export const verificationRouter = createTRPCRouter({
-    getPending: protectedProcedure.input(z.object({
+    getActive: protectedProcedure.input(z.object({
         projectId: z.string(),
     })).query(async ({ ctx, input }): Promise<CustomDomainVerification | null> => {
         const verification = await ctx.db.query.customDomainVerification.findFirst({
             where: and(
                 eq(customDomainVerification.projectId, input.projectId),
-                eq(customDomainVerification.status, VerificationRequestStatus.PENDING),
+                or(
+                    eq(customDomainVerification.status, VerificationRequestStatus.PENDING),
+                    eq(customDomainVerification.status, VerificationRequestStatus.VERIFIED),
+                ),
             ),
         });
         return verification ?? null;
@@ -38,6 +41,7 @@ export const verificationRouter = createTRPCRouter({
     })).mutation(async ({ ctx, input }) => {
         await ctx.db.update(customDomainVerification).set({
             status: VerificationRequestStatus.CANCELLED,
+            updatedAt: new Date(),
         }).where(eq(customDomainVerification.id, input.verificationId));
     }),
     // verify: protectedProcedure.input(z.object({
