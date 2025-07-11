@@ -465,7 +465,7 @@ export default function AboutPage() {
                             <BlurInElement delay={0.1}>
                                 <div className="flex flex-col items-start text-left">
                                     <h3 className="text-title3 font-normal mb-4">Commitment</h3>
-                                    <p className="text-foreground-secondary text-regular font-light text-balance">Have you put real time into something you cared about? We're looking for builders who've made a long-term bets on themselves.</p>
+                                    <p className="text-foreground-secondary text-regular font-light text-balance">Have you put real time into something you cared about? We're looking for builders who've made long-term bets on themselves.</p>
                                 </div>
                             </BlurInElement>
                             {/* Passion */}
