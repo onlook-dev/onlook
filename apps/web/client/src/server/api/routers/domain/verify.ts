@@ -122,6 +122,8 @@ export const verificationRouter = createTRPCRouter({
             };
         }
         const { customDomain, subdomain } = await getCustomDomain(ctx.db, input.fullDomain);
+
+        // TODO: There is a known issue with Freestyle where the domain verification can fail if another verification request was made for the same domain.
         const verifiedDomain = await verifyFreestyleDomainWithCustomDomain(customDomain.apexDomain);
         if (!verifiedDomain) {
             return {
@@ -129,11 +131,13 @@ export const verificationRouter = createTRPCRouter({
                 failureReason: 'Failed to verify domain with Freestyle hosting provider. Please contact support as this is likely an issue with Freestyle.',
             };
         }
+
         const [projectCustomDomain] = await ctx.db.insert(projectCustomDomains).values({
             projectId: input.projectId,
-            fullDomain: verifiedDomain,
+            fullDomain: input.fullDomain,
             customDomainId: customDomain.id,
-        });
+        }).returning();
+
         if (!projectCustomDomain) {
             throw new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',

@@ -60,70 +60,86 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
     }, [verification]);
 
     const createVerificationRequest = async () => {
-        setVerificationState(VerificationState.CREATING_VERIFICATION);
-        setError(null);
-        const verificationRequest = await createDomainVerification({
-            domain: domainInput,
-            projectId: editorEngine.projectId,
-        });
-        if (!verificationRequest) {
-            setError('Failed to create domain verification');
-            setVerificationState(VerificationState.INPUTTING_DOMAIN);
-            return;
+        try {
+            setVerificationState(VerificationState.CREATING_VERIFICATION);
+            setError(null);
+            const verificationRequest = await createDomainVerification({
+                domain: domainInput,
+                projectId: editorEngine.projectId,
+            });
+            if (!verificationRequest) {
+                setError('Failed to create domain verification');
+                setVerificationState(VerificationState.INPUTTING_DOMAIN);
+                return;
+            }
+            await refetchVerification();
+            setError(null);
+        } catch (error) {
+            setError(`Failed to create domain verification: ${error}`);
         }
-        await refetchVerification();
-        setError(null);
     };
 
     const removeVerificationRequest = async () => {
-        if (!verification) {
-            setError('No verification request to remove');
-            return;
+        try {
+            if (!verification) {
+                setError('No verification request to remove');
+                return;
+            }
+            await removeDomainVerification({
+                verificationId: verification.id,
+            });
+            await refetchVerification();
+            setVerificationState(VerificationState.INPUTTING_DOMAIN);
+            setError(null);
+        } catch (error) {
+            setError(`Failed to remove verification request: ${error}`);
         }
-        await removeDomainVerification({
-            verificationId: verification.id,
-        });
-        await refetchVerification();
-        setVerificationState(VerificationState.INPUTTING_DOMAIN);
-        setError(null);
     };
 
     const verifyVerificationRequest = async () => {
-        if (!verification) {
-            setError('No verification request to verify');
-            return;
+        try {
+            if (!verification) {
+                setError('No verification request to verify');
+                return;
+            }
+            const {
+                success,
+                failureReason,
+            } = await verifyDomain({
+                verificationId: verification.id,
+            });
+            if (!success || failureReason) {
+                setError(failureReason ?? 'Failed to verify domain');
+                return;
+            }
+            await refetchVerification();
+            setVerificationState(VerificationState.VERIFIED);
+            setError(null);
+        } catch (error) {
+            setError(`Failed to verify domain: ${error}`);
         }
-        const {
-            success,
-            failureReason,
-        } = await verifyDomain({
-            verificationId: verification.id,
-        });
-        if (!success || failureReason) {
-            setError(failureReason ?? 'Failed to verify domain');
-            return;
-        }
-        await refetchVerification();
-        setVerificationState(VerificationState.VERIFIED);
-        setError(null);
     };
 
     const reuseDomain = async (domain: string) => {
-        setError(null);
-        const {
-            success,
-            failureReason,
-        } = await verifyOwnedDomain({
-            fullDomain: domain,
-            projectId: editorEngine.projectId,
-        });
-        if (!success || failureReason) {
-            setError(failureReason ?? 'Failed to reuse domain');
-            return;
+        try {
+            setError(null);
+            const {
+                success,
+                failureReason,
+            } = await verifyOwnedDomain({
+                fullDomain: domain,
+                projectId: editorEngine.projectId,
+            });
+            if (!success || failureReason) {
+                setError(failureReason ?? 'Failed to reuse domain');
+                return;
+            }
+            await refetchVerification();
+            setVerificationState(VerificationState.VERIFIED);
+            setError(null);
+        } catch (error) {
+            setError(`Failed to reuse domain: ${error}`);
         }
-        await refetchVerification();
-        setVerificationState(VerificationState.VERIFIED);
-        setError(null);
     };
 
     return (
