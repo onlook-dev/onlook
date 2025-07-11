@@ -30,7 +30,7 @@ export const FolderDropdownMenu = memo(
         className?: string;
     }) => {
         const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-        const { folderStructure, folderOperations } = useImagesContext();
+        const { rootFolderStructure, folderOperations } = useImagesContext();
 
         const { handleRenameFolder, handleDeleteFolder, handleMoveToFolder, moveState } = folderOperations;
 
@@ -114,7 +114,7 @@ export const FolderDropdownMenu = memo(
                                 </span>
                             </Button>
                         </DropdownMenuItem>
-                        {folderStructure && (
+                        {rootFolderStructure && (
                             <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuSub>
@@ -129,7 +129,7 @@ export const FolderDropdownMenu = memo(
                                     </DropdownMenuSubTrigger>
                                     <DropdownMenuSubContent className="w-64 p-0" sideOffset={8}>
                                         <FolderDropdown
-                                            rootFolder={folderStructure}
+                                            rootFolder={rootFolderStructure}
                                             selectedFolder={moveState.targetFolder}
                                             onSelectFolder={handleFolderSelect}
                                         />

@@ -5,9 +5,7 @@ import {
     createBaseFolder,
     validateFolderRename,
     validateFolderMove,
-    validateFolderCreate,
-    getParentPath,
-    findFolderInStructureByPath
+    validateFolderCreate
 } from '@onlook/utility';
 
 interface FolderState {

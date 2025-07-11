@@ -11,7 +11,7 @@ import type { FolderNode } from '@onlook/models';
 interface FolderListProps {
     childFolders: FolderNode[];
     onSelectFolder: (folder: FolderNode) => void;
-    folder: FolderNode | null;
+    folder: FolderNode;
     showCreateButton: boolean;
 }
 

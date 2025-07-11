@@ -22,7 +22,7 @@ const FolderTreeItem = ({
     asMenuContent = false,
 }: FolderTreeItemProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const hasChildren = folder.children.size > 0;
+    const hasChildren = folder.children && folder.children.size > 0;
 
     const isSelected = selectedFolder?.fullPath === folder.fullPath;
 
@@ -79,7 +79,7 @@ const FolderTreeItem = ({
 
             {isExpanded && hasChildren && (
                 <div>
-                    {Array.from(folder.children.values()).map((child) => (
+                    {Array.from(folder.children?.values() ?? []).map((child) => (
                         <FolderTreeItem
                             key={child.fullPath}
                             folder={child}
