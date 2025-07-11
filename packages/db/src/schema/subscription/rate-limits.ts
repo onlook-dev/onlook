@@ -1,11 +1,15 @@
 import { relations } from 'drizzle-orm';
-import { integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { index, integer, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { subscriptions } from '../subscription';
+import { users } from '../user';
 
 export const rateLimits = pgTable('rate_limits', {
     id: uuid('id').primaryKey().defaultRandom(),
 
     // Relationships
+    userId: uuid('user_id')
+        .notNull()
+        .references(() => users.id),
     subscriptionId: uuid('subscription_id')
         .notNull()
         .references(() => subscriptions.id),
@@ -34,9 +38,15 @@ export const rateLimits = pgTable('rate_limits', {
     // When upgrading a subscription, the subscription item ID is updated.
     // Due to slight limitations of the Stripe API, we need to track the subscription item ID.
     stripeSubscriptionItemId: text('stripe_subscription_item_id').notNull(),
-}).enableRLS();
+}, (table) => [
+    index('rate_limits_user_time_idx').on(table.userId, table.startedAt, table.endedAt)
+]).enableRLS();
 
 export const rateLimitRelations = relations(rateLimits, ({ one, many }) => ({
+    user: one(users, {
+        fields: [rateLimits.userId],
+        references: [users.id],
+    }),
     subscription: one(subscriptions, {
         fields: [rateLimits.subscriptionId],
         references: [subscriptions.id],

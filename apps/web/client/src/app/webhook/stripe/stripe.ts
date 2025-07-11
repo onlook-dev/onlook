@@ -114,6 +114,7 @@ export const handleSubscriptionCreated = async (
         const [rateLimit] = await tx
             .insert(rateLimits)
             .values({
+                userId: user.id,
                 subscriptionId: data.id,
                 max: price.monthlyMessageLimit,
                 left: price.monthlyMessageLimit,
@@ -193,15 +194,6 @@ export const handleSubscriptionUpdated = async (
         price.monthlyMessageLimit > currentPrice.monthlyMessageLimit;
 
     let renew = false;
-    console.log(
-        '=====> 1',
-        isTierIncrease,
-        currentPeriodStart,
-        subscription.stripeCurrentPeriodStart,
-        '-------',
-        currentPeriodEnd,
-        subscription.stripeCurrentPeriodEnd,
-    );
     // Update subscription if price changed
     if (isTierIncrease) {
         await db.transaction(async (tx) => {
@@ -219,9 +211,9 @@ export const handleSubscriptionUpdated = async (
             const isProRated =
                 isTierIncrease && +currentPeriodEnd === +subscription.stripeCurrentPeriodEnd;
             const tierIncrease = price.monthlyMessageLimit - currentPrice.monthlyMessageLimit;
-            console.log('=====> 2', isProRated, tierIncrease);
             if (isProRated) {
                 await tx.insert(rateLimits).values({
+                    userId: subscription.userId,
                     subscriptionId: subscription.id,
                     max: tierIncrease,
                     left: tierIncrease,
@@ -275,6 +267,7 @@ export const handleSubscriptionUpdated = async (
                 // In the future, we may want to carry over the credits on the next carry-overs.
                 if (rate.carryOverTotal === 0) {
                     await tx.insert(rateLimits).values({
+                        userId: subscription.userId,
                         subscriptionId: subscription.id,
                         max,
                         left: max,
@@ -289,6 +282,7 @@ export const handleSubscriptionUpdated = async (
 
             // Create a new rate limit for the new period.
             await tx.insert(rateLimits).values({
+                userId: subscription.userId,
                 subscriptionId: subscription.id,
                 max: price.monthlyMessageLimit,
                 left: price.monthlyMessageLimit,
