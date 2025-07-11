@@ -4,7 +4,7 @@ import { generate, parse, types as t, traverse, type t as T } from '@onlook/pars
 import { nanoid } from 'nanoid';
 import type { SandboxManager } from '../sandbox';
 import { formatContent } from '../sandbox/helpers';
-import { RouterType } from '@onlook/constants';
+import { RouterType } from '@onlook/models';
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     children,

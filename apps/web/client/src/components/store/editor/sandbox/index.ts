@@ -1,6 +1,6 @@
 import type { ReaddirEntry, WatchEvent } from '@codesandbox/sdk';
-import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS, type RouterType } from '@onlook/constants';
-import { type SandboxFile, type TemplateNode } from '@onlook/models';
+import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { type RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';

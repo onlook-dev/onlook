@@ -1,5 +1,4 @@
-import { RouterType } from '@onlook/constants';
-import type { Font, RawFont } from '@onlook/models';
+import { type Font, type RawFont, RouterType } from '@onlook/models';
 
 /**
  * Converts a RawFont to a Font
