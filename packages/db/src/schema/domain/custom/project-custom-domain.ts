@@ -22,7 +22,7 @@ export const projectCustomDomains = pgTable('project_custom_domains', {
 }, (table) => [primaryKey({ columns: [table.customDomainId, table.projectId] })],
 ).enableRLS();
 
-export const publishedDomainRelations = relations(projectCustomDomains, ({ one }) => ({
+export const projectCustomDomainRelation = relations(projectCustomDomains, ({ one }) => ({
     customDomain: one(customDomains, {
         fields: [projectCustomDomains.customDomainId],
         references: [customDomains.id],

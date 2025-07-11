@@ -77,7 +77,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             await refetchVerification();
             setError(null);
         } catch (error) {
-            setError(`Failed to create domain verification: ${error}`);
+            setError(error instanceof Error ? error.message : 'Failed to create domain verification');
         }
     };
 
@@ -94,7 +94,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             setVerificationState(VerificationState.INPUTTING_DOMAIN);
             setError(null);
         } catch (error) {
-            setError(`Failed to remove verification request: ${error}`);
+            setError(error instanceof Error ? error.message : 'Failed to remove verification request');
         }
     };
 
@@ -118,7 +118,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             setVerificationState(VerificationState.VERIFIED);
             setError(null);
         } catch (error) {
-            setError(`Failed to verify domain: ${error}`);
+            setError(error instanceof Error ? error.message : 'Failed to verify domain');
         }
     };
 
@@ -140,7 +140,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             setVerificationState(VerificationState.VERIFIED);
             setError(null);
         } catch (error) {
-            setError(`Failed to reuse domain: ${error}`);
+            setError(error instanceof Error ? error.message : 'Failed to reuse domain');
         }
     };
 
@@ -158,7 +158,7 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             setVerificationState(VerificationState.INPUTTING_DOMAIN);
             setError(null);
         } catch (error) {
-            setError(`Failed to remove verified domain: ${error}`);
+            setError(error instanceof Error ? error.message : 'Failed to remove verified domain');
         }
     };
 

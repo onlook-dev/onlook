@@ -1,11 +1,9 @@
 import { DeploymentStatus } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { cn } from '@onlook/ui/utils';
-import { timeAgo } from '@onlook/utility';
-import { observer } from 'mobx-react-lite';
 import stripAnsi from 'strip-ansi';
 import { UrlSection } from '../url';
-import { CustomDomainProvider, useCustomDomainContext } from './provider';
+import { useCustomDomainContext } from './provider';
 
 export const ActionSection = () => {
     const { customDomain, deployment, publish, retry, isDeploying } = useCustomDomainContext();
@@ -28,7 +26,7 @@ export const ActionSection = () => {
                     )}
                     disabled={isDeploying}
                 >
-                    {deployment?.createdAt ? 'Update' : `Publish to ${customDomain.url}`}
+                    {deployment?.updatedAt ? 'Update' : `Publish to ${customDomain.url}`}
                 </Button>
             )}
             {deployment?.status === DeploymentStatus.FAILED && (

@@ -61,16 +61,12 @@ const useCustomDomain = () => {
         isPro,
         openCustomDomain,
     }
-
 }
 
 const CustomDomainContext = createContext<ReturnType<typeof useCustomDomain> | null>(null);
 
 export const CustomDomainProvider = ({ children }: { children: React.ReactNode }) => {
     const value = useCustomDomain();
-    if (!value) {
-        throw new Error('CustomDomainProvider must be used within a CustomDomainProvider');
-    }
     return <CustomDomainContext.Provider value={value}>
         {children}
     </CustomDomainContext.Provider>
