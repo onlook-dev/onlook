@@ -2,23 +2,25 @@ import type { EditorEngine } from '@/components/store/editor/engine';
 import { api } from '@/trpc/client';
 import {
     CREATE_FILE_TOOL_NAME,
-    CREATE_FILE_TOOL_PARAMETERS,
+    type CREATE_FILE_TOOL_PARAMETERS,
     EDIT_FILE_TOOL_NAME,
-    EDIT_FILE_TOOL_PARAMETERS,
+    type EDIT_FILE_TOOL_PARAMETERS,
     LIST_FILES_TOOL_NAME,
-    LIST_FILES_TOOL_PARAMETERS,
+    type LIST_FILES_TOOL_PARAMETERS,
     ONLOOK_INSTRUCTIONS,
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
     READ_FILES_TOOL_NAME,
-    READ_FILES_TOOL_PARAMETERS,
+    type READ_FILES_TOOL_PARAMETERS,
     READ_STYLE_GUIDE_TOOL_NAME,
+    SCRAPE_URL_TOOL_NAME,
+    type SCRAPE_URL_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_NAME,
-    TERMINAL_COMMAND_TOOL_PARAMETERS
+    type TERMINAL_COMMAND_TOOL_PARAMETERS
 } from '@onlook/ai';
 import type { SandboxFile } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
     try {
@@ -53,6 +55,10 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             return await handleTerminalCommandTool(
                 toolCall.args as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
                 editorEngine,
+            );
+        } else if (toolName === SCRAPE_URL_TOOL_NAME) {
+            return await handleScrapeUrlTool(
+                toolCall.args as z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
             );
         } else {
             throw new Error(`Unknown tool call: ${toolCall.toolName}`);
@@ -177,4 +183,28 @@ async function handleTerminalCommandTool(
     error: string | null;
 }> {
     return await editorEngine.sandbox.session.runCommand(args.command);
+}
+
+async function handleScrapeUrlTool(
+    args: z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
+): Promise<string> {
+    try {
+        const result = await api.code.scrapeUrl.mutate({
+            url: args.url,
+            formats: args.formats,
+            onlyMainContent: args.onlyMainContent,
+            includeTags: args.includeTags,
+            excludeTags: args.excludeTags,
+            waitFor: args.waitFor,
+        });
+
+        if (!result.result) {
+            throw new Error(`Failed to scrape URL: ${result.error}`);
+        }
+
+        return result.result;
+    } catch (error) {
+        console.error('Error scraping URL:', error);
+        throw new Error(`Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 }
