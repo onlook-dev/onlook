@@ -62,7 +62,7 @@ export default function DeleteImageModal({
                     >
                         {isLoading ? (
                             <>
-                                <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                                <Icons.LoadingSpinner className="w-4 h-4 animate-spin mr-2" />
                                 Deleting
                             </>
                         ) : (
