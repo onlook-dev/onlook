@@ -8,7 +8,7 @@ import { and, eq } from 'drizzle-orm';
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { deploymentRouter } from './deployment';
-import { createDeployment, getProjectUrls, publishInBackground, unpublishInBackground } from './helpers.ts';
+import { createDeployment, getProjectUrls, publishInBackground, unpublishInBackground } from './helpers/index.ts';
 
 export const publishRouter = createTRPCRouter({
     deployment: deploymentRouter,
