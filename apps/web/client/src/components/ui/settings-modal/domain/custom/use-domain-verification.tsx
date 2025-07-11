@@ -89,11 +89,14 @@ export const DomainVerificationProvider = ({ children }: { children: ReactNode }
             setError('No verification request to verify');
             return;
         }
-        const verified = await verifyDomain({
+        const {
+            success,
+            failureReason,
+        } = await verifyDomain({
             verificationId: verification.id,
         });
-        if (!verified) {
-            setError('Failed to verify domain');
+        if (!success || failureReason) {
+            setError(failureReason ?? 'Failed to verify domain');
             return;
         }
         await refetchVerification();

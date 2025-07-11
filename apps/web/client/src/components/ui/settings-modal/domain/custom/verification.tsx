@@ -51,7 +51,7 @@ export const Verification = observer(() => {
                 </>
             )}
             {verificationState === VerificationState.VERIFIED && <VerifiedHeader />}
-            {error && <p className="text-sm text-red-500">{error}</p>}
+            {error && <p className="text-sm text-red-500 whitespace-pre-wrap">{error}</p>}
         </div>
     );
 });

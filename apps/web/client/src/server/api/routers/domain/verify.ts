@@ -3,6 +3,7 @@ import { customDomains, customDomainVerification, projectCustomDomains, type Cus
 import type { DrizzleDb } from '@onlook/db/src/client';
 import { VerificationRequestStatus, type AVerificationRecord } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
+import { promises as dns } from 'dns';
 import { and, eq, or } from 'drizzle-orm';
 import type { HandleVerifyDomainResponse } from 'freestyle-sandboxes';
 import { parse } from 'psl';
@@ -47,7 +48,10 @@ export const verificationRouter = createTRPCRouter({
     }),
     verify: protectedProcedure.input(z.object({
         verificationId: z.string(),
-    })).mutation(async ({ ctx, input }): Promise<boolean> => {
+    })).mutation(async ({ ctx, input }): Promise<{
+        success: boolean;
+        failureReason: string | null;
+    }> => {
         const verification = await ctx.db.query.customDomainVerification.findFirst({
             where: and(
                 eq(customDomainVerification.id, input.verificationId),
@@ -63,7 +67,11 @@ export const verificationRouter = createTRPCRouter({
         const domain = await verifyFreestyleDomain(verification.freestyleVerificationId);
 
         if (!domain) {
-            return false;
+            const failureReason = await getFailureReason(verification);
+            return {
+                success: false,
+                failureReason,
+            };
         }
 
         await ctx.db
@@ -84,7 +92,10 @@ export const verificationRouter = createTRPCRouter({
                     }).where(eq(customDomainVerification.id, verification.id));
                 },
             );
-        return true;
+        return {
+            success: true,
+            failureReason: null,
+        };
     }),
 });
 
@@ -216,3 +227,81 @@ const verifyFreestyleDomain = async (verificationId: string): Promise<string | n
         return null;
     }
 }
+
+const getFailureReason = async (verification: CustomDomainVerification): Promise<string> => {
+    const errors: string[] = [];
+    const txtRecord = verification.txtRecord;
+    const txtRecordResponse = await isTxtRecordPresent(txtRecord.name, txtRecord.value);
+
+    if (!txtRecordResponse.isPresent) {
+        let txtError = `TXT Record Missing:\n`;
+        txtError += `    Expected:\n`;
+        txtError += `        host: ${txtRecord.name}\n`;
+        txtError += `        value: "${txtRecord.value}"\n`;
+        if (txtRecordResponse.foundRecords.length > 0) {
+            txtError += `    Found:\n`;
+            txtError += `        value: ${txtRecordResponse.foundRecords.map(record => `"${record}"`).join(', ')}`;
+        } else {
+            txtError += `    Found: No TXT records`;
+        }
+        errors.push(txtError);
+    }
+
+    const aRecords = verification.aRecords;
+    for (const aRecord of aRecords) {
+        const aRecordResponse = await isARecordPresent(aRecord.name, aRecord.value);
+        if (!aRecordResponse.isPresent) {
+            let aError = `A Record Missing:\n`;
+            aError += `    Expected:\n`;
+            aError += `        host: ${aRecord.name}\n`;
+            aError += `        value: ${aRecord.value}\n`;
+            if (aRecordResponse.foundRecords.length > 0) {
+                aError += `    Found:\n`;
+                aError += `        value: ${aRecordResponse.foundRecords.join(', ')}`;
+            } else {
+                aError += `    Found: No A records`;
+            }
+            errors.push(aError);
+        }
+    }
+
+    return errors.join('\n\n');
+};
+
+export async function isTxtRecordPresent(name: string, expectedValue: string): Promise<{
+    isPresent: boolean;
+    foundRecords: string[];
+}> {
+    try {
+        const records = await dns.resolveTxt(name);
+        const foundRecords = records.map(entry => entry.join(''));
+        return {
+            isPresent: foundRecords.includes(expectedValue),
+            foundRecords,
+        };
+    } catch {
+        return {
+            isPresent: false,
+            foundRecords: [],
+        };
+    }
+}
+
+export async function isARecordPresent(name: string, expectedIp: string): Promise<{
+    isPresent: boolean;
+    foundRecords: string[];
+}> {
+    try {
+        const records = await dns.resolve4(name);
+        return {
+            isPresent: records.includes(expectedIp),
+            foundRecords: records,
+        };
+    } catch {
+        return {
+            isPresent: false,
+            foundRecords: [],
+        };
+    }
+}
+
