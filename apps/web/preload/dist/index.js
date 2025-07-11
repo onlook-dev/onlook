@@ -5048,6 +5048,7 @@ export {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 //# debugId=42EC3DA97884598964756E2164756E21
 =======
 //# debugId=7AB273697E2189B064756E2164756E21
@@ -5056,4 +5057,7 @@ export {
 =======
 //# debugId=D773FAD3D262279764756E2164756E21
 >>>>>>> 418244b8 (fix updates)
+=======
+//# debugId=1BE06EF3C7A5F7C864756E2164756E21
+>>>>>>> 248c10a1 (refactor to small manager)
 //# sourceMappingURL=index.js.map

@@ -1,6 +1,6 @@
 import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
 import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
-import { type SandboxFile, type TemplateNode } from '@onlook/models';
+import { type SandboxFile, type TemplateNode, type RouterType } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -12,10 +12,14 @@ import { FileWatcher } from './file-watcher';
 import { formatContent, normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
+import { detectRouterTypeInSandbox } from '../pages/helper';
 
 export class SandboxManager {
     readonly session: SessionManager;
     readonly fileEventBus: FileEventBus = new FileEventBus();
+    
+    // Add router configuration
+    private _routerConfig: { type: RouterType; basePath: string } | null = null;
 
     private fileWatcher: FileWatcher | null = null;
     private fileSync: FileSyncManager
@@ -47,6 +51,10 @@ export class SandboxManager {
     get isIndexing() {
         return this._isIndexing;
     }
+    
+    get routerConfig(): { type: RouterType; basePath: string } | null {
+        return this._routerConfig;
+    }
 
     async index(force = false) {
         if (this._isIndexing || (this._isIndexed && !force)) {
@@ -62,6 +70,14 @@ export class SandboxManager {
         const timer = new LogTimer('Sandbox Indexing');
 
         try {
+            // Detect router configuration first
+            if (!this._routerConfig) {
+                this._routerConfig = await detectRouterTypeInSandbox(this);
+                if (this._routerConfig) {
+                    timer.log(`Router detected: ${this._routerConfig.type} at ${this._routerConfig.basePath}`);
+                }
+            }
+
             // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
@@ -648,5 +664,6 @@ export class SandboxManager {
         this.session.clear();
         this._isIndexed = false;
         this._isIndexing = false;
+        this._routerConfig = null;
     }
 }
