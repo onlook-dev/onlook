@@ -2,7 +2,7 @@ import { rateLimits, subscriptions, usageRecords } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { UsageType, type Usage } from '@onlook/models';
 import { FREE_PRODUCT_CONFIG } from '@onlook/stripe';
-import { and, eq, gte, lte, sql, sum } from 'drizzle-orm';
+import { and, desc, eq, gte, lte, ne, sql, sum } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { startOfDay } from 'date-fns/startOfDay';
@@ -67,7 +67,7 @@ export const usageRouter = createTRPCRouter({
             };
         }
 
-        const left = await db
+        const limit = await db
             .select({ left: sum(rateLimits.left), max: sum(rateLimits.max) })
             .from(rateLimits)
             .where(and(
@@ -85,13 +85,13 @@ export const usageRouter = createTRPCRouter({
                 period: 'day',
                 // technically, this is the monthly value, since subscriptions don't have daily limits
                 // the code returns the monthly limits, which is technically correct.
-                usageCount: left.max - left.left,
-                limitCount: left.max,
+                usageCount: limit.max - limit.left,
+                limitCount: limit.max,
             } satisfies Usage,
             monthly: {
                 period: 'month',
-                usageCount: left.max - left.left,
-                limitCount: left.max,
+                usageCount: limit.max - limit.left,
+                limitCount: limit.max,
             } satisfies Usage,
         };
     }),
@@ -100,10 +100,58 @@ export const usageRouter = createTRPCRouter({
         type: z.nativeEnum(UsageType),
     })).mutation(async ({ ctx, input }) => {
         const user = ctx.user;
-        await db.insert(usageRecords).values({
-            userId: user.id,
-            type: input.type,
-            timestamp: new Date(),
+        // running a transaction helps with concurrency issues and ensures that
+        // the usage is incremented atomically
+        return db.transaction(async (tx) => {
+            const now = new Date();
+            const [limit] = await tx
+                .select({ id: rateLimits.id, left: rateLimits.left })
+                .from(rateLimits)
+                .where(and(
+                    eq(rateLimits.userId, user.id),
+                    lte(rateLimits.startedAt, now),
+                    gte(rateLimits.endedAt, now),
+                    ne(rateLimits.left, 0),
+                ))
+                // deduct from the credits that have carried over the most
+                // (in other words, the oldest credits)
+                .orderBy(desc(rateLimits.carryOverTotal))
+                .limit(1);
+
+            // if there are no credits left then rollback
+            if (!limit?.left) {
+                tx.rollback();
+                return;
+            }
+
+            await tx.update(rateLimits).set({
+                left: sql`${rateLimits.left} - 1`,
+            }).where(and(
+                eq(rateLimits.id, limit.id),
+            ));
+
+            const usageRecord = await tx.insert(usageRecords).values({
+                userId: user.id,
+                type: input.type,
+                timestamp: new Date(),
+            }).returning({ id: usageRecords.id });
+
+            return { rateLimitId: limit?.id, usageRecordId: usageRecord?.[0]?.id };
+        });
+    }),
+
+    revertIncrement: protectedProcedure.input(z.object({
+        usageRecordId: z.string(),
+        rateLimitId: z.string(),
+    })).mutation(async ({ ctx, input }) => {
+        return db.transaction(async (tx) => {
+            await tx.update(rateLimits).set({
+                left: sql`${rateLimits.left} + 1`,
+            }).where(and(
+                eq(rateLimits.id, input.rateLimitId),
+            ));
+            await tx.delete(usageRecords).where(and(eq(usageRecords.id, input.usageRecordId)));
+            return { rateLimitId: input.rateLimitId, usageRecordId: input.usageRecordId };
         });
     }),
 });
