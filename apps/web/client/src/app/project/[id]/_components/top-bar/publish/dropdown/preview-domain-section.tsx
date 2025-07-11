@@ -56,7 +56,6 @@ export const PreviewDomainSection = observer(() => {
             console.error(`No preview domain info found`);
             return;
         }
-        // editorEngine.hosting.resetState();
         publish();
     };
 
