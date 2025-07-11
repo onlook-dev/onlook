@@ -96,7 +96,6 @@ export const useDropdownControl = ({ id, onOpenChange, isOverflow = false }: Use
     const [isOpen, setIsOpen] = useState(false);
 
     const handleOpenChange = useCallback((open: boolean) => {
-        console.error(open, id);
         if (open) {
             openDropdown(id);
             setIsOpen(true);
