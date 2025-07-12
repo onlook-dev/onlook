@@ -111,6 +111,10 @@
                 "insertText": {
                     "name": "テキスト挿入",
                     "tooltip": "新しいテキスト要素を追加"
+                },
+                "insertWindow": {
+                    "name": "ウィンドウ挿入",
+                    "tooltip": "新しいウィンドウ要素を追加"
                 }
             },
             "versionHistory": "バージョン履歴"

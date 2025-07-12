@@ -212,6 +212,10 @@
                 "insertText": {
                     "name": "Insertar Texto",
                     "tooltip": "Agregar un nuevo elemento de texto"
+                },
+                "insertWindow": {
+                    "name": "Insertar Ventana",
+                    "tooltip": "Insertar una nueva ventana"
                 }
             },
             "versionHistory": "Historial de Versiones"
