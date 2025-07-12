@@ -13,26 +13,26 @@ export const RecenterCanvasButton = observer(() => {
 
     const frames = editorEngine.frames.getAll();
 
-    function isFrameInViewport(frame: Frame): boolean {
-        const canvasPos = editorEngine.canvas.position;
-        const canvasScale = editorEngine.canvas.scale;
-
-        const screenX = canvasPos.x + frame.position.x * canvasScale;
-        const screenY = canvasPos.y + frame.position.y * canvasScale;
-        const screenWidth = frame.dimension.width * canvasScale;
-        const screenHeight = frame.dimension.height * canvasScale;
-
-        return !(
-            screenX + screenWidth < 0 ||
-            screenX > window.innerWidth ||
-            screenY + screenHeight < 0 ||
-            screenY > window.innerHeight
-        );
-    }
-
     const throttledViewportCheck = useCallback(
         throttle(
             () => {
+                function isFrameInViewport(frame: Frame): boolean {
+                    const canvasPos = editorEngine.canvas.position;
+                    const canvasScale = editorEngine.canvas.scale;
+
+                    const screenX = canvasPos.x + frame.position.x * canvasScale;
+                    const screenY = canvasPos.y + frame.position.y * canvasScale;
+                    const screenWidth = frame.dimension.width * canvasScale;
+                    const screenHeight = frame.dimension.height * canvasScale;
+
+                    return !(
+                        screenX + screenWidth < 0 ||
+                        screenX > window.innerWidth ||
+                        screenY + screenHeight < 0 ||
+                        screenY > window.innerHeight
+                    );
+                }
+
                 return !editorEngine.frames
                     .getAll()
                     .some((frame) => isFrameInViewport(frame.frame));
@@ -77,7 +77,7 @@ export const RecenterCanvasButton = observer(() => {
     if (!isCanvasOutOfView) return null;
 
     return (
-        <div className="absolute top-1/2 right-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
             <p className="text-foreground-secondary mb-2">Your canvas is out of view</p>
             <Button onClick={handleRecenterCanvas}>
                 <Scan className="size-4" />
