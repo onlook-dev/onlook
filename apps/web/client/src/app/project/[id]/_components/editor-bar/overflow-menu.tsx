@@ -3,6 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/
 import { Icons } from '@onlook/ui/icons';
 import React from 'react';
 import { InputSeparator } from './separator';
+import { ToolbarButton } from './toolbar-button';
 
 interface OverflowMenuProps {
     isOpen: boolean;
@@ -23,14 +24,13 @@ export const OverflowMenu = ({ isOpen, onOpenChange, overflowGroups, visibleCoun
             {visibleCount > 0 && <InputSeparator />}
             <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
                 <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="toolbar"
-                        className="w-8 h-8 flex items-center justify-center"
+                    <ToolbarButton
+                        isOpen={isOpen}
+                        className="w-10 flex items-center justify-center"
                         aria-label="Show more toolbar controls"
                     >
                         <Icons.DotsHorizontal className="w-5 h-5" />
-                    </Button>
+                    </ToolbarButton>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                     align="end"

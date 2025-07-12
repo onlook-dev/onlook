@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo } from 'react';
 import type { ImageContentData } from '@onlook/models';
 import { ImageItem } from './image-item';
 import { Button } from '@onlook/ui/button';

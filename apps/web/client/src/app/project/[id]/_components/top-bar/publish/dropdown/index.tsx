@@ -3,7 +3,7 @@ import { DeploymentType } from '@onlook/models';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import { AdvancedSettingsSection } from './advanced-settings';
-import { CustomDomainSection } from './custom-domain-section';
+import { CustomDomainSection } from './custom-domain';
 import { LoadingState } from './loading';
 import { PreviewDomainSection } from './preview-domain-section';
 

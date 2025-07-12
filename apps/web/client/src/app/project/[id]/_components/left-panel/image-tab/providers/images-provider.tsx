@@ -1,16 +1,23 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { DefaultSettings } from '@onlook/constants';
 import { observer } from 'mobx-react-lite';
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useFolder } from '../hooks/use-folder';
 import { useImageDelete } from '../hooks/use-image-delete';
 import { useImageMove } from '../hooks/use-image-move';
 import { useImageRename } from '../hooks/use-image-rename';
 import { useImageUpload } from '../hooks/use-image-upload';
-import type { FolderNode } from './types';
+import type { FolderNode } from '@onlook/models';
+import { isEqual } from 'lodash';
+import {
+    createBaseFolder,
+    findFolderInStructureByPath,
+    replaceFolderInStructure,
+} from '@onlook/utility';
+import { DefaultSettings } from '@onlook/constants';
 
 interface ImagesContextValue {
-    folderStructure: FolderNode;
+    rootFolderStructure: FolderNode;
+    updateFolderStructure: (folderStructure: FolderNode) => void;
 
     // Image operations
     isOperating: boolean;
@@ -25,7 +32,7 @@ interface ImagesContextValue {
 const ImagesContext = createContext<ImagesContextValue | null>(null);
 
 interface ImagesProviderProps {
-    children: ReactNode
+    children: ReactNode;
 }
 
 export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
@@ -34,63 +41,44 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
     const renameOperations = useImageRename();
     const uploadOperations = useImageUpload();
     const moveOperations = useImageMove();
-    const folderOperations = useFolder();
+
+    const folderPaths = editorEngine.sandbox.files.filter(file => file.startsWith(DefaultSettings.IMAGE_FOLDER));
 
     // Create initial folder structure from image assets
-    const baseFolderStructure = useMemo(() => {
-        const createFolderNode = (name: string, path: string, fullPath: string): FolderNode => ({
-            name,
-            path,
-            fullPath,
-            images: [],
-            children: new Map(),
-        });
+    const baseFolderStructure = useMemo(() => createBaseFolder(folderPaths), [folderPaths]);
 
-        const root = createFolderNode(DefaultSettings.IMAGE_FOLDER, '', '');
+    const [rootFolderStructure, setRootFolderStructure] = useState<FolderNode>(baseFolderStructure);
 
-        editorEngine.image.imagePaths.forEach((image) => {
-            if (!image) return;
+    // Initialize folder operations with the update callback
+    const folderOperations = useFolder({
+        onFolderStructureUpdate: (folder: FolderNode) => {
+            handleFolderStructureUpdate(folder);
+        },
+        rootFolderStructure: rootFolderStructure,
+    });
 
-            let pathParts = image.split('/');
-            pathParts.pop();
-
-            if (pathParts.length === 0) {
-                root.images.push(image);
-                return;
+    const handleFolderStructureUpdate = (folder: FolderNode) => {
+        const existingFolder = findFolderInStructureByPath(rootFolderStructure, folder.fullPath);
+        if (existingFolder) {
+            const newStructure = replaceFolderInStructure(rootFolderStructure, folder.fullPath, folder);
+            if (newStructure !== null) {
+                setRootFolderStructure(newStructure);
             }
-
-            let currentNode = root;
-            let currentPath = '';
-
-            pathParts.forEach((part: string) => {
-                if (!part) return;
-
-                currentPath = currentPath ? `${currentPath}/${part}` : part;
-                if (!currentNode.children.has(part)) {
-                    currentNode.children.set(
-                        part,
-                        createFolderNode(part, currentPath, currentPath),
-                    );
-                }
-
-                currentNode = currentNode.children.get(part)!;
-            });
-
-            currentNode.images.push(image);
-        });
-
-        return root;
-    }, [editorEngine.image.imagePaths]);
-
-    const [folderStructure, setFolderStructure] = useState<FolderNode>(baseFolderStructure);
+        }
+    };
 
     useEffect(() => {
-        setFolderStructure(baseFolderStructure);
+        const updateFolderStructure = async () => {
+            try {
+                if(!isEqual(baseFolderStructure, rootFolderStructure)) {
+                    setRootFolderStructure(baseFolderStructure);
+                }
+            } catch (error) {
+                console.error('Error updating folder structure:', error);
+            }
+        };
+        updateFolderStructure();
     }, [baseFolderStructure]);
-
-    const triggerFolderStructureUpdate = useCallback(() => {
-        setFolderStructure(prev => ({ ...prev }));
-    }, []);
 
     const isOperating =
         deleteOperations.deleteState.isLoading ||
@@ -100,19 +88,14 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         folderOperations.isOperating;
 
     const value: ImagesContextValue = {
-        folderStructure: folderStructure.children.get(DefaultSettings.IMAGE_FOLDER)!,
+        rootFolderStructure,
+        updateFolderStructure: setRootFolderStructure,
         isOperating,
         deleteOperations,
         renameOperations,
         uploadOperations,
         moveOperations,
-        folderOperations: {
-            ...folderOperations,
-            scanFolderChildren: useCallback(async (folder: FolderNode) => {
-                await folderOperations.scanFolderChildren(folder);
-                triggerFolderStructureUpdate();
-            }, [folderOperations.scanFolderChildren, triggerFolderStructureUpdate]),
-        },
+        folderOperations,
     };
 
     return <ImagesContext.Provider value={value}>{children}</ImagesContext.Provider>;

@@ -12,118 +12,104 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { cn } from '@onlook/ui/utils';
-import type { FolderNode } from '../../providers/types';
+import { useImagesContext } from '../../providers/images-provider';
 
-const FolderCreateModal = observer(
-    ({
-        isOpen,
-        toggleOpen,
-        onCreate,
-        folderName,
-        onNameChange,
-        isLoading = false,
-        error,
-        parentFolder,
-    }: {
-        isOpen: boolean;
-        toggleOpen: () => void;
-        onCreate: () => void;
-        folderName: string;
-        onNameChange: (name: string) => void;
-        isLoading?: boolean;
-        error?: string | null;
-        parentFolder?: FolderNode | null;
-    }) => {
-        const [inputValue, setInputValue] = useState(folderName);
+export const FolderCreateModal = observer(() => {
+    const { folderOperations } = useImagesContext();
+    const { createState, handleCreateFolderInputChange, onCreateFolder, handleCreateModalToggle } =
+        folderOperations;
 
-        useEffect(() => {
-            setInputValue(folderName);
-        }, [folderName, isOpen]);
+    const [inputValue, setInputValue] = useState(createState.newFolderName);
 
-        const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const value = e.target.value;
-            setInputValue(value);
-            onNameChange(value);
-        };
+    useEffect(() => {
+        setInputValue(createState.newFolderName);
+    }, [createState.newFolderName, createState.isCreating]);
 
-        const handleCreate = () => {
-            if (!isLoading && inputValue.trim()) {
-                onCreate();
-            }
-        };
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setInputValue(value);
+        handleCreateFolderInputChange(value);
+    };
 
-        const handleClose = () => {
-            if (!isLoading) {
-                toggleOpen();
-            }
-        };
+    const handleCreate = async () => {
+        if (!createState.isLoading && inputValue.trim()) {
+            await onCreateFolder();
+        }
+    };
 
-        const handleKeyDown = (e: React.KeyboardEvent) => {
-            if (e.key === 'Enter' && inputValue.trim() && !isLoading) {
-                handleCreate();
-            }
-            if (e.key === 'Escape') {
-                handleClose();
-            }
-        };
+    const handleClose = () => {
+        if (!createState.isLoading) {
+            handleCreateModalToggle();
+        }
+    };
 
-        const getLocationText = () => {
-            if (!parentFolder) {
-                return 'in the root directory';
-            }
-            return `in "${parentFolder.name}"`;
-        };
+    const handleKeyDown = async (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && inputValue.trim() && !createState.isLoading) {
+            await handleCreate();
+        }
+        if (e.key === 'Escape') {
+            handleClose();
+        }
+    };
 
-        return (
-            <AlertDialog open={isOpen} onOpenChange={handleClose}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Create New Folder</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Enter a name for the new folder {getLocationText()}
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    
-                    <div className="py-4">
-                        <Input
-                            value={inputValue}
-                            onChange={handleInputChange}
-                            onKeyDown={handleKeyDown}
-                            placeholder="Folder name"
-                            className={cn(
-                                error && 'border-red-500 focus-visible:ring-red-500'
-                            )}
-                            disabled={isLoading}
-                            autoFocus
-                        />
-                        {error && (
-                            <p className="text-sm text-red-500 mt-2">{error}</p>
+    const getLocationText = () => {
+        if (!createState.parentFolder) {
+            return 'in the root directory';
+        }
+        return `in "${createState.parentFolder.name}"`;
+    };
+
+    return (
+        <AlertDialog open={createState.isCreating} onOpenChange={handleClose}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Create New Folder</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Enter a name for the new folder {getLocationText()}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                
+                <div className="py-4">
+                    <Input
+                        value={inputValue}
+                        onChange={handleInputChange}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Folder name"
+                        className={cn(
+                            createState.error && 'border-red-500 focus-visible:ring-red-500'
                         )}
-                    </div>
+                        disabled={createState.isLoading}
+                        autoFocus
+                    />
+                    {createState.error && (
+                        <p className="text-sm text-red-500 mt-2">{createState.error}</p>
+                    )}
+                </div>
 
-                    <AlertDialogFooter>
-                        <Button variant={'ghost'} onClick={handleClose} disabled={isLoading}>
-                            Cancel
-                        </Button>
-                        <Button 
-                            variant={'default'} 
-                            onClick={handleCreate} 
-                            disabled={isLoading || !inputValue.trim()}
-                        >
-                            {isLoading ? (
-                                <>
-                                    <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
-                                    Creating...
-                                </>
-                            ) : (
-                                'Create Folder'
-                            )}
-                        </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        );
-    },
-);
-
-export default FolderCreateModal; 
+                <AlertDialogFooter>
+                    <Button 
+                        variant={'ghost'} 
+                        onClick={handleClose} 
+                        disabled={createState.isLoading}
+                    >
+                        Cancel
+                    </Button>
+                    <Button 
+                        variant={'default'} 
+                        onClick={handleCreate} 
+                        disabled={createState.isLoading || !inputValue.trim()}
+                    >
+                        {createState.isLoading ? (
+                            <>
+                                <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
+                                Creating...
+                            </>
+                        ) : (
+                            'Create Folder'
+                        )}
+                    </Button>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
+}); 

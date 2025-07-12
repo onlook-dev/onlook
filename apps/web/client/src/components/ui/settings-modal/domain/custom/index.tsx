@@ -5,6 +5,7 @@ import { ProductType } from '@onlook/stripe';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { UpgradePrompt } from '../upgrade-prompt';
+import { DomainVerificationProvider } from './use-domain-verification';
 import { Verification } from './verification';
 import { Verified } from './verified';
 
@@ -34,17 +35,19 @@ export const CustomDomain = observer(() => {
     };
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-start gap-3">
-                <h2 className="text-lg">Custom Domain</h2>
-                {product?.type === ProductType.PRO && (
-                    <div className="flex h-5 items-center space-x-1 bg-blue-500/20 dark:bg-blue-500 px-2 rounded-full">
-                        <Icons.Sparkles className="h-4 w-4" />
-                        <span className="text-xs">Pro</span>
-                    </div>
-                )}
+        <DomainVerificationProvider>
+            <div className="space-y-4">
+                <div className="flex items-center justify-start gap-3">
+                    <h2 className="text-lg">Custom Domain</h2>
+                    {product?.type === ProductType.PRO && (
+                        <div className="flex h-5 items-center space-x-1 bg-blue-500/20 dark:bg-blue-500 px-2 rounded-full">
+                            <Icons.Sparkles className="h-4 w-4" />
+                            <span className="text-xs">Pro</span>
+                        </div>
+                    )}
+                </div>
+                {renderContent()}
             </div>
-            {renderContent()}
-        </div>
+        </DomainVerificationProvider>
     );
 });

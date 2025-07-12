@@ -8,8 +8,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import type { ImageContentData } from '@onlook/models';
-import type { FolderNode } from './providers/types';
+import type { ImageContentData, FolderNode } from '@onlook/models';
 
 export default function MoveImageModal({
     onMove,
@@ -46,7 +45,7 @@ export default function MoveImageModal({
                     <AlertDialogDescription>
                         {image && targetFolder && (
                             <>
-                                Are you sure you want to move "{image.fileName}" to "{targetFolder.name || 'root'}" folder?
+                                Are you sure you want to move &quot;{image.fileName}&quot; to &quot;{targetFolder.name ?? 'root'}&quot; folder?
                                 <span className="block mt-2 text-sm">
                                     This will move the image file to the selected folder location.
                                 </span>

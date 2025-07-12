@@ -53,7 +53,7 @@ export class FileSyncManager {
         }
     }
 
-    async updateCache(file: SandboxFile): Promise<void> {
+    updateCache(file: SandboxFile): void {
         this.cache.set(file.path, file);
     }
 
@@ -76,7 +76,7 @@ export class FileSyncManager {
         return Array.from(this.cache.keys());
     }
 
-    async writeEmptyFile(filePath: string, type: 'binary') {
+    writeEmptyFile(filePath: string, type: 'binary') {
         if (this.has(filePath)) {
             return;
         }
@@ -109,7 +109,7 @@ export class FileSyncManager {
         filePaths: string[],
         readFile: (path: string) => Promise<SandboxFile | null>,
     ): Promise<Record<string, SandboxFile>> {
-        const results: Map<string, SandboxFile> = new Map();
+        const results = new Map<string, SandboxFile>();
         const promises = filePaths.map(async (filePath) => {
             try {
                 const content = await this.readOrFetch(filePath, readFile);
@@ -144,7 +144,7 @@ export class FileSyncManager {
     /**
      * Track multiple binary files at once
      */
-    async writeEmptyFilesBatch(filePaths: string[], type: 'binary'): Promise<void> {
+    writeEmptyFilesBatch(filePaths: string[], type: 'binary'): void {
         for (const filePath of filePaths) {
             this.writeEmptyFile(filePath, type);
         }

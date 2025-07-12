@@ -19,9 +19,9 @@ export class ImageManager {
 
         reaction(
             () => this.editorEngine.sandbox.isIndexingFiles,
-            (isIndexingFiles) => {
+            async (isIndexingFiles) => {
                 if (!isIndexingFiles) {
-                    this.scanImages();
+                    await this.scanImages();
                 }
             }
         );
@@ -37,10 +37,10 @@ export class ImageManager {
 
     async upload(file: File, destinationFolder: string): Promise<void> {
         try {
-            const path = `${destinationFolder}/${file.name}`;
+            const path = `${DefaultSettings.IMAGE_FOLDER}/${destinationFolder}/${file.name}`;
             const uint8Array = new Uint8Array(await file.arrayBuffer());
             await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;
@@ -50,7 +50,7 @@ export class ImageManager {
     async delete(originPath: string): Promise<void> {
         try {
             await this.editorEngine.sandbox.delete(originPath);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
@@ -62,7 +62,7 @@ export class ImageManager {
             const basePath = getDirName(originPath);
             const newPath = `${basePath}/${newName}`;
             await this.editorEngine.sandbox.rename(originPath, newPath);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;
@@ -118,6 +118,8 @@ export class ImageManager {
                 return;
             }
             this._imagePaths = files.filter((file: string) => isImageFile(file))
+            console.log('files', files);
+            console.log('imagePaths', this._imagePaths);
         } catch (error) {
             console.error('Error scanning images:', error);
             this._imagePaths = [];
