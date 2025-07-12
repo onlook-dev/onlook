@@ -1,3 +1,5 @@
+'use client';
+
 import type { Frame, LayerNode } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -8,7 +10,6 @@ export class FrameEventManager {
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-
         reaction(
             () => ({
                 position: this.editorEngine.canvas.position,
@@ -22,11 +23,7 @@ export class FrameEventManager {
         );
     }
 
-    clear() {
-        this.handleWindowMutated.cancel();
-    }
-
-    async undebouncedHandleWindowMutated() {
+    private async undebouncedHandleWindowMutated() {
         try {
             await this.editorEngine.refreshLayers();
             await this.editorEngine.overlay.refresh();
@@ -58,7 +55,7 @@ export class FrameEventManager {
         );
     }
 
-    undebouncedViewportCheck = () => {
+    private undebouncedViewportCheck = () => {
         if (typeof window === 'undefined') {
             this.isCanvasOutOfView = false;
             return;
@@ -150,4 +147,6 @@ export class FrameEventManager {
             this.editorEngine.elements.click(validElements);
         }
     }
+
+    clear() { }
 } 
