@@ -14,6 +14,18 @@ export class CreateManager {
         makeAutoObservable(this);
     }
 
+    async generateProjectName(prompt: string): Promise<string> {
+        try {
+            const generatedName = await api.project.generateName.mutate({
+                prompt: prompt,
+            });
+            return generatedName;
+        } catch (error) {
+            console.error('Error generating project name:', error);
+            return 'New Project';
+        }
+    }
+
     async startCreate(userId: string, prompt: string, images: ImageMessageContext[]) {
         this.error = null;
         try {
@@ -30,7 +42,10 @@ export class CreateManager {
                 sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
                 config,
             });
-            const project = await this.createDefaultProject(sandboxId, previewUrl);
+            
+            // Generate project name based on prompt
+            const projectName = await this.generateProjectName(prompt);
+            const project = await this.createDefaultProject(sandboxId, previewUrl, projectName);
             const newProject = await api.project.create.mutate({
                 project,
                 userId,
@@ -57,10 +72,10 @@ export class CreateManager {
         }
     }
 
-    createDefaultProject(sandboxId: string, previewUrl: string): DbProject {
+    createDefaultProject(sandboxId: string, previewUrl: string, name: string = 'New Project'): DbProject {
         const newProject = {
             id: uuidv4(),
-            name: 'New project',
+            name,
             sandboxId,
             sandboxUrl: previewUrl,
             createdAt: new Date(),
@@ -92,7 +107,10 @@ export class CreateManager {
             }
 
             const { sandboxId, previewUrl } = await this.createSandboxFromGithub(repoUrl, branch);
-            const project = await this.createDefaultProject(sandboxId, previewUrl);
+            
+            // Generate project name based on repository name
+            const projectName = await this.generateProjectName(`Import from GitHub repository: ${repo}`);
+            const project = await this.createDefaultProject(sandboxId, previewUrl, projectName);
             const newProject = await api.project.create.mutate({
                 project,
                 userId,

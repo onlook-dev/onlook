@@ -22,6 +22,8 @@ import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { projectCreateRequestRouter } from './createRequest';
+import { generateText } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
 
 export const projectRouter = createTRPCRouter({
     createRequest: projectCreateRequestRouter,
@@ -130,6 +132,37 @@ export const projectRouter = createTRPCRouter({
                 }
                 return newProject;
             });
+        }),
+    generateName: protectedProcedure
+        .input(z.object({
+            prompt: z.string(),
+        }))
+        .mutation(async ({ input }) => {
+            try {
+                const model = anthropic('claude-3-5-sonnet-20241022');
+                
+                const result = await generateText({
+                    model,
+                    prompt: `Based on the following project description, generate a concise and meaningful project name (2-4 words maximum). The name should reflect the main purpose or theme of the project.
+
+Project description: ${input.prompt}
+
+Generate only the project name, nothing else. Keep it short and descriptive.`,
+                    maxTokens: 50,
+                });
+
+                const generatedName = result.text.trim();
+                
+                // Validate the generated name
+                if (generatedName && generatedName.length > 0 && generatedName.length <= 50) {
+                    return generatedName;
+                }
+                
+                return 'New Project';
+            } catch (error) {
+                console.error('Error generating project name:', error);
+                return 'New Project';
+            }
         }),
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
