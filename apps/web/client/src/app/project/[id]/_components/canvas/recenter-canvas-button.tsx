@@ -17,7 +17,7 @@ export const RecenterCanvasButton = observer(() => {
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-24 text-center"
+                    className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-full text-center"
                 >
                     <p className="text-foreground-secondary mb-2">Your canvas is out of view</p>
                     <Button onClick={editorEngine.frameEvent.recenterCanvas}>
