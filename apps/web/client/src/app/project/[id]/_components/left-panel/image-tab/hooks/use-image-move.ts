@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { type ImageContentData, type FolderNode } from '@onlook/models';
+import { type FolderNode, type ImageContentData } from '@onlook/models';
 import { useCallback, useState } from 'react';
 
 interface MoveImageState {
@@ -69,8 +69,14 @@ export const useImageMove = () => {
                 throw new Error('No sandbox session available');
             }
 
-            await editorEngine.sandbox.copy(currentPath, newPath);
-            await editorEngine.sandbox.delete(currentPath);
+            const copied = await editorEngine.sandbox.copy(currentPath, newPath);
+            if (!copied) {
+                throw new Error('Failed to copy image');
+            }
+            const deleted = await editorEngine.sandbox.delete(currentPath);
+            if (!deleted) {
+                throw new Error('Failed to delete image');
+            }
             await editorEngine.image.scanImages();
 
             setMoveState({
