@@ -72,7 +72,7 @@ export const RecenterCanvasButton = observer(() => {
     if (!isCanvasOutOfView) return null;
 
     return (
-        <div className="absolute top-1/2 right-1/2 translate-1/2 text-center">
+        <div className="absolute top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 text-center">
             <p className="text-foreground-secondary mb-2">Your canvas is out of view</p>
             <Button onClick={handleRecenterCanvas}>
                 <Scan className="size-4" />
