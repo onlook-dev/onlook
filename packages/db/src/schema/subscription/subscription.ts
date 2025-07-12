@@ -25,12 +25,15 @@ export const subscriptions = pgTable('subscriptions', {
     stripeCustomerId: text('stripe_customer_id').notNull(),
     stripeSubscriptionId: text('stripe_subscription_id').notNull().unique(),
     stripeSubscriptionItemId: text('stripe_subscription_item_id').notNull().unique(),
+    stripeSubscriptionScheduleId: text('stripe_subscription_schedule_id'),
+    // The current period start and end is used to determine if the subscription has renewed.
+    stripeCurrentPeriodStart: timestamp('stripe_current_period_start', { withTimezone: true }).notNull(),
+    stripeCurrentPeriodEnd: timestamp('stripe_current_period_end', { withTimezone: true }).notNull(),
 
     // Scheduled price change
     scheduledAction: scheduledSubscriptionAction('scheduled_action'),
     scheduledPriceId: uuid('scheduled_price_id').references(() => prices.id),
     scheduledChangeAt: timestamp('scheduled_change_at', { withTimezone: true }),
-    stripeSubscriptionScheduleId: text('stripe_subscription_schedule_id'),
 }).enableRLS();
 
 export const subscriptionRelations = relations(subscriptions, ({ one, many }) => ({

@@ -88,6 +88,24 @@ export const streamResponse = async (req: NextRequest) => {
         model: CLAUDE_MODELS.SONNET_4,
     });
 
+    // Updating the usage record and rate limit is done here to avoid
+    // abuse in the case where a single user sends many concurrent requests.
+    // If the call below fails, the user will not be penalized.
+    let usageRecordId: string | undefined;
+    let rateLimitId: string | undefined;
+    if (chatType === ChatType.EDIT) {
+        const user = await getSupabaseUser(req);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const { api } = await createTRPCClient(req);
+        const incrementRes = await api.usage.increment({
+            type: UsageType.MESSAGE,
+        });
+        usageRecordId = incrementRes?.usageRecordId;
+        rateLimitId = incrementRes?.rateLimitId;
+    }
+
     let systemPrompt: string;
     switch (chatType) {
         case ChatType.CREATE:
@@ -143,25 +161,16 @@ export const streamResponse = async (req: NextRequest) => {
 
             return { ...toolCall, args: JSON.stringify(repairedArgs) };
         },
-        onError: (error) => {
+        onError: async (error) => {
             console.error('Error in chat', error);
+            // if there was an error with the API, do not penalize the user
+            if (usageRecordId && rateLimitId) {
+                await createTRPCClient(req)
+                    .then(({ api }) => api.usage.revertIncrement({ usageRecordId, rateLimitId }))
+                    .catch(error => console.error('Error in chat usage decrement', error));
+            }
         },
     });
-
-    try {
-        if (chatType === ChatType.EDIT) {
-            const user = await getSupabaseUser(req);
-            if (!user) {
-                throw new Error('User not found');
-            }
-            const { api } = await createTRPCClient(req);
-            await api.usage.increment({
-                type: UsageType.MESSAGE,
-            });
-        }
-    } catch (error) {
-        console.error('Error in chat usage increment', error);
-    }
 
     return result.toDataStreamResponse();
 }

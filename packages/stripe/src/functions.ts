@@ -3,7 +3,7 @@ import { createStripeClient } from './client';
 
 export const createCustomer = async ({ name, email }: { name: string; email: string }) => {
     const stripe = createStripeClient();
-    return await stripe.customers.create({ name, email });
+    return stripe.customers.create({ name, email });
 };
 
 export const createMeterEvent = async ({
@@ -67,12 +67,14 @@ export const createSubscription = async ({
 export const createCheckoutSession = async ({
     priceId,
     userId,
+    stripeCustomerId,
     successUrl,
     cancelUrl,
     existing,
 }: {
     priceId: string;
     userId: string;
+    stripeCustomerId: string;
     existing?: {
         subscriptionId: string;
         customerId: string;
@@ -85,7 +87,7 @@ export const createCheckoutSession = async ({
     if (existing) {
         session = await stripe.checkout.sessions.create({
             mode: 'subscription',
-            customer: existing.customerId,
+            customer: stripeCustomerId,
             line_items: [{
                 price: priceId,
                 quantity: 1,
@@ -104,6 +106,7 @@ export const createCheckoutSession = async ({
     } else {
         session = await stripe.checkout.sessions.create({
             mode: 'subscription',
+            customer: stripeCustomerId,
             line_items: [{
                 price: priceId,
                 quantity: 1,
@@ -144,7 +147,7 @@ export const updateSubscription = async ({
     priceId: string;
 }) => {
     const stripe = createStripeClient();
-    return await stripe.subscriptions.update(subscriptionId, {
+    return stripe.subscriptions.update(subscriptionId, {
         items: [{
             id: subscriptionItemId,
             price: priceId,

@@ -1,7 +1,7 @@
 import { Routes } from '@/utils/constants';
-import { prices, subscriptions, toSubscription } from '@onlook/db';
+import { prices, subscriptions, toSubscription, users } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { createBillingPortalSession, createCheckoutSession, PriceKey, releaseSubscriptionSchedule, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
+import { createBillingPortalSession, createCheckoutSession, createCustomer, PriceKey, releaseSubscriptionSchedule, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -51,9 +51,38 @@ export const subscriptionRouter = createTRPCRouter({
     })).mutation(async ({ ctx, input }) => {
         const originUrl = (await headers()).get('origin');
         const user = ctx.user;
+        const userData = await ctx.db.query.users.findFirst({
+            where: eq(users.id, user.id),
+        });
+
+        if (!userData) {
+            throw new Error('User not found');
+        }
+
+        let stripeCustomerId = userData?.stripeCustomerId;
+        if (!stripeCustomerId) {
+            // Store Stripe's customer ID as it is available in all customer-related events and
+            // API requests.
+            // Important, it may seem like a good idea to check if the customer already exists
+            // by looking up the email in Stripe, however, this can be a security risk since
+            // a user may sign up with an email that is not their own.
+            // This may happen when a user changes their email address in the app and the email
+            // is not updated in Stripe.
+            const customer = await createCustomer({
+                name: (userData.firstName
+                    ? userData.firstName + ' ' + userData.lastName
+                    : userData.displayName) || "",
+                email: user.email ?? userData.email,
+            });
+
+            await db.update(users).set({ stripeCustomerId: customer.id }).where(eq(users.id, user.id));
+            stripeCustomerId = customer.id;
+        }
+
         const session = await createCheckoutSession({
             priceId: input.priceId,
             userId: user.id,
+            stripeCustomerId,
             successUrl: `${originUrl}${Routes.CALLBACK_STRIPE_SUCCESS}`,
             cancelUrl: `${originUrl}${Routes.CALLBACK_STRIPE_CANCEL}`,
         });
@@ -118,34 +147,17 @@ export const subscriptionRouter = createTRPCRouter({
         const isUpgrade = newPrice?.monthlyMessageLimit > currentPrice.monthlyMessageLimit;
         if (isUpgrade) {
             // If the new price is higher, we invoice the customer immediately.
-            const updatedSubscription = await updateSubscription({
+            await updateSubscription({
                 subscriptionId: stripeSubscriptionId,
                 subscriptionItemId: stripeSubscriptionItemId,
                 priceId: stripePriceId,
             });
-            await db.update(subscriptions).set({
-                priceId: newPrice.id,
-                status: 'active',
-                updatedAt: new Date(),
-            }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
-            return updatedSubscription;
         } else {
             // If the new price is lower, we schedule the change for the end of the current period.
-            const schedule = await updateSubscriptionNextPeriod({
+            await updateSubscriptionNextPeriod({
                 subscriptionId: stripeSubscriptionId,
                 priceId: stripePriceId,
             });
-            const endDate = schedule.phases[0]?.end_date;
-            const scheduledChangeAt = endDate ? new Date(endDate * 1000) : null;
-
-            const [updatedSubscription] = await db.update(subscriptions).set({
-                priceId: currentPrice.id,
-                updatedAt: new Date(),
-                scheduledPriceId: newPrice.id,
-                stripeSubscriptionScheduleId: schedule.id,
-                scheduledChangeAt,
-            }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
-            return updatedSubscription;
         }
     }),
 
