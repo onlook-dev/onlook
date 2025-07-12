@@ -1,5 +1,6 @@
-import { applyCodeChange } from '@onlook/ai';
 import { env } from '@/env';
+import FirecrawlApp from '@mendable/firecrawl-js';
+import { applyCodeChange } from '@onlook/ai';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
@@ -43,7 +44,6 @@ export const codeRouter = createTRPCRouter({
                     throw new Error('FIRECRAWL_API_KEY is not configured');
                 }
 
-                const FirecrawlApp = (await import('@mendable/firecrawl-js')).default;
                 const app = new FirecrawlApp({ apiKey: env.FIRECRAWL_API_KEY });
 
                 const result = await app.scrapeUrl(input.url, {
@@ -61,7 +61,7 @@ export const codeRouter = createTRPCRouter({
                 // Return the primary content format (markdown by default)
                 // or the first available format if markdown isn't available
                 const content = result.markdown ?? result.html ?? JSON.stringify(result.json, null, 2);
-                
+
                 if (!content) {
                     throw new Error('No content was scraped from the URL');
                 }

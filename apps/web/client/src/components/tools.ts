@@ -1,26 +1,28 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
 import { api } from '@/trpc/client';
+import type {
+    CREATE_FILE_TOOL_PARAMETERS,
+    EDIT_FILE_TOOL_PARAMETERS,
+    LIST_FILES_TOOL_PARAMETERS,
+    READ_FILES_TOOL_PARAMETERS,
+    SCRAPE_URL_TOOL_PARAMETERS,
+    TERMINAL_COMMAND_TOOL_PARAMETERS
+} from '@onlook/ai';
 import {
     CREATE_FILE_TOOL_NAME,
-    type CREATE_FILE_TOOL_PARAMETERS,
     EDIT_FILE_TOOL_NAME,
-    type EDIT_FILE_TOOL_PARAMETERS,
     LIST_FILES_TOOL_NAME,
-    type LIST_FILES_TOOL_PARAMETERS,
     ONLOOK_INSTRUCTIONS,
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
     READ_FILES_TOOL_NAME,
-    type READ_FILES_TOOL_PARAMETERS,
     READ_STYLE_GUIDE_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
-    type SCRAPE_URL_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_NAME,
-    type TERMINAL_COMMAND_TOOL_PARAMETERS
 } from '@onlook/ai';
 import type { SandboxFile } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
-import { type z } from 'zod';
+import { z } from 'zod';
 
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
     try {
