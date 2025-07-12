@@ -1,3 +1,4 @@
+import React from 'react';
 import {
     CREATE_FILE_TOOL_NAME,
     EDIT_FILE_TOOL_NAME,
@@ -12,7 +13,12 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import type { ToolInvocation } from 'ai';
 
-// Map tool names to specific icon components
+
+const formatToolName = (name: string) =>
+    name.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+
+const getFilename = (path?: string) => path?.split('/').pop() || '';
+
 const TOOL_ICONS: Record<string, any> = {
     [LIST_FILES_TOOL_NAME]: Icons.ListBullet,
     [READ_FILES_TOOL_NAME]: Icons.EyeOpen,
@@ -24,6 +30,28 @@ const TOOL_ICONS: Record<string, any> = {
     [SCRAPE_URL_TOOL_NAME]: Icons.Globe,
 };
 
+const LABEL_GENERATORS: Record<string, (args: ToolInvocation['args']) => string> = {
+    [TERMINAL_COMMAND_TOOL_NAME]: () => "Terminal",
+    [EDIT_FILE_TOOL_NAME]: (args) => `Editing ${getFilename(args?.path as string)}` || "Editing file",
+    [CREATE_FILE_TOOL_NAME]: (args) => `Creating file ${getFilename(args?.path as string)}` || "Creating file",
+    [LIST_FILES_TOOL_NAME]: (args) => `Reading directory ${getFilename(args?.path as string)}` || "Reading directory",
+    [READ_FILES_TOOL_NAME]: (args) => {
+        const paths = args?.paths as string[] || [];
+        const fileNames = paths.map(getFilename).join(', ');
+        return `Reading file${paths.length > 1 ? 's' : ''} ${fileNames}` || "Reading files";
+    },
+    [READ_STYLE_GUIDE_TOOL_NAME]: () => "Reading style guide",
+    [ONLOOK_INSTRUCTIONS_TOOL_NAME]: () => "Reading Onlook instructions",
+    [SCRAPE_URL_TOOL_NAME]: (args) => {
+        try {
+            const url = new URL(args?.url as string);
+            return `Visiting ${url.hostname}`;
+        } catch {
+            return "Visiting URL";
+        }
+    },
+};
+
 export function ToolCallSimple({
     toolInvocation,
     className,
@@ -33,63 +61,24 @@ export function ToolCallSimple({
     className?: string;
     loading?: boolean;
 }) {
-    const toolName = toolInvocation.toolName;
+    const { toolName, args } = toolInvocation;
     const Icon = TOOL_ICONS[toolName] ?? Icons.QuestionMarkCircled;
 
-    const getLabel = () => {
+    // useMemo prevents recalculating the label on every render if the toolInvocation hasn't changed.
+    const label = React.useMemo(() => {
         try {
-            let label = '';
-            if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
-                return 'Terminal';
+            const generator = LABEL_GENERATORS[toolName];
+            if (generator) {
+                return generator(args);
             }
-            if (toolName === EDIT_FILE_TOOL_NAME) {
-                if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Editing " + (toolInvocation.args.path.split('/').pop() || '');
-                } else {
-                    label = "Editing file";
-                }
-            } else if (toolName === CREATE_FILE_TOOL_NAME) {
-                if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Creating file " + (toolInvocation.args.path.split('/').pop() || '');
-                } else {
-                    label = "Creating file";
-                }
-            } else if (toolName === LIST_FILES_TOOL_NAME) {
-                if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Reading directory " + (toolInvocation.args.path.split('/').pop() || '');
-                } else {
-                    label = "Reading directory";
-                }
-            } else if (toolName === READ_FILES_TOOL_NAME) {
-                if (toolInvocation.args && 'paths' in toolInvocation.args) {
-                    label = "Reading file" + (toolInvocation.args.paths.length > 1 ? 's' : '') + ' ' + (toolInvocation.args.paths.map((path: string) => path.split('/').pop()).join(', ') || '');
-                } else {
-                    label = "Reading files";
-                }
-            } else if (toolName === READ_STYLE_GUIDE_TOOL_NAME) {
-                label = "Reading style guide";
-            } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
-                label = "Reading Onlook instructions";
-            } else if (toolName === SCRAPE_URL_TOOL_NAME) {
-                if (toolInvocation.args && 'url' in toolInvocation.args) {
-                    try {
-                        const url = new URL(toolInvocation.args.url as string);
-                        label = "Visiting " + url.hostname;
-                    } catch {
-                        label = "Visiting URL";
-                    }
-                } else {
-                    label = "Visiting URL";
-                }
-            } else {
-                label = toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-            }
-            return label;
+            // Fallback for unregistered tools.
+            return formatToolName(toolName);
         } catch (error) {
-            console.error('Error getting label', error);
-            return toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+            console.error('Error getting label for tool:', toolName, error);
+            // Fallback in case a generator function fails.
+            return formatToolName(toolName);
         }
-    }
+    }, [toolName, args]);
 
     return (
         <div className={cn('flex items-center gap-2 ml-2 text-foreground-tertiary/80', className)}>
@@ -101,8 +90,8 @@ export function ToolCallSimple({
                     'bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]'
                 )}
             >
-                {getLabel()}
+                {label}
             </span>
         </div>
     );
-} 
+}
