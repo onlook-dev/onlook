@@ -12,6 +12,8 @@ export const IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_
 
 export const EXCLUDED_PUBLISH_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, 'coverage'];
 
+export const IGNORED_DIRECTORIES = ['api', 'components', 'lib', 'utils', 'node_modules'];
+
 export const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
 
 export const JS_FILE_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs'];
