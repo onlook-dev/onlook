@@ -1,6 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useCallback, useState } from 'react';
-import type { FolderNode } from '../providers/types';
+import type { FolderNode } from '@onlook/models';
+import {
+    createBaseFolder,
+    validateFolderRename,
+    validateFolderMove,
+    validateFolderCreate
+} from '@onlook/utility';
 
 interface FolderState {
     isLoading: boolean;
@@ -27,8 +33,14 @@ interface CreateFolderState extends FolderState {
     parentFolder: FolderNode | null;
 }
 
-export const useFolder = () => {
+interface UseFolderOptions {
+    onFolderStructureUpdate?: (folderStructure: FolderNode) => void;
+    rootFolderStructure?: FolderNode;
+}
+
+export const useFolder = (options: UseFolderOptions = {}) => {
     const editorEngine = useEditorEngine();
+    const { onFolderStructureUpdate, rootFolderStructure } = options;
 
     const [renameState, setRenameState] = useState<RenameFolderState>({
         folderToRename: null,
@@ -76,15 +88,22 @@ export const useFolder = () => {
     }, []);
 
     const onRenameFolder = useCallback(async () => {
-        if (!renameState.folderToRename || !renameState.newFolderName.trim()) {
+        if (!renameState.folderToRename) return;
+
+        const validation = validateFolderRename(
+            renameState.folderToRename.fullPath,
+            renameState.newFolderName,
+        );
+
+        if (!validation.isValid) {
             setRenameState((prev) => ({
                 ...prev,
-                error: 'Folder name cannot be empty',
+                error: validation.error ?? 'Invalid folder name',
             }));
             return;
         }
 
-        if (renameState.newFolderName === renameState.folderToRename.name) {
+        if (validation.error === 'Name unchanged') {
             setRenameState({
                 folderToRename: null,
                 newFolderName: '',
@@ -97,16 +116,11 @@ export const useFolder = () => {
         setRenameState((prev) => ({ ...prev, isLoading: true }));
 
         try {
-            const { folderToRename, newFolderName } = renameState;
+            const { folderToRename } = renameState;
             const oldPath = folderToRename.fullPath;
-            const parentPath = oldPath.includes('/')
-                ? oldPath.substring(0, oldPath.lastIndexOf('/'))
-                : '';
-            const newPath = parentPath ? `${parentPath}/${newFolderName}` : newFolderName;
+            const newPath = validation.newPath!;
 
             await editorEngine.sandbox.rename(oldPath, newPath);
-
-            editorEngine.image.scanImages();
 
             setRenameState({
                 folderToRename: null,
@@ -122,7 +136,7 @@ export const useFolder = () => {
             }));
             console.error('Folder rename error:', error);
         }
-    }, [renameState, editorEngine]);
+    }, [renameState, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
 
     const handleDeleteFolder = useCallback((folder: FolderNode) => {
         setDeleteState({
@@ -138,17 +152,9 @@ export const useFolder = () => {
         setDeleteState((prev) => ({ ...prev, isLoading: true }));
 
         try {
-            const folderPath = `${deleteState.folderToDelete.fullPath}`;
-
-            for (const image of deleteState.folderToDelete.images) {
-                if (image) {
-                    await editorEngine.sandbox.delete(image);
-                }
-            }
+            const folderPath = deleteState.folderToDelete.fullPath;
 
             await editorEngine.sandbox.delete(folderPath, true);
-
-            editorEngine.image.scanImages();
 
             setDeleteState({
                 folderToDelete: null,
@@ -163,8 +169,7 @@ export const useFolder = () => {
             }));
             console.error('Folder delete error:', error);
         }
-    }, [deleteState.folderToDelete, editorEngine]);
-
+    }, [deleteState.folderToDelete, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
 
     const handleMoveToFolder = useCallback((folder: FolderNode, targetFolder: FolderNode) => {
         setMoveState({
@@ -184,11 +189,15 @@ export const useFolder = () => {
             return;
         }
 
-        // Prevent moving folder into itself or its children
-        if (moveState.targetFolder.fullPath.startsWith(moveState.folderToMove.fullPath)) {
+        const validation = validateFolderMove(
+            moveState.folderToMove.fullPath,
+            moveState.targetFolder.fullPath,
+        );
+
+        if (!validation.isValid) {
             setMoveState((prev) => ({
                 ...prev,
-                error: 'Cannot move folder into itself or its children',
+                error: validation.error ?? 'Invalid move operation',
             }));
             return;
         }
@@ -196,20 +205,24 @@ export const useFolder = () => {
         setMoveState((prev) => ({ ...prev, isLoading: true }));
 
         try {
-            const { folderToMove, targetFolder } = moveState;
+            const { folderToMove } = moveState;
             const oldPath = folderToMove.fullPath;
-            const newPath = targetFolder.fullPath
-                ? `${targetFolder.fullPath}/${folderToMove.name}`
-                : folderToMove.name;
+            const newPath = validation.newPath!;
+
+            if (oldPath === newPath) {
+                setMoveState((prev) => ({
+                    ...prev,
+                    error: 'Cannot move folder to the same path',
+                    isLoading: false,
+                }));
+                return;
+            }
 
             const session = editorEngine.sandbox.session?.session;
             if (!session) {
                 throw new Error('No sandbox session available');
             }
             await editorEngine.sandbox.rename(oldPath, newPath);
-
-            // Refresh images
-            editorEngine.image.scanImages();
 
             setMoveState({
                 folderToMove: null,
@@ -225,7 +238,7 @@ export const useFolder = () => {
             }));
             console.error('Folder move error:', error);
         }
-    }, [moveState, editorEngine]);
+    }, [moveState, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
 
     const moveFolderContents = async (folder: FolderNode, newPath: string) => {
         const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
@@ -234,15 +247,17 @@ export const useFolder = () => {
 
         for (const image of folder.images) {
             if (image) {
-                const fileName = image.split('/').pop();
+                const fileName = image.split('/').pop() ?? '';
                 const newImagePath = `${newPath}/${fileName}`;
                 await editorEngine.sandbox.copy(image, newImagePath);
                 await editorEngine.sandbox.delete(image);
             }
         }
 
-        for (const [, subfolder] of folder.children) {
-            await moveSubfolder(subfolder, newPath);
+        if (folder.children) {
+            for (const [, subfolder] of folder.children) {
+                await moveSubfolder(subfolder, newPath);
+            }
         }
     };
 
@@ -284,7 +299,7 @@ export const useFolder = () => {
             isLoading: false,
             error: null,
             newFolderName: '',
-            parentFolder: parentFolder || null,
+            parentFolder: parentFolder ?? null,
         });
     }, []);
 
@@ -296,34 +311,34 @@ export const useFolder = () => {
         }));
     }, []);
 
-    const onCreateFolder = useCallback(async () => {
-        if (!createState.newFolderName.trim()) {
+    const onCreateFolder = useCallback(async (): Promise<boolean> => {
+        const validation = validateFolderCreate(
+            createState.newFolderName,
+            createState.parentFolder?.fullPath,
+        );
+
+        if (!validation.isValid) {
             setCreateState((prev) => ({
                 ...prev,
-                error: 'Folder name cannot be empty',
+                error: validation.error ?? 'Invalid folder name',
             }));
-            return;
+            return false;
         }
 
         setCreateState((prev) => ({ ...prev, isLoading: true }));
 
         try {
-            const folderName = createState.newFolderName.trim();
-            const parentPath = createState.parentFolder?.fullPath || '';
-            const newFolderPath = parentPath ? `${parentPath}/${folderName}` : folderName;
+            const newFolderPath = validation.newPath!;
 
             const session = editorEngine.sandbox.session?.session;
             if (!session) {
                 throw new Error('No sandbox session available');
             }
 
-            // Create the folder with a .gitkeep file
+            // Create the folder with a .gitkeep file to make it visible in the sandbox
             const gitkeepPath = `${newFolderPath}/.gitkeep`.replace(/\\/g, '/');
             const gitkeepContent = '# This folder was created by Onlook\n';
-            await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
-            if (createState.parentFolder) {
-                await scanFolderChildren(createState.parentFolder);
-            }
+            const success = await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
 
             setCreateState({
                 isCreating: false,
@@ -332,14 +347,17 @@ export const useFolder = () => {
                 newFolderName: '',
                 parentFolder: null,
             });
+
+            return success;
         } catch (error) {
             setCreateState((prev) => ({
                 ...prev,
                 error: error instanceof Error ? error.message : 'Failed to create folder',
                 isLoading: false,
             }));
+            return false;
         }
-    }, [createState, editorEngine]);
+    }, [createState, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
 
     const handleCreateModalToggle = useCallback(() => {
         setCreateState({
@@ -351,40 +369,68 @@ export const useFolder = () => {
         });
     }, []);
 
-    const scanFolderChildren = useCallback(async (folder: FolderNode): Promise<void> => {
-        if (!editorEngine.sandbox.session.session) {
-            console.warn('No session available for folder scanning');
-            return;
-        }
-
-        try {
-
-            const folderPathToScan = folder.fullPath
-            const entries = await editorEngine.sandbox.readDir(folderPathToScan);
-            const existingChildNames = new Set(folder.children.keys());
-
-            for (const entry of entries) {
-                if (entry.type === 'directory' && !existingChildNames.has(entry.name)) {
-                    // Create new folder node for empty directory
-                    const childPath = folder.fullPath ? `${folder.fullPath}/${entry.name}` : entry.name;
-                    const newFolderNode: FolderNode = {
-                        name: entry.name,
-                        path: childPath,
-                        fullPath: childPath,
-                        images: [],
-                        children: new Map(),
-                    };
-
-                    folder.children.set(entry.name, newFolderNode);
-                }
+    const scanFolderChildren = useCallback(
+        async (folder: FolderNode): Promise<FolderNode | null> => {
+            if (!editorEngine.sandbox.session?.session) {
+                console.warn('No session available for folder scanning');
+                return null;
             }
-        } catch (error) {
-            console.error('Error scanning folder children:', error);
-        }
-    }, [editorEngine]);
 
+            try {
+                const folderPathToScan = folder.fullPath;
+                const entries = await editorEngine.sandbox.readDir(folderPathToScan);
+
+                // Create a new folder object to maintain immutability
+                const updatedFolder: FolderNode = {
+                    ...folder,
+                    children: new Map(folder.children ?? new Map()),
+                };
+
+                // Process directory entries
+                for (const entry of entries) {
+                    if (entry.type === 'directory' && !updatedFolder.children?.has(entry.name)) {
+                        const childPath = folder.fullPath
+                            ? `${folder.fullPath}/${entry.name}`
+                            : entry.name;
+
+                        const newFolderNode: FolderNode = {
+                            name: entry.name,
+                            fullPath: childPath,
+                            images: [],
+                            children: new Map(),
+                        };
+
+                        updatedFolder.children?.set(entry.name, newFolderNode);
+                    }
+                }
+                
+
+                // Remove directories that no longer exist
+                if (updatedFolder.children) {
+                    for (const [childName] of updatedFolder.children) {
+                        const childExists = entries.some(
+                            entry => entry.type === 'directory' && entry.name === childName
+                        );
+                        if (!childExists) {
+                            updatedFolder.children.delete(childName);
+                        }
+                    }
+                }
+
+                return  updatedFolder ;
+            } catch (error) {
+                console.error('Error scanning folder children:', error);
+                return null;
+            }
+        },
+        [editorEngine],
+    );
     // Check if any operation is loading
-    const isOperating = renameState.isLoading || deleteState.isLoading || moveState.isLoading || createState.isLoading;
+    const isOperating =
+        renameState.isLoading ||
+        deleteState.isLoading ||
+        moveState.isLoading ||
+        createState.isLoading;
 
     return {
         // Rename operations
@@ -412,6 +458,7 @@ export const useFolder = () => {
         handleCreateFolderInputChange,
         onCreateFolder,
         handleCreateModalToggle,
+        createBaseFolder,
 
         // Folder scanning
         scanFolderChildren,

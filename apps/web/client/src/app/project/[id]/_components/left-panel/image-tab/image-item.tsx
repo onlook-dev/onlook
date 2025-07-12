@@ -1,16 +1,15 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { EditorTabValue, type ImageContentData } from '@onlook/models';
+import { EditorTabValue, type ImageContentData, type FolderNode } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { memo, useCallback, useMemo } from 'react';
 import { useImageDragDrop } from './hooks/use-image-drag-drop';
 import { ImageDropdownMenu } from './image-dropdown-menu';
 import { useImagesContext } from './providers/images-provider';
-import type { FolderNode } from './providers/types';
 
 export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
     const editorEngine = useEditorEngine();
     const { onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp } = useImageDragDrop();
-    const { renameOperations, deleteOperations, moveOperations, isOperating, folderStructure } = useImagesContext();
+    const { renameOperations, deleteOperations, moveOperations, isOperating, rootFolderStructure } = useImagesContext();
 
     const {
         renameState,
@@ -20,8 +19,7 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
     } = renameOperations;
 
     const {
-        handleDeleteImage,
-        onDeleteImage
+        handleDeleteImage
     } = deleteOperations;
 
     const {
@@ -148,7 +146,7 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
                 handleOpenFolder={handleOpenFolder}
                 handleMoveToFolder={handleMoveToFolder}
                 isDisabled={isDisabled}
-                folderStructure={folderStructure}
+                folderStructure={rootFolderStructure}
                 selectedTargetFolder={moveState.targetFolder}
                 onSelectTargetFolder={handleSelectTargetFolder}
             />

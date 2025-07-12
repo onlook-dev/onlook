@@ -2,7 +2,7 @@ import { Icons } from '@onlook/ui/icons';
 import { ScrollArea } from '@onlook/ui/scroll-area';
 import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
-import type { FolderNode } from '../providers/types';
+import type { FolderNode } from '@onlook/models';
 
 interface FolderTreeItemProps {
     folder: FolderNode;
@@ -22,7 +22,7 @@ const FolderTreeItem = ({
     asMenuContent = false,
 }: FolderTreeItemProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const hasChildren = folder.children.size > 0;
+    const hasChildren = folder.children && folder.children.size > 0;
 
     const isSelected = selectedFolder?.fullPath === folder.fullPath;
 
@@ -79,7 +79,7 @@ const FolderTreeItem = ({
 
             {isExpanded && hasChildren && (
                 <div>
-                    {Array.from(folder.children.values()).map((child) => (
+                    {Array.from(folder.children?.values() ?? []).map((child) => (
                         <FolderTreeItem
                             key={child.fullPath}
                             folder={child}

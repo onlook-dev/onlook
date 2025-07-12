@@ -69,9 +69,7 @@ export class SandboxManager {
                 timer.log(`Tracking ${imageFiles.length} image files`);
                 for (let i = 0; i < imageFiles.length; i += BATCH_SIZE) {
                     const batch = imageFiles.slice(i, i + BATCH_SIZE);
-                    for (const filePath of batch) {
-                        await this.fileSync.writeEmptyFile(filePath, 'binary');
-                    }
+                    this.fileSync.writeEmptyFilesBatch(batch, 'binary');
                 }
             }
 
@@ -205,6 +203,8 @@ export class SandboxManager {
 
         try {
             if (isImageFile(filePath)) {
+                console.log('reading image file', filePath);
+
                 const content = await this.session.session.fs.readFile(filePath);
                 return this.fileSync.getFileFromContent(filePath, content);
             } else {
@@ -243,7 +243,7 @@ export class SandboxManager {
     }
 
     async readFiles(paths: string[]): Promise<Record<string, SandboxFile>> {
-        const results: Map<string, SandboxFile> = new Map();
+        const results = new Map<string, SandboxFile>();
         for (const path of paths) {
             const file = await this.readFile(path);
             if (!file) {
@@ -419,7 +419,7 @@ export class SandboxManager {
                 const normalizedPath = normalizePath(path);
 
                 if (isImageFile(normalizedPath)) {
-                    await this.fileSync.writeEmptyFile(normalizedPath, 'binary');
+                    this.fileSync.writeEmptyFile(normalizedPath, 'binary');
                 } else {
                     const content = await this.readRemoteFile(normalizedPath);
                     if (content === null) {
