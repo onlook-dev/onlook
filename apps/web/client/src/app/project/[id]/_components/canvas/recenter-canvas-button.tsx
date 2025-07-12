@@ -57,12 +57,17 @@ export const RecenterCanvasButton = observer(() => {
 
         if (firstFrame) {
             const canvasScale = editorEngine.canvas.scale;
+
             const frameCenterX = firstFrame.position.x + firstFrame.dimension.width / 2;
             const frameCenterY = firstFrame.position.y + firstFrame.dimension.height / 2;
 
+            const defaultPosition = editorEngine.canvas.getDefaultPanPosition();
+            const viewportCenterX = window.innerWidth / 2 - defaultPosition.x;
+            const viewportCenterY = window.innerHeight / 2 - defaultPosition.y;
+
             editorEngine.canvas.position = {
-                x: window.innerWidth / 2 - frameCenterX * canvasScale,
-                y: window.innerHeight / 2 - frameCenterY * canvasScale,
+                x: viewportCenterX - frameCenterX * canvasScale,
+                y: viewportCenterY - frameCenterY * canvasScale,
             };
         } else {
             editorEngine.canvas.position = editorEngine.canvas.getDefaultPanPosition();
@@ -72,7 +77,7 @@ export const RecenterCanvasButton = observer(() => {
     if (!isCanvasOutOfView) return null;
 
     return (
-        <div className="absolute top-1/2 right-1/2 translate-x-1/2 -translate-y-1/2 text-center">
+        <div className="absolute top-1/2 right-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
             <p className="text-foreground-secondary mb-2">Your canvas is out of view</p>
             <Button onClick={handleRecenterCanvas}>
                 <Scan className="size-4" />
