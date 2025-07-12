@@ -22,11 +22,7 @@ import { TextColor } from './text-inputs/text-color';
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [
-    {
-        key: 'dimensions',
-        label: 'Dimensions',
-        components: [<Width />, <Height />],
-    },
+
     {
         key: 'base',
         label: 'Base',
@@ -60,15 +56,23 @@ export const DIV_SELECTED_GROUPS = [
     },
 ];
 
+const MUST_EXTEND_GROUPS = [
+    {
+        key: 'dimensions',
+        label: 'Dimensions',
+        components: [<Width />, <Height />],
+    },
+]
+
 export const DivSelected = memo(({ availableWidth = 0 }: { availableWidth?: number }) => {
-    const { visibleCount } = useMeasureGroup({ availableWidth, count: DIV_SELECTED_GROUPS.length });
+    const { visibleCount } = useMeasureGroup({ availableWidth, count: DIV_SELECTED_GROUPS.length});
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'div-selected-overflow-dropdown',
         isOverflow: true
     });
 
     const visibleGroups = DIV_SELECTED_GROUPS.slice(0, visibleCount);
-    const overflowGroups = DIV_SELECTED_GROUPS.slice(visibleCount);
+    const overflowGroups = [...DIV_SELECTED_GROUPS.slice(visibleCount), ...MUST_EXTEND_GROUPS];
 
     return (
         <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">

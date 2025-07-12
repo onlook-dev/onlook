@@ -79,8 +79,8 @@ export const FolderDeleteModal = observer(() => {
                     >
                         {deleteState.isLoading ? (
                             <>
-                                <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
-                                Deleting...
+                                <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                                Deleting
                             </>
                         ) : (
                             'Delete Folder'

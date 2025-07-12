@@ -1,19 +1,19 @@
+import { type FolderNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { findFolderInStructureByPath } from '@onlook/utility';
 import { isEqual } from 'lodash';
 import { useEffect, useRef, useState } from 'react';
 import { useFolderImages } from '../hooks/use-folder-images';
 import { useImageSearch } from '../hooks/use-image-search';
 import { ImageList } from '../image-list';
 import { useImagesContext } from '../providers/images-provider';
-import { type FolderNode } from '@onlook/models';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import { FolderList } from './folder-list';
 import { FolderCreateModal } from './modal/folder-create-modal';
-import { findFolderInStructureByPath } from '@onlook/utility';
 
 interface FolderPathItem {
     folder: FolderNode;
@@ -75,7 +75,7 @@ export default function Folder() {
     }, [currentFolder]);
 
     useEffect(() => {
-        const handleFolderOperations = async () => {   
+        const handleFolderOperations = async () => {
             // Update current folder when structure changes
             const updatedFolder = findFolderInStructureByPath(
                 rootFolderStructure,
