@@ -6,6 +6,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 import { useRef } from 'react';
+import { HoverOnlyTooltip } from '../../editor-bar/hover-tooltip';
 
 export const TopBar = observer(
     ({ frame }: { frame: WebFrame }) => {
@@ -88,15 +89,29 @@ export const TopBar = observer(
                         transformOrigin: 'left center',
                     }}
                 >
-                    <Button variant="ghost" size="icon" className="cursor-pointer" onClick={handleReload}>
-                        <Icons.Reload />
-                    </Button>
-                    <div
-                        ref={urlRef}
-                        className="text-small overflow-hidden text-ellipsis whitespace-nowrap">
-                        {frame.url}
-                    </div>
+                    <HoverOnlyTooltip
+                        content="Refresh Page"
+                        side="top"
+                        className='mb-1'
+                        hideArrow
+                    >
+                        <Button variant="ghost" size="icon" className="cursor-pointer" onClick={handleReload}>
+                            <Icons.Reload />
+                        </Button>
+                    </HoverOnlyTooltip>
+
+                        <div
+                            ref={urlRef}
+                            className="text-small overflow-hidden text-ellipsis whitespace-nowrap">
+                            {frame.url}
+                        </div>
                 </div>
+                <HoverOnlyTooltip
+                    content="Preview in new tab"
+                    side="top"
+                    hideArrow
+                    className='mb-1'
+                >
                 <Link
                     className="absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300"
                     href={frame.url}
@@ -112,6 +127,8 @@ export const TopBar = observer(
                         <Icons.ExternalLink />
                     </Button>
                 </Link>
+                </HoverOnlyTooltip>
+
             </div>
         );
     },

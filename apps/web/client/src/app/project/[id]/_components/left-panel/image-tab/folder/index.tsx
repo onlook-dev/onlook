@@ -90,7 +90,7 @@ export default function Folder() {
         if (folder && target && folder.fullPath === target.fullPath) {
             return folder;
         }
-        for (const child of folder.children.values()) {
+        for (const child of folder?.children.values() ?? []) {
             const found = findFolderInStructure(child, target);
             if (found) return found;
         }
@@ -98,7 +98,7 @@ export default function Folder() {
     };
 
     useEffect(() => {
-        if (currentFolder && currentFolder !== folderStructure) {
+        if (folderStructure && currentFolder && currentFolder !== folderStructure) {
             const updatedCurrentFolder = findFolderInStructure(folderStructure, currentFolder);
 
             if (!updatedCurrentFolder) {

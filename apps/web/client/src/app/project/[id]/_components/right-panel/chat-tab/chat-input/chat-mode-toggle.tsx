@@ -1,8 +1,10 @@
+import { Hotkey } from '@/components/hotkey';
 import { ChatType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { Kbd } from '@onlook/ui/kbd';
+import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -37,38 +39,40 @@ export const ChatModeToggle = observer(({ chatMode, onChatModeChange, disabled =
 
         return (
             <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                disabled={disabled}
+                <HoverOnlyTooltip 
+                    className='mb-1'
+                    content={
+                        <span>
+                            Open mode menu <Kbd>{Hotkey.CHAT_MODE_TOGGLE.readableCommand}</Kbd>
+                        </span>
+                    }
+                    side="top"
+                    hideArrow
+                >
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            disabled={disabled}
+                            className={cn(
+                                'h-8 px-2 text-foreground-onlook group flex items-center gap-1.5',
+                                disabled && 'opacity-50 cursor-not-allowed'
+                            )}
+                        >
+                            <Icon 
                                 className={cn(
-                                    'h-8 px-2 text-foreground-onlook group flex items-center gap-1.5',
-                                    disabled && 'opacity-50 cursor-not-allowed'
-                                )}
-                            >
-                                <Icon 
-                                    className={cn(
-                                        'w-4 h-4',
-                                        disabled 
-                                            ? 'text-foreground-tertiary' 
-                                            : 'text-foreground-secondary group-hover:text-foreground'
-                                    )} 
-                                />
-                                <span className="text-xs font-medium">
-                                    {getCurrentModeLabel()}
-                                </span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                    </TooltipTrigger>
-                    <TooltipPortal>
-                        <TooltipContent side="top">
-                            Open mode menu (⌘.)
-                        </TooltipContent>
-                    </TooltipPortal>
-                </Tooltip>
+                                    'w-4 h-4',
+                                    disabled 
+                                        ? 'text-foreground-tertiary' 
+                                        : 'text-foreground-secondary group-hover:text-foreground'
+                                )} 
+                            />
+                            <span className="text-xs font-medium">
+                                {getCurrentModeLabel()}
+                            </span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="w-40">
                 <DropdownMenuItem
                     onClick={() => onChatModeChange(ChatType.EDIT)}

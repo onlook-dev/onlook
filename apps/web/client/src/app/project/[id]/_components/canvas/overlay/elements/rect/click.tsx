@@ -114,7 +114,7 @@ export const ClickRect = ({
 
         const checkMarginAuto = (side: string) => {
             const marginSide = styles?.defined?.[`margin-${side}`];
-            const margin = styles?.defined?.['margin'];
+            const margin = styles?.defined?.margin;
             const isMarginNumber = marginSide && /^\d+/.test(marginSide)
 
             if (isMarginNumber) {
@@ -310,6 +310,8 @@ export const ClickRect = ({
             </>
         );
     };
+    const isAbsolutelyPositioned = styles?.computed?.position === 'absolute';
+    const shouldShowHandles = shouldShowResizeHandles && isAbsolutelyPositioned;
 
     return (
         <BaseRect
@@ -322,7 +324,7 @@ export const ClickRect = ({
         >
             {renderMarginLabels()}
             {renderPaddingLabels()}
-            {shouldShowResizeHandles && (
+            {shouldShowHandles && (
                 <ResizeHandles
                     width={width}
                     height={height}
