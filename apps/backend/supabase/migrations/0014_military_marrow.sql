@@ -10,7 +10,6 @@ CREATE TABLE "project_custom_domains" (
 );
 --> statement-breakpoint
 ALTER TABLE "project_custom_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "auth"."users" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
 DROP TABLE "published_domains" CASCADE;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" RENAME COLUMN "domain_id" TO "custom_domain_id";--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" RENAME COLUMN "verification_id" TO "freestyle_verification_id";--> statement-breakpoint
