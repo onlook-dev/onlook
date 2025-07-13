@@ -30,7 +30,7 @@ const ImagePicker = forwardRef<
             if (url) {
                 const relativeUrl = urlToRelativePath(url);
                 const fullPath = `${DefaultSettings.IMAGE_FOLDER}${relativeUrl}`;
-                const image = editorEngine.image.find(fullPath);
+                const image = editorEngine.image.search(fullPath);
 
                 if (image) {
                     const imageContent = await editorEngine.image.readImageContent(image);
@@ -82,7 +82,7 @@ const ImagePicker = forwardRef<
 
     const reset = useCallback(async () => {
         if (url) {
-            const image = editorEngine.image.find(url);
+            const image = editorEngine.image.search(url);
             if (image) {
                 const imageContent = await editorEngine.image.readImageContent(image);
                 if (imageContent) {
@@ -98,7 +98,7 @@ const ImagePicker = forwardRef<
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
-    }, [url, editorEngine.image.assets]);
+    }, [url, editorEngine.image.imagePaths]);
 
     useImperativeHandle(
         ref,

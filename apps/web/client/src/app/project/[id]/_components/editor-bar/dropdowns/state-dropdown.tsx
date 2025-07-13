@@ -9,7 +9,7 @@ import { Icons } from '@onlook/ui/icons';
 
 export const StateDropdown = () => {
     return (
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"

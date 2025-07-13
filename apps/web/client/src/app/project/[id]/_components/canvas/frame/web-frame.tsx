@@ -56,12 +56,9 @@ export const WebFrameComponent = observer(
             }
         };
 
-        const reloadIframe = debounce(() => {
-            undebouncedReloadIframe();
-        }, 1000, {
+        const reloadIframe = debounce(undebouncedReloadIframe, 1000, {
             leading: true,
         });
-
 
         const setupPenpalConnection = () => {
             if (!iframeRef.current?.contentWindow) {
@@ -164,7 +161,7 @@ export const WebFrameComponent = observer(
                     iframe.style.transformOrigin = 'top left';
                 },
                 loadURL: (url: string) => {
-                    iframe.src = url;
+                    editorEngine.frames.updateAndSaveToStorage(frame.id, { url });
                 },
                 canGoForward: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
                 canGoBack: () => (iframe.contentWindow?.history?.length ?? 0) > 0,

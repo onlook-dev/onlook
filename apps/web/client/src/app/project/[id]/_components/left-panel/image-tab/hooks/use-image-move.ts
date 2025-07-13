@@ -1,7 +1,6 @@
-import { useCallback, useState } from 'react';
-import { type ImageContentData } from '@onlook/models';
 import { useEditorEngine } from '@/components/store/editor';
-import type { FolderNode } from '../providers/types';
+import { type FolderNode, type ImageContentData } from '@onlook/models';
+import { useCallback, useState } from 'react';
 
 interface MoveImageState {
     targetFolder: FolderNode | null;
@@ -12,7 +11,7 @@ interface MoveImageState {
 
 export const useImageMove = () => {
     const editorEngine = useEditorEngine();
-    
+
     const [moveState, setMoveState] = useState<MoveImageState>({
         targetFolder: null,
         imageToMove: null,
@@ -49,9 +48,9 @@ export const useImageMove = () => {
         try {
             const fileName = image.fileName;
             const currentPath = image.originPath;
-            
+
             // Construct new path based on target folder
-            const newPath = targetFolder.fullPath 
+            const newPath = targetFolder.fullPath
                 ? `${targetFolder.fullPath}/${fileName}`
                 : `${fileName}`;
 
@@ -70,13 +69,15 @@ export const useImageMove = () => {
                 throw new Error('No sandbox session available');
             }
 
-            await editorEngine.sandbox.copy(currentPath, newPath);
-            
-            await editorEngine.sandbox.delete(currentPath);
-            
-            await editorEngine.sandbox.updateFileCache(newPath, '');
-
-            editorEngine.image.scanImages();
+            const copied = await editorEngine.sandbox.copy(currentPath, newPath);
+            if (!copied) {
+                throw new Error('Failed to copy image');
+            }
+            const deleted = await editorEngine.sandbox.delete(currentPath);
+            if (!deleted) {
+                throw new Error('Failed to delete image');
+            }
+            await editorEngine.image.scanImages();
 
             setMoveState({
                 targetFolder: null,

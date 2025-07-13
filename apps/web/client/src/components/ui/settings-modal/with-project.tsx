@@ -36,14 +36,14 @@ export const SettingsModalWithProjects = observer(() => {
             return acc;
         }, [] as PageNode[]);
     }, [pagesManager.tree]);
-    
+
     const globalTabs: SettingTab[] = [
         {
             label: SettingsTabValue.PREFERENCES,
             icon: <Icons.Person className="mr-2 h-4 w-4" />,
             component: <PreferencesTab />,
         },
-    ]
+    ];
 
     const projectTabs: SettingTab[] = [
         {
@@ -68,12 +68,13 @@ export const SettingsModalWithProjects = observer(() => {
         },
     ];
 
-    const pagesTabs: SettingTab[] = flattenPages.filter((page) => page.path !== '/').map((page) => ({
-        label: page.path,
-        icon: <Icons.File className="mr-2 h-4 min-w-4" />,
-        component: <PageTab metadata={page.metadata} path={page.path} />,
-    }));
-    
+    const pagesTabs: SettingTab[] = flattenPages
+        .filter((page) => page.path !== '/')
+        .map((page) => ({
+            label: page.path,
+            icon: <Icons.File className="mr-2 h-4 min-w-4" />,
+            component: <PageTab metadata={page.metadata} path={page.path} />,
+        }));
 
     const tabs = [...globalTabs, ...pagesTabs, ...projectTabs];
 
@@ -149,44 +150,50 @@ export const SettingsModalWithProjects = observer(() => {
                                             ))}
                                         </div>
                                         <Separator />
-                                        <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
-                                            <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
-                                                Pages Settings
-                                            </p>
-                                            {pagesTabs.map((tab) => (
-                                                <Button
-                                                    key={tab.label}
-                                                    variant="ghost"
-                                                    className={cn(
-                                                        'w-full justify-start px-0 hover:bg-transparent',
-                                                        'truncate',
-                                                        stateManager.settingsTab === tab.label
-                                                            ? 'text-foreground-active'
-                                                            : 'text-muted-foreground',
-                                                    )}
-                                                    onClick={() =>
-                                                        (stateManager.settingsTab = tab.label)
-                                                    }
-                                                >
-                                                    {tab.icon}
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <span className="truncate">
-                                                                {capitalizeFirstLetter(
-                                                                    tab.label.toLowerCase(),
-                                                                )}
-                                                            </span>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>
-                                                            {capitalizeFirstLetter(
-                                                                tab.label.toLowerCase(),
+                                        {pagesTabs.length > 0 && (
+                                            <>
+                                                <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
+                                                    <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
+                                                        Pages Settings
+                                                    </p>
+                                                    {pagesTabs.map((tab) => (
+                                                        <Button
+                                                            key={tab.label}
+                                                            variant="ghost"
+                                                            className={cn(
+                                                                'w-full justify-start px-0 hover:bg-transparent',
+                                                                'truncate',
+                                                                stateManager.settingsTab ===
+                                                                    tab.label
+                                                                    ? 'text-foreground-active'
+                                                                    : 'text-muted-foreground',
                                                             )}
-                                                        </TooltipContent>
-                                                    </Tooltip>
-                                                </Button>
-                                            ))}
-                                        </div>
-                                        <Separator />
+                                                            onClick={() =>
+                                                                (stateManager.settingsTab =
+                                                                    tab.label)
+                                                            }
+                                                        >
+                                                            {tab.icon}
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <span className="truncate">
+                                                                        {capitalizeFirstLetter(
+                                                                            tab.label.toLowerCase(),
+                                                                        )}
+                                                                    </span>
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    {capitalizeFirstLetter(
+                                                                        tab.label.toLowerCase(),
+                                                                    )}
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        </Button>
+                                                    ))}
+                                                </div>
+                                                <Separator />
+                                            </>
+                                        )}
                                         <div className="shrink-0 w-48 space-y-1 p-5 text-regularPlus">
                                             <p className="text-muted-foreground text-smallPlus ml-2.5 mt-2 mb-2">
                                                 Global Settings

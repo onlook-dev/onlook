@@ -2,7 +2,7 @@ import { EditorAttributes } from '@onlook/constants';
 import type { ActionElement, ActionLocation, PasteParams } from '@onlook/models/actions';
 import { CodeActionType, type CodeInsert } from '@onlook/models/actions';
 import { StyleChangeType } from '@onlook/models/style';
-import { twMerge } from 'tailwind-merge';
+import { customTwMerge } from '@onlook/utility';
 import { getTailwindClasses } from './tailwind';
 
 export function getInsertedElement(
@@ -20,7 +20,7 @@ export function getInsertedElement(
     );
     const newClasses = getTailwindClasses(actionElement.oid, styles);
     const attributes = {
-        className: twMerge(
+        className: customTwMerge(
             actionElement.attributes['className'],
             actionElement.attributes['class'],
             newClasses,

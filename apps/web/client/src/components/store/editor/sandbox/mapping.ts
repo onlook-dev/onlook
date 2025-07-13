@@ -1,5 +1,5 @@
 import { LAYOUT_FILE_CONDITIONS } from '@onlook/constants';
-import type { TemplateNode } from '@onlook/models';
+import type { SandboxFile, TemplateNode } from '@onlook/models';
 import {
     addOidsToAst,
     createTemplateNodeMap,
@@ -8,76 +8,48 @@ import {
     injectPreloadScript,
 } from '@onlook/parser';
 import { isTargetFile } from '@onlook/utility/src/path';
-import localforage from 'localforage';
-import type { EditorEngine } from '../engine';
 
 export class TemplateNodeMapper {
     private oidToTemplateNodeMap = new Map<string, TemplateNode>();
-    private storageKey
-
-    constructor(private readonly editorEngine: EditorEngine) {
-        this.storageKey = 'template-node-map-' + this.editorEngine.projectId;
-        this.restoreFromLocalStorage();
-    }
-
-    private async restoreFromLocalStorage() {
-        try {
-            const storedCache = await localforage.getItem<Record<string, TemplateNode>>(
-                this.storageKey,
-            );
-            if (storedCache) {
-                Object.entries(storedCache).forEach(([key, value]) => {
-                    this.oidToTemplateNodeMap.set(key, value);
-                });
-            }
-        } catch (error) {
-            console.error('Error restoring from localForage:', error);
-        }
-    }
-
-    private async saveToLocalStorage() {
-        try {
-            const cacheObject = Object.fromEntries(this.oidToTemplateNodeMap.entries());
-            await localforage.setItem(this.storageKey, cacheObject);
-        } catch (error) {
-            console.error('Error saving to localForage:', error);
-        }
-    }
 
     updateMapping(newMap: Map<string, TemplateNode>) {
         this.oidToTemplateNodeMap = new Map([...this.oidToTemplateNodeMap, ...newMap]);
-        this.saveToLocalStorage();
     }
 
     async processFileForMapping(
-        file: string,
-        readFile: (path: string) => Promise<string | null>,
+        filePath: string,
+        readFile: (path: string) => Promise<SandboxFile | null>,
         writeFile: (path: string, content: string) => Promise<boolean>,
     ) {
-        const content = await readFile(file);
-        if (!content) {
-            console.error(`Failed to read file ${file}`);
+        const file = await readFile(filePath);
+        if (!file) {
+            console.error(`Failed to read file ${filePath}`);
             return;
         }
 
-        const ast = getAstFromContent(content);
+        if (file.type === 'binary') {
+            console.error(`Binary files are not supported for mapping`);
+            return;
+        }
+
+        const ast = getAstFromContent(file.content);
         if (!ast) {
-            console.error(`Failed to get ast for file ${file}`);
+            console.error(`Failed to get ast for file ${filePath}`);
             return;
         }
 
-        if (isTargetFile(file, LAYOUT_FILE_CONDITIONS)) {
+        if (isTargetFile(filePath, LAYOUT_FILE_CONDITIONS)) {
             injectPreloadScript(ast);
         }
 
         const { ast: astWithIds, modified } = addOidsToAst(ast);
-        const templateNodeMap = createTemplateNodeMap(astWithIds, file);
+        const templateNodeMap = createTemplateNodeMap(astWithIds, filePath);
         this.updateMapping(templateNodeMap);
 
         // Write the file if it has changed
         if (modified) {
             const contentWithIds = await getContentFromAst(astWithIds);
-            await writeFile(file, contentWithIds);
+            await writeFile(filePath, contentWithIds);
         }
     }
 

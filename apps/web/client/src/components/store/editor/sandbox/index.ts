@@ -1,6 +1,6 @@
-import type { WatchEvent } from '@codesandbox/sdk';
+import type { ReaddirEntry, WatchEvent } from '@codesandbox/sdk';
 import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
-import { type TemplateNode } from '@onlook/models';
+import { type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -15,17 +15,18 @@ import { SessionManager } from './session';
 
 export class SandboxManager {
     readonly session: SessionManager;
+    readonly fileEventBus: FileEventBus = new FileEventBus();
+
     private fileWatcher: FileWatcher | null = null;
     private fileSync: FileSyncManager
     private templateNodeMap: TemplateNodeMapper
-    readonly fileEventBus: FileEventBus = new FileEventBus();
     private isIndexed = false;
     private isIndexing = false;
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
-        this.fileSync = new FileSyncManager(this.editorEngine);
-        this.templateNodeMap = new TemplateNodeMapper(this.editorEngine);
+        this.fileSync = new FileSyncManager();
+        this.templateNodeMap = new TemplateNodeMapper();
         makeAutoObservable(this);
 
         reaction(
@@ -34,8 +35,6 @@ export class SandboxManager {
                 this.isIndexed = false;
                 if (session) {
                     this.index();
-                } else {
-                    this.fileSync.clear();
                 }
             },
         );
@@ -70,7 +69,7 @@ export class SandboxManager {
                 timer.log(`Tracking ${imageFiles.length} image files`);
                 for (let i = 0; i < imageFiles.length; i += BATCH_SIZE) {
                     const batch = imageFiles.slice(i, i + BATCH_SIZE);
-                    await this.fileSync.trackBinaryFilesBatch(batch);
+                    this.fileSync.writeEmptyFilesBatch(batch, 'binary');
                 }
             }
 
@@ -196,35 +195,29 @@ export class SandboxManager {
         await this.fileSync.readOrFetchBatch(filePaths, this.readRemoteFile.bind(this));
     }
 
-    private async readRemoteFile(filePath: string): Promise<string | null> {
+    private async readRemoteFile(filePath: string): Promise<SandboxFile | null> {
         if (!this.session.session) {
             console.error('No session found for remote read');
-            return null;
+            throw new Error('No session found for remote read');
         }
 
         try {
-            return await this.session.session.fs.readTextFile(filePath);
+            if (isImageFile(filePath)) {
+                console.log('reading image file', filePath);
+
+                const content = await this.session.session.fs.readFile(filePath);
+                return this.fileSync.getFileFromContent(filePath, content);
+            } else {
+                const content = await this.session.session.fs.readTextFile(filePath);
+                return this.fileSync.getFileFromContent(filePath, content);
+            }
         } catch (error) {
             console.error(`Error reading remote file ${filePath}:`, error);
             return null;
         }
     }
 
-    private async readRemoteBinaryFile(filePath: string): Promise<Uint8Array | null> {
-        if (!this.session.session) {
-            console.error('No session found for remote binary read');
-            return null;
-        }
-
-        try {
-            return await this.session.session.fs.readFile(filePath);
-        } catch (error) {
-            console.error(`Error reading remote binary file ${filePath}:`, error);
-            return null;
-        }
-    }
-
-    private async writeRemoteFile(filePath: string, fileContent: string): Promise<boolean> {
+    private async writeRemoteFile(filePath: string, content: string | Uint8Array): Promise<boolean> {
         if (!this.session.session) {
             console.error('No session found for remote write');
             return false;
@@ -232,7 +225,11 @@ export class SandboxManager {
 
         try {
             await this.processFileForMapping(filePath);
-            await this.session.session.fs.writeTextFile(filePath, fileContent);
+            if (content instanceof Uint8Array) {
+                await this.session.session.fs.writeFile(filePath, content);
+            } else {
+                await this.session.session.fs.writeTextFile(filePath, content);
+            }
             return true;
         } catch (error) {
             console.error(`Error writing remote file ${filePath}:`, error);
@@ -240,52 +237,22 @@ export class SandboxManager {
         }
     }
 
-    private async writeRemoteBinaryFile(
-        filePath: string,
-        fileContent: Buffer | Uint8Array,
-    ): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for remote binary write');
-            return false;
-        }
-
-        try {
-            await this.session.session.fs.writeFile(filePath, fileContent);
-            return true;
-        } catch (error) {
-            console.error(`Error writing remote binary file ${filePath}:`, error);
-            return false;
-        }
-    }
-
-    async readFile(path: string): Promise<string | null> {
+    async readFile(path: string): Promise<SandboxFile | null> {
         const normalizedPath = normalizePath(path);
         return this.fileSync.readOrFetch(normalizedPath, this.readRemoteFile.bind(this));
     }
 
-    async readFiles(paths: string[]): Promise<Record<string, string>> {
-        const results: Record<string, string> = {};
+    async readFiles(paths: string[]): Promise<Record<string, SandboxFile>> {
+        const results = new Map<string, SandboxFile>();
         for (const path of paths) {
-            const content = await this.readFile(path);
-            if (!content) {
+            const file = await this.readFile(path);
+            if (!file) {
                 console.error(`Failed to read file ${path}`);
                 continue;
             }
-            results[path] = content;
+            results.set(path, file);
         }
-        return results;
-    }
-    async readBinaryFile(path: string): Promise<Uint8Array | null> {
-        const normalizedPath = normalizePath(path);
-        try {
-            return this.fileSync.readOrFetchBinaryFile(
-                normalizedPath,
-                this.readRemoteBinaryFile.bind(this),
-            );
-        } catch (error) {
-            console.error(`Error reading binary file ${normalizedPath}:`, error);
-            return null;
-        }
+        return Object.fromEntries(results);
     }
 
     async writeFile(path: string, content: string): Promise<boolean> {
@@ -298,35 +265,30 @@ export class SandboxManager {
         );
     }
 
-    listAllFiles() {
-        return this.fileSync.listAllFiles();
-    }
-
-    async updateFileCache(filePath: string, content: string): Promise<void> {
-        await this.fileSync.updateCache(filePath, content);
-    }
-
-    async listFiles(dir: string) {
-        return this.session.session?.fs.readdir(dir);
-    }
-
-    listBinaryFiles(dir: string) {
-        return this.fileSync.listBinaryFiles(dir);
-    }
-
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-
         try {
-            return this.fileSync.writeBinary(
+            return this.fileSync.write(
                 normalizedPath,
                 content,
-                this.writeRemoteBinaryFile.bind(this),
+                this.writeRemoteFile.bind(this),
             );
         } catch (error) {
             console.error(`Error writing binary file ${normalizedPath}:`, error);
             return false;
         }
+    }
+
+    get files() {
+        return this.fileSync.listAllFiles();
+    }
+
+    listAllFiles() {
+        return this.fileSync.listAllFiles();
+    }
+
+    readDir(dir: string): Promise<ReaddirEntry[]> {
+        return this.session.session?.fs.readdir(dir) ?? Promise.resolve([]);
     }
 
     async listFilesRecursively(
@@ -457,19 +419,21 @@ export class SandboxManager {
                 const normalizedPath = normalizePath(path);
 
                 if (isImageFile(normalizedPath)) {
-                    await this.fileSync.trackBinaryFile(normalizedPath);
+                    this.fileSync.writeEmptyFile(normalizedPath, 'binary');
                 } else {
                     const content = await this.readRemoteFile(normalizedPath);
                     if (content === null) {
                         console.error(`File content for ${normalizedPath} not found`);
                         continue;
                     }
-                    const contentChanged = await this.fileSync.syncFromRemote(
-                        normalizedPath,
-                        content,
-                    );
-                    if (contentChanged) {
+                    const cachedFile = this.fileSync.readCache(normalizedPath);
+                    if (!cachedFile || cachedFile.content === null || cachedFile.content !== content.content) {
                         await this.processFileForMapping(normalizedPath);
+                        this.fileSync.updateCache({
+                            type: 'text',
+                            path: normalizedPath,
+                            content: content.content as string,
+                        });
                     }
                 }
 
@@ -501,18 +465,18 @@ export class SandboxManager {
     }
 
     async getTemplateNodeChild(
-            parentOid: string,
-            child: TemplateNode,
-            index: number,
-        ): Promise<{ instanceId: string; component: string } | null> {
-            
-            const codeBlock = await this.getCodeBlock(parentOid);
-            
-            if (codeBlock == null) {
-                console.error(`Failed to read code block: ${parentOid}`);
-                return null;
-            }
-            
+        parentOid: string,
+        child: TemplateNode,
+        index: number,
+    ): Promise<{ instanceId: string; component: string } | null> {
+
+        const codeBlock = await this.getCodeBlock(parentOid);
+
+        if (codeBlock == null) {
+            console.error(`Failed to read code block: ${parentOid}`);
+            return null;
+        }
+
         return await getTemplateNodeChild(codeBlock, child, index);
     }
 
@@ -523,13 +487,18 @@ export class SandboxManager {
             return null;
         }
 
-        const content = await this.readFile(templateNode.path);
-        if (!content) {
+        const file = await this.readFile(templateNode.path);
+        if (!file) {
             console.error(`No file found for template node ${oid}`);
             return null;
         }
 
-        const codeBlock = await getContentFromTemplateNode(templateNode, content);
+        if (file.type === 'binary') {
+            console.error(`File ${templateNode.path} is a binary file`);
+            return null;
+        }
+
+        const codeBlock = await getContentFromTemplateNode(templateNode, file.content);
         return codeBlock;
     }
 

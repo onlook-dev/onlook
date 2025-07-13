@@ -1,6 +1,7 @@
 'use client';
 
 import { Button } from '@onlook/ui/button';
+import { ToolbarButton } from '../toolbar-button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { LayoutMode } from '@onlook/utility';
@@ -14,24 +15,23 @@ export const Height = observer(() => {
     const { dimensionState, handleDimensionChange, handleUnitChange, handleLayoutChange } =
         useDimensionControl('height');
 
-    const { isOpen, onOpenChange } = useDropdownControl({ 
-        id: 'height-dropdown' 
+    const { isOpen, onOpenChange } = useDropdownControl({
+        id: 'height-dropdown'
     });
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Height" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="toolbar"
-                        className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                    <ToolbarButton
+                        isOpen={isOpen}
+                        className="flex items-center gap-1"
                     >
                         <Icons.Height className="h-4 min-h-4 w-4 min-w-4" />
                         <span className="text-small">
                             {dimensionState.height.value}
                         </span>
-                    </Button>
+                    </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent

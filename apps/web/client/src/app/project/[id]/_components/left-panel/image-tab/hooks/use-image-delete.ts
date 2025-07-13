@@ -32,7 +32,7 @@ export const useImageDelete = () => {
                 });
             } catch (error) {
                 console.error('Image delete error:', error);
-                setDeleteState((prev) => ({ ...prev, isLoading: false }));
+                setDeleteState((prev) => ({ ...prev, imageToDelete: null, isLoading: false }));
             }
         }
     }, [deleteState.imageToDelete, editorEngine.image]);

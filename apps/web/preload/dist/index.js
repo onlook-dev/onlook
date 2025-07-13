@@ -1885,13 +1885,31 @@ function processDomDebounced(root = document.body) {
   return { rootDomId, layerMap: Array.from(layerMap.entries()) };
 }
 var processDom = import_debounce.default(processDomDebounced, 500);
+var FILTER_CONDITIONS = [
+  (element) => {
+    const parent2 = element.parentElement;
+    return parent2 && parent2.tagName.toLowerCase() === "svg";
+  },
+  (element) => {
+    return element.tagName.toLowerCase() === "next-route-announcer";
+  },
+  (element) => {
+    return element.tagName.toLowerCase() === "nextjs-portal";
+  }
+];
 function buildLayerTree(root) {
   if (!isValidHtmlElement(root)) {
     return null;
   }
   const layerMap = new Map;
   const treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
-    acceptNode: (node) => isValidHtmlElement(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP
+    acceptNode: (node) => {
+      const element = node;
+      if (FILTER_CONDITIONS.some((condition) => condition(element))) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return isValidHtmlElement(element) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP;
+    }
   });
   const rootLayerNode = processNode(root);
   rootLayerNode.children = [];
@@ -1921,7 +1939,7 @@ function processNode(node) {
   const oid = getOid(node);
   const instanceId = getInstanceId(node);
   const textContent = Array.from(node.childNodes).map((node2) => node2.nodeType === Node.TEXT_NODE ? node2.textContent : "").join(" ").trim().slice(0, 500);
-  const style = window.getComputedStyle(node);
+  const style2 = window.getComputedStyle(node);
   const component = node.getAttribute("data-ocname" /* DATA_ONLOOK_COMPONENT_NAME */);
   const layerNode = {
     domId,
@@ -1929,7 +1947,7 @@ function processNode(node) {
     instanceId: instanceId || null,
     textContent: textContent || "",
     tagName: node.tagName.toLowerCase(),
-    isVisible: style.visibility !== "hidden",
+    isVisible: style2.visibility !== "hidden",
     component: component || null,
     frameId: getFrameId(),
     children: null,
@@ -2013,12 +2031,12 @@ function getStylesheetStyles(element) {
 }
 function parseCssText(cssText) {
   const styles = {};
-  cssText.split(";").forEach((style) => {
-    style = style.trim();
-    if (!style) {
+  cssText.split(";").forEach((style2) => {
+    style2 = style2.trim();
+    if (!style2) {
       return;
     }
-    const [property, ...values] = style.split(":");
+    const [property, ...values] = style2.split(":");
     styles[property?.trim() ?? ""] = values.join(":").trim();
   });
   return styles;
@@ -2074,9 +2092,9 @@ function restoreElementStyle(el) {
   try {
     const saved = el.getAttribute("data-onlook-drag-saved-style" /* DATA_ONLOOK_DRAG_SAVED_STYLE */);
     if (saved) {
-      const style = JSON.parse(saved);
-      for (const key in style) {
-        el.style[key] = style[key];
+      const style2 = JSON.parse(saved);
+      for (const key in style2) {
+        el.style[key] = style2[key];
       }
     }
   } catch (e) {
@@ -12248,10 +12266,10 @@ class CSSManager {
     });
     return matchingNodes;
   }
-  updateStyle(domId, style) {
+  updateStyle(domId, style2) {
     const selector2 = getDomIdSelector(domId, false);
     const ast = this.stylesheet;
-    for (const [property2, value] of Object.entries(style)) {
+    for (const [property2, value] of Object.entries(style2)) {
       const cssProperty = this.jsToCssProperty(property2);
       const matchingNodes = this.find(ast, selector2);
       if (!matchingNodes.length) {
@@ -12362,7 +12380,7 @@ class CSSManager {
     const matchingNodes = this.find(ast, selector2);
     matchingNodes.forEach((node) => {
       if (node.type === "Rule") {
-        const cssProperties = jsStyles.map((style) => this.jsToCssProperty(style));
+        const cssProperties = jsStyles.map((style2) => this.jsToCssProperty(style2));
         node.block.children = node.block.children.filter((decl) => !cssProperties.includes(decl.property));
       }
     });
@@ -12867,7 +12885,7 @@ function prepareElementForDragging(el) {
   if (saved) {
     return;
   }
-  const style = {
+  const style2 = {
     position: el.style.position,
     transform: el.style.transform,
     width: el.style.width,
@@ -12875,7 +12893,7 @@ function prepareElementForDragging(el) {
     left: el.style.left,
     top: el.style.top
   };
-  el.setAttribute("data-onlook-drag-saved-style" /* DATA_ONLOOK_DRAG_SAVED_STYLE */, JSON.stringify(style));
+  el.setAttribute("data-onlook-drag-saved-style" /* DATA_ONLOOK_DRAG_SAVED_STYLE */, JSON.stringify(style2));
   el.setAttribute("data-onlook-dragging" /* DATA_ONLOOK_DRAGGING */, "true");
   el.style.zIndex = "1000";
   if (el.getAttribute("data-onlook-drag-direction" /* DATA_ONLOOK_DRAG_DIRECTION */) !== null) {
@@ -17417,5 +17435,5 @@ export {
   penpalParent
 };
 
-//# debugId=24CC7E56470B217C64756E2164756E21
+//# debugId=36F59AB4115EBBC464756E2164756E21
 //# sourceMappingURL=index.js.map

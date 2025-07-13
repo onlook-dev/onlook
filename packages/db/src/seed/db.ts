@@ -8,8 +8,8 @@ import {
     previewDomains,
     prices,
     products,
+    projectCustomDomains,
     projects,
-    publishedDomains,
     subscriptions,
     usageRecords,
     userCanvases,
@@ -17,7 +17,10 @@ import {
     users,
     type Conversation,
     type Message,
+    type Price,
+    type Product,
     type Project,
+    type Subscription,
     type User,
 } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
@@ -27,6 +30,7 @@ import {
     ProjectRole,
     type ChatMessageContext,
 } from '@onlook/models';
+import { PriceKey, ProductType } from '@onlook/stripe';
 import { v4 as uuidv4 } from 'uuid';
 import { SEED_USER } from './constants';
 
@@ -43,7 +47,7 @@ const user0 = {
 
 const project0 = {
     id: uuidv4(),
-    name: 'Test Project',
+    name: 'Preload Script Test',
     sandboxId: '3f5rf6',
     sandboxUrl: 'http://localhost:8084',
     previewImgUrl: null,
@@ -54,38 +58,14 @@ const project0 = {
     description: 'Test Project Description',
 } satisfies Project;
 
-const project1 = {
-    id: uuidv4(),
-    name: 'Test Project 1',
-    sandboxId: '3f5rf6',
-    sandboxUrl: 'https://3f5rf6-8084.csb.app',
-    previewImgUrl: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    description: 'Test Project 1 Description',
-    previewImgPath: null,
-    previewImgBucket: null,
-} satisfies Project;
-
 const canvas0 = createDefaultCanvas(project0.id);
-const canvas1 = createDefaultCanvas(project1.id);
 const frame0 = createDefaultFrame(canvas0.id, project0.sandboxUrl);
-const frame1 = createDefaultFrame(canvas1.id, project1.sandboxUrl);
 const userCanvas0 = createDefaultUserCanvas(user0.id, canvas0.id);
-const userCanvas1 = createDefaultUserCanvas(user0.id, canvas1.id);
 
 const conversation0 = {
     id: uuidv4(),
     projectId: project0.id,
     displayName: 'Test Conversation',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-} satisfies Conversation;
-
-const conversation1 = {
-    id: uuidv4(),
-    projectId: project1.id,
-    displayName: 'Test Conversation 1',
     createdAt: new Date(),
     updatedAt: new Date(),
 } satisfies Conversation;
@@ -149,7 +129,7 @@ const message2 = {
 
 const message3 = {
     id: uuidv4(),
-    conversationId: conversation1.id,
+    conversationId: conversation0.id,
     role: ChatMessageRole.USER,
     content: 'Test message 3',
     commitOid: null,
@@ -162,7 +142,7 @@ const message3 = {
 
 const message4 = {
     id: uuidv4(),
-    conversationId: conversation1.id,
+    conversationId: conversation0.id,
     role: ChatMessageRole.ASSISTANT,
     content: 'Test message 4',
     createdAt: new Date(),
@@ -173,28 +153,59 @@ const message4 = {
     commitOid: null,
 } satisfies Message;
 
+const product0 = {
+    id: uuidv4(),
+    name: 'Test Pro Product',
+    type: ProductType.PRO,
+    stripeProductId: 'prod_1234567890',
+} satisfies Product;
+
+const price0 = {
+    id: uuidv4(),
+    productId: product0.id,
+    key: PriceKey.PRO_MONTHLY_TIER_1,
+    monthlyMessageLimit: 100,
+    stripePriceId: 'price_1234567890',
+} satisfies Price;
+
+const subscription0 = {
+    id: uuidv4(),
+    userId: user0.id,
+    productId: product0.id,
+    priceId: price0.id,
+    startedAt: new Date(),
+    updatedAt: new Date(),
+    status: 'active',
+    stripeCustomerId: 'cus_1234567890',
+    stripeSubscriptionId: 'sub_1234567890',
+    stripeSubscriptionScheduleId: null,
+    stripeSubscriptionItemId: 'si_1234567890',
+    scheduledAction: null,
+    scheduledPriceId: null,
+    scheduledChangeAt: null,
+    endedAt: null,
+} satisfies Subscription;
+
 export const seedDb = async () => {
     console.log('Seeding the database...');
 
     await db.transaction(async (tx) => {
         await tx.insert(users).values(user0);
-        await tx.insert(projects).values([project0, project1]);
+        await tx.insert(products).values([product0]);
+        await tx.insert(prices).values([price0]);
+        await tx.insert(subscriptions).values([subscription0]);
+        await tx.insert(projects).values([project0]);
         await tx.insert(userProjects).values([
             {
                 userId: user0.id,
                 projectId: project0.id,
                 role: ProjectRole.OWNER,
             },
-            {
-                userId: user0.id,
-                projectId: project1.id,
-                role: ProjectRole.OWNER,
-            },
         ]);
-        await tx.insert(canvases).values([canvas0, canvas1]);
-        await tx.insert(userCanvases).values([userCanvas0, userCanvas1]);
-        await tx.insert(frames).values([frame0, frame1]);
-        await tx.insert(conversations).values([conversation0, conversation1]);
+        await tx.insert(canvases).values([canvas0]);
+        await tx.insert(userCanvases).values([userCanvas0]);
+        await tx.insert(frames).values([frame0]);
+        await tx.insert(conversations).values([conversation0]);
         await tx.insert(messages).values([message0, message1, message2, message3, message4]);
     });
 
@@ -206,7 +217,7 @@ export const resetDb = async () => {
     await db.transaction(async (tx) => {
         await tx.delete(deployments);
         await tx.delete(previewDomains);
-        await tx.delete(publishedDomains);
+        await tx.delete(projectCustomDomains);
         await tx.delete(userCanvases);
         await tx.delete(userProjects);
         await tx.delete(usageRecords);

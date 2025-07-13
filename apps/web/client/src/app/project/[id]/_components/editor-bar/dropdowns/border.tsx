@@ -10,6 +10,7 @@ import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { InputRange } from '../inputs/input-range';
 import { SpacingInputs } from '../inputs/spacing-inputs';
+import { ToolbarButton } from '../toolbar-button';
 
 export const Border = observer(() => {
     const [activeTab, setActiveTab] = useState('all');
@@ -21,7 +22,7 @@ export const Border = observer(() => {
     });
 
     return (
-        <DropdownMenu open={isOpen} onOpenChange={onOpenChange}>
+        <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip
                 content="Border"
                 side="bottom"
@@ -30,10 +31,9 @@ export const Border = observer(() => {
                 disabled={isOpen}
             >
                 <DropdownMenuTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="toolbar"
-                        className="flex items-center gap-1 text-muted-foreground hover:text-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                    <ToolbarButton
+                        isOpen={isOpen}
+                        className="flex items-center gap-1 min-w-10"
                     >
                         <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
                         {borderExists && (
@@ -43,7 +43,7 @@ export const Border = observer(() => {
                                     : boxState.borderWidth.value}
                             </span>
                         )}
-                    </Button>
+                    </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent
