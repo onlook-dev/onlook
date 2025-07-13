@@ -8,20 +8,19 @@ import { Toaster } from '@onlook/ui/sonner';
 import { type Metadata } from 'next';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale } from 'next-intl/server';
-import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
 import { AuthProvider } from './auth/auth-context';
 import { faqSchema, organizationSchema } from './seo';
 
 export const metadata: Metadata = {
-    title: 'Onlook – Cursor for Designers',
-    description: 'The power of Cursor for your own website. Onlook lets you edit your React website and write your changes back to code in real-time. Iterate and experiment with AI.',
+    title: 'GeauxCode – Comprehensive Development Platform',
+    description: 'Complete development toolkit with extension builder, system monitor, AI wrapper studio, security suite, database manager, project generators, and more. Build anything with our powerful platform.',
     icons: [{ rel: 'icon', url: '/favicon.ico' }],
     openGraph: {
-        url: 'https://onlook.com/',
+        url: 'https://geauxcode.com/',
         type: 'website',
-        title: 'Onlook – Cursor for Designers',
-        description: 'The power of Cursor for your own website. Onlook lets you edit your React website and write your changes back to code in real-time. Iterate and experiment with AI.',
+        title: 'GeauxCode – Comprehensive Development Platform',
+        description: 'Complete development toolkit with extension builder, system monitor, AI wrapper studio, security suite, database manager, project generators, and more.',
         images: [
             {
                 url: 'https://framerusercontent.com/images/ScnnNT7JpmUya7afqGAets8.png',
@@ -30,10 +29,10 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: 'summary_large_image',
-        site: '@onlookdev',
-        creator: '@onlookdev',
-        title: 'Onlook – Cursor for Designers',
-        description: 'The power of Cursor for your own website. Onlook lets you edit your React website and write your changes back to code in real-time. Iterate and experiment with AI.',
+        site: '@geauxcode',
+        creator: '@geauxcode',
+        title: 'GeauxCode – Comprehensive Development Platform',
+        description: 'Complete development toolkit with extension builder, system monitor, AI wrapper studio, security suite, database manager, project generators, and more.',
         images: [
             {
                 url: 'https://framerusercontent.com/images/ScnnNT7JpmUya7afqGAets8.png',
@@ -42,18 +41,15 @@ export const metadata: Metadata = {
     },
 };
 
-const inter = Inter({
-    subsets: ['latin'],
-    variable: '--font-inter',
-});
+import { Inter } from 'next/font/google';
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     const locale = await getLocale();
 
     return (
-        <html lang={locale} className={inter.variable} suppressHydrationWarning>
+        <html lang={locale} className="font-sans" suppressHydrationWarning>
             <head>
-                <link rel="canonical" href="https://onlook.com/" />
+                <link rel="canonical" href="https://geauxcode.com/" />
                 <meta name="robots" content="index, follow" />
                 <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <script
@@ -65,7 +61,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
                 />
             </head>
-            <body>
+            <body className="font-sans">
                 <TRPCReactProvider>
                     <FeatureFlagsProvider>
                         <PostHogProvider>
