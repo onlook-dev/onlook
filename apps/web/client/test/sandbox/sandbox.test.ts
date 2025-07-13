@@ -138,6 +138,8 @@ describe('SandboxManager', () => {
         // @ts-ignore - accessing private property for testing
         testManager.session.session = testMockSession;
 
+        expect(testManager.session.session).toBe(testMockSession);
+
         const files = await testManager.listFilesRecursively(
             './',
             IGNORED_DIRECTORIES,
