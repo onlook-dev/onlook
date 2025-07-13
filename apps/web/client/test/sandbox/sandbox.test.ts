@@ -134,6 +134,9 @@ describe('SandboxManager', () => {
         };
 
         const testManager = new SandboxManager(mockEditorEngine);
+        
+        // @ts-ignore - accessing private property for testing
+        testManager.session.session = testMockSession;
 
         const files = await testManager.listFilesRecursively(
             './',
