@@ -61,14 +61,44 @@ export class FileSyncManager {
         this.cache.delete(filePath);
     }
 
-    async rename(oldPath: string, newPath: string) {
+    async deleteFolder(folderPath: string) {
+        const filesToDelete = Array.from(this.cache.entries())
+            .filter(([filePath]) => filePath.startsWith(folderPath + '/'))
+            .map(([filePath, file]) => ({ filePath, file }));
+        for (const { filePath } of filesToDelete) {
+            this.cache.delete(filePath);
+        }
+    }
+
+    async rename(oldPath: string, newPath: string) {        
         const normalizedOldPath = normalizePath(oldPath);
         const normalizedNewPath = normalizePath(newPath);
-
         const oldFile = this.cache.get(normalizedOldPath);
         if (oldFile) {
             this.cache.set(normalizedNewPath, oldFile);
             this.cache.delete(normalizedOldPath);
+        }
+    }
+
+    async renameFolder(oldPath: string, newPath: string) {
+        const normalizedOldPath = normalizePath(oldPath);
+        const normalizedNewPath = normalizePath(newPath);
+        
+        // Get all files that are within the old folder path
+        const filesToRename = Array.from(this.cache.entries())
+            .filter(([filePath]) => filePath.startsWith(normalizedOldPath + '/'))
+            .map(([filePath, file]) => ({ oldFilePath: filePath, file }));
+        
+        // Rename each file by updating its path in the cache
+        for (const { oldFilePath, file } of filesToRename) {
+            // Calculate the new file path by replacing the old folder path with the new one
+            const relativePath = oldFilePath.substring(normalizedOldPath.length);
+            const newFilePath = normalizedNewPath + relativePath;
+            
+            // Update the file's path and move it in the cache
+            const updatedFile = { ...file, path: newFilePath };
+            this.cache.set(newFilePath, updatedFile);
+            this.cache.delete(oldFilePath);
         }
     }
 

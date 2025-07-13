@@ -19,7 +19,7 @@ describe('useFolder hook logic', () => {
             const rootFolder = createBaseFolder([]);
             
             expect(rootFolder.name).toBe('public');
-            expect(rootFolder.fullPath).toBe('');
+            expect(rootFolder.fullPath).toBe('public');
             expect(rootFolder.images).toEqual([]);
             expect(rootFolder.children?.size).toBe(0);
         });
@@ -162,7 +162,7 @@ describe('useFolder hook logic', () => {
             const rootFolder = createBaseFolder(['public/image.jpg']);
             
             expect(rootFolder.name).toBe('public');
-            expect(rootFolder.fullPath).toBe('');
+            expect(rootFolder.fullPath).toBe('public');
             
             expect(rootFolder.children?.has('public')).toBe(false);
             expect(rootFolder.images).toContain('public/image.jpg');
@@ -172,8 +172,32 @@ describe('useFolder hook logic', () => {
             const rootFolder = createBaseFolder([]);
             
             expect(rootFolder.name).toBe('public');
-            expect(rootFolder.fullPath).toBe('');
+            expect(rootFolder.fullPath).toBe('public');
             expect(rootFolder.children?.size).toBe(0);
+        });
+
+        test('should create child folders with fullPath including root prefix', () => {
+            const imagePaths = [
+                'public/images/photo1.jpg',
+                'public/icons/icon1.png',
+                'public/assets/gallery/photo2.jpg'
+            ];
+            
+            const rootFolder = createBaseFolder(imagePaths);
+            
+            // Check that child folders have fullPath with root prefix
+            const imagesFolder = rootFolder.children?.get('images')!;
+            expect(imagesFolder.fullPath).toBe('public/images');
+            
+            const iconsFolder = rootFolder.children?.get('icons')!;
+            expect(iconsFolder.fullPath).toBe('public/icons');
+            
+            const assetsFolder = rootFolder.children?.get('assets')!;
+            expect(assetsFolder.fullPath).toBe('public/assets');
+            
+            // Check nested folder
+            const galleryFolder = assetsFolder.children?.get('gallery')!;
+            expect(galleryFolder.fullPath).toBe('public/assets/gallery');
         });
     });
 

@@ -99,7 +99,7 @@ export const getMimeType = (fileName: string): string => {
 };
 
 export const isImageFile = (fileName: string): boolean => {
-    const mimeType = mime.getType(fileName);
+    const mimeType = getMimeType(fileName);
     return IMAGE_EXTENSIONS.includes(mimeType);
 };
 

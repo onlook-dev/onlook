@@ -378,12 +378,24 @@ export class SandboxManager {
     async handleFileChange(event: WatchEvent) {
         const eventType = event.type;
 
-        if (eventType === 'remove') {
+        if (eventType === 'remove') {            
             for (const path of event.paths) {
                 if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
                     continue;
                 }
                 const normalizedPath = normalizePath(path);
+
+                const stat = await this.session.session?.fs.stat(normalizedPath);
+                if(stat?.type === 'directory') {
+                    await this.fileSync.deleteFolder(normalizedPath);
+                    this.fileEventBus.publish({
+                        type: eventType,
+                        paths: [normalizedPath],
+                        timestamp: Date.now(),
+                    });
+                    continue
+                }
+                
                 await this.fileSync.delete(normalizedPath);
 
                 this.fileEventBus.publish({
@@ -392,7 +404,7 @@ export class SandboxManager {
                     timestamp: Date.now(),
                 });
             }
-        } else if (eventType === 'change' || eventType === 'add') {
+        } else if (eventType === 'change' || eventType === 'add') {            
             if (event.paths.length === 2) {
                 // This mean rename a file or a folder, move a file or a folder
                 const [oldPath, newPath] = event.paths;
@@ -401,9 +413,23 @@ export class SandboxManager {
                     console.error('Invalid rename event', event);
                     return;
                 }
+
+                if(!this.session.session) {
+                    console.error('No session found');
+                    return;
+                }
+
+
                 const oldNormalizedPath = normalizePath(oldPath);
                 const newNormalizedPath = normalizePath(newPath);
-                await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
+
+                const stat = await this.session.session.fs.stat(oldPath);
+                
+                if(stat.type === 'directory') {
+                    await this.fileSync.renameFolder(oldNormalizedPath, newNormalizedPath);
+                } else {
+                    await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
+                }
 
                 this.fileEventBus.publish({
                     type: 'rename',
@@ -416,6 +442,12 @@ export class SandboxManager {
                 if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
                     continue;
                 }
+                const stat = await this.session.session?.fs.stat(path);
+                
+                if(stat?.type === 'directory') {
+                    continue
+                }
+
                 const normalizedPath = normalizePath(path);
 
                 if (isImageFile(normalizedPath)) {

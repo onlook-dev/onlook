@@ -1,5 +1,6 @@
 import { DefaultSettings } from '@onlook/constants';
 import type { FolderNode } from '@onlook/models';
+import { isImageFile } from './file';
 
 /**
  * Creates a folder node with the given properties
@@ -15,21 +16,21 @@ export const createFolderNode = (name: string, fullPath: string): FolderNode => 
  * Creates the base folder structure from image paths
  * This is the core logic extracted from the useFolder hook
  */
-export const createBaseFolder = (imagePaths: string[]): FolderNode => {
-    const root = createFolderNode(DefaultSettings.IMAGE_FOLDER, '');
+export const createBaseFolder = (paths: string[]): FolderNode => {
+    const root = createFolderNode(DefaultSettings.IMAGE_FOLDER, DefaultSettings.IMAGE_FOLDER);
 
-    if (imagePaths.length === 0) {
+    if (paths.length === 0) {
         return root;
     }
 
-    imagePaths.forEach((image) => {
-        if (!image) return;
+    paths.forEach((path) => {
+        if (!path) return;
 
-        const pathParts = image.split('/');
+        const pathParts = path.split('/');
         pathParts.pop(); // Remove filename
 
-        if (pathParts.length === 0) {
-            root.images.push(image);
+        if (pathParts.length === 0 && isImageFile(path)) {
+            root.images.push(path);
             return;
         }
 
@@ -40,19 +41,19 @@ export const createBaseFolder = (imagePaths: string[]): FolderNode => {
         }
 
         // If after skipping root, there are no more parts, add to root
-        if (startIndex >= pathParts.length) {
-            root.images.push(image);
+        if (startIndex >= pathParts.length && isImageFile(path)) {
+            root.images.push(path);
             return;
         }
 
         let currentNode = root;
-        let currentPath = '';
+        let currentPath = DefaultSettings.IMAGE_FOLDER;
 
         for (let i = startIndex; i < pathParts.length; i++) {
             const part = pathParts[i];
             if (!part) continue;
 
-            currentPath = currentPath ? `${currentPath}/${part}` : part;
+            currentPath = `${currentPath}/${part}`;
             if (!currentNode.children?.has(part)) {
                 currentNode.children?.set(part, createFolderNode(part, currentPath));
             }
@@ -60,7 +61,9 @@ export const createBaseFolder = (imagePaths: string[]): FolderNode => {
             currentNode = currentNode.children?.get(part) ?? createFolderNode(part, currentPath);
         }
 
-        currentNode.images.push(image);
+        if (isImageFile(path)) {
+            currentNode.images.push(path);
+        }
     });
 
     return root;
@@ -162,6 +165,13 @@ export const generateNewFolderPath = (
         default:
             return currentPath;
     }
+};
+
+export const ensureImageFolderPrefix = (path: string): string => {
+    if (path.startsWith(DefaultSettings.IMAGE_FOLDER)) {
+        return path;
+    }
+    return normalizePath(`${DefaultSettings.IMAGE_FOLDER}/${path}`);
 };
 
 /**
