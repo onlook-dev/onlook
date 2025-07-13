@@ -1,5 +1,6 @@
 import { IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
+import { runInAction } from 'mobx';
 
 // Setup mocks before imports
 // Mock localforage before importing anything that uses it
@@ -65,6 +66,7 @@ describe('SandboxManager', () => {
         // Create a sandbox with a mock FileSyncManager
         mockFileSync = {
             readOrFetch: mock(async () => '<div>Mocked Content</div>'),
+            readOrFetchBatch: mock(async () => []),
             write: mock(async () => true),
             clear: mock(async () => undefined),
             updateCache: mock(async () => undefined),
@@ -99,6 +101,7 @@ describe('SandboxManager', () => {
                 }),
                 watch: mock(async () => mockWatcher),
             },
+            disconnect: mock(async () => undefined),
         };
 
         mockEditorEngine = {
@@ -131,14 +134,15 @@ describe('SandboxManager', () => {
                 writeTextFile: mock(async () => true),
                 watch: mock(async () => mockWatcher),
             },
+            disconnect: mock(async () => undefined),
         };
 
         const testManager = new SandboxManager(mockEditorEngine);
         
-        // @ts-ignore - accessing private property for testing
-        testManager.session.session = testMockSession;
-
-        expect(testManager.session.session).toBe(testMockSession);
+        runInAction(() => {
+            // @ts-ignore - accessing private property for testing
+            testManager.session.session = testMockSession;
+        });
 
         const files = await testManager.listFilesRecursively(
             './',
@@ -154,6 +158,12 @@ describe('SandboxManager', () => {
     });
 
     test('should read file content', async () => {
+        // Set up session for this test
+        runInAction(() => {
+            // @ts-ignore - accessing private property for testing
+            sandboxManager.session.session = mockSession;
+        });
+
         // Override the fileSync property to use our specific mock
         // @ts-ignore - accessing private property for testing
         sandboxManager.fileSync = mockFileSync;
@@ -164,6 +174,12 @@ describe('SandboxManager', () => {
     });
 
     test('should write file content', async () => {
+        // Set up session for this test
+        runInAction(() => {
+            // @ts-ignore - accessing private property for testing
+            sandboxManager.session.session = mockSession;
+        });
+
         // Override the fileSync property to use our specific mock
         // @ts-ignore - accessing private property for testing
         sandboxManager.fileSync = mockFileSync;
@@ -175,12 +191,18 @@ describe('SandboxManager', () => {
         expect(result).toBe(true);
         expect(mockFileSync.write).toHaveBeenCalledWith(
             'file1.tsx',
-            '<div id="123">Modified Component</div>',
+            '<div id="123">Modified Component</div>;\n',
             expect.any(Function),
         );
     });
 
     test('should read from localforage cache when reading files multiple times', async () => {
+        // Set up session for this test
+        runInAction(() => {
+            // @ts-ignore - accessing private property for testing
+            sandboxManager.session.session = mockSession;
+        });
+
         // First read gets from filesystem and caches
         await sandboxManager.readFile('file1.tsx');
 
@@ -189,7 +211,7 @@ describe('SandboxManager', () => {
 
         // Second read should use cache
         const content2 = await sandboxManager.readFile('file1.tsx');
-        expect(content2).toBe('<div>Test Component</div>');
+        expect(content2.content).toBe('<div>Test Component</div>');
 
         // Filesystem should not be accessed for the second read
         expect(mockSession.fs.readTextFile).not.toHaveBeenCalled();
@@ -208,6 +230,7 @@ describe('SandboxManager', () => {
                 readdir: mock(async () => []),
                 watch: mock(async () => mockWatcher),
             },
+            disconnect: mock(async () => undefined),
         };
 
         const errorManager = new SandboxManager(mockEditorEngine);
@@ -215,6 +238,7 @@ describe('SandboxManager', () => {
         // We need to create a custom fileSync mock that returns null for this test
         const errorFileSync = {
             readOrFetch: mock(async () => null),
+            readOrFetchBatch: mock(async () => []),
             write: mock(async () => false),
             clear: mock(async () => undefined),
             updateCache: mock(async () => undefined),
@@ -233,7 +257,7 @@ describe('SandboxManager', () => {
         expect(writeResult).toBe(false);
         expect(errorFileSync.write).toHaveBeenCalledWith(
             'error.tsx',
-            '<div>Content</div>',
+            '<div>Content</div>;\n',
             expect.any(Function),
         );
     });
@@ -310,6 +334,12 @@ describe('SandboxManager', () => {
     });
 
     test('should normalize file paths for read', async () => {
+        // Set up session for this test
+        runInAction(() => {
+            // @ts-ignore - accessing private property for testing
+            sandboxManager.session.session = mockSession;
+        });
+
         // Override the fileSync property in the sandboxManager
         // @ts-ignore - accessing private property for testing
         sandboxManager.fileSync = mockFileSync;
@@ -334,6 +364,12 @@ describe('SandboxManager', () => {
     });
 
     test('should normalize file paths for write', async () => {
+        // Set up session for this test
+        runInAction(() => {
+            // @ts-ignore - accessing private property for testing
+            sandboxManager.session.session = mockSession;
+        });
+
         // Override the fileSync property in the sandboxManager
         // @ts-ignore - accessing private property for testing
         sandboxManager.fileSync = mockFileSync;
@@ -352,7 +388,7 @@ describe('SandboxManager', () => {
             await sandboxManager.writeFile(variant, 'test');
             expect(mockFileSync.write).toHaveBeenCalledWith(
                 normalizedPath,
-                'test',
+                'test;\n',
                 expect.any(Function),
             );
         }
