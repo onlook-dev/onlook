@@ -24,54 +24,40 @@ import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
 import { z } from 'zod';
 
+type ToolHandler = (args: any, editorEngine: EditorEngine) => Promise<any>;
+
+
+const toolHandlers: Record<string, ToolHandler> = {
+    [LIST_FILES_TOOL_NAME]: handleListFiles,
+    [READ_FILES_TOOL_NAME]: handleReadFiles,
+    [READ_STYLE_GUIDE_TOOL_NAME]: handleReadStyleGuide,
+    [ONLOOK_INSTRUCTIONS_TOOL_NAME]: async () => ONLOOK_INSTRUCTIONS,
+    [EDIT_FILE_TOOL_NAME]: handleEditFile,
+    [CREATE_FILE_TOOL_NAME]: handleCreateFile,
+    [TERMINAL_COMMAND_TOOL_NAME]: handleTerminalCommand,
+    [SCRAPE_URL_TOOL_NAME]: handleScrapeUrl,
+};
+
+
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
+    const { toolName, args } = toolCall;
+    const handler = toolHandlers[toolName];
+
+    if (!handler) {
+        return `Unknown tool call: ${toolName}`;
+    }
+
     try {
-        const toolName = toolCall.toolName;
-        if (toolName === LIST_FILES_TOOL_NAME) {
-            return await handleListFilesTool(
-                toolCall.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
-                editorEngine,
-            );
-        } else if (toolName === READ_FILES_TOOL_NAME) {
-            return await handleReadFilesTool(
-                toolCall.args as z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
-                editorEngine,
-            );
-        } else if (toolName === READ_STYLE_GUIDE_TOOL_NAME) {
-            const result = await handleReadStyleGuideTool(editorEngine);
-            return result;
-        } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
-            const result = ONLOOK_INSTRUCTIONS;
-            return result;
-        } else if (toolName === EDIT_FILE_TOOL_NAME) {
-            return await handleEditFileTool(
-                toolCall.args as z.infer<typeof EDIT_FILE_TOOL_PARAMETERS>,
-                editorEngine,
-            );
-        } else if (toolName === CREATE_FILE_TOOL_NAME) {
-            return await handleCreateFileTool(
-                toolCall.args as z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
-                editorEngine,
-            );
-        } else if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
-            return await handleTerminalCommandTool(
-                toolCall.args as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
-                editorEngine,
-            );
-        } else if (toolName === SCRAPE_URL_TOOL_NAME) {
-            return await handleScrapeUrlTool(
-                toolCall.args as z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
-            );
-        } else {
-            throw new Error(`Unknown tool call: ${toolCall.toolName}`);
-        }
+        console.log(`Executing tool: ${toolName}`, args);
+        return await handler(args, editorEngine);
     } catch (error) {
-        console.error('Error handling tool call', error);
-        return 'error handling tool call ' + error;
+        console.error(`Error handling tool call "${toolName}":`, error);
+        // Return a user-friendly error message.
+        return error instanceof Error ? error.message : 'An unknown error occurred.';
     }
 }
 
-async function handleListFilesTool(
+async function handleListFiles(
     args: z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<{ path: string; type: 'file' | 'directory' }[]> {
@@ -85,7 +71,7 @@ async function handleListFilesTool(
     }));
 }
 
-async function handleReadFilesTool(
+async function handleReadFiles(
     args: z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<{ path: string; content: string; type: 'text' | 'binary' }[]> {
@@ -114,7 +100,7 @@ async function handleReadFilesTool(
     return files;
 }
 
-async function handleReadStyleGuideTool(editorEngine: EditorEngine): Promise<{
+async function handleReadStyleGuide(editorEngine: EditorEngine): Promise<{
     configPath: string;
     cssPath: string;
     configContent: string;
@@ -127,7 +113,7 @@ async function handleReadStyleGuideTool(editorEngine: EditorEngine): Promise<{
     return result;
 }
 
-async function handleEditFileTool(
+async function handleEditFile(
     args: z.infer<typeof EDIT_FILE_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<string> {
@@ -161,7 +147,7 @@ async function handleEditFileTool(
     return 'File edited!';
 }
 
-async function handleCreateFileTool(
+async function handleCreateFile(
     args: z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<string> {
@@ -176,7 +162,7 @@ async function handleCreateFileTool(
     return 'File created';
 }
 
-async function handleTerminalCommandTool(
+async function handleTerminalCommand(
     args: z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<{
@@ -187,7 +173,7 @@ async function handleTerminalCommandTool(
     return await editorEngine.sandbox.session.runCommand(args.command);
 }
 
-async function handleScrapeUrlTool(
+async function handleScrapeUrl(
     args: z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
 ): Promise<string> {
     try {
