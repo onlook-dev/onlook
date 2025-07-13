@@ -7,7 +7,8 @@ import {
     READ_FILES_TOOL_NAME,
     READ_STYLE_GUIDE_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
-    TERMINAL_COMMAND_TOOL_NAME
+    TERMINAL_COMMAND_TOOL_NAME,
+    SAVE_IMAGE_TOOL_NAME
 } from '@onlook/ai';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
@@ -28,6 +29,7 @@ const TOOL_ICONS: Record<string, any> = {
     [CREATE_FILE_TOOL_NAME]: Icons.FilePlus,
     [TERMINAL_COMMAND_TOOL_NAME]: Icons.Terminal,
     [SCRAPE_URL_TOOL_NAME]: Icons.Globe,
+    [SAVE_IMAGE_TOOL_NAME]: Icons.FilePlus, 
 };
 
 const LABEL_GENERATORS: Record<string, (args: ToolInvocation['args']) => string> = {
@@ -50,6 +52,7 @@ const LABEL_GENERATORS: Record<string, (args: ToolInvocation['args']) => string>
             return "Visiting URL";
         }
     },
+    [SAVE_IMAGE_TOOL_NAME]: (args) => `Saving image to ${getFilename(args?.path as string)}` || "Saving image",
 };
 
 export function ToolCallSimple({

@@ -6,7 +6,8 @@ import type {
     LIST_FILES_TOOL_PARAMETERS,
     READ_FILES_TOOL_PARAMETERS,
     SCRAPE_URL_TOOL_PARAMETERS,
-    TERMINAL_COMMAND_TOOL_PARAMETERS
+    TERMINAL_COMMAND_TOOL_PARAMETERS,
+    SAVE_IMAGE_TOOL_PARAMETERS
 } from '@onlook/ai';
 import {
     CREATE_FILE_TOOL_NAME,
@@ -18,8 +19,10 @@ import {
     READ_STYLE_GUIDE_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_NAME,
+    SAVE_IMAGE_TOOL_NAME,
 } from '@onlook/ai';
-import type { SandboxFile } from '@onlook/models';
+import type { ImageMessageContext, SandboxFile } from '@onlook/models';
+import { MessageContextType } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
 import { z } from 'zod';
@@ -36,6 +39,7 @@ const toolHandlers: Record<string, ToolHandler> = {
     [CREATE_FILE_TOOL_NAME]: handleCreateFile,
     [TERMINAL_COMMAND_TOOL_NAME]: handleTerminalCommand,
     [SCRAPE_URL_TOOL_NAME]: handleScrapeUrl,
+    [SAVE_IMAGE_TOOL_NAME]: handleCreateImage
 };
 
 
@@ -194,5 +198,68 @@ async function handleScrapeUrl(
     } catch (error) {
         console.error('Error scraping URL:', error);
         throw new Error(`Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+async function handleCreateImage(
+    args: z.infer<typeof SAVE_IMAGE_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+): Promise<string> {
+    const { path, fileId } = args;
+
+    const imageContext = editorEngine.chat.context.context.find(
+        (c): c is ImageMessageContext =>
+            c.type === MessageContextType.IMAGE && c.fileId === fileId,
+    );
+
+    if (!imageContext) {
+        const errorMessage = `Error: Could not find an image in the context with fileId "${fileId}".`;
+        console.error(errorMessage);
+        return errorMessage;
+    }
+
+    const decodeBase64Image = (base64String: string): Uint8Array => {
+        const commaIndex = base64String.indexOf(',');
+        if (commaIndex === -1) {
+            throw new Error('Invalid base64 string: missing data URI scheme.');
+        }
+
+        const base64Data = base64String.substring(commaIndex + 1);
+
+        const binaryString = atob(base64Data);
+
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+
+        return bytes;
+    }
+
+
+    try {
+        const imageData = decodeBase64Image(imageContext.content);
+
+        await editorEngine.sandbox.writeBinaryFile(path, imageData);
+        
+        editorEngine.chat.context.context = editorEngine.chat.context.context.filter(
+            (c) => {
+                if (c.type !== MessageContextType.IMAGE) {
+                    return true;
+                }
+                return c.fileId !== fileId;
+            }
+        );
+
+        const successMessage = `Successfully saved image to ${path}.`;
+        console.log(successMessage);
+        return successMessage;
+
+    } catch (error) {
+        const errorMessage = `Error: Failed to save image to path "${path}". Reason: ${error instanceof Error ? error.message : String(error)}`;
+        console.error(errorMessage, error);
+        return errorMessage;
     }
 }

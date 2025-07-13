@@ -63,3 +63,21 @@ export const terminalCommandTool = tool({
     description: 'Run a Bash command in the terminal',
     parameters: TERMINAL_COMMAND_TOOL_PARAMETERS,
 });
+
+export const SAVE_IMAGE_TOOL_NAME = 'save_image';
+export const SAVE_IMAGE_TOOL_PARAMETERS = z.object({
+    path: z
+        .string()
+        .describe(
+            'The absolute path where the image file should be saved, including the desired file name and extension (e.g., /src/images/new_logo.png)',
+        ),
+    fileId: z
+        .string()
+        .describe(
+            'The unique identifier (fileId) of the image that is already in the chat context and needs to be saved to the filesystem',
+        ),
+});
+export const saveImageTool = tool({
+    description: 'Create the image file for images in the context of the chat',
+    parameters: SAVE_IMAGE_TOOL_PARAMETERS,
+});
