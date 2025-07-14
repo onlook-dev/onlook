@@ -63,11 +63,10 @@ export class FileSyncManager {
         this.cache.set(file.path, file);
     }
 
-    updateDirectoryCache(dirPath: string, files: SandboxFile[]): void {
+    updateDirectoryCache(dirPath: string): void {
         this.directoryCache.set(dirPath, {
             type: 'directory',
             path: dirPath,
-            files
         });
     }
 
@@ -84,7 +83,7 @@ export class FileSyncManager {
         this.cache.delete(path);
     }
 
-    async rename(oldPath: string, newPath: string) {        
+    async rename(oldPath: string, newPath: string) {
         const normalizedOldPath = normalizePath(oldPath);
         const normalizedNewPath = normalizePath(newPath);
         const oldFile = this.cache.get(normalizedOldPath);
@@ -97,18 +96,18 @@ export class FileSyncManager {
     async renameDir(oldPath: string, newPath: string) {
         const normalizedOldPath = normalizePath(oldPath);
         const normalizedNewPath = normalizePath(newPath);
-        
+
         // Get all files that are within the old folder path
         const filesToRename = Array.from(this.cache.entries())
             .filter(([filePath]) => filePath.startsWith(normalizedOldPath + '/'))
             .map(([filePath, file]) => ({ oldFilePath: filePath, file }));
-        
+
         // Rename each file by updating its path in the cache
         for (const { oldFilePath, file } of filesToRename) {
             // Calculate the new file path by replacing the old folder path with the new one
             const relativePath = oldFilePath.substring(normalizedOldPath.length);
             const newFilePath = normalizedNewPath + relativePath;
-            
+
             // Update the file's path and move it in the cache
             const updatedFile = { ...file, path: newFilePath };
             this.cache.set(newFilePath, updatedFile);
@@ -118,7 +117,6 @@ export class FileSyncManager {
         this.directoryCache.set(normalizedNewPath, {
             type: 'directory',
             path: normalizedNewPath,
-            files: filesToRename.map(({ file }) => file)
         });
 
         this.directoryCache.delete(normalizedOldPath);

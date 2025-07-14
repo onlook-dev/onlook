@@ -129,7 +129,7 @@ export class SandboxManager {
                         if (!excludeDirs.includes(entry.name)) {
                             dirsToProcess.push(normalizedPath);
                         }
-                        this.fileSync.updateDirectoryCache(normalizedPath, []);
+                        this.fileSync.updateDirectoryCache(normalizedPath);
                     } else if (entry.type === 'file') {
                         allPaths.push(normalizedPath);
                     }
@@ -383,7 +383,7 @@ export class SandboxManager {
     async handleFileChange(event: WatchEvent) {
         const eventType = event.type;
 
-        if (eventType === 'remove') {            
+        if (eventType === 'remove') {
             for (const path of event.paths) {
                 if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
                     continue;
@@ -391,7 +391,7 @@ export class SandboxManager {
                 const normalizedPath = normalizePath(path);
 
                 const isDirectory = this.fileSync.hasDirectory(normalizedPath);
-                
+
                 if (isDirectory) {
                     this.fileSync.deleteDir(normalizedPath);
                     this.fileEventBus.publish({
@@ -401,7 +401,7 @@ export class SandboxManager {
                     });
                     continue
                 }
-                
+
                 await this.fileSync.delete(normalizedPath);
 
                 this.fileEventBus.publish({
@@ -410,13 +410,13 @@ export class SandboxManager {
                     timestamp: Date.now(),
                 });
             }
-        } else if (eventType === 'change' || eventType === 'add') {      
+        } else if (eventType === 'change' || eventType === 'add') {
             const session = this.session.session;
-            if(!session) {
+            if (!session) {
                 console.error('No session found');
                 return;
             }
-            
+
             if (event.paths.length === 2) {
                 // This mean rename a file or a folder, move a file or a folder
                 const [oldPath, newPath] = event.paths;
@@ -430,12 +430,12 @@ export class SandboxManager {
                 const newNormalizedPath = normalizePath(newPath);
 
                 const stat = await session.fs.stat(newPath);
-                
-                if(stat.type === 'directory') {
+
+                if (stat.type === 'directory') {
                     await this.fileSync.renameDir(oldNormalizedPath, newNormalizedPath);
                 } else {
                     await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
-                }                
+                }
 
                 this.fileEventBus.publish({
                     type: 'rename',
@@ -449,10 +449,10 @@ export class SandboxManager {
                     continue;
                 }
                 const stat = await session.fs.stat(path);
-                
-                if(stat?.type === 'directory') {
+
+                if (stat?.type === 'directory') {
                     const normalizedPath = normalizePath(path);
-                    this.fileSync.updateDirectoryCache(normalizedPath, []);
+                    this.fileSync.updateDirectoryCache(normalizedPath);
                     continue
                 }
 
