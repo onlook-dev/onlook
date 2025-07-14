@@ -23,10 +23,6 @@ export class TemplateNodeMapper {
         modified: boolean;
         newContent: string;
     }> {
-        if (content === null) {
-            throw new Error(`Binary files are not supported for mapping`);
-        }
-
         const ast = getAstFromContent(content);
         if (!ast) {
             throw new Error(`Failed to get ast for file ${filePath}`);
@@ -39,10 +35,12 @@ export class TemplateNodeMapper {
         const { ast: astWithIds, modified } = addOidsToAst(ast);
         const templateNodeMap = createTemplateNodeMap(astWithIds, filePath);
         this.updateMapping(templateNodeMap);
+        const newContent = await getContentFromAst(astWithIds);
+
         console.error('templateNodeMap', templateNodeMap);
         return {
             modified,
-            newContent: await getContentFromAst(astWithIds),
+            newContent,
         };
     }
 
