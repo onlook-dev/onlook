@@ -6,6 +6,7 @@ import {
     DeploymentStatus,
     DeploymentType
 } from '@onlook/models';
+import { TRPCError } from '@trpc/server';
 import { PublishManager } from '../manager';
 import { deployFreestyle } from './deploy';
 import { forkBuildSandbox } from './fork';
@@ -23,22 +24,33 @@ export async function publish({
         const deploymentUrls = await getProjectUrls(db, projectId, type);
         const sandboxId = await getSandboxId(db, projectId);
 
-        updateDeployment(db, deploymentId, {
+        const updateDeploymentResult1 = await updateDeployment(db, deploymentId, {
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Creating build environment...',
             progress: 10,
-            urls: deploymentUrls,
         });
+        if (!updateDeploymentResult1) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Update deployment failed',
+            });
+        }
 
         const { session, sandboxId: forkedSandboxId }: { session: WebSocketSession, sandboxId: string } = await forkBuildSandbox(sandboxId, userId, deploymentId);
 
         try {
-            updateDeployment(db, deploymentId, {
+            const updateDeploymentResult2 = await updateDeployment(db, deploymentId, {
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Creating optimized build...',
                 progress: 20,
                 sandboxId: forkedSandboxId,
             });
+            if (!updateDeploymentResult2) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Update deployment failed',
+                });
+            }
 
             const publishManager = new PublishManager(session);
             const files = await publishManager.publish({
@@ -48,22 +60,22 @@ export async function publish({
                 updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
             });
 
-            updateDeployment(db, deploymentId, {
+            const updateDeploymentResult3 = await updateDeployment(db, deploymentId, {
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Deploying build...',
                 progress: 80,
             });
+            if (!updateDeploymentResult3) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Update deployment failed',
+                });
+            }
 
             await deployFreestyle({
                 files,
                 urls: deploymentUrls,
                 envVars: envVars ?? {},
-            });
-
-            updateDeployment(db, deploymentId, {
-                status: DeploymentStatus.COMPLETED,
-                message: 'Deployment Success!',
-                progress: 100,
             });
         } finally {
             await session.disconnect();

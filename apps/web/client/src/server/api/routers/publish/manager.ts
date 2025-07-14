@@ -1,6 +1,6 @@
 import { WebSocketSession } from '@codesandbox/sdk';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
-import type { deploymentUpdateSchema } from '@onlook/db';
+import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
@@ -51,7 +51,7 @@ export class PublishManager {
         buildScript: string;
         buildFlags: string;
         skipBadge: boolean;
-        updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<void>;
+        updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<Deployment | null>;
     }): Promise<Record<string, FreestyleFile>> {
         await this.runPrepareStep();
         await updateDeployment({

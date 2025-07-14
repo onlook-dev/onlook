@@ -79,6 +79,11 @@ export const PreviewDomainSection = observer(() => {
                             <p className="text-red-500">Error</p>
                         </div>
                     )}
+                    {deployment?.status === DeploymentStatus.CANCELLED && (
+                        <div className="ml-auto flex items-center gap-2">
+                            <p className="text-foreground-secondary">Cancelled</p>
+                        </div>
+                    )}
                     {isDeploying && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="">Updating • In progress</p>
@@ -112,7 +117,7 @@ export const PreviewDomainSection = observer(() => {
         return (
             <div className="w-full flex flex-col gap-2">
                 <UrlSection url={previewDomain.url} isCopyable={true} />
-                {deployment?.status === DeploymentStatus.FAILED ? (
+                {deployment?.status === DeploymentStatus.FAILED || deployment?.status === DeploymentStatus.CANCELLED ? (
                     <div className="w-full flex flex-col gap-2">
                         {deployment?.error && <p className="text-red-500 max-h-20 overflow-y-auto">{stripAnsi(deployment?.error)}</p>}
                         <Button

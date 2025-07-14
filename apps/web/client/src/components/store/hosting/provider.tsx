@@ -23,6 +23,7 @@ interface HostingContextValue {
     // Operations
     publish: (params: PublishParams) => Promise<{ success: boolean } | null>;
     unpublish: (projectId: string, type: DeploymentType) => Promise<{ deploymentId: string } | null>;
+    cancel: (type: DeploymentType) => Promise<void>;
 
     // Utilities
     refetch: (type: DeploymentType) => void;
@@ -77,6 +78,7 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
     const { mutateAsync: runCreateDeployment } = api.publish.deployment.create.useMutation();
     const { mutateAsync: runDeployment } = api.publish.deployment.run.useMutation();
     const { mutateAsync: runUnpublish } = api.publish.unpublish.useMutation();
+    const { mutateAsync: runCancel } = api.publish.deployment.cancel.useMutation();
 
     // Organize deployments by type
     const deployments = useMemo(() => ({
@@ -138,6 +140,8 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
             deploymentId: deployment.deploymentId,
         });
 
+        refetch(params.type);
+
         if (!res.success) {
             toast.error('Deployment failed', {
                 description: `Deployment ID: ${deployment.deploymentId}`,
@@ -185,6 +189,23 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
         }
     };
 
+    const cancel = async (type: DeploymentType) => {
+        if (!deployments[type]) {
+            toast.error('No deployment found');
+            return;
+        }
+        try {
+            await runCancel({
+                deploymentId: deployments[type].id,
+            });
+            toast.success('Deployment cancelled');
+            refetch(type);
+        } catch (error) {
+            toast.error('Failed to cancel deployment');
+            console.error(error);
+        }
+    };
+
     const refetchAll = () => {
         previewQuery.refetch();
         customQuery.refetch();
@@ -203,6 +224,7 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
         unpublish,
         refetch,
         refetchAll,
+        cancel,
     };
 
     return (
