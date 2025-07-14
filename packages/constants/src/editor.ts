@@ -70,7 +70,6 @@ export const DefaultSettings = {
 };
 
 export const DEFAULT_COLOR_NAME = 'DEFAULT';
-
 export const PRELOAD_SCRIPT_SRC = 'https://onlook.com/preload/index.js';
-
-export const DEPRECATED_PRELOAD_SCRIPT_SRC = 'onlook-dev/web';
+export const DEPRECATED_PRELOAD_SCRIPT_SRC =
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js';
