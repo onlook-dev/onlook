@@ -1,79 +1,81 @@
 import type { WebSocketSession } from '@codesandbox/sdk';
+import { DefaultSettings } from '@onlook/constants';
 import type { DrizzleDb } from '@onlook/db/src/client';
+import type { Deployment } from '@onlook/db/src/schema/project/deployment';
 import {
     DeploymentStatus,
     DeploymentType
 } from '@onlook/models';
+import { TRPCError } from '@trpc/server';
 import { PublishManager } from '../manager';
 import { deployFreestyle } from './deploy';
 import { forkBuildSandbox } from './fork';
 import { getProjectUrls, getSandboxId, updateDeployment } from './helpers';
 
-export async function publishInBackground({
-    deploymentId,
-    userId,
+export async function publish({
     db,
-    projectId,
-    type,
-    buildScript,
-    buildFlags,
-    envVars,
+    deployment,
 }: {
-    deploymentId: string;
-    userId: string;
     db: DrizzleDb;
-    projectId: string;
-    type: DeploymentType;
-    buildScript: string;
-    buildFlags: string;
-    envVars: Record<string, string>;
+    deployment: Deployment;
 }) {
+    const { id: deploymentId, projectId, type, buildScript, buildFlags, envVars, requestedBy: userId } = deployment;
     try {
         const deploymentUrls = await getProjectUrls(db, projectId, type);
         const sandboxId = await getSandboxId(db, projectId);
 
-        updateDeployment(db, deploymentId, {
+        const updateDeploymentResult1 = await updateDeployment(db, deploymentId, {
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Creating build environment...',
             progress: 10,
-            urls: deploymentUrls,
         });
+        if (!updateDeploymentResult1) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Update deployment failed',
+            });
+        }
 
         const { session, sandboxId: forkedSandboxId }: { session: WebSocketSession, sandboxId: string } = await forkBuildSandbox(sandboxId, userId, deploymentId);
 
         try {
-            updateDeployment(db, deploymentId, {
+            const updateDeploymentResult2 = await updateDeployment(db, deploymentId, {
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Creating optimized build...',
                 progress: 20,
                 sandboxId: forkedSandboxId,
             });
+            if (!updateDeploymentResult2) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Update deployment failed',
+                });
+            }
 
             const publishManager = new PublishManager(session);
             const files = await publishManager.publish({
-                skipBadge: false,
-                buildScript,
-                buildFlags,
-                envVars,
+                skipBadge: type === DeploymentType.CUSTOM,
+                buildScript: buildScript ?? DefaultSettings.COMMANDS.build,
+                buildFlags: buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
                 updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
             });
 
-            updateDeployment(db, deploymentId, {
+            const updateDeploymentResult3 = await updateDeployment(db, deploymentId, {
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Deploying build...',
                 progress: 80,
             });
+            if (!updateDeploymentResult3) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Update deployment failed',
+                });
+            }
 
             await deployFreestyle({
                 files,
                 urls: deploymentUrls,
-                envVars,
-            });
-
-            updateDeployment(db, deploymentId, {
-                status: DeploymentStatus.COMPLETED,
-                message: 'Deployment Success!',
-                progress: 100,
+                envVars: envVars ?? {},
             });
         } finally {
             await session.disconnect();

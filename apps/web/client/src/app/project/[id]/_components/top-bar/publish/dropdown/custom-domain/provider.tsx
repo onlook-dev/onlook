@@ -2,15 +2,14 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useHostingType } from '@/components/store/hosting';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
-import { DefaultSettings } from '@onlook/constants';
 import { DeploymentType, SettingsTabValue } from '@onlook/models';
 import { ProductType } from '@onlook/stripe';
-import { toast } from '@onlook/ui/sonner';
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 const useCustomDomain = () => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
+    const [isLoading, setIsLoading] = useState(false);
     const { data: subscription } = api.subscription.get.useQuery();
     const { data: customDomain } = api.domain.custom.get.useQuery({ projectId: editorEngine.projectId });
     const { deployment, publish: runPublish, isDeploying } = useHostingType(DeploymentType.CUSTOM);
@@ -29,19 +28,16 @@ const useCustomDomain = () => {
             console.error(`No custom domain hosting manager found`);
             return;
         }
-        const res = await runPublish({
-            projectId: editorEngine.projectId,
-            buildScript: DefaultSettings.COMMANDS.build,
-            buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-            envVars: {},
-        });
-        if (!res) {
-            toast.error('Failed to create deployment');
-            return;
+        setIsLoading(true);
+        try {
+            await runPublish({
+                projectId: editorEngine.projectId
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
         }
-        toast.success('Created Deployment', {
-            description: 'Deployment ID: ' + res.deploymentId,
-        });
     };
 
     const retry = () => {
@@ -60,6 +56,7 @@ const useCustomDomain = () => {
         isDeploying,
         isPro,
         openCustomDomain,
+        isLoading,
     }
 }
 
