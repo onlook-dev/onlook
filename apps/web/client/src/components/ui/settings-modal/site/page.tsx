@@ -37,7 +37,6 @@ export const PageTab = ({ metadata, path }: { metadata?: PageMetadata; path: str
     const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
-        console.log('handleSave');
         if (!project) {
             return;
         }
@@ -60,8 +59,6 @@ export const PageTab = ({ metadata, path }: { metadata?: PageMetadata; path: str
                     type: 'website',
                 },
             };
-
-            console.log('updatedMetadata', updatedMetadata);
 
             if (!metadata?.metadataBase) {
                 if (url) {
