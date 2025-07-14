@@ -9,9 +9,9 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 interface PublishParams {
     projectId: string;
     type: DeploymentType;
-    buildScript: string;
-    buildFlags: string;
-    envVars: Record<string, string>;
+    buildScript?: string;
+    buildFlags?: string;
+    envVars?: Record<string, string>;
 }
 
 interface HostingContextValue {
@@ -73,7 +73,8 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
     });
 
     // Mutations
-    const { mutateAsync: runPublish } = api.publish.publish.useMutation();
+    const { mutateAsync: runCreateDeployment } = api.publish.deployment.create.useMutation();
+    const { mutateAsync: runDeployment } = api.publish.deployment.run.useMutation();
     const { mutateAsync: runUnpublish } = api.publish.unpublish.useMutation();
 
     // Organize deployments by type
@@ -113,12 +114,16 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
             [params.type]: true,
         }));
 
-        const response = await runPublish(params);
+        const deployment = await runCreateDeployment(params);
 
         // Refetch the specific deployment
         await refetch(params.type);
 
-        return response;
+        await runDeployment({
+            deploymentId: deployment.deploymentId,
+        });
+
+        return deployment;
     };
 
     // Unpublish function
