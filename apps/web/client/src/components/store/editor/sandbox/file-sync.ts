@@ -156,54 +156,6 @@ export class FileSyncManager {
         return newFile;
     }
 
-    /**
-     * Batch read multiple files in parallel
-     */
-    async readOrFetchBatch(
-        filePaths: string[],
-        readFile: (path: string) => Promise<SandboxFile | null>,
-    ): Promise<Record<string, SandboxFile>> {
-        const results = new Map<string, SandboxFile>();
-        const promises = filePaths.map(async (filePath) => {
-            try {
-                const content = await this.readOrFetch(filePath, readFile);
-                if (content !== null) {
-                    return { path: filePath, content };
-                }
-            } catch (error) {
-                console.warn(`Error reading file ${filePath}:`, error);
-            }
-            return null;
-        });
-
-        const batchResults = await Promise.all(promises);
-
-        for (const result of batchResults) {
-            if (result) {
-                results.set(result.path, result.content);
-            }
-        }
-        return Object.fromEntries(results);
-    }
-
-    /**
-     * Batch update cache entries
-     */
-    async updateCacheBatch(entries: Array<SandboxFile>): Promise<void> {
-        for (const entry of entries) {
-            this.cache.set(entry.path, entry);
-        }
-    }
-
-    /**
-     * Track multiple binary files at once
-     */
-    writeEmptyFilesBatch(filePaths: string[], type: 'binary'): void {
-        for (const filePath of filePaths) {
-            this.writeEmptyFile(filePath, type);
-        }
-    }
-
     async clear() {
         this.cache.clear();
         this.cache = new Map();
