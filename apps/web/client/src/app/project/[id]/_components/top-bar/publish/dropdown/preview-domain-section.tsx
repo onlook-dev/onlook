@@ -3,6 +3,7 @@ import { useHostingType } from '@/components/store/hosting';
 import { api } from '@/trpc/react';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
 import { toast } from '@onlook/ui/sonner';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
@@ -126,6 +127,7 @@ export const PreviewDomainSection = observer(() => {
                         className="w-full rounded-md p-3"
                         disabled={isDeploying || isLoading}
                     >
+                        {isLoading && <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />}
                         Update
                     </Button>
                 )}
