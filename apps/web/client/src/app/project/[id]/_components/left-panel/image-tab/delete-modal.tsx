@@ -16,7 +16,6 @@ export const DeleteImageModal = () => {
     const { deleteOperations } = useImagesContext();
     const { deleteState, onDeleteImage, handleDeleteModalToggle } = deleteOperations;
 
-
     const handleDelete = async () => {
         if (!deleteState.isLoading) {
             await onDeleteImage();
@@ -25,11 +24,6 @@ export const DeleteImageModal = () => {
 
     const handleClose = () => {
         if (!deleteState.isLoading) {
-            // Reset pointer-events and editor mode when modal is closed
-            // for (const frame of editorEngine.frames.getAll()) {
-            //     frame.frame.pointerEvents = 'auto';
-            // }
-            // editorEngine.mode = EditorMode.DESIGN;
             editorEngine.overlay.clear();
             handleDeleteModalToggle();
         }

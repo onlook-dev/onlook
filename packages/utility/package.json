@@ -29,8 +29,7 @@
     "homepage": "https://onlook.com",
     "devDependencies": {
         "@onlook/typescript": "*",
-        "@types/culori": "^2.0.4",
-        "vitest": "^3.2.4"
+        "@types/culori": "^2.0.4"
     },
     "dependencies": {
         "@onlook/fonts": "*",

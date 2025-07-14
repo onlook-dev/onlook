@@ -1,4 +1,4 @@
-import type { ReaddirEntry, WatchEvent } from '@codesandbox/sdk';
+import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
 import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
@@ -418,32 +418,9 @@ export class SandboxManager {
             }
 
             if (event.paths.length === 2) {
-                // This mean rename a file or a folder, move a file or a folder
-                const [oldPath, newPath] = event.paths;
-
-                if (!oldPath || !newPath) {
-                    console.error('Invalid rename event', event);
-                    return;
-                }
-
-                const oldNormalizedPath = normalizePath(oldPath);
-                const newNormalizedPath = normalizePath(newPath);
-
-                const stat = await session.fs.stat(newPath);
-
-                if (stat.type === 'directory') {
-                    await this.fileSync.renameDir(oldNormalizedPath, newNormalizedPath);
-                } else {
-                    await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
-                }
-
-                this.fileEventBus.publish({
-                    type: 'rename',
-                    paths: [oldPath, newPath],
-                    timestamp: Date.now(),
-                });
-                return;
+                await this.handleFileRenameEvent(event, session);
             }
+
             for (const path of event.paths) {
                 if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
                     continue;
@@ -457,30 +434,80 @@ export class SandboxManager {
                 }
 
                 const normalizedPath = normalizePath(path);
-
-                if (isImageFile(normalizedPath)) {
-                    this.fileSync.writeEmptyFile(normalizedPath, 'binary');
-                } else {
-                    const content = await this.readRemoteFile(normalizedPath);
-                    if (content === null) {
-                        console.error(`File content for ${normalizedPath} not found`);
-                        continue;
-                    }
-                    const cachedFile = this.fileSync.readCache(normalizedPath);
-                    if (!cachedFile?.content || cachedFile.content !== content.content) {
-                        await this.processFileForMapping(normalizedPath);
-                        this.fileSync.updateCache({
-                            type: 'text',
-                            path: normalizedPath,
-                            content: content.content as string,
-                        });
-                    }
-                }
+                const cachedFile = this.fileSync.readCache(normalizedPath);
+                await this.handleFileChangedEvent(normalizedPath, cachedFile);
 
                 this.fileEventBus.publish({
                     type: eventType,
                     paths: [normalizedPath],
                     timestamp: Date.now(),
+                });
+            }
+        }
+    }
+
+    async handleFileRenameEvent(event: WatchEvent, session: WebSocketSession) {
+        // This mean rename a file or a folder, move a file or a folder
+        const [oldPath, newPath] = event.paths;
+
+        if (!oldPath || !newPath) {
+            console.error('Invalid rename event', event);
+            return;
+        }
+
+        const oldNormalizedPath = normalizePath(oldPath);
+        const newNormalizedPath = normalizePath(newPath);
+
+        const stat = await session.fs.stat(newPath);
+
+        if (stat.type === 'directory') {
+            await this.fileSync.renameDir(oldNormalizedPath, newNormalizedPath);
+        } else {
+            await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
+        }
+
+        this.fileEventBus.publish({
+            type: 'rename',
+            paths: [oldPath, newPath],
+            timestamp: Date.now(),
+        });
+        return;
+    }
+
+    async handleFileChangedEvent(normalizedPath: string, cachedFile: SandboxFile | undefined) {
+        if (isImageFile(normalizedPath)) {
+            if (!cachedFile || cachedFile.content === null) {
+                // If the file was not cached, we need to write an empty file
+                this.fileSync.writeEmptyFile(normalizedPath, 'binary');
+            } else {
+                // If the file was already cached, we need to read the remote file and update the cache
+                const remoteFile = await this.readRemoteFile(normalizedPath);
+                if (!remoteFile || remoteFile.content === null) {
+                    console.error(`File content for ${normalizedPath} not found in remote`);
+                    return;
+                }
+                this.fileSync.updateCache(remoteFile);
+            }
+        } else {
+            // If the file is not an image, we need to read the remote file and update the cache
+            const remoteFile = await this.readRemoteFile(normalizedPath);
+            if (!remoteFile || remoteFile.content === null) {
+                console.error(`File content for ${normalizedPath} not found in remote`);
+                return;
+            }
+            if (remoteFile.type === 'text') {
+                // If the file is a text file, we need to process it for mapping
+                await this.processFileForMapping(normalizedPath);
+                this.fileSync.updateCache({
+                    type: 'text',
+                    path: normalizedPath,
+                    content: remoteFile.content,
+                });
+            } else {
+                this.fileSync.updateCache({
+                    type: 'binary',
+                    path: normalizedPath,
+                    content: remoteFile.content,
                 });
             }
         }
