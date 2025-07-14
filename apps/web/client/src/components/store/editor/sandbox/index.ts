@@ -129,6 +129,7 @@ export class SandboxManager {
                         if (!excludeDirs.includes(entry.name)) {
                             dirsToProcess.push(normalizedPath);
                         }
+                        this.fileSync.updateDirectoryCache(normalizedPath, []);
                     } else if (entry.type === 'file') {
                         allPaths.push(normalizedPath);
                     }
@@ -283,6 +284,10 @@ export class SandboxManager {
         return this.fileSync.listAllFiles();
     }
 
+    get directories() {
+        return this.fileSync.listAllDirectories();
+    }
+
     listAllFiles() {
         return this.fileSync.listAllFiles();
     }
@@ -340,7 +345,7 @@ export class SandboxManager {
             const { downloadUrl } = await this.session.session.fs.download('./');
             return {
                 downloadUrl,
-                fileName: `${projectName || 'onlook-project'}-${Date.now()}.zip`,
+                fileName: `${projectName ?? 'onlook-project'}-${Date.now()}.zip`,
             };
         } catch (error) {
             console.error('Error generating download URL:', error);
@@ -385,9 +390,10 @@ export class SandboxManager {
                 }
                 const normalizedPath = normalizePath(path);
 
-                const stat = await this.session.session?.fs.stat(normalizedPath);
-                if(stat?.type === 'directory') {
-                    await this.fileSync.deleteFolder(normalizedPath);
+                const isDirectory = this.fileSync.hasDirectory(normalizedPath);
+                
+                if (isDirectory) {
+                    this.fileSync.deleteDir(normalizedPath);
                     this.fileEventBus.publish({
                         type: eventType,
                         paths: [normalizedPath],
@@ -423,13 +429,13 @@ export class SandboxManager {
                 const oldNormalizedPath = normalizePath(oldPath);
                 const newNormalizedPath = normalizePath(newPath);
 
-                const stat = await this.session.session.fs.stat(oldPath);
+                const stat = await this.session.session.fs.stat(newPath);
                 
                 if(stat.type === 'directory') {
-                    await this.fileSync.renameFolder(oldNormalizedPath, newNormalizedPath);
+                    await this.fileSync.renameDir(oldNormalizedPath, newNormalizedPath);
                 } else {
                     await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
-                }
+                }                
 
                 this.fileEventBus.publish({
                     type: 'rename',
@@ -445,6 +451,7 @@ export class SandboxManager {
                 const stat = await this.session.session?.fs.stat(path);
                 
                 if(stat?.type === 'directory') {
+                    this.fileSync.updateDirectoryCache(path, []);
                     continue
                 }
 
@@ -459,7 +466,7 @@ export class SandboxManager {
                         continue;
                     }
                     const cachedFile = this.fileSync.readCache(normalizedPath);
-                    if (!cachedFile || cachedFile.content === null || cachedFile.content !== content.content) {
+                    if (!cachedFile?.content || cachedFile.content !== content.content) {
                         await this.processFileForMapping(normalizedPath);
                         this.fileSync.updateCache({
                             type: 'text',
@@ -546,7 +553,7 @@ export class SandboxManager {
             const dirPath = getDirName(normalizedPath);
             const fileName = getBaseName(normalizedPath);
             const dirEntries = await this.session.session.fs.readdir(dirPath);
-            return dirEntries.some((entry: any) => entry.name === fileName);
+            return dirEntries.some((entry: ReaddirEntry) => entry.name === fileName);
         } catch (error) {
             console.error(`Error checking file existence ${normalizedPath}:`, error);
             return false;

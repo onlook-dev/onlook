@@ -1,17 +1,23 @@
-import type { SandboxFile } from '@onlook/models';
+import type { SandboxDirectory, SandboxFile } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { normalizePath } from './helpers';
 
 export class FileSyncManager {
     private cache: Map<string, SandboxFile>;
+    private directoryCache: Map<string, SandboxDirectory>;
 
     constructor() {
         this.cache = new Map();
+        this.directoryCache = new Map();
         makeAutoObservable(this);
     }
 
     has(filePath: string) {
         return this.cache.has(filePath);
+    }
+
+    hasDirectory(dirPath: string) {
+        return this.directoryCache.has(dirPath);
     }
 
     async isFileLoaded(file: SandboxFile) {
@@ -57,17 +63,25 @@ export class FileSyncManager {
         this.cache.set(file.path, file);
     }
 
-    async delete(filePath: string) {
-        this.cache.delete(filePath);
+    updateDirectoryCache(dirPath: string, files: SandboxFile[]): void {
+        this.directoryCache.set(dirPath, {
+            type: 'directory',
+            path: dirPath,
+            files
+        });
     }
 
-    async deleteFolder(folderPath: string) {
-        const filesToDelete = Array.from(this.cache.entries())
-            .filter(([filePath]) => filePath.startsWith(folderPath + '/'))
-            .map(([filePath, file]) => ({ filePath, file }));
-        for (const { filePath } of filesToDelete) {
-            this.cache.delete(filePath);
-        }
+    deleteDir(dirPath: string) {
+        this.directoryCache.delete(dirPath);
+        this.cache.forEach((file, path) => {
+            if (path.startsWith(dirPath + '/')) {
+                this.cache.delete(path);
+            }
+        });
+    }
+
+    async delete(path: string) {
+        this.cache.delete(path);
     }
 
     async rename(oldPath: string, newPath: string) {        
@@ -80,7 +94,7 @@ export class FileSyncManager {
         }
     }
 
-    async renameFolder(oldPath: string, newPath: string) {
+    async renameDir(oldPath: string, newPath: string) {
         const normalizedOldPath = normalizePath(oldPath);
         const normalizedNewPath = normalizePath(newPath);
         
@@ -104,6 +118,10 @@ export class FileSyncManager {
 
     listAllFiles() {
         return Array.from(this.cache.keys());
+    }
+
+    listAllDirectories() {
+        return Array.from(this.directoryCache.keys());
     }
 
     writeEmptyFile(filePath: string, type: 'binary') {

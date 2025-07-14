@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { type FolderNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -23,6 +24,7 @@ interface FolderPathItem {
 export default function Folder() {
     const inputRef = useRef<HTMLInputElement>(null);
     const breadcrumbsRef = useRef<HTMLDivElement>(null);
+    const editorEngine = useEditorEngine();
     const { uploadOperations, isOperating, rootFolderStructure, folderOperations } = useImagesContext();
     const [currentFolder, setCurrentFolder] = useState<FolderNode>(rootFolderStructure);
     const [folderPath, setFolderPath] = useState<FolderPathItem[]>([]);
@@ -55,6 +57,20 @@ export default function Folder() {
         }
     };
 
+    const getChildFolders = (folder: FolderNode) => {
+        return editorEngine.sandbox.directories.filter(dir => {
+            if (dir.startsWith(folder.fullPath)) {
+                // Check if this is a direct child (not in a subdirectory)
+                const relativePath = dir.slice(folder.fullPath.length);
+                // Remove leading slash if present
+                const cleanRelativePath = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
+                // Only include if it's a direct child (no additional path separators)
+                return !cleanRelativePath.includes('/') && cleanRelativePath.length > 0;
+            }
+            return false;
+        });
+    }
+
     const handleBreadcrumbClick = (index: number) => {
         if (index === -1) {
             setCurrentFolder(rootFolderStructure);
@@ -71,6 +87,8 @@ export default function Folder() {
     useEffect(() => {
         if (currentFolder) {
             loadFolderImages(currentFolder);
+            const childFolders = getChildFolders(currentFolder);
+            console.log('childFolders', childFolders);
         }
     }, [currentFolder]);
 

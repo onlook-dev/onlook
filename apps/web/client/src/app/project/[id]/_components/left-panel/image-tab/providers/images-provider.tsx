@@ -11,6 +11,7 @@ import { isEqual } from 'lodash';
 import {
     createBaseFolder,
     findFolderInStructureByPath,
+    isImageFile,
     replaceFolderInStructure,
 } from '@onlook/utility';
 import { DefaultSettings } from '@onlook/constants';
@@ -27,6 +28,7 @@ interface ImagesContextValue {
     uploadOperations: ReturnType<typeof useImageUpload>;
     moveOperations: ReturnType<typeof useImageMove>;
     folderOperations: ReturnType<typeof useFolder>;
+    getImagePaths: (folder: FolderNode) => string[];
 }
 
 const ImagesContext = createContext<ImagesContextValue | null>(null);
@@ -67,6 +69,22 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         }
     };
 
+    const getImagePaths = (folder: FolderNode) => {
+        return editorEngine.sandbox.files.filter(image => {
+            if(image.startsWith(folder.fullPath)) {
+                // Check if this is a direct child (not in a subdirectory)
+                const relativePath = image.slice(folder.fullPath.length);
+                // Remove leading slash if present
+                const cleanRelativePath = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
+                // Only include if it's a direct child (no additional path separators)
+                if (!cleanRelativePath.includes('/')) {
+                    return isImageFile(image);
+                }
+            }
+            return false;
+        });
+    }
+
     useEffect(() => {
         const updateFolderStructure = async () => {
             try {
@@ -77,7 +95,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
                 console.error('Error updating folder structure:', error);
             }
         };
-        updateFolderStructure();
+        void updateFolderStructure();
     }, [baseFolderStructure]);
 
     const isOperating =
@@ -96,6 +114,7 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         uploadOperations,
         moveOperations,
         folderOperations,
+        getImagePaths,
     };
 
     return <ImagesContext.Provider value={value}>{children}</ImagesContext.Provider>;
