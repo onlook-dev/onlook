@@ -1,12 +1,10 @@
-import { DropdownMenu } from "@onlook/ui/dropdown-menu";
-
 import type { FolderNode, ImageContentData } from "@onlook/models";
 import { Button } from "@onlook/ui/button";
-import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
 import { memo, useCallback, useMemo, useState } from "react";
-import { FolderDropdown } from "./folder-dropdown/folder-dropdown";
 import { rootDir } from "./folder";
+import { FolderDropdown } from "./folder-dropdown/folder-dropdown";
 
 export const ImageDropdownMenu = memo(
     ({

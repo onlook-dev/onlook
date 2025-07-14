@@ -11,13 +11,12 @@ import { Icons } from '@onlook/ui/icons';
 import { useImagesContext } from './providers/images-provider';
 
 export const MoveImageModal = () => {
-
     const { moveOperations } = useImagesContext();
     const { moveState, moveImageToFolder, handleMoveModalToggle } = moveOperations;
 
     const handleMove = async () => {
         if (!moveState.isLoading) {
-            await   moveImageToFolder();
+            await moveImageToFolder();
         }
     };
 

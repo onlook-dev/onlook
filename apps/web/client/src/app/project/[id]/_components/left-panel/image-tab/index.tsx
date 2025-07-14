@@ -1,11 +1,11 @@
+import { useEditorEngine } from '@/components/store/editor';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import Folder from './folder';
-import { ImagesProvider, useImagesContext } from './providers/images-provider';
 import { FolderProvider } from './providers/folder-provider';
-import { useEditorEngine } from '@/components/store/editor';
+import { ImagesProvider, useImagesContext } from './providers/images-provider';
 
-export const ImagesTab = observer(() => {
+export const ImagesTab = () => {
     return (
         <ImagesProvider>
             <FolderProvider>
@@ -13,14 +13,15 @@ export const ImagesTab = observer(() => {
             </FolderProvider>
         </ImagesProvider>
     );
-});
+};
 
 const ImagesTabContent = observer(() => {
-    const { renameOperations, uploadOperations, isOperating } = useImagesContext();
     const editorEngine = useEditorEngine();
     const isIndexing = editorEngine.sandbox.isIndexingFiles;
-
-    const { renameState } = renameOperations;
+    const {
+        renameOperations: { renameState },
+        uploadOperations,
+    } = useImagesContext();
 
     if (isIndexing) {
         return (
