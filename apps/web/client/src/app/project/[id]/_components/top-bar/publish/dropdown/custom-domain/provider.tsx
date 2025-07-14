@@ -2,7 +2,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useHostingType } from '@/components/store/hosting';
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
-import { DefaultSettings } from '@onlook/constants';
 import { DeploymentType, SettingsTabValue } from '@onlook/models';
 import { ProductType } from '@onlook/stripe';
 import { createContext, useContext, useState } from 'react';
@@ -30,13 +29,15 @@ const useCustomDomain = () => {
             return;
         }
         setIsLoading(true);
-        await runPublish({
-            projectId: editorEngine.projectId,
-            buildScript: DefaultSettings.COMMANDS.build,
-            buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-            envVars: {},
-        });
-        setIsLoading(false);
+        try {
+            await runPublish({
+                projectId: editorEngine.projectId
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const retry = () => {

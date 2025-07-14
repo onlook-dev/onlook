@@ -37,12 +37,15 @@ export const PreviewDomainSection = observer(() => {
             return;
         }
         setIsLoading(true);
-
-        await runPublish({
-            projectId: editorEngine.projectId
-        });
-
-        setIsLoading(false);
+        try {
+            await runPublish({
+                projectId: editorEngine.projectId
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const retry = () => {
