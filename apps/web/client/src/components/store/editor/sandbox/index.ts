@@ -58,41 +58,22 @@ export class SandboxManager {
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
-            // Categorize files for optimized processing
-            const { imageFiles, jsxFiles, otherFiles } =
-                this.categorizeFilesForIndexing(allFilePaths);
+            for (const filePath of allFilePaths) {
+                // Track image files first
+                if (isImageFile(filePath)) {
+                    this.fileSync.writeEmptyFile(filePath, 'binary');
+                    continue;
+                }
 
-            const BATCH_SIZE = 50;
-
-            // Track image files first
-            if (imageFiles.length > 0) {
-                timer.log(`Tracking ${imageFiles.length} image files`);
-                for (let i = 0; i < imageFiles.length; i += BATCH_SIZE) {
-                    const batch = imageFiles.slice(i, i + BATCH_SIZE);
-                    this.fileSync.writeEmptyFilesBatch(batch, 'binary');
+                if (this.isJsxFile(filePath)) {
+                    const remoteFile = await this.readRemoteFile(filePath);
+                    if (!remoteFile) {
+                        console.error(`Failed to read file ${filePath}`);
+                        continue;
+                    }
+                    await this.processFileForMapping(remoteFile);
                 }
             }
-
-            // Process JSX files
-            if (jsxFiles.length > 0) {
-                timer.log(`Processing ${jsxFiles.length} JSX files in batches of ${BATCH_SIZE}`);
-                for (let i = 0; i < jsxFiles.length; i += BATCH_SIZE) {
-                    const batch = jsxFiles.slice(i, i + BATCH_SIZE);
-                    await this.processJsxFilesBatch(batch);
-                }
-            }
-
-            // Process other files
-            if (otherFiles.length > 0) {
-                timer.log(
-                    `Processing ${otherFiles.length} other files in batches of ${BATCH_SIZE}`,
-                );
-                for (let i = 0; i < otherFiles.length; i += BATCH_SIZE) {
-                    const batch = otherFiles.slice(i, i + BATCH_SIZE);
-                    await this.processTextFilesBatch(batch);
-                }
-            }
-
             await this.watchFiles();
             this.isIndexed = true;
             timer.log('Indexing completed successfully');
@@ -142,60 +123,6 @@ export class SandboxManager {
         return allPaths;
     }
 
-    /**
-     * Categorize files for optimized processing
-     */
-    private categorizeFilesForIndexing(filePaths: string[]): {
-        imageFiles: string[];
-        jsxFiles: string[];
-        otherFiles: string[];
-    } {
-        const imageFiles: string[] = [];
-        const jsxFiles: string[] = [];
-        const otherFiles: string[] = [];
-
-        for (const filePath of filePaths) {
-            const normalizedPath = normalizePath(filePath);
-
-            if (isImageFile(normalizedPath)) {
-                imageFiles.push(normalizedPath);
-            } else {
-                const extension = path.extname(filePath);
-                if (JSX_FILE_EXTENSIONS.includes(extension)) {
-                    jsxFiles.push(normalizedPath);
-                } else {
-                    otherFiles.push(normalizedPath);
-                }
-            }
-        }
-
-        return { imageFiles, jsxFiles, otherFiles };
-    }
-
-    private async processJsxFilesBatch(filePaths: string[]): Promise<void> {
-        const fileContents = await this.fileSync.readOrFetchBatch(
-            filePaths,
-            this.readRemoteFile.bind(this),
-        );
-
-        const mappingPromises = Object.keys(fileContents).map(async (filePath) => {
-            try {
-                await this.processFileForMapping(filePath);
-            } catch (error) {
-                console.warn(`Error processing mapping for JSX file ${filePath}:`, error);
-            }
-        });
-
-        await Promise.all(mappingPromises);
-    }
-
-    /**
-     * Process text files in parallel batches
-     */
-    private async processTextFilesBatch(filePaths: string[]): Promise<void> {
-        await this.fileSync.readOrFetchBatch(filePaths, this.readRemoteFile.bind(this));
-    }
-
     private async readRemoteFile(filePath: string): Promise<SandboxFile | null> {
         if (!this.session.session) {
             console.error('No session found for remote read');
@@ -225,7 +152,6 @@ export class SandboxManager {
         }
 
         try {
-            await this.processFileForMapping(filePath);
             if (content instanceof Uint8Array) {
                 await this.session.session.fs.writeFile(filePath, content);
             } else {
@@ -258,12 +184,32 @@ export class SandboxManager {
 
     async writeFile(path: string, content: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-        const formattedContent = await formatContent(normalizedPath, content);
+        let writeContent = await formatContent(normalizedPath, content);
+        // If the file is a JSX file, we need to process it for mapping before writing
+        if (this.isJsxFile(normalizedPath)) {
+            try {
+                const { newContent } = await this.templateNodeMap.processFileForMapping(
+                    normalizedPath,
+                    writeContent
+                );
+                writeContent = newContent;
+            } catch (error) {
+                console.error(`Error processing file ${normalizedPath}:`, error);
+            }
+        }
         return this.fileSync.write(
             normalizedPath,
-            formattedContent,
+            writeContent,
             this.writeRemoteFile.bind(this),
         );
+    }
+
+    isJsxFile(filePath: string): boolean {
+        const extension = path.extname(filePath);
+        if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
+            return false;
+        }
+        return true;
     }
 
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
@@ -434,9 +380,7 @@ export class SandboxManager {
                 }
 
                 const normalizedPath = normalizePath(path);
-                const cachedFile = this.fileSync.readCache(normalizedPath);
-                await this.handleFileChangedEvent(normalizedPath, cachedFile);
-
+                await this.handleFileChangedEvent(normalizedPath);
                 this.fileEventBus.publish({
                     type: eventType,
                     paths: [normalizedPath],
@@ -474,7 +418,9 @@ export class SandboxManager {
         return;
     }
 
-    async handleFileChangedEvent(normalizedPath: string, cachedFile: SandboxFile | undefined) {
+    async handleFileChangedEvent(normalizedPath: string) {
+        const cachedFile = this.fileSync.readCache(normalizedPath);
+
         if (isImageFile(normalizedPath)) {
             if (!cachedFile || cachedFile.content === null) {
                 // If the file was not cached, we need to write an empty file
@@ -497,12 +443,14 @@ export class SandboxManager {
             }
             if (remoteFile.type === 'text') {
                 // If the file is a text file, we need to process it for mapping
-                await this.processFileForMapping(normalizedPath);
-                this.fileSync.updateCache({
-                    type: 'text',
-                    path: normalizedPath,
-                    content: remoteFile.content,
-                });
+                if (remoteFile.content !== cachedFile?.content) {
+                    this.fileSync.updateCache({
+                        type: 'text',
+                        path: normalizedPath,
+                        content: remoteFile.content,
+                    });
+                    await this.processFileForMapping(remoteFile);
+                }
             } else {
                 this.fileSync.updateCache({
                     type: 'binary',
@@ -513,18 +461,23 @@ export class SandboxManager {
         }
     }
 
-    async processFileForMapping(file: string) {
-        const extension = path.extname(file);
-        if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
-            return;
-        }
+    async processFileForMapping(file: SandboxFile) {
+        try {
+            if (file.type === 'binary' || !this.isJsxFile(file.path)) {
+                return;
+            }
 
-        const normalizedPath = normalizePath(file);
-        await this.templateNodeMap.processFileForMapping(
-            normalizedPath,
-            this.readFile.bind(this),
-            this.writeFile.bind(this),
-        );
+            const { modified, newContent } = await this.templateNodeMap.processFileForMapping(
+                file.path,
+                file.content
+            );
+
+            if (modified || file.content !== newContent) {
+                await this.writeFile(file.path, newContent);
+            }
+        } catch (error) {
+            console.error(`Error processing file ${file.path}:`, error);
+        }
     }
 
     async getTemplateNode(oid: string): Promise<TemplateNode | null> {
