@@ -12,6 +12,7 @@ export function listenForDomMutation() {
 
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
+                const parent = mutation.target as HTMLElement;
                 // Handle added nodes
                 mutation.addedNodes.forEach((node) => {
                     const el = node as HTMLElement;
@@ -21,7 +22,6 @@ export function listenForDomMutation() {
                         !shouldIgnoreMutatedNode(el)
                     ) {
                         dedupNewElement(el);
-                        const parent = el.parentElement;
                         if (parent) {
                             const layerMap = buildLayerTree(parent);
                             if (layerMap) {
@@ -39,9 +39,8 @@ export function listenForDomMutation() {
                         el.hasAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) &&
                         !shouldIgnoreMutatedNode(el)
                     ) {
-                        const parent = el.parentElement;
                         if (parent) {
-                            const layerMap = buildLayerTree(parent as HTMLElement);
+                            const layerMap = buildLayerTree(parent);
                             if (layerMap) {
                                 removed = new Map([...removed, ...layerMap]);
                             }
@@ -97,7 +96,6 @@ function dedupNewElement(newEl: HTMLElement) {
     if (!oid) {
         return;
     }
-
     document
         .querySelectorAll(
             `[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"][${EditorAttributes.DATA_ONLOOK_INSERTED}]`,

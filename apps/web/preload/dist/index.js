@@ -13013,11 +13013,11 @@ function listenForDomMutation() {
     let removed = new Map;
     for (const mutation of mutationsList) {
       if (mutation.type === "childList") {
+        const parent2 = mutation.target;
         mutation.addedNodes.forEach((node) => {
           const el = node;
           if (node.nodeType === Node.ELEMENT_NODE && el.hasAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */) && !shouldIgnoreMutatedNode(el)) {
             dedupNewElement(el);
-            const parent2 = el.parentElement;
             if (parent2) {
               const layerMap = buildLayerTree(parent2);
               if (layerMap) {
@@ -13029,7 +13029,6 @@ function listenForDomMutation() {
         mutation.removedNodes.forEach((node) => {
           const el = node;
           if (node.nodeType === Node.ELEMENT_NODE && el.hasAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */) && !shouldIgnoreMutatedNode(el)) {
-            const parent2 = el.parentElement;
             if (parent2) {
               const layerMap = buildLayerTree(parent2);
               if (layerMap) {
@@ -17468,5 +17467,5 @@ export {
   penpalParent
 };
 
-//# debugId=A064D37661531BA364756E2164756E21
+//# debugId=A764399C428F6D1F64756E2164756E21
 //# sourceMappingURL=index.js.map
