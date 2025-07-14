@@ -20,7 +20,7 @@ export const LoadingState = ({ type }: { type: DeploymentType }) => {
             <p className="text-foreground-secondary">{deployment?.message}</p>
             <Progress value={deployment?.progress ?? 0} className="w-full" />
             <div className="flex mt-2 justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={handleCancel}>
+                <Button variant="outline" size="sm" onClick={handleCancel} disabled={isLoading}>
                     Cancel
                 </Button>
             </div>

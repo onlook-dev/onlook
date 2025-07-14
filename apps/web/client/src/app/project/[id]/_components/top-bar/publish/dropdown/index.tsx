@@ -20,7 +20,7 @@ export const PublishDropdown = observer(() => {
             }
             <Separator />
             {
-                !isCustomDeploying ?
+                isCustomDeploying ?
                     <LoadingState type={DeploymentType.CUSTOM} /> :
                     <CustomDomainSection />
             }

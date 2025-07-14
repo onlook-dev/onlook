@@ -140,6 +140,8 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
             deploymentId: deployment.deploymentId,
         });
 
+        refetch(params.type);
+
         if (!res.success) {
             toast.error('Deployment failed', {
                 description: `Deployment ID: ${deployment.deploymentId}`,
@@ -192,9 +194,16 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
             toast.error('No deployment found');
             return;
         }
-        await runCancel({
-            deploymentId: deployments[type].id,
-        });
+        try {
+            await runCancel({
+                deploymentId: deployments[type].id,
+            });
+            toast.success('Deployment cancelled');
+            refetch(type);
+        } catch (error) {
+            toast.error('Failed to cancel deployment');
+            console.error(error);
+        }
     };
 
     const refetchAll = () => {

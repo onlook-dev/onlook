@@ -8,7 +8,7 @@ import { useCustomDomainContext } from './provider';
 
 export const ActionSection = () => {
     const { customDomain, deployment, publish, retry, isDeploying, isLoading } = useCustomDomainContext();
-
+    const failedOrCancelled = deployment?.status === DeploymentStatus.FAILED || deployment?.status === DeploymentStatus.CANCELLED;
     if (!customDomain) {
         return 'Something went wrong';
     }
@@ -16,7 +16,7 @@ export const ActionSection = () => {
     return (
         <div className="w-full flex flex-col gap-2">
             <UrlSection url={customDomain.url} isCopyable={false} />
-            {deployment?.status !== DeploymentStatus.FAILED && (
+            {!failedOrCancelled && (
                 <Button
                     onClick={publish}
                     variant="outline"
@@ -31,7 +31,7 @@ export const ActionSection = () => {
                     {deployment?.updatedAt ? 'Update' : `Publish to ${customDomain.url}`}
                 </Button>
             )}
-            {deployment?.status === DeploymentStatus.FAILED && (
+            {failedOrCancelled && (
                 <div className="w-full flex flex-col gap-2">
                     {deployment?.error && <p className="text-red-500 max-h-20 overflow-y-auto">{stripAnsi(deployment?.error)}</p>}
                     <Button

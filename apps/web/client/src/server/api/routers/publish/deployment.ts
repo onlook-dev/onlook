@@ -97,6 +97,12 @@ export const deploymentRouter = createTRPCRouter({
                 message: 'Deployment in progress',
             });
         }
+        if (existingDeployment.status === DeploymentStatus.CANCELLED) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Deployment cancelled',
+            });
+        }
         try {
             await publish({
                 db: ctx.db,
@@ -122,8 +128,8 @@ export const deploymentRouter = createTRPCRouter({
     })).mutation(async ({ ctx, input }) => {
         const { deploymentId } = input;
         await updateDeployment(ctx.db, deploymentId, {
-            status: DeploymentStatus.FAILED,
-            message: 'User cancelled deployment',
+            status: DeploymentStatus.CANCELLED,
+            message: 'Cancelled by user',
         });
     }),
 });
