@@ -22,10 +22,11 @@ import {
     SAVE_IMAGE_TOOL_NAME,
 } from '@onlook/ai';
 import type { ImageMessageContext, SandboxFile } from '@onlook/models';
-import { MessageContextType } from '@onlook/models';
+import { ChatMessageRole, MessageContextType } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
 import { z } from 'zod';
+import type { UserChatMessageImpl } from './store/editor/chat/message/user';
 
 type ToolHandler = (args: any, editorEngine: EditorEngine) => Promise<any>;
 
@@ -207,11 +208,13 @@ async function handleCreateImage(
 ): Promise<string> {
     const { path, fileId } = args;
 
-    const imageContext = editorEngine.chat.context.context.find(
-        (c): c is ImageMessageContext =>
-            c.type === MessageContextType.IMAGE && c.fileId === fileId,
-    );
-
+    const imageContext = editorEngine.chat.conversation.current?.messages
+        .filter((m): m is UserChatMessageImpl => m.role === ChatMessageRole.USER)
+        .flatMap(userMessage => userMessage.context)
+        .find(
+            (c): c is ImageMessageContext =>
+                c.type === MessageContextType.IMAGE && c.fileId === fileId,
+        );
     if (!imageContext) {
         const errorMessage = `Error: Could not find an image in the context with fileId "${fileId}".`;
         console.error(errorMessage);
@@ -244,6 +247,7 @@ async function handleCreateImage(
 
         await editorEngine.sandbox.writeBinaryFile(path, imageData);
         
+        // Remove the image context after saving the image
         editorEngine.chat.context.context = editorEngine.chat.context.context.filter(
             (c) => {
                 if (c.type !== MessageContextType.IMAGE) {
