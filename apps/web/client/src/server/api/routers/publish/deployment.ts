@@ -69,7 +69,7 @@ export const deploymentRouter = createTRPCRouter({
             });
         }
 
-        const deployment = await createDeployment(ctx.db, projectId, type, userId, buildScript, buildFlags, envVars);
+        const deployment = await createDeployment(ctx.db, projectId, type, userId);
         return { deploymentId: deployment.id };
     }),
     run: protectedProcedure.input(z.object({
@@ -116,5 +116,14 @@ export const deploymentRouter = createTRPCRouter({
             });
             throw error;
         }
+    }),
+    cancel: protectedProcedure.input(z.object({
+        deploymentId: z.string(),
+    })).mutation(async ({ ctx, input }) => {
+        const { deploymentId } = input;
+        await updateDeployment(ctx.db, deploymentId, {
+            status: DeploymentStatus.FAILED,
+            message: 'User cancelled deployment',
+        });
     }),
 });
