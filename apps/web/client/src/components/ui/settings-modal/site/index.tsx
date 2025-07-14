@@ -8,6 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
 import { MetadataForm } from './metadata-form';
 import { useMetadataForm } from './use-metadata-form';
+import { createSecureUrl } from '@onlook/utility';
 
 export const SiteTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -38,6 +39,7 @@ export const SiteTab = observer(() => {
     });
 
     const [uploadedFavicon, setUploadedFavicon] = useState<File | null>(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleFaviconSelect = (file: File) => {
         setUploadedFavicon(file);
@@ -45,10 +47,11 @@ export const SiteTab = observer(() => {
     };
 
     const handleSave = async () => {
+        setIsSaving(true);
         try {
-            const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+            const url = createSecureUrl(baseUrl);
             const finalTitle = getFinalTitleMetadata();
-            const siteTitle = typeof finalTitle === 'string' ? finalTitle : finalTitle.absolute || finalTitle.default || '';
+            const siteTitle = typeof finalTitle === 'string' ? finalTitle : finalTitle.absolute ?? finalTitle.default ?? '';
 
             const updatedMetadata: PageMetadata = {
                 ...(homePage?.metadata ?? {}),
@@ -58,7 +61,7 @@ export const SiteTab = observer(() => {
                     ...homePage?.metadata?.openGraph,
                     title: siteTitle,
                     description: description,
-                    url: baseUrl || '',
+                    url,
                     siteName: siteTitle,
                     type: 'website',
                 },
@@ -115,6 +118,8 @@ export const SiteTab = observer(() => {
             toast.error('Failed to update site metadata. Please try again.', {
                 description: 'Failed to update site metadata. Please try again.',
             });
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -140,6 +145,7 @@ export const SiteTab = observer(() => {
                         projectUrl={baseUrl}
                         isSimpleTitle={isSimpleTitle}
                         disabled={editorEngine.pages.isScanning}
+                        isSaving={isSaving}
                         onTitleChange={handleTitleChange}
                         onTitleTemplateChange={handleTitleTemplateChange}
                         onTitleAbsoluteChange={handleTitleAbsoluteChange}

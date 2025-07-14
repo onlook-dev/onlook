@@ -68,3 +68,36 @@ export const isValidDomain = (domain: string): boolean => {
         /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i;
     return domainRegex.test(domain) && domain.length <= 253;
 };
+
+/**
+ * Creates a secure URL from a given URL string
+ * @param url - The URL string to create a secure URL from
+ * @returns The secure URL string
+ */
+export const createSecureUrl = (url: string | undefined): string => {
+    if (!url || typeof url !== 'string' || url.trim() === '') {
+        return '';
+    }
+
+    const trimmedUrl = url.trim();
+
+    try {
+        // If it already has a protocol, validate it's http or https
+        if (trimmedUrl.includes('://')) {
+            const parsedUrl = new URL(trimmedUrl);
+            if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
+                return parsedUrl.toString();
+            }
+            // Invalid protocol, return empty string
+            return '';
+        }
+
+        // No protocol, add https and validate
+        const httpsUrl = `https://${trimmedUrl}`;
+        const parsedUrl = new URL(httpsUrl);
+        return parsedUrl.toString();
+    } catch {
+        // Invalid URL format
+        return '';
+    }
+};

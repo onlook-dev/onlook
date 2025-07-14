@@ -4,11 +4,12 @@ import { DefaultSettings } from '@onlook/constants';
 import type { PageMetadata } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { Icons } from '@onlook/ui/icons';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { MetadataForm } from './metadata-form';
 import { useMetadataForm } from './use-metadata-form';
+import { createSecureUrl } from '@onlook/utility';
 
-export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path: string }) => {
+const PageTabComponent = ({ metadata, path }: { metadata?: PageMetadata; path: string }) => {
     const editorEngine = useEditorEngine();
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
@@ -33,14 +34,18 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
         initialMetadata: metadata,
     });
 
+    const [isSaving, setIsSaving] = useState(false);
+
+
     const handleSave = async () => {
         if (!project) {
             return;
         }
+        setIsSaving(true);
         try {
-            const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
+            const url = createSecureUrl(baseUrl);
             const finalTitle = getFinalTitleMetadata();
-            const siteTitle = typeof finalTitle === 'string' ? finalTitle : finalTitle.absolute || finalTitle.default || '';
+            const siteTitle = typeof finalTitle === 'string' ? finalTitle : finalTitle.absolute ?? finalTitle.default ?? '';
 
             const updatedMetadata: PageMetadata = {
                 ...metadata,
@@ -50,7 +55,7 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
                     ...metadata?.openGraph,
                     title: siteTitle,
                     description: description,
-                    url: baseUrl || '',
+                    url: url,
                     siteName: siteTitle,
                     type: 'website',
                 },
@@ -91,6 +96,8 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
         } catch (error) {
             console.error('Failed to update metadata:', error);
             toast.error('Failed to update page metadata. Please try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -116,6 +123,7 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
                         projectUrl={baseUrl}
                         isSimpleTitle={isSimpleTitle}
                         disabled={editorEngine.pages.isScanning}
+                        isSaving={isSaving}
                         onTitleChange={handleTitleChange}
                         onTitleTemplateChange={handleTitleTemplateChange}
                         onTitleAbsoluteChange={handleTitleAbsoluteChange}
@@ -130,4 +138,8 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
             </div>
         </div>
     );
-});
+};
+
+PageTabComponent.displayName = 'PageTab';
+
+export const PageTab = memo(PageTabComponent);
