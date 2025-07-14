@@ -124,7 +124,7 @@ export const CustomDomainSection = observer(() => {
 
         return (
             <div className="w-full flex flex-col gap-2">
-                <UrlSection url={domain.url} isCopyable={false} />
+                <UrlSection url={domain.url} isCopyable={false} publishError={demoNonDomainError} />
                 {demoNonDomainError && (
                     <div className="w-full flex flex-col gap-2">
                         <p className="text-red-500 max-h-20 overflow-y-auto">
@@ -143,7 +143,7 @@ export const CustomDomainSection = observer(() => {
                             <div className="flex-1">
                                 <Button
                                     variant="outline"
-                                    className="w-full rounded-md p-3 border-amber-400 text-amber-400 hover:bg-amber-400/10 flex items-center justify-center gap-2"
+                                    className="w-full rounded-md p-3 border-amber-400 text-amber-600 dark:text-amber-400 hover:text-amber-900 hover:bg-amber-200 dark:hover:text-amber-100 dark:hover:bg-amber-700 font-sans select-none flex items-center justify-center gap-2"
                                     // onClick for Fix with AI will be added later
                                 >
                                     <Icons.MagicWand className="h-4 w-4 mr-2" />
@@ -160,15 +160,15 @@ export const CustomDomainSection = observer(() => {
     const demoNonDomainError = true; // or false to disable the demo
 
     return (
-        <div className="w-full flex flex-col items-center gap-2 px-2">
+        <div className="w-full flex flex-col items-center gap-2">
             <Button
                 variant="ghost"
-                className="flex flex-row items-center gap-2 py-4 rounded-t-none h-12 w-full justify-start"
+                className="group flex flex-row items-center gap-2 py-4 px-4 rounded-t-none h-12 w-full justify-start hover:rounded-none active:rounded-none"
                 onClick={openCustomDomain}
                 disabled={false}
             >
                 <Icons.Link className="h-4 w-4" />
-                <span>Link a Custom Domain</span>
+                <span className="group-hover:underline group-active:underline">Link a Custom Domain</span>
                 <span className="ml-2 rounded-full bg-blue-400 text-white px-1.5 py-0.5 text-xs">PRO</span>
                 <Icons.ChevronRight className="ml-auto h-3 w-3" />
             </Button>

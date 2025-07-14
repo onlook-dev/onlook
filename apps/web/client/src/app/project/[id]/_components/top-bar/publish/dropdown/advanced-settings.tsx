@@ -17,11 +17,11 @@ export const AdvancedSettingsSection = () => {
     return (
         <Button
             variant="ghost"
-            className="flex flex-row items-center gap-2 py-4 rounded-t-none h-12"
+            className="group flex flex-row items-center gap-2 py-4 rounded-t-none h-12 hover:rounded-none active:rounded-none"
             onClick={openAdvancedSettings}
         >
             <Icons.Gear className="h-4 w-4" />
-            Advanced Settings
+            <span className="group-hover:underline group-active:underline">Advanced Settings</span>
         </Button>
     );
 };

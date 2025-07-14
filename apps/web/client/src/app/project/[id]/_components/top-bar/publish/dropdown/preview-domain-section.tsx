@@ -94,6 +94,7 @@ export const PreviewDomainSection = observer(() => {
                         </div>
                     )}
                 </div>
+                <div className="border-t border-border w-[calc(100%+2rem)] -mx-4 my-1" />
                 {renderActionSection()}
             </>
         );
@@ -127,7 +128,7 @@ export const PreviewDomainSection = observer(() => {
 
         return (
             <div className="w-full flex flex-col gap-2">
-                <UrlSection url={domain.url} isCopyable={true} />
+                <UrlSection url={domain.url} isCopyable={true} publishError={demoNonDomainError} />
                 {demoNonDomainError ? (
                     <div className="w-full flex flex-col gap-2">
                         <p className="text-red-500 max-h-20 overflow-y-auto">
@@ -146,7 +147,7 @@ export const PreviewDomainSection = observer(() => {
                             <div className="flex-1">
                                 <Button
                                     variant="outline"
-                                    className="w-full rounded-md p-3 border-amber-400 text-amber-400 hover:bg-amber-400/10 flex items-center justify-center gap-2"
+                                    className="w-full rounded-md p-3 border-amber-400 text-amber-600 dark:text-amber-400 hover:text-amber-900 hover:bg-amber-200 dark:hover:text-amber-100 dark:hover:bg-amber-700 font-sans select-none flex items-center justify-center gap-2"
                                     // onClick for Fix with AI will be added later
                                 >
                                     <Icons.MagicWand className="h-4 w-4 mr-2" />

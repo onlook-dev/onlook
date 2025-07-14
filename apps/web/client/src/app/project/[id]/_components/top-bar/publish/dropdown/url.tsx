@@ -6,7 +6,7 @@ import { getValidUrl } from '@onlook/utility';
 import Link from 'next/link';
 import { useState } from 'react';
 
-export const UrlSection = ({ url, isCopyable }: { url: string, isCopyable: boolean }) => {
+export const UrlSection = ({ url, isCopyable, publishError }: { url: string, isCopyable: boolean, publishError?: boolean }) => {
     const [isCopied, setIsCopied] = useState(false);
     
     // Validate and process the URL safely
@@ -41,6 +41,18 @@ export const UrlSection = ({ url, isCopyable }: { url: string, isCopyable: boole
             setIsCopied(false);
         }, 2000);
     };
+
+    if (publishError) {
+        return (
+            <div className="flex flex-row items-center justify-between gap-2">
+                <Input 
+                    className="bg-background-secondary w-full text-xs" 
+                    value="Resolve error below to publish..." 
+                    readOnly 
+                />
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-row items-center justify-between gap-2">
