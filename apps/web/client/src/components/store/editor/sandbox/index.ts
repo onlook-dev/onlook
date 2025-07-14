@@ -41,7 +41,6 @@ export class SandboxManager {
     }
 
     async index(force = false) {
-        console.error('index', force);
         if (this.isIndexing || (this.isIndexed && !force)) {
             return;
         }
