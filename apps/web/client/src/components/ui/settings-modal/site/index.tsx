@@ -2,13 +2,13 @@ import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
 import { type PageMetadata } from '@onlook/models';
-import { toast } from '@onlook/ui/sonner';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
+import { createSecureUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
 import { MetadataForm } from './metadata-form';
 import { useMetadataForm } from './use-metadata-form';
-import { createSecureUrl } from '@onlook/utility';
 
 export const SiteTab = observer(() => {
     const editorEngine = useEditorEngine();

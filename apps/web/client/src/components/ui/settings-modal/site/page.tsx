@@ -2,14 +2,14 @@ import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
 import type { PageMetadata } from '@onlook/models';
-import { toast } from '@onlook/ui/sonner';
 import { Icons } from '@onlook/ui/icons';
-import { memo, useState } from 'react';
+import { toast } from '@onlook/ui/sonner';
+import { createSecureUrl } from '@onlook/utility';
+import { useState } from 'react';
 import { MetadataForm } from './metadata-form';
 import { useMetadataForm } from './use-metadata-form';
-import { createSecureUrl } from '@onlook/utility';
 
-const PageTabComponent = ({ metadata, path }: { metadata?: PageMetadata; path: string }) => {
+export const PageTab = ({ metadata, path }: { metadata?: PageMetadata; path: string }) => {
     const editorEngine = useEditorEngine();
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
@@ -36,8 +36,8 @@ const PageTabComponent = ({ metadata, path }: { metadata?: PageMetadata; path: s
 
     const [isSaving, setIsSaving] = useState(false);
 
-
     const handleSave = async () => {
+        console.log('handleSave');
         if (!project) {
             return;
         }
@@ -60,6 +60,8 @@ const PageTabComponent = ({ metadata, path }: { metadata?: PageMetadata; path: s
                     type: 'website',
                 },
             };
+
+            console.log('updatedMetadata', updatedMetadata);
 
             if (!metadata?.metadataBase) {
                 if (url) {
@@ -139,7 +141,3 @@ const PageTabComponent = ({ metadata, path }: { metadata?: PageMetadata; path: s
         </div>
     );
 };
-
-PageTabComponent.displayName = 'PageTab';
-
-export const PageTab = memo(PageTabComponent);
