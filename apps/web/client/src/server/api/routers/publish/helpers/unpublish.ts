@@ -7,7 +7,7 @@ import { TRPCError } from '@trpc/server';
 import { deployFreestyle } from './deploy';
 import { updateDeployment } from './helpers';
 
-export const unpublishInBackground = async (db: DrizzleDb, deployment: Deployment, urls: string[]) => {
+export const unpublish = async (db: DrizzleDb, deployment: Deployment, urls: string[]) => {
     if (!deployment) {
         throw new TRPCError({
             code: 'BAD_REQUEST',

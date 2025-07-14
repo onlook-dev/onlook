@@ -1,17 +1,19 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useHostingType } from '@/components/store/hosting';
 import { api } from '@/trpc/react';
-import { DefaultSettings } from '@onlook/constants';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
 import { toast } from '@onlook/ui/sonner';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import stripAnsi from 'strip-ansi';
 import { UrlSection } from './url';
 
 export const PreviewDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
+    const [isLoading, setIsLoading] = useState(false);
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: previewDomain, refetch: refetchPreviewDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
@@ -34,21 +36,16 @@ export const PreviewDomainSection = observer(() => {
             toast.error('No project found');
             return;
         }
-
-        const res = await runPublish({
-            projectId: editorEngine.projectId,
-            buildScript: DefaultSettings.COMMANDS.build,
-            buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-            envVars: {},
-        });
-
-        if (!res) {
-            toast.error('Failed to create deployment');
-            return;
+        setIsLoading(true);
+        try {
+            await runPublish({
+                projectId: editorEngine.projectId
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
         }
-        toast.success('Created Deployment', {
-            description: 'Deployment ID: ' + res.deploymentId,
-        });
     };
 
     const retry = () => {
@@ -131,8 +128,9 @@ export const PreviewDomainSection = observer(() => {
                         onClick={() => publish()}
                         variant="outline"
                         className="w-full rounded-md p-3"
-                        disabled={isDeploying}
+                        disabled={isDeploying || isLoading}
                     >
+                        {isLoading && <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />}
                         Update
                     </Button>
                 )}

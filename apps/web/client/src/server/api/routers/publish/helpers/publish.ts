@@ -1,5 +1,7 @@
 import type { WebSocketSession } from '@codesandbox/sdk';
+import { DefaultSettings } from '@onlook/constants';
 import type { DrizzleDb } from '@onlook/db/src/client';
+import type { Deployment } from '@onlook/db/src/schema/project/deployment';
 import {
     DeploymentStatus,
     DeploymentType
@@ -9,25 +11,14 @@ import { deployFreestyle } from './deploy';
 import { forkBuildSandbox } from './fork';
 import { getProjectUrls, getSandboxId, updateDeployment } from './helpers';
 
-export async function publishInBackground({
-    deploymentId,
-    userId,
+export async function publish({
     db,
-    projectId,
-    type,
-    buildScript,
-    buildFlags,
-    envVars,
+    deployment,
 }: {
-    deploymentId: string;
-    userId: string;
     db: DrizzleDb;
-    projectId: string;
-    type: DeploymentType;
-    buildScript: string;
-    buildFlags: string;
-    envVars: Record<string, string>;
+    deployment: Deployment;
 }) {
+    const { id: deploymentId, projectId, type, buildScript, buildFlags, envVars, requestedBy: userId } = deployment;
     try {
         const deploymentUrls = await getProjectUrls(db, projectId, type);
         const sandboxId = await getSandboxId(db, projectId);
@@ -51,10 +42,9 @@ export async function publishInBackground({
 
             const publishManager = new PublishManager(session);
             const files = await publishManager.publish({
-                skipBadge: false,
-                buildScript,
-                buildFlags,
-                envVars,
+                skipBadge: type === DeploymentType.CUSTOM,
+                buildScript: buildScript ?? DefaultSettings.COMMANDS.build,
+                buildFlags: buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
                 updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
             });
 
@@ -67,7 +57,7 @@ export async function publishInBackground({
             await deployFreestyle({
                 files,
                 urls: deploymentUrls,
-                envVars,
+                envVars: envVars ?? {},
             });
 
             updateDeployment(db, deploymentId, {

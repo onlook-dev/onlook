@@ -1,6 +1,6 @@
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { relations } from 'drizzle-orm';
-import { integer, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { users } from '../user/user';
 import { projects } from './project';
@@ -14,14 +14,19 @@ export const deployments = pgTable('deployments', {
     projectId: uuid('project_id').references(() => projects.id).notNull(),
     sandboxId: text('sandbox_id'),
     urls: text('urls').array(),
-
     type: deploymentType('type').notNull(),
     status: deploymentStatus('status').notNull(),
 
+    // Deployment progress
     message: text('message'),
     buildLog: text('build_log'),
     error: text('error'),
     progress: integer('progress'),
+
+    // Custom deployment settings
+    buildScript: text('build_script'),
+    buildFlags: text('build_flags'),
+    envVars: jsonb('env_vars').$type<Record<string, string>>(),
 
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

@@ -44,15 +44,13 @@ export class PublishManager {
 
     async publish({
         buildScript,
-        skipBadge,
         buildFlags,
-        envVars,
+        skipBadge,
         updateDeployment,
     }: {
-        buildScript: string,
+        buildScript: string;
         buildFlags: string;
         skipBadge: boolean;
-        envVars: Record<string, string>;
         updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<void>;
     }): Promise<Record<string, FreestyleFile>> {
         await this.runPrepareStep();
@@ -77,7 +75,7 @@ export class PublishManager {
             progress: 40,
         });
 
-        await this.runBuildStep(buildScript, buildFlags, envVars);
+        await this.runBuildStep(buildScript, buildFlags);
 
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
@@ -123,7 +121,7 @@ export class PublishManager {
         }
     }
 
-    private async runBuildStep(buildScript: string, buildFlags: string, envVars: Record<string, string>): Promise<void> {
+    private async runBuildStep(buildScript: string, buildFlags: string): Promise<void> {
         try {
             // Use default build flags if no build flags are provided
             const buildFlagsString: string = isNullOrUndefined(buildFlags)

@@ -1,12 +1,13 @@
 import { DeploymentStatus } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
 import stripAnsi from 'strip-ansi';
 import { UrlSection } from '../url';
 import { useCustomDomainContext } from './provider';
 
 export const ActionSection = () => {
-    const { customDomain, deployment, publish, retry, isDeploying } = useCustomDomainContext();
+    const { customDomain, deployment, publish, retry, isDeploying, isLoading } = useCustomDomainContext();
 
     if (!customDomain) {
         return 'Something went wrong';
@@ -24,8 +25,9 @@ export const ActionSection = () => {
                         !customDomain.publishedAt &&
                         'bg-blue-400 hover:bg-blue-500 text-white',
                     )}
-                    disabled={isDeploying}
+                    disabled={isDeploying || isLoading}
                 >
+                    {isLoading && <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />}
                     {deployment?.updatedAt ? 'Update' : `Publish to ${customDomain.url}`}
                 </Button>
             )}

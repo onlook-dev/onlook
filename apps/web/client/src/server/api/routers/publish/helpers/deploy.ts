@@ -52,12 +52,23 @@ export const deployFreestyle = async (
     return result;
 }
 
-export async function createDeployment(db: DrizzleDb, projectId: string, type: DeploymentType, userId: string): Promise<Deployment> {
+export async function createDeployment(
+    db: DrizzleDb,
+    projectId: string,
+    type: DeploymentType,
+    userId: string,
+    buildScript?: string,
+    buildFlags?: string,
+    envVars?: Record<string, string>,
+): Promise<Deployment> {
     const [deployment] = await db.insert(deployments).values({
         id: randomUUID(),
         projectId,
         type,
-        status: DeploymentStatus.IN_PROGRESS,
+        buildScript,
+        buildFlags,
+        envVars,
+        status: DeploymentStatus.PENDING,
         requestedBy: userId,
         message: 'Creating deployment...',
         progress: 0,

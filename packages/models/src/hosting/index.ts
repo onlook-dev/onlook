@@ -6,6 +6,7 @@ export enum DeploymentType {
 }
 
 export enum DeploymentStatus {
+    PENDING = 'pending',
     IN_PROGRESS = 'in_progress',
     COMPLETED = 'completed',
     FAILED = 'failed',
