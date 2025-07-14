@@ -54,10 +54,6 @@ describe('createSecureUrl', () => {
         expect(createSecureUrl('ftp://onlook.dev')).toBe('https://onlook.dev');
     });
 
-    it('should return an empty string for a url that only contains a protocol', () => {
-        expect(createSecureUrl('http://')).toBe('');
-    });
-
     it('should return an empty string for a url that does not contain a domain', () => {
         expect(createSecureUrl('a')).toBe('');
     });

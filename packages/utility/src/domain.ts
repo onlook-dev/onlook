@@ -104,9 +104,11 @@ export const createSecureUrl = (url: string | undefined | null): string => {
         }
 
         return normalizedUrl;
-    } catch {
+    } catch (error) {
         // Invalid URL format
-        console.error('Invalid URL format', url);
+        console.error(
+            `Invalid URL format. Input: "${url}", Error: ${error instanceof Error ? error.message : error}`,
+        );
         return '';
     }
 };
