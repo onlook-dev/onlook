@@ -3,6 +3,7 @@ import { ScrollArea } from '@onlook/ui/scroll-area';
 import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
 import type { FolderNode } from '@onlook/models';
+import { useFolderContext } from '../providers/folder-provider';
 
 interface FolderTreeItemProps {
     folder: FolderNode;
@@ -22,7 +23,8 @@ const FolderTreeItem = ({
     asMenuContent = false,
 }: FolderTreeItemProps) => {
     const [isExpanded, setIsExpanded] = useState(false);
-    const hasChildren = folder.children && folder.children.size > 0;
+    const { getChildFolders } = useFolderContext();
+    const children = getChildFolders(folder);
 
     const isSelected = selectedFolder?.fullPath === folder.fullPath;
 
@@ -35,7 +37,7 @@ const FolderTreeItem = ({
 
     const handleToggle = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (hasChildren) {
+        if (children.length > 0) {
             setIsExpanded(!isExpanded);
         }
     };
@@ -51,7 +53,7 @@ const FolderTreeItem = ({
                 style={{ paddingLeft: `${level * 16 + 8}px` }}
                 onClick={handleClick}
             >
-                {hasChildren && (
+                {children.length > 0 && (
                     <button
                         onClick={handleToggle}
                         className="p-1 hover:bg-background-secondary rounded"
@@ -64,22 +66,17 @@ const FolderTreeItem = ({
                         )}
                     </button>
                 )}
-                {!hasChildren && <div className="w-5" />}
+                {children.length === 0 && <div className="w-5" />}
 
                 <Icons.Directory className="w-4 h-4 text-foreground-secondary" />
                 <span className={cn('text-sm', asMenuContent && 'text-smallPlus')}>
                     {folder.name}
                 </span>
-                {folder.images.length > 0 && (
-                    <span className="text-xs text-foreground-secondary ml-auto">
-                        {folder.images.length} items
-                    </span>
-                )}
             </div>
 
-            {isExpanded && hasChildren && (
+            {isExpanded && children.length > 0 && (
                 <div>
-                    {Array.from(folder.children?.values() ?? []).map((child) => (
+                    {children.map((child) => (
                         <FolderTreeItem
                             key={child.fullPath}
                             folder={child}

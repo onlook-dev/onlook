@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useEditorEngine } from '@/components/store/editor';
 import type { ImageContentData, FolderNode } from '@onlook/models';
-import { useImagesContext } from '../providers/images-provider';
+import { useFolderContext } from '../providers/folder-provider';
 
 interface FolderImagesState {
     isLoading: boolean;
@@ -9,9 +9,11 @@ interface FolderImagesState {
     images: ImageContentData[];
 }
 
-export const useFolderImages = () => {
+export const useFolderImages = (folder: FolderNode) => {
     const editorEngine = useEditorEngine();
-    const { getImagePaths } = useImagesContext();
+    const { getImagesInFolder } = useFolderContext();
+    const allImages = useMemo(() => getImagesInFolder(folder), [getImagesInFolder, folder]);
+
     const [folderImagesState, setFolderImagesState] = useState<FolderImagesState>({
         isLoading: false,
         error: null,
@@ -57,8 +59,8 @@ export const useFolderImages = () => {
         }
     }, [editorEngine.image]);
 
-    const loadFolderImages = useCallback(async (folder: FolderNode | null) => {
-        if (!folder) {
+    const loadFolderImages = useCallback(async (currentFolder: FolderNode | null) => {
+        if (!currentFolder) {
             setFolderImagesState({
                 isLoading: false,
                 error: null,
@@ -67,10 +69,8 @@ export const useFolderImages = () => {
             return;
         }
 
-        const allImagePaths = getImagePaths(folder);
-
-        if (allImagePaths.length > 0) {
-            await readImagesContent(allImagePaths);
+        if (allImages.length > 0) {
+            await readImagesContent(allImages);
         } else {
             setFolderImagesState({
                 isLoading: false,
@@ -78,7 +78,12 @@ export const useFolderImages = () => {
                 images: [],
             });
         }
-    }, [readImagesContent]);
+    }, [readImagesContent, allImages]);
+
+    // Auto-load images when the folder or image list changes
+    useEffect(() => {
+        loadFolderImages(folder);
+    }, [allImages, folder]);
 
     useEffect(() => {
         return () => {

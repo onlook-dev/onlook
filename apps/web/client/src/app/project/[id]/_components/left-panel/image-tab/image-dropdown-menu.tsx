@@ -6,6 +6,7 @@ import { DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownM
 import { Icons } from "@onlook/ui/icons";
 import { memo, useCallback, useMemo, useState } from "react";
 import { FolderDropdown } from "./folder-dropdown/folder-dropdown";
+import { rootDir } from "./folder";
 
 export const ImageDropdownMenu = memo(
     ({
@@ -15,7 +16,6 @@ export const ImageDropdownMenu = memo(
         handleOpenFolder,
         handleMoveToFolder,
         isDisabled,
-        folderStructure,
         selectedTargetFolder,
         onSelectTargetFolder,
     }: {
@@ -25,7 +25,6 @@ export const ImageDropdownMenu = memo(
         handleOpenFolder: () => void;
         handleMoveToFolder: (targetFolder: FolderNode) => void;
         isDisabled: boolean;
-        folderStructure: FolderNode;
         selectedTargetFolder: FolderNode | null;
         onSelectTargetFolder: (folder: FolderNode) => void;
     }) => {
@@ -125,7 +124,7 @@ export const ImageDropdownMenu = memo(
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent className="w-64 p-0" sideOffset={8}>
                                 <FolderDropdown
-                                    rootFolder={folderStructure}
+                                    rootFolder={rootDir}
                                     selectedFolder={selectedTargetFolder}
                                     onSelectFolder={handleFolderSelect}
                                 />

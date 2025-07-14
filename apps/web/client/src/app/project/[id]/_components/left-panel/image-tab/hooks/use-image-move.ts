@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { type FolderNode, type ImageContentData } from '@onlook/models';
 import { ensureImageFolderPrefix, generateNewFolderPath } from '@onlook/utility';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface MoveImageState {
     targetFolder: FolderNode | null;
@@ -106,6 +106,16 @@ export const useImageMove = () => {
     const clearError = useCallback(() => {
         setMoveState((prev) => ({ ...prev, error: null }));
     }, []);
+
+    useEffect(() => {
+        if (moveState.error) {
+            const timer = setTimeout(() => {
+                setMoveState((prev) => ({ ...prev, error: null }));
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [moveState.error]);
 
     return {
         moveState,

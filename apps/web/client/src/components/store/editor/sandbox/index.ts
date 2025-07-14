@@ -451,7 +451,8 @@ export class SandboxManager {
                 const stat = await this.session.session?.fs.stat(path);
                 
                 if(stat?.type === 'directory') {
-                    this.fileSync.updateDirectoryCache(path, []);
+                    const normalizedPath = normalizePath(path);
+                    this.fileSync.updateDirectoryCache(normalizedPath, []);
                     continue
                 }
 

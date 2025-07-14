@@ -8,13 +8,11 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import type { FolderNode } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
-import { useImagesContext } from '../../providers/images-provider';
+import { useFolderContext } from '../../providers/folder-provider';
 
 export const FolderDeleteModal = observer(() => {
-    const { folderOperations } = useImagesContext();
-    const { deleteState, handleDeleteModalToggle, onDeleteFolder } = folderOperations;
+    const { deleteState, handleDeleteModalToggle, onDeleteFolder, getChildFolders, getImagesInFolder } = useFolderContext();
 
     const handleDelete = async () => {
         if (!deleteState.isLoading) {
@@ -28,19 +26,10 @@ export const FolderDeleteModal = observer(() => {
         }
     };
 
-    const getTotalItems = (folderNode: FolderNode): number => {
-        let total = folderNode.images.length;
-        if (folderNode.children) {
-            for (const [, child] of folderNode.children) {
-                total += getTotalItems(child);
-            }
-        }
-        return total;
-    };
 
     const folder = deleteState.folderToDelete;
-    const totalItems = folder ? getTotalItems(folder) : 0;
-    const hasSubfolders = (folder?.children?.size ?? 0) > 0;
+    const totalItems = folder ? getImagesInFolder(folder).length : 0;
+    const hasSubfolders = folder ? getChildFolders(folder).length > 0 : false;
 
     return (
         <AlertDialog open={!!deleteState.folderToDelete} onOpenChange={handleClose}>
@@ -53,7 +42,7 @@ export const FolderDeleteModal = observer(() => {
                                 Are you sure you want to delete the folder &quot;{folder.name}&quot;?
                                 {totalItems > 0 && (
                                     <span className="block mt-2 text-red-600">
-                                        This will permanently delete {totalItems} item{totalItems !== 1 ? 's' : ''} 
+                                        This will permanently delete {totalItems} image{totalItems !== 1 ? 's' : ''} 
                                         {hasSubfolders && ' and all subfolders'}.
                                     </span>
                                 )}

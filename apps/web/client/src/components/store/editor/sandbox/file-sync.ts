@@ -114,6 +114,14 @@ export class FileSyncManager {
             this.cache.set(newFilePath, updatedFile);
             this.cache.delete(oldFilePath);
         }
+        // Update the directory cache
+        this.directoryCache.set(normalizedNewPath, {
+            type: 'directory',
+            path: normalizedNewPath,
+            files: filesToRename.map(({ file }) => file)
+        });
+
+        this.directoryCache.delete(normalizedOldPath);
     }
 
     listAllFiles() {

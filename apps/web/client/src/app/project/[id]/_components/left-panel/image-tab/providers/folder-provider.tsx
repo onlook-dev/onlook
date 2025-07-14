@@ -1,11 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useCallback, useState } from 'react';
+import { observer } from 'mobx-react-lite';
+import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 import type { FolderNode } from '@onlook/models';
 import {
-    createBaseFolder,
     validateFolderRename,
     validateFolderMove,
-    validateFolderCreate
+    validateFolderCreate,
+    isImageFile
 } from '@onlook/utility';
 
 interface FolderState {
@@ -33,14 +34,47 @@ interface CreateFolderState extends FolderState {
     parentFolder: FolderNode | null;
 }
 
-interface UseFolderOptions {
-    onFolderStructureUpdate?: (folderStructure: FolderNode) => void;
-    rootFolderStructure?: FolderNode;
+interface FolderContextValue {
+    // Rename operations
+    renameState: RenameFolderState;
+    handleRenameFolder: (folder: FolderNode) => void;
+    handleRenameInputChange: (value: string) => void;
+    onRenameFolder: () => Promise<void>;
+    handleRenameModalToggle: () => void;
+
+    // Delete operations
+    deleteState: DeleteFolderState;
+    handleDeleteFolder: (folder: FolderNode) => void;
+    onDeleteFolder: () => Promise<void>;
+    handleDeleteModalToggle: () => void;
+
+    // Move operations
+    moveState: MoveFolderState;
+    handleMoveToFolder: (folder: FolderNode, targetFolder: FolderNode) => void;
+    onMoveFolder: () => Promise<void>;
+    handleMoveModalToggle: () => void;
+
+    // Create operations
+    createState: CreateFolderState;
+    handleCreateFolder: (parentFolder: FolderNode | null) => void;
+    handleCreateFolderInputChange: (value: string) => void;
+    onCreateFolder: () => Promise<boolean>;
+    handleCreateModalToggle: () => void;
+
+    // Global state
+    isOperating: boolean;
+    getChildFolders: (folder: FolderNode) => { name: string; fullPath: string; }[];
+    getImagesInFolder: (folder: FolderNode) => string[];
 }
 
-export const useFolder = (options: UseFolderOptions = {}) => {
+const FolderContext = createContext<FolderContextValue | null>(null);
+
+interface FolderProviderProps {
+    children: ReactNode;
+}
+
+export const FolderProvider = observer(({ children }: FolderProviderProps) => {
     const editorEngine = useEditorEngine();
-    const { onFolderStructureUpdate, rootFolderStructure } = options;
 
     const [renameState, setRenameState] = useState<RenameFolderState>({
         folderToRename: null,
@@ -136,7 +170,7 @@ export const useFolder = (options: UseFolderOptions = {}) => {
             }));
             console.error('Folder rename error:', error);
         }
-    }, [renameState, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
+    }, [renameState, editorEngine]);
 
     const handleDeleteFolder = useCallback((folder: FolderNode) => {
         setDeleteState({
@@ -169,7 +203,7 @@ export const useFolder = (options: UseFolderOptions = {}) => {
             }));
             console.error('Folder delete error:', error);
         }
-    }, [deleteState.folderToDelete, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
+    }, [deleteState.folderToDelete, editorEngine]);
 
     const handleMoveToFolder = useCallback((folder: FolderNode, targetFolder: FolderNode) => {
         setMoveState({
@@ -238,33 +272,7 @@ export const useFolder = (options: UseFolderOptions = {}) => {
             }));
             console.error('Folder move error:', error);
         }
-    }, [moveState, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
-
-    const moveFolderContents = async (folder: FolderNode, newPath: string) => {
-        const gitkeepPath = `${newPath}/.gitkeep`.replace(/\\/g, '/');
-        const gitkeepContent = '# This folder was created by Onlook\n';
-        await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
-
-        for (const image of folder.images) {
-            if (image) {
-                const fileName = image.split('/').pop() ?? '';
-                const newImagePath = `${newPath}/${fileName}`;
-                await editorEngine.sandbox.copy(image, newImagePath);
-                await editorEngine.sandbox.delete(image);
-            }
-        }
-
-        if (folder.children) {
-            for (const [, subfolder] of folder.children) {
-                await moveSubfolder(subfolder, newPath);
-            }
-        }
-    };
-
-    const moveSubfolder = async (subfolder: FolderNode, newParentPath: string) => {
-        const newSubfolderPath = `${newParentPath}/${subfolder.name}`;
-        await moveFolderContents(subfolder, newSubfolderPath);
-    };
+    }, [moveState, editorEngine]);
 
     // Modal toggle handlers
     const handleRenameModalToggle = useCallback(() => {
@@ -357,7 +365,7 @@ export const useFolder = (options: UseFolderOptions = {}) => {
             }));
             return false;
         }
-    }, [createState, editorEngine, onFolderStructureUpdate, rootFolderStructure]);
+    }, [createState, editorEngine]);
 
     const handleCreateModalToggle = useCallback(() => {
         setCreateState({
@@ -369,62 +377,41 @@ export const useFolder = (options: UseFolderOptions = {}) => {
         });
     }, []);
 
-    const scanFolderChildren = useCallback(
-        async (folder: FolderNode): Promise<FolderNode | null> => {
-            if (!editorEngine.sandbox.session?.session) {
-                console.warn('No session available for folder scanning');
-                return null;
+    const getChildFolders = useCallback((folder: FolderNode) => {
+        const childFolders = editorEngine.sandbox.directories.filter(dir => {
+            if (dir.startsWith(folder.fullPath)) {
+                // Check if this is a direct child (not in a subdirectory)
+                const relativePath = dir.slice(folder.fullPath.length);
+                // Remove leading slash if present
+                const cleanRelativePath = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
+                // Only include if it's a direct child (no additional path separators)
+                return !cleanRelativePath.includes('/') && cleanRelativePath.length > 0;
             }
+            return false;
+        });
+        return childFolders.map(dir => ({
+            name: dir.split('/').pop() ?? '',
+            fullPath: dir,
+        }));
+    }, [editorEngine.sandbox.directories]);
 
-            try {
-                const folderPathToScan = folder.fullPath;
-                const entries = await editorEngine.sandbox.readDir(folderPathToScan);
-
-                // Create a new folder object to maintain immutability
-                const updatedFolder: FolderNode = {
-                    ...folder,
-                    children: new Map(folder.children ?? new Map()),
-                };
-
-                // Process directory entries
-                for (const entry of entries) {
-                    if (entry.type === 'directory' && !updatedFolder.children?.has(entry.name)) {
-                        const childPath = folder.fullPath
-                            ? `${folder.fullPath}/${entry.name}`
-                            : entry.name;
-
-                        const newFolderNode: FolderNode = {
-                            name: entry.name,
-                            fullPath: childPath,
-                            images: [],
-                            children: new Map(),
-                        };
-
-                        updatedFolder.children?.set(entry.name, newFolderNode);
-                    }
+    // Get all folder paths
+    const getImagesInFolder = useCallback((folder: FolderNode) => {
+        return editorEngine.sandbox.files.filter(image => {
+            if(image.startsWith(folder.fullPath)) {
+                // Check if this is a direct child (not in a subdirectory)
+                const relativePath = image.slice(folder.fullPath.length);
+                // Remove leading slash if present
+                const cleanRelativePath = relativePath.startsWith('/') ? relativePath.slice(1) : relativePath;
+                // Only include if it's a direct child (no additional path separators)
+                if (!cleanRelativePath.includes('/')) {
+                    return isImageFile(image);
                 }
-                
-
-                // Remove directories that no longer exist
-                if (updatedFolder.children) {
-                    for (const [childName] of updatedFolder.children) {
-                        const childExists = entries.some(
-                            entry => entry.type === 'directory' && entry.name === childName
-                        );
-                        if (!childExists) {
-                            updatedFolder.children.delete(childName);
-                        }
-                    }
-                }
-
-                return  updatedFolder ;
-            } catch (error) {
-                console.error('Error scanning folder children:', error);
-                return null;
             }
-        },
-        [editorEngine],
-    );
+            return false;
+        });
+    }, [editorEngine.sandbox.files]);
+
     // Check if any operation is loading
     const isOperating =
         renameState.isLoading ||
@@ -432,7 +419,7 @@ export const useFolder = (options: UseFolderOptions = {}) => {
         moveState.isLoading ||
         createState.isLoading;
 
-    return {
+    const value: FolderContextValue = {
         // Rename operations
         renameState,
         handleRenameFolder,
@@ -458,12 +445,20 @@ export const useFolder = (options: UseFolderOptions = {}) => {
         handleCreateFolderInputChange,
         onCreateFolder,
         handleCreateModalToggle,
-        createBaseFolder,
-
-        // Folder scanning
-        scanFolderChildren,
 
         // Global state
         isOperating,
+        getChildFolders,
+        getImagesInFolder,
     };
-};
+
+    return <FolderContext.Provider value={value}>{children}</FolderContext.Provider>;
+});
+
+export const useFolderContext = () => {
+    const context = useContext(FolderContext);
+    if (!context) {
+        throw new Error('useFolderContext must be used within FolderProvider');
+    }
+    return context;
+}; 
