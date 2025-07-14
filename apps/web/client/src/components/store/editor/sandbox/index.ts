@@ -64,16 +64,15 @@ export class SandboxManager {
                     this.fileSync.writeEmptyFile(filePath, 'binary');
                     continue;
                 }
-
-                if (this.isJsxFile(filePath)) {
-                    const remoteFile = await this.readRemoteFile(filePath);
-                    if (!remoteFile) {
-                        console.error(`Failed to read file ${filePath}`);
-                        continue;
+                const remoteFile = await this.readRemoteFile(filePath);
+                if (remoteFile) {
+                    this.fileSync.updateCache(remoteFile);
+                    if (this.isJsxFile(filePath)) {
+                        await this.processFileForMapping(remoteFile);
                     }
-                    await this.processFileForMapping(remoteFile);
                 }
             }
+
             await this.watchFiles();
             this.isIndexed = true;
             timer.log('Indexing completed successfully');
@@ -443,12 +442,12 @@ export class SandboxManager {
             }
             if (remoteFile.type === 'text') {
                 // If the file is a text file, we need to process it for mapping
+                this.fileSync.updateCache({
+                    type: 'text',
+                    path: normalizedPath,
+                    content: remoteFile.content,
+                });
                 if (remoteFile.content !== cachedFile?.content) {
-                    this.fileSync.updateCache({
-                        type: 'text',
-                        path: normalizedPath,
-                        content: remoteFile.content,
-                    });
                     await this.processFileForMapping(remoteFile);
                 }
             } else {
