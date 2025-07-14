@@ -410,7 +410,13 @@ export class SandboxManager {
                     timestamp: Date.now(),
                 });
             }
-        } else if (eventType === 'change' || eventType === 'add') {            
+        } else if (eventType === 'change' || eventType === 'add') {      
+            const session = this.session.session;
+            if(!session) {
+                console.error('No session found');
+                return;
+            }
+            
             if (event.paths.length === 2) {
                 // This mean rename a file or a folder, move a file or a folder
                 const [oldPath, newPath] = event.paths;
@@ -420,16 +426,10 @@ export class SandboxManager {
                     return;
                 }
 
-                if(!this.session.session) {
-                    console.error('No session found');
-                    return;
-                }
-
-
                 const oldNormalizedPath = normalizePath(oldPath);
                 const newNormalizedPath = normalizePath(newPath);
 
-                const stat = await this.session.session.fs.stat(newPath);
+                const stat = await session.fs.stat(newPath);
                 
                 if(stat.type === 'directory') {
                     await this.fileSync.renameDir(oldNormalizedPath, newNormalizedPath);
@@ -448,7 +448,7 @@ export class SandboxManager {
                 if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
                     continue;
                 }
-                const stat = await this.session.session?.fs.stat(path);
+                const stat = await session.fs.stat(path);
                 
                 if(stat?.type === 'directory') {
                     const normalizedPath = normalizePath(path);
