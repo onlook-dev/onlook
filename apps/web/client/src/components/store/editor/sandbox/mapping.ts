@@ -36,8 +36,6 @@ export class TemplateNodeMapper {
         const templateNodeMap = createTemplateNodeMap(astWithIds, filePath);
         this.updateMapping(templateNodeMap);
         const newContent = await getContentFromAst(astWithIds);
-
-        console.error('templateNodeMap', templateNodeMap);
         return {
             modified,
             newContent,

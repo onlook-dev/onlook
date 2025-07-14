@@ -65,7 +65,7 @@ export class SandboxManager {
                     continue;
                 }
 
-                if (JSX_FILE_EXTENSIONS.includes(path.extname(filePath))) {
+                if (this.isJsxFile(filePath)) {
                     const remoteFile = await this.readRemoteFile(filePath);
                     if (!remoteFile) {
                         console.error(`Failed to read file ${filePath}`);
