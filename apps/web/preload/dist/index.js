@@ -13014,8 +13014,10 @@ function listenForDomMutation() {
     for (const mutation of mutationsList) {
       if (mutation.type === "childList") {
         mutation.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */)) {
-            const parent2 = node.parentElement;
+          const el = node;
+          if (node.nodeType === Node.ELEMENT_NODE && el.hasAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */) && !shouldIgnoreMutatedNode(el)) {
+            dedupNewElement(el);
+            const parent2 = el.parentElement;
             if (parent2) {
               const layerMap = buildLayerTree(parent2);
               if (layerMap) {
@@ -13025,8 +13027,9 @@ function listenForDomMutation() {
           }
         });
         mutation.removedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */)) {
-            const parent2 = node.parentElement;
+          const el = node;
+          if (node.nodeType === Node.ELEMENT_NODE && el.hasAttribute("data-odid" /* DATA_ONLOOK_DOM_ID */) && !shouldIgnoreMutatedNode(el)) {
+            const parent2 = el.parentElement;
             if (parent2) {
               const layerMap = buildLayerTree(parent2);
               if (layerMap) {
@@ -13059,6 +13062,36 @@ function listenForResize() {
     }
   }
   window.addEventListener("resize", notifyResize);
+}
+function shouldIgnoreMutatedNode(node) {
+  if (node.id === "onlook-drag-stub" /* ONLOOK_STUB_ID */) {
+    return true;
+  }
+  if (node.getAttribute("data-onlook-inserted" /* DATA_ONLOOK_INSERTED */)) {
+    return true;
+  }
+  return false;
+}
+function dedupNewElement(newEl) {
+  const oid = newEl.getAttribute("data-oid" /* DATA_ONLOOK_ID */);
+  if (!oid) {
+    return;
+  }
+  document.querySelectorAll(`[${"data-oid" /* DATA_ONLOOK_ID */}="${oid}"][${"data-onlook-inserted" /* DATA_ONLOOK_INSERTED */}]`).forEach((targetEl) => {
+    const ATTRIBUTES_TO_REPLACE = [
+      "data-odid" /* DATA_ONLOOK_DOM_ID */,
+      "data-onlook-drag-saved-style" /* DATA_ONLOOK_DRAG_SAVED_STYLE */,
+      "data-onlook-editing-text" /* DATA_ONLOOK_EDITING_TEXT */,
+      "data-oiid" /* DATA_ONLOOK_INSTANCE_ID */
+    ];
+    ATTRIBUTES_TO_REPLACE.forEach((attr) => {
+      const targetAttr = targetEl.getAttribute(attr);
+      if (targetAttr) {
+        newEl.setAttribute(attr, targetAttr);
+      }
+    });
+    targetEl.remove();
+  });
 }
 
 // script/api/events/index.ts
@@ -17435,5 +17468,5 @@ export {
   penpalParent
 };
 
-//# debugId=36F59AB4115EBBC464756E2164756E21
+//# debugId=A064D37661531BA364756E2164756E21
 //# sourceMappingURL=index.js.map

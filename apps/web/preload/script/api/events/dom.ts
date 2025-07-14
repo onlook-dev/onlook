@@ -1,5 +1,4 @@
 import { EditorAttributes } from '@onlook/constants';
-import type { LayerNode } from '@onlook/models';
 import { penpalParent } from '../..';
 import { buildLayerTree } from '../dom';
 
@@ -15,13 +14,16 @@ export function listenForDomMutation() {
             if (mutation.type === 'childList') {
                 // Handle added nodes
                 mutation.addedNodes.forEach((node) => {
+                    const el = node as HTMLElement;
                     if (
                         node.nodeType === Node.ELEMENT_NODE &&
-                        (node as Element).hasAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID)
+                        el.hasAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) &&
+                        !shouldIgnoreMutatedNode(el)
                     ) {
-                        const parent = (node as Element).parentElement;
+                        dedupNewElement(el);
+                        const parent = el.parentElement;
                         if (parent) {
-                            const layerMap = buildLayerTree(parent as HTMLElement);
+                            const layerMap = buildLayerTree(parent);
                             if (layerMap) {
                                 added = new Map([...added, ...layerMap]);
                             }
@@ -31,11 +33,13 @@ export function listenForDomMutation() {
 
                 // Handle removed nodes
                 mutation.removedNodes.forEach((node) => {
+                    const el = node as HTMLElement;
                     if (
                         node.nodeType === Node.ELEMENT_NODE &&
-                        (node as Element).hasAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID)
+                        el.hasAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) &&
+                        !shouldIgnoreMutatedNode(el)
                     ) {
-                        const parent = (node as Element).parentElement;
+                        const parent = el.parentElement;
                         if (parent) {
                             const layerMap = buildLayerTree(parent as HTMLElement);
                             if (layerMap) {
