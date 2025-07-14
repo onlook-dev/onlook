@@ -70,10 +70,3 @@ export async function updateDeployment(db: DrizzleDb, deploymentId: string, depl
         return null;
     }
 }
-
-export async function getDeployment(db: DrizzleDb, deploymentId: string): Promise<Deployment | null> {
-    const deployment = await db.query.deployments.findFirst({
-        where: eq(deployments.id, deploymentId),
-    });
-    return deployment ?? null;
-}
