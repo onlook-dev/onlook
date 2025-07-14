@@ -9,11 +9,10 @@ import {
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useImagesContext } from '../../providers/images-provider';
+import { useFolderContext } from '../../providers/folder-provider';
 
 export const FolderMoveModal = observer(() => {
-    const { folderOperations } = useImagesContext();
-    const { moveState, handleMoveModalToggle, onMoveFolder } = folderOperations;
+    const { moveState, handleMoveModalToggle, onMoveFolder } = useFolderContext();
 
     const handleMove = async () => {
         if (!moveState.isLoading) {

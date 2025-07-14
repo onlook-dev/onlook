@@ -12,13 +12,10 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { cn } from '@onlook/ui/utils';
-import { useImagesContext } from '../../providers/images-provider';
+import { useFolderContext } from '../../providers/folder-provider';
 
 export const FolderCreateModal = observer(() => {
-    const { folderOperations } = useImagesContext();
-    const { createState, handleCreateFolderInputChange, onCreateFolder, handleCreateModalToggle } =
-        folderOperations;
-
+    const { createState, handleCreateFolderInputChange, onCreateFolder, handleCreateModalToggle } = useFolderContext();
     const [inputValue, setInputValue] = useState(createState.newFolderName);
 
     useEffect(() => {

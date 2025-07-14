@@ -8,44 +8,33 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import type { ImageContentData, FolderNode } from '@onlook/models';
+import { useImagesContext } from './providers/images-provider';
 
-export default function MoveImageModal({
-    onMove,
-    isOpen,
-    toggleOpen,
-    isLoading = false,
-    image,
-    targetFolder,
-}: {
-    onMove: () => void;
-    isOpen: boolean;
-    toggleOpen: () => void;
-    isLoading?: boolean;
-    image: ImageContentData | null;
-    targetFolder: FolderNode | null;
-}) {
-    const handleMove = () => {
-        if (!isLoading) {
-            onMove();
+export const MoveImageModal = () => {
+    const { moveOperations } = useImagesContext();
+    const { moveState, moveImageToFolder, handleMoveModalToggle } = moveOperations;
+
+    const handleMove = async () => {
+        if (!moveState.isLoading) {
+            await moveImageToFolder();
         }
     };
 
     const handleClose = () => {
-        if (!isLoading) {
-            toggleOpen();
+        if (!moveState.isLoading) {
+            handleMoveModalToggle();
         }
     };
 
     return (
-        <AlertDialog open={isOpen} onOpenChange={handleClose}>
+        <AlertDialog open={!!moveState.imageToMove && !!moveState.targetFolder} onOpenChange={handleClose}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Move Image</AlertDialogTitle>
                     <AlertDialogDescription>
-                        {image && targetFolder && (
+                        {moveState.imageToMove && moveState.targetFolder && (
                             <>
-                                Are you sure you want to move &quot;{image.fileName}&quot; to &quot;{targetFolder.name ?? 'root'}&quot; folder?
+                                Are you sure you want to move &quot;{moveState.imageToMove.fileName}&quot; to &quot;{moveState.targetFolder.name ?? 'root'}&quot; folder?
                                 <span className="block mt-2 text-sm">
                                     This will move the image file to the selected folder location.
                                 </span>
@@ -54,16 +43,16 @@ export default function MoveImageModal({
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <Button variant={'ghost'} onClick={handleClose} disabled={isLoading}>
+                    <Button variant={'ghost'} onClick={handleClose} disabled={moveState.isLoading}>
                         Cancel
                     </Button>
                     <Button
                         variant={'default'}
                         className="rounded-md text-sm"
                         onClick={handleMove}
-                        disabled={isLoading}
+                        disabled={moveState.isLoading}
                     >
-                        {isLoading ? (
+                        {moveState.isLoading ? (
                             <>
                                 <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
                                 Moving...

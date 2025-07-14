@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { type FolderNode, type ImageContentData } from '@onlook/models';
-import { useCallback, useState } from 'react';
+import { ensureImageFolderPrefix, generateNewFolderPath } from '@onlook/utility';
+import { useCallback, useEffect, useState } from 'react';
 
 interface MoveImageState {
     targetFolder: FolderNode | null;
@@ -48,14 +49,12 @@ export const useImageMove = () => {
         try {
             const fileName = image.fileName;
             const currentPath = image.originPath;
-
             // Construct new path based on target folder
-            const newPath = targetFolder.fullPath
-                ? `${targetFolder.fullPath}/${fileName}`
-                : `${fileName}`;
+            const newPath = generateNewFolderPath(currentPath, fileName, 'move', targetFolder.fullPath);
+            const fullPath = ensureImageFolderPrefix(newPath);
 
             // Don't move if it's already in the same location
-            if (currentPath === newPath) {
+            if (currentPath === fullPath) {
                 setMoveState((prev) => ({
                     ...prev,
                     isLoading: false,
@@ -69,7 +68,7 @@ export const useImageMove = () => {
                 throw new Error('No sandbox session available');
             }
 
-            const copied = await editorEngine.sandbox.copy(currentPath, newPath);
+            const copied = await editorEngine.sandbox.copy(currentPath, fullPath, true);
             if (!copied) {
                 throw new Error('Failed to copy image');
             }
@@ -107,6 +106,16 @@ export const useImageMove = () => {
     const clearError = useCallback(() => {
         setMoveState((prev) => ({ ...prev, error: null }));
     }, []);
+
+    useEffect(() => {
+        if (moveState.error) {
+            const timer = setTimeout(() => {
+                setMoveState((prev) => ({ ...prev, error: null }));
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [moveState.error]);
 
     return {
         moveState,

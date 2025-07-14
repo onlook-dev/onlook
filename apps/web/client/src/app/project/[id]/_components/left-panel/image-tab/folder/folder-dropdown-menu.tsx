@@ -15,24 +15,25 @@ import { cn } from '@onlook/ui/utils';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { FolderDropdown } from '../folder-dropdown/folder-dropdown';
 import type { FolderNode } from '@onlook/models';
-import { useImagesContext } from '../providers/images-provider';
+import { useFolderContext } from '../providers/folder-provider';
 
 export const FolderDropdownMenu = memo(
     ({
         folder,
+        rootDir,
         isDisabled,
         alwaysVisible,
         className,
     }: {
         folder: FolderNode;
+        rootDir: FolderNode;
         isDisabled?: boolean;
         alwaysVisible?: boolean;
         className?: string;
     }) => {
         const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
-        const { rootFolderStructure, folderOperations } = useImagesContext();
 
-        const { handleRenameFolder, handleDeleteFolder, handleMoveToFolder, moveState } = folderOperations;
+        const { handleRenameFolder, handleDeleteFolder, handleMoveToFolder, moveState } = useFolderContext();
 
         const handleOpenChange = useCallback(
             (isOpen: boolean) => {
@@ -51,7 +52,7 @@ export const FolderDropdownMenu = memo(
         );
 
         const isVisible = useMemo(() => {
-            return alwaysVisible || activeDropdown === folder.name;
+            return alwaysVisible ? true : activeDropdown === folder.name;
         }, [activeDropdown, folder.name, alwaysVisible]);
 
         return (
@@ -114,7 +115,7 @@ export const FolderDropdownMenu = memo(
                                 </span>
                             </Button>
                         </DropdownMenuItem>
-                        {rootFolderStructure && (
+                        {rootDir && (
                             <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuSub>
@@ -129,7 +130,7 @@ export const FolderDropdownMenu = memo(
                                     </DropdownMenuSubTrigger>
                                     <DropdownMenuSubContent className="w-64 p-0" sideOffset={8}>
                                         <FolderDropdown
-                                            rootFolder={rootFolderStructure}
+                                            rootFolder={rootDir}
                                             selectedFolder={moveState.targetFolder}
                                             onSelectFolder={handleFolderSelect}
                                         />

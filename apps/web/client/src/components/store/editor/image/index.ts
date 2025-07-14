@@ -3,12 +3,12 @@ import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/
 import {
     convertToBase64,
     getBaseName,
-    getDirName,
     getMimeType,
     isImageFile,
 } from '@onlook/utility/src/file';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
+import { generateNewFolderPath } from '@onlook/utility';
 
 export class ImageManager {
     private _imagePaths: string[] = [];
@@ -37,7 +37,7 @@ export class ImageManager {
 
     async upload(file: File, destinationFolder: string): Promise<void> {
         try {
-            const path = `${DefaultSettings.IMAGE_FOLDER}/${destinationFolder}/${file.name}`;
+            const path = `${destinationFolder}/${file.name}`;
             const uint8Array = new Uint8Array(await file.arrayBuffer());
             await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
             await this.scanImages();
@@ -59,8 +59,7 @@ export class ImageManager {
 
     async rename(originPath: string, newName: string): Promise<void> {
         try {
-            const basePath = getDirName(originPath);
-            const newPath = `${basePath}/${newName}`;
+            const newPath = generateNewFolderPath(originPath, newName, 'rename');
             await this.editorEngine.sandbox.rename(originPath, newPath);
             await this.scanImages();
         } catch (error) {
@@ -118,8 +117,6 @@ export class ImageManager {
                 return;
             }
             this._imagePaths = files.filter((file: string) => isImageFile(file))
-            console.log('files', files);
-            console.log('imagePaths', this._imagePaths);
         } catch (error) {
             console.error('Error scanning images:', error);
             this._imagePaths = [];

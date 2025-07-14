@@ -1,17 +1,23 @@
-import type { SandboxFile } from '@onlook/models';
+import type { SandboxDirectory, SandboxFile } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { normalizePath } from './helpers';
 
 export class FileSyncManager {
     private cache: Map<string, SandboxFile>;
+    private directoryCache: Map<string, SandboxDirectory>;
 
     constructor() {
         this.cache = new Map();
+        this.directoryCache = new Map();
         makeAutoObservable(this);
     }
 
     has(filePath: string) {
         return this.cache.has(filePath);
+    }
+
+    hasDirectory(dirPath: string) {
+        return this.directoryCache.has(dirPath);
     }
 
     async isFileLoaded(file: SandboxFile) {
@@ -57,14 +63,29 @@ export class FileSyncManager {
         this.cache.set(file.path, file);
     }
 
-    async delete(filePath: string) {
-        this.cache.delete(filePath);
+    updateDirectoryCache(dirPath: string): void {
+        this.directoryCache.set(dirPath, {
+            type: 'directory',
+            path: dirPath,
+        });
+    }
+
+    deleteDir(dirPath: string) {
+        this.directoryCache.delete(dirPath);
+        this.cache.forEach((file, path) => {
+            if (path.startsWith(dirPath + '/')) {
+                this.cache.delete(path);
+            }
+        });
+    }
+
+    async delete(path: string) {
+        this.cache.delete(path);
     }
 
     async rename(oldPath: string, newPath: string) {
         const normalizedOldPath = normalizePath(oldPath);
         const normalizedNewPath = normalizePath(newPath);
-
         const oldFile = this.cache.get(normalizedOldPath);
         if (oldFile) {
             this.cache.set(normalizedNewPath, oldFile);
@@ -72,8 +93,41 @@ export class FileSyncManager {
         }
     }
 
+    async renameDir(oldPath: string, newPath: string) {
+        const normalizedOldPath = normalizePath(oldPath);
+        const normalizedNewPath = normalizePath(newPath);
+
+        // Get all files that are within the old folder path
+        const filesToRename = Array.from(this.cache.entries())
+            .filter(([filePath]) => filePath.startsWith(normalizedOldPath + '/'))
+            .map(([filePath, file]) => ({ oldFilePath: filePath, file }));
+
+        // Rename each file by updating its path in the cache
+        for (const { oldFilePath, file } of filesToRename) {
+            // Calculate the new file path by replacing the old folder path with the new one
+            const relativePath = oldFilePath.substring(normalizedOldPath.length);
+            const newFilePath = normalizedNewPath + relativePath;
+
+            // Update the file's path and move it in the cache
+            const updatedFile = { ...file, path: newFilePath };
+            this.cache.set(newFilePath, updatedFile);
+            this.cache.delete(oldFilePath);
+        }
+        // Update the directory cache
+        this.directoryCache.set(normalizedNewPath, {
+            type: 'directory',
+            path: normalizedNewPath,
+        });
+
+        this.directoryCache.delete(normalizedOldPath);
+    }
+
     listAllFiles() {
         return Array.from(this.cache.keys());
+    }
+
+    listAllDirectories() {
+        return Array.from(this.directoryCache.keys());
     }
 
     writeEmptyFile(filePath: string, type: 'binary') {
