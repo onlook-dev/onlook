@@ -2,11 +2,15 @@ import {
     CUSTOM_OUTPUT_DIR,
     DEPRECATED_PRELOAD_SCRIPT_SRC,
     JS_FILE_EXTENSIONS,
+    LOCAL_PRELOAD_SCRIPT_SRC,
     PRELOAD_SCRIPT_SRC,
 } from '@onlook/constants';
 import { type FileOperations } from '@onlook/utility';
 import { genASTParserOptionsByFileExtension } from '../helpers';
 import { generate, parse, type t as T, types as t, traverse } from '../packages';
+
+const PRELOAD_SCRIPT =
+    process.env.NODE_ENV === 'development' ? LOCAL_PRELOAD_SCRIPT_SRC : PRELOAD_SCRIPT_SRC;
 
 enum CONFIG_BASE_NAME {
     NEXTJS = 'next.config',
@@ -278,7 +282,7 @@ function addScriptToHead(headElement: T.JSXElement) {
                                 t.isJSXIdentifier(attr.name) &&
                                 attr.name.name === 'src' &&
                                 t.isStringLiteral(attr.value) &&
-                                attr.value.value.includes(PRELOAD_SCRIPT_SRC)
+                                attr.value.value.includes(PRELOAD_SCRIPT)
                             );
                         },
                     );
@@ -297,7 +301,7 @@ function addScriptToHead(headElement: T.JSXElement) {
                 t.jsxIdentifier('Script'),
                 [
                     t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                    t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
+                    t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT)),
                 ],
                 true,
             ),
@@ -326,7 +330,7 @@ function createAndAddHeadTag(htmlElement: T.JSXElement) {
             t.jsxIdentifier('Script'),
             [
                 t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
+                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT)),
             ],
             true,
         ),
