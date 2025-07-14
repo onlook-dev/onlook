@@ -4,7 +4,7 @@ import {
     DeploymentType
 } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, or } from 'drizzle-orm';
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { updateDeployment } from './helpers';
@@ -50,13 +50,19 @@ export const deploymentRouter = createTRPCRouter({
             where: and(eq(
                 deployments.projectId, projectId),
                 eq(deployments.type, type),
-                eq(deployments.status, DeploymentStatus.IN_PROGRESS),
+                or(
+                    eq(deployments.status, DeploymentStatus.IN_PROGRESS),
+                    eq(deployments.status, DeploymentStatus.PENDING),
+                ),
             ),
         });
         if (existingDeployment) {
             throw new TRPCError({
                 code: 'BAD_REQUEST',
-                message: 'Deployment already exists',
+                message:
+                    existingDeployment.status === DeploymentStatus.IN_PROGRESS ?
+                        'Deployment in progress' :
+                        'Deployment already exists',
             });
         }
 
@@ -70,13 +76,22 @@ export const deploymentRouter = createTRPCRouter({
         const existingDeployment = await ctx.db.query.deployments.findFirst({
             where: and(
                 eq(deployments.id, deploymentId),
-                eq(deployments.status, DeploymentStatus.IN_PROGRESS),
+                or(
+                    eq(deployments.status, DeploymentStatus.IN_PROGRESS),
+                    eq(deployments.status, DeploymentStatus.PENDING),
+                ),
             ),
         });
         if (!existingDeployment) {
             throw new TRPCError({
                 code: 'BAD_REQUEST',
-                message: 'Deployment already exists',
+                message: 'Deployment not found',
+            });
+        }
+        if (existingDeployment.status === DeploymentStatus.IN_PROGRESS) {
+            throw new TRPCError({
+                code: 'BAD_REQUEST',
+                message: 'Deployment in progress',
             });
         }
         publish({
