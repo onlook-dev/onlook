@@ -18,6 +18,10 @@ import { useEditorEngine } from '@/components/store/editor';
 import { DeleteImageModal } from '../delete-modal';
 import { MoveImageModal } from '../move-modal';
 import { RenameImageModal } from '../rename-modal';
+import { FolderRenameModal } from './modal/folder-rename-modal';
+import { FolderDeleteModal } from './modal/folder-delete-modal';
+import { FolderMoveModal } from './modal/folder-move-modal';
+import { FolderCreateModal } from './modal/folder-create-modal';
 
 interface FolderPathItem {
     folder: FolderNode;
@@ -254,6 +258,12 @@ const Folder = observer(() => {
             <DeleteImageModal />
             <RenameImageModal />
             <MoveImageModal />
+
+            {/* Folder Operation Modals */}
+            <FolderRenameModal />
+            <FolderDeleteModal />
+            <FolderMoveModal />
+            <FolderCreateModal />
         </div>
     );
 });

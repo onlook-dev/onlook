@@ -53,13 +53,6 @@ export const FolderList = memo(
                         Create a Folder
                     </Button>
                 )}
-
-                {/* Folder Operation Modals */}
-                <FolderRenameModal />
-                <FolderDeleteModal />
-                <FolderMoveModal />
-                <FolderCreateModal />
-
             </div>
         );
     },
