@@ -2,6 +2,8 @@
  * Domain utility functions
  */
 
+import normalizeUrl from 'normalize-url';
+
 /**
  * Verifies domain ownership by checking various conditions
  * @param requestDomains - Array of domains to verify
@@ -74,30 +76,37 @@ export const isValidDomain = (domain: string): boolean => {
  * @param url - The URL string to create a secure URL from
  * @returns The secure URL string
  */
-export const createSecureUrl = (url: string | undefined): string => {
+export const createSecureUrl = (url: string | undefined | null): string => {
     if (!url || typeof url !== 'string' || url.trim() === '') {
         return '';
     }
 
-    const trimmedUrl = url.trim();
-
     try {
-        // If it already has a protocol, validate it's http or https
-        if (trimmedUrl.includes('://')) {
-            const parsedUrl = new URL(trimmedUrl);
-            if (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:') {
-                return parsedUrl.toString();
-            }
-            // Invalid protocol, return empty string
+        const normalizedUrl = normalizeUrl(url, {
+            forceHttps: true,
+            stripAuthentication: true,
+            removeTrailingSlash: true,
+            stripWWW: false,
+            defaultProtocol: 'https',
+        });
+
+        // For single-word strings like 'test', normalize-url returns 'https://test',
+        // which is not what we want. A valid domain should have at least one dot.
+        const { protocol, hostname, pathname } = new URL(normalizedUrl);
+        if (!hostname.includes('.') && pathname === '/') {
             return '';
         }
 
-        // No protocol, add https and validate
-        const httpsUrl = `https://${trimmedUrl}`;
-        const parsedUrl = new URL(httpsUrl);
-        return parsedUrl.toString();
+        if (protocol !== 'https:' && protocol !== 'http:') {
+            const urlObject = new URL(normalizedUrl);
+            urlObject.protocol = 'https:';
+            return urlObject.toString().replace(/\/$/, '');
+        }
+
+        return normalizedUrl;
     } catch {
         // Invalid URL format
+        console.error('Invalid URL format', url);
         return '';
     }
 };
