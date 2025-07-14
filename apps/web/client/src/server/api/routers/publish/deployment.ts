@@ -17,7 +17,10 @@ export const deploymentRouter = createTRPCRouter({
     })).query(async ({ ctx, input }) => {
         const { projectId, type } = input;
         const deployment = await ctx.db.query.deployments.findFirst({
-            where: and(eq(deployments.projectId, projectId), eq(deployments.type, type)),
+            where: and(
+                eq(deployments.projectId, projectId),
+                eq(deployments.type, type)
+            ),
             orderBy: desc(deployments.createdAt),
         });
         return deployment ?? null;
@@ -94,9 +97,24 @@ export const deploymentRouter = createTRPCRouter({
                 message: 'Deployment in progress',
             });
         }
-        publish({
-            db: ctx.db,
-            deployment: existingDeployment,
-        })
+        try {
+            await publish({
+                db: ctx.db,
+                deployment: existingDeployment,
+            });
+            await updateDeployment(ctx.db, deploymentId, {
+                status: DeploymentStatus.COMPLETED,
+                message: 'Deployment Success!',
+            });
+            return {
+                success: true,
+            };
+        } catch (error) {
+            await updateDeployment(ctx.db, deploymentId, {
+                status: DeploymentStatus.FAILED,
+                message: 'Failed to publish deployment',
+            });
+            throw error;
+        }
     }),
 });

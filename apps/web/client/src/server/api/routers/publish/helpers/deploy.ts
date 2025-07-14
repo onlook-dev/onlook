@@ -68,7 +68,7 @@ export async function createDeployment(
         buildScript,
         buildFlags,
         envVars,
-        status: DeploymentStatus.IN_PROGRESS,
+        status: DeploymentStatus.PENDING,
         requestedBy: userId,
         message: 'Creating deployment...',
         progress: 0,

@@ -4,6 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { type Deployment } from '@onlook/db';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
+import { toast } from '@onlook/ui/sonner';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 interface PublishParams {
@@ -20,7 +21,7 @@ interface HostingContextValue {
     isDeploying: (type: DeploymentType) => boolean;
 
     // Operations
-    publish: (params: PublishParams) => Promise<{ deploymentId: string } | null>;
+    publish: (params: PublishParams) => Promise<{ success: boolean } | null>;
     unpublish: (projectId: string, type: DeploymentType) => Promise<{ deploymentId: string } | null>;
 
     // Utilities
@@ -87,13 +88,17 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
 
     // Check if any deployment is in progress
     const isDeploying = (type: DeploymentType): boolean => {
-        return deployments[type]?.status === DeploymentStatus.IN_PROGRESS;
+        return deployments[type]?.status === DeploymentStatus.IN_PROGRESS ||
+            deployments[type]?.status === DeploymentStatus.PENDING;
     };
 
     // Stop polling when deployments complete, start polling when in progress
     useEffect(() => {
         Object.entries(deployments).forEach(([type, deployment]) => {
-            if (deployment?.status === DeploymentStatus.IN_PROGRESS) {
+            if (
+                deployment?.status === DeploymentStatus.IN_PROGRESS ||
+                deployment?.status === DeploymentStatus.PENDING
+            ) {
                 setSubscriptionStates(prev => ({
                     ...prev,
                     [type as DeploymentType]: true,
@@ -116,14 +121,32 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
 
         const deployment = await runCreateDeployment(params);
 
+        if (!deployment) {
+            return {
+                success: false,
+            };
+        }
+
+        toast.success('Deployment created', {
+            description: `Deployment ID: ${deployment.deploymentId}`,
+        });
+
         // Refetch the specific deployment
         await refetch(params.type);
 
-        await runDeployment({
+        const res = await runDeployment({
             deploymentId: deployment.deploymentId,
         });
 
-        return deployment;
+        if (!res.success) {
+            toast.error('Deployment failed', {
+                description: `Deployment ID: ${deployment.deploymentId}`,
+            });
+        } else {
+            toast.success('Deployment success!');
+        }
+
+        return res;
     };
 
     // Unpublish function
