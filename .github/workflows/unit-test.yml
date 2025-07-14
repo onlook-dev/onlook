@@ -1,4 +1,4 @@
-name: Run Tests
+name: Run Unit Tests
 
 on:
   pull_request:
@@ -18,4 +18,4 @@ jobs:
         run: bun install --frozen
       
       - name: Run tests
-        run: bun test --timeout 30000 --bail --coverage
+        run: bun test --timeout 30000 --coverage
