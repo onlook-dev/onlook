@@ -187,11 +187,15 @@ export class SandboxManager {
         let writeContent = await formatContent(normalizedPath, content);
         // If the file is a JSX file, we need to process it for mapping before writing
         if (this.isJsxFile(normalizedPath)) {
-            const { newContent } = await this.templateNodeMap.processFileForMapping(
-                normalizedPath,
-                writeContent
-            );
-            writeContent = newContent;
+            try {
+                const { newContent } = await this.templateNodeMap.processFileForMapping(
+                    normalizedPath,
+                    writeContent
+                );
+                writeContent = newContent;
+            } catch (error) {
+                console.error(`Error processing file ${normalizedPath}:`, error);
+            }
         }
         return this.fileSync.write(
             normalizedPath,
@@ -458,17 +462,21 @@ export class SandboxManager {
     }
 
     async processFileForMapping(file: SandboxFile) {
-        if (file.type === 'binary' || !this.isJsxFile(file.path)) {
-            return;
-        }
+        try {
+            if (file.type === 'binary' || !this.isJsxFile(file.path)) {
+                return;
+            }
 
-        const { modified, newContent } = await this.templateNodeMap.processFileForMapping(
-            file.path,
-            file.content
-        );
+            const { modified, newContent } = await this.templateNodeMap.processFileForMapping(
+                file.path,
+                file.content
+            );
 
-        if (modified || file.content !== newContent) {
-            await this.writeFile(file.path, newContent);
+            if (modified || file.content !== newContent) {
+                await this.writeFile(file.path, newContent);
+            }
+        } catch (error) {
+            console.error(`Error processing file ${file.path}:`, error);
         }
     }
 
