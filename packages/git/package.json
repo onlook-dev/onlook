@@ -32,6 +32,7 @@
     },
     "dependencies": {
         "globby": "^14.1.0",
-        "isomorphic-git": "^1.29.0"
+        "isomorphic-git": "^1.29.0",
+        "strip-ansi": "^7.1.0"
     }
 }

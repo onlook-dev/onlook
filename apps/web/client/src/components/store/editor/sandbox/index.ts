@@ -1,4 +1,4 @@
-import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
+import type { ReaddirEntry, SandboxClient, WatchEvent } from '@codesandbox/sdk';
 import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
@@ -389,7 +389,7 @@ export class SandboxManager {
         }
     }
 
-    async handleFileRenameEvent(event: WatchEvent, session: WebSocketSession) {
+    async handleFileRenameEvent(event: WatchEvent, session: SandboxClient) {
         // This mean rename a file or a folder, move a file or a folder
         const [oldPath, newPath] = event.paths;
 
