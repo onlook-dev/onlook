@@ -1,5 +1,5 @@
 import { env } from '@/env';
-import { CodeSandbox, type SandboxBrowserSession } from '@codesandbox/sdk';
+import { CodeSandbox } from '@codesandbox/sdk';
 import { getSandboxPreviewUrl } from '@onlook/constants';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,10 +18,10 @@ export const sandboxRouter = createTRPCRouter({
         )
         .mutation(async ({ input }) => {
             const startData = await sdk.sandboxes.resume(input.sandboxId);
-            const session = await startData.createBrowserSession({
+            const session = await startData.createSession({
                 id: shortenUuid(input.userId ?? uuidv4(), 20),
             });
-            return session as SandboxBrowserSession;
+            return session;
         }),
     hibernate: protectedProcedure
         .input(
@@ -51,7 +51,6 @@ export const sandboxRouter = createTRPCRouter({
         )
         .mutation(async ({ input }) => {
             const sandbox = await sdk.sandboxes.create({
-                source: 'template',
                 id: input.sandbox.id,
 
                 // Metadata

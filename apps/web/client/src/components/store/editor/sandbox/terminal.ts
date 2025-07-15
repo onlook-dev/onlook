@@ -1,4 +1,4 @@
-import type { Task, Terminal, WebSocketSession } from '@codesandbox/sdk';
+import type { SandboxClient, Task, Terminal } from '@codesandbox/sdk';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { v4 as uuidv4 } from 'uuid';
 import type { ErrorManager } from '../error';
@@ -37,7 +37,7 @@ export class CLISessionImpl implements CLISession {
     constructor(
         public readonly name: string,
         public readonly type: CLISessionType,
-        private readonly session: WebSocketSession,
+        private readonly session: SandboxClient,
         private readonly errorManager: ErrorManager,
     ) {
         this.id = uuidv4();

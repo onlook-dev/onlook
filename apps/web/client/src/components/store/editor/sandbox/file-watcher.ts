@@ -1,8 +1,8 @@
-import type { WatchEvent, Watcher, WebSocketSession } from '@codesandbox/sdk';
+import type { SandboxClient, WatchEvent, Watcher } from '@codesandbox/sdk';
 import { FileEventBus } from './file-event-bus';
 
 interface FileWatcherOptions {
-    session: WebSocketSession;
+    session: SandboxClient;
     onFileChange: (event: WatchEvent) => Promise<void>;
     excludePatterns?: string[];
     fileEventBus: FileEventBus;
@@ -10,7 +10,7 @@ interface FileWatcherOptions {
 
 export class FileWatcher {
     private watcher: Watcher | null = null;
-    private readonly session: WebSocketSession;
+    private readonly session: SandboxClient;
     private readonly onFileChange: (event: WatchEvent) => Promise<void>;
     private readonly excludePatterns: string[];
     private readonly eventBus: FileEventBus;

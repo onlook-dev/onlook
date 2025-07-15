@@ -1,5 +1,5 @@
 import type { SandboxManager } from "@/components/store/editor/sandbox";
-import type { WebSocketSession } from "@codesandbox/sdk";
+import type { SandboxClient } from "@codesandbox/sdk";
 
 // System reserved names (Windows compatibility)
 export const RESERVED_NAMES = [
@@ -82,7 +82,7 @@ export const doesFolderExist = (files: string[], folderPath: string): boolean =>
     });
 };
 
-export const createFileInSandbox = async (session: WebSocketSession, filePath: string, content: string = '', sandboxManager: SandboxManager): Promise<void> => {
+export const createFileInSandbox = async (session: SandboxClient, filePath: string, content: string = '', sandboxManager: SandboxManager): Promise<void> => {
     try {
         if (!session) {
             throw new Error('No sandbox session available');
@@ -94,7 +94,7 @@ export const createFileInSandbox = async (session: WebSocketSession, filePath: s
     }
 };
 
-export const createFolderInSandbox = async (session: WebSocketSession, folderPath: string, sandboxManager: SandboxManager): Promise<void> => {
+export const createFolderInSandbox = async (session: SandboxClient, folderPath: string, sandboxManager: SandboxManager): Promise<void> => {
     try {
         if (!session) {
             throw new Error('No sandbox session available');

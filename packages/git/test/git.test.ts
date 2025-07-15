@@ -1,249 +1,123 @@
-import { afterEach, beforeEach, describe, expect, test } from 'bun:test';
-import fs from 'fs';
-import path from 'path';
-import {
-    add,
-    addAll,
-    branch,
-    checkout,
-    commit,
-    getCommitDisplayName,
-    getCurrentCommit,
-    init,
-    isEmptyCommit,
-    isRepoInitialized,
-    log,
-    status,
-    updateCommitDisplayName,
-} from '../src/git';
+import { describe, expect, it } from 'vitest';
+import { formatGitLogOutput, parseGitLog, parseGitStatusOutput } from '../src/git';
 
-describe('GitManager Integration Tests', () => {
-    let testRepoPath: string;
-
-    beforeEach(async () => {
-        // Create a temporary directory for testing with a shorter path
-        testRepoPath = 'git-test-' + Date.now();
-        fs.mkdirSync(testRepoPath, { recursive: true });
-
-        // Create package.json (required by isomorphic-git)
-        fs.writeFileSync(
-            path.join(testRepoPath, 'package.json'),
-            JSON.stringify({ name: 'test-repo', version: '1.0.0' }),
-        );
-
-        // Initialize Git repository
-        await init(testRepoPath);
-
-        // Create some test files
-        fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Hello World');
-        fs.writeFileSync(path.join(testRepoPath, 'test2.txt'), 'Another test file');
+describe('formatGitLogOutput', () => {
+    it('should return an empty string if input is empty', () => {
+        expect(formatGitLogOutput('')).toBe('');
     });
 
-    afterEach(() => {
-        // Clean up the test directory
-        fs.rmSync(testRepoPath, { recursive: true, force: true });
+    it('should remove standard ANSI escape sequences', () => {
+        const raw = '\x1b[31mHello\x1b[0m World';
+        const formatted = 'Hello World';
+        expect(formatGitLogOutput(raw)).toBe(formatted);
     });
 
-    test('should initialize Git repository', async () => {
-        expect(fs.existsSync(path.join(testRepoPath, '.git'))).toBe(true);
+    it('should remove complex ANSI escape sequences', () => {
+        const raw = '[?1h\x1b=Hello World\x1b[K\x1b[?1l\x1b>';
+        const formatted = 'Hello World';
+        expect(formatGitLogOutput(raw)).toBe(formatted);
     });
 
-    test('should correctly detect if repository is initialized', async () => {
-        // Test initialized repo
-        expect(await isRepoInitialized(testRepoPath)).toBe(true);
-
-        // Delete the .git directory
-        fs.rmSync(path.join(testRepoPath, '.git'), { recursive: true, force: true });
-
-        // Test non-initialized repo
-        expect(await isRepoInitialized(testRepoPath)).toBe(false);
+    it('should remove control characters', () => {
+        const raw = 'Hello\x07 World\x01';
+        const formatted = 'Hello World';
+        expect(formatGitLogOutput(raw)).toBe(formatted);
     });
 
-    test('should add files', async () => {
-        await add(testRepoPath, 'test1.txt');
-        // Verify file was added by committing and checking if it appears in the commit
-        await commit(testRepoPath, 'Add test1.txt');
-        const commits = await log(testRepoPath);
+    it('should correctly format a realistic git log output line with escape sequences', () => {
+        const raw =
+            '\x1b[33m25a8123\x1b[m\x1b[33m\x1b[m|John Doe <john.doe@example.com>|2023-01-01T12:00:00Z|Initial commit';
+        const expected =
+            '25a8123|John Doe <john.doe@example.com>|2023-01-01T12:00:00Z|Initial commit';
+        expect(formatGitLogOutput(raw)).toBe(expected);
+    });
+});
+
+describe('parseGitStatusOutput', () => {
+    it('should return an empty array for empty input', () => {
+        expect(parseGitStatusOutput('')).toEqual([]);
+    });
+
+    it('should parse standard git status output', () => {
+        const output = ' M src/git.ts\n D src/main.ts\n?? new-file.ts';
+        const expected = [' M src/git.ts', ' D src/main.ts', '?? new-file.ts'];
+        expect(parseGitStatusOutput(output)).toEqual(expected);
+    });
+
+    it('should handle prefixed lines', () => {
+        const output = 'prefix= M src/git.ts\n  D src/main.ts';
+        const expected = [' M src/git.ts', ' D src/main.ts'];
+        expect(parseGitStatusOutput(output)).toEqual(expected);
+    });
+});
+
+describe('parseGitLog', () => {
+    it('should return an empty array for empty input', () => {
+        expect(parseGitLog('')).toEqual([]);
+    });
+
+    it('should parse a single commit log entry', () => {
+        const rawOutput =
+            'a1b2c3d|John Doe <john.doe@example.com>|2023-10-27T10:00:00Z|feat: initial commit';
+        const commits = parseGitLog(rawOutput);
         expect(commits).toHaveLength(1);
+        expect(commits[0]).toEqual({
+            oid: 'a1b2c3d',
+            message: 'feat: initial commit',
+            author: { name: 'John Doe', email: 'john.doe@example.com' },
+            timestamp: 1698397200,
+            displayName: 'feat: initial commit',
+        });
     });
 
-    test('should add files', async () => {
-        const res = await status(testRepoPath, 'test1.txt');
-        expect(res).toBe('*added');
-
-        await add(testRepoPath, 'test1.txt');
-        // Verify file was added by committing and checking if it appears in the commit
-        const res1 = await status(testRepoPath, 'test1.txt');
-        expect(res1).toBe('added');
+    it('should parse multiple commit log entries', () => {
+        const rawOutput = `
+            a1b2c3d|John Doe <john.doe@example.com>|2023-10-27T10:00:00Z|feat: initial commit
+            e4f5g6h|Jane Smith <jane.smith@example.com>|2023-10-27T11:00:00Z|fix: bug in feature
+        `;
+        const commits = parseGitLog(rawOutput);
+        expect(commits).toHaveLength(2);
+        expect(commits[0]?.oid).toBe('a1b2c3d');
+        expect(commits[1]?.oid).toBe('e4f5g6h');
     });
 
-    test('should add and commit files', async () => {
-        // Add all files
-        await addAll(testRepoPath);
-
-        // Commit the files
-        const commitMessage = 'Initial commit';
-        await commit(testRepoPath, commitMessage);
-
-        // Verify the commit was created
-        const commits = await log(testRepoPath);
+    it('should handle messages with pipe characters', () => {
+        const rawOutput =
+            'a1b2c3d|John Doe <john.doe@example.com>|2023-10-27T10:00:00Z|feat: something|another thing';
+        const commits = parseGitLog(rawOutput);
         expect(commits).toHaveLength(1);
-        expect(commits[0].commit.message.trim()).toBe(commitMessage);
+        expect(commits[0]?.message).toBe('feat: something|another thing');
     });
 
-    test('should include deleted files in addAll', async () => {
-        // First commit all files
-        await addAll(testRepoPath);
-        await commit(testRepoPath, 'Initial commit');
-
-        // Delete a file
-        fs.unlinkSync(path.join(testRepoPath, 'test1.txt'));
-
-        // Check status before addAll
-        const statusBeforeAdd = await status(testRepoPath, 'test1.txt');
-        expect(statusBeforeAdd).toBe('*deleted');
-
-        // Add all changes including deleted file
-        await addAll(testRepoPath);
-
-        // Check status after addAll
-        const statusAfterAdd = await status(testRepoPath, 'test1.txt');
-        expect(statusAfterAdd).toBe('deleted');
+    it('should parse log with ANSI escape codes', () => {
+        const rawOutput =
+            '\x1b[33ma1b2c3d\x1b[m|John Doe <john.doe@example.com>|2023-10-27T10:00:00Z|feat: initial commit';
+        const commits = parseGitLog(rawOutput);
+        expect(commits).toHaveLength(1);
+        expect(commits[0]?.oid).toBe('a1b2c3d');
     });
 
-    test('should create and switch branches', async () => {
-        // First commit to main branch
-        await addAll(testRepoPath);
-        await commit(testRepoPath, 'Initial commit');
-
-        // Create a new branch
-        const branchName = 'feature-branch';
-        await branch(testRepoPath, branchName);
-
-        // Modify a file in the new branch
-        fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Modified in feature branch');
-        await add(testRepoPath, 'test1.txt');
-        await commit(testRepoPath, 'Feature branch commit');
-
-        // Switch back to main
-        await checkout(testRepoPath, 'main');
-
-        // Verify file content is from main branch
-        expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe('Hello World');
-
-        // Switch to feature branch again
-        await checkout(testRepoPath, branchName);
-
-        // Verify file content is from feature branch
-        expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe(
-            'Modified in feature branch',
-        );
+    it('should handle author names without email', () => {
+        const rawOutput = 'a1b2c3d|John Doe|2023-10-27T10:00:00Z|feat: initial commit';
+        const commits = parseGitLog(rawOutput);
+        expect(commits[0]?.author).toEqual({ name: 'John Doe', email: '' });
     });
 
-    test('should revert changes', async () => {
-        // First commit
-        await addAll(testRepoPath);
-        await commit(testRepoPath, 'Initial commit');
-
-        // Modify a file
-        fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Modified content');
-        await add(testRepoPath, 'test1.txt');
-        await commit(testRepoPath, 'Modification commit');
-
-        // Verify file is modified
-        expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe(
-            'Modified content',
-        );
-
-        // Get the commit history
-        const commits = await log(testRepoPath);
-
-        // Revert to the initial commit
-        await checkout(testRepoPath, commits[1].oid);
-
-        // Verify file is reverted
-        expect(fs.readFileSync(path.join(testRepoPath, 'test1.txt'), 'utf8')).toBe('Hello World');
+    it('should handle malformed lines gracefully', () => {
+        const rawOutput = `
+            a1b2c3d|John Doe <john.doe@example.com>|2023-10-27T10:00:00Z|feat: initial commit
+            this is a malformed line
+            e4f5g6h|Jane Smith <jane.smith@example.com>|2023-10-27T11:00:00Z|fix: bug in feature
+        `;
+        const commits = parseGitLog(rawOutput);
+        expect(commits).toHaveLength(2);
     });
 
-    test('should get current commit hash', async () => {
-        // First commit to get a valid commit hash
-        await addAll(testRepoPath);
-        await commit(testRepoPath, 'Initial commit');
-
-        // Get the current commit hash
-        const currentCommit = await getCurrentCommit(testRepoPath);
-
-        // Get the commit history to verify the hash
-        const commits = await log(testRepoPath);
-        expect(currentCommit).toBe(commits[0].oid);
-    });
-
-    test('should set and get commit display name', async () => {
-        // First commit to get a valid commit hash
-        await addAll(testRepoPath);
-        await commit(testRepoPath, 'Initial commit');
-
-        // Get the commit hash
-        const commits = await log(testRepoPath);
-        const commitHash = commits[0].oid;
-
-        // Initially, display name should be null
-        const initialDisplayName = await getCommitDisplayName(testRepoPath, commitHash);
-        expect(initialDisplayName).toBeNull();
-
-        // Set a display name
-        const displayName = 'My Custom Display Name';
-        await updateCommitDisplayName(testRepoPath, commitHash, displayName);
-
-        // Verify the display name was set correctly
-        const retrievedDisplayName = await getCommitDisplayName(testRepoPath, commitHash);
-        expect(retrievedDisplayName).toBe(displayName);
-    });
-
-    test('should update existing commit display name', async () => {
-        // First commit to get a valid commit hash
-        await addAll(testRepoPath);
-        await commit(testRepoPath, 'Initial commit');
-
-        // Get the commit hash
-        const commits = await log(testRepoPath);
-        const commitHash = commits[0].oid;
-
-        // Set initial display name
-        const initialDisplayName = 'Initial Display Name';
-        await updateCommitDisplayName(testRepoPath, commitHash, initialDisplayName);
-
-        // Update the display name
-        const updatedDisplayName = 'Updated Display Name';
-        await updateCommitDisplayName(testRepoPath, commitHash, updatedDisplayName);
-
-        // Verify the display name was updated correctly
-        const retrievedDisplayName = await getCommitDisplayName(testRepoPath, commitHash);
-        expect(retrievedDisplayName).toBe(updatedDisplayName);
-    });
-
-    test('should detect changes in repository', async () => {
-        // Initially there should be changes (untracked files)
-        expect(await isEmptyCommit(testRepoPath)).toBe(false);
-
-        // Add and commit all files
-        await addAll(testRepoPath);
-        await commit(testRepoPath, 'Initial commit');
-
-        // No changes after committing everything
-        expect(await isEmptyCommit(testRepoPath)).toBe(true);
-
-        // Make a change to a file
-        fs.writeFileSync(path.join(testRepoPath, 'test1.txt'), 'Modified content');
-
-        // Should detect the change
-        expect(await isEmptyCommit(testRepoPath)).toBe(false);
-
-        // Add and commit the changes
-        await addAll(testRepoPath);
-        await commit(testRepoPath, 'Modified content');
-
-        // No changes after committing everything
-        expect(await isEmptyCommit(testRepoPath)).toBe(true);
+    it('should handle commit with no message', () => {
+        const rawOutput = 'a1b2c3d|John Doe <john.doe@example.com>|2023-10-27T10:00:00Z|';
+        const commits = parseGitLog(rawOutput);
+        expect(commits).toHaveLength(1);
+        expect(commits[0]?.message).toBe('No message');
+        expect(commits[0]?.displayName).toBe(null);
     });
 });

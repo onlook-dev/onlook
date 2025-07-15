@@ -3,7 +3,7 @@
 import { ProcessedFileType, type NextJsProjectValidation, type ProcessedFile } from '@/app/projects/types';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
-import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/sdk';
+import type { SandboxClient } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import { generate, injectPreloadScript, parse } from '@onlook/parser';
@@ -92,7 +92,7 @@ export const ProjectCreationProvider = ({
                 },
             });
 
-            const browserSession: SandboxBrowserSession = await startSandbox({
+            const browserSession = await startSandbox({
                 sandboxId: forkedSandbox.sandboxId,
                 userId: user.id,
             });
@@ -262,7 +262,7 @@ export const useProjectCreation = (): ProjectCreationContextValue => {
     return context;
 };
 
-export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocketSession) => {
+export const uploadToSandbox = async (files: ProcessedFile[], session: SandboxClient) => {
     for (const file of files) {
         try {
             if (file.type === ProcessedFileType.BINARY) {
