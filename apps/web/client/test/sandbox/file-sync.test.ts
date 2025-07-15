@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
+import { toJS } from 'mobx';
 import { FileSyncManager } from '../../src/components/store/editor/sandbox/file-sync';
 
 mock.module('localforage', () => ({
@@ -77,7 +78,7 @@ describe('FileSyncManager', async () => {
         // Read should return cached content without calling readFile
         const content = await fileSyncManager.readOrFetch('file1.tsx', mockReadFile);
 
-        expect(content).toEqual(cachedFile);
+        expect(toJS(content)).toEqual(cachedFile);
         expect(mockReadFile).not.toHaveBeenCalled();
     });
 
@@ -85,7 +86,7 @@ describe('FileSyncManager', async () => {
         // Read file that is not in cache
         const content = await fileSyncManager.readOrFetch('file1.tsx', mockReadFile);
 
-        expect(content).toEqual({
+        expect(toJS(content)).toEqual({
             type: 'text',
             path: 'file1.tsx',
             content: '<div>Test Component</div>'
@@ -104,7 +105,7 @@ describe('FileSyncManager', async () => {
         // Verify cache was updated
         expect(fileSyncManager.has('file1.tsx')).toBe(true);
         const cachedFile = await fileSyncManager.readOrFetch('file1.tsx', mockReadFile);
-        expect(cachedFile).toEqual({
+        expect(toJS(cachedFile)).toEqual({
             type: 'text',
             path: 'file1.tsx',
             content: newContent
@@ -122,7 +123,8 @@ describe('FileSyncManager', async () => {
 
         // Verify cache was updated
         expect(fileSyncManager.has('file1.tsx')).toBe(true);
-        expect(await fileSyncManager.readOrFetch('file1.tsx', mockReadFile)).toEqual(testFile);
+        const cachedFile = await fileSyncManager.readOrFetch('file1.tsx', mockReadFile);
+        expect(toJS(cachedFile)).toEqual(testFile);
 
         // Verify filesystem was not written to
         expect(mockWriteFile).not.toHaveBeenCalled();
