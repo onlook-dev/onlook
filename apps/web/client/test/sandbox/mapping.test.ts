@@ -8,13 +8,8 @@ describe('TemplateNodeMapper', () => {
     let mockLocalforage: any;
 
     beforeEach(() => {
-        // Create mock localforage
-        mockLocalforage = {
-            getItem: mock(async () => null),
-            setItem: mock(async () => undefined),
-            removeItem: mock(async () => undefined),
-        };
-        mapper = new TemplateNodeMapper(mockLocalforage);
+        // Create TemplateNodeMapper instance (no parameters needed)
+        mapper = new TemplateNodeMapper();
     });
 
     const createMockTemplateNode = (id: string, name: string): TemplateNode => {
@@ -89,45 +84,27 @@ describe('TemplateNodeMapper', () => {
 
     test('processFileForMapping should handle file content properly', async () => {
         // Arrange
-        const mockReadFile = mock(async (path: string) => {
-            return `
+        const fileContent = `
         function TestComponent() {
           return <div>Hello World</div>;
         }
       `;
-        });
-
-        const mockWriteFile = mock(async (path: string, content: string) => {
-            return true;
-        });
 
         const processFileSpy = spyOn(mapper, 'updateMapping');
 
         // Act
-        await mapper.processFileForMapping('test.tsx', mockReadFile, mockWriteFile);
+        const result = await mapper.processFileForMapping('test.tsx', fileContent);
 
         // Assert
-        expect(mockReadFile).toHaveBeenCalledWith('test.tsx');
+        expect(result).toHaveProperty('modified');
+        expect(result).toHaveProperty('newContent');
         expect(processFileSpy).toHaveBeenCalled();
     });
 
-    test('processFileForMapping should handle errors from readFile', async () => {
+    test('processFileForMapping should handle errors from invalid content', async () => {
         // Arrange
-        const mockReadFile = mock(async (path: string) => {
-            return null;
-        });
+        const invalidContent = 'invalid javascript content {{{';
 
-        const mockWriteFile = mock(async (path: string, content: string) => {
-            return true;
-        });
-
-        const consoleSpy = spyOn(console, 'error');
-
-        // Act
-        await mapper.processFileForMapping('test.tsx', mockReadFile, mockWriteFile);
-
-        // Assert
-        expect(mockReadFile).toHaveBeenCalledWith('test.tsx');
-        expect(consoleSpy).toHaveBeenCalledWith('Failed to read file test.tsx');
+        await expect(mapper.processFileForMapping('test.tsx', invalidContent)).rejects.toThrow();
     });
 });

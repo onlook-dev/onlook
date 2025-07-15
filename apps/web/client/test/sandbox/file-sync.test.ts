@@ -14,18 +14,23 @@ describe('FileSyncManager', async () => {
     let mockEditorEngine: any;
 
     beforeEach(async () => {
-        mockEditorEngine = mock(() => ({
-            projectId: 'test-project',
-        }));
         // Create mock file operations
         mockReadFile = mock(async (path: string) => {
-            // Return mock content based on file path
+            // Return mock SandboxFile based on file path
             if (path === 'file1.tsx') {
-                return '<div>Test Component</div>';
+                return {
+                    type: 'text' as const,
+                    path: 'file1.tsx',
+                    content: '<div>Test Component</div>'
+                };
             } else if (path === 'file2.tsx') {
-                return '<div>Another Component</div>';
+                return {
+                    type: 'text' as const,
+                    path: 'file2.tsx',
+                    content: '<div>Another Component</div>'
+                };
             }
-            return '';
+            return null;
         });
 
         mockWriteFile = mock(async (path: string, content: string) => {
@@ -33,8 +38,8 @@ describe('FileSyncManager', async () => {
             return true;
         });
 
-        // Create FileSyncManager instance
-        fileSyncManager = new FileSyncManager(mockEditorEngine);
+        // Create FileSyncManager instance (no parameters needed)
+        fileSyncManager = new FileSyncManager();
 
         // Wait for initialization to complete
         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -49,7 +54,12 @@ describe('FileSyncManager', async () => {
         expect(fileSyncManager.has('file1.tsx')).toBe(false);
 
         // Add a file to cache
-        await fileSyncManager.updateCache('file1.tsx', '<div>Test Component</div>');
+        const testFile = {
+            type: 'text' as const,
+            path: 'file1.tsx',
+            content: '<div>Test Component</div>'
+        };
+        fileSyncManager.updateCache(testFile);
 
         // Now it should exist
         expect(fileSyncManager.has('file1.tsx')).toBe(true);
@@ -57,12 +67,17 @@ describe('FileSyncManager', async () => {
 
     test('should read from cache if available', async () => {
         // Seed the cache
-        await fileSyncManager.updateCache('file1.tsx', '<div>Cached Content</div>');
+        const cachedFile = {
+            type: 'text' as const,
+            path: 'file1.tsx',
+            content: '<div>Cached Content</div>'
+        };
+        fileSyncManager.updateCache(cachedFile);
 
         // Read should return cached content without calling readFile
         const content = await fileSyncManager.readOrFetch('file1.tsx', mockReadFile);
 
-        expect(content).toBe('<div>Cached Content</div>');
+        expect(content).toEqual(cachedFile);
         expect(mockReadFile).not.toHaveBeenCalled();
     });
 
@@ -70,7 +85,11 @@ describe('FileSyncManager', async () => {
         // Read file that is not in cache
         const content = await fileSyncManager.readOrFetch('file1.tsx', mockReadFile);
 
-        expect(content).toBe('<div>Test Component</div>');
+        expect(content).toEqual({
+            type: 'text',
+            path: 'file1.tsx',
+            content: '<div>Test Component</div>'
+        });
         expect(mockReadFile).toHaveBeenCalledWith('file1.tsx');
     });
 
@@ -84,17 +103,26 @@ describe('FileSyncManager', async () => {
 
         // Verify cache was updated
         expect(fileSyncManager.has('file1.tsx')).toBe(true);
-        expect(await fileSyncManager.readOrFetch('file1.tsx', mockReadFile)).toBe(newContent);
+        const cachedFile = await fileSyncManager.readOrFetch('file1.tsx', mockReadFile);
+        expect(cachedFile).toEqual({
+            type: 'text',
+            path: 'file1.tsx',
+            content: newContent
+        });
     });
 
     test('should update cache without writing to filesystem', async () => {
-        const content = '<div>Updated Cache</div>';
+        const testFile = {
+            type: 'text' as const,
+            path: 'file1.tsx',
+            content: '<div>Updated Cache</div>'
+        };
 
-        await fileSyncManager.updateCache('file1.tsx', content);
+        fileSyncManager.updateCache(testFile);
 
         // Verify cache was updated
         expect(fileSyncManager.has('file1.tsx')).toBe(true);
-        expect(await fileSyncManager.readOrFetch('file1.tsx', mockReadFile)).toBe(content);
+        expect(await fileSyncManager.readOrFetch('file1.tsx', mockReadFile)).toEqual(testFile);
 
         // Verify filesystem was not written to
         expect(mockWriteFile).not.toHaveBeenCalled();
@@ -102,7 +130,12 @@ describe('FileSyncManager', async () => {
 
     test('should delete file from cache', async () => {
         // Seed the cache
-        await fileSyncManager.updateCache('file1.tsx', '<div>Test Content</div>');
+        const testFile = {
+            type: 'text' as const,
+            path: 'file1.tsx',
+            content: '<div>Test Content</div>'
+        };
+        fileSyncManager.updateCache(testFile);
 
         // Verify file is in cache
         expect(fileSyncManager.has('file1.tsx')).toBe(true);
@@ -116,9 +149,13 @@ describe('FileSyncManager', async () => {
 
     test('should list all files in cache', async () => {
         // Seed the cache with multiple files
-        await fileSyncManager.updateCache('file1.tsx', '<div>Content 1</div>');
-        await fileSyncManager.updateCache('file2.tsx', '<div>Content 2</div>');
-        await fileSyncManager.updateCache('file3.tsx', '<div>Content 3</div>');
+        const file1 = { type: 'text' as const, path: 'file1.tsx', content: '<div>Content 1</div>' };
+        const file2 = { type: 'text' as const, path: 'file2.tsx', content: '<div>Content 2</div>' };
+        const file3 = { type: 'text' as const, path: 'file3.tsx', content: '<div>Content 3</div>' };
+        
+        fileSyncManager.updateCache(file1);
+        fileSyncManager.updateCache(file2);
+        fileSyncManager.updateCache(file3);
 
         // Get list of files
         const files = fileSyncManager.listAllFiles();
@@ -132,8 +169,11 @@ describe('FileSyncManager', async () => {
 
     test('should clear all files from cache', async () => {
         // Seed the cache with multiple files
-        await fileSyncManager.updateCache('file1.tsx', '<div>Content 1</div>');
-        await fileSyncManager.updateCache('file2.tsx', '<div>Content 2</div>');
+        const file1 = { type: 'text' as const, path: 'file1.tsx', content: '<div>Content 1</div>' };
+        const file2 = { type: 'text' as const, path: 'file2.tsx', content: '<div>Content 2</div>' };
+        
+        fileSyncManager.updateCache(file1);
+        fileSyncManager.updateCache(file2);
 
         // Verify files are in cache
         expect(fileSyncManager.listAllFiles().length).toBe(2);
