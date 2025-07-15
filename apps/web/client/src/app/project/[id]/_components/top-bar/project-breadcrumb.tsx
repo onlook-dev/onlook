@@ -103,7 +103,7 @@ export const ProjectBreadcrumb = observer(() => {
                 sendAnalytics('download project code', {
                     projectId: project.id,
                     projectName: project.name,
-                    method: 'codesandbox_download_url'
+                    method: 'e2b_download_url'
                 });
 
                 toast.success(t(transKeys.projects.actions.downloadSuccess));

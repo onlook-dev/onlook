@@ -28,7 +28,7 @@ export class SandboxManager {
         this.fileEventBus = new FileEventBus();
         this.fileSync = new FileSyncManager();
         this.fileWatcher = new FileWatcher({
-            session: null as any, // Will be set when connected
+            session: null, // Will be set when connected
             onFileChange: this.handleFileChange.bind(this),
             excludePatterns: EXCLUDED_SYNC_DIRECTORIES,
             fileEventBus: this.fileEventBus,
@@ -92,9 +92,11 @@ export class SandboxManager {
             return;
         }
 
-        // E2B doesn't have built-in file watching, so we'll poll for changes
-        // This is a simplified implementation
-        console.log('File watching started (polling mode)');
+        // Update the file watcher with the current session
+        this.fileWatcher.updateSession(this.session.session);
+        
+        // Start watching files
+        await this.fileWatcher.start();
     }
 
     async readRemoteFile(remotePath: string): Promise<SandboxFile | null> {
@@ -207,6 +209,182 @@ export class SandboxManager {
         }
     }
 
+    async readDir(dirPath: string): Promise<FileInfo[]> {
+        if (!this.session.session) {
+            return [];
+        }
+
+        try {
+            const files = await this.session.session.filesystem.list(dirPath);
+            return files.map(file => ({
+                name: file.name,
+                path: path.join(dirPath, file.name),
+                isDir: file.isDir,
+            }));
+        } catch (error) {
+            console.error(`Error reading directory ${dirPath}:`, error);
+            return [];
+        }
+    }
+
+    async delete(filePath: string, recursive: boolean = false): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for delete operation');
+            return false;
+        }
+
+        try {
+            const normalizedPath = normalizePath(filePath);
+            
+            // Check if it's a directory
+            const stat = await this.session.session.filesystem.stat(normalizedPath);
+            if (stat && stat.isDir && recursive) {
+                // Delete directory recursively
+                await this.deleteDirectoryRecursive(normalizedPath);
+            } else {
+                // Delete single file
+                await this.session.session.filesystem.remove(normalizedPath);
+            }
+
+            // Clean up cache
+            this.fileSync.removeFromCache(normalizedPath);
+            this.mapper.removeFile(normalizedPath);
+
+            // Publish deletion event
+            this.fileEventBus.publish({
+                type: 'remove',
+                paths: [normalizedPath],
+                timestamp: Date.now(),
+            });
+
+            return true;
+        } catch (error) {
+            console.error(`Error deleting ${filePath}:`, error);
+            return false;
+        }
+    }
+
+    private async deleteDirectoryRecursive(dirPath: string): Promise<void> {
+        if (!this.session.session) {
+            return;
+        }
+
+        const files = await this.session.session.filesystem.list(dirPath);
+        
+        for (const file of files) {
+            const fullPath = path.join(dirPath, file.name);
+            if (file.isDir) {
+                await this.deleteDirectoryRecursive(fullPath);
+            } else {
+                await this.session.session.filesystem.remove(fullPath);
+            }
+        }
+        
+        // Remove the directory itself
+        await this.session.session.filesystem.remove(dirPath);
+    }
+
+    async rename(oldPath: string, newPath: string): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for rename operation');
+            return false;
+        }
+
+        try {
+            const normalizedOldPath = normalizePath(oldPath);
+            const normalizedNewPath = normalizePath(newPath);
+
+            // Read the content first
+            const content = await this.session.session.filesystem.read(normalizedOldPath);
+            
+            // Create the new file
+            await this.session.session.filesystem.write(normalizedNewPath, content);
+            
+            // Delete the old file
+            await this.session.session.filesystem.remove(normalizedOldPath);
+
+            // Update cache
+            const file = this.fileSync.get(normalizedOldPath);
+            if (file) {
+                this.fileSync.removeFromCache(normalizedOldPath);
+                this.fileSync.updateCache({
+                    ...file,
+                    path: normalizedNewPath,
+                });
+            }
+
+            // Update mapper
+            this.mapper.removeFile(normalizedOldPath);
+            if (file && this.isJsxFile(normalizedNewPath)) {
+                this.mapper.updateFile(normalizedNewPath, file.content);
+            }
+
+            // Publish rename event
+            this.fileEventBus.publish({
+                type: 'rename',
+                paths: [normalizedOldPath, normalizedNewPath],
+                timestamp: Date.now(),
+            });
+
+            return true;
+        } catch (error) {
+            console.error(`Error renaming ${oldPath} to ${newPath}:`, error);
+            return false;
+        }
+    }
+
+    async copy(sourcePath: string, targetPath: string, recursive: boolean = false): Promise<boolean> {
+        if (!this.session.session) {
+            console.error('No session found for copy operation');
+            return false;
+        }
+
+        try {
+            const normalizedSourcePath = normalizePath(sourcePath);
+            const normalizedTargetPath = normalizePath(targetPath);
+
+            // Check if source is a directory
+            const stat = await this.session.session.filesystem.stat(normalizedSourcePath);
+            if (stat && stat.isDir && recursive) {
+                await this.copyDirectoryRecursive(normalizedSourcePath, normalizedTargetPath);
+            } else {
+                // Copy single file
+                const content = await this.session.session.filesystem.read(normalizedSourcePath);
+                await this.session.session.filesystem.write(normalizedTargetPath, content);
+            }
+
+            return true;
+        } catch (error) {
+            console.error(`Error copying ${sourcePath} to ${targetPath}:`, error);
+            return false;
+        }
+    }
+
+    private async copyDirectoryRecursive(sourceDir: string, targetDir: string): Promise<void> {
+        if (!this.session.session) {
+            return;
+        }
+
+        // Create target directory (by creating a file in it)
+        const tempFile = path.join(targetDir, '.temp');
+        await this.session.session.filesystem.write(tempFile, '');
+        await this.session.session.filesystem.remove(tempFile);
+
+        const files = await this.session.session.filesystem.list(sourceDir);
+        
+        for (const file of files) {
+            const sourcePath = path.join(sourceDir, file.name);
+            const targetPath = path.join(targetDir, file.name);
+            
+            if (file.isDir) {
+                await this.copyDirectoryRecursive(sourcePath, targetPath);
+            } else {
+                const content = await this.session.session.filesystem.read(sourcePath);
+                await this.session.session.filesystem.write(targetPath, content);
+            }
+        }
+    }
+
     async handleFileChange(event: { path: string; type: string }) {
         if (!this.session.session) {
             return;
@@ -261,6 +439,7 @@ export class SandboxManager {
         this.mapper.clear();
         this.fileSync.clear();
         this.fileEventBus.clear();
+        this.fileWatcher.dispose();
         this.isIndexed = false;
     }
 

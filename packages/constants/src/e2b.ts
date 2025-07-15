@@ -26,4 +26,3 @@ export function getSandboxPreviewUrl(sandboxId: string, port: number) {
 
 // E2B specific configurations
 export const E2B_DEFAULT_TIMEOUT = 300000; // 5 minutes in ms
-export const E2B_FILE_WATCHER_DEBOUNCE = 100; // ms
