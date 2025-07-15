@@ -2,13 +2,12 @@ import { rateLimits, subscriptions, usageRecords } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { UsageType, type Usage } from '@onlook/models';
 import { FREE_PRODUCT_CONFIG } from '@onlook/stripe';
+import { add } from 'date-fns/add';
+import { startOfDay } from 'date-fns/startOfDay';
+import { startOfMonth } from 'date-fns/startOfMonth';
 import { and, desc, eq, gt, gte, lt, lte, ne, sql, sum } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { startOfDay } from 'date-fns/startOfDay';
-import { startOfMonth } from 'date-fns/startOfMonth';
-import { add } from 'date-fns/add';
-
 
 export const usageRouter = createTRPCRouter({
     get: protectedProcedure.query(async ({ ctx }) => {
@@ -25,9 +24,9 @@ export const usageRouter = createTRPCRouter({
         // if no subscription then user is on a free plan
         if (!subscription) {
             const dayStart = startOfDay(now);
-            const dayEnd = add(dayStart, { days: 1});
+            const dayEnd = add(dayStart, { days: 1 });
             const monthStart = startOfMonth(now);
-            const monthEnd = add(monthStart, { months: 1});
+            const monthEnd = add(monthStart, { months: 1 });
 
             // Count records from current day
             const lastDayCount = await db
@@ -52,7 +51,7 @@ export const usageRouter = createTRPCRouter({
                         lt(usageRecords.timestamp, monthEnd),
                     )
                 );
-    
+
             return {
                 daily: {
                     period: 'day',
@@ -136,7 +135,7 @@ export const usageRouter = createTRPCRouter({
                 timestamp: new Date(),
             }).returning({ id: usageRecords.id });
 
-            return { rateLimitId: limit?.id, usageRecordId: usageRecord?.[0]?.id };
+            return { rateLimitId: limit.id, usageRecordId: usageRecord?.[0]?.id };
         });
     }),
 

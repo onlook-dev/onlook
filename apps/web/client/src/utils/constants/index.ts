@@ -17,7 +17,7 @@ export const Routes = {
     // Callback
     CALLBACK_STRIPE_SUCCESS: '/callback/stripe/success',
     CALLBACK_STRIPE_CANCEL: '/callback/stripe/cancel',
-};
+} as const;
 
 export const ExternalRoutes = {
     DOCS: 'https://docs.onlook.com',

@@ -1,4 +1,4 @@
-import { prices, rateLimits, subscriptions, users, type NewSubscription } from '@onlook/db';
+import { prices, rateLimits, subscriptions, users } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { ScheduledSubscriptionAction } from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
@@ -171,10 +171,11 @@ export const handleSubscriptionUpdated = async (
         throw new Error('Subscription not found');
     }
 
-    const price = await db.query.prices.findFirst({
+    const newPrice = await db.query.prices.findFirst({
         where: eq(prices.stripePriceId, stripePriceId),
     });
-    if (!price) {
+
+    if (!newPrice) {
         throw new Error(`No price found for updated price ID: ${stripePriceId}`);
     }
 
@@ -188,8 +189,8 @@ export const handleSubscriptionUpdated = async (
     }
 
     const isTierIncrease =
-        currentPrice?.id !== price.id &&
-        price.monthlyMessageLimit > currentPrice.monthlyMessageLimit;
+        currentPrice.id !== newPrice.id &&
+        newPrice.monthlyMessageLimit > currentPrice.monthlyMessageLimit;
 
     let renew = false;
     // Update subscription if price changed
@@ -200,7 +201,7 @@ export const handleSubscriptionUpdated = async (
                 // this call is solely to update the priceId
                 // there is another call below in the case where
                 .set({
-                    priceId: price.id,
+                    priceId: newPrice.id,
                 })
                 .where(eq(subscriptions.id, subscription.id));
 
@@ -208,7 +209,7 @@ export const handleSubscriptionUpdated = async (
             // In the case of a pro-rated tier increase, the system creates a new rate limit with the delta.
             const isProRated =
                 isTierIncrease && +currentPeriodEnd === +subscription.stripeCurrentPeriodEnd;
-            const tierIncrease = price.monthlyMessageLimit - currentPrice.monthlyMessageLimit;
+            const tierIncrease = newPrice.monthlyMessageLimit - currentPrice.monthlyMessageLimit;
             if (isProRated) {
                 await tx.insert(rateLimits).values({
                     userId: subscription.userId,
@@ -282,8 +283,8 @@ export const handleSubscriptionUpdated = async (
             await tx.insert(rateLimits).values({
                 userId: subscription.userId,
                 subscriptionId: subscription.id,
-                max: price.monthlyMessageLimit,
-                left: price.monthlyMessageLimit,
+                max: newPrice.monthlyMessageLimit,
+                left: newPrice.monthlyMessageLimit,
                 startedAt: currentPeriodStart,
                 endedAt: currentPeriodEnd,
                 carryOverKey: uuid(),
@@ -309,7 +310,7 @@ export const handleSubscriptionUpdated = async (
             await tx
                 .update(subscriptions)
                 .set({
-                    priceId: price.id,
+                    priceId: newPrice.id,
                     scheduledAction: ScheduledSubscriptionAction.CANCELLATION,
                     scheduledChangeAt: cancelAt,
                     stripeSubscriptionItemId,
