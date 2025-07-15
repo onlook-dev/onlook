@@ -15,3 +15,8 @@ export interface BinarySandboxFile extends BaseSandboxFile {
 }
 
 export type SandboxFile = TextSandboxFile | BinarySandboxFile;
+
+export type SandboxDirectory = {
+    type: 'directory';
+    path: string;
+};

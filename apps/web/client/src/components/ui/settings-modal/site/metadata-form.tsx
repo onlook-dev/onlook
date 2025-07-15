@@ -1,5 +1,6 @@
 import type { OGImage, PageMetadata, TitleMetadata } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Textarea } from '@onlook/ui/textarea';
@@ -31,6 +32,7 @@ interface MetadataFormProps {
     projectUrl?: string;
     isSimpleTitle: boolean;
     disabled?: boolean;
+    isSaving?: boolean;
     onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onTitleTemplateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onTitleAbsoluteChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -57,6 +59,7 @@ export const MetadataForm = ({
     projectUrl,
     isSimpleTitle,
     disabled = false,
+    isSaving = false,
     onTitleChange,
     onTitleTemplateChange,
     onTitleAbsoluteChange,
@@ -242,9 +245,10 @@ export const MetadataForm = ({
                         className="flex items-center gap-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20"
                         type="button"
                         onClick={onSave}
-                        disabled={!isDirty || disabled}
+                        disabled={!isDirty || disabled || isSaving}
                     >
-                        <span>Save changes</span>
+                        {isSaving && <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />}
+                        <span>{isSaving ? 'Saving...' : 'Save changes'}</span>
                     </Button>
                 </div>
             </div>

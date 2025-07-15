@@ -21,11 +21,16 @@ export function useHostingType(type: DeploymentType) {
         context.refetch(type);
     };
 
+    const cancel = async () => {
+        return context.cancel(type);
+    };
+
     return {
         deployment,
         isDeploying,
         publish,
         unpublish,
         refetch,
+        cancel,
     };
 } 

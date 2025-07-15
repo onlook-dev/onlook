@@ -1,6 +1,6 @@
 import { WebSocketSession } from '@codesandbox/sdk';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
-import type { deploymentUpdateSchema } from '@onlook/db';
+import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
@@ -44,16 +44,14 @@ export class PublishManager {
 
     async publish({
         buildScript,
-        skipBadge,
         buildFlags,
-        envVars,
+        skipBadge,
         updateDeployment,
     }: {
-        buildScript: string,
+        buildScript: string;
         buildFlags: string;
         skipBadge: boolean;
-        envVars: Record<string, string>;
-        updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<void>;
+        updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<Deployment | null>;
     }): Promise<Record<string, FreestyleFile>> {
         await this.runPrepareStep();
         await updateDeployment({
@@ -77,7 +75,7 @@ export class PublishManager {
             progress: 40,
         });
 
-        await this.runBuildStep(buildScript, buildFlags, envVars);
+        await this.runBuildStep(buildScript, buildFlags);
 
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
@@ -123,7 +121,7 @@ export class PublishManager {
         }
     }
 
-    private async runBuildStep(buildScript: string, buildFlags: string, envVars: Record<string, string>): Promise<void> {
+    private async runBuildStep(buildScript: string, buildFlags: string): Promise<void> {
         try {
             // Use default build flags if no build flags are provided
             const buildFlagsString: string = isNullOrUndefined(buildFlags)

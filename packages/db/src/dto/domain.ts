@@ -1,5 +1,5 @@
 import { type DomainInfo, DomainType } from '@onlook/models';
-import type { PreviewDomain, PublishedDomain } from '../schema';
+import type { PreviewDomain, ProjectCustomDomain } from '../schema';
 
 export const toDomainInfoFromPreview = (previewDomain: PreviewDomain): DomainInfo => {
     return {
@@ -9,10 +9,10 @@ export const toDomainInfoFromPreview = (previewDomain: PreviewDomain): DomainInf
     };
 };
 
-export const toDomainInfoFromPublished = (publishedDomain: PublishedDomain): DomainInfo => {
+export const toDomainInfoFromPublished = (projectCustomDomain: ProjectCustomDomain): DomainInfo => {
     return {
-        url: publishedDomain.fullDomain,
+        url: projectCustomDomain.fullDomain,
         type: DomainType.CUSTOM,
-        publishedAt: publishedDomain.updatedAt.toISOString(),
+        publishedAt: projectCustomDomain.updatedAt.toISOString(),
     };
 };

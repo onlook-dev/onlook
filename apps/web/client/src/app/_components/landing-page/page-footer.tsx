@@ -21,7 +21,7 @@ export function Footer() {
                     <div>
                         <h3 className="text-regularPlus mb-4 text-foreground-primary">Company</h3>
                         <ul className="flex flex-col gap-4 text-regular text-foreground-secondary">
-                            {/* <li><a href={Routes.ABOUT} className="hover:underline">About</a></li> */}
+                            <li><a href={Routes.ABOUT} className="hover:underline">About</a></li>
                             <li><a href={ExternalRoutes.DOCS} target="_blank" className="hover:underline" title="View Onlook documentation">Docs</a></li>
                             <li><a href={Routes.FAQ} className="hover:underline" title="Frequently Asked Questions">FAQ</a></li>
                             <li><a href={ExternalRoutes.BLOG} target="_blank" className="hover:underline" title="Read the Onlook blog">Blog</a></li>

@@ -116,6 +116,7 @@ export const WebFrameComponent = observer(
                 const remote = child as unknown as PenpalChildMethods;
                 setPenpalChild(remote);
                 remote.setFrameId(frame.id);
+                remote.handleBodyReady();
                 remote.processDom();
                 console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
             });

@@ -1,16 +1,15 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { EditorTabValue, type ImageContentData } from '@onlook/models';
+import { EditorTabValue, type ImageContentData, type FolderNode } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { memo, useCallback, useMemo } from 'react';
 import { useImageDragDrop } from './hooks/use-image-drag-drop';
 import { ImageDropdownMenu } from './image-dropdown-menu';
 import { useImagesContext } from './providers/images-provider';
-import type { FolderNode } from './providers/types';
 
 export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
     const editorEngine = useEditorEngine();
     const { onImageDragStart, onImageDragEnd, onImageMouseDown, onImageMouseUp } = useImageDragDrop();
-    const { renameOperations, deleteOperations, moveOperations, isOperating, folderStructure } = useImagesContext();
+    const { renameOperations, deleteOperations, moveOperations, isOperating } = useImagesContext();
 
     const {
         renameState,
@@ -20,15 +19,13 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
     } = renameOperations;
 
     const {
-        handleDeleteImage,
-        onDeleteImage
+        handleDeleteImage
     } = deleteOperations;
 
     const {
         moveState,
         handleSelectTargetFolder,
         handleMoveImage,
-        clearError,
     } = moveOperations;
 
     const isImageRenaming = renameState.imageToRename === image.fileName;
@@ -148,25 +145,9 @@ export const ImageItem = memo(({ image }: { image: ImageContentData }) => {
                 handleOpenFolder={handleOpenFolder}
                 handleMoveToFolder={handleMoveToFolder}
                 isDisabled={isDisabled}
-                folderStructure={folderStructure}
                 selectedTargetFolder={moveState.targetFolder}
                 onSelectTargetFolder={handleSelectTargetFolder}
             />
-
-            {moveState.error && (
-                <div className="absolute top-0 left-0 right-0 bg-red-100 border border-red-400 text-red-700 px-2 py-1 rounded text-xs z-10">
-                    {moveState.error}
-                    <button
-                        onClick={clearError}
-                        className="ml-2 font-bold"
-                        type="button"
-                    >
-                        ×
-                    </button>
-                </div>
-            )}
         </div>
     );
 });
-
-ImageItem.displayName = 'ImageItem';

@@ -1,6 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { boolean, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
-import { publishedDomains } from './published';
+import { projectCustomDomains } from './project-custom-domain';
 import { customDomainVerification } from './verification';
 
 export const customDomains = pgTable('custom_domains', {
@@ -12,7 +12,7 @@ export const customDomains = pgTable('custom_domains', {
 }).enableRLS();
 
 export const customDomainRelations = relations(customDomains, ({ many }) => ({
-    publishedDomains: many(publishedDomains),
+    projectCustomDomains: many(projectCustomDomains),
     verificationRequests: many(customDomainVerification),
 }));
 

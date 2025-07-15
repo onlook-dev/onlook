@@ -1,33 +1,54 @@
-import { DefaultSettings } from '@onlook/constants';
+import { type FolderNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { isEqual } from 'lodash';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { observer } from 'mobx-react-lite';
 import { useFolderImages } from '../hooks/use-folder-images';
 import { useImageSearch } from '../hooks/use-image-search';
 import { ImageList } from '../image-list';
 import { useImagesContext } from '../providers/images-provider';
-import { type FolderNode } from '../providers/types';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import { FolderList } from './folder-list';
-import FolderCreateModal from './modal/folder-create-modal';
+import { useFolderContext } from '../providers/folder-provider';
+import { DefaultSettings } from '@onlook/constants';
+import { useEditorEngine } from '@/components/store/editor';
+import { DeleteImageModal } from '../delete-modal';
+import { MoveImageModal } from '../move-modal';
+import { RenameImageModal } from '../rename-modal';
+import { FolderRenameModal } from './modal/folder-rename-modal';
+import { FolderDeleteModal } from './modal/folder-delete-modal';
+import { FolderMoveModal } from './modal/folder-move-modal';
+import { FolderCreateModal } from './modal/folder-create-modal';
 
 interface FolderPathItem {
     folder: FolderNode;
     name: string;
 }
 
-export default function Folder() {
+export const rootDir: FolderNode = {
+    name: DefaultSettings.IMAGE_FOLDER,
+    fullPath: DefaultSettings.IMAGE_FOLDER,
+};
+
+const Folder = observer(() => {
     const inputRef = useRef<HTMLInputElement>(null);
     const breadcrumbsRef = useRef<HTMLDivElement>(null);
-    const { uploadOperations, isOperating, folderStructure, folderOperations } = useImagesContext();
-    const [currentFolder, setCurrentFolder] = useState<FolderNode | null>(null);
-    const [folderPath, setFolderPath] = useState<FolderPathItem[]>([]);
+    const editorEngine = useEditorEngine();
 
-    const { folderImagesState, loadFolderImages } = useFolderImages();
+    const { uploadOperations, isOperating } = useImagesContext();
+    const [currentFolder, setCurrentFolder] = useState<FolderNode>(rootDir);
+    const [folderPath, setFolderPath] = useState<FolderPathItem[]>([]);
+    const [childFolders, setChildFolders] = useState<FolderNode[]>([]);
+
+    const folders = useMemo(
+        () => editorEngine.sandbox.directories.filter((dir) => dir.startsWith(rootDir.fullPath)),
+        [editorEngine.sandbox.directories, rootDir.fullPath],
+    );
+
+    const { folderImagesState } = useFolderImages(currentFolder);
 
     const { search, filteredImages, handleSearchClear, handleSearchChange, handleKeyDown } =
         useImageSearch({
@@ -35,30 +56,16 @@ export default function Folder() {
         });
 
     const {
-        createState,
         handleCreateFolder,
-        handleRenameFolder,
-        handleDeleteFolder,
-        handleMoveToFolder,
         isOperating: isFolderOperating,
-        scanFolderChildren,
-        handleCreateFolderInputChange,
-        handleCreateModalToggle,
-        onCreateFolder,
-    } = folderOperations;
+        getChildFolders,
+    } = useFolderContext();
 
     const handleSelectFolder = async (folder: FolderNode) => {
         if (currentFolder) {
             setFolderPath((prev) => [...prev, { folder: currentFolder, name: currentFolder.name }]);
         }
         setCurrentFolder(folder);
-
-        // Scan for empty child folders when selecting a folder
-        try {
-            await scanFolderChildren(folder);
-        } catch (error) {
-            console.error('Error scanning folder children:', error);
-        }
     };
 
     const handleGoBack = () => {
@@ -69,13 +76,13 @@ export default function Folder() {
                 setFolderPath((prev) => prev.slice(0, -1));
             }
         } else {
-            setCurrentFolder(folderStructure);
+            setCurrentFolder(rootDir);
         }
     };
 
     const handleBreadcrumbClick = (index: number) => {
         if (index === -1) {
-            setCurrentFolder(folderStructure);
+            setCurrentFolder(rootDir);
             setFolderPath([]);
         } else {
             const targetFolder = folderPath[index];
@@ -86,48 +93,16 @@ export default function Folder() {
         }
     };
 
-    const findFolderInStructure = (folder: FolderNode, target: FolderNode): FolderNode | null => {
-        if (folder && target && folder.fullPath === target.fullPath) {
-            return folder;
-        }
-        for (const child of folder.children.values()) {
-            const found = findFolderInStructure(child, target);
-            if (found) return found;
-        }
-        return null;
+    const loadDirData = async (folder: FolderNode) => {
+        const childFolders = getChildFolders(folder);
+        setChildFolders(childFolders);
     };
 
     useEffect(() => {
-        if (currentFolder && currentFolder !== folderStructure) {
-            const updatedCurrentFolder = findFolderInStructure(folderStructure, currentFolder);
-
-            if (!updatedCurrentFolder) {
-                setCurrentFolder(folderStructure);
-                setFolderPath([]);
-            } else if (!isEqual(updatedCurrentFolder, currentFolder)) {
-                setCurrentFolder(updatedCurrentFolder);
-                loadFolderImages(updatedCurrentFolder);
-            }
-        } else {
-            setCurrentFolder(folderStructure);
-            setFolderPath([]);
+        if (currentFolder && folders.length > 0) {
+            loadDirData(currentFolder);
         }
-    }, [folderStructure, currentFolder, loadFolderImages]);
-
-    useEffect(() => {
-        if (currentFolder) {
-            loadFolderImages(currentFolder);
-        }
-    }, [currentFolder, loadFolderImages]);
-
-    // Scan root folder for empty directories on initial load
-    useEffect(() => {
-        if (folderStructure && (currentFolder === folderStructure || !currentFolder)) {
-            scanFolderChildren(folderStructure).catch((error) => {
-                console.error('Error scanning root folder children:', error);
-            });
-        }
-    }, [folderStructure, currentFolder, scanFolderChildren]);
+    }, [currentFolder, folders]);
 
     // Auto-scroll breadcrumbs to the right when folder path changes
     useEffect(() => {
@@ -143,9 +118,10 @@ export default function Folder() {
         }
     };
 
-    const canGoBack = folderPath.length > 0 || currentFolder !== folderStructure;
+    const canGoBack = folderPath.length > 0 || currentFolder !== rootDir;
     const isAnyOperationLoading = isOperating || isFolderOperating;
-    const showCreateButton = !!currentFolder && currentFolder === folderStructure && currentFolder.children.size === 0;
+
+    const showCreateButton = !!currentFolder && currentFolder === rootDir;
 
     return (
         <div className="flex flex-col gap-2 h-full">
@@ -185,7 +161,7 @@ export default function Folder() {
                                     </div>
                                 ))}
 
-                                {currentFolder && currentFolder !== folderStructure && (
+                                {currentFolder && currentFolder !== rootDir && (
                                     <div className="flex items-center gap-1">
                                         <Icons.ChevronRight className="h-3 w-3 text-gray-400" />
                                         <span className="font-medium text-white whitespace-nowrap">
@@ -196,18 +172,14 @@ export default function Folder() {
                             </div>
                         </div>
 
-                        <FolderDropdownMenu
-                            folder={currentFolder ?? folderStructure}
-                            handleRenameFolder={() =>
-                                handleRenameFolder(currentFolder ?? folderStructure)
-                            }
-                            handleDeleteFolder={() =>
-                                handleDeleteFolder(currentFolder ?? folderStructure)
-                            }
-                            handleMoveToFolder={handleMoveToFolder}
-                            className="bg-gray-700"
-                            alwaysVisible={true}
-                        />
+                        {currentFolder && (
+                            <FolderDropdownMenu
+                                rootDir={rootDir}
+                                folder={currentFolder}
+                                className="bg-gray-700"
+                                alwaysVisible={true}
+                            />
+                        )}
                     </div>
                     <Separator />
                 </>
@@ -264,10 +236,11 @@ export default function Folder() {
 
             {/* Folder Content */}
             <FolderList
-                items={Array.from(currentFolder?.children.values() || [])}
+                childFolders={childFolders}
                 folder={currentFolder}
                 showCreateButton={showCreateButton}
                 onSelectFolder={handleSelectFolder}
+                rootDir={rootDir}
             />
 
             {/* Images Section */}
@@ -279,19 +252,20 @@ export default function Folder() {
                     </div>
                 </div>
             ) : (
-                <ImageList images={filteredImages} currentFolder={currentFolder?.fullPath ?? DefaultSettings.IMAGE_FOLDER} />
+                <ImageList images={filteredImages} currentFolder={currentFolder.fullPath} />
             )}
+            {/* Image Operation Modals */}
+            <DeleteImageModal />
+            <RenameImageModal />
+            <MoveImageModal />
 
-            <FolderCreateModal
-                isOpen={createState.isCreating}
-                toggleOpen={handleCreateModalToggle}
-                onCreate={onCreateFolder}
-                folderName={createState.newFolderName}
-                onNameChange={handleCreateFolderInputChange}
-                isLoading={createState.isLoading}
-                error={createState.error}
-                parentFolder={createState.parentFolder}
-            />
+            {/* Folder Operation Modals */}
+            <FolderRenameModal />
+            <FolderDeleteModal />
+            <FolderMoveModal />
+            <FolderCreateModal />
         </div>
     );
-}
+});
+
+export default Folder;

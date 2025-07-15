@@ -1,5 +1,5 @@
 import { LAYOUT_FILE_CONDITIONS } from '@onlook/constants';
-import type { SandboxFile, TemplateNode } from '@onlook/models';
+import type { TemplateNode } from '@onlook/models';
 import {
     addOidsToAst,
     createTemplateNodeMap,
@@ -18,24 +18,14 @@ export class TemplateNodeMapper {
 
     async processFileForMapping(
         filePath: string,
-        readFile: (path: string) => Promise<SandboxFile | null>,
-        writeFile: (path: string, content: string) => Promise<boolean>,
-    ) {
-        const file = await readFile(filePath);
-        if (!file) {
-            console.error(`Failed to read file ${filePath}`);
-            return;
-        }
-
-        if (file.type === 'binary') {
-            console.error(`Binary files are not supported for mapping`);
-            return;
-        }
-
-        const ast = getAstFromContent(file.content);
+        content: string,
+    ): Promise<{
+        modified: boolean;
+        newContent: string;
+    }> {
+        const ast = getAstFromContent(content);
         if (!ast) {
-            console.error(`Failed to get ast for file ${filePath}`);
-            return;
+            throw new Error(`Failed to get ast for file ${filePath}`);
         }
 
         if (isTargetFile(filePath, LAYOUT_FILE_CONDITIONS)) {
@@ -45,12 +35,11 @@ export class TemplateNodeMapper {
         const { ast: astWithIds, modified } = addOidsToAst(ast);
         const templateNodeMap = createTemplateNodeMap(astWithIds, filePath);
         this.updateMapping(templateNodeMap);
-
-        // Write the file if it has changed
-        if (modified) {
-            const contentWithIds = await getContentFromAst(astWithIds);
-            await writeFile(filePath, contentWithIds);
-        }
+        const newContent = await getContentFromAst(astWithIds);
+        return {
+            modified,
+            newContent,
+        };
     }
 
     getTemplateNode(oid: string): TemplateNode | null {
