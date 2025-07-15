@@ -1,6 +1,7 @@
 import { env } from '@/env';
 import { CodeSandbox } from '@codesandbox/sdk';
 import { getSandboxPreviewUrl } from '@onlook/constants';
+import { GIT_AUTHOR } from '@onlook/git';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
@@ -20,6 +21,11 @@ export const sandboxRouter = createTRPCRouter({
             const startData = await sdk.sandboxes.resume(input.sandboxId);
             const session = await startData.createSession({
                 id: shortenUuid(input.userId ?? uuidv4(), 20),
+                git: {
+                    provider: 'github.com',
+                    email: GIT_AUTHOR.email,
+                    name: GIT_AUTHOR.name,
+                },
             });
             return session;
         }),

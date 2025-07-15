@@ -13,7 +13,7 @@ export const GIT_AUTHOR = { name: 'Onlook', email: 'support@onlook.com' };
 export const DISPLAY_NAME_NAMESPACE = 'onlook-display-name';
 
 export const statusCommand = () => 'git status --porcelain';
-export const logCommand = () => 'git log --pretty=format:"%H|%an <%ae>|%ad|%s" --date=iso"';
+export const logCommand = () => 'git log --pretty=format:"%H|%an <%ae>|%ad|%s" --date=iso';
 export const stageAllCommand = () => 'git add .';
 export const unstageAllCommand = () => 'git restore --staged .';
 export const userNameCommand = () => `git config user.name "${GIT_AUTHOR.name}"`;
