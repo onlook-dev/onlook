@@ -1,3 +1,5 @@
+import stripAnsi from 'strip-ansi';
+
 export interface GitCommit {
     oid: string;
     message: string;
@@ -6,14 +8,37 @@ export interface GitCommit {
     timestamp: number;
 }
 
+export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 export const GIT_AUTHOR = { name: 'Onlook', email: 'support@onlook.com' };
 export const DISPLAY_NAME_NAMESPACE = 'onlook-display-name';
+
+export const statusCommand = () => 'git status --porcelain';
+export const logCommand = () => 'git log --pretty=format:"%H|%an <%ae>|%ad|%s" --date=iso"';
+export const stageAllCommand = () => 'git add .';
+export const unstageAllCommand = () => 'git restore --staged .';
+export const userNameCommand = () => `git config user.name "${GIT_AUTHOR.name}"`;
+export const userEmailCommand = () => `git config user.email "${GIT_AUTHOR.email}"`;
+export const initCommand = () => 'git init';
+export const checkUserNameCommand = () => 'git config user.name';
+export const checkUserEmailCommand = () => 'git config user.email';
+export const restoreToCommitCommand = (commitOid: string): string => {
+    return `git restore --source ${commitOid} .`;
+};
+export const addCommitNoteCommand = (commitOid: string, displayName: string): string => {
+    return `git notes --ref=${DISPLAY_NAME_NAMESPACE} add -f -m "${displayName}" ${commitOid}`;
+};
+export const commitCommand = (message: string): string => {
+    return `git commit --allow-empty --no-verify -m "${message}"`;
+};
+export const getCommitNoteCommand = (commitOid: string): string => {
+    return `git notes --ref=${DISPLAY_NAME_NAMESPACE} show ${commitOid}`;
+};
 
 /**
  * Parse git log output into GitCommit objects
  */
 export const parseGitLog = (rawOutput: string): GitCommit[] => {
-    const cleanOutput = formatGitLogOutput(rawOutput);
+    const cleanOutput = stripAnsi(rawOutput);
 
     if (!cleanOutput) {
         return [];
@@ -70,25 +95,15 @@ export const parseGitLog = (rawOutput: string): GitCommit[] => {
 
 export const parseGitStatusOutput = (output: string): string[] => {
     const lines = output.split('\n').filter((line) => line.trim());
-    return lines.map((line) => line.replace(/^[^\w]*=?(.+)$/, '$1'));
-};
+    return lines.map((line) => {
+        const trimmedLine = line.trim();
+        const pathPart = trimmedLine.substring(trimmedLine.indexOf(' ') + 1);
 
-export const formatGitLogOutput = (input: string): string => {
-    // Handle sequences with ESC characters anywhere within them
-    // Pattern to match sequences like [?1h<ESC>= and [K<ESC>[?1l<ESC>>
-    const ansiWithEscPattern = /\[[0-9;?a-zA-Z\x1b]*[a-zA-Z=>/]*/g;
+        if (trimmedLine.startsWith('R') || trimmedLine.startsWith('C')) {
+            const pathParts = pathPart.split(' -> ');
+            return pathParts[1]?.trim() ?? '';
+        }
 
-    // Handle standard ANSI escape sequences starting with ESC
-    const ansiEscapePattern = /\x1b\[[0-9;?a-zA-Z]*[a-zA-Z=>/]*/g;
-
-    // Handle control characters
-    const controlChars = /[\x00-\x09\x0B-\x1F\x7F]/g;
-
-    const cleanOutput = input
-        .replace(ansiWithEscPattern, '') // Remove sequences with ESC chars in middle
-        .replace(ansiEscapePattern, '') // Remove standard ESC sequences
-        .replace(controlChars, '') // Remove control characters
-        .trim();
-
-    return cleanOutput;
+        return pathPart.trim();
+    });
 };

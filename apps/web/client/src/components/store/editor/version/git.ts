@@ -1,7 +1,22 @@
-import { formatGitLogOutput, GIT_AUTHOR, parseGitLog, type GitCommit } from '@onlook/git';
+import {
+    addCommitNoteCommand,
+    checkUserEmailCommand,
+    checkUserNameCommand,
+    commitCommand,
+    getCommitNoteCommand,
+    initCommand,
+    logCommand,
+    parseGitLog,
+    parseGitStatusOutput,
+    restoreToCommitCommand,
+    stageAllCommand,
+    statusCommand,
+    userEmailCommand,
+    userNameCommand,
+    type GitCommit
+} from '@onlook/git';
+import stripAnsi from 'strip-ansi';
 import type { EditorEngine } from '../engine';
-
-export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 
 export interface GitStatus {
     files: string[];
@@ -39,8 +54,8 @@ export class GitManager {
             }
 
             // Check if user.name is set
-            const nameResult = await this.runCommand('git config user.name');
-            const emailResult = await this.runCommand('git config user.email');
+            const nameResult = await this.runCommand(checkUserNameCommand());
+            const emailResult = await this.runCommand(checkUserEmailCommand());
 
             const hasName = nameResult.success && nameResult.output.trim();
             const hasEmail = emailResult.success && emailResult.output.trim();
@@ -52,7 +67,7 @@ export class GitManager {
 
             // Set user.name if not configured
             if (!hasName) {
-                const nameConfigResult = await this.runCommand(`git config user.name "${GIT_AUTHOR.name}"`);
+                const nameConfigResult = await this.runCommand(userNameCommand());
                 if (!nameConfigResult.success) {
                     console.error('Failed to set git user.name:', nameConfigResult.error);
                 }
@@ -61,7 +76,7 @@ export class GitManager {
             // Set user.email if not configured
             if (!hasEmail) {
                 const emailConfigResult = await this.runCommand(
-                    `git config user.email "${GIT_AUTHOR.email}"`,
+                    userEmailCommand(),
                 );
                 if (!emailConfigResult.success) {
                     console.error('Failed to set git user.email:', emailConfigResult.error);
@@ -94,7 +109,7 @@ export class GitManager {
             console.log('Initializing git repository...');
 
             // Initialize git repository
-            const initResult = await this.runCommand('git init');
+            const initResult = await this.runCommand(initCommand());
             if (!initResult.success) {
                 console.error('Failed to initialize git repository:', initResult.error);
                 return false;
@@ -119,14 +134,13 @@ export class GitManager {
      */
     async getStatus(): Promise<GitStatus | null> {
         try {
-            const statusResult = await this.runCommand('git status');
+            const statusResult = await this.runCommand(statusCommand());
             if (!statusResult.success) {
                 console.error('Failed to get git status');
                 return null;
             }
 
-            const files = statusResult.output.split('\n').filter((line) => line.trim());
-
+            const files = parseGitStatusOutput(statusResult.output);
             return {
                 files,
             };
@@ -140,7 +154,7 @@ export class GitManager {
      * Stage all files
      */
     async stageAll(): Promise<GitCommandResult> {
-        return this.runCommand('git add .');
+        return this.runCommand(stageAllCommand());
     }
 
     /**
@@ -148,7 +162,7 @@ export class GitManager {
      */
     async commit(message: string): Promise<GitCommandResult> {
         const escapedMessage = message.replace(/\"/g, '\\"');
-        return this.runCommand(`git commit --allow-empty --no-verify -m "${escapedMessage}"`);
+        return this.runCommand(commitCommand(escapedMessage));
     }
 
     /**
@@ -157,11 +171,12 @@ export class GitManager {
     async listCommits(): Promise<GitCommit[]> {
         try {
             const result = await this.runCommand(
-                'git log --pretty=format:"%H|%an <%ae>|%ad|%s" --date=iso',
+                logCommand(),
             );
 
             if (result.success && result.output) {
-                return parseGitLog(result.output);
+                const cleanOutput = stripAnsi(result.output);
+                return parseGitLog(cleanOutput);
             }
 
             return [];
@@ -175,7 +190,7 @@ export class GitManager {
      * Checkout/restore to a specific commit
      */
     async restoreToCommit(commitOid: string): Promise<GitCommandResult> {
-        return this.runCommand(`git restore --source ${commitOid} .`);
+        return this.runCommand(restoreToCommitCommand(commitOid));
     }
 
     /**
@@ -184,7 +199,7 @@ export class GitManager {
     async addCommitNote(commitOid: string, displayName: string): Promise<GitCommandResult> {
         const escapedDisplayName = displayName.replace(/\"/g, '\\"');
         return this.runCommand(
-            `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} add -f -m "${escapedDisplayName}" ${commitOid}`,
+            addCommitNoteCommand(commitOid, escapedDisplayName),
         );
     }
 
@@ -194,10 +209,10 @@ export class GitManager {
     async getCommitNote(commitOid: string): Promise<string | null> {
         try {
             const result = await this.runCommand(
-                `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} show ${commitOid}`,
+                getCommitNoteCommand(commitOid),
                 true,
             );
-            return result.success ? formatGitLogOutput(result.output) : null;
+            return result.success ? stripAnsi(result.output) : null;
         } catch (error) {
             console.warn('Failed to get commit note', error);
             return null;

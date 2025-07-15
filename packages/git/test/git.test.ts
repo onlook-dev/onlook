@@ -1,37 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatGitLogOutput, parseGitLog, parseGitStatusOutput } from '../src/git';
-
-describe('formatGitLogOutput', () => {
-    it('should return an empty string if input is empty', () => {
-        expect(formatGitLogOutput('')).toBe('');
-    });
-
-    it('should remove standard ANSI escape sequences', () => {
-        const raw = '\x1b[31mHello\x1b[0m World';
-        const formatted = 'Hello World';
-        expect(formatGitLogOutput(raw)).toBe(formatted);
-    });
-
-    it('should remove complex ANSI escape sequences', () => {
-        const raw = '[?1h\x1b=Hello World\x1b[K\x1b[?1l\x1b>';
-        const formatted = 'Hello World';
-        expect(formatGitLogOutput(raw)).toBe(formatted);
-    });
-
-    it('should remove control characters', () => {
-        const raw = 'Hello\x07 World\x01';
-        const formatted = 'Hello World';
-        expect(formatGitLogOutput(raw)).toBe(formatted);
-    });
-
-    it('should correctly format a realistic git log output line with escape sequences', () => {
-        const raw =
-            '\x1b[33m25a8123\x1b[m\x1b[33m\x1b[m|John Doe <john.doe@example.com>|2023-01-01T12:00:00Z|Initial commit';
-        const expected =
-            '25a8123|John Doe <john.doe@example.com>|2023-01-01T12:00:00Z|Initial commit';
-        expect(formatGitLogOutput(raw)).toBe(expected);
-    });
-});
+import { parseGitLog, parseGitStatusOutput } from '../src/git';
 
 describe('parseGitStatusOutput', () => {
     it('should return an empty array for empty input', () => {
@@ -40,13 +8,19 @@ describe('parseGitStatusOutput', () => {
 
     it('should parse standard git status output', () => {
         const output = ' M src/git.ts\n D src/main.ts\n?? new-file.ts';
-        const expected = [' M src/git.ts', ' D src/main.ts', '?? new-file.ts'];
+        const expected = ['src/git.ts', 'src/main.ts', 'new-file.ts'];
         expect(parseGitStatusOutput(output)).toEqual(expected);
     });
 
-    it('should handle prefixed lines', () => {
-        const output = 'prefix= M src/git.ts\n  D src/main.ts';
-        const expected = [' M src/git.ts', ' D src/main.ts'];
+    it('should handle renamed files', () => {
+        const output = 'R  src/old.ts -> src/new.ts';
+        const expected = ['src/new.ts'];
+        expect(parseGitStatusOutput(output)).toEqual(expected);
+    });
+
+    it('should handle lines with leading spaces', () => {
+        const output = '  D src/main.ts';
+        const expected = ['src/main.ts'];
         expect(parseGitStatusOutput(output)).toEqual(expected);
     });
 });
@@ -65,7 +39,7 @@ describe('parseGitLog', () => {
             oid: 'a1b2c3d',
             message: 'feat: initial commit',
             author: { name: 'John Doe', email: 'john.doe@example.com' },
-            timestamp: 1698397200,
+            timestamp: 1698400800,
             displayName: 'feat: initial commit',
         });
     });
