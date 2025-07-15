@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { readdir } from 'fs/promises';
+import { readdir, stat } from 'fs/promises';
 import path from 'path';
 
 // Path to locales directory
@@ -12,7 +12,7 @@ async function getTranslationFiles() {
 
     for (const locale of locales) {
         const localePath = path.join(LOCALES_DIR, locale);
-        const stats = await Bun.file(localePath).stat();
+        const stats = await stat(localePath);
 
         if (stats.isFile() && locale.endsWith('.json')) {
             translationFiles.push({ locale: locale.replace('.json', ''), path: localePath });
