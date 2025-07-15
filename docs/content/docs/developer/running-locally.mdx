@@ -26,9 +26,12 @@ These are the prerequisites for running Onlook locally.
 
 ### 2. Install dependencies
 
+From the root directory, run:
    ```bash
    bun install
    ```
+
+Note: As mentioned earlier, some API keys are optional, but missing them will limit functionality. If you skip an optional API key, the setup script will show warnings but continue.
 
 ### 3. Run backend
 
@@ -42,15 +45,14 @@ These are the prerequisites for running Onlook locally.
 
 ### 4. Get API keys
 
-#### a. Get Codesandbox API key
+#### a. Get E2B API key
 
-1. Go to [Codesandbox Dashboard](https://codesandbox.io/dashboard)
-2. Click on settings in the left menu, your workspace setting should open
-3. Navigate to the "API" tab
-4. Click "Create API Token" and generate an API token
-5. Copy the token and save it for the environment setup step
+1. Go to [E2B Dashboard](https://e2b.dev)
+2. Sign up or log in
+3. Navigate to your API keys section
+4. Create a new API key or copy an existing one
 
-Note: We plan on enabling running the dev containers with Docker Desktop in the future after we figure out the best API integration. 
+Note: As mentioned earlier, some API keys are optional, but missing them will limit functionality. If you skip an optional API key, the setup script will show warnings but continue.
 
 #### b. Get Anthropic API key
 
@@ -101,13 +103,12 @@ Go to [http://localhost:3000](http://localhost:3000) to see the app running. You
 
 ## Common Issues
 
-#### Codesandbox Preview
+#### E2B Sandbox Preview
 
-Codesandbox may ask you to confirm to proceed. You can click the button by switching to Preview mode in onlook, and click the "Yes, proceed to preview" link and switch back. The UI should render properly inside the iframe after that.
-
-![Codesandbox confirmation mode](/images/csb-proceed-to-preview.png)
-
-![Switch to Preview mode](/images/visual-switch-to-preview.png)
+If you encounter issues with the E2B sandbox preview not loading, make sure:
+1. Your E2B API key is valid and active
+2. You have sufficient credits in your E2B account 
+3. Check the browser console for any error messages
 
 #### Refreshing pages
 

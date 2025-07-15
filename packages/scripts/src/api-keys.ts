@@ -7,14 +7,23 @@ interface ApiKeyConfig {
     message: string;
     required: boolean;
     description?: string;
+    docsUrl?: string;
+    getInstructions?: () => string[];
 }
 
 const API_KEYS: Record<string, ApiKeyConfig> = {
-    CSB_API_KEY: {
-        name: 'CSB_API_KEY',
-        message: 'Enter your Codesandbox API key:',
+    E2B_API_KEY: {
+        name: 'E2B_API_KEY',
+        message: 'Enter your E2B API key:',
         required: true,
-        description: 'Codesandbox',
+        docsUrl: 'https://e2b.dev/docs',
+        description: 'E2B',
+        getInstructions: () => [
+            '1. Go to https://e2b.dev',
+            '2. Sign up or log in',
+            '3. Go to your dashboard',
+            '4. Create or copy your API key',
+        ],
     },
     ANTHROPIC_API_KEY: {
         name: 'ANTHROPIC_API_KEY',

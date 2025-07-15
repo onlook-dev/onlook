@@ -1,12 +1,12 @@
 import { api } from '@/trpc/client';
-import type { WebSocketSession } from '@codesandbox/sdk';
-import { connectToSandbox } from '@codesandbox/sdk/browser';
+import { Sandbox } from '@e2b/sdk';
+import { env } from '@/env';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
 
 export class SessionManager {
-    session: WebSocketSession | null = null;
+    session: Sandbox | null = null;
     isConnecting = false;
     terminalSessions: Map<string, CLISession> = new Map();
     activeTerminalSessionId: string = 'cli';
@@ -15,146 +15,133 @@ export class SessionManager {
         makeAutoObservable(this);
     }
 
-    async start(sandboxId: string, userId?: string) {
-        if (this.isConnecting || this.session) {
-            return;
+    get project() {
+        return this.editorEngine.project;
+    }
+
+    async connect() {
+        if (!this.project?.sandbox?.id) {
+            console.error('No sandbox ID available');
+            return null;
         }
+
+        if (this.session) {
+            return this.session;
+        }
+
         this.isConnecting = true;
-        const session = await api.sandbox.start.mutate({ sandboxId, userId });
-        this.session = await connectToSandbox({
-            session,
-            getSession: async (id) => {
-                return await api.sandbox.start.mutate({ sandboxId: id, userId });
-            },
-        });
-        this.session.keepActiveWhileConnected(true);
-        this.isConnecting = false;
-        await this.createTerminalSessions(this.session);
-    }
-
-    getTerminalSession(id: string) {
-        return this.terminalSessions.get(id) as TerminalSession | undefined;
-    }
-
-    async createTerminalSessions(session: WebSocketSession) {
-        const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session, this.editorEngine.error);
-        this.terminalSessions.set(task.id, task);
-        const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session, this.editorEngine.error);
-
-        this.terminalSessions.set(terminal.id, terminal);
-        this.activeTerminalSessionId = task.id;
-    }
-
-    async disposeTerminal(id: string) {
-        const terminal = this.terminalSessions.get(id) as TerminalSession | undefined;
-        if (terminal) {
-            if (terminal.type === 'terminal') {
-                await terminal.terminal?.kill();
-                terminal.xterm?.dispose();
-            }
-            this.terminalSessions.delete(id);
-        }
-    }
-
-    async hibernate(sandboxId: string) {
-        await api.sandbox.hibernate.mutate({ sandboxId });
-    }
-
-    async reconnect(sandboxId: string, userId?: string) {
         try {
-            if (!this.session) {
-                console.error('No session found');
-                return;
-            }
+            // Start the sandbox through the API
+            const sessionData = await api.sandbox.start.mutate({
+                sandboxId: this.project.sandbox.id,
+                userId: this.editorEngine.user?.id,
+            });
 
-            // Check if the session is still connected
-            const isConnected = await this.ping();
-            if (isConnected) {
-                return;
-            }
+            // Connect to E2B sandbox
+            this.session = await Sandbox.create({
+                id: sessionData.sandboxId,
+                apiKey: env.E2B_API_KEY,
+            });
 
-            // Attempt soft reconnect
-            await this.session.reconnect()
-
-            const isConnected2 = await this.ping();
-            if (isConnected2) {
-                return;
-            }
-
-            await this.start(sandboxId, userId);
+            console.log('Connected to E2B sandbox', this.session.sandboxId);
+            return this.session;
         } catch (error) {
-            console.error('Failed to reconnect to sandbox', error);
+            console.error('Failed to connect to sandbox', error);
+            throw error;
+        } finally {
             this.isConnecting = false;
         }
     }
 
-    async ping() {
-        if (!this.session) return false;
+    async disconnect() {
+        if (!this.session) {
+            return;
+        }
+
         try {
-            await this.session.commands.run('echo "ping"');
-            return true;
+            // Clean up terminal sessions
+            for (const [id, session] of this.terminalSessions) {
+                await session.kill();
+            }
+            this.terminalSessions.clear();
+
+            // Kill the sandbox
+            await this.session.kill();
+            this.session = null;
+            
+            console.log('Disconnected from E2B sandbox');
         } catch (error) {
-            console.error('Failed to connect to sandbox', error);
-            return false;
+            console.error('Failed to disconnect from sandbox', error);
+            throw error;
         }
     }
 
-    async runCommand(command: string, streamCallback?: (output: string) => void): Promise<{
-        output: string;
-        success: boolean;
-        error: string | null;
-    }> {
+    async runCommand(command: string, onOutput?: (data: string) => void): Promise<{ success: boolean; output?: string; error?: string }> {
+        if (!this.session) {
+            return { success: false, error: 'No sandbox session available' };
+        }
+
         try {
-            if (!this.session) {
-                throw new Error('No session found');
-            }
-
-            const terminalSession = Array.from(this.terminalSessions.values()).find(session => session.type === CLISessionType.TERMINAL) as TerminalSession | undefined;
-
-            if (!terminalSession?.terminal) {
-                throw new Error('No terminal session found');
-            }
-
-            const cmd = await this.session.commands.runBackground(command, {
-                name: 'user command'
+            const process = await this.session.process.start({
+                cmd: command,
+                onStdout: onOutput ? (data) => onOutput(data.toString()) : undefined,
+                onStderr: onOutput ? (data) => onOutput(data.toString()) : undefined,
             });
 
-            terminalSession.xterm?.write(command + '\n');
-
-            await cmd.open();
-            const disposer = cmd.onOutput((output) => {
-                streamCallback?.(output);
-                terminalSession.xterm?.write(output);
-            });
-
-            const finalOutput = await cmd.waitUntilComplete();
-
-            disposer.dispose();
+            await process.wait();
+            
             return {
-                output: finalOutput,
-                success: true,
-                error: null
+                success: process.exitCode === 0,
+                output: process.stdout,
+                error: process.exitCode !== 0 ? process.stderr : undefined,
             };
         } catch (error) {
-            console.error('Error running command:', error);
+            console.error('Failed to run command', error);
             return {
-                output: '',
                 success: false,
-                error: error instanceof Error ? error.message : 'Unknown error occurred'
+                error: error instanceof Error ? error.message : 'Unknown error',
             };
         }
     }
 
-    async clear() {
-        await this.session?.disconnect();
-        this.session = null;
-        this.isConnecting = false;
-        this.terminalSessions.forEach(terminal => {
-            if (terminal.type === 'terminal') {
-                terminal.terminal?.kill();
-                terminal.xterm?.dispose();
+    createTerminal(id: string = 'cli'): CLISession {
+        if (this.terminalSessions.has(id)) {
+            return this.terminalSessions.get(id)!;
+        }
+
+        const terminalSession = new CLISessionImpl(id, CLISessionType.TERMINAL, this);
+        this.terminalSessions.set(id, terminalSession);
+        return terminalSession;
+    }
+
+    createTask(id: string, command: string): CLISession {
+        if (this.terminalSessions.has(id)) {
+            return this.terminalSessions.get(id)!;
+        }
+
+        const taskSession = new CLISessionImpl(id, CLISessionType.TASK, this, command);
+        this.terminalSessions.set(id, taskSession);
+        return taskSession;
+    }
+
+    setActiveTerminalSession(id: string) {
+        if (this.terminalSessions.has(id)) {
+            this.activeTerminalSessionId = id;
+        }
+    }
+
+    getActiveTerminalSession(): CLISession | undefined {
+        return this.terminalSessions.get(this.activeTerminalSessionId);
+    }
+
+    async removeTerminalSession(id: string) {
+        const session = this.terminalSessions.get(id);
+        if (session) {
+            await session.kill();
+            this.terminalSessions.delete(id);
+            if (this.activeTerminalSessionId === id && this.terminalSessions.size > 0) {
+                this.activeTerminalSessionId = this.terminalSessions.keys().next().value;
             }
-        });
-        this.terminalSessions.clear();
+        }
     }
 }

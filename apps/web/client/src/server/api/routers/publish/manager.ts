@@ -1,4 +1,4 @@
-import { WebSocketSession } from '@codesandbox/sdk';
+import { Sandbox } from '@e2b/sdk';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
@@ -12,7 +12,7 @@ import type { z } from 'zod';
 
 export class PublishManager {
     constructor(
-        private readonly session: WebSocketSession,
+        private readonly session: Sandbox,
     ) { }
 
     private get fileOps(): FileOperations {
@@ -244,12 +244,12 @@ export class PublishManager {
                 for (const entry of entries) {
                     const fullPath = `${currentDir}/${entry.name}`;
 
-                    if (entry.type === 'directory') {
+                    if (entry.isDir) {
                         // Skip node_modules and other heavy directories early
                         if (!EXCLUDED_PUBLISH_DIRECTORIES.includes(entry.name)) {
                             dirsToProcess.push(fullPath);
                         }
-                    } else if (entry.type === 'file') {
+                    } else if (!entry.isDir) {
                         allPaths.push(fullPath);
                     }
                 }

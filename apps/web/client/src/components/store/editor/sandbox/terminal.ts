@@ -1,7 +1,7 @@
-import type { Task, Terminal, WebSocketSession } from '@codesandbox/sdk';
+import type { ProcessManager } from '@e2b/sdk';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { v4 as uuidv4 } from 'uuid';
-import type { ErrorManager } from '../error';
+import type { SessionManager } from './session';
 
 export enum CLISessionType {
     TERMINAL = 'terminal',
@@ -10,116 +10,119 @@ export enum CLISessionType {
 
 export interface CLISession {
     id: string;
-    name: string;
     type: CLISessionType;
-    terminal: Terminal | null;
-    // Task is readonly
-    task: Task | null;
-    xterm: XTerm;
-}
-
-export interface TaskSession extends CLISession {
-    type: CLISessionType.TASK;
-    task: Task;
+    terminal?: ProcessManager;
+    xterm?: XTerm;
+    onOutput?: (data: string) => void;
+    onExit?: (code: number) => void;
+    write: (data: string) => void;
+    kill: () => Promise<void>;
+    start: () => Promise<void>;
 }
 
 export interface TerminalSession extends CLISession {
-    type: CLISessionType.TERMINAL;
-    terminal: Terminal;
+    terminal: ProcessManager;
+    xterm: XTerm;
 }
 
 export class CLISessionImpl implements CLISession {
     id: string;
-    terminal: Terminal | null;
-    task: Task | null;
-    xterm: XTerm;
+    type: CLISessionType;
+    terminal?: ProcessManager;
+    xterm?: XTerm;
+    onOutput?: (data: string) => void;
+    onExit?: (code: number) => void;
+    private command?: string;
 
     constructor(
-        public readonly name: string,
-        public readonly type: CLISessionType,
-        private readonly session: WebSocketSession,
-        private readonly errorManager: ErrorManager,
+        id: string,
+        type: CLISessionType,
+        private sessionManager: SessionManager,
+        command?: string
     ) {
-        this.id = uuidv4();
-        this.xterm = this.createXTerm();
-        this.terminal = null;
-        this.task = null;
+        this.id = id || uuidv4();
+        this.type = type;
+        this.command = command;
+    }
 
-        if (type === CLISessionType.TERMINAL) {
-            this.initTerminal();
-        } else if (type === CLISessionType.TASK) {
-            this.initTask();
+    async start() {
+        if (!this.sessionManager.session) {
+            throw new Error('No E2B session available');
+        }
+
+        if (this.type === CLISessionType.TERMINAL) {
+            // Create XTerm instance for terminal UI
+            this.xterm = new XTerm({
+                convertEol: true,
+                theme: {
+                    background: '#1e1e1e',
+                    foreground: '#d4d4d4',
+                },
+            });
+
+            // Start an interactive shell process
+            const process = await this.sessionManager.session.process.start({
+                cmd: '/bin/bash',
+                onStdout: (data) => {
+                    const output = data.toString();
+                    this.xterm?.write(output);
+                    this.onOutput?.(output);
+                },
+                onStderr: (data) => {
+                    const output = data.toString();
+                    this.xterm?.write(output);
+                    this.onOutput?.(output);
+                },
+            });
+
+            this.terminal = process;
+
+            // Handle terminal input
+            this.xterm.onData(async (data) => {
+                if (this.terminal) {
+                    await this.terminal.sendStdin(data);
+                }
+            });
+        } else if (this.type === CLISessionType.TASK && this.command) {
+            // For tasks, run the command directly
+            const process = await this.sessionManager.session.process.start({
+                cmd: this.command,
+                onStdout: (data) => {
+                    const output = data.toString();
+                    this.onOutput?.(output);
+                },
+                onStderr: (data) => {
+                    const output = data.toString();
+                    this.onOutput?.(output);
+                },
+            });
+
+            this.terminal = process;
+
+            // Wait for task completion
+            process.wait().then((result) => {
+                this.onExit?.(result.exitCode);
+            });
         }
     }
 
-    async initTerminal() {
-        try {
-            const terminal = await this.session?.terminals.create();
-            if (!terminal) {
-                console.error('Failed to create terminal');
-                return;
-            }
-            this.terminal = terminal;
-            terminal.onOutput((data: string) => {
-                this.xterm.write(data);
-            });
-
-            this.xterm.onData((data: string) => {
-                terminal.write(data);
-            });
-            await terminal.open();
-        } catch (error) {
-            console.error('Failed to initialize terminal:', error);
-            this.terminal = null;
-        }
-    }
-
-    async initTask() {
-        const task = await this.createDevTaskTerminal();
-        if (!task) {
-            console.error('Failed to create task');
-            return;
-        }
-        this.task = task;
-        const output = await task.open();
-        this.xterm.write(output);
-        this.errorManager.processMessage(output);
-        task.onOutput((data: string) => {
+    write(data: string) {
+        if (this.type === CLISessionType.TERMINAL && this.xterm) {
             this.xterm.write(data);
-            this.errorManager.processMessage(data);
-        });
-    }
-
-    createXTerm() {
-        return new XTerm({
-            cursorBlink: true,
-            fontSize: 12,
-            fontFamily: 'monospace',
-            convertEol: true,
-            allowTransparency: true,
-            disableStdin: false,
-            allowProposedApi: true,
-            macOptionIsMeta: true,
-        });
-    }
-
-    async createDevTaskTerminal() {
-        const task = this.session?.tasks.get('dev');
-        if (!task) {
-            console.error('No dev task found');
-            return;
         }
-        return task;
+        this.onOutput?.(data);
     }
 
-    dispose() {
-        this.xterm.dispose();
-        if (this.terminal) {
-            try {
-                this.terminal.kill();
-            } catch (error) {
-                console.warn('Failed to kill terminal during disposal:', error);
+    async kill() {
+        try {
+            if (this.terminal) {
+                await this.terminal.kill();
             }
+            if (this.xterm) {
+                this.xterm.dispose();
+            }
+        } catch (error) {
+            console.error('Failed to kill terminal session:', error);
         }
     }
 }
