@@ -267,7 +267,6 @@ export class FontConfigManager {
         }
 
         const fontConfigPath = normalizePath(this.fontConfigPath);
-        console.log('fontConfigPath', fontConfigPath);
         const fontConfigExists = await sandbox.fileExists(fontConfigPath);
 
         if (!fontConfigExists) {

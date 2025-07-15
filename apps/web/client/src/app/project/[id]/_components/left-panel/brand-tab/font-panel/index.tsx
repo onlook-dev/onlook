@@ -107,7 +107,6 @@ const FontPanel = observer(() => {
             setIsLoading(false);
         }
     };
-    console.log('fontManager.defaultFont', fontManager.defaultFont);
 
     const uniqueSiteFonts = searchQuery ? fontManager.searchResults : fontManager.systemFonts;
 
