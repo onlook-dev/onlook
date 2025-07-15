@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-/Users/bryceparsons/.bun/bin/bun run format && git add .
+bun run format && git add .
 # /Users/bryceparsons/.bun/bin/bun run lint && /Users/bryceparsons/.bun/bin/bun run format:write && git add .
