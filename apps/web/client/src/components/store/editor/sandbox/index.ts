@@ -40,13 +40,24 @@ export class SandboxManager {
         );
     }
 
+    get indexed(): boolean {
+        return this.isIndexed;
+    }
+
+    get indexing(): boolean {
+        return this.isIndexing;
+    }
+
     async index(force = false) {
+        console.log('[SandboxManager] Starting indexing, force:', force);
+        
         if (this.isIndexing || (this.isIndexed && !force)) {
+            console.log('[SandboxManager] Skipping indexing - isIndexing:', this.isIndexing, 'isIndexed:', this.isIndexed);
             return;
         }
 
         if (!this.session.session) {
-            console.error('No session found');
+            console.error('[SandboxManager] No session found for indexing');
             return;
         }
 
@@ -76,6 +87,15 @@ export class SandboxManager {
             await this.watchFiles();
             this.isIndexed = true;
             timer.log('Indexing completed successfully');
+            
+            // Inject preload script after successful indexing
+            console.log('[SandboxManager] Indexing complete, triggering preload script injection...');
+            setTimeout(() => {
+                void this.editorEngine.preloadScript.injectPreloadScript().catch((error: Error) => {
+                    console.error('[SandboxManager] Failed to inject preload script after indexing:', error);
+                });
+            }, 1000); // Give a bit more time for everything to settle
+            
         } catch (error) {
             console.error('Error during indexing:', error);
             throw error;

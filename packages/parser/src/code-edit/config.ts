@@ -162,6 +162,10 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
 };
 
 export const injectPreloadScript = (ast: T.File): T.File => {
+    // NOTE: Preload script is now injected dynamically when editing starts
+    // This function is kept for backward compatibility but doesn't inject the script anymore
+    // The script is managed by PreloadScriptManager in the editor
+
     let hasScriptImport = false;
 
     // Check if Script is already imported from next/script
@@ -181,29 +185,6 @@ export const injectPreloadScript = (ast: T.File): T.File => {
             }
         },
     });
-
-    // Add Script import if not present
-    if (!hasScriptImport) {
-        const scriptImport = t.importDeclaration(
-            [t.importDefaultSpecifier(t.identifier('Script'))],
-            t.stringLiteral('next/script'),
-        );
-
-        // Find the last import statement and add after it
-        let lastImportIndex = -1;
-        ast.program.body.forEach((node, index) => {
-            if (t.isImportDeclaration(node)) {
-                lastImportIndex = index;
-            }
-        });
-
-        if (lastImportIndex >= 0) {
-            ast.program.body.splice(lastImportIndex + 1, 0, scriptImport);
-        } else {
-            // If no imports found, add at the beginning
-            ast.program.body.unshift(scriptImport);
-        }
-    }
 
     let headFound = false;
     let htmlElement = null;
@@ -226,7 +207,23 @@ export const injectPreloadScript = (ast: T.File): T.File => {
                 return;
             }
 
-            // If head tag found, add Script to it
+            // Remove any existing Onlook preload scripts since they're now managed dynamically
+            if (
+                t.isJSXIdentifier(path.node.openingElement.name, { name: 'Script' }) &&
+                path.node.openingElement.attributes.some(
+                    (attr) =>
+                        t.isJSXAttribute(attr) &&
+                        t.isJSXIdentifier(attr.name, { name: 'src' }) &&
+                        t.isStringLiteral(attr.value) &&
+                        (attr.value.value.includes(PRELOAD_SCRIPT_SRC) ||
+                            attr.value.value.includes('localhost:8083')),
+                )
+            ) {
+                path.remove();
+                return;
+            }
+
+            // Find head tag for adding a comment
             if (
                 t.isJSXOpeningElement(path.node.openingElement) &&
                 t.isJSXIdentifier(path.node.openingElement.name)
@@ -235,8 +232,8 @@ export const injectPreloadScript = (ast: T.File): T.File => {
 
                 if (elementName === 'head' || elementName === 'Head') {
                     headFound = true;
-                    // Add Script to existing head
-                    addScriptToHead(path.node);
+                    // Add comment explaining dynamic injection
+                    addCommentToHead(path.node);
                 } else if (elementName === 'html' || elementName === 'Html') {
                     htmlElement = path.node;
                 }
@@ -244,13 +241,77 @@ export const injectPreloadScript = (ast: T.File): T.File => {
         },
     });
 
-    // If no head tag found, create one and add it to html element
+    // If no head tag found, create one with comment
     if (!headFound && htmlElement) {
-        createAndAddHeadTag(htmlElement);
+        createAndAddHeadTagWithComment(htmlElement);
     }
 
     return ast;
 };
+
+function addCommentToHead(headElement: T.JSXElement) {
+    // Check if comment already exists
+    let hasOnlookComment = false;
+
+    if (headElement.children) {
+        headElement.children.forEach(
+            (
+                child:
+                    | T.JSXElement
+                    | T.JSXFragment
+                    | T.JSXText
+                    | T.JSXExpressionContainer
+                    | T.JSXSpreadChild,
+            ) => {
+                if (
+                    t.isJSXText(child) &&
+                    child.value.includes('Preload script will be injected dynamically')
+                ) {
+                    hasOnlookComment = true;
+                }
+            },
+        );
+    }
+
+    if (!hasOnlookComment) {
+        // Create a comment element
+        const commentElement = t.jsxText(
+            '\n        {/* Preload script will be injected dynamically when editing starts */}\n      ',
+        );
+
+        if (headElement.openingElement.selfClosing) {
+            headElement.openingElement.selfClosing = false;
+            headElement.closingElement = t.jsxClosingElement(headElement.openingElement.name);
+        }
+
+        // Add the comment as the first child of head
+        if (!headElement.children) {
+            headElement.children = [];
+        }
+        headElement.children.unshift(commentElement);
+    }
+}
+
+function createAndAddHeadTagWithComment(htmlElement: T.JSXElement) {
+    // Create a comment element
+    const commentElement = t.jsxText(
+        '\n        {/* Preload script will be injected dynamically when editing starts */}\n      ',
+    );
+
+    // Create the head element with the comment as its child
+    const headElement = t.jsxElement(
+        t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
+        t.jsxClosingElement(t.jsxIdentifier('head')),
+        [commentElement],
+        false,
+    );
+
+    // Add the head element as the first child of html
+    if (!htmlElement.children) {
+        htmlElement.children = [];
+    }
+    htmlElement.children.unshift(headElement);
+}
 
 function addScriptToHead(headElement: T.JSXElement) {
     // Check if Script with our specific src already exists

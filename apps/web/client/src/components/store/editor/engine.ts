@@ -18,6 +18,7 @@ import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
+import { PreloadScriptManager } from './preload-script-manager';
 import { SandboxManager } from './sandbox';
 import { StateManager } from './state';
 import { StyleManager } from './style';
@@ -52,6 +53,7 @@ export class EditorEngine {
     readonly pages: PagesManager = new PagesManager(this);
     readonly frames: FramesManager = new FramesManager(this);
     readonly frameEvent: FrameEventManager = new FrameEventManager(this);
+    readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
 
     constructor(projectId: string) {
         this.projectId = projectId;

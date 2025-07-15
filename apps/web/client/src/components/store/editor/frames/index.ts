@@ -64,7 +64,11 @@ export class FramesManager {
     }
 
     registerView(frame: Frame, view: WebFrameView) {
+        console.log('[FramesManager] Registering frame view:', frame.id);
         this._frameIdToData.set(frame.id, { frame, view, selected: false });
+        
+        // Preload script injection now happens after sandbox indexing is complete
+        console.log('[FramesManager] Frame registered, preload script will be injected after sandbox indexing');
     }
 
     deregister(frame: Frame) {

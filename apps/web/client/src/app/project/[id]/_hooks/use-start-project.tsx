@@ -130,5 +130,13 @@ export const useStartProject = () => {
         setError(userError?.message ?? projectError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
     }, [userError, projectError, canvasError, conversationsError, creationRequestError]);
 
+    // Cleanup when component unmounts or project changes
+    useEffect(() => {
+        return () => {
+            // Clean up preload scripts when leaving the project
+            void editorEngine.preloadScript.removePreloadScript();
+        };
+    }, [editorEngine.projectId]);
+
     return { isProjectReady, error };
 }
