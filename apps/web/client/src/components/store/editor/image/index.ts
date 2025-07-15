@@ -3,12 +3,12 @@ import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/
 import {
     convertToBase64,
     getBaseName,
-    getDirName,
     getMimeType,
     isImageFile,
 } from '@onlook/utility/src/file';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
+import { generateNewFolderPath } from '@onlook/utility';
 
 export class ImageManager {
     private _imagePaths: string[] = [];
@@ -19,9 +19,9 @@ export class ImageManager {
 
         reaction(
             () => this.editorEngine.sandbox.isIndexingFiles,
-            (isIndexingFiles) => {
+            async (isIndexingFiles) => {
                 if (!isIndexingFiles) {
-                    this.scanImages();
+                    await this.scanImages();
                 }
             }
         );
@@ -40,7 +40,7 @@ export class ImageManager {
             const path = `${destinationFolder}/${file.name}`;
             const uint8Array = new Uint8Array(await file.arrayBuffer());
             await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;
@@ -50,7 +50,7 @@ export class ImageManager {
     async delete(originPath: string): Promise<void> {
         try {
             await this.editorEngine.sandbox.delete(originPath);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
@@ -59,10 +59,9 @@ export class ImageManager {
 
     async rename(originPath: string, newName: string): Promise<void> {
         try {
-            const basePath = getDirName(originPath);
-            const newPath = `${basePath}/${newName}`;
+            const newPath = generateNewFolderPath(originPath, newName, 'rename');
             await this.editorEngine.sandbox.rename(originPath, newPath);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;

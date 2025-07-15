@@ -8,8 +8,8 @@ import {
     previewDomains,
     prices,
     products,
+    projectCustomDomains,
     projects,
-    publishedDomains,
     subscriptions,
     usageRecords,
     userCanvases,
@@ -217,7 +217,7 @@ export const resetDb = async () => {
     await db.transaction(async (tx) => {
         await tx.delete(deployments);
         await tx.delete(previewDomains);
-        await tx.delete(publishedDomains);
+        await tx.delete(projectCustomDomains);
         await tx.delete(userCanvases);
         await tx.delete(userProjects);
         await tx.delete(usageRecords);

@@ -2,8 +2,9 @@ import React from 'react';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { type FrameData } from '@/components/store/editor/frames';
 
-export function RotateGroup({ frameData }: { frameData: any }) {
+export function RotateGroup({ frameData }: { frameData: FrameData }) {
     return (
         <Tooltip key="rotate">
             <TooltipTrigger asChild>

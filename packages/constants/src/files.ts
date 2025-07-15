@@ -85,6 +85,7 @@ export const IMAGE_EXTENSIONS = [
     'image/svg+xml',
     'image/bmp',
     'image/ico',
+    'image/x-icon',
     'image/avif',
 ];
 

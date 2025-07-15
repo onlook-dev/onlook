@@ -9,6 +9,7 @@ import { Frames } from './frames';
 import { HotkeysArea } from './hotkeys';
 import { Overlay } from './overlay';
 import { PanOverlay } from './overlay/pan';
+import { RecenterCanvasButton } from './recenter-canvas-button';
 
 const ZOOM_SENSITIVITY = 0.006;
 const PAN_SENSITIVITY = 0.52;
@@ -166,6 +167,7 @@ export const Canvas = observer(() => {
                 <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
                     <Frames />
                 </div>
+                <RecenterCanvasButton />
                 <Overlay />
                 <PanOverlay
                     clampPosition={(position: { x: number; y: number }) =>
