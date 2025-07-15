@@ -3,11 +3,14 @@ import { removeFontFromTailwindTheme, addFontToTailwindTheme } from '@onlook/fon
 import type { Font } from '@onlook/models';
 import { normalizePath } from '../sandbox/helpers';
 import type { EditorEngine } from '../engine';
+import { makeAutoObservable } from 'mobx';
 
 export class TailwindConfigManager {
     readonly tailwindConfigPath = normalizePath(DefaultSettings.TAILWIND_CONFIG);
 
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) {
+        makeAutoObservable(this);
+    }
 
     /**
      * Removes a font from the Tailwind config

@@ -8,7 +8,7 @@ import {
     removeFontsFromClassName,
     removeFontImportFromFile,
     cleanComma,
-    getTargetElementsByType,
+    getFontRootElements,
 } from '@onlook/fonts';
 import type { Font } from '@onlook/models';
 import { generate, parse, traverse } from '@onlook/parser';
@@ -16,6 +16,7 @@ import { camelCase } from 'lodash';
 import * as pathModule from 'path';
 import { normalizePath } from '../sandbox/helpers';
 import type { EditorEngine } from '../engine';
+import { makeAutoObservable } from 'mobx';
 
 type TraverseCallback = (
     classNameAttr: t.JSXAttribute,
@@ -31,12 +32,18 @@ interface CodeDiff {
 export class LayoutManager {
     readonly fontImportPath = './fonts';
 
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) {
+        makeAutoObservable(this);
+    }
 
     /**
      * Adds a font variable to the appropriate layout file
      */
-    async addFontVariableToLayout(fontId: string): Promise<boolean> {
+    async addFontVariableToRootLayout(fontId: string): Promise<boolean> {
+        const sandbox = this.editorEngine.sandbox;
+        if (!sandbox) {
+            return false;
+        }
         try {
             const { layoutPath, routerConfig } = (await this.getRootLayoutPath()) ?? {};
 
@@ -46,8 +53,95 @@ export class LayoutManager {
             }
 
             const fontName = camelCase(fontId);
-            const targetElements = getTargetElementsByType(routerConfig.type);
-            await this.addFontVariableToElement(layoutPath, fontName, targetElements);
+            const targetElements = getFontRootElements(routerConfig.type);
+
+            const file = await sandbox.readFile(layoutPath);
+            if (!file || file.type === 'binary') {
+                console.error(`Failed to read file: ${layoutPath}`);
+                return false;
+            }
+
+            const content = file.content;
+            let updatedAst = false;
+            let targetElementFound = false;
+
+            await this.traverseClassName(
+                layoutPath,
+                targetElements,
+                async (classNameAttr, ast) => {
+                    targetElementFound = true;
+                    const fontVarExpr = t.memberExpression(
+                        t.identifier(fontName),
+                        t.identifier('variable'),
+                    );
+
+                    if (t.isStringLiteral(classNameAttr.value)) {
+                        if (classNameAttr.value.value === '') {
+                            const quasis = [
+                                t.templateElement({ raw: '', cooked: '' }, false),
+                                t.templateElement({ raw: '', cooked: '' }, true),
+                            ];
+                            classNameAttr.value = t.jsxExpressionContainer(
+                                t.templateLiteral(quasis, [fontVarExpr]),
+                            );
+                        } else {
+                            classNameAttr.value = t.jsxExpressionContainer(
+                                createTemplateLiteralWithFont(
+                                    fontVarExpr,
+                                    t.stringLiteral(classNameAttr.value.value),
+                                ),
+                            );
+                        }
+                        updatedAst = true;
+                    } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+                        const expr = classNameAttr.value.expression;
+
+                        if (t.isTemplateLiteral(expr)) {
+                            const hasFont = expr.expressions.some(
+                                (e) =>
+                                    t.isMemberExpression(e) &&
+                                    t.isIdentifier(e.object) &&
+                                    e.object.name === fontName &&
+                                    t.isIdentifier(e.property) &&
+                                    e.property.name === 'variable',
+                            );
+
+                            if (!hasFont) {
+                                if (expr.expressions.length > 0) {
+                                    const lastQuasi = expr.quasis[expr.quasis.length - 1];
+                                    if (lastQuasi) {
+                                        lastQuasi.value.raw = lastQuasi.value.raw + ' ';
+                                        lastQuasi.value.cooked = lastQuasi.value.cooked + ' ';
+                                    }
+                                }
+                                expr.expressions.push(fontVarExpr);
+                                if (expr.quasis.length <= expr.expressions.length) {
+                                    expr.quasis.push(
+                                        t.templateElement({ raw: '', cooked: '' }, true),
+                                    );
+                                }
+                                updatedAst = true;
+                            }
+                        } else if (t.isIdentifier(expr) || t.isMemberExpression(expr)) {
+                            classNameAttr.value = t.jsxExpressionContainer(
+                                createTemplateLiteralWithFont(fontVarExpr, expr),
+                            );
+                            updatedAst = true;
+                        }
+                    }
+
+                    if (updatedAst) {
+                        await this.updateFileWithImport(layoutPath, content, ast, fontName);
+                    }
+                },
+            );
+
+            if (!targetElementFound) {
+                console.log(
+                    `Could not find target elements (${targetElements.join(', ')}) in ${layoutPath}`,
+                );
+            }
+
             return true;
         } catch (error) {
             console.error(`Error adding font variable to layout:`, error);
@@ -72,7 +166,7 @@ export class LayoutManager {
                 return false;
             }
 
-            const targetElements = getTargetElementsByType(routerConfig.type);
+            const targetElements = getFontRootElements(routerConfig.type);
 
             const file = await sandbox.readFile(layoutPath);
             if (!file || file.type === 'binary') {
@@ -100,6 +194,7 @@ export class LayoutManager {
                         updatedAst = true;
                     }
                 },
+                true, // Should check all elements
             );
 
             if (updatedAst && ast) {
@@ -125,11 +220,7 @@ export class LayoutManager {
     /**
      * Updates the default font in a layout file by modifying className attributes
      */
-    async updateDefaultFontInRootLayout(
-        filePath: string,
-        font: Font,
-        targetElements: string[],
-    ): Promise<CodeDiff | null> {
+    async updateDefaultFontInRootLayout(font: Font): Promise<CodeDiff | null> {
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             return null;
@@ -139,17 +230,24 @@ export class LayoutManager {
         const fontClassName = `font-${font.id}`;
         let result = null;
 
-        const normalizedFilePath = normalizePath(filePath);
+        const { layoutPath, routerConfig } = (await this.getRootLayoutPath()) ?? {};
 
-        const file = await sandbox.readFile(normalizedFilePath);
+        if (!layoutPath || !routerConfig) {
+            console.error('Could not get layout path or router config');
+            return null;
+        }
+
+        const targetElements = getFontRootElements(routerConfig.type);
+
+        const file = await sandbox.readFile(layoutPath);
         if (!file || file.type === 'binary') {
-            console.error(`Failed to read file: ${filePath}`);
+            console.error(`Failed to read file: ${layoutPath}`);
             return null;
         }
         const content = file.content;
 
         await this.traverseClassName(
-            normalizedFilePath,
+            layoutPath,
             targetElements,
             (classNameAttr, ast) => {
                 if (t.isStringLiteral(classNameAttr.value)) {
@@ -178,16 +276,16 @@ export class LayoutManager {
                     const codeDiff: CodeDiff = {
                         original: content,
                         generated: code,
-                        path: normalizedFilePath,
+                        path: layoutPath,
                     };
                     result = codeDiff;
                 }
             },
+            true, // Should check all elements
         );
 
         return result;
     }
-
     /**
      * Detects the current font being used in a layout file
      */
@@ -195,23 +293,19 @@ export class LayoutManager {
         let currentFont: string | null = null;
         const normalizedFilePath = normalizePath(filePath);
 
-        await this.traverseClassName(
-            normalizedFilePath,
-            targetElements,
-            (classNameAttr) => {
-                if (t.isStringLiteral(classNameAttr.value)) {
-                    currentFont = findFontClass(classNameAttr.value.value);
-                } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
-                    const expr = classNameAttr.value.expression;
-                    if (t.isTemplateLiteral(expr)) {
-                        const firstQuasi = expr.quasis[0];
-                        if (firstQuasi) {
-                            currentFont = findFontClass(firstQuasi.value.raw);
-                        }
+        await this.traverseClassName(normalizedFilePath, targetElements, (classNameAttr) => {
+            if (t.isStringLiteral(classNameAttr.value)) {
+                currentFont = findFontClass(classNameAttr.value.value);
+            } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+                const expr = classNameAttr.value.expression;
+                if (t.isTemplateLiteral(expr)) {
+                    const firstQuasi = expr.quasis[0];
+                    if (firstQuasi) {
+                        currentFont = findFontClass(firstQuasi.value.raw);
                     }
                 }
-            },
-        );
+            }
+        });
 
         return currentFont;
     }
@@ -228,7 +322,7 @@ export class LayoutManager {
                 return null;
             }
 
-            const targetElements = getTargetElementsByType(routerConfig.type);
+            const targetElements = getFontRootElements(routerConfig.type);
             const defaultFont = await this.detectCurrentFont(layoutPath, targetElements);
 
             return defaultFont;
@@ -244,7 +338,6 @@ export class LayoutManager {
     async getRootLayoutPath(): Promise<
         { layoutPath: string; routerConfig: { type: RouterType; basePath: string } } | undefined
     > {
-
         const routerConfig = this.editorEngine.sandbox.routerConfig;
         if (!routerConfig) {
             console.log('Could not detect Next.js router type');
@@ -413,6 +506,7 @@ export class LayoutManager {
         filePath: string,
         targetElements: string[],
         callback: TraverseCallback,
+        allElements = false,
     ): Promise<void> {
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
@@ -433,7 +527,7 @@ export class LayoutManager {
             });
 
             traverse(ast, {
-                JSXOpeningElement(path) {
+                JSXOpeningElement: (path) => {
                     if (
                         !t.isJSXIdentifier(path.node.name) ||
                         !targetElements.includes(path.node.name.name)
@@ -454,10 +548,14 @@ export class LayoutManager {
                             t.stringLiteral(''),
                         );
                         path.node.attributes.push(newClassNameAttr);
-                        void callback(newClassNameAttr, ast);
-                        return;
+                        callback(newClassNameAttr, ast);
+                    } else {
+                        callback(classNameAttr, ast);
                     }
-                    void callback(classNameAttr, ast);
+
+                    if (!allElements) {
+                        path.stop();
+                    }
                 },
             });
         } catch (error) {

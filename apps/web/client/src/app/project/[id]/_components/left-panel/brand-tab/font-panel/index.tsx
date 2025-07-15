@@ -30,12 +30,19 @@ const FontPanel = observer(() => {
 
     const handleFontUpload = async (fonts: FontFile[]) => {
         try {
-            await fontManager.uploadFonts(fonts);
+            const success = await fontManager.uploadFonts(fonts);
+            if (success) {
+                toast.success('Fonts uploaded successfully');
+            } else {
+                toast.error('Failed to upload fonts');
+            }
+            return success;
         } catch (error) {
             console.error('Font upload failed:', error);
             toast.error('Failed to upload fonts', {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
+            return false;
         }
     };
 
@@ -100,6 +107,7 @@ const FontPanel = observer(() => {
             setIsLoading(false);
         }
     };
+    console.log('fontManager.defaultFont', fontManager.defaultFont);
 
     const uniqueSiteFonts = searchQuery ? fontManager.searchResults : fontManager.systemFonts;
 

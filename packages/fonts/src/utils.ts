@@ -15,8 +15,8 @@ export function convertRawFont(font: RawFont): Font {
 /**
  * Gets target elements based on router type
  */
-export function getTargetElementsByType(type: RouterType): string[] {
-    if (type === RouterType.APP) return ['html'];
+export function getFontRootElements(type: RouterType): string[] {
+    if (type === RouterType.APP) return ['html', 'body'];
     return ['div', 'main', 'section', 'body'];
 }
 

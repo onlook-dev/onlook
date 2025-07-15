@@ -12,11 +12,14 @@ import { getFontFileName } from '@onlook/utility';
 import { camelCase } from 'lodash';
 import * as pathModule from 'path';
 import type { EditorEngine } from '../engine';
+import { makeAutoObservable, runInAction } from 'mobx';
 
 export class FontUploadManager {
     private _isUploading = false;
 
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) {
+        makeAutoObservable(this);
+    }
 
     get isUploading(): boolean {
         return this._isUploading;
@@ -29,11 +32,14 @@ export class FontUploadManager {
         fontFiles: FontUploadFile[],
         basePath: string,
         fontConfigAst: ParseResult<t.File>,
-    ): Promise<boolean> {
+    ): Promise<{ success: boolean; fontConfigAst: ParseResult<t.File> }> {
         this._isUploading = true;
         try {
             if (fontFiles.length === 0) {
-                return false;
+                return {
+                    success: false,
+                    fontConfigAst,
+                };
             }
             const baseFontName = fontFiles[0]?.name.split('.')[0] ?? 'custom-font';
 
@@ -52,10 +58,16 @@ export class FontUploadManager {
                 existingFontNode,
             );
 
-            return true;
+            return {
+                success: true,
+                fontConfigAst,
+            };
         } catch (error) {
             console.error('Error uploading fonts:', error);
-            return false;
+            return {
+                success: false,
+                fontConfigAst,
+            };
         } finally {
             this._isUploading = false;
         }

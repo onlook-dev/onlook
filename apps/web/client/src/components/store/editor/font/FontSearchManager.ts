@@ -169,6 +169,7 @@ export class FontSearchManager {
         this._searchResults = [];
         this._currentFontIndex = 0;
         this._isFetching = false;
+        this._fonts = [];
     }
 
     get systemFonts(): Font[] {

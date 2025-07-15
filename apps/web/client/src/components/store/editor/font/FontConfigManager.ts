@@ -9,11 +9,12 @@ import {
     addGoogleFontSpecifier,
     generateFontVariableExport,
 } from '@onlook/fonts';
-import type { Font } from '@onlook/models';
+import { RouterType, type Font } from '@onlook/models';
 import { generate, parse } from '@onlook/parser';
 import { camelCase } from 'lodash';
 import { normalizePath } from '../sandbox/helpers';
 import type { EditorEngine } from '../engine';
+import { makeAutoObservable, reaction } from 'mobx';
 
 interface CodeDiff {
     original: string;
@@ -25,7 +26,18 @@ export class FontConfigManager {
     private _fontConfigPath: string | null = null;
     readonly fontImportPath = './fonts';
 
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) {
+        makeAutoObservable(this);
+
+        reaction(
+            () => this.editorEngine.sandbox.isIndexed,
+            async (isIndexedFiles) => {
+                if (isIndexedFiles) {
+                    await this.updateFontConfigPath();
+                }
+            },
+        );
+    }
 
     get fontConfigPath(): string {
         if (!this._fontConfigPath) {
@@ -108,8 +120,11 @@ export class FontConfigManager {
             const { ast, content } = fontConfig;
 
             // Check if the font already exists in the font config file
-            const { hasGoogleFontImport, hasImportName, hasFontExport } =
-                validateGoogleFontSetup(content, importName, fontName);
+            const { hasGoogleFontImport, hasImportName, hasFontExport } = validateGoogleFontSetup(
+                content,
+                importName,
+                fontName,
+            );
 
             if (hasFontExport) {
                 console.log(`Font ${fontName} already exists in font.ts`);
@@ -159,7 +174,7 @@ export class FontConfigManager {
                 return false;
             }
 
-            const { removedFont, ast } = removeFontDeclaration(font, content);
+            const { removedFont, fontFilesToDelete, ast } = removeFontDeclaration(font, content);
 
             if (removedFont) {
                 const { code } = generate(ast);
@@ -176,6 +191,23 @@ export class FontConfigManager {
                 );
                 if (!success) {
                     throw new Error('Failed to write font configuration');
+                }
+
+                // Delete font files if this is a custom font
+                if (fontFilesToDelete.length > 0) {
+                    const routerConfig = this.editorEngine.sandbox.routerConfig;
+                    if (!routerConfig?.basePath) {
+                        console.error('Could not get base path');
+                        return false;
+                    }
+
+                    await Promise.all(
+                        fontFilesToDelete.map((file) =>
+                            this.editorEngine.sandbox.delete(
+                                normalizePath(routerConfig.basePath + '/' + file),
+                            ),
+                        ),
+                    );
                 }
 
                 return codeDiff;
@@ -235,10 +267,35 @@ export class FontConfigManager {
         }
 
         const fontConfigPath = normalizePath(this.fontConfigPath);
+        console.log('fontConfigPath', fontConfigPath);
         const fontConfigExists = await sandbox.fileExists(fontConfigPath);
 
         if (!fontConfigExists) {
             await sandbox.writeFile(this.fontConfigPath, '');
+        }
+    }
+
+    /**
+     * Updates the font config path based on the detected router configuration
+     */
+    private async updateFontConfigPath(): Promise<void> {
+        const routerConfig = this.editorEngine.sandbox.routerConfig;
+
+        if (routerConfig) {
+            let fontConfigPath: string;
+            if (routerConfig.type === RouterType.APP) {
+                fontConfigPath = normalizePath(`${routerConfig.basePath}/fonts.ts`);
+            } else {
+                // For pages router, place fonts.ts in the appropriate directory
+                if (routerConfig.basePath.startsWith('src/')) {
+                    fontConfigPath = normalizePath('src/fonts.ts');
+                } else {
+                    fontConfigPath = normalizePath('fonts.ts');
+                }
+            }
+            this.setFontConfigPath(fontConfigPath);
+            console.log('this.fontConfigPath', this.fontConfigPath);
+            console.log('routerConfig', fontConfigPath);
         }
     }
 }

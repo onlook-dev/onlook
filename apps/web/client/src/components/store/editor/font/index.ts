@@ -11,6 +11,7 @@ import { TailwindConfigManager } from './TailwindConfigManager';
 import { LayoutManager } from './LayoutManager';
 import { FontUploadManager } from './FontUploadManager';
 import { generate } from '@onlook/parser';
+import { getFontRootElements } from '@onlook/fonts';
 
 interface CodeDiff {
     original: string;
@@ -48,7 +49,6 @@ export class FontManager {
             () => this.editorEngine.sandbox.isIndexed,
             async (isIndexedFiles) => {
                 if (isIndexedFiles) {
-                    await this.updateFontConfigPath();
                     await this.loadInitialFonts();
                     await this.getDefaultFont();
                 }
@@ -56,7 +56,7 @@ export class FontManager {
         );
 
         reaction(
-            () => this.editorEngine.sandbox.readFile(this.fontConfigPath),
+            () => this.editorEngine.sandbox.readFile(this.fontConfigManager.fontConfigPath),
             async () => {
                 await this.syncFontsWithConfigs();
             },
@@ -89,9 +89,9 @@ export class FontManager {
             // Scan fonts from config file
             const fonts = await this.fontConfigManager.scanFonts();
             this._fonts = fonts;
-            
+
             // Update font search manager with current fonts
-            this.fontSearchManager.updateFontsList(fonts);
+            this.fontSearchManager.updateFontsList(this._fonts);
 
             return fonts;
         } catch (error) {
@@ -129,10 +129,13 @@ export class FontManager {
             if (success) {
                 // Update the fonts array
                 this._fonts.push(font);
-                
+
+                // Update font search manager with current fonts
+                this.fontSearchManager.updateFontsList(this._fonts);
+
                 // Load the new font in the search manager
                 await this.fontSearchManager.loadFontFromBatch([font]);
-                
+
                 return true;
             }
             return false;
@@ -151,18 +154,18 @@ export class FontManager {
     async removeFont(font: Font): Promise<CodeDiff | false> {
         try {
             const result = await this.fontConfigManager.removeFont(font);
-            
+
             if (result) {
                 // Remove from fonts array
-                this._fonts = this._fonts.filter(f => f.id !== font.id);
-                
+                this._fonts = this._fonts.filter((f) => f.id !== font.id);
+
                 // Update font search manager
                 this.fontSearchManager.updateFontsList(this._fonts);
-                
+
                 if (font.id === this._defaultFont) {
                     this._defaultFont = null;
                 }
-                
+
                 return result;
             }
             return false;
@@ -176,19 +179,7 @@ export class FontManager {
         try {
             this._defaultFont = font.id;
 
-            const { layoutPath, routerConfig } = (await this.layoutManager.getRootLayoutPath()) ?? {};
-
-            if (!layoutPath || !routerConfig) {
-                console.error('Could not get layout path or router config');
-                return false;
-            }
-
-            const targetElements = ['html', 'body'];
-            const codeDiff = await this.layoutManager.updateDefaultFontInRootLayout(
-                layoutPath, 
-                font, 
-                targetElements
-            );
+            const codeDiff = await this.layoutManager.updateDefaultFontInRootLayout(font);
 
             if (codeDiff) {
                 await this.editorEngine.sandbox.writeFile(codeDiff.path, codeDiff.generated);
@@ -203,8 +194,8 @@ export class FontManager {
 
     async uploadFonts(fontFiles: FontUploadFile[]): Promise<boolean> {
         try {
-                const routerConfig = this.editorEngine.sandbox.routerConfig;
-                if (!routerConfig?.basePath) {
+            const routerConfig = this.editorEngine.sandbox.routerConfig;
+            if (!routerConfig?.basePath) {
                 console.error('Could not get base path');
                 return false;
             }
@@ -217,18 +208,21 @@ export class FontManager {
                 return false;
             }
 
-            const success = await this.fontUploadManager.uploadFonts(
+            const result = await this.fontUploadManager.uploadFonts(
                 fontFiles,
                 routerConfig.basePath,
-                fontConfig.ast
+                fontConfig.ast,
             );
 
-            if (success) {
-                const { code } = generate(fontConfig.ast);
-                await this.editorEngine.sandbox.writeFile(this.fontConfigPath, code);
+            if (result.success) {
+                const { code } = generate(result.fontConfigAst);
+                await this.editorEngine.sandbox.writeFile(
+                    this.fontConfigManager.fontConfigPath,
+                    code,
+                );
             }
 
-            return success;
+            return result.success;
         } catch (error) {
             console.error('Error uploading fonts:', error);
             return false;
@@ -296,6 +290,7 @@ export class FontManager {
 
         // Clear managers
         this.fontSearchManager.clear();
+        this.fontSearchManager.updateFontsList([]);
         this.fontUploadManager.clear();
 
         // Clean up file watcher
@@ -348,40 +343,20 @@ export class FontManager {
 
             if (addedFonts.length > 0) {
                 for (const font of addedFonts) {
-                    await this.layoutManager.addFontVariableToLayout(font.id);
+                    await this.layoutManager.addFontVariableToRootLayout(font.id);
                     await this.tailwindConfigManager.addFontToTailwindConfig(font);
                 }
             }
 
             if (removedFonts.length > 0 || addedFonts.length > 0) {
                 this._fonts = currentFonts;
+                // Update font search manager with current fonts
+                this.fontSearchManager.updateFontsList(this._fonts);
             }
 
             this.previousFonts = currentFonts;
         } catch (error) {
             console.error('Error syncing fonts:', error);
-        }
-    }
-
-    /**
-     * Updates the font config path based on the detected router configuration
-     */
-    private async updateFontConfigPath(): Promise<void> {
-        const routerConfig = this.editorEngine.sandbox.routerConfig;
-
-        if (routerConfig) {
-            let fontConfigPath: string;
-            if (routerConfig.type === RouterType.APP) {
-                fontConfigPath = normalizePath(`${routerConfig.basePath}/fonts.ts`);
-            } else {
-                // For pages router, place fonts.ts in the appropriate directory
-                if (routerConfig.basePath.startsWith('src/')) {
-                    fontConfigPath = normalizePath('src/fonts.ts');
-                } else {
-                    fontConfigPath = normalizePath('fonts.ts');
-                }
-            }
-            this.fontConfigManager.setFontConfigPath(fontConfigPath);
         }
     }
 
@@ -401,4 +376,4 @@ export class FontManager {
             this.fontConfigFileWatcher = null;
         }
     }
-} 
+}

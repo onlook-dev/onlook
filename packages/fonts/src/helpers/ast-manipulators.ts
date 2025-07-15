@@ -109,8 +109,8 @@ export function removeFontDeclaration(font: Font, content: string) {
                                         ) {
                                             // Get the path value
                                             let fontFilePath = pathProp.value.value;
-                                            if (fontFilePath.startsWith('../')) {
-                                                fontFilePath = fontFilePath.substring(3); // Remove '../' prefix
+                                            if (fontFilePath.startsWith('./')) {
+                                                fontFilePath = fontFilePath.substring(2); // Remove './' prefix
                                             }
                                             fontFilesToDelete.push(fontFilePath);
                                         }
