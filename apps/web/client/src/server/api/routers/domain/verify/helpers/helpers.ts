@@ -1,3 +1,4 @@
+import { client } from '@/utils/analytics/server';
 import { customDomains, customDomainVerification, userProjects, type CustomDomain } from '@onlook/db';
 import type { DrizzleDb } from '@onlook/db/src/client';
 import { VerificationRequestStatus } from '@onlook/models';
@@ -64,6 +65,19 @@ export const getCustomDomain = async (db: DrizzleDb, domain: string): Promise<{ 
 
     return { customDomain, subdomain };
 }
+
+export const trackCustomDomainMapping = async (userId: string, domain: string) => {
+    if (client) {
+        client.capture({
+            event: 'user_map_custom_domain',
+            distinctId: userId,
+            properties: {
+                $set_once: { first_custom_domain: new Date().toISOString() },
+                domain: domain
+            }
+        });
+    }
+};
 
 export const getVerification = async (db: DrizzleDb, projectId: string, customDomainId: string) => {
     const verification = await db.query.customDomainVerification.findFirst({

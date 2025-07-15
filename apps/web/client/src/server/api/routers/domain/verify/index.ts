@@ -4,7 +4,7 @@ import { TRPCError } from '@trpc/server';
 import { and, eq, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../../trpc';
-import { createDomainVerification, ensureUserOwnsDomain, getCustomDomain, getFailureReason, getVerification, verifyFreestyleDomain, verifyFreestyleDomainWithCustomDomain } from './helpers';
+import { createDomainVerification, ensureUserOwnsDomain, getCustomDomain, getFailureReason, getVerification, trackCustomDomainMapping, verifyFreestyleDomain, verifyFreestyleDomainWithCustomDomain } from './helpers';
 
 export const verificationRouter = createTRPCRouter({
     getActive: protectedProcedure.input(z.object({
@@ -90,6 +90,9 @@ export const verificationRouter = createTRPCRouter({
                     }).where(eq(customDomainVerification.id, verification.id));
                 },
             );
+        
+        await trackCustomDomainMapping(ctx.user.id, domain);
+        
         return {
             success: true,
             failureReason: null,
@@ -139,6 +142,9 @@ export const verificationRouter = createTRPCRouter({
                 message: 'Failed to create project custom domain',
             });
         }
+        
+        await trackCustomDomainMapping(ctx.user.id, input.fullDomain);
+        
         return {
             success: true,
             failureReason: null,

@@ -8,6 +8,7 @@ import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import { generate, injectPreloadScript, parse } from '@onlook/parser';
 import { useRouter } from 'next/navigation';
+import { usePostHog } from 'posthog-js/react';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
 
@@ -50,6 +51,7 @@ export const ProjectCreationProvider = ({
     totalSteps,
 }: ProjectCreationProviderProps) => {
     const router = useRouter();
+    const posthog = usePostHog();
     const [currentStep, setCurrentStep] = useState(0);
     const [projectData, setProjectDataState] = useState<Partial<Project>>({
         name: '',
@@ -125,6 +127,10 @@ export const ProjectCreationProvider = ({
                 console.error('Failed to create project');
                 return;
             }
+            posthog.capture('user_import_project', {
+                $set_once: { first_project_import: new Date().toISOString() }
+            });
+            
             // Open the project
             router.push(`${Routes.PROJECT}/${project.id}`);
         } catch (error) {

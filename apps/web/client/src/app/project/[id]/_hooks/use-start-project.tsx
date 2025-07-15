@@ -7,10 +7,12 @@ import { type ProjectCreateRequest } from '@onlook/db';
 import { ChatType, CreateRequestContextType, MessageContextType, ProjectCreateRequestStatus, type ChatMessageContext, type ImageMessageContext, type Project } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { useEffect, useState } from 'react';
+import { usePostHog } from 'posthog-js/react';
 import { useTabActive } from '../_hooks/use-tab-active';
 
 export const useStartProject = () => {
     const editorEngine = useEditorEngine();
+    const posthog = usePostHog();
     const [isProjectReady, setIsProjectReady] = useState(false);
     const [isSandboxLoading, setIsSandboxLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -123,6 +125,12 @@ export const useStartProject = () => {
             !isCreationRequestLoading &&
             !isSandboxLoading;
 
+        if (allQueriesResolved && !isProjectReady) {
+            posthog.capture('user_start_app_builder', {
+                $set_once: { first_app_start: new Date().toISOString() }
+            });
+        }
+        
         setIsProjectReady(allQueriesResolved);
     }, [isUserLoading, isProjectLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading, isSandboxLoading]);
 

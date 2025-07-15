@@ -13,6 +13,7 @@ import { cn } from '@onlook/ui/utils';
 import { compressImageInBrowser } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
+import { usePostHog } from 'posthog-js/react';
 import { useEffect, useRef, useState } from 'react';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { type SuggestionsRef } from '../suggestions';
@@ -28,6 +29,7 @@ export const ChatInput = observer(({
 }) => {
     const { sendMessages, stop, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
+    const posthog = usePostHog();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isComposing, setIsComposing] = useState(false);
@@ -142,6 +144,10 @@ export const ChatInput = observer(({
         }
 
         sendMessages(streamMessages, chatMode);
+        
+        posthog.capture('user_send_ai_message', {
+            $set_once: { first_ai_message: new Date().toISOString() }
+        });
     }
 
     const getPlaceholderText = () => {

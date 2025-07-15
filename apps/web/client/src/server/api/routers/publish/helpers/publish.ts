@@ -1,4 +1,5 @@
 import type { WebSocketSession } from '@codesandbox/sdk';
+import { client } from '@/utils/analytics/server';
 import { DefaultSettings } from '@onlook/constants';
 import type { DrizzleDb } from '@onlook/db/src/client';
 import type { Deployment } from '@onlook/db/src/schema/project/deployment';
@@ -77,6 +78,16 @@ export async function publish({
                 urls: deploymentUrls,
                 envVars: envVars ?? {},
             });
+            
+            if (client) {
+                client.capture({
+                    event: 'user_publish_project',
+                    distinctId: userId,
+                    properties: {
+                        $set_once: { first_project_publish: new Date().toISOString() }
+                    }
+                });
+            }
         } finally {
             await session.disconnect();
         }

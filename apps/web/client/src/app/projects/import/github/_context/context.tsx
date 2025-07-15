@@ -6,6 +6,7 @@ import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { SignInMethod } from '@onlook/models/auth';
 import { useRouter } from 'next/navigation';
+import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useEffect, useState } from 'react';
 
 const FAKE_ORGANIZATIONS = [
@@ -104,6 +105,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     totalSteps = 1,
 }) => {
     const router = useRouter();
+    const posthog = usePostHog();
     // Step management
     const [currentStep, setCurrentStep] = useState(0);
 
@@ -244,6 +246,9 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
         //         console.error('Failed to create project');
         //         return;
         //     }
+        //     // Track project import completion
+        //         $set_once: { first_project_import: new Date().toISOString() }
+        //     });
         //     // Open the project
         //     router.push(`${Routes.PROJECT}/${project.id}`);
         // } catch (error) {

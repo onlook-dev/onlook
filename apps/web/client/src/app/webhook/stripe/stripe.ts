@@ -1,3 +1,4 @@
+import { client } from '@/utils/analytics/server';
 import { prices, subscriptions, type NewSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { ScheduledSubscriptionAction } from '@onlook/stripe';
@@ -70,6 +71,18 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
     }).returning()
 
     console.log("Checkout session completed: ", data)
+    
+    // Track subscription activation
+    if (client && data) {
+        client.capture({
+            event: 'subscription_event',
+            distinctId: data.userId,
+            properties: {
+                $set: { subscription_active: true }
+            }
+        });
+    }
+    
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
 
@@ -88,6 +101,23 @@ export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSu
     }).where(eq(subscriptions.stripeSubscriptionId, subscriptionId))
 
     console.log("Subscription cancelled: ", res)
+    
+    // Track subscription cancellation
+    if (client && subscriptionId) {
+        const subscription = await db.query.subscriptions.findFirst({
+            where: eq(subscriptions.stripeSubscriptionId, subscriptionId),
+        });
+        if (subscription) {
+            client.capture({
+                event: 'subscription_event',
+                distinctId: subscription.userId,
+                properties: {
+                    $set: { subscription_active: false }
+                }
+            });
+        }
+    }
+    
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
 
