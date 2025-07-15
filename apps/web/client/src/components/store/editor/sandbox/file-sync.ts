@@ -63,6 +63,14 @@ export class FileSyncManager {
         this.cache.set(file.path, file);
     }
 
+    get(filePath: string): SandboxFile | undefined {
+        return this.cache.get(filePath);
+    }
+
+    removeFromCache(filePath: string): void {
+        this.cache.delete(filePath);
+    }
+
     updateDirectoryCache(dirPath: string): void {
         this.directoryCache.set(dirPath, {
             type: 'directory',

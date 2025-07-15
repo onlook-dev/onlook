@@ -89,7 +89,7 @@ describe('isSubdirectory', () => {
 
     test('handles .git directory with parent path', () => {
         expect(
-            isSubdirectory('../home/csb-session-000000000000013wf4ua/workspace/.git/FETCH_HEAD', [
+            isSubdirectory('../home/e2b-session-000000000000013wf4ua/workspace/.git/FETCH_HEAD', [
                 '.git',
             ]),
         ).toBe(true);

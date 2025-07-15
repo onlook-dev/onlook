@@ -1,4 +1,4 @@
-import { WebSocketSession } from '@codesandbox/sdk';
+import { Sandbox } from '@e2b/sdk';
 import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
@@ -12,31 +12,36 @@ import type { z } from 'zod';
 
 export class PublishManager {
     constructor(
-        private readonly session: WebSocketSession,
+        private readonly session: Sandbox,
     ) { }
 
     private get fileOps(): FileOperations {
         return {
-            readFile: async (path: string) => this.session.fs.readTextFile(path),
+            readFile: async (path: string) => {
+                const content = await this.session.filesystem.read(path);
+                return typeof content === 'string' ? content : content.toString();
+            },
             writeFile: async (path: string, content: string) => {
-                await this.session.fs.writeTextFile(path, content);
+                await this.session.filesystem.write(path, content);
                 return true;
             },
             fileExists: async (path: string) => {
                 try {
-                    const stat = await this.session.fs.stat(path);
-                    return stat.type === 'file';
+                    const stat = await this.session.filesystem.stat(path);
+                    return !stat.isDir;
                 } catch (error) {
                     console.error(`[fileExists] Error checking if file exists at ${path}:`, error);
                     return false;
                 }
             },
             copy: async (source: string, destination: string, recursive?: boolean, overwrite?: boolean) => {
-                await this.session.fs.copy(source, destination, recursive, overwrite);
+                // E2B doesn't have a direct copy method, so we'll implement it
+                const content = await this.session.filesystem.read(source);
+                await this.session.filesystem.write(destination, content);
                 return true;
             },
             delete: async (path: string, recursive?: boolean) => {
-                await this.session.fs.remove(path, recursive);
+                await this.session.filesystem.remove(path);
                 return true;
             },
         };
@@ -239,17 +244,17 @@ export class PublishManager {
         while (dirsToProcess.length > 0) {
             const currentDir = dirsToProcess.shift()!;
             try {
-                const entries = await this.session.fs.readdir(currentDir);
+                const entries = await this.session.filesystem.list(currentDir);
 
                 for (const entry of entries) {
                     const fullPath = `${currentDir}/${entry.name}`;
 
-                    if (entry.type === 'directory') {
+                    if (entry.isDir) {
                         // Skip node_modules and other heavy directories early
                         if (!EXCLUDED_PUBLISH_DIRECTORIES.includes(entry.name)) {
                             dirsToProcess.push(fullPath);
                         }
-                    } else if (entry.type === 'file') {
+                    } else if (!entry.isDir) {
                         allPaths.push(fullPath);
                     }
                 }
@@ -294,7 +299,7 @@ export class PublishManager {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
             try {
-                const textContent = await this.session.fs.readTextFile(fullPath);
+                const textContent = await this.session.filesystem.read(fullPath);
 
                 if (textContent !== null) {
                     return {
@@ -331,7 +336,7 @@ export class PublishManager {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
             try {
-                const binaryContent = await this.session.fs.readFile(fullPath);
+                const binaryContent = await this.session.filesystem.read(fullPath);
 
                 if (binaryContent) {
                     const base64String = convertToBase64(binaryContent);

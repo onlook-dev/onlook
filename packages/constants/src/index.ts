@@ -1,5 +1,5 @@
 export * from './colors';
-export * from './csb';
+export * from './e2b';
 export * from './dom';
 export * from './editor';
 export * from './files';

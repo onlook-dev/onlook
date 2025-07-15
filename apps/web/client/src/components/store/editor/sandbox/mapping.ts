@@ -50,6 +50,29 @@ export class TemplateNodeMapper {
         return this.oidToTemplateNodeMap;
     }
 
+    removeFile(filePath: string) {
+        // Remove all template nodes associated with this file
+        const keysToRemove: string[] = [];
+        for (const [oid, node] of this.oidToTemplateNodeMap) {
+            if (node.path === filePath) {
+                keysToRemove.push(oid);
+            }
+        }
+        keysToRemove.forEach(key => this.oidToTemplateNodeMap.delete(key));
+    }
+
+    async updateFile(filePath: string, content: string) {
+        // First remove existing mappings for this file
+        this.removeFile(filePath);
+        
+        // Then process the new content
+        try {
+            await this.processFileForMapping(filePath, content);
+        } catch (error) {
+            console.error(`Error updating file mapping for ${filePath}:`, error);
+        }
+    }
+
     clear() {
         this.oidToTemplateNodeMap.clear();
     }

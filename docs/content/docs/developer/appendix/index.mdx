@@ -13,18 +13,16 @@ It should look like this:
 ```properties
 # ------------- Required Keys -------------
 
-# Supabase - Enables our backend such as database and auth
-NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY="<Fill in from content after running supabase start>"
-
-# Drizzle - Our ORM for accessing the database
-SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+# Supabase - Used for auth, database, and storage. Other providers may be supported in the future.
+NEXT_PUBLIC_SUPABASE_URL="<Your Supabase URL from https://supabase.com/dashboard/project/_/settings/api>"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="<Your Supabase anon key from https://supabase.com/dashboard/project/_/settings/api>"
+SUPABASE_DATABASE_URL="<Your Supabase database URL from https://supabase.com/dashboard/project/_/settings/database. Should start with postgres://>"
 
 # Anthropic - Enables AI chat. Other providers are optional below
 ANTHROPIC_API_KEY="<Your api key from https://console.anthropic.com/settings/keys>"
 
-# Codesandbox - Used to host user apps. Other providers may be supported in the future. May be optional in the future.
-CSB_API_KEY="<Your api key from https://codesandbox.io/t/api>"
+# E2B - Used to host user apps. Other providers may be supported in the future. May be optional in the future.
+E2B_API_KEY="<Your api key from https://e2b.dev>"
 
 # Fast apply model providers to reliably resolve code changes. Either will work since we will fall back.
 # Option 1: MorphLLM

@@ -1,4 +1,4 @@
-import type { ReaddirEntry } from '@codesandbox/sdk';
+import type { FileInfo } from '@e2b/sdk';
 import type { PageMetadata, PageNode } from '@onlook/models';
 import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
@@ -200,7 +200,7 @@ const scanAppDirectory = async (
     parentPath: string = '',
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
-    let entries;
+    let entries: FileInfo[];
 
     try {
         entries = await sandboxManager.readDir(dir);
@@ -211,8 +211,8 @@ const scanAppDirectory = async (
 
     // Handle page files
     const pageFile = entries.find(
-        (entry: any) =>
-            entry.type === 'file' &&
+        (entry: FileInfo) =>
+            !entry.isDir &&
             entry.name.startsWith('page.') &&
             ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
     );
@@ -249,8 +249,8 @@ const scanAppDirectory = async (
 
         // Look for layout file in the same directory
         const layoutFile = entries.find(
-            (entry: any) =>
-                entry.type === 'file' &&
+            (entry: FileInfo) =>
+                !entry.isDir &&
                 entry.name.startsWith('layout.') &&
                 ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
         );
@@ -298,7 +298,7 @@ const scanAppDirectory = async (
         const fullPath = `${dir}/${entry.name}`;
         const relativePath = joinPath(parentPath, entry.name);
 
-        if (entry.type === 'directory') {
+        if (entry.isDir) {
             const children = await scanAppDirectory(sandboxManager, fullPath, relativePath);
             if (children.length > 0) {
                 const dirPath = relativePath.replace(/\\/g, '/');
@@ -325,7 +325,7 @@ const scanPagesDirectory = async (
     parentPath: string = '',
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
-    let entries: ReaddirEntry[];
+    let entries: FileInfo[];
 
     try {
         entries = await sandboxManager.readDir(dir);
@@ -344,7 +344,7 @@ const scanPagesDirectory = async (
         }
 
         if (
-            entry.type === 'file' &&
+            !entry.isDir &&
             ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)) &&
             !IGNORED_DIRECTORIES.includes(fileName)
         ) {
@@ -407,7 +407,7 @@ const scanPagesDirectory = async (
         const dirNameForPath = isDynamicDir ? entry.name.slice(1, -1) : entry.name;
         const relativePath = joinPath(parentPath, dirNameForPath);
 
-        if (entry.type === 'directory') {
+        if (entry.isDir) {
             const children = await scanPagesDirectory(sandboxManager, fullPath, relativePath);
             if (children.length > 0) {
                 const dirPath = relativePath.replace(/\\/g, '/');
@@ -484,8 +484,8 @@ const detectRouterTypeInSandbox = async (
             if (entries && entries.length > 0) {
                 // Check for layout file (required for App Router)
                 const hasLayout = entries.some(
-                    (entry: any) =>
-                        entry.type === 'file' &&
+                    (entry: FileInfo) =>
+                        !entry.isDir &&
                         entry.name.startsWith('layout.') &&
                         ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
                 );
@@ -506,8 +506,8 @@ const detectRouterTypeInSandbox = async (
             if (entries && entries.length > 0) {
                 // Check for index file (common in Pages Router)
                 const hasIndex = entries.some(
-                    (entry: any) =>
-                        entry.type === 'file' &&
+                    (entry: FileInfo) =>
+                        !entry.isDir &&
                         entry.name.startsWith('index.') &&
                         ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
                 );
@@ -531,7 +531,7 @@ const pathExists = async (sandboxManager: SandboxManager, filePath: string): Pro
         await sandboxManager.readDir(getDirName(filePath));
         const dirEntries = await sandboxManager.readDir(getDirName(filePath));
         const fileName = getBaseName(filePath);
-        return dirEntries.some((entry: any) => entry.name === fileName);
+        return dirEntries.some((entry: FileInfo) => entry.name === fileName);
     } catch (error) {
         return false;
     }
@@ -756,7 +756,7 @@ export const duplicatePageInSandbox = async (
         // Check if source is a directory or file
         const sourceEntries = await sandboxManager.readDir(getDirName(sourceFull));
         const sourceEntry = sourceEntries.find(
-            (entry: any) => entry.name === getBaseName(sourceFull),
+            (entry: FileInfo) => entry.name === getBaseName(sourceFull),
         );
 
         if (!sourceEntry) {

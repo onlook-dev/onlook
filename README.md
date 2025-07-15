@@ -194,7 +194,7 @@ For a full walkthrough, check out our
 
 #### Sandbox and hosting
 
-- [CodeSandboxSDK](https://codesandbox.io/docs/sdk) - Dev sandbox
+- [E2B SDK](https://e2b.dev/docs/sdk) - Dev sandbox
 - [Freestyle](https://www.freestyle.sh/) - Hosting
 
 #### Runtime

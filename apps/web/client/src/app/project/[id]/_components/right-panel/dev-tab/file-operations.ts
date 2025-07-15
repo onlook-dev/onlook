@@ -1,5 +1,4 @@
 import type { SandboxManager } from "@/components/store/editor/sandbox";
-import type { WebSocketSession } from "@codesandbox/sdk";
 
 // System reserved names (Windows compatibility)
 export const RESERVED_NAMES = [
@@ -82,21 +81,21 @@ export const doesFolderExist = (files: string[], folderPath: string): boolean =>
     });
 };
 
-export const createFileInSandbox = async (session: WebSocketSession, filePath: string, content: string = '', sandboxManager: SandboxManager): Promise<void> => {
+export const createFileInSandbox = async (sandboxManager: SandboxManager, filePath: string, content: string = ''): Promise<void> => {
     try {
-        if (!session) {
+        if (!sandboxManager.session.session) {
             throw new Error('No sandbox session available');
         }
-        await sandboxManager.writeFile(filePath, content);
+        await sandboxManager.writeRemoteFile(filePath, content);
     } catch (error) {
         console.error('Error creating file:', error);
         throw error;
     }
 };
 
-export const createFolderInSandbox = async (session: WebSocketSession, folderPath: string, sandboxManager: SandboxManager): Promise<void> => {
+export const createFolderInSandbox = async (sandboxManager: SandboxManager, folderPath: string): Promise<void> => {
     try {
-        if (!session) {
+        if (!sandboxManager.session.session) {
             throw new Error('No sandbox session available');
         }
 
@@ -105,7 +104,7 @@ export const createFolderInSandbox = async (session: WebSocketSession, folderPat
         // the empty directory is discoverable and tracked by Git
         const gitkeepPath = `${folderPath}/.gitkeep`.replace(/\\/g, '/');
         const gitkeepContent = '# This folder was created by Onlook\n';
-        await sandboxManager.writeFile(gitkeepPath, gitkeepContent);
+        await sandboxManager.writeRemoteFile(gitkeepPath, gitkeepContent);
 
     } catch (error) {
         console.error('Error creating folder:', error);

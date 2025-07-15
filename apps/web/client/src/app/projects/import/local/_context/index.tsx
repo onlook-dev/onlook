@@ -3,9 +3,9 @@
 import { ProcessedFileType, type NextJsProjectValidation, type ProcessedFile } from '@/app/projects/types';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
-import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/sdk';
-import { connectToSandbox } from '@codesandbox/sdk/browser';
-import { SandboxTemplates, Templates } from '@onlook/constants';
+import { Sandbox } from '@e2b/sdk';
+import { env } from '@/env';
+import { E2BTemplates, Templates } from '@onlook/constants';
 import { generate, injectPreloadScript, parse } from '@onlook/parser';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -80,7 +80,7 @@ export const ProjectCreationProvider = ({
                 return;
             }
 
-            const template = SandboxTemplates[Templates.BLANK];
+            const template = E2BTemplates[Templates.BLANK];
             const forkedSandbox = await forkSandbox({
                 sandbox: {
                     id: template.id,
@@ -92,25 +92,19 @@ export const ProjectCreationProvider = ({
                 },
             });
 
-            const browserSession: SandboxBrowserSession = await startSandbox({
-                sandboxId: forkedSandbox.sandboxId,
-                userId: user.id,
+            // Connect to E2B sandbox
+            const sandbox = await Sandbox.create({
+                id: forkedSandbox.sandboxId,
+                apiKey: env.E2B_API_KEY,
             });
 
-            const session = await connectToSandbox({
-                session: browserSession,
-                getSession: async (id) => {
-                    return await startSandbox({
-                        sandboxId: id,
-                        userId: user.id,
-                    });
-                },
-            });
-
-            await uploadToSandbox(projectData.files, session);
-            await session.setup.run();
-            await session.setup.waitUntilComplete();
-            await session.disconnect();
+            await uploadToSandbox(projectData.files, sandbox);
+            
+            // Run setup commands
+            await sandbox.process.start({ cmd: 'npm install' }).then(p => p.wait());
+            await sandbox.process.start({ cmd: 'npm run dev' }).then(p => p.wait());
+            
+            await sandbox.kill();
 
             const project = await createProject({
                 project: {
@@ -262,14 +256,12 @@ export const useProjectCreation = (): ProjectCreationContextValue => {
     return context;
 };
 
-export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocketSession) => {
+export const uploadToSandbox = async (files: ProcessedFile[], session: Sandbox) => {
     for (const file of files) {
         try {
             if (file.type === ProcessedFileType.BINARY) {
                 const uint8Array = new Uint8Array(file.content);
-                await session.fs.writeFile(file.path, uint8Array, {
-                    overwrite: true,
-                });
+                await session.filesystem.write(file.path, uint8Array);
             } else {
                 let content = file.content;
 
@@ -289,9 +281,7 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
                         );
                     }
                 }
-                await session.fs.writeTextFile(file.path, content, {
-                    overwrite: true,
-                });
+                await session.filesystem.write(file.path, content);
             }
         } catch (fileError) {
             console.error(`Error uploading file ${file.path}:`, fileError);

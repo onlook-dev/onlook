@@ -8,7 +8,7 @@ export const env = createEnv({
      */
     server: {
         NODE_ENV: z.enum(['development', 'test', 'production']),
-        CSB_API_KEY: z.string(),
+        E2B_API_KEY: z.string(),
         SUPABASE_DATABASE_URL: z.string().url(),
         RESEND_API_KEY: z.string().optional(),
         FREESTYLE_API_KEY: z.string().optional(),
@@ -64,7 +64,7 @@ export const env = createEnv({
      */
     runtimeEnv: {
         NODE_ENV: process.env.NODE_ENV,
-        CSB_API_KEY: process.env.CSB_API_KEY,
+        E2B_API_KEY: process.env.E2B_API_KEY,
         RESEND_API_KEY: process.env.RESEND_API_KEY,
         NEXT_PUBLIC_FEATURE_COLLABORATION: process.env.NEXT_PUBLIC_FEATURE_COLLABORATION,
 

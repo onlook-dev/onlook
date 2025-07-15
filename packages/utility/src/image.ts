@@ -37,7 +37,7 @@ export function addBase64Prefix(mimeType: string, base64: string): string {
 
 /**
  * Converts a CSS background-image URL from full URL to relative path
- * Example: url("https://xxx-3000.csb.app/images/a.jpg") -> url("/images/c.jpg")
+      * Example: url("https://xxx-3000.e2b.dev/images/a.jpg") -> url("/images/c.jpg")
  */
 export function urlToRelativePath(url: string): string {
     const urlMatch = url.match(/url\s*\(\s*["']?([^"')]+)["']?\s*\)/);
