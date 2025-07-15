@@ -2,7 +2,7 @@ import { rateLimits, subscriptions, usageRecords } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { UsageType, type Usage } from '@onlook/models';
 import { FREE_PRODUCT_CONFIG } from '@onlook/stripe';
-import { and, desc, eq, gte, lte, ne, sql, sum } from 'drizzle-orm';
+import { and, desc, eq, gt, gte, lt, lte, ne, sql, sum } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { startOfDay } from 'date-fns/startOfDay';
@@ -37,7 +37,7 @@ export const usageRouter = createTRPCRouter({
                     and(
                         eq(usageRecords.userId, user.id),
                         gte(usageRecords.timestamp, dayStart),
-                        lte(usageRecords.timestamp, dayEnd),
+                        lt(usageRecords.timestamp, dayEnd),
                     )
                 );
 
@@ -49,7 +49,7 @@ export const usageRouter = createTRPCRouter({
                     and(
                         eq(usageRecords.userId, user.id),
                         gte(usageRecords.timestamp, monthStart),
-                        lte(usageRecords.timestamp, monthEnd),
+                        lt(usageRecords.timestamp, monthEnd),
                     )
                 );
     
@@ -73,7 +73,7 @@ export const usageRouter = createTRPCRouter({
             .where(and(
                 eq(rateLimits.userId, user.id),
                 lte(rateLimits.startedAt, now),
-                gte(rateLimits.endedAt, now),
+                gt(rateLimits.endedAt, now),
             ))
             .then(res => ({
                 left: res[0]?.left ? parseInt(res[0]?.left, 10) : 0,
