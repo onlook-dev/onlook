@@ -72,7 +72,12 @@ describe('SandboxManager', () => {
                 path: path,
                 content: '<div>Mocked Content</div>'
             })),
-            write: mock(async () => true),
+            write: mock(async (path: string, content: string, writeCallback: any) => {
+                if (writeCallback) {
+                    await writeCallback(path, content);
+                }
+                return true;
+            }),
             clear: mock(async () => undefined),
             updateCache: mock(async () => undefined),
         };
@@ -114,6 +119,9 @@ describe('SandboxManager', () => {
             projectId: 'test-project',
         };
         sandboxManager = new SandboxManager(mockEditorEngine as any);
+        
+        // Set up the session for the sandbox manager
+        sandboxManager.session.session = mockSession;
     });
 
     afterEach(() => {
@@ -189,7 +197,7 @@ describe('SandboxManager', () => {
         expect(result).toBe(true);
         expect(mockFileSync.write).toHaveBeenCalledWith(
             'file1.tsx',
-            '<div id="123">Modified Component</div>',
+            '<div id="123">Modified Component</div>;\n',
             expect.any(Function),
         );
     });
@@ -242,7 +250,15 @@ describe('SandboxManager', () => {
         // We need to create a custom fileSync mock that returns null for this test
         const errorFileSync = {
             readOrFetch: mock(async () => null),
-            write: mock(async () => false),
+            write: mock(async (path: string, content: string, writeCallback: any) => {
+                if (writeCallback) {
+                    try {
+                        await writeCallback(path, content);
+                    } catch (error) {
+                    }
+                }
+                return false;
+            }),
             clear: mock(async () => undefined),
             updateCache: mock(async () => undefined),
         };
@@ -260,7 +276,7 @@ describe('SandboxManager', () => {
         expect(writeResult).toBe(false);
         expect(errorFileSync.write).toHaveBeenCalledWith(
             'error.tsx',
-            '<div>Content</div>',
+            '<div>Content</div>;\n',
             expect.any(Function),
         );
     });
@@ -379,7 +395,7 @@ describe('SandboxManager', () => {
             await sandboxManager.writeFile(variant, 'test');
             expect(mockFileSync.write).toHaveBeenCalledWith(
                 normalizedPath,
-                'test',
+                'test;\n',
                 expect.any(Function),
             );
         }
