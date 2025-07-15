@@ -1,4 +1,4 @@
-import { IGNORED_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 
 // Setup mocks before imports
@@ -8,7 +8,11 @@ const mockSetItem = mock<(key: string, value: any) => Promise<any>>(async () => 
 const mockRemoveItem = mock<(key: string) => Promise<any>>(async () => undefined);
 
 // Mock FileSyncManager before importing SandboxManager or any code that uses it
-const mockReadOrFetch = mock(async (path: string) => '<div>Mocked Content</div>');
+const mockReadOrFetch = mock(async (path: string) => ({
+    type: 'text' as const,
+    path: path,
+    content: '<div>Mocked Content</div>'
+}));
 const mockWrite = mock(async (path: string, content: string) => true);
 const mockClear = mock(async () => undefined);
 
@@ -63,7 +67,11 @@ describe('SandboxManager', () => {
 
         // Create a sandbox with a mock FileSyncManager
         mockFileSync = {
-            readOrFetch: mock(async () => '<div>Mocked Content</div>'),
+            readOrFetch: mock(async (path: string) => ({
+                type: 'text' as const,
+                path: path,
+                content: '<div>Mocked Content</div>'
+            })),
             write: mock(async () => true),
             clear: mock(async () => undefined),
             updateCache: mock(async () => undefined),
@@ -98,9 +106,14 @@ describe('SandboxManager', () => {
                 }),
                 watch: mock(async () => mockWatcher),
             },
+            disconnect: mock(async () => undefined),
         };
 
-        sandboxManager = new SandboxManager();
+        // Create mock EditorEngine
+        const mockEditorEngine = {
+            projectId: 'test-project',
+        };
+        sandboxManager = new SandboxManager(mockEditorEngine as any);
     });
 
     afterEach(() => {
@@ -127,14 +140,19 @@ describe('SandboxManager', () => {
                 writeTextFile: mock(async () => true),
                 watch: mock(async () => mockWatcher),
             },
+            disconnect: mock(async () => undefined),
         };
 
-        const testManager = new SandboxManager();
-        testManager.init(testMockSession);
+        // Create mock EditorEngine for test manager
+        const mockTestEditorEngine = {
+            projectId: 'test-project',
+        };
+        const testManager = new SandboxManager(mockTestEditorEngine as any);
+        testManager.session.session = testMockSession;
 
         const files = await testManager.listFilesRecursively(
             './',
-            IGNORED_DIRECTORIES,
+            EXCLUDED_SYNC_DIRECTORIES,
             JSX_FILE_EXTENSIONS,
         );
 
@@ -151,7 +169,11 @@ describe('SandboxManager', () => {
         sandboxManager.fileSync = mockFileSync;
 
         const content = await sandboxManager.readFile('file1.tsx');
-        expect(content).toBe('<div>Mocked Content</div>');
+        expect(content).toEqual({
+            type: 'text',
+            path: 'file1.tsx',
+            content: '<div>Mocked Content</div>'
+        });
         expect(mockFileSync.readOrFetch).toHaveBeenCalledWith('file1.tsx', expect.any(Function));
     });
 
@@ -173,6 +195,9 @@ describe('SandboxManager', () => {
     });
 
     test('should read from localforage cache when reading files multiple times', async () => {
+        // Set up the session properly for this test
+        sandboxManager.session.session = mockSession;
+        
         // First read gets from filesystem and caches
         await sandboxManager.readFile('file1.tsx');
 
@@ -181,7 +206,11 @@ describe('SandboxManager', () => {
 
         // Second read should use cache
         const content2 = await sandboxManager.readFile('file1.tsx');
-        expect(content2).toBe('<div>Test Component</div>');
+        expect(content2).toEqual({
+            type: 'text',
+            path: 'file1.tsx',
+            content: '<div>Test Component</div>'
+        });
 
         // Filesystem should not be accessed for the second read
         expect(mockSession.fs.readTextFile).not.toHaveBeenCalled();
@@ -200,10 +229,15 @@ describe('SandboxManager', () => {
                 readdir: mock(async () => []),
                 watch: mock(async () => mockWatcher),
             },
+            disconnect: mock(async () => undefined),
         };
 
-        const errorManager = new SandboxManager();
-        errorManager.init(errorSession);
+        // Create mock EditorEngine for error manager
+        const mockErrorEditorEngine = {
+            projectId: 'test-project',
+        };
+        const errorManager = new SandboxManager(mockErrorEditorEngine as any);
+        errorManager.session.session = errorSession;
 
         // We need to create a custom fileSync mock that returns null for this test
         const errorFileSync = {
