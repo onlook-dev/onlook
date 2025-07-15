@@ -23,7 +23,8 @@ import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { projectCreateRequestRouter } from './createRequest';
 import { generateText } from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
+import { initModel } from '@onlook/ai';
+import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 
 export const projectRouter = createTRPCRouter({
     createRequest: projectCreateRequestRouter,
@@ -139,7 +140,10 @@ export const projectRouter = createTRPCRouter({
         }))
         .mutation(async ({ input }) => {
             try {
-                const model = anthropic('claude-3-5-sonnet-20241022');
+                const { model, providerOptions } = await initModel({
+                    provider: LLMProvider.ANTHROPIC,
+                    model: CLAUDE_MODELS.HAIKU,
+                });
                 
                 const result = await generateText({
                     model,
@@ -149,6 +153,7 @@ Project description: ${input.prompt}
 
 Generate only the project name, nothing else. Keep it short and descriptive.`,
                     maxTokens: 50,
+                    providerOptions,
                 });
 
                 const generatedName = result.text.trim();

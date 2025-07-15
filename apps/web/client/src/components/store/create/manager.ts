@@ -45,7 +45,7 @@ export class CreateManager {
             
             // Generate project name based on prompt
             const projectName = await this.generateProjectName(prompt);
-            const project = await this.createDefaultProject(sandboxId, previewUrl, projectName);
+            const project = this.createDefaultProject(sandboxId, previewUrl, projectName);
             const newProject = await api.project.create.mutate({
                 project,
                 userId,
@@ -72,7 +72,7 @@ export class CreateManager {
         }
     }
 
-    createDefaultProject(sandboxId: string, previewUrl: string, name: string = 'New Project'): DbProject {
+    createDefaultProject(sandboxId: string, previewUrl: string, name = 'New Project'): DbProject {
         const newProject = {
             id: uuidv4(),
             name,
@@ -110,7 +110,7 @@ export class CreateManager {
             
             // Generate project name based on repository name
             const projectName = await this.generateProjectName(`Import from GitHub repository: ${repo}`);
-            const project = await this.createDefaultProject(sandboxId, previewUrl, projectName);
+            const project = this.createDefaultProject(sandboxId, previewUrl, projectName);
             const newProject = await api.project.create.mutate({
                 project,
                 userId,
