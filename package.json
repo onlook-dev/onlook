@@ -39,10 +39,10 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/onlook-dev/desktop.git"
+        "url": "git+https://github.com/onlook-dev/onlook.git"
     },
     "bugs": {
-        "url": "https://github.com/onlook-dev/desktop/issues"
+        "url": "https://github.com/onlook-dev/onlook/issues"
     },
     "devDependencies": {
         "extract-zip": "^2.0.1",
