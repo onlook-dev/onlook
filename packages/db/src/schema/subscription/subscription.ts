@@ -1,4 +1,4 @@
-import { ScheduledSubscriptionAction } from '@onlook/stripe';
+import { ScheduledSubscriptionAction, SubscriptionStatus } from '@onlook/stripe';
 import { relations } from 'drizzle-orm';
 import { pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { users } from '../user/user';
@@ -6,6 +6,7 @@ import { prices } from './price';
 import { products } from './product';
 
 export const scheduledSubscriptionAction = pgEnum('scheduled_subscription_action', ScheduledSubscriptionAction);
+export const subscriptionStatusEnum = pgEnum('subscription_status', SubscriptionStatus);
 
 export const subscriptions = pgTable('subscriptions', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -19,7 +20,7 @@ export const subscriptions = pgTable('subscriptions', {
     startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     endedAt: timestamp('ended_at', { withTimezone: true }),
-    status: text('status', { enum: ['active', 'canceled'] }).notNull(),
+    status: subscriptionStatusEnum('status').notNull(),
 
     // Stripe
     stripeCustomerId: text('stripe_customer_id').notNull(),
