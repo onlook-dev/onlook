@@ -17,7 +17,6 @@
     "type": "module",
     "scripts": {
         "build": "next build",
-        "postbuild": "cp ../../preload/dist/index.js ./public/onlook-preload-script.js",
         "check": "next lint && tsc --noEmit",
         "dev": "next dev --turbo",
         "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
