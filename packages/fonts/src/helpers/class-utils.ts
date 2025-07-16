@@ -258,3 +258,96 @@ export function removeFontsFromClassName(
         return false;
     }
 }
+
+/**
+ * Helper to update className attribute value with font variable
+ */
+export function updateClassNameWithFontVar(
+    classNameAttr: T.JSXAttribute,
+    fontName: string,
+): boolean {
+    const fontVarExpr = t.memberExpression(t.identifier(fontName), t.identifier('variable'));
+
+    if (t.isStringLiteral(classNameAttr.value)) {
+        return handleStringLiteralClassName(classNameAttr, fontVarExpr);
+    } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+        return handleJSXExpressionClassName(classNameAttr, fontVarExpr, fontName);
+    }
+    return false;
+}
+
+/**
+ * Handles updating className when it's a StringLiteral
+ */
+function handleStringLiteralClassName(
+    classNameAttr: T.JSXAttribute,
+    fontVarExpr: T.MemberExpression,
+): boolean {
+    if (t.isStringLiteral(classNameAttr.value)) {
+        if (classNameAttr.value.value === '') {
+            classNameAttr.value = t.jsxExpressionContainer(
+                t.templateLiteral(
+                    [
+                        t.templateElement({ raw: '', cooked: '' }, false),
+                        t.templateElement({ raw: '', cooked: '' }, true),
+                    ],
+                    [fontVarExpr],
+                ),
+            );
+        } else {
+            classNameAttr.value = t.jsxExpressionContainer(
+                createTemplateLiteralWithFont(
+                    fontVarExpr,
+                    t.stringLiteral(classNameAttr.value.value),
+                ),
+            );
+        }
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Handles updating className when it's a JSXExpressionContainer
+ */
+function handleJSXExpressionClassName(
+    classNameAttr: T.JSXAttribute,
+    fontVarExpr: T.MemberExpression,
+    fontName: string,
+): boolean {
+    if (t.isJSXExpressionContainer(classNameAttr.value)) {
+        const expr = classNameAttr.value.expression;
+
+        if (t.isTemplateLiteral(expr)) {
+            const hasFont = expr.expressions.some(
+                (e) =>
+                    t.isMemberExpression(e) &&
+                    t.isIdentifier(e.object) &&
+                    e.object.name === fontName &&
+                    t.isIdentifier(e.property) &&
+                    e.property.name === 'variable',
+            );
+
+            if (!hasFont) {
+                if (expr.expressions.length > 0) {
+                    const lastQuasi = expr.quasis[expr.quasis.length - 1];
+                    if (lastQuasi) {
+                        lastQuasi.value.raw = lastQuasi.value.raw + ' ';
+                        lastQuasi.value.cooked = lastQuasi.value.cooked + ' ';
+                    }
+                }
+                expr.expressions.push(fontVarExpr);
+                if (expr.quasis.length <= expr.expressions.length) {
+                    expr.quasis.push(t.templateElement({ raw: '', cooked: '' }, true));
+                }
+                return true;
+            }
+        } else if (t.isIdentifier(expr) || t.isMemberExpression(expr)) {
+            classNameAttr.value = t.jsxExpressionContainer(
+                createTemplateLiteralWithFont(fontVarExpr, expr),
+            );
+            return true;
+        }
+    }
+    return false;
+}

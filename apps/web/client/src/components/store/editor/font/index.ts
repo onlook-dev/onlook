@@ -1,17 +1,16 @@
 'use client';
 
-import { RouterType, type FontUploadFile } from '@onlook/models';
+import {  type FontUploadFile } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
 import { makeAutoObservable, reaction } from 'mobx';
-import { normalizePath } from '../sandbox/helpers';
 import type { EditorEngine } from '../engine';
-import { FontSearchManager } from './FontSearchManager';
-import { FontConfigManager } from './FontConfigManager';
-import { TailwindConfigManager } from './TailwindConfigManager';
-import { LayoutManager } from './LayoutManager';
-import { FontUploadManager } from './FontUploadManager';
+import { FontSearchManager } from './font-search-manager';
+import { FontConfigManager } from './font-config-manager';
+import { LayoutManager } from './layout-manager';
+import { FontUploadManager } from './font-upload-manager';
 import { generate } from '@onlook/parser';
-import { getFontRootElements } from '@onlook/fonts';
+import { addFontToTailwindConfig, removeFontFromTailwindConfig } from './tailwind-config';
+import { ensureTailwindConfigExists } from './tailwind-config';
 
 interface CodeDiff {
     original: string;
@@ -30,7 +29,6 @@ export class FontManager {
     // Managers
     private fontSearchManager: FontSearchManager;
     private fontConfigManager: FontConfigManager;
-    private tailwindConfigManager: TailwindConfigManager;
     private layoutManager: LayoutManager;
     private fontUploadManager: FontUploadManager;
 
@@ -39,8 +37,7 @@ export class FontManager {
 
         // Initialize managers
         this.fontSearchManager = new FontSearchManager();
-        this.fontConfigManager = new FontConfigManager(editorEngine);
-        this.tailwindConfigManager = new TailwindConfigManager(editorEngine);
+        this.fontConfigManager = new FontConfigManager(editorEngine);   
         this.layoutManager = new LayoutManager(editorEngine);
         this.fontUploadManager = new FontUploadManager(editorEngine);
 
@@ -336,15 +333,15 @@ export class FontManager {
 
             if (removedFonts.length > 0) {
                 for (const font of removedFonts) {
-                    await this.tailwindConfigManager.removeFontFromTailwindConfig(font);
-                    await this.layoutManager.removeFontVariableFromLayout(font.id);
+                    await removeFontFromTailwindConfig(font, sandbox);
+                    await this.layoutManager.removeFontVariableFromRootLayout(font.id);
                 }
             }
 
             if (addedFonts.length > 0) {
                 for (const font of addedFonts) {
                     await this.layoutManager.addFontVariableToRootLayout(font.id);
-                    await this.tailwindConfigManager.addFontToTailwindConfig(font);
+                    await addFontToTailwindConfig(font, sandbox);
                 }
             }
 
@@ -364,9 +361,15 @@ export class FontManager {
      * Ensures both font config and tailwind config files exist
      */
     private async ensureConfigFilesExist(): Promise<void> {
+        const sandbox = this.editorEngine.sandbox;
+        if (!sandbox) {
+            console.error('No sandbox session found');
+            return;
+        }
+
         await Promise.all([
             this.fontConfigManager.ensureConfigFileExists(),
-            this.tailwindConfigManager.ensureTailwindConfigExists(),
+            ensureTailwindConfigExists(sandbox),
         ]);
     }
 
