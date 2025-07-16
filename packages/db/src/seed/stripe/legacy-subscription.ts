@@ -1,23 +1,34 @@
+import { legacySubscriptions } from '@/schema/subscription/legacy';
 import { db } from '@onlook/db/src/client';
-import { PriceKey, PRO_PRODUCT_CONFIG, ProductType } from "@onlook/stripe";
-import { getProProductAndPrices } from "@onlook/stripe/src/scripts/dev/product";
+import { createStripeClient } from '@onlook/stripe/src/client';
+import { createCodeForCoupon, createLegacyCoupon } from '@onlook/stripe/src/scripts/production/coupon';
 import { config } from 'dotenv';
-import Stripe from "stripe";
-import { prices, products } from '../../schema';
+import { readFileSync } from 'fs';
 
 // Load .env file
 config({ path: '../../.env' });
 
-export const seedStripe = async () => {
-    console.log('Getting product and prices...');
-    const { product: stripeProduct, prices: stripePrices } = await getProProductAndPrices()
+export const seedLegacySubscriptions = async () => {
+    const stripe = createStripeClient();
 
-    console.log('Inserting product...');
-    const [product] = await db.insert(products).values({
-        name: stripeProduct.name,
-        type: ProductType.PRO,
-        stripeProductId: stripeProduct.id,
-    }).returning();
+    // Create a stripe coupone
+    console.log('Create Coupon...');
+    const stripeCouponId = await createLegacyCoupon(stripe);
+
+    // Read all legacy subscriptions from csv file
+    console.log('Getting legacy subscriptions emails...');
+    const emails: string[] = readFileSync('legacy-subscriptions.csv', 'utf8').split('\n');
+
+    // Create a code for each email
+    for (const email of emails) {
+        const { id: stripePromotionCodeId, code: stripePromotionCode } = await createCodeForCoupon(stripe, stripeCouponId, email);
+        await db.insert(legacySubscriptions).values({
+            email,
+            stripeCouponId,
+            stripePromotionCodeId,
+            stripePromotionCode,
+        });
+    }
 }
 
 (async () => {
@@ -31,7 +42,7 @@ export const seedStripe = async () => {
         }
 
         console.log('Seeding stripe...');
-        await seedStripe();
+        await seedLegacySubscriptions();
         console.log('Stripe seeded!');
         process.exit(0);
     } catch (error) {

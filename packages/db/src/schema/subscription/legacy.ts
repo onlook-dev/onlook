@@ -5,7 +5,8 @@ export const legacySubscriptions = pgTable('legacy_subscriptions', {
 
     // Relationships
     email: text('email').notNull(),
-    couponCode: text('coupon_code').notNull(),
-    couponId: uuid('coupon_id').notNull(),
+    stripeCouponId: text('stripe_coupon_id').notNull(),
+    stripePromotionCodeId: text('stripe_promotion_code_id').notNull(),
+    stripePromotionCode: text('stripe_promotion_code').notNull(),
     redeemAt: timestamp('redeem_date', { withTimezone: true })
 }).enableRLS();
