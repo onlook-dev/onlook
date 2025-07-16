@@ -30,8 +30,7 @@ export const createLegacyCoupon = async (stripe: Stripe) => {
         duration: 'once',
         max_redemptions: 1,
         name: 'Desktop Pro User',
-        percent_off: 0,
-        redeem_by: 1721136000,
+        redeem_by: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 90), // 90 days from now
         metadata: {
             type: 'legacy'
         }

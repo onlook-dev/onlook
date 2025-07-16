@@ -4,6 +4,7 @@ import { createStripeClient } from '@onlook/stripe/src/client';
 import { createCodeForCoupon, createLegacyCoupon } from '@onlook/stripe/src/scripts/production/coupon';
 import { config } from 'dotenv';
 import { readFileSync } from 'fs';
+import path from 'path';
 
 // Load .env file
 config({ path: '../../.env' });
@@ -17,7 +18,7 @@ export const seedLegacySubscriptions = async () => {
 
     // Read all legacy subscriptions from csv file
     console.log('Getting legacy subscriptions emails...');
-    const emails: string[] = readFileSync('legacy-subscriptions.csv', 'utf8').split('\n');
+    const emails: string[] = readFileSync(path.join(__dirname, './subscriptions.csv'), 'utf8').split('\n');
 
     // Create a code for each email
     for (const email of emails) {
