@@ -223,7 +223,7 @@ export const injectPreloadScript = (ast: T.File): T.File => {
                 return;
             }
 
-            // Find head tag for adding a comment
+            // Find head tag
             if (
                 t.isJSXOpeningElement(path.node.openingElement) &&
                 t.isJSXIdentifier(path.node.openingElement.name)
@@ -232,8 +232,6 @@ export const injectPreloadScript = (ast: T.File): T.File => {
 
                 if (elementName === 'head' || elementName === 'Head') {
                     headFound = true;
-                    // Add comment explaining dynamic injection
-                    addCommentToHead(path.node);
                 } else if (elementName === 'html' || elementName === 'Html') {
                     htmlElement = path.node;
                 }
@@ -241,166 +239,19 @@ export const injectPreloadScript = (ast: T.File): T.File => {
         },
     });
 
-    // If no head tag found, create one with comment
+    // If no head tag found, create one
     if (!headFound && htmlElement) {
-        createAndAddHeadTagWithComment(htmlElement);
+        createHeadTag(htmlElement);
     }
 
     return ast;
 };
 
-function addCommentToHead(headElement: T.JSXElement) {
-    // Check if comment already exists
-    let hasOnlookComment = false;
-
-    if (headElement.children) {
-        headElement.children.forEach(
-            (
-                child:
-                    | T.JSXElement
-                    | T.JSXFragment
-                    | T.JSXText
-                    | T.JSXExpressionContainer
-                    | T.JSXSpreadChild,
-            ) => {
-                if (
-                    t.isJSXText(child) &&
-                    child.value.includes('Preload script will be injected dynamically')
-                ) {
-                    hasOnlookComment = true;
-                }
-            },
-        );
-    }
-
-    if (!hasOnlookComment) {
-        // Create a comment element
-        const commentElement = t.jsxText(
-            '\n        {/* Preload script will be injected dynamically when editing starts */}\n      ',
-        );
-
-        if (headElement.openingElement.selfClosing) {
-            headElement.openingElement.selfClosing = false;
-            headElement.closingElement = t.jsxClosingElement(headElement.openingElement.name);
-        }
-
-        // Add the comment as the first child of head
-        if (!headElement.children) {
-            headElement.children = [];
-        }
-        headElement.children.unshift(commentElement);
-    }
-}
-
-function createAndAddHeadTagWithComment(htmlElement: T.JSXElement) {
-    // Create a comment element
-    const commentElement = t.jsxText(
-        '\n        {/* Preload script will be injected dynamically when editing starts */}\n      ',
-    );
-
-    // Create the head element with the comment as its child
+function createHeadTag(htmlElement: T.JSXElement) {
     const headElement = t.jsxElement(
         t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
         t.jsxClosingElement(t.jsxIdentifier('head')),
-        [commentElement],
-        false,
-    );
-
-    // Add the head element as the first child of html
-    if (!htmlElement.children) {
-        htmlElement.children = [];
-    }
-    htmlElement.children.unshift(headElement);
-}
-
-function addScriptToHead(headElement: T.JSXElement) {
-    // Check if Script with our specific src already exists
-    let hasOnlookScript = false;
-
-    if (headElement.children) {
-        headElement.children.forEach(
-            (
-                child:
-                    | T.JSXElement
-                    | T.JSXFragment
-                    | T.JSXText
-                    | T.JSXExpressionContainer
-                    | T.JSXSpreadChild,
-            ) => {
-                if (
-                    t.isJSXElement(child) &&
-                    t.isJSXIdentifier(child.openingElement.name) &&
-                    child.openingElement.name.name === 'Script'
-                ) {
-                    const srcAttr = child.openingElement.attributes.find(
-                        (attr: T.JSXAttribute | T.JSXSpreadAttribute) => {
-                            return (
-                                t.isJSXAttribute(attr) &&
-                                t.isJSXIdentifier(attr.name) &&
-                                attr.name.name === 'src' &&
-                                t.isStringLiteral(attr.value) &&
-                                attr.value.value.includes(PRELOAD_SCRIPT_SRC)
-                            );
-                        },
-                    );
-                    if (srcAttr) {
-                        hasOnlookScript = true;
-                    }
-                }
-            },
-        );
-    }
-
-    if (!hasOnlookScript) {
-        // Create the Script JSX element
-        const scriptElement = t.jsxElement(
-            t.jsxOpeningElement(
-                t.jsxIdentifier('Script'),
-                [
-                    t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                    t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
-                ],
-                true,
-            ),
-            null,
-            [],
-            true,
-        );
-
-        if (headElement.openingElement.selfClosing) {
-            headElement.openingElement.selfClosing = false;
-            headElement.closingElement = t.jsxClosingElement(headElement.openingElement.name);
-        }
-
-        // Add the Script element as the first child of head
-        if (!headElement.children) {
-            headElement.children = [];
-        }
-        headElement.children.unshift(scriptElement);
-    }
-}
-
-function createAndAddHeadTag(htmlElement: T.JSXElement) {
-    // Create the Script JSX element
-    const scriptElement = t.jsxElement(
-        t.jsxOpeningElement(
-            t.jsxIdentifier('Script'),
-            [
-                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
-            ],
-            true,
-        ),
-        null,
         [],
-        true,
-    );
-
-    // Create the head element with the Script as its child
-    const headElement = t.jsxElement(
-        t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
-        t.jsxClosingElement(t.jsxIdentifier('head')),
-        [scriptElement],
         false,
     );
 

@@ -91,10 +91,10 @@ export class SandboxManager {
             // Inject preload script after successful indexing
             console.log('[SandboxManager] Indexing complete, triggering preload script injection...');
             setTimeout(() => {
-                void this.editorEngine.preloadScript.injectPreloadScript().catch((error: Error) => {
+                this.editorEngine.preloadScript.injectPreloadScript().catch((error: Error) => {
                     console.error('[SandboxManager] Failed to inject preload script after indexing:', error);
                 });
-            }, 1000); // Give a bit more time for everything to settle
+            }, 1000);
             
         } catch (error) {
             console.error('Error during indexing:', error);
@@ -201,9 +201,9 @@ export class SandboxManager {
         return Object.fromEntries(results);
     }
 
-    async writeFile(path: string, content: string): Promise<boolean> {
+    async writeFile(path: string, content: string, skipFormat = false): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-        let writeContent = await formatContent(normalizedPath, content);
+        let writeContent = skipFormat ? content : await formatContent(normalizedPath, content);
         // If the file is a JSX file, we need to process it for mapping before writing
         if (this.isJsxFile(normalizedPath)) {
             try {

@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from './engine';
-
+import { parse, traverse, types as t, generate } from '@onlook/parser';
 interface PreloadScriptState {
     isInjected: boolean;
     injectedAt: number;
@@ -16,7 +16,7 @@ export class PreloadScriptManager {
         makeAutoObservable(this);
     }
 
-    async injectPreloadScript(): Promise<boolean> {        
+    async injectPreloadScript(): Promise<boolean> {
         if (this.state.isInjected) {
             return false;
         }
@@ -24,21 +24,25 @@ export class PreloadScriptManager {
         try {
             const session = this.editorEngine.sandbox.session.session;
             if (!session) {
-                console.warn('[PreloadScriptManager] No sandbox session available for preload script injection');
+                console.warn(
+                    '[PreloadScriptManager] No sandbox session available for preload script injection',
+                );
                 return false;
             }
 
             const preloadCopySuccess = await this.copyPreloadScriptToPublic();
             if (!preloadCopySuccess) {
-                console.error('[PreloadScriptManager] Failed to copy preload script to public folder');
+                console.error(
+                    '[PreloadScriptManager] Failed to copy preload script to public folder',
+                );
                 return false;
             }
-
+            // TODO: Update after this PR is merged: https://github.com/onlook-dev/onlook/pull/2386
             const layoutPaths = [
                 'app/layout.tsx',
                 'src/app/layout.tsx',
                 'pages/_app.tsx',
-                'src/pages/_app.tsx'
+                'src/pages/_app.tsx',
             ];
 
             let layoutPath: string | null = null;
@@ -56,31 +60,32 @@ export class PreloadScriptManager {
             }
 
             if (!layoutPath) {
-                console.error('[PreloadScriptManager] Could not find layout file for preload script injection');
+                console.error(
+                    '[PreloadScriptManager] Could not find layout file for preload script injection',
+                );
                 return false;
             }
 
             const layoutFile = await this.editorEngine.sandbox.readFile(layoutPath);
             if (!layoutFile || layoutFile.type !== 'text') {
-                console.error('[PreloadScriptManager] Could not read layout file or file is not text');
+                console.error(
+                    '[PreloadScriptManager] Could not read layout file or file is not text',
+                );
                 return false;
             }
-            
-            const currentContent = layoutFile.content;
-            
-            const hasOnlookScript = currentContent.includes('onlook-preload-script');
-            const hasPreloadJs = currentContent.includes('preload.js');
-            
-            if (hasOnlookScript || hasPreloadJs) {
-                this.state.isInjected = true;
-                this.state.injectedAt = Date.now();
-                return false; // Already injected
-            }
 
-            const updatedContent = this.addPreloadScriptToLayout(currentContent);
-            
+            const currentContent = layoutFile.content;
+
+            // Remove old preload script from layout if it exists
+            const cleanContent = this.removePreloadScriptFromLayout(currentContent);
+
+            // Add preload script to layout
+            const updatedContent = this.addPreloadScriptToLayout(cleanContent);
+
             if (updatedContent === currentContent) {
-                console.warn('[PreloadScriptManager] Could not inject preload script - no suitable injection point found');
+                console.warn(
+                    '[PreloadScriptManager] Could not inject preload script - no suitable injection point found',
+                );
                 return false;
             }
 
@@ -88,41 +93,10 @@ export class PreloadScriptManager {
 
             this.state.isInjected = true;
             this.state.injectedAt = Date.now();
-            
+
             return true;
         } catch (error) {
             console.error('[PreloadScriptManager] Failed to inject preload script:', error);
-            console.error('[PreloadScriptManager] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-            return false;
-        }
-    }
-
-    /**
-     * Remove the preload script by updating the layout.tsx file and deleting public/preload.js when editing stops
-     */
-    async removePreloadScript(): Promise<boolean> {
-        if (!this.state.isInjected) {
-            return false;
-        }
-
-        try {
-            const session = this.editorEngine.sandbox.session.session;
-            if (!session) {
-                console.warn('[PreloadScriptManager] No sandbox session available for preload script removal');
-                return false;
-            }
-
-            const layoutRemovalSuccess = await this.removeScriptFromLayout();
-            await this.removePreloadScriptFile();
-
-            const success = layoutRemovalSuccess;
-            if (success) {
-                this.state.isInjected = false;
-            }
-
-            return success;
-        } catch (error) {
-            console.error('[PreloadScriptManager] Failed to remove preload script:', error);
             return false;
         }
     }
@@ -147,63 +121,120 @@ export class PreloadScriptManager {
      * Add preload script to layout content
      */
     private addPreloadScriptToLayout(content: string): string {
-        const scriptSrc = '/preload.js';
+        const scriptSrc = '/onlook-preload-script.js';
 
-        const scriptTag = `
-                <Script
-                    id="onlook-preload-script"
-                    type="module"
-                    src="${scriptSrc}"
-                    strategy="beforeInteractive"
-                />`;
+        // Parse the layout file
+        const ast = parse(content, {
+            sourceType: 'module',
+            plugins: ['jsx', 'typescript'],
+        });
 
-        // Try to inject into existing head tag
-        const headRegex = /(<head[^>]*>)([\s\S]*?)(<\/head>)/i;
-        const headMatch = headRegex.exec(content);
-        
-        if (headMatch) {
-            const [, openTag, headContent, closeTag] = headMatch;
-            const updatedHead = `${openTag}${headContent}${scriptTag}
-            ${closeTag}`;
-            const result = content.replace(headRegex, updatedHead);
-            return result;
-        }
+        let hasScriptImport = false;
+        let scriptAdded = false;
 
-        // Try to inject after opening html tag
-        const htmlRegex = /(<html[^>]*>)/i;
-        
-        if (htmlRegex.test(content)) {
-            const result = content.replace(htmlRegex, `$1
-            <head>${scriptTag}
-            </head>`);
-            return result;
-        }
+        // Check if Script is already imported
+        traverse(ast, {
+            ImportDeclaration(path) {
+                if (path.node.source.value === 'next/script') {
+                    hasScriptImport = true;
+                }
+            },
+        });
 
-        // Last resort: inject at the beginning of the file if it contains JSX
-        const hasExportDefault = content.includes('export default function');
-        const hasReturn = content.includes('return');
-        
-        if (hasExportDefault && hasReturn) {
-            // Make sure Script is imported
-            let updatedContent = content;
-            const hasScriptImport = content.includes('import Script from \'next/script\'') || content.includes('import { Script }');
-            
-            if (!hasScriptImport) {
-                const importRegex = /(import.*from.*['"];?\s*)/;
-                const lastImportMatch = [...content.matchAll(new RegExp(importRegex.source, 'g'))].pop();
-                if (lastImportMatch) {
-                    const insertPoint = lastImportMatch.index + lastImportMatch[0].length;
-                    updatedContent = content.slice(0, insertPoint) + 
-                        `import Script from 'next/script';\n` + 
-                        content.slice(insertPoint);
+        // Add Script import if it doesn't exist
+        if (!hasScriptImport) {
+            const scriptImport = t.importDeclaration(
+                [t.importDefaultSpecifier(t.identifier('Script'))],
+                t.stringLiteral('next/script'),
+            );
+
+            // Find the position to insert the import
+            let insertIndex = 0;
+            for (let i = 0; i < ast.program.body.length; i++) {
+                const node = ast.program.body[i];
+                if (t.isImportDeclaration(node)) {
+                    insertIndex = i + 1;
                 } else {
-                    updatedContent = `import Script from 'next/script';\n` + content;
+                    break;
                 }
             }
-            return updatedContent;
+
+            ast.program.body.splice(insertIndex, 0, scriptImport);
         }
 
-        return content;
+        // Add Script component to the body
+        traverse(ast, {
+            JSXElement(path) {
+                // Check if this is the body element
+                const openingElement = path.node.openingElement;
+                if (
+                    t.isJSXIdentifier(openingElement.name) &&
+                    openingElement.name.name.toLowerCase() === 'body'
+                ) {
+                    // Check if Script is already added
+                    const hasScript = path.node.children.some(
+                        (child) =>
+                            t.isJSXElement(child) &&
+                            t.isJSXIdentifier(child.openingElement.name) &&
+                            child.openingElement.name.name === 'Script' &&
+                            child.openingElement.attributes.some(
+                                (attr) =>
+                                    t.isJSXAttribute(attr) &&
+                                    t.isJSXIdentifier(attr.name) &&
+                                    attr.name.name === 'src' &&
+                                    t.isStringLiteral(attr.value) &&
+                                    attr.value.value === scriptSrc,
+                            ),
+                    );
+
+                    if (!hasScript) {
+                        // Create Script element
+                        const scriptElement = t.jsxElement(
+                            t.jsxOpeningElement(
+                                t.jsxIdentifier('Script'),
+                                [
+                                    t.jsxAttribute(
+                                        t.jsxIdentifier('src'),
+                                        t.stringLiteral(scriptSrc),
+                                    ),
+                                    t.jsxAttribute(
+                                        t.jsxIdentifier('strategy'),
+                                        t.stringLiteral('afterInteractive'),
+                                    ),
+                                    t.jsxAttribute(
+                                        t.jsxIdentifier('type'),
+                                        t.stringLiteral('module'),
+                                    ),
+                                    t.jsxAttribute(
+                                        t.jsxIdentifier('id'),
+                                        t.stringLiteral('onlook-preload-script'),
+                                    ),
+                                ],
+                                true,
+                            ),
+                            null,
+                            [],
+                            true,
+                        );
+
+                        // Add Script element after children
+                        path.node.children.push(t.jsxText('\n                '));
+                        path.node.children.push(scriptElement);
+                        path.node.children.push(t.jsxText('\n            '));
+                        scriptAdded = true;
+                    }
+                }
+            },
+        });
+
+        if (scriptAdded) {
+            // Generate the modified code
+            const output = generate(ast, {}, content);
+
+            return output.code;
+        } else {
+            return content;
+        }
     }
 
     /**
@@ -213,16 +244,10 @@ export class PreloadScriptManager {
         // Remove the script tag - handle both self-closing and regular script tags
         const scriptRegex = /<Script[^>]*id="onlook-preload-script"[^>]*\/?>(?:\s*<\/Script>)?/gi;
         let updatedContent = content.replace(scriptRegex, '');
-        
+
         // Also remove any script tags that reference preload.js
         const preloadJsRegex = /<Script[^>]*src="[^"]*preload\.js"[^>]*\/?>(?:\s*<\/Script>)?/gi;
         updatedContent = updatedContent.replace(preloadJsRegex, '');
-
-        // Remove the import if it's not used elsewhere
-        if (!updatedContent.includes('<Script') && !updatedContent.includes('Script ')) {
-            const importRegex = /import\s+Script\s+from\s+['"]next\/script['"];\s*\n?/gi;
-            updatedContent = updatedContent.replace(importRegex, '');
-        }
 
         return updatedContent;
     }
@@ -240,7 +265,8 @@ export class PreloadScriptManager {
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-                scriptContent = await response.text();
+                const data = await response.text();
+                scriptContent = data;
             } catch (fetchError) {
                 // Fallback: create a minimal preload script
                 scriptContent = `
@@ -248,22 +274,17 @@ export class PreloadScriptManager {
 console.log('Onlook preload script loaded');
 
 // This is a fallback version - the full script should be served from localhost:8083
-if (typeof window !== 'undefined') {
-    window.onlookPreloadLoaded = true;
-}
 `;
             }
 
-            // Ensure public directory exists
-            const publicDirExists = await this.editorEngine.sandbox.fileExists('public');
-            if (!publicDirExists) {
-                // CodeSandbox will create the directory when we write a file to it
-            }
+            // Write the minified script content to public/onlook-preload-script.js
+            const publicScriptPath = 'public/onlook-preload-script.js';
+            const writeSuccess = await this.editorEngine.sandbox.writeFile(
+                publicScriptPath,
+                scriptContent,
+                true,
+            );
 
-            // Write the script content to public/preload.js
-            const publicScriptPath = 'public/preload.js';
-            const writeSuccess = await this.editorEngine.sandbox.writeFile(publicScriptPath, scriptContent);
-            
             return writeSuccess;
         } catch (error) {
             console.error('[PreloadScriptManager] Error copying preload script to public:', error);
@@ -272,89 +293,12 @@ if (typeof window !== 'undefined') {
     }
 
     /**
-     * Remove script tag from layout file
-     */
-    private async removeScriptFromLayout(): Promise<boolean> {
-        try {
-            // Find the layout file
-            const layoutPaths = [
-                'app/layout.tsx',
-                'src/app/layout.tsx', 
-                'pages/_app.tsx',
-                'src/pages/_app.tsx'
-            ];
-
-            let layoutPath: string | null = null;
-            for (const path of layoutPaths) {
-                try {
-                    const exists = await this.editorEngine.sandbox.fileExists(path);
-                    if (exists) {
-                        layoutPath = path;
-                        break;
-                    }
-                } catch (error) {
-                    // Continue to next path
-                }
-            }
-
-            if (!layoutPath) {
-                console.error('[PreloadScriptManager] Could not find layout file for preload script removal');
-                return false;
-            }
-
-            // Read the current layout file
-            const layoutFile = await this.editorEngine.sandbox.readFile(layoutPath);
-            if (!layoutFile || layoutFile.type !== 'text') {
-                console.error('[PreloadScriptManager] Could not read layout file or file is not text');
-                return false;
-            }
-            
-            const currentContent = layoutFile.content;
-            
-            // Remove the preload script
-            const updatedContent = this.removePreloadScriptFromLayout(currentContent);
-            
-            if (updatedContent === currentContent) {
-                // No changes needed
-                return true;
-            }
-
-            // Write the updated content back
-            await this.editorEngine.sandbox.writeFile(layoutPath, updatedContent);
-            return true;
-        } catch (error) {
-            console.error('[PreloadScriptManager] Error removing script from layout:', error);
-            return false;
-        }
-    }
-
-    /**
-     * Remove the public/preload.js file
-     */
-    private async removePreloadScriptFile(): Promise<boolean> {
-        try {
-            const publicScriptPath = 'public/preload.js';
-            const exists = await this.editorEngine.sandbox.fileExists(publicScriptPath);
-            if (!exists) {
-                return true;
-            }
-
-            const deleteSuccess = await this.editorEngine.sandbox.delete(publicScriptPath);
-            return deleteSuccess;
-        } catch (error) {
-            console.error('[PreloadScriptManager] Error removing preload script file:', error);
-            return false;
-        }
-    }
-
-    /**
      * Clean up when manager is destroyed
      */
     async destroy(): Promise<void> {
-        await this.removePreloadScript();
         this.state = {
             isInjected: false,
             injectedAt: 0,
         };
     }
-} 
+}
