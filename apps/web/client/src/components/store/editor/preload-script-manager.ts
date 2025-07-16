@@ -280,12 +280,11 @@ console.log('Onlook preload script loaded');
             } else {
                 // Production: read from public/onlook-preload-script.js
                 try {
-                    const file = await this.editorEngine.sandbox.readFile(publicScriptPath);
-                    if (!file || file.type !== 'text') {
-                        console.error('[PreloadScriptManager] Could not read preload script from public directory');
-                        return false;
+                    const response = await fetch('/onlook-preload-script.js');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
-                    scriptContent = file.content;
+                    scriptContent = await response.text();
                 } catch (readError) {
                     console.error('[PreloadScriptManager] Error reading preload script from public directory:', readError);
                     return false;
