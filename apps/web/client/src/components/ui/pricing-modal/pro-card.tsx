@@ -218,7 +218,7 @@ export const ProCard = ({
                     {isPendingTierSelected && isPro && <div className="text-amber-500 text-small text-balance">
                         {`This plan will start on ${subscription?.scheduledChange?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
                     </div>}
-                    <LegacyPromotion />
+                    {!isPro && <LegacyPromotion />}
                 </div>
                 <div className="flex flex-col gap-2 ">
                     {PRO_FEATURES.map((feature) => (

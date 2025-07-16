@@ -23,17 +23,24 @@ export const createCodeForCoupon = async (
     };
 }
 
-export const createLegacyCoupon = async (stripe: Stripe) => {
+export const createLegacyCoupon = async (stripe: Stripe): Promise<{
+    id: string;
+    redeemBy: Date;
+}> => {
+    const redeemBy = Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 90); // 90 days from now
     const coupon = await stripe.coupons.create({
         amount_off: 2500, // $25
         currency: 'usd',
         duration: 'once',
         max_redemptions: 1,
         name: 'Desktop Pro User',
-        redeem_by: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 90), // 90 days from now
+        redeem_by: redeemBy,
         metadata: {
             type: 'legacy'
-        }
+        },
     });
-    return coupon.id;
+    return {
+        id: coupon.id,
+        redeemBy: new Date(redeemBy * 1000),
+    }
 }

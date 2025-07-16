@@ -12,13 +12,13 @@ config({ path: '../../.env' });
 export const seedLegacySubscriptions = async () => {
     const stripe = createStripeClient();
 
-    // Create a stripe coupone
-    console.log('Create Coupon...');
-    const stripeCouponId = await createLegacyCoupon(stripe);
-
     // Read all legacy subscriptions from csv file
     console.log('Getting legacy subscriptions emails...');
     const emails: string[] = readFileSync(path.join(__dirname, './subscriptions.csv'), 'utf8').split('\n');
+
+    // Create a stripe coupon
+    console.log('Create Coupon...');
+    const { id: stripeCouponId, redeemBy } = await createLegacyCoupon(stripe);
 
     // Create a code for each email
     for (const email of emails) {
@@ -29,6 +29,7 @@ export const seedLegacySubscriptions = async () => {
             stripeCouponId,
             stripePromotionCodeId,
             stripePromotionCode,
+            redeemBy
         });
     }
 }
