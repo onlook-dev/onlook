@@ -31,6 +31,7 @@ export const seedLegacySubscriptions = async () => {
             stripePromotionCode,
             redeemBy
         });
+        console.log(`Created legacy subscription for ${email}`);
     }
 }
 
