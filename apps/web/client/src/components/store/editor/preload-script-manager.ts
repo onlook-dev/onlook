@@ -257,28 +257,42 @@ export class PreloadScriptManager {
      */
     private async copyPreloadScriptToPublic(): Promise<boolean> {
         try {
-            // Fetch the preload script content from the local server or built file
             let scriptContent: string;
-            try {
-                // We need to fetch this from the actual file system, not CodeSandbox
-                const response = await fetch('http://localhost:8083/');
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                const data = await response.text();
-                scriptContent = data;
-            } catch (fetchError) {
-                // Fallback: create a minimal preload script
-                scriptContent = `
+            const isDev = process.env.NODE_ENV === 'development';
+            const publicScriptPath = 'public/onlook-preload-script.js';
+
+            if (isDev) {
+                // Development: fetch from local server
+                try {
+                    const response = await fetch('http://localhost:8083/');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    scriptContent = await response.text();
+                } catch (fetchError) {
+                    // Fallback: create a minimal preload script
+                    scriptContent = `
 // Onlook Preload Script (Fallback)
 console.log('Onlook preload script loaded');
-
 // This is a fallback version - the full script should be served from localhost:8083
 `;
+                }
+            } else {
+                // Production: read from public/onlook-preload-script.js
+                try {
+                    const file = await this.editorEngine.sandbox.readFile(publicScriptPath);
+                    if (!file || file.type !== 'text') {
+                        console.error('[PreloadScriptManager] Could not read preload script from public directory');
+                        return false;
+                    }
+                    scriptContent = file.content;
+                } catch (readError) {
+                    console.error('[PreloadScriptManager] Error reading preload script from public directory:', readError);
+                    return false;
+                }
             }
 
-            // Write the minified script content to public/onlook-preload-script.js
-            const publicScriptPath = 'public/onlook-preload-script.js';
+            // Write the script content to public/onlook-preload-script.js (overwrite)
             const writeSuccess = await this.editorEngine.sandbox.writeFile(
                 publicScriptPath,
                 scriptContent,
