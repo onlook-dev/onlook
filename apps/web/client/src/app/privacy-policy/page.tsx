@@ -210,11 +210,11 @@ export default function PrivacyPage() {
                         </p>
                         <ul className="text-foreground-secondary mb-6 list-disc pl-6">
                             <li>https://onlook.dev/</li>
-                            <li>contact@onlook.dev</li>
+                            <li>contact@onlook.com</li>
                         </ul>
                     </div>
                 </div>
             </main>
         </WebsiteLayout>
     );
-}  
+}    
