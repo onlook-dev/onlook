@@ -18,10 +18,6 @@ export const EditorEngineProvider = ({ children, projectId }: {
     const editorEngine = useMemo(() => new EditorEngine(projectId), [projectId]);
 
     useEffect(() => {
-        // Always inject preload script in development after hot reload
-        if (process.env.NODE_ENV === 'development') {
-            editorEngine.preloadScript.injectPreloadScript();
-        }
         return () => {
             editorEngine.clear();
         };
