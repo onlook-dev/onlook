@@ -22,6 +22,7 @@ export const seedLegacySubscriptions = async () => {
 
     // Create a code for each email
     for (const email of emails) {
+        if (!email) continue;
         const { id: stripePromotionCodeId, code: stripePromotionCode } = await createCodeForCoupon(stripe, stripeCouponId, email);
         await db.insert(legacySubscriptions).values({
             email,
