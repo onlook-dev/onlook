@@ -10,6 +10,7 @@ import { toast } from '@onlook/ui/sonner';
 import { motion } from 'framer-motion';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { LegacyPromotion } from './legacy-promotion';
 import { useSubscription } from './use-subscription';
 
 export const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month`;
@@ -217,8 +218,9 @@ export const ProCard = ({
                     {isPendingTierSelected && isPro && <div className="text-amber-500 text-small text-balance">
                         {`This plan will start on ${subscription?.scheduledChange?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`}
                     </div>}
+                    {!isPro && <LegacyPromotion />}
                 </div>
-                <div className="flex flex-col gap-2 h-42">
+                <div className="flex flex-col gap-2 ">
                     {PRO_FEATURES.map((feature) => (
                         <div
                             key={feature}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
+import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
