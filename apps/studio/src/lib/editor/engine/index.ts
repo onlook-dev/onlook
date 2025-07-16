@@ -21,6 +21,7 @@ import { CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { ErrorManager } from './error';
+import { FilesManager } from './files';
 import { FontManager } from './font';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
@@ -29,7 +30,6 @@ import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
-import { FilesManager } from './files';
 import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
@@ -42,7 +42,7 @@ export class EditorEngine {
     private _hotkeysOpen: boolean = false;
     private _publishOpen: boolean = false;
     private _isLayersPanelLocked: boolean = false;
-
+    private _isAnnouncementOpen: boolean = false;
     private _editorMode: EditorMode = EditorMode.DESIGN;
     private _editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private _settingsTab: SettingsTabValue | string = SettingsTabValue.PREFERENCES;
@@ -190,7 +190,9 @@ export class EditorEngine {
     get isLayersPanelLocked() {
         return this._isLayersPanelLocked;
     }
-
+    get isAnnouncementOpen() {
+        return this._isAnnouncementOpen;
+    }
     set isLayersPanelLocked(value: boolean) {
         this._isLayersPanelLocked = value;
     }
@@ -232,6 +234,10 @@ export class EditorEngine {
 
     set brandTab(tab: BrandTabValue | null) {
         this._brandTab = tab;
+    }
+
+    set isAnnouncementOpen(open: boolean) {
+        this._isAnnouncementOpen = open;
     }
 
     dispose() {

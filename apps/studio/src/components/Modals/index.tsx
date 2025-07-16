@@ -1,3 +1,4 @@
+import { AnnouncementModal } from './Announcement';
 import { QuittingModal } from './Quitting';
 import { SettingsModal } from './Settings';
 import { SubscriptionModal } from './Subscription/PricingPage';
@@ -8,6 +9,7 @@ export const Modals = () => {
             <SettingsModal />
             <QuittingModal />
             <SubscriptionModal />
+            <AnnouncementModal />
         </>
     );
 };
