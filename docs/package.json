@@ -9,13 +9,13 @@
         "postinstall": "fumadocs-mdx"
     },
     "dependencies": {
+        "@onlook/ui": "*",
+        "fumadocs-core": "^15.6.4",
+        "fumadocs-mdx": "^11.6.11",
+        "fumadocs-ui": "^15.6.4",
         "next": "15.3.1",
         "react": "^19.1.0",
-        "react-dom": "^19.1.0",
-        "fumadocs-ui": "15.3.1",
-        "fumadocs-core": "15.5.0",
-        "fumadocs-mdx": "11.6.3",
-        "@onlook/ui": "*"
+        "react-dom": "^19.1.0"
     },
     "devDependencies": {
         "@types/node": "22.15.12",

@@ -33,7 +33,8 @@
         "prepare": "husky",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
-        "setup:env": "bun --filter @onlook/scripts build && bun packages/scripts/dist/index.js"
+        "setup:env": "bun --filter @onlook/scripts build && bun packages/scripts/dist/index.js",
+        "postbuild": "next-sitemap"
     },
     "repository": {
         "type": "git",
@@ -44,8 +45,13 @@
     },
     "devDependencies": {
         "extract-zip": "^2.0.1",
-        "husky": "^9.1.6"
+        "husky": "^9.1.6",
+        "next-sitemap": "^4.2.3"
     },
-    "dependencies": {},
+    "dependencies": {
+        "fumadocs-core": "^15.6.4",
+        "fumadocs-mdx": "^11.6.11",
+        "fumadocs-ui": "^15.6.4"
+    },
     "packageManager": "bun@1.2.13"
 }
