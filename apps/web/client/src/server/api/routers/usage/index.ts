@@ -1,7 +1,7 @@
 import { rateLimits, subscriptions, usageRecords } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { UsageType, type Usage } from '@onlook/models';
-import { FREE_PRODUCT_CONFIG } from '@onlook/stripe';
+import { FREE_PRODUCT_CONFIG, SubscriptionStatus } from '@onlook/stripe';
 import { add } from 'date-fns/add';
 import { startOfDay } from 'date-fns/startOfDay';
 import { startOfMonth } from 'date-fns/startOfMonth';
@@ -18,7 +18,7 @@ export const usageRouter = createTRPCRouter({
 
         // If the user has an active subscription then they can use their rate limits (including carry-over)
         const subscription = await db.query.subscriptions.findFirst({
-            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
+            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, SubscriptionStatus.ACTIVE)),
         });
 
         // if no subscription then user is on a free plan

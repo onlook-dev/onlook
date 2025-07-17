@@ -1,6 +1,6 @@
 import { prices, rateLimits, subscriptions, users } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { ScheduledSubscriptionAction } from '@onlook/stripe';
+import { ScheduledSubscriptionAction, SubscriptionStatus } from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { v4 as uuid } from 'uuid';
@@ -88,7 +88,7 @@ export const handleSubscriptionCreated = async (
                 userId: user.id,
                 priceId: price.id,
                 productId: price.productId,
-                status: 'active',
+                status: SubscriptionStatus.ACTIVE,
                 stripeCustomerId,
                 stripeSubscriptionId: stripeSubscriptionId,
                 stripeSubscriptionItemId: stripeSubscriptionItemId,
@@ -99,7 +99,7 @@ export const handleSubscriptionCreated = async (
                 target: [subscriptions.stripeSubscriptionItemId],
                 set: {
                     // Left in case there are concurrent webhook requests for the same subscription
-                    status: 'active',
+                    status: SubscriptionStatus.ACTIVE,
                 },
             })
             .returning();
@@ -139,7 +139,7 @@ export const handleSubscriptionDeleted = async (
     const res = await db
         .update(subscriptions)
         .set({
-            status: 'canceled',
+            status: SubscriptionStatus.CANCELED,
             endedAt: new Date(),
             scheduledPriceId: null,
             scheduledChangeAt: null,
@@ -295,7 +295,7 @@ export const handleSubscriptionUpdated = async (
             await tx
                 .update(subscriptions)
                 .set({
-                    status: 'active',
+                    status: SubscriptionStatus.ACTIVE,
                     stripeSubscriptionItemId,
                     stripeCurrentPeriodStart: currentPeriodStart,
                     stripeCurrentPeriodEnd: currentPeriodEnd,

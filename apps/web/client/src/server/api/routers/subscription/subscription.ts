@@ -1,17 +1,30 @@
 import { Routes } from '@/utils/constants';
-import { prices, subscriptions, toSubscription, users } from '@onlook/db';
+import { legacySubscriptions, prices, subscriptions, toSubscription, users } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { createBillingPortalSession, createCheckoutSession, createCustomer, PriceKey, releaseSubscriptionSchedule, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
-import { and, eq } from 'drizzle-orm';
+import { createBillingPortalSession, createCheckoutSession, createCustomer, PriceKey, releaseSubscriptionSchedule, SubscriptionStatus, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
+import { and, eq, isNull } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const subscriptionRouter = createTRPCRouter({
+    getLegacySubscriptions: protectedProcedure.query(async ({ ctx }) => {
+        const user = ctx.user;
+        const subscription = await db.query.legacySubscriptions.findFirst({
+            where: and(
+                eq(legacySubscriptions.email, user.email),
+                isNull(legacySubscriptions.redeemAt),
+            ),
+        });
+        return subscription;
+    }),
     get: protectedProcedure.query(async ({ ctx }) => {
         const user = ctx.user;
         const subscription = await db.query.subscriptions.findFirst({
-            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
+            where: and(
+                eq(subscriptions.userId, user.id),
+                eq(subscriptions.status, SubscriptionStatus.ACTIVE),
+            ),
             with: {
                 product: true,
                 price: true,
@@ -92,7 +105,10 @@ export const subscriptionRouter = createTRPCRouter({
     manageSubscription: protectedProcedure.mutation(async ({ ctx }) => {
         const user = ctx.user;
         const subscription = await db.query.subscriptions.findFirst({
-            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
+            where: and(
+                eq(subscriptions.userId, user.id),
+                eq(subscriptions.status, SubscriptionStatus.ACTIVE),
+            ),
         });
 
         if (!subscription) {
@@ -166,7 +182,7 @@ export const subscriptionRouter = createTRPCRouter({
     })).mutation(async ({ input }) => {
         await releaseSubscriptionSchedule({ subscriptionScheduleId: input.subscriptionScheduleId });
         await db.update(subscriptions).set({
-            status: 'active',
+            status: SubscriptionStatus.ACTIVE,
             updatedAt: new Date(),
             scheduledPriceId: null,
             stripeSubscriptionScheduleId: null,
