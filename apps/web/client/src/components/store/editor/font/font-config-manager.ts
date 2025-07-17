@@ -2,25 +2,19 @@ import type { ParseResult } from '@babel/parser';
 import * as t from '@babel/types';
 import { DefaultSettings } from '@onlook/constants';
 import {
-    parseFontDeclarations,
-    migrateFontsFromLayout,
-    validateGoogleFontSetup,
-    removeFontDeclaration,
     addGoogleFontSpecifier,
     generateFontVariableExport,
+    migrateFontsFromLayout,
+    parseFontDeclarations,
+    removeFontDeclaration,
+    validateGoogleFontSetup,
 } from '@onlook/fonts';
-import { RouterType, type Font } from '@onlook/models';
+import { RouterType, type CodeDiff, type Font } from '@onlook/models';
 import { generate, parse } from '@onlook/parser';
 import { camelCase } from 'lodash';
-import { normalizePath } from '../sandbox/helpers';
-import type { EditorEngine } from '../engine';
 import { makeAutoObservable, reaction } from 'mobx';
-
-interface CodeDiff {
-    original: string;
-    generated: string;
-    path: string;
-}
+import type { EditorEngine } from '../engine';
+import { normalizePath } from '../sandbox/helpers';
 
 export class FontConfigManager {
     private _fontConfigPath: string | null = null;
@@ -226,9 +220,9 @@ export class FontConfigManager {
      */
     async readFontConfigFile(): Promise<
         | {
-              ast: ParseResult<t.File>;
-              content: string;
-          }
+            ast: ParseResult<t.File>;
+            content: string;
+        }
         | undefined
     > {
         const sandbox = this.editorEngine.sandbox;

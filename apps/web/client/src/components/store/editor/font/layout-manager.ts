@@ -1,33 +1,27 @@
 import type { ParseResult } from '@babel/parser';
 import * as t from '@babel/types';
-import { RouterType } from '@onlook/models';
 import {
+    cleanComma,
     createStringLiteralWithFont,
     findFontClass,
-    removeFontsFromClassName,
-    removeFontImportFromFile,
-    cleanComma,
     getFontRootElements,
+    removeFontImportFromFile,
+    removeFontsFromClassName,
     updateClassNameWithFontVar,
 } from '@onlook/fonts';
-import type { Font } from '@onlook/models';
+import type { CodeDiff, Font } from '@onlook/models';
+import { RouterType } from '@onlook/models';
 import { generate, parse, traverse } from '@onlook/parser';
 import { camelCase } from 'lodash';
-import * as pathModule from 'path';
-import { normalizePath } from '../sandbox/helpers';
-import type { EditorEngine } from '../engine';
 import { makeAutoObservable } from 'mobx';
+import * as pathModule from 'path';
+import type { EditorEngine } from '../engine';
+import { normalizePath } from '../sandbox/helpers';
 
 type TraverseCallback = (
     classNameAttr: t.JSXAttribute,
     ast: ParseResult<t.File>,
 ) => void | Promise<void>;
-
-interface CodeDiff {
-    original: string;
-    generated: string;
-    path: string;
-}
 
 export class LayoutManager {
     readonly fontImportPath = './fonts';
@@ -348,7 +342,7 @@ export class LayoutManager {
         }
     }
 
-    private async getLayoutContext(): Promise<{ layoutPath: string; targetElements: string[] , layoutContent: string} | undefined> {
+    private async getLayoutContext(): Promise<{ layoutPath: string; targetElements: string[], layoutContent: string } | undefined> {
         const { layoutPath, routerConfig } = (await this.getRootLayoutPath()) ?? {};
 
         if (!layoutPath || !routerConfig) {

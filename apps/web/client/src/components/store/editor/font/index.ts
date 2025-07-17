@@ -1,22 +1,15 @@
 'use client';
 
-import {  type FontUploadFile } from '@onlook/models';
+import { type CodeDiff, type FontUploadFile } from '@onlook/models';
 import type { Font } from '@onlook/models/assets';
+import { generate } from '@onlook/parser';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
-import { FontSearchManager } from './font-search-manager';
 import { FontConfigManager } from './font-config-manager';
-import { LayoutManager } from './layout-manager';
+import { FontSearchManager } from './font-search-manager';
 import { FontUploadManager } from './font-upload-manager';
-import { generate } from '@onlook/parser';
-import { addFontToTailwindConfig, removeFontFromTailwindConfig } from './tailwind-config';
-import { ensureTailwindConfigExists } from './tailwind-config';
-
-interface CodeDiff {
-    original: string;
-    generated: string;
-    path: string;
-}
+import { LayoutManager } from './layout-manager';
+import { addFontToTailwindConfig, ensureTailwindConfigExists, removeFontFromTailwindConfig } from './tailwind-config';
 
 export class FontManager {
     private _fonts: Font[] = [];
@@ -37,7 +30,7 @@ export class FontManager {
 
         // Initialize managers
         this.fontSearchManager = new FontSearchManager();
-        this.fontConfigManager = new FontConfigManager(editorEngine);   
+        this.fontConfigManager = new FontConfigManager(editorEngine);
         this.layoutManager = new LayoutManager(editorEngine);
         this.fontUploadManager = new FontUploadManager(editorEngine);
 
