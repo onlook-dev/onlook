@@ -7,6 +7,7 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
     openGraph: {
+        url: 'https://onlook.com',
         siteName: 'Onlook',
     },
     title: 'My New App',

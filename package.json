@@ -45,13 +45,7 @@
     },
     "devDependencies": {
         "extract-zip": "^2.0.1",
-        "husky": "^9.1.6",
-        "next-sitemap": "^4.2.3"
-    },
-    "dependencies": {
-        "fumadocs-core": "^15.6.4",
-        "fumadocs-mdx": "^11.6.11",
-        "fumadocs-ui": "^15.6.4"
+        "husky": "^9.1.6"
     },
     "packageManager": "bun@1.2.13"
 }
