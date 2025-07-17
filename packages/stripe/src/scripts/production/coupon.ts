@@ -32,7 +32,6 @@ export const createLegacyCoupon = async (stripe: Stripe): Promise<{
         amount_off: 2500, // $25
         currency: 'usd',
         duration: 'once',
-        max_redemptions: 1,
         name: 'Desktop Pro User',
         redeem_by: redeemBy,
         metadata: {
