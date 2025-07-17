@@ -41,14 +41,8 @@ export class FontManager {
                 if (isIndexedFiles) {
                     await this.loadInitialFonts();
                     await this.getDefaultFont();
+                    await this.syncFontsWithConfigs();
                 }
-            },
-        );
-
-        reaction(
-            () => this.editorEngine.sandbox.readFile(this.fontConfigManager.fontConfigPath),
-            async () => {
-                await this.syncFontsWithConfigs();
             },
         );
     }
@@ -62,12 +56,6 @@ export class FontManager {
     }
 
     async scanFonts(): Promise<Font[]> {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            console.error('No sandbox session found');
-            return [];
-        }
-
         this._isScanning = true;
         try {
             // Scan existing fonts and move them to config
