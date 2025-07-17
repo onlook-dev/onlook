@@ -30,8 +30,12 @@ interface InputIconProps {
 
 export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: InputIconProps) => {
     const [unitValue, setUnitValue] = useState(unit);
+    const [inputValue, setInputValue] = useState(String(value));
     const { localValue, handleKeyDown, handleChange } = useInputControl(value, onChange);
 
+    useEffect(() => {
+        setInputValue(String(value));
+    }, [value]);
 
     const IconComponent = icon ? Icons[icon] : null;
 
@@ -43,12 +47,18 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
             <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
                 <input
                     type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
-                    value={localValue}
-                    onChange={(e) => handleChange(Number(e.target.value))}
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
+                    value={inputValue}
+                    onChange={(e) => {
+                        setInputValue(e.target.value);
+                        const numValue = Number(e.target.value);
+                        if (!isNaN(numValue)) {
+                            handleChange(numValue);
+                        }
+                    }}
                     onKeyDown={handleKeyDown}
-                    className="w-full bg-transparent text-sm text-white focus:outline-none uppercase hover:text-white"
+                    className="w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase hover:text-white"
                 />
 
                 <DropdownMenu modal={false}>

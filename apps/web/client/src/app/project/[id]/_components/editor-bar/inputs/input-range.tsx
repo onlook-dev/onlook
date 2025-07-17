@@ -113,12 +113,12 @@ export const InputRange = ({
                 <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px]">
                     <input
                         type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
+                        inputMode="decimal"
+                        pattern="[0-9]*\.?[0-9]*"
                         value={localValue}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase input-range-text"
+                        className="w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase input-range-text"
                         onKeyDown={(e) => {
                             if (e.key === 'Enter') {
                                 handleBlur();

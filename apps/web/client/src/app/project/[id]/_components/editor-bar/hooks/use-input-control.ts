@@ -37,7 +37,6 @@ export const useInputControl = (value: number, onChange?: (value: number) => voi
         [onChange]
     );
 
-
     useEffect(() => {
         return () => {
             debouncedOnChange.cancel();
