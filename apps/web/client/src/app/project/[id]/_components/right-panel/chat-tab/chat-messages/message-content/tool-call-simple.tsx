@@ -41,11 +41,12 @@ export function ToolCallSimple({
         let interval: NodeJS.Timeout | null = null;
         
         if (loading) {
+            const currentStartTime = startTime ?? Date.now();
             if (startTime === null) {
-                setStartTime(Date.now());
+                setStartTime(currentStartTime);
             }
             interval = setInterval(() => {
-                setElapsedTime(Date.now() - (startTime || Date.now()));
+                setElapsedTime(Date.now() - currentStartTime);
             }, 100);
         }
         
@@ -147,4 +148,4 @@ export function ToolCallSimple({
             )}
         </div>
     );
-}  
+}    
