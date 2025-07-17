@@ -56,7 +56,7 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
             
             // Render children recursively
             if (page.children && page.children.length > 0) {
-                items.push(...renderPageItems(page.children, depth + 1, true));
+                items.push(...renderPageItems(page.children, depth + 1));
             }
         }
         
