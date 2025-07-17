@@ -1,5 +1,5 @@
 -- Create new type
-CREATE TYPE "public"."verification_request_status" AS ENUM('active', 'expired', 'used');--> statement-breakpoint
+CREATE TYPE "public"."verification_request_status" AS ENUM('pending', 'verified', 'cancelled');--> statement-breakpoint
 CREATE TABLE "custom_domains" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"apex_domain" text NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE "custom_domain_verification" (
 	"verification_code" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"status" "verification_request_status" DEFAULT 'active' NOT NULL
+	"status" "verification_request_status" DEFAULT 'pending' NOT NULL
 );
 --> statement-breakpoint
 ALTER TABLE "preview_domains" ADD CONSTRAINT "preview_domains_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

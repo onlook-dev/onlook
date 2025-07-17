@@ -64,8 +64,6 @@ ALTER TABLE "custom_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "preview_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "published_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "custom_domain_verification" ALTER COLUMN "status" SET DATA TYPE "public"."verification_request_status";--> statement-breakpoint
-ALTER TABLE "custom_domain_verification" ALTER COLUMN "status" SET DEFAULT 'active';--> statement-breakpoint
 ALTER TABLE "messages" ADD COLUMN "commit_oid" text;--> statement-breakpoint
 ALTER TABLE "user_settings" ADD COLUMN "should_warn_delete" boolean DEFAULT true NOT NULL;--> statement-breakpoint
 ALTER TABLE "project_settings" ADD CONSTRAINT "project_settings_project_id_projects_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."projects"("id") ON DELETE cascade ON UPDATE cascade;--> statement-breakpoint
