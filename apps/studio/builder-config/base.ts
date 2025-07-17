@@ -41,10 +41,8 @@ const config: Configuration = {
             } as TargetConfiguration,
         ],
         artifactName: '${productName}-setup.${ext}',
-        signtoolOptions: {
-            publisherName: 'On Off, Inc',
-        },
         azureSignOptions: {
+            publisherName: 'On Off, Inc',
             certificateProfileName: 'public-trust-onlook',
             codeSigningAccountName: 'trusted-onlook',
             endpoint: 'https://eus.codesigning.azure.net',
