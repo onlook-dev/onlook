@@ -1,7 +1,7 @@
 import { Routes } from '@/utils/constants';
 import { legacySubscriptions, prices, subscriptions, toSubscription, users } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { createBillingPortalSession, createCheckoutSession, createCustomer, PriceKey, releaseSubscriptionSchedule, SubscriptionStatus, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
+import { createBillingPortalSession, createCheckoutSession, createCustomer, isTierUpgrade, PriceKey, releaseSubscriptionSchedule, SubscriptionStatus, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
 import { and, eq, isNull } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -160,7 +160,7 @@ export const subscriptionRouter = createTRPCRouter({
             });
         }
 
-        const isUpgrade = newPrice?.monthlyMessageLimit > currentPrice.monthlyMessageLimit;
+        const isUpgrade = isTierUpgrade(currentPrice, newPrice);
         if (isUpgrade) {
             // If the new price is higher, we invoice the customer immediately.
             await updateSubscription({
@@ -181,13 +181,19 @@ export const subscriptionRouter = createTRPCRouter({
         subscriptionScheduleId: z.string(),
     })).mutation(async ({ input }) => {
         await releaseSubscriptionSchedule({ subscriptionScheduleId: input.subscriptionScheduleId });
-        await db.update(subscriptions).set({
+        const [updatedSubscription] = await db.update(subscriptions).set({
             status: SubscriptionStatus.ACTIVE,
             updatedAt: new Date(),
             scheduledPriceId: null,
             stripeSubscriptionScheduleId: null,
             scheduledChangeAt: null,
         }).where(eq(subscriptions.stripeSubscriptionScheduleId, input.subscriptionScheduleId)).returning();
+
+        if (!updatedSubscription) {
+            throw new Error('Subscription not found');
+        }
+
+        return updatedSubscription;
     }),
 });
 

@@ -1,7 +1,7 @@
 import { env } from '@/env';
 import { createStripeClient } from '@onlook/stripe';
 import Stripe from 'stripe';
-import { handleSubscriptionCreated, handleSubscriptionDeleted, handleSubscriptionUpdated } from './stripe';
+import { handleSubscriptionCreated, handleSubscriptionDeleted, handleSubscriptionUpdated } from './subscription';
 
 export async function POST(request: Request) {
     const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
