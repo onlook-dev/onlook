@@ -46,7 +46,7 @@ export function ToolCallSimple({
                 setStartTime(currentStartTime);
             }
             interval = setInterval(() => {
-                setElapsedTime(Date.now() - currentStartTime);
+                setElapsedTime(Date.now() - (startTime ?? Date.now()));
             }, 100);
         }
         
@@ -148,4 +148,4 @@ export function ToolCallSimple({
             )}
         </div>
     );
-}    
+}      
