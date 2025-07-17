@@ -227,6 +227,9 @@
                             "placeholder": "输入您的消息…",
                             "tooltip": "就所选元素与 AI 进行讨论"
                         },
+                        "mode": {
+                            "tooltip": "在构建和询问模式之间切换"
+                        },
                         "controls": {
                             "newChat": "新聊天",
                             "history": "聊天记录"
