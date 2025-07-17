@@ -5,6 +5,11 @@ export enum ProductType {
     PRO = 'pro',
 }
 
+export enum SubscriptionStatus {
+    ACTIVE = 'active',
+    CANCELED = 'canceled',
+}
+
 export interface Product {
     name: string;
     type: ProductType;
@@ -21,7 +26,7 @@ export interface Price {
 
 export interface Subscription {
     id: string;
-    status: string;
+    status: SubscriptionStatus;
     startedAt: Date;
     endedAt: Date | null;
     product: Product;

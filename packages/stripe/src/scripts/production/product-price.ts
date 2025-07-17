@@ -1,5 +1,5 @@
-import { createStripeClient } from '../client';
-import { createProProductWithPrices } from './product';
+import { createStripeClient } from '../../client';
+import { createProProductWithPrices } from '../dev/product';
 
 const createProductionProduct = async () => {
     const stripe = createStripeClient();
