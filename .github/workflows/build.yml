@@ -27,7 +27,7 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - os: macos-14
+                    - os: macos-15
                     - os: windows-latest
                     - os: ubuntu-latest
 
@@ -55,7 +55,7 @@ jobs:
 
             - uses: oven-sh/setup-bun@v1
               with:
-                  bun-version: 1.2.8
+                  bun-version: latest
 
             - name: Install dependencies
               run: bun install
