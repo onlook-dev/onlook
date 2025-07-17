@@ -9,11 +9,9 @@ export const replaceCommand = (command: string, newCommand: string): string => {
 
     // For Windows, add '&' to the command to handle special characters
     if (process.platform === 'win32') {
-        const executable = `"${finalCommand.toString()}"`;
-        // This is a simplification and assumes args don't need complex escaping.
-        const args = cmdArgs.map((arg) => arg?.toString() || '');
-        const fullCommand = [executable, ...args].join(' ');
-        return `& ${fullCommand}`;
+        return (
+            '& ' + quote([finalCommand.toString(), ...cmdArgs.map((arg) => arg?.toString() || '')])
+        );
     }
     return quote([finalCommand.toString(), ...cmdArgs.map((arg) => arg?.toString() || '')]);
 };
