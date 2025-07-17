@@ -15,9 +15,10 @@ ALTER TABLE "custom_domain_verification" RENAME COLUMN "domain_id" TO "custom_do
 ALTER TABLE "custom_domain_verification" RENAME COLUMN "verification_id" TO "freestyle_verification_id";--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" DROP CONSTRAINT "custom_domain_verification_domain_id_custom_domains_id_fk";
 --> statement-breakpoint
+ALTER TABLE "custom_domain_verification" DROP COLUMN "status";--> statement-breakpoint
 DROP TYPE IF EXISTS "public"."verification_request_status";--> statement-breakpoint
 CREATE TYPE "public"."verification_request_status" AS ENUM('pending', 'verified', 'cancelled');--> statement-breakpoint
-ALTER TABLE "custom_domain_verification" ALTER COLUMN "status" SET DEFAULT 'pending';--> statement-breakpoint
+ALTER TABLE "custom_domain_verification" ADD COLUMN "status" "verification_request_status" NOT NULL DEFAULT 'pending';--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ADD COLUMN "full_domain" text NOT NULL;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ADD COLUMN "txt_record" jsonb NOT NULL;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ADD COLUMN "a_records" jsonb DEFAULT '[]'::jsonb NOT NULL;--> statement-breakpoint
