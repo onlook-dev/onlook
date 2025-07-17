@@ -5,4 +5,4 @@ VERSION=$(node -p "require('./apps/studio/package').version")
 git tag -d v$VERSION
 
 # Remove tag remotely
-git push origin :refs/tags/v$VERSION
+git push https://github.com/onlook-dev/onlook.git :refs/tags/v$VERSION
