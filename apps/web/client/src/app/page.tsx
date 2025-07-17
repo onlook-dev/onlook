@@ -1,7 +1,7 @@
 'use client';
 
 import { CreateManagerProvider } from '@/components/store/create';
-import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
+import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
 import { AuthModal } from './_components/auth-modal';
 import { Hero } from './_components/hero';

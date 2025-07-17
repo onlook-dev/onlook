@@ -1,7 +1,7 @@
 import { subscriptions, usageRecords } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { UsageType, type Usage } from '@onlook/models';
-import { FREE_PRODUCT_CONFIG } from '@onlook/stripe';
+import { FREE_PRODUCT_CONFIG, SubscriptionStatus } from '@onlook/stripe';
 import { and, eq, gte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -11,7 +11,10 @@ export const usageRouter = createTRPCRouter({
         const user = ctx.user;
 
         const subscription = await db.query.subscriptions.findFirst({
-            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
+            where: and(
+                eq(subscriptions.userId, user.id),
+                eq(subscriptions.status, SubscriptionStatus.ACTIVE),
+            ),
             with: {
                 price: true,
             },
