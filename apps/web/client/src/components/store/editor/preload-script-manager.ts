@@ -264,7 +264,7 @@ export class PreloadScriptManager {
             if (isDev) {
                 // Development: fetch from local server
                 try {
-                    const response = await fetch('http://localhost:8083/');
+                    const response = await fetch(`http://localhost:8083/?${Math.random()}`);
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                     }
