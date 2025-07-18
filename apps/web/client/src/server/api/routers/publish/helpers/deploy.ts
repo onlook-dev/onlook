@@ -1,4 +1,4 @@
-import { client } from '@/utils/analytics/server.ts';
+import { trackEvent } from '@/utils/analytics/server.ts';
 import { deployments, type Deployment } from '@onlook/db';
 import type { DrizzleDb } from '@onlook/db/src/client';
 import {
@@ -82,7 +82,7 @@ export async function createDeployment(
         });
     }
 
-    client?.capture({
+    trackEvent({
         distinctId: userId,
         event: 'user_deployed_project',
         properties: {

@@ -68,9 +68,6 @@ export function Create({ cardKey }: { cardKey: number }) {
     };
 
     const createProject = async (prompt: string, images: ImageMessageContext[]) => {
-        posthog.capture('user_create_project', {
-            prompt,
-        });
         if (!user?.id) {
             console.error('No user ID found');
 
