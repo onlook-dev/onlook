@@ -212,7 +212,7 @@ const scanAppDirectory = async (
 
     // Handle page files
     const pageFile = entries.find(
-        (entry: ReaddirEntry) =>
+        (entry: any) =>
             entry.type === 'file' &&
             entry.name.startsWith('page.') &&
             ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
@@ -250,7 +250,7 @@ const scanAppDirectory = async (
 
         // Look for layout file in the same directory
         const layoutFile = entries.find(
-            (entry: ReaddirEntry) =>
+            (entry: any) =>
                 entry.type === 'file' &&
                 entry.name.startsWith('layout.') &&
                 ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
@@ -275,22 +275,6 @@ const scanAppDirectory = async (
             ...pageMetadata,
         };
 
-        // Scan for child directories and add them as children of this page
-        const children: PageNode[] = [];
-        for (const entry of entries) {
-            if (IGNORED_DIRECTORIES.includes(entry.name)) {
-                continue;
-            }
-
-            const fullPath = `${dir}/${entry.name}`;
-            const relativePath = joinPath(parentPath, entry.name);
-
-            if (entry.type === 'directory') {
-                const childNodes = await scanAppDirectory(sandboxManager, fullPath, relativePath);
-                children.push(...childNodes);
-            }
-        }
-
         nodes.push({
             id: nanoid(),
             name: isDynamicRoute
@@ -299,36 +283,36 @@ const scanAppDirectory = async (
                     ? getBaseName(parentPath)
                     : ROOT_PAGE_NAME,
             path: cleanPath,
-            children,
+            children: [],
             isActive: false,
             isRoot,
-            metadata: metadata ?? {},
+            metadata: metadata || {},
         });
-    } else {
-        // Handle directories that don't have a page file
-        for (const entry of entries) {
-            if (IGNORED_DIRECTORIES.includes(entry.name)) {
-                continue;
-            }
+    }
 
-            const fullPath = `${dir}/${entry.name}`;
-            const relativePath = joinPath(parentPath, entry.name);
+    // Handle directories
+    for (const entry of entries) {
+        if (IGNORED_DIRECTORIES.includes(entry.name)) {
+            continue;
+        }
 
-            if (entry.type === 'directory') {
-                const children = await scanAppDirectory(sandboxManager, fullPath, relativePath);
-                if (children.length > 0) {
-                    const dirPath = relativePath.replace(/\\/g, '/');
-                    const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
-                    nodes.push({
-                        id: nanoid(),
-                        name: entry.name,
-                        path: cleanPath,
-                        children,
-                        isActive: false,
-                        isRoot: false,
-                        metadata: {},
-                    });
-                }
+        const fullPath = `${dir}/${entry.name}`;
+        const relativePath = joinPath(parentPath, entry.name);
+
+        if (entry.type === 'directory') {
+            const children = await scanAppDirectory(sandboxManager, fullPath, relativePath);
+            if (children.length > 0) {
+                const dirPath = relativePath.replace(/\\/g, '/');
+                const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
+                nodes.push({
+                    id: nanoid(),
+                    name: entry.name,
+                    path: cleanPath,
+                    children,
+                    isActive: false,
+                    isRoot: false,
+                    metadata: {},
+                });
             }
         }
     }
@@ -441,7 +425,7 @@ const scanPagesDirectory = async (
             }
         }
     }
-    
+
     return nodes;
 };
 
