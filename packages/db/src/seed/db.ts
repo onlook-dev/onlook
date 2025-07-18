@@ -4,6 +4,7 @@ import {
     createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
     deployments,
     frames,
+    legacySubscriptions,
     messages,
     previewDomains,
     prices,
@@ -231,6 +232,7 @@ export const resetDb = async () => {
         await tx.delete(userProjects);
         await tx.delete(projects);
         await tx.delete(users);
+        await tx.delete(legacySubscriptions);
     });
 
     console.log('Database reset!');

@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
-import { createStripeClient } from '../client';
-import { PRO_PRODUCT_CONFIG, PriceKey, type PriceConfig } from '../constants';
+import { createStripeClient } from '../../client';
+import { PRO_PRODUCT_CONFIG, PriceKey, type PriceConfig } from '../../constants';
 import { createTestCustomerAndSubscribe } from './customer';
 import { cleanupExistingProduct } from './reset';
 

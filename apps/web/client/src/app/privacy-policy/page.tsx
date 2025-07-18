@@ -12,7 +12,7 @@ export default function PrivacyPage() {
 
                     <div className="prose prose-invert max-w-none">
                         <p className="text-foreground-secondary mb-8">
-                            If you have any questions, please write to us at [email protected]
+                            If you have any questions, please write to us at contact@onlook.com
                         </p>
 
                         <h2 className="text-2xl font-light text-foreground-primary mt-12 mb-6">Introduction</h2>
@@ -190,13 +190,13 @@ export default function PrivacyPage() {
 
                         <h2 className="text-2xl font-light text-foreground-primary mt-12 mb-6">Personal Data of Children</h2>
                         <p className="text-foreground-secondary mb-6">
-                            As noted in the Terms of Use, we do not knowingly collect or solicit Personal Data from children under 13 years of age; if you are a child under the age of 13, please do not attempt to register for or otherwise use the Services or send us any Personal Data. If we learn we have collected Personal Data from a child under 13 years of age, we will delete that information as quickly as possible. If you believe that a child under 13 years of age may have provided Personal Data to us, please contact us at [email protected].
+                            As noted in the Terms of Use, we do not knowingly collect or solicit Personal Data from children under 13 years of age; if you are a child under the age of 13, please do not attempt to register for or otherwise use the Services or send us any Personal Data. If we learn we have collected Personal Data from a child under 13 years of age, we will delete that information as quickly as possible. If you believe that a child under 13 years of age may have provided Personal Data to us, please contact us at contact@onlook.com.
                         </p>
 
                         <h2 className="text-2xl font-light text-foreground-primary mt-12 mb-6">Other State Law Privacy Rights</h2>
                         <h3 className="text-xl font-light text-foreground-primary mt-8 mb-4">California Resident Rights</h3>
                         <p className="text-foreground-secondary mb-6">
-                            Under California Civil Code Sections 1798.83-1798.84, California residents are entitled to contact us to prevent disclosure of Personal Data to third parties for such third parties' direct marketing purposes; in order to submit such a request, please contact us at [email protected].
+                            Under California Civil Code Sections 1798.83-1798.84, California residents are entitled to contact us to prevent disclosure of Personal Data to third parties for such third parties' direct marketing purposes; in order to submit such a request, please contact us at contact@onlook.com.
                         </p>
 
                         <h3 className="text-xl font-light text-foreground-primary mt-8 mb-4">Nevada Resident Rights</h3>
@@ -210,11 +210,11 @@ export default function PrivacyPage() {
                         </p>
                         <ul className="text-foreground-secondary mb-6 list-disc pl-6">
                             <li>https://onlook.dev/</li>
-                            <li>contact@onlook.dev</li>
+                            <li>contact@onlook.com</li>
                         </ul>
                     </div>
                 </div>
             </main>
         </WebsiteLayout>
     );
-} 
+}    

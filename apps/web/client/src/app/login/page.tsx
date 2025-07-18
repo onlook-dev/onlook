@@ -8,7 +8,7 @@ import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
-import { GithubLoginButton, GoogleLoginButton } from '../_components/login-button';
+import { DevLoginButton, GithubLoginButton, GoogleLoginButton } from '../_components/login-button';
 import { useAuthContext } from '../auth/auth-context';
 
 export default function LoginPage() {
@@ -41,11 +41,7 @@ export default function LoginPage() {
                         <GithubLoginButton />
                         <GoogleLoginButton />
                     </div>
-                    {isDev && (
-                        <Button variant="outline" className="w-full text-active text-small" onClick={handleDevLogin}>
-                            DEV MODE: Sign in as demo user
-                        </Button>
-                    )}
+                    {isDev && <DevLoginButton />}
                     <p className="text-small text-foreground-onlook">
                         {t(transKeys.welcome.terms.agreement)}{' '}
                         <Link
