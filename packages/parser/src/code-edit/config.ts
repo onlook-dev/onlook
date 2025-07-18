@@ -2,6 +2,7 @@ import {
     CUSTOM_OUTPUT_DIR,
     DEPRECATED_PRELOAD_SCRIPT_SRC,
     JS_FILE_EXTENSIONS,
+    PRELOAD_SCRIPT_FILE_NAME,
     PRELOAD_SCRIPT_SRC,
 } from '@onlook/constants';
 import { type FileOperations } from '@onlook/utility';
@@ -162,10 +163,6 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
 };
 
 export const injectPreloadScript = (ast: T.File): T.File => {
-    // NOTE: Preload script is now injected dynamically when editing starts
-    // This function is kept for backward compatibility but doesn't inject the script anymore
-    // The script is managed by PreloadScriptManager in the editor
-
     let hasScriptImport = false;
 
     // Check if Script is already imported from next/script
@@ -186,10 +183,129 @@ export const injectPreloadScript = (ast: T.File): T.File => {
         },
     });
 
-    let headFound = false;
+    // Add Script import if it doesn't exist
+    if (!hasScriptImport) {
+        const scriptImport = t.importDeclaration(
+            [t.importDefaultSpecifier(t.identifier('Script'))],
+            t.stringLiteral('next/script'),
+        );
+
+        // Find the position to insert the import
+        let insertIndex = 0;
+        for (let i = 0; i < ast.program.body.length; i++) {
+            const node = ast.program.body[i];
+            if (t.isImportDeclaration(node)) {
+                insertIndex = i + 1;
+            } else {
+                break;
+            }
+        }
+
+        ast.program.body.splice(insertIndex, 0, scriptImport);
+    }
+
+    // Remove deprecated script and any existing Onlook preload scripts
+    ast = removePreloadScriptFromLayout(ast);
+
+    let bodyFound = false;
     let htmlElement = null;
 
-    // First pass: Look for existing head tag and html element
+    // Find the body tag
+    traverse(ast, {
+        JSXElement(path) {
+            if (t.isJSXIdentifier(path.node.openingElement.name, { name: 'body' })) {
+                bodyFound = true;
+                // Add Script component to the body
+                ast = addScriptToBody(ast);
+            } else if (t.isJSXIdentifier(path.node.openingElement.name, { name: 'html' })) {
+                htmlElement = path.node;
+            }
+        },
+    });
+
+    if (!bodyFound && htmlElement) {
+        createBodyTag(htmlElement);
+    }
+
+    return ast;
+};
+
+export function addScriptToBody(ast: T.File): T.File {
+    traverse(ast, {
+        JSXElement(path) {
+            // Check if this is the body element
+            const openingElement = path.node.openingElement;
+            if (
+                t.isJSXIdentifier(openingElement.name) &&
+                openingElement.name.name.toLowerCase() === 'body'
+            ) {
+                // Check if Script is already added
+                const hasScript = path.node.children.some(
+                    (child) =>
+                        t.isJSXElement(child) &&
+                        t.isJSXIdentifier(child.openingElement.name) &&
+                        child.openingElement.name.name === 'Script' &&
+                        child.openingElement.attributes.some(
+                            (attr) =>
+                                (t.isJSXAttribute(attr) &&
+                                    t.isJSXIdentifier(attr.name) &&
+                                    attr.name.name === 'id' &&
+                                    t.isStringLiteral(attr.value) &&
+                                    attr.value.value === PRELOAD_SCRIPT_FILE_NAME) ||
+                                (t.isJSXAttribute(attr) &&
+                                    t.isJSXIdentifier(attr.name) &&
+                                    attr.name.name === 'src' &&
+                                    t.isStringLiteral(attr.value) &&
+                                    attr.value.value === PRELOAD_SCRIPT_FILE_NAME),
+                        ),
+                );
+
+                if (!hasScript) {
+                    // Create Script element
+                    const scriptElement = t.jsxElement(
+                        t.jsxOpeningElement(
+                            t.jsxIdentifier('Script'),
+                            [
+                                t.jsxAttribute(
+                                    t.jsxIdentifier('src'),
+                                    t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME),
+                                ),
+                                t.jsxAttribute(
+                                    t.jsxIdentifier('strategy'),
+                                    t.stringLiteral('beforeInteractive'),
+                                ),
+                                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
+                                t.jsxAttribute(
+                                    t.jsxIdentifier('id'),
+                                    t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME),
+                                ),
+                            ],
+                            true,
+                        ),
+                        null,
+                        [],
+                        true,
+                    );
+
+                    // Handle self-closing tag
+                    if (openingElement.selfClosing) {
+                        openingElement.selfClosing = false;
+                        path.node.closingElement = t.jsxClosingElement(t.jsxIdentifier('body'));
+                    }
+
+                    // Add Script element after children
+                    path.node.children.push(t.jsxText('\n                '));
+                    path.node.children.push(scriptElement);
+                    path.node.children.push(t.jsxText('\n            '));
+                }
+            }
+        },
+    });
+
+    return ast;
+}
+
+export function removePreloadScriptFromLayout(ast: T.File): T.File {
     traverse(ast, {
         JSXElement(path) {
             // Remove deprecated script
@@ -207,7 +323,7 @@ export const injectPreloadScript = (ast: T.File): T.File => {
                 return;
             }
 
-            // Remove any existing Onlook preload scripts since they're now managed dynamically
+            // Remove any existing Onlook preload scripts
             if (
                 t.isJSXIdentifier(path.node.openingElement.name, { name: 'Script' }) &&
                 path.node.openingElement.attributes.some(
@@ -216,48 +332,45 @@ export const injectPreloadScript = (ast: T.File): T.File => {
                         t.isJSXIdentifier(attr.name, { name: 'src' }) &&
                         t.isStringLiteral(attr.value) &&
                         (attr.value.value.includes(PRELOAD_SCRIPT_SRC) ||
+                            attr.value.value.includes(PRELOAD_SCRIPT_FILE_NAME) ||
                             attr.value.value.includes('localhost:8083')),
                 )
             ) {
                 path.remove();
                 return;
             }
-
-            // Find head tag
-            if (
-                t.isJSXOpeningElement(path.node.openingElement) &&
-                t.isJSXIdentifier(path.node.openingElement.name)
-            ) {
-                const elementName = path.node.openingElement.name.name;
-
-                if (elementName === 'head' || elementName === 'Head') {
-                    headFound = true;
-                } else if (elementName === 'html' || elementName === 'Html') {
-                    htmlElement = path.node;
-                }
-            }
         },
     });
 
-    // If no head tag found, create one
-    if (!headFound && htmlElement) {
-        createHeadTag(htmlElement);
-    }
-
     return ast;
-};
+}
 
-function createHeadTag(htmlElement: T.JSXElement) {
-    const headElement = t.jsxElement(
-        t.jsxOpeningElement(t.jsxIdentifier('head'), [], false),
-        t.jsxClosingElement(t.jsxIdentifier('head')),
+function createBodyTag(htmlElement: T.JSXElement): T.JSXElement {
+    const scriptElement = t.jsxElement(
+        t.jsxOpeningElement(
+            t.jsxIdentifier('Script'),
+            [
+                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME)),
+                t.jsxAttribute(t.jsxIdentifier('strategy'), t.stringLiteral('beforeInteractive')),
+                t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
+                t.jsxAttribute(t.jsxIdentifier('id'), t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME)),
+            ],
+            false,
+        ),
+        t.jsxClosingElement(t.jsxIdentifier('Script')),
         [],
         false,
     );
 
-    // Add the head element as the first child of html
-    if (!htmlElement.children) {
-        htmlElement.children = [];
-    }
-    htmlElement.children.unshift(headElement);
+    const bodyElement = t.jsxElement(
+        t.jsxOpeningElement(t.jsxIdentifier('body'), [], false),
+        t.jsxClosingElement(t.jsxIdentifier('body')),
+        [scriptElement],
+        false,
+    );
+
+    // Add the body element as the last child of html
+    htmlElement.children.push(bodyElement);
+
+    return htmlElement;
 }
