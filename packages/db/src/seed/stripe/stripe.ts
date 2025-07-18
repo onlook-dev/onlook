@@ -1,9 +1,9 @@
 import { db } from '@onlook/db/src/client';
 import { PriceKey, PRO_PRODUCT_CONFIG, ProductType } from "@onlook/stripe";
-import { getProProductAndPrices } from "@onlook/stripe/src/scripts/product";
+import { getProProductAndPrices } from "@onlook/stripe/src/scripts/dev/product";
 import { config } from 'dotenv';
 import Stripe from "stripe";
-import { prices, products } from '../schema';
+import { prices, products } from '../../schema';
 
 // Load .env file
 config({ path: '../../.env' });

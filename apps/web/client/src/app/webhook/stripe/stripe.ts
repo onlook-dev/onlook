@@ -1,6 +1,6 @@
 import { prices, subscriptions, type NewSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { ScheduledSubscriptionAction } from '@onlook/stripe';
+import { ScheduledSubscriptionAction, SubscriptionStatus } from '@onlook/stripe';
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
@@ -53,7 +53,7 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         userId: userId,
         priceId: price.id,
         productId: price.productId,
-        status: 'active',
+        status: SubscriptionStatus.ACTIVE,
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscriptionId,
         stripeSubscriptionItemId: subscriptionItemId,
@@ -62,7 +62,7 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         set: {
             priceId: price.id,
             productId: price.productId,
-            status: 'active',
+            status: SubscriptionStatus.ACTIVE,
             updatedAt: new Date(),
             stripeSubscriptionId: subscriptionId,
             stripeSubscriptionItemId: subscriptionItemId,
@@ -80,7 +80,7 @@ export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSu
     }
 
     const res = await db.update(subscriptions).set({
-        status: 'canceled',
+        status: SubscriptionStatus.CANCELED,
         endedAt: new Date(),
         scheduledPriceId: null,
         scheduledChangeAt: null,

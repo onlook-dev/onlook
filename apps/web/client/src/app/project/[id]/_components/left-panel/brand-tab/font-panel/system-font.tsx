@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { VARIANTS } from '@onlook/fonts';
 import { observer } from 'mobx-react-lite';
 import { FontFamily } from './font-family';
+import { Icons } from '@onlook/ui/icons/index';
 
 const SystemFont = observer(() => {
     const editorEngine = useEditorEngine();
@@ -9,7 +10,14 @@ const SystemFont = observer(() => {
 
     return (
         <div className="flex flex-col divide-y divide-border">
-            {!fontManager.fonts.length ? (
+            {fontManager.isScanning ? (
+                <div className="flex justify-center items-center border-dashed border-default border-2 rounded-lg h-20 my-2">
+                    <div className="flex items-center gap-2">
+                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Scanning fonts...</span>
+                    </div>
+                </div>
+            ) : !fontManager.fonts.length ? (
                 <div className="flex justify-center items-center border-dashed border-default border-2 rounded-lg h-20 my-2">
                     <span className="text-sm text-muted-foreground">No fonts added</span>
                 </div>

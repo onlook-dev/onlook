@@ -18,7 +18,7 @@ export class ImageManager {
         makeAutoObservable(this);
 
         reaction(
-            () => this.editorEngine.sandbox.isIndexingFiles,
+            () => this.editorEngine.sandbox.isIndexing,
             async (isIndexingFiles) => {
                 if (!isIndexingFiles) {
                     await this.scanImages();

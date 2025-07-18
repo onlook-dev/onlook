@@ -1,11 +1,12 @@
 import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
 import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
-import { type SandboxFile, type TemplateNode } from '@onlook/models';
+import { type RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
+import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
 import { FileWatcher } from './file-watcher';
@@ -17,11 +18,14 @@ export class SandboxManager {
     readonly session: SessionManager;
     readonly fileEventBus: FileEventBus = new FileEventBus();
 
+    // Add router configuration
+    private _routerConfig: { type: RouterType; basePath: string } | null = null;
+
     private fileWatcher: FileWatcher | null = null;
     private fileSync: FileSyncManager
     private templateNodeMap: TemplateNodeMapper
-    private isIndexed = false;
-    private isIndexing = false;
+    private _isIndexed = false;
+    private _isIndexing = false;
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
@@ -32,7 +36,7 @@ export class SandboxManager {
         reaction(
             () => this.session.session,
             (session) => {
-                this.isIndexed = false;
+                this._isIndexed = false;
                 if (session) {
                     this.index();
                 }
@@ -40,31 +44,42 @@ export class SandboxManager {
         );
     }
 
-    get indexed(): boolean {
-        return this.isIndexed;
+    get isIndexed() {
+        return this._isIndexed;
     }
 
-    get indexing(): boolean {
-        return this.isIndexing;
+    get isIndexing() {
+        return this._isIndexing;
+    }
+
+    get routerConfig(): { type: RouterType; basePath: string } | null {
+        return this._routerConfig;
     }
 
     async index(force = false) {
         console.log('[SandboxManager] Starting indexing, force:', force);
-        
-        if (this.isIndexing || (this.isIndexed && !force)) {
-            console.log('[SandboxManager] Skipping indexing - isIndexing:', this.isIndexing, 'isIndexed:', this.isIndexed);
+
+        if (this._isIndexing || (this._isIndexed && !force)) {
             return;
         }
 
         if (!this.session.session) {
-            console.error('[SandboxManager] No session found for indexing');
+            console.error('No session found for indexing');
             return;
         }
 
-        this.isIndexing = true;
+        this._isIndexing = true;
         const timer = new LogTimer('Sandbox Indexing');
 
         try {
+            // Detect router configuration first
+            if (!this._routerConfig) {
+                this._routerConfig = await detectRouterTypeInSandbox(this);
+                if (this._routerConfig) {
+                    timer.log(`Router detected: ${this._routerConfig.type} at ${this._routerConfig.basePath}`);
+                }
+            }
+
             // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
@@ -85,22 +100,22 @@ export class SandboxManager {
             }
 
             await this.watchFiles();
-            this.isIndexed = true;
+            this._isIndexed = true;
             timer.log('Indexing completed successfully');
-            
+
             // Inject preload script after successful indexing
             console.log('[SandboxManager] Indexing complete, triggering preload script injection...');
             setTimeout(() => {
                 this.editorEngine.preloadScript.injectPreloadScript().catch((error: Error) => {
-                    console.error('[SandboxManager] Failed to inject preload script after indexing:', error);
+                    console.error('Failed to inject preload script after indexing:', error);
                 });
             }, 1000);
-            
+
         } catch (error) {
             console.error('Error during indexing:', error);
             throw error;
         } finally {
-            this.isIndexing = false;
+            this._isIndexing = false;
         }
     }
 
@@ -652,17 +667,14 @@ export class SandboxManager {
         }
     }
 
-    get isIndexingFiles() {
-        return this.isIndexing;
-    }
-
     clear() {
         this.fileWatcher?.dispose();
         this.fileWatcher = null;
         this.fileSync.clear();
         this.templateNodeMap.clear();
         this.session.clear();
-        this.isIndexed = false;
-        this.isIndexing = false;
+        this._isIndexed = false;
+        this._isIndexing = false;
+        this._routerConfig = null;
     }
 }
