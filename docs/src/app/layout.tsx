@@ -20,6 +20,9 @@ const inter = Inter({
 export default function Layout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" className={inter.variable} suppressHydrationWarning>
+            <head>
+                <script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" async></script>
+            </head>
             <body className="flex flex-col min-h-screen">
                 <RootProvider>{children}</RootProvider>
             </body>

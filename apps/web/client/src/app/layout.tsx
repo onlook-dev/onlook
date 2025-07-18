@@ -64,6 +64,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
                 />
+                <script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" async></script>
             </head>
             <body>
                 <TRPCReactProvider>
