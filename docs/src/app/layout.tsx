@@ -22,7 +22,9 @@ export default function Layout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" className={inter.variable} suppressHydrationWarning>
             <body className="flex flex-col min-h-screen">
-                <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="beforeInteractive" />
+                {process.env.NODE_ENV === 'production' && (
+                    <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="beforeInteractive" />
+                )}
                 <RootProvider>{children}</RootProvider>
             </body>
         </html>

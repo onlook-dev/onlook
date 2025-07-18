@@ -67,7 +67,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 />
             </head>
             <body>
-                <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="beforeInteractive" />
+                {process.env.NODE_ENV === 'production' && (
+                    <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="beforeInteractive" />
+                )}
                 <TRPCReactProvider>
                     <FeatureFlagsProvider>
                         <PostHogProvider>
