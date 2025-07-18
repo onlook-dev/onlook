@@ -412,7 +412,7 @@ export class SandboxManager {
             }
         }
 
-        if (event.paths.includes(normalizePath(`public/${PRELOAD_SCRIPT_FILE_NAME}`))) {
+        if (event.paths.some((path) => path.includes(`public/${PRELOAD_SCRIPT_FILE_NAME}`))) {
             await this.editorEngine.preloadScript.ensurePreloadScriptFile();
         }
     }
