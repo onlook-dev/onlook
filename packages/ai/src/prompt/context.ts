@@ -21,9 +21,27 @@ NEVER SUGGEST THE "bun run dev" command. Assume the user is already running the 
 
 const projectContextPrefix = `The project is located in the folder:`;
 
+const imageContextPrefix = `*IMPORTANT: Use only the images provided in this current message. Previous messages may contain outdated image versions.*
+## IMAGE INTENT ANALYSIS
+Determine if images should be imported to project or used as reference only based on the user instructions:
+## EXECUTION:
+### If USE IN PROJECT:
+1. Use create_image tool to save image in the file system with the following parameters:
+   - path: Save to public directory with full path (e.g., public/images/new-logo.png)
+   - fileId: The unique ID of the specific image being saved2. Generate Next.js Image component in code
+2. IMPORTANT: Always use the Next.js Image component for images in the project.
+3. Ensure images are responsive and adapt to different screen sizes
+### If REFERENCE ONLY:
+- Use image details to improve code quality, styling, or layout
+- Apply visual patterns, color schemes, or design principles
+- DO NOT use create_image tool
+
+When uncertain, ask for clarification.`;
+
 export const CONTEXT_PROMPTS = {
     filesContentPrefix,
     highlightPrefix,
     errorsContentPrefix,
     projectContextPrefix,
+    imageContextPrefix,
 };

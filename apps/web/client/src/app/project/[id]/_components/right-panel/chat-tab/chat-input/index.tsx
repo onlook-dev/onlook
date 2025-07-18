@@ -134,7 +134,7 @@ export const ChatInput = observer(({
         const streamMessages = chatMode === ChatType.ASK 
             ? await editorEngine.chat.getAskMessages(savedInput)
             : await editorEngine.chat.getEditMessages(savedInput);
-            
+        
         if (!streamMessages) {
             toast.error('Failed to send message. Please try again.');
             setInputValue(savedInput);
@@ -194,6 +194,7 @@ export const ChatInput = observer(({
                 content: base64URL,
                 mimeType: file.type,
                 displayName: displayName ?? file.name,
+                fileId:  Math.random().toString(36).substring(2, 14),
             };
             editorEngine.chat.context.context.push(contextImage);
         };
@@ -239,6 +240,7 @@ export const ChatInput = observer(({
                 content: screenshotData,
                 mimeType: mimeType,
                 displayName: 'Screenshot',
+                fileId:  Math.random().toString(36).substring(2, 14),
             };
             editorEngine.chat.context.context.push(contextImage);
             toast.success('Screenshot added to chat');
