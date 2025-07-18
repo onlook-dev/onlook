@@ -4,6 +4,7 @@ import './global.css';
 import { RootProvider } from 'fumadocs-ui/provider';
 import { type Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
@@ -20,10 +21,8 @@ const inter = Inter({
 export default function Layout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" className={inter.variable} suppressHydrationWarning>
-            <head>
-                <script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" async></script>
-            </head>
             <body className="flex flex-col min-h-screen">
+                <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="beforeInteractive" />
                 <RootProvider>{children}</RootProvider>
             </body>
         </html>
