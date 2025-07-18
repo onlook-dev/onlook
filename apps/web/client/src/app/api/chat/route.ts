@@ -1,7 +1,22 @@
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
-import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { ChatType, CLAUDE_MODELS, LLMProvider, type Usage, UsageType } from '@onlook/models';
+import {
+    askToolSet,
+    buildToolSet,
+    getAskModeSystemPrompt,
+    getCreatePageSystemPrompt,
+    getSuggestionSystemPrompt,
+    getSystemPrompt,
+    initModel,
+} from '@onlook/ai';
+import {
+    ChatType,
+    CLAUDE_MODELS,
+    LLMProvider,
+    suggestionSchema, 
+    type Usage,
+    UsageType,
+} from '@onlook/models';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 
@@ -96,11 +111,27 @@ export const streamResponse = async (req: NextRequest) => {
         case ChatType.ASK:
             systemPrompt = getAskModeSystemPrompt();
             break;
+        case ChatType.SUGGEST:
+            systemPrompt = getSuggestionSystemPrompt();
+            break;
         case ChatType.EDIT:
         default:
             systemPrompt = getSystemPrompt();
             break;
     }
+    
+    if (chatType === ChatType.SUGGEST) {
+        const { object } = await generateObject({
+            model,
+            schema: suggestionSchema,
+            prompt: [systemPrompt, ...messages].map((m) => `${m.role}: ${m.content}`).join('\n'),
+        });
+        
+        return new Response(JSON.stringify(object.suggestions), {
+            headers: { 'Content-Type': 'application/json' },
+        });
+    }
+    
     const toolSet = chatType === ChatType.ASK ? askToolSet : buildToolSet;
     const result = streamText({
         model,
@@ -149,7 +180,7 @@ export const streamResponse = async (req: NextRequest) => {
     });
 
     try {
-        if (chatType === ChatType.EDIT) {
+        if (chatType === ChatType.EDIT || chatType === ChatType.SUGGEST) {
             const user = await getSupabaseUser(req);
             if (!user) {
                 throw new Error('User not found');

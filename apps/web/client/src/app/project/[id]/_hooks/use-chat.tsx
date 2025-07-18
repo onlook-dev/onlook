@@ -21,6 +21,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             lastMessageRef.current = message;
             if (finishReason !== 'tool-calls') {
                 editorEngine.chat.conversation.addAssistantMessage(message);
+                editorEngine.chat.suggestions.getNextSuggestionsMessages();
                 lastMessageRef.current = null;
             }
 
@@ -40,6 +41,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         onError: (error) => {
             console.error('Error in chat', error);
             editorEngine.chat.error.handleChatError(error);
+
+            editorEngine.chat.suggestions.setSendingMessage(false);
 
             if (lastMessageRef.current) {
                 editorEngine.chat.conversation.addAssistantMessage(lastMessageRef.current);

@@ -16,6 +16,7 @@ import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { type SuggestionsRef } from '../suggestions';
+import { Suggestions } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
 
@@ -42,10 +43,17 @@ export const ChatInput = observer(({
     };
 
     useEffect(() => {
+        const messages = editorEngine.chat.conversation.current?.messages;
+        if (messages && messages.length > 0) {
+            editorEngine.chat.suggestions.getNextSuggestionsMessages();
+        }
+    }, []);
+
+    useEffect(() => {
         if (textareaRef.current && !isWaiting) {
             focusInput();
         }
-    }, [editorEngine.chat.conversation.current?.messages.length]);
+    }, [editorEngine.chat.conversation.current?.messages]);
 
     useEffect(() => {
         if (editorEngine.state.rightPanelTab === EditorTabValue.CHAT) {
@@ -130,6 +138,8 @@ export const ChatInput = observer(({
         }
         const savedInput = inputValue.trim();
         setInputValue('');
+        
+        editorEngine.chat.suggestions.setSendingMessage(true);
         
         const streamMessages = chatMode === ChatType.ASK 
             ? await editorEngine.chat.getAskMessages(savedInput)
@@ -301,7 +311,7 @@ export const ChatInput = observer(({
             }}
         >
             {/* TODO: Reenable suggestions */}
-            {/* <Suggestions
+            <Suggestions
                 ref={suggestionRef}
                 disabled={disabled}
                 inputValue={inputValue}
@@ -319,7 +329,7 @@ export const ChatInput = observer(({
                         textareaRef.current?.focus();
                     }
                 }}
-            /> */}
+            />
             <div className="flex flex-col w-full p-4">
                 <InputContextPills />
                 <Textarea
