@@ -101,6 +101,15 @@ export const usageRouter = createTRPCRouter({
         // running a transaction helps with concurrency issues and ensures that
         // the usage is incremented atomically
         return ctx.db.transaction(async (tx) => {
+            // users on free plans don't have their rate limits stored in the database
+            // the limits are calculated on the fly instead
+            const subscription = await tx.query.subscriptions.findFirst({
+                where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, SubscriptionStatus.ACTIVE)),
+            });
+            if (!subscription) {
+                return { rateLimitId: undefined, usageRecordId: undefined };
+            }
+
             const now = new Date();
             const [limit] = await tx
                 .select({ id: rateLimits.id, left: rateLimits.left })
