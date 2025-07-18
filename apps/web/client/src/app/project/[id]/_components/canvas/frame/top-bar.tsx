@@ -13,10 +13,11 @@ export const TopBar = observer(({ frame }: { frame: WebFrame }) => {
     const editorEngine = useEditorEngine();
     const isSelected = editorEngine.frames.isSelected(frame.id);
     const topBarRef = useRef<HTMLDivElement>(null);
-    const urlRef = useRef<HTMLDivElement>(null);
+    const toolBarRef = useRef<HTMLDivElement>(null);
     const topBarWidth = topBarRef.current?.clientWidth ?? 0;
-    const urlWidth = urlRef.current?.clientWidth ?? 0;
-    const shouldShowExternalLink = (topBarWidth - urlWidth) * editorEngine.canvas.scale > 250;
+    const toolBarWidth = toolBarRef.current?.clientWidth ?? 0;
+    const padding = 210;
+    const shouldShowExternalLink = (topBarWidth - toolBarWidth - padding) * editorEngine.canvas.scale > 250;
 
     const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
         e.preventDefault();
@@ -81,11 +82,12 @@ export const TopBar = observer(({ frame }: { frame: WebFrame }) => {
             onClick={handleClick}
         >
             <div
-                className="flex flex-row items-center gap-2"
+                className="flex flex-row items-center gap-1"
                 style={{
                     transform: `scale(${1 / editorEngine.canvas.scale})`,
                     transformOrigin: 'left center',
                 }}
+                ref={toolBarRef}
             >
                 <HoverOnlyTooltip content="Refresh Page" side="top" className="mb-1" hideArrow>
                     <Button
@@ -97,13 +99,8 @@ export const TopBar = observer(({ frame }: { frame: WebFrame }) => {
                         <Icons.Reload />
                     </Button>
                 </HoverOnlyTooltip>
-
                 <PageSelector frame={frame} />
-
-                <div
-                    ref={urlRef}
-                    className="text-small overflow-hidden text-ellipsis whitespace-nowrap"
-                >
+                <div className="text-small overflow-hidden text-ellipsis whitespace-nowrap" >
                     {frame.url}
                 </div>
             </div>
