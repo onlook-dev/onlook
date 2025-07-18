@@ -1,6 +1,9 @@
+import { generate, parse, types as t, traverse } from '@onlook/parser';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from './engine';
-import { parse, traverse, types as t, generate } from '@onlook/parser';
+import type { EditorEngine } from '../engine';
+
+export const PRELOAD_SCRIPT_FILE_NAME = `onlook-preload-script.js`;
+
 interface PreloadScriptState {
     isInjected: boolean;
     injectedAt: number;
@@ -121,7 +124,6 @@ export class PreloadScriptManager {
      * Add preload script to layout content
      */
     private addPreloadScriptToLayout(content: string): string {
-        const scriptSrc = '/onlook-preload-script.js';
 
         // Parse the layout file
         const ast = parse(content, {
@@ -179,11 +181,18 @@ export class PreloadScriptManager {
                             child.openingElement.name.name === 'Script' &&
                             child.openingElement.attributes.some(
                                 (attr) =>
-                                    t.isJSXAttribute(attr) &&
-                                    t.isJSXIdentifier(attr.name) &&
-                                    attr.name.name === 'src' &&
-                                    t.isStringLiteral(attr.value) &&
-                                    attr.value.value === scriptSrc,
+                                    (t.isJSXAttribute(attr) &&
+                                        t.isJSXIdentifier(attr.name) &&
+                                        attr.name.name === 'id' &&
+                                        t.isStringLiteral(attr.value) &&
+                                        attr.value.value === PRELOAD_SCRIPT_FILE_NAME) ||
+                                    (t.isJSXAttribute(attr) &&
+                                        t.isJSXIdentifier(attr.name) &&
+                                        attr.name.name === 'src' &&
+                                        t.isStringLiteral(attr.value) &&
+                                        attr.value.value === PRELOAD_SCRIPT_FILE_NAME)
+
+
                             ),
                     );
 
@@ -195,11 +204,11 @@ export class PreloadScriptManager {
                                 [
                                     t.jsxAttribute(
                                         t.jsxIdentifier('src'),
-                                        t.stringLiteral(scriptSrc),
+                                        t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME),
                                     ),
                                     t.jsxAttribute(
                                         t.jsxIdentifier('strategy'),
-                                        t.stringLiteral('afterInteractive'),
+                                        t.stringLiteral('beforeInteractive'),
                                     ),
                                     t.jsxAttribute(
                                         t.jsxIdentifier('type'),
@@ -207,7 +216,7 @@ export class PreloadScriptManager {
                                     ),
                                     t.jsxAttribute(
                                         t.jsxIdentifier('id'),
-                                        t.stringLiteral('onlook-preload-script'),
+                                        t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME),
                                     ),
                                 ],
                                 true,
@@ -242,58 +251,36 @@ export class PreloadScriptManager {
      */
     private removePreloadScriptFromLayout(content: string): string {
         // Remove the script tag - handle both self-closing and regular script tags
-        const scriptRegex = /<Script[^>]*id="onlook-preload-script"[^>]*\/?>(?:\s*<\/Script>)?/gi;
+        const scriptRegex = /<Script[^>]*id="${PRELOAD_SCRIPT_FILE_NAME}"[^>]*\/?>(?:\s*<\/Script>)?/gi;
         let updatedContent = content.replace(scriptRegex, '');
 
-        // Also remove any script tags that reference preload.js
-        const preloadJsRegex = /<Script[^>]*src="[^"]*preload\.js"[^>]*\/?>(?:\s*<\/Script>)?/gi;
+        // Also remove any script tags that reference the preload script file
+        const preloadJsRegex = /<Script[^>]*src="[^"]*${PRELOAD_SCRIPT_FILE_NAME}"[^>]*\/?>(?:\s*<\/Script>)?/gi;
         updatedContent = updatedContent.replace(preloadJsRegex, '');
 
         return updatedContent;
     }
 
     /**
-     * Copy the preload script content to public/preload.js in the CodeSandbox project
+     * Copy the preload script content to the CodeSandbox project
      */
     private async copyPreloadScriptToPublic(): Promise<boolean> {
         try {
             let scriptContent: string;
-            const isDev = process.env.NODE_ENV === 'development';
-            const publicScriptPath = 'public/onlook-preload-script.js';
-
-            if (isDev) {
-                // Development: fetch from local server
-                try {
-                    const response = await fetch(`http://localhost:8083/?${Math.random()}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    scriptContent = await response.text();
-                } catch (fetchError) {
-                    // Fallback: create a minimal preload script
-                    scriptContent = `
-// Onlook Preload Script (Fallback)
-console.log('Onlook preload script loaded');
-// This is a fallback version - the full script should be served from localhost:8083
-`;
+            try {
+                const response = await fetch(`/${PRELOAD_SCRIPT_FILE_NAME}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-            } else {
-                // Production: read from public/onlook-preload-script.js
-                try {
-                    const response = await fetch('/onlook-preload-script.js');
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                    }
-                    scriptContent = await response.text();
-                } catch (readError) {
-                    console.error('[PreloadScriptManager] Error reading preload script from public directory:', readError);
-                    return false;
-                }
+                scriptContent = await response.text();
+            } catch (readError) {
+                console.error('[PreloadScriptManager] Error reading preload script from public directory:', readError);
+                return false;
             }
 
-            // Write the script content to public/onlook-preload-script.js (overwrite)
+            // Write the script content to the CodeSandbox project
             const writeSuccess = await this.editorEngine.sandbox.writeFile(
-                publicScriptPath,
+                `public/${PRELOAD_SCRIPT_FILE_NAME}`,
                 scriptContent,
                 true,
             );
