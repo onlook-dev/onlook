@@ -30,12 +30,7 @@ interface InputIconProps {
 
 export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: InputIconProps) => {
     const [unitValue, setUnitValue] = useState(unit);
-    const [inputValue, setInputValue] = useState(String(value));
     const { localValue, handleKeyDown, handleChange } = useInputControl(value, onChange);
-
-    useEffect(() => {
-        setInputValue(String(value));
-    }, [value]);
 
     const IconComponent = icon ? Icons[icon] : null;
 
@@ -49,14 +44,8 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
                     type="text"
                     inputMode="decimal"
                     pattern="[0-9]*\.?[0-9]*"
-                    value={inputValue}
-                    onChange={(e) => {
-                        setInputValue(e.target.value);
-                        const numValue = Number(e.target.value);
-                        if (!isNaN(numValue)) {
-                            handleChange(numValue);
-                        }
-                    }}
+                    value={localValue}
+                    onChange={(e) => handleChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     className="w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase hover:text-white"
                 />

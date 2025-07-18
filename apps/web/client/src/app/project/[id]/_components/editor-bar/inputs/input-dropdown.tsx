@@ -9,7 +9,6 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { useState, useEffect } from 'react';
 import { useInputControl } from '../hooks/use-input-control';
 
 const OPTION_OVERRIDES: Record<string, string | undefined> = {
@@ -36,26 +35,17 @@ export const InputDropdown = ({
     onDropdownChange,
     onUnitChange,
 }: InputDropdownProps) => {
-    const [inputValue, setInputValue] = useState(String(value));
     const { localValue, handleKeyDown, handleChange } = useInputControl(value, onChange);
-
-    useEffect(() => {
-        setInputValue(String(value));
-    }, [value]);
 
     return (
         <div className="flex items-center">
             <div className="flex flex-1 items-center bg-background-tertiary/50 justify-between rounded-l-md px-2.5 h-[36px] min-w-[72px]">
                 <input
                     type="text"
-                    value={inputValue}
-                    onChange={(e) => {
-                        setInputValue(e.target.value);
-                        const numValue = Number(e.target.value);
-                        if (!isNaN(numValue)) {
-                            handleChange(numValue);
-                        }
-                    }}
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
+                    value={localValue}
+                    onChange={(e) => handleChange(e.target.value)}
                     onKeyDown={handleKeyDown}
                     className="w-[40px] bg-transparent text-sm text-white focus:outline-none text-left"
                     aria-label="Value input"
