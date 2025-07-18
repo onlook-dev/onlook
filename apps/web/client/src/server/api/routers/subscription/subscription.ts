@@ -1,6 +1,5 @@
 import { Routes } from '@/utils/constants';
 import { legacySubscriptions, prices, subscriptions, toSubscription, users } from '@onlook/db';
-import { db } from '@onlook/db/src/client';
 import { createBillingPortalSession, createCheckoutSession, createCustomer, isTierUpgrade, PriceKey, releaseSubscriptionSchedule, SubscriptionStatus, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
 import { and, eq, isNull } from 'drizzle-orm';
 import { headers } from 'next/headers';
@@ -10,7 +9,7 @@ import { createTRPCRouter, protectedProcedure } from '../../trpc';
 export const subscriptionRouter = createTRPCRouter({
     getLegacySubscriptions: protectedProcedure.query(async ({ ctx }) => {
         const user = ctx.user;
-        const subscription = await db.query.legacySubscriptions.findFirst({
+        const subscription = await ctx.db.query.legacySubscriptions.findFirst({
             where: and(
                 eq(legacySubscriptions.email, user.email),
                 isNull(legacySubscriptions.redeemAt),
@@ -20,7 +19,7 @@ export const subscriptionRouter = createTRPCRouter({
     }),
     get: protectedProcedure.query(async ({ ctx }) => {
         const user = ctx.user;
-        const subscription = await db.query.subscriptions.findFirst({
+        const subscription = await ctx.db.query.subscriptions.findFirst({
             where: and(
                 eq(subscriptions.userId, user.id),
                 eq(subscriptions.status, SubscriptionStatus.ACTIVE),
@@ -39,7 +38,7 @@ export const subscriptionRouter = createTRPCRouter({
         // If there is a scheduled price, we need to fetch it from the database.
         let scheduledPrice = null;
         if (subscription.scheduledPriceId) {
-            scheduledPrice = await db.query.prices.findFirst({
+            scheduledPrice = await ctx.db.query.prices.findFirst({
                 where: eq(prices.id, subscription.scheduledPriceId),
             }) ?? null;
         }
@@ -48,8 +47,8 @@ export const subscriptionRouter = createTRPCRouter({
     }),
     getPriceId: protectedProcedure.input(z.object({
         priceKey: z.nativeEnum(PriceKey),
-    })).mutation(async ({ input }) => {
-        const price = await db.query.prices.findFirst({
+    })).mutation(async ({ input, ctx }) => {
+        const price = await ctx.db.query.prices.findFirst({
             where: eq(prices.key, input.priceKey),
         });
 
@@ -88,7 +87,7 @@ export const subscriptionRouter = createTRPCRouter({
                 email: user.email ?? userData.email,
             });
 
-            await db.update(users).set({ stripeCustomerId: customer.id }).where(eq(users.id, user.id));
+            await ctx.db.update(users).set({ stripeCustomerId: customer.id }).where(eq(users.id, user.id));
             stripeCustomerId = customer.id;
         }
 
@@ -104,7 +103,7 @@ export const subscriptionRouter = createTRPCRouter({
     }),
     manageSubscription: protectedProcedure.mutation(async ({ ctx }) => {
         const user = ctx.user;
-        const subscription = await db.query.subscriptions.findFirst({
+        const subscription = await ctx.db.query.subscriptions.findFirst({
             where: and(
                 eq(subscriptions.userId, user.id),
                 eq(subscriptions.status, SubscriptionStatus.ACTIVE),
@@ -128,9 +127,9 @@ export const subscriptionRouter = createTRPCRouter({
         stripeSubscriptionId: z.string(),
         stripeSubscriptionItemId: z.string(),
         stripePriceId: z.string(),
-    })).mutation(async ({ input }) => {
+    })).mutation(async ({ input, ctx }) => {
         const { stripeSubscriptionId, stripeSubscriptionItemId, stripePriceId } = input;
-        const subscription = await db.query.subscriptions.findFirst({
+        const subscription = await ctx.db.query.subscriptions.findFirst({
             where: and(
                 eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId),
                 eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId),
@@ -145,7 +144,7 @@ export const subscriptionRouter = createTRPCRouter({
         }
 
         const currentPrice = subscription.price;
-        const newPrice = await db.query.prices.findFirst({
+        const newPrice = await ctx.db.query.prices.findFirst({
             where: eq(prices.stripePriceId, stripePriceId),
         });
 
@@ -179,9 +178,9 @@ export const subscriptionRouter = createTRPCRouter({
 
     releaseSubscriptionSchedule: protectedProcedure.input(z.object({
         subscriptionScheduleId: z.string(),
-    })).mutation(async ({ input }) => {
+    })).mutation(async ({ input, ctx }) => {
         await releaseSubscriptionSchedule({ subscriptionScheduleId: input.subscriptionScheduleId });
-        const [updatedSubscription] = await db.update(subscriptions).set({
+        const [updatedSubscription] = await ctx.db.update(subscriptions).set({
             status: SubscriptionStatus.ACTIVE,
             updatedAt: new Date(),
             scheduledPriceId: null,

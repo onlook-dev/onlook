@@ -31,7 +31,7 @@ import {
     ProjectRole,
     type ChatMessageContext,
 } from '@onlook/models';
-import { PriceKey, ProductType } from '@onlook/stripe';
+import { PriceKey, ProductType, SubscriptionStatus } from '@onlook/stripe';
 import { v4 as uuidv4 } from 'uuid';
 import { SEED_USER } from './constants';
 
@@ -44,6 +44,7 @@ const user0 = {
     avatarUrl: SEED_USER.AVATAR_URL,
     createdAt: new Date(),
     updatedAt: new Date(),
+    stripeCustomerId: null,
 } satisfies User;
 
 const project0 = {
@@ -176,7 +177,7 @@ const subscription0 = {
     priceId: price0.id,
     startedAt: new Date(),
     updatedAt: new Date(),
-    status: 'active',
+    status: SubscriptionStatus.ACTIVE,
     stripeCustomerId: 'cus_1234567890',
     stripeSubscriptionId: 'sub_1234567890',
     stripeSubscriptionScheduleId: null,
@@ -185,6 +186,8 @@ const subscription0 = {
     scheduledPriceId: null,
     scheduledChangeAt: null,
     endedAt: null,
+    stripeCurrentPeriodStart: new Date(),
+    stripeCurrentPeriodEnd: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
 } satisfies Subscription;
 
 export const seedDb = async () => {

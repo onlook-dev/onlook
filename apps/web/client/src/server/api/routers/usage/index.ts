@@ -1,5 +1,4 @@
 import { rateLimits, subscriptions, usageRecords } from '@onlook/db';
-import { db } from '@onlook/db/src/client';
 import { UsageType, type Usage } from '@onlook/models';
 import { FREE_PRODUCT_CONFIG, SubscriptionStatus } from '@onlook/stripe';
 import { add } from 'date-fns/add';
@@ -17,7 +16,7 @@ export const usageRouter = createTRPCRouter({
         const now = new Date();
 
         // If the user has an active subscription then they can use their rate limits (including carry-over)
-        const subscription = await db.query.subscriptions.findFirst({
+        const subscription = await ctx.db.query.subscriptions.findFirst({
             where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, SubscriptionStatus.ACTIVE)),
         });
 
@@ -29,7 +28,7 @@ export const usageRouter = createTRPCRouter({
             const monthEnd = add(monthStart, { months: 1 });
 
             // Count records from current day
-            const lastDayCount = await db
+            const lastDayCount = await ctx.db
                 .select({ count: sql<number>`count(*)` })
                 .from(usageRecords)
                 .where(
@@ -41,7 +40,7 @@ export const usageRouter = createTRPCRouter({
                 );
 
             // Count records from current month
-            const lastMonthCount = await db
+            const lastMonthCount = await ctx.db
                 .select({ count: sql<number>`count(*)` })
                 .from(usageRecords)
                 .where(
@@ -66,7 +65,7 @@ export const usageRouter = createTRPCRouter({
             };
         }
 
-        const limit = await db
+        const limit = await ctx.db
             .select({ left: sum(rateLimits.left), max: sum(rateLimits.max) })
             .from(rateLimits)
             .where(and(
@@ -101,7 +100,7 @@ export const usageRouter = createTRPCRouter({
         const user = ctx.user;
         // running a transaction helps with concurrency issues and ensures that
         // the usage is incremented atomically
-        return db.transaction(async (tx) => {
+        return ctx.db.transaction(async (tx) => {
             const now = new Date();
             const [limit] = await tx
                 .select({ id: rateLimits.id, left: rateLimits.left })
@@ -143,7 +142,7 @@ export const usageRouter = createTRPCRouter({
         usageRecordId: z.string(),
         rateLimitId: z.string(),
     })).mutation(async ({ ctx, input }) => {
-        return db.transaction(async (tx) => {
+        return ctx.db.transaction(async (tx) => {
             await tx.update(rateLimits).set({
                 left: sql`${rateLimits.left} + 1`,
             }).where(and(
