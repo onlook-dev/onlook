@@ -1,6 +1,7 @@
 import { prices, subscriptions, type NewSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { ScheduledSubscriptionAction, SubscriptionStatus } from '@onlook/stripe';
+import { trackSubscriptionEventServer } from '@/utils/analytics/posthog';
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
@@ -69,6 +70,10 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         }
     }).returning()
 
+    trackSubscriptionEventServer(userId, {
+        subscription_active: true
+    });
+
     console.log("Checkout session completed: ", data)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
@@ -85,7 +90,13 @@ export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSu
         scheduledPriceId: null,
         scheduledChangeAt: null,
         stripeSubscriptionScheduleId: null,
-    }).where(eq(subscriptions.stripeSubscriptionId, subscriptionId))
+    }).where(eq(subscriptions.stripeSubscriptionId, subscriptionId)).returning()
+
+    if (res.length > 0 && res[0]) {
+        trackSubscriptionEventServer(res[0].userId, {
+            subscription_active: false
+        });
+    }
 
     console.log("Subscription cancelled: ", res)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })

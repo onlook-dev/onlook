@@ -1,4 +1,3 @@
 
-export function sendAnalytics(event: string, properties?: Record<string, any>) {
-    console.log('sendAnalytics', event, properties);
-}
+export * from './posthog';
+export { sendAnalytics } from './posthog';

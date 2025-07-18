@@ -1,4 +1,5 @@
 import { api } from '@/trpc/client';
+import { trackMilestoneEvent, MILESTONE_EVENTS } from '@/utils/analytics/posthog';
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import type { Project as DbProject } from '@onlook/db';
 import { CreateRequestContextType } from '@onlook/models';
@@ -64,6 +65,12 @@ export class CreateManager {
                 },
             });
 
+            trackMilestoneEvent(MILESTONE_EVENTS.CREATE_PROJECT, {
+                projectId: newProject.id,
+                projectName: newProject.name,
+                creationType: 'prompt'
+            });
+
             return newProject;
         }
         catch (error) {
@@ -115,6 +122,13 @@ export class CreateManager {
                 project,
                 userId,
             });
+            
+            trackMilestoneEvent(MILESTONE_EVENTS.CREATE_PROJECT, {
+                projectId: newProject.id,
+                projectName: newProject.name,
+                creationType: 'github_template'
+            });
+            
             return newProject;
         }
         catch (error) {

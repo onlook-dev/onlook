@@ -1,6 +1,7 @@
 import { customDomains, customDomainVerification, projectCustomDomains, type CustomDomainVerification } from '@onlook/db';
 import { VerificationRequestStatus } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
+import { trackMilestoneEventServer, MILESTONE_EVENTS } from '@/utils/analytics/posthog';
 import { and, eq, or } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../../trpc';
@@ -90,6 +91,12 @@ export const verificationRouter = createTRPCRouter({
                     }).where(eq(customDomainVerification.id, verification.id));
                 },
             );
+
+        trackMilestoneEventServer(ctx.user.id, MILESTONE_EVENTS.MAP_CUSTOM_DOMAIN, {
+            projectId: verification.projectId,
+            customDomain: domain
+        });
+
         return {
             success: true,
             failureReason: null,
@@ -139,6 +146,12 @@ export const verificationRouter = createTRPCRouter({
                 message: 'Failed to create project custom domain',
             });
         }
+
+        trackMilestoneEventServer(ctx.user.id, MILESTONE_EVENTS.MAP_CUSTOM_DOMAIN, {
+            projectId: input.projectId,
+            customDomain: input.fullDomain
+        });
+
         return {
             success: true,
             failureReason: null,

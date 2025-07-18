@@ -6,6 +6,7 @@ import {
     DeploymentType
 } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
+import { trackMilestoneEventServer, MILESTONE_EVENTS } from '@/utils/analytics/posthog';
 import { PublishManager } from '../manager';
 import { deployFreestyle } from './deploy';
 import { forkBuildSandbox } from './fork';
@@ -75,6 +76,11 @@ export async function publish({
                 files,
                 urls: deploymentUrls,
                 envVars: envVars ?? {},
+            });
+
+            trackMilestoneEventServer(userId, MILESTONE_EVENTS.PUBLISH_ONLOOK_DOMAIN, {
+                projectId,
+                deploymentType: type
             });
         } finally {
             await session.disconnect();

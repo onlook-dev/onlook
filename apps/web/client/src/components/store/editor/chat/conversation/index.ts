@@ -1,5 +1,6 @@
 
 import { api } from '@/trpc/client';
+import { trackMilestoneEvent, MILESTONE_EVENTS } from '@/utils/analytics/posthog';
 import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, type ChatConversation, type ChatMessageContext } from '@onlook/models';
 import type { Message } from 'ai';
@@ -117,6 +118,12 @@ export class ConversationManager {
         }
         const newMessage = UserChatMessageImpl.fromStringContent(content, context);
         await this.addMessage(newMessage);
+        
+        trackMilestoneEvent(MILESTONE_EVENTS.SEND_AI_MESSAGE, {
+            projectId: this.editorEngine.projectId,
+            messageLength: content.length
+        });
+        
         return newMessage;
     }
 

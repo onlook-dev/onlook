@@ -3,6 +3,7 @@
 import { ProcessedFileType, type NextJsProjectValidation, type ProcessedFile } from '@/app/projects/types';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
+import { trackMilestoneEvent, MILESTONE_EVENTS } from '@/utils/analytics/posthog';
 import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { SandboxTemplates, Templates } from '@onlook/constants';
@@ -125,6 +126,13 @@ export const ProjectCreationProvider = ({
                 console.error('Failed to create project');
                 return;
             }
+            
+            trackMilestoneEvent(MILESTONE_EVENTS.IMPORT_PROJECT, {
+                projectId: project.id,
+                projectName: project.name,
+                importType: 'local'
+            });
+            
             // Open the project
             router.push(`${Routes.PROJECT}/${project.id}`);
         } catch (error) {

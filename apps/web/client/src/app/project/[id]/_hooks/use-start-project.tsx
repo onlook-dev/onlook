@@ -3,6 +3,7 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
+import { trackMilestoneEvent, MILESTONE_EVENTS } from '@/utils/analytics/posthog';
 import { type ProjectCreateRequest } from '@onlook/db';
 import { ChatType, CreateRequestContextType, MessageContextType, ProjectCreateRequestStatus, type ChatMessageContext, type ImageMessageContext, type Project } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
@@ -28,6 +29,10 @@ export const useStartProject = () => {
     useEffect(() => {
         if (project) {
             startSandbox(project);
+            trackMilestoneEvent(MILESTONE_EVENTS.START_APP, {
+                projectId: project.id,
+                projectName: project.name
+            });
         }
     }, [project]);
 
