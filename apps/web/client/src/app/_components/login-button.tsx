@@ -23,7 +23,7 @@ export const GithubLoginButton = ({
                 onClick={() => handleLogin(SignInMethod.GITHUB)}
                 disabled={isPending}
             >
-                {isPending ? (
+                {isPending && isLastSignInMethod ? (
                     <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
                     <Icons.GitHubLogo className="w-4 h-4 mr-2" />
@@ -54,7 +54,7 @@ export const GoogleLoginButton = ({
                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
                 disabled={isPending}
             >
-                {isPending ? (
+                {isPending && isLastSignInMethod ? (
                     <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
                     <Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />
