@@ -12,7 +12,7 @@ const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 export function ChatProvider({ children }: { children: React.ReactNode }) {
     const editorEngine = useEditorEngine();
     const lastMessageRef = useRef<Message | null>(null);
-    const posthog = usePostHog();
+    const { capture } = usePostHog();
 
     const chat = useChat({
         id: 'user-chat',
@@ -54,7 +54,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
         chat.setMessages(messages);
-        posthog.capture('user_send_message', {
+        capture('user_send_message', {
             type,
         });
         return chat.reload({
