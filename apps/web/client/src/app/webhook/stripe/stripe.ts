@@ -1,3 +1,4 @@
+import { trackEvent } from '@/utils/analytics/server';
 import { prices, subscriptions, type NewSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { ScheduledSubscriptionAction, SubscriptionStatus } from '@onlook/stripe';
@@ -68,6 +69,15 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
             stripeSubscriptionItemId: subscriptionItemId,
         }
     }).returning()
+
+    trackEvent({
+        distinctId: userId,
+        event: 'user_subscription_created',
+        properties: {
+            priceId: price.id,
+            productId: price.productId,
+        }
+    })
 
     console.log("Checkout session completed: ", data)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
@@ -180,7 +190,19 @@ export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSu
         updates.scheduledChangeAt = new Date(stripeSubscription.cancel_at * 1000)
     }
 
-    await db.update(subscriptions).set(updates).where(eq(subscriptions.id, subscription.id));
+    await db.update(subscriptions)
+        .set(updates)
+        .where(eq(subscriptions.id, subscription.id));
+
+    trackEvent({
+        distinctId: subscription.userId,
+        event: 'user_subscription_updated',
+        properties: {
+            priceId: price.id,
+            productId: price.productId,
+            cancellationScheduled: !!stripeSubscription.cancel_at,
+        }
+    })
 
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
