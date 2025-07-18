@@ -43,7 +43,7 @@ export class TemplateNodeMapper {
     }
 
     getTemplateNode(oid: string): TemplateNode | null {
-        return this.oidToTemplateNodeMap.get(oid) || null;
+        return this.oidToTemplateNodeMap.get(oid) ?? null;
     }
 
     getTemplateNodeMap(): Map<string, TemplateNode> {
