@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
     CREATE_FILE_TOOL_NAME,
     EDIT_FILE_TOOL_NAME,
@@ -33,6 +34,29 @@ export function ToolCallSimple({
     className?: string;
     loading?: boolean;
 }) {
+    const [elapsedTime, setElapsedTime] = useState(0);
+    const [startTime, setStartTime] = useState<number | null>(null);
+    
+    useEffect(() => {
+        let interval: NodeJS.Timeout | null = null;
+        
+        if (loading) {
+            const currentStartTime = startTime ?? Date.now();
+            if (startTime === null) {
+                setStartTime(currentStartTime);
+            }
+            interval = setInterval(() => {
+                setElapsedTime(Date.now() - currentStartTime);
+            }, 100);
+        }
+        
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [loading, startTime]);
+
     const toolName = toolInvocation.toolName;
     const Icon = TOOL_ICONS[toolName] ?? Icons.QuestionMarkCircled;
 
@@ -91,6 +115,17 @@ export function ToolCallSimple({
         }
     }
 
+    const formatDuration = (ms: number): string => {
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        
+        if (minutes > 0) {
+            const remainingSeconds = seconds % 60;
+            return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`;
+        }
+        return `${seconds}s`;
+    };
+
     return (
         <div className={cn('flex items-center gap-2 ml-2 text-foreground-tertiary/80', className)}>
             <Icon className="w-4 h-4" />
@@ -103,6 +138,14 @@ export function ToolCallSimple({
             >
                 {getLabel()}
             </span>
+            {(loading || elapsedTime > 0) && (
+                <span className={cn(
+                    'text-regularPlus',
+                    loading ? 'text-foreground-secondary' : 'text-foreground-tertiary'
+                )}>
+                    • {formatDuration(elapsedTime)}
+                </span>
+            )}
         </div>
     );
-} 
+}        
