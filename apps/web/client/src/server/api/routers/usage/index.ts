@@ -106,36 +106,38 @@ export const usageRouter = createTRPCRouter({
             const subscription = await tx.query.subscriptions.findFirst({
                 where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, SubscriptionStatus.ACTIVE)),
             });
-            if (!subscription) {
-                return { rateLimitId: undefined, usageRecordId: undefined };
+
+            let rateLimitId: string | undefined;
+            if (subscription) {
+                const now = new Date();
+                const [limit] = await tx
+                    .select({ id: rateLimits.id, left: rateLimits.left })
+                    .from(rateLimits)
+                    .where(and(
+                        eq(rateLimits.userId, user.id),
+                        lte(rateLimits.startedAt, now),
+                        gte(rateLimits.endedAt, now),
+                        ne(rateLimits.left, 0),
+                    ))
+                    // deduct from the credits that have carried over the most
+                    // (in other words, the oldest credits)
+                    .orderBy(desc(rateLimits.carryOverTotal))
+                    .limit(1);
+
+                // if there are no credits left then rollback
+                if (!limit?.left) {
+                    tx.rollback();
+                    return;
+                }
+
+                await tx.update(rateLimits).set({
+                    left: sql`${rateLimits.left} - 1`,
+                }).where(and(
+                    eq(rateLimits.id, limit.id),
+                ));
+
+                rateLimitId = limit.id;
             }
-
-            const now = new Date();
-            const [limit] = await tx
-                .select({ id: rateLimits.id, left: rateLimits.left })
-                .from(rateLimits)
-                .where(and(
-                    eq(rateLimits.userId, user.id),
-                    lte(rateLimits.startedAt, now),
-                    gte(rateLimits.endedAt, now),
-                    ne(rateLimits.left, 0),
-                ))
-                // deduct from the credits that have carried over the most
-                // (in other words, the oldest credits)
-                .orderBy(desc(rateLimits.carryOverTotal))
-                .limit(1);
-
-            // if there are no credits left then rollback
-            if (!limit?.left) {
-                tx.rollback();
-                return;
-            }
-
-            await tx.update(rateLimits).set({
-                left: sql`${rateLimits.left} - 1`,
-            }).where(and(
-                eq(rateLimits.id, limit.id),
-            ));
 
             const usageRecord = await tx.insert(usageRecords).values({
                 userId: user.id,
@@ -143,7 +145,7 @@ export const usageRouter = createTRPCRouter({
                 timestamp: new Date(),
             }).returning({ id: usageRecords.id });
 
-            return { rateLimitId: limit.id, usageRecordId: usageRecord?.[0]?.id };
+            return { rateLimitId, usageRecordId: usageRecord?.[0]?.id };
         });
     }),
 
@@ -152,12 +154,18 @@ export const usageRouter = createTRPCRouter({
         rateLimitId: z.string(),
     })).mutation(async ({ ctx, input }) => {
         return ctx.db.transaction(async (tx) => {
-            await tx.update(rateLimits).set({
-                left: sql`${rateLimits.left} + 1`,
-            }).where(and(
-                eq(rateLimits.id, input.rateLimitId),
-            ));
-            await tx.delete(usageRecords).where(and(eq(usageRecords.id, input.usageRecordId)));
+            if (input.rateLimitId) {
+                await tx.update(rateLimits).set({
+                    left: sql`${rateLimits.left} + 1`,
+                }).where(and(
+                    eq(rateLimits.id, input.rateLimitId),
+                ));
+            }
+
+            if (input.usageRecordId) {
+                await tx.delete(usageRecords).where(and(eq(usageRecords.id, input.usageRecordId)));
+            }
+
             return { rateLimitId: input.rateLimitId, usageRecordId: input.usageRecordId };
         });
     }),
