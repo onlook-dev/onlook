@@ -1,3 +1,4 @@
+import { initModel } from '@onlook/ai';
 import {
     canvases,
     conversations,
@@ -17,14 +18,12 @@ import {
     type Canvas,
     type UserCanvas
 } from '@onlook/db';
-import { ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import { CLAUDE_MODELS, LLMProvider, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { projectCreateRequestRouter } from './createRequest';
-import { generateText } from 'ai';
-import { initModel } from '@onlook/ai';
-import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 
 export const projectRouter = createTRPCRouter({
     createRequest: projectCreateRequestRouter,
@@ -138,31 +137,26 @@ export const projectRouter = createTRPCRouter({
         .input(z.object({
             prompt: z.string(),
         }))
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input }): Promise<string> => {
             try {
                 const { model, providerOptions } = await initModel({
                     provider: LLMProvider.ANTHROPIC,
                     model: CLAUDE_MODELS.HAIKU,
                 });
-                
+
+                const MAX_NAME_LENGTH = 50;
                 const result = await generateText({
                     model,
-                    prompt: `Based on the following project description, generate a concise and meaningful project name (2-4 words maximum). The name should reflect the main purpose or theme of the project.
-
-Project description: ${input.prompt}
-
-Generate only the project name, nothing else. Keep it short and descriptive.`,
-                    maxTokens: 50,
+                    prompt: `Generate a concise and meaningful project name (2-4 words maximum) that reflects the main purpose or theme of the project based on user's creation prompt. Generate only the project name, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.prompt}</prompt>`,
                     providerOptions,
+                    maxTokens: 50,
                 });
 
                 const generatedName = result.text.trim();
-                
-                // Validate the generated name
-                if (generatedName && generatedName.length > 0 && generatedName.length <= 50) {
+                if (generatedName && generatedName.length > 0 && generatedName.length <= MAX_NAME_LENGTH) {
                     return generatedName;
                 }
-                
+
                 return 'New Project';
             } catch (error) {
                 console.error('Error generating project name:', error);

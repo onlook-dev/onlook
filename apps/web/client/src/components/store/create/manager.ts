@@ -38,13 +38,13 @@ export class CreateManager {
                 tags: ['prompt', userId],
             };
 
-            const { sandboxId, previewUrl } = await api.sandbox.fork.mutate({
-                sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
-                config,
-            });
-            
-            // Generate project name based on prompt
-            const projectName = await this.generateProjectName(prompt);
+            const [{ sandboxId, previewUrl }, projectName] = await Promise.all([
+                api.sandbox.fork.mutate({
+                    sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
+                    config,
+                }),
+                this.generateProjectName(prompt)
+            ]);
             const project = this.createDefaultProject(sandboxId, previewUrl, projectName);
             const newProject = await api.project.create.mutate({
                 project,
@@ -106,10 +106,10 @@ export class CreateManager {
                 return;
             }
 
-            const { sandboxId, previewUrl } = await this.createSandboxFromGithub(repoUrl, branch);
-            
-            // Generate project name based on repository name
-            const projectName = await this.generateProjectName(`Import from GitHub repository: ${repo}`);
+            const [{ sandboxId, previewUrl }, projectName] = await Promise.all([
+                this.createSandboxFromGithub(repoUrl, branch),
+                this.generateProjectName(`Import from GitHub repository: ${repo}`)
+            ]);
             const project = this.createDefaultProject(sandboxId, previewUrl, projectName);
             const newProject = await api.project.create.mutate({
                 project,
