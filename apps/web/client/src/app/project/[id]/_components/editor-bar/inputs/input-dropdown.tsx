@@ -42,10 +42,12 @@ export const InputDropdown = ({
             <div className="flex flex-1 items-center bg-background-tertiary/50 justify-between rounded-l-md px-2.5 h-[36px] min-w-[72px]">
                 <input
                     type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     value={localValue}
-                    onChange={(e) => handleChange(Number(e.target.value))}
+                    onChange={(e) => handleChange(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="w-[32px] bg-transparent text-sm text-white focus:outline-none text-left"
+                    className="w-[40px] bg-transparent text-sm text-white focus:outline-none text-left"
                     aria-label="Value input"
                 />
                 <DropdownMenu modal={false}>

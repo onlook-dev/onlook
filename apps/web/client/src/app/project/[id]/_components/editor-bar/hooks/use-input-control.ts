@@ -3,23 +3,28 @@ import type { KeyboardEvent } from 'react';
 import { debounce } from "lodash";
 
 export const useInputControl = (value: number, onChange?: (value: number) => void) => {
-    const [localValue, setLocalValue] = useState<number>(value);
+    const [localValue, setLocalValue] = useState<string>(String(value));
 
     useEffect(() => {
-        setLocalValue(value);
+        setLocalValue(String(value));
     }, [value]);
 
     const handleIncrement = (step: number) => {
-        if (!isNaN(localValue)) {
-            const newValue = (localValue + step);
-            handleChange(newValue);
+        const currentValue = Number(localValue);
+        if (!isNaN(currentValue)) {
+            const newValue = currentValue + step;
+            setLocalValue(String(newValue));
+            debouncedOnChange(newValue);
         }
     };
 
-    const handleChange = (value: number) => {
-        setLocalValue(value);
-        debouncedOnChange(value);
-    }
+    const handleChange = (inputValue: string) => {
+        setLocalValue(inputValue);
+        const numValue = Number(inputValue);
+        if (!isNaN(numValue)) {
+            debouncedOnChange(numValue);
+        }
+    };
 
     const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
@@ -36,7 +41,6 @@ export const useInputControl = (value: number, onChange?: (value: number) => voi
         }, 500),
         [onChange]
     );
-
 
     useEffect(() => {
         return () => {
