@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useBoxControl } from '../hooks/use-box-control';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
-import { InputRange } from '../inputs/input-range';
+import { InputRange, STANDARD_INCREMENTS } from '../inputs/input-range';
 import { SpacingInputs } from '../inputs/spacing-inputs';
 import { ToolbarButton } from '../toolbar-button';
 
@@ -33,11 +33,11 @@ export const Border = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="flex items-center gap-1 min-w-10"
+                        className={`flex items-center gap-1 min-w-10 ${borderExists ? 'text-foreground-primary' : ''}`}
                     >
-                        <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
+                        <Icons.BorderEdit className={`h-4 w-4 min-h-4 min-w-4 ${borderExists ? 'text-foreground-primary' : ''}`} />
                         {borderExists && (
-                            <span className="text-xs">
+                            <span className="text-xs text-foreground-primary">
                                 {boxState.borderWidth.unit === 'px'
                                     ? boxState.borderWidth.num
                                     : boxState.borderWidth.value}
@@ -77,6 +77,7 @@ export const Border = observer(() => {
                         onChange={(value) => handleBoxChange('borderWidth', value.toString())}
                         unit={boxState.borderWidth.unit}
                         onUnitChange={(unit) => handleUnitChange('borderWidth', unit)}
+                        customIncrements={STANDARD_INCREMENTS}
                     />
                 ) : (
                     <SpacingInputs
