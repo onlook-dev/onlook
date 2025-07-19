@@ -14,6 +14,7 @@ import { wrapXml } from './helpers';
 import { SHELL_PROMPT } from './shell';
 import { SUMMARY_PROMPTS } from './summary';
 import { SYSTEM_PROMPT } from './system';
+import { SUGGESTION_SYSTEM_PROMPT } from './suggest';
 
 export function getSystemPrompt() {
     let prompt = '';
@@ -25,6 +26,12 @@ export function getSystemPrompt() {
 export function getCreatePageSystemPrompt() {
     let prompt = getSystemPrompt() + '\n\n';
     prompt += wrapXml('create-system-prompt', CREATE_NEW_PAGE_SYSTEM_PROMPT);
+    return prompt;
+}
+
+export function getSuggestionSystemPrompt() {
+    let prompt = '';
+    prompt += wrapXml('role', SUGGESTION_SYSTEM_PROMPT);
     return prompt;
 }
 
@@ -45,6 +52,14 @@ export function getExampleConversation(
         prompt += `${message.role.toUpperCase()}: ${message.content}\n`;
     }
     return prompt;
+}
+
+export function removeContextMessages(messages: Message[]) {
+    for (const m of messages) {
+        if ('context' in m) {
+            m.context = [];
+        }
+    }
 }
 
 export function getHydratedUserMessage(
