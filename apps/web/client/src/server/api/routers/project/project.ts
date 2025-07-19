@@ -1,3 +1,4 @@
+import { trackEvent } from '@/utils/analytics/server';
 import { initModel } from '@onlook/ai';
 import {
     canvases,
@@ -130,6 +131,14 @@ export const projectRouter = createTRPCRouter({
                         projectId: newProject.id,
                     });
                 }
+
+                trackEvent({
+                    distinctId: input.userId,
+                    event: 'user_create_project',
+                    properties: {
+                        projectId: newProject.id,
+                    },
+                });
                 return newProject;
             });
         }),

@@ -16,7 +16,7 @@ export const publishRouter = createTRPCRouter({
         const userId = ctx.user.id;
         const deployment = await createDeployment(ctx.db, projectId, type, userId);
         const urls = await getProjectUrls(ctx.db, projectId, type);
-        unpublish(
+        await unpublish(
             ctx.db,
             deployment,
             urls,
