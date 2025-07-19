@@ -1,4 +1,5 @@
-import { prices, rateLimits, subscriptions, users } from '@onlook/db';
+import { trackEvent } from '@/utils/analytics/server';
+import { prices, rateLimits, subscriptions } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { isTierUpgrade, ScheduledSubscriptionAction, SubscriptionStatus } from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
@@ -76,6 +77,19 @@ export const handleSubscriptionUpdated = async (
         });
         console.log('Subscription cancellation scheduled at ', stripeSubscription.cancel_at);
     }
+
+    trackEvent({
+        distinctId: subscription.userId,
+        event: 'user_subscription_updated',
+        properties: {
+            priceId: newPrice.id,
+            productId: newPrice.productId,
+            cancellationScheduled: !!stripeSubscription.cancel_at,
+            $set: {
+                subscription_updated_at: new Date(),
+            }
+        }
+    })
 
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
 };

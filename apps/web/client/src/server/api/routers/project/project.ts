@@ -1,3 +1,5 @@
+import { trackEvent } from '@/utils/analytics/server';
+import { initModel } from '@onlook/ai';
 import {
     canvases,
     conversations,
@@ -17,7 +19,8 @@ import {
     type Canvas,
     type UserCanvas
 } from '@onlook/db';
-import { ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import { CLAUDE_MODELS, LLMProvider, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -128,8 +131,46 @@ export const projectRouter = createTRPCRouter({
                         projectId: newProject.id,
                     });
                 }
+
+                trackEvent({
+                    distinctId: input.userId,
+                    event: 'user_create_project',
+                    properties: {
+                        projectId: newProject.id,
+                    },
+                });
                 return newProject;
             });
+        }),
+    generateName: protectedProcedure
+        .input(z.object({
+            prompt: z.string(),
+        }))
+        .mutation(async ({ input }): Promise<string> => {
+            try {
+                const { model, providerOptions } = await initModel({
+                    provider: LLMProvider.ANTHROPIC,
+                    model: CLAUDE_MODELS.HAIKU,
+                });
+
+                const MAX_NAME_LENGTH = 50;
+                const result = await generateText({
+                    model,
+                    prompt: `Generate a concise and meaningful project name (2-4 words maximum) that reflects the main purpose or theme of the project based on user's creation prompt. Generate only the project name, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.prompt}</prompt>`,
+                    providerOptions,
+                    maxTokens: 50,
+                });
+
+                const generatedName = result.text.trim();
+                if (generatedName && generatedName.length > 0 && generatedName.length <= MAX_NAME_LENGTH) {
+                    return generatedName;
+                }
+
+                return 'New Project';
+            } catch (error) {
+                console.error('Error generating project name:', error);
+                return 'New Project';
+            }
         }),
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))

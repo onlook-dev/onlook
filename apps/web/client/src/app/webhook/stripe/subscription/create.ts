@@ -1,3 +1,4 @@
+import { trackEvent } from '@/utils/analytics/server';
 import { prices, rateLimits, subscriptions, users } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { SubscriptionStatus } from '@onlook/stripe';
@@ -89,6 +90,18 @@ export const handleSubscriptionCreated = async (
 
         return [data, rateLimit];
     });
+
+    trackEvent({
+        distinctId: user.id,
+        event: 'user_subscription_created',
+        properties: {
+            priceId: price.id,
+            productId: price.productId,
+            $set: {
+                subscription_created_at: new Date(),
+            }
+        }
+    })
 
     console.log('Checkout session completed: ', sub, rateLimit);
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
