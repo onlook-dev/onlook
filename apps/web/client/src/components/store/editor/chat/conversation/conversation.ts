@@ -3,8 +3,12 @@ import { MAX_NAME_LENGTH } from '@onlook/constants';
 import { fromConversation, fromMessage } from '@onlook/db';
 import {
     ChatMessageRole,
+    MessageContextType,
     type AssistantChatMessage,
     type ChatConversation,
+    type ChatMessageContext,
+    type FileMessageContext,
+    type HighlightMessageContext,
     type UserChatMessage
 } from '@onlook/models/chat';
 import type { Message } from 'ai';
@@ -59,7 +63,59 @@ export class ChatConversationImpl implements ChatConversation {
 
 
     getMessagesForStream(): Message[] {
-        return this.messages.map((m) => m.toStreamMessage());
+        const deduplicatedMessages = this.deduplicateFiles(this.messages);
+        return deduplicatedMessages.map((m) => m.toStreamMessage());
+    }
+
+    deduplicateFiles(messages: ChatMessageImpl[]): ChatMessageImpl[] {
+        if (messages.length === 0) {
+            return messages;
+        }
+
+        const seenContexts = new Set<string>();
+        const deduplicatedMessages: ChatMessageImpl[] = [];
+        let hasChanges = false;
+        
+        for (let i = messages.length - 1; i >= 0; i--) {
+            const message = messages[i]!;
+            
+            if (message.role === ChatMessageRole.USER) {
+                const userMessage = message as UserChatMessageImpl;
+                
+                const filteredContext = userMessage.context.filter(context => {
+                    if (context.type !== MessageContextType.FILE && 
+                        context.type !== MessageContextType.HIGHLIGHT && 
+                        context.type !== MessageContextType.PROJECT) {
+                        return true;
+                    }
+                    
+                    const contextKey = `${context.type}:${context.path}`;
+                    
+                    if (seenContexts.has(contextKey)) {
+                        hasChanges = true;
+                        return false;
+                    }
+                    
+                    seenContexts.add(contextKey);
+                    return true;
+                });
+                
+                if (filteredContext.length !== userMessage.context.length) {
+                    const newUserMessage = new UserChatMessageImpl(userMessage.content, filteredContext);
+                    newUserMessage.id = userMessage.id;
+                    newUserMessage.aiSdkId = userMessage.aiSdkId;
+                    newUserMessage.commitOid = userMessage.commitOid;
+                    
+                    deduplicatedMessages.unshift(newUserMessage);
+                } else {
+                    deduplicatedMessages.unshift(message);
+                }
+            } else {
+                deduplicatedMessages.unshift(message);
+            }
+        }
+        
+        return hasChanges ? deduplicatedMessages : messages;
     }
 
     async addOrUpdateMessage(message: ChatMessageImpl) {
