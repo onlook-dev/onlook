@@ -12,7 +12,7 @@ import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
-import { InputRange } from "../inputs/input-range";
+import { InputRange, STANDARD_INCREMENTS } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 import { ToolbarButton } from "../toolbar-button";
 
@@ -142,7 +142,7 @@ export const Radius = observer(() => {
                         onChange={(value) => handleBoxChange('borderRadius', value.toString())}
                         unit={boxState.borderRadius.unit}
                         onUnitChange={(unit) => handleUnitChange('borderRadius', unit)}
-                        customIncrements={[0, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}
+                        customIncrements={STANDARD_INCREMENTS}
                         useTailwindClasses={true}
                     />
                 ) : (

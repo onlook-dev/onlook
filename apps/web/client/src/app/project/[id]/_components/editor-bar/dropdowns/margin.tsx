@@ -14,7 +14,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
-import { InputRange } from "../inputs/input-range";
+import { InputRange, STANDARD_INCREMENTS } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 import { ToolbarButton } from "../toolbar-button";
 
@@ -192,6 +192,7 @@ export const Margin = observer(() => {
                         onChange={(value) => handleBoxChange('margin', value.toString())}
                         unit={boxState.margin.unit}
                         onUnitChange={(unit) => handleUnitChange('margin', unit)}
+                        customIncrements={STANDARD_INCREMENTS}
                     />
                 ) : (
                     <SpacingInputs

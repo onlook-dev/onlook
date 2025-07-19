@@ -11,7 +11,7 @@ import { useMemo, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
-import { InputRange } from "../inputs/input-range";
+import { InputRange, STANDARD_INCREMENTS } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 import { ToolbarButton } from "../toolbar-button";
 
@@ -164,6 +164,7 @@ export const Padding = observer(() => {
                         onChange={(value) => handleBoxChange('padding', value.toString())}
                         unit={boxState.padding.unit}
                         onUnitChange={(unit) => handleUnitChange('padding', unit)}
+                        customIncrements={STANDARD_INCREMENTS}
                     />
                 ) : (
                     <SpacingInputs
