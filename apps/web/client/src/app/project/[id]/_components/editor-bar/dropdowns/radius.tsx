@@ -106,11 +106,11 @@ export const Radius = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="gap-1 flex items-center min-w-10"
+                        className={`gap-1 flex items-center min-w-10 ${radiusValue ? 'text-foreground-primary' : ''}`}
                     >
-                        <RadiusIcon className="h-4 min-h-4 w-4 min-w-4" />
+                        <RadiusIcon className={`h-4 min-h-4 w-4 min-w-4 ${radiusValue ? 'text-foreground-primary' : ''}`} />
                         {radiusValue && (
-                            <span className="text-small data-[state=open]:text-white">{radiusValue}</span>
+                            <span className="text-small text-foreground-primary data-[state=open]:text-white">{radiusValue}</span>
                         )}
                     </ToolbarButton>
                 </DropdownMenuTrigger>
@@ -142,6 +142,8 @@ export const Radius = observer(() => {
                         onChange={(value) => handleBoxChange('borderRadius', value.toString())}
                         unit={boxState.borderRadius.unit}
                         onUnitChange={(unit) => handleUnitChange('borderRadius', unit)}
+                        customIncrements={[0, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}
+                        useTailwindClasses={true}
                     />
                 ) : (
                     <SpacingInputs

@@ -56,7 +56,7 @@ export const Display = observer(() => {
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="min-w-[200px] mt-2 p-1.5 rounded-lg">
-                <div className="p-2 space-y-2.5">
+                <div className="space-y-2 px-4 py-4">
                     <TypeInput />
                     <DirectionInput />
                     <VerticalAlignInput />

@@ -33,11 +33,11 @@ export const Border = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="flex items-center gap-1 min-w-10"
+                        className={`flex items-center gap-1 min-w-10 ${borderExists ? 'text-foreground-primary' : ''}`}
                     >
-                        <Icons.BorderEdit className="h-4 w-4 min-h-4 min-w-4" />
+                        <Icons.BorderEdit className={`h-4 w-4 min-h-4 min-w-4 ${borderExists ? 'text-foreground-primary' : ''}`} />
                         {borderExists && (
-                            <span className="text-xs">
+                            <span className="text-xs text-foreground-primary">
                                 {boxState.borderWidth.unit === 'px'
                                     ? boxState.borderWidth.num
                                     : boxState.borderWidth.value}
@@ -77,6 +77,7 @@ export const Border = observer(() => {
                         onChange={(value) => handleBoxChange('borderWidth', value.toString())}
                         unit={boxState.borderWidth.unit}
                         onUnitChange={(unit) => handleUnitChange('borderWidth', unit)}
+                        customIncrements={[0, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]}
                     />
                 ) : (
                     <SpacingInputs

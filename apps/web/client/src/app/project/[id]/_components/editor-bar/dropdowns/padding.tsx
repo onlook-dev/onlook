@@ -128,11 +128,11 @@ export const Padding = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="gap-1 flex items-center min-w-10"
+                        className={`gap-1 flex items-center min-w-10 ${paddingValue ? 'text-foreground-primary' : ''}`}
                     >
-                        <PaddingIcon className="h-4 min-h-4 w-4 min-w-4" />
+                        <PaddingIcon className={`h-4 min-h-4 w-4 min-w-4 ${paddingValue ? 'text-foreground-primary' : ''}`} />
                         {paddingValue && (
-                            <span className="text-small data-[state=open]:text-white">{paddingValue}</span>
+                            <span className="text-small text-foreground-primary data-[state=open]:text-white">{paddingValue}</span>
                         )}
                     </ToolbarButton>
                 </DropdownMenuTrigger>

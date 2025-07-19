@@ -12,7 +12,6 @@ import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverAnchor, PopoverContent } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
@@ -108,11 +107,10 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                                             <Icons.Trash className="w-4 h-4" />
                                                         </Button>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side="right">
+                                                    <TooltipContent side="right" className="mt-1">
                                                         <p className="font-normal">
                                                             Delete Conversation
                                                         </p>
-                                                        <TooltipArrow className="fill-foreground" />
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </div>
