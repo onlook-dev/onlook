@@ -1,4 +1,5 @@
 import { createClient as createTRPCClient } from '@/trpc/request-server';
+import { trackEvent } from '@/utils/analytics/server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, CLAUDE_MODELS, LLMProvider, type Usage, UsageType } from '@onlook/models';
@@ -20,6 +21,13 @@ export async function POST(req: NextRequest) {
 
         const usageCheckResult = await checkMessageLimit(req);
         if (usageCheckResult.exceeded) {
+            trackEvent({
+                distinctId: user.id,
+                event: 'message_limit_exceeded',
+                properties: {
+                    usage: usageCheckResult.usage,
+                },
+            });
             return new Response(JSON.stringify({
                 error: 'Message limit exceeded. Please upgrade to a paid plan.',
                 code: 402,

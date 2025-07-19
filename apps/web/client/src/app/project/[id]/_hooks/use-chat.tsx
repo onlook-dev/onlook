@@ -1,8 +1,11 @@
+'use client'
+
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { ChatType } from '@onlook/models';
 import type { Message } from 'ai';
+import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
 
 type ExtendedUseChatHelpers = UseChatHelpers & { sendMessages: (messages: Message[], type: ChatType) => Promise<string | null | undefined> };
@@ -11,6 +14,7 @@ const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 export function ChatProvider({ children }: { children: React.ReactNode }) {
     const editorEngine = useEditorEngine();
     const lastMessageRef = useRef<Message | null>(null);
+    const posthog = usePostHog();
 
     const chat = useChat({
         id: 'user-chat',
@@ -52,6 +56,13 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
         chat.setMessages(messages);
+        try {
+            posthog.capture('user_send_message', {
+                type,
+            });
+        } catch (error) {
+            console.error('Error tracking user send message: ', error)
+        }
         return chat.reload({
             body: {
                 chatType: type,
