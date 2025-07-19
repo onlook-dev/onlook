@@ -76,6 +76,9 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         properties: {
             priceId: price.id,
             productId: price.productId,
+            $set: {
+                subscription_created_at: new Date(),
+            }
         }
     })
 
@@ -98,6 +101,27 @@ export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSu
     }).where(eq(subscriptions.stripeSubscriptionId, subscriptionId))
 
     console.log("Subscription cancelled: ", res)
+
+    // Track event
+    try {
+        const subscription = await db.query.subscriptions.findFirst({
+            where: eq(subscriptions.stripeSubscriptionId, subscriptionId),
+        })
+        if (subscription) {
+            trackEvent({
+                distinctId: subscription.userId,
+                event: 'user_subscription_cancelled',
+                properties: {
+                    $set: {
+                        subscription_cancelled_at: new Date(),
+                    }
+                }
+            })
+        }
+    } catch (error) {
+        console.error('Error tracking user subscription cancelled: ', error)
+    }
+
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
 
