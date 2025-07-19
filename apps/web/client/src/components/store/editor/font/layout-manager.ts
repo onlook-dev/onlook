@@ -10,11 +10,9 @@ import {
     updateClassNameWithFontVar,
 } from '@onlook/fonts';
 import type { CodeDiff, Font } from '@onlook/models';
-import { RouterType } from '@onlook/models';
 import { generate, parse, traverse } from '@onlook/parser';
 import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import * as pathModule from 'path';
 import type { EditorEngine } from '../engine';
 import { normalizePath } from '../sandbox/helpers';
 

@@ -1,8 +1,8 @@
 import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
-import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS, LAYOUT_FILE_CONDITIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
+import { EXCLUDED_SYNC_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS, LAYOUT_FILE_CONDITIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
 import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
-import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer, isTargetFile } from '@onlook/utility';
+import { getBaseName, getDirName, isImageFile, isSubdirectory, isTargetFile, LogTimer } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
@@ -672,23 +672,30 @@ export class SandboxManager {
     /**
      * Gets the root layout path and router config
      */
-    async getRootLayoutPath(): Promise<string | undefined> {
+    async getRootLayoutPath(): Promise<string | null> {
         const routerConfig = this.routerConfig;
         if (!routerConfig) {
             console.log('Could not detect Next.js router type');
-            return;
+            return null;
         }
 
-        // Determine the layout file path based on router type
-        let layoutPath: string;
+        let layoutFileName: string;
 
-        if (routerConfig.type === RouterType.APP) {
-            layoutPath = path.join(routerConfig.basePath, 'layout.tsx');
+        if (routerConfig.type === RouterType.PAGES) {
+            layoutFileName = '_app';
         } else {
-            layoutPath = path.join(routerConfig.basePath, '_app.tsx');
+            layoutFileName = 'layout';
         }
 
-        return normalizePath(layoutPath);
+        for (const extension of [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS]) {
+            const layoutPath = path.join(routerConfig.basePath, `${layoutFileName}${extension}`);
+            if (await this.fileExists(layoutPath)) {
+                return normalizePath(layoutPath);
+            }
+        }
+
+        console.log('Could not find layout file');
+        return null;
     }
 
     clear() {
