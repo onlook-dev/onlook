@@ -179,25 +179,16 @@ export const useBoxControl = (type: BoxType) => {
         if (!currentState) return;
 
         const cssValue = parsedValue ? `${parsedValue}${currentState.unit}` : '';
-        const updates = new Map<CSSBoxProperty, string>();
-
-        updates.set(property, cssValue);
-
+        
         if (type === 'radius' && property === 'borderRadius') {
-            CORNERS_RADIUS.forEach((corner) => {
-                updates.set(`border${corner}` as CSSBoxProperty, cssValue);
-            });
+            editorEngine.style.update('borderRadius', cssValue);
         } else if (type === 'border' && property === 'borderWidth') {
-            SIDES.forEach((side) => {
-                updates.set(`border${side}Width` as CSSBoxProperty, cssValue);
-            });
+            editorEngine.style.update('borderWidth', cssValue);
         } else if ((type === 'margin' || type === 'padding') && property === type) {
-            SIDES.forEach((side) => {
-                updates.set(`${type}${side}` as CSSBoxProperty, cssValue);
-            });
+            editorEngine.style.update(property, cssValue);
+        } else {
+            editorEngine.style.update(property, cssValue);
         }
-
-        editorEngine.style.updateMultiple(Object.fromEntries(updates));
     }, [boxState, editorEngine.style, type]);
 
     const handleUnitChange = useCallback((property: CSSBoxProperty, unit: string) => {
