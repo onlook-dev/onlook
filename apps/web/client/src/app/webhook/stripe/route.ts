@@ -1,7 +1,7 @@
 import { env } from '@/env';
 import { createStripeClient } from '@onlook/stripe';
 import Stripe from 'stripe';
-import { handleCheckoutSessionCompleted, handleInvoicePaid, handleSubscriptionDeleted, handleSubscriptionUpdated } from './stripe';
+import { handleSubscriptionCreated, handleSubscriptionDeleted, handleSubscriptionUpdated } from './subscription';
 
 export async function POST(request: Request) {
     const stripe = createStripeClient(env.STRIPE_SECRET_KEY)
@@ -23,21 +23,21 @@ export async function POST(request: Request) {
     }
 
     switch (event.type) {
-        case 'checkout.session.completed': {
-            return await handleCheckoutSessionCompleted(event, stripe);
+        case 'customer.subscription.created': {
+            return handleSubscriptionCreated(event);
         }
         case 'customer.subscription.updated': {
-            return await handleSubscriptionUpdated(event);
-        }
-        case 'invoice.paid': {
-            return await handleInvoicePaid(event);
+            return handleSubscriptionUpdated(event);
         }
         // Fires when the subscription expires, not when the user cancels it
         case 'customer.subscription.deleted': {
-            return await handleSubscriptionDeleted(event);
+            return handleSubscriptionDeleted(event);
         }
+        // list of events that could be handled in the future
+        case 'customer.subscription.paused':
+        case 'customer.subscription.resumed':
         default: {
-            return new Response(null, { status: 200 })
+            return new Response(null, { status: 200 });
         }
     }
 
