@@ -12,7 +12,7 @@ const sanitizeOids = (content: string) => {
 };
 
 describe('addOidsToAst', () => {
-    const SHOULD_UPDATE_EXPECTED = true;
+    const SHOULD_UPDATE_EXPECTED = false;
     const casesDir = path.resolve(__dirname, 'data/ids');
 
     const testCases = fs.readdirSync(casesDir);

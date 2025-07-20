@@ -56,6 +56,7 @@ export async function getContentFromAst(ast: T.File, originalContent: string): P
             minified: false,
             jsonCompatibleStrings: false,
             shouldPrintComment: () => true,
+            retainFunctionParens: true,
         },
         originalContent,
     ).code;
