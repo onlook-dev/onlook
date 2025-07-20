@@ -10,11 +10,9 @@ import {
     updateClassNameWithFontVar,
 } from '@onlook/fonts';
 import type { CodeDiff, Font } from '@onlook/models';
-import { RouterType } from '@onlook/models';
 import { generate, parse, traverse } from '@onlook/parser';
 import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import * as pathModule from 'path';
 import type { EditorEngine } from '../engine';
 import { normalizePath } from '../sandbox/helpers';
 
@@ -211,36 +209,6 @@ export class LayoutManager {
     }
 
     /**
-     * Gets the root layout path and router config
-     */
-    async getRootLayoutPath(): Promise<
-        { layoutPath: string; routerConfig: { type: RouterType; basePath: string } } | undefined
-    > {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            console.error('No sandbox session found');
-            return;
-        }
-
-        const routerConfig = sandbox.routerConfig;
-        if (!routerConfig) {
-            console.log('Could not detect Next.js router type');
-            return;
-        }
-
-        // Determine the layout file path based on router type
-        let layoutPath: string;
-
-        if (routerConfig.type === RouterType.APP) {
-            layoutPath = pathModule.join(routerConfig.basePath, 'layout.tsx');
-        } else {
-            layoutPath = pathModule.join(routerConfig.basePath, '_app.tsx');
-        }
-
-        return { layoutPath: normalizePath(layoutPath), routerConfig };
-    }
-
-    /**
      * Updates a file with a font import if needed
      */
     private async updateFileWithImport(
@@ -343,7 +311,8 @@ export class LayoutManager {
     }
 
     private async getLayoutContext(): Promise<{ layoutPath: string; targetElements: string[], layoutContent: string } | undefined> {
-        const { layoutPath, routerConfig } = (await this.getRootLayoutPath()) ?? {};
+        const layoutPath = await this.editorEngine.sandbox.getRootLayoutPath();
+        const routerConfig = this.editorEngine.sandbox.routerConfig;
 
         if (!layoutPath || !routerConfig) {
             console.error('Could not get layout path or router config');

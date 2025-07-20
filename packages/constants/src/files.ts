@@ -16,14 +16,6 @@ export const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
 
 export const JS_FILE_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs'];
 
-export const LAYOUT_FILE_LOCATION = ['src/app', 'app'];
-
-export const LAYOUT_FILE_CONDITIONS = {
-    fileName: 'layout',
-    targetExtensions: JSX_FILE_EXTENSIONS,
-    potentialPaths: LAYOUT_FILE_LOCATION,
-};
-
 export const SUPPORTED_LOCK_FILES = [
     'bun.lock',
     'package-lock.json',
