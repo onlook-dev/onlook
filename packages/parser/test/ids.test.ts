@@ -7,6 +7,9 @@ describe('addIdsToAst Tests', () => {
     test('should add ids to jsx', async () => {
         const code = `export default function App() {\n  return (\n    <div>Hello, world!</div>);\n\n}`;
         const ast = getAstFromContent(code);
+        if (!ast) {
+            throw new Error('Failed to get ast');
+        }
         const { ast: astWithIds, modified } = addOidsToAst(ast);
         const serialized = await getContentFromAst(astWithIds);
         expect(serialized).toEqual(
@@ -20,6 +23,9 @@ describe('addIdsToAst Tests', () => {
     test('should not add ids to jsx if they already exist', async () => {
         const code = `export default function App() {\n  return (\n    <div data-oid="1">Hello, world!</div>);\n\n}`;
         const ast = getAstFromContent(code);
+        if (!ast) {
+            throw new Error('Failed to get ast');
+        }
         const { ast: astWithIds, modified } = addOidsToAst(ast);
         const serialized = await getContentFromAst(astWithIds);
         expect(serialized).toEqual(code);
