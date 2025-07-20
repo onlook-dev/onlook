@@ -137,7 +137,14 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
         const typescriptExists = addTypescriptConfig(ast);
 
         // Generate the modified code from the AST
-        const updatedCode = generate(ast, {}, data).code;
+        const updatedCode = generate(
+            ast,
+            {
+                retainLines: true,
+                compact: false,
+            },
+            data,
+        ).code;
 
         const success = await fileOps.writeFile(configPath, updatedCode);
 

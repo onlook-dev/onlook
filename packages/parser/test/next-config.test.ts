@@ -1,8 +1,12 @@
-import { CUSTOM_OUTPUT_DIR, JS_FILE_EXTENSIONS } from '@onlook/constants';
+import { JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { type FileOperations } from '@onlook/utility';
 import { describe, expect, test } from 'bun:test';
+import fs from 'fs/promises';
+import path from 'path';
 import { getAstFromContent, getContentFromAst } from '../src';
 import { addNextBuildConfig } from '../src/code-edit/next-config';
+
+const __dirname = import.meta.dir;
 
 describe('Build Config Tests', () => {
     // Mock FileOperations for testing
@@ -29,133 +33,49 @@ describe('Build Config Tests', () => {
     };
 
     describe('addNextBuildConfig', () => {
-        test('should add config to basic next.config.js', async () => {
-            const configContent = `/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-}
+        const SHOULD_UPDATE_EXPECTED = false;
+        const casesDir = path.resolve(__dirname, 'data/next-config');
 
-module.exports = nextConfig`;
+        const runTestCases = async () => {
+            const testCases = await fs.readdir(casesDir);
 
-            const fileOps = createMockFileOps({
-                'next.config.js': configContent,
-            });
+            for (const testCase of testCases) {
+                test(`should handle case: ${testCase}`, async () => {
+                    const caseDir = path.resolve(casesDir, testCase);
+                    const files = await fs.readdir(caseDir);
 
-            const result = await addNextBuildConfig(fileOps);
-            expect(result).toBe(true);
+                    const inputFile = files.find((f) => f.startsWith('input.'));
+                    const expectedFile = files.find((f) => f.startsWith('expected.'));
 
-            const modifiedContent = await fileOps.readFile('next.config.js');
-            expect(modifiedContent).toContain('output: "standalone"');
-            expect(modifiedContent).toContain('typescript: {');
-            expect(modifiedContent).toContain('ignoreBuildErrors: true');
-            expect(modifiedContent).toContain(
-                `distDir: process.env.NODE_ENV === "production" ? "${CUSTOM_OUTPUT_DIR}" : ".next"`,
-            );
-        });
+                    if (!inputFile || !expectedFile) {
+                        throw new Error(`Test case ${testCase} is missing input or expected file.`);
+                    }
 
-        test('should add config to next.config.ts', async () => {
-            const configContent = `import type { NextConfig } from 'next'
+                    const inputPath = path.resolve(caseDir, inputFile);
+                    const expectedPath = path.resolve(caseDir, expectedFile);
 
-const nextConfig: NextConfig = {
-  reactStrictMode: true,
-}
+                    const extension = path.extname(inputFile);
+                    const configFilename = `next.config${extension}`;
 
-export default nextConfig`;
+                    const configContent = await Bun.file(inputPath).text();
+                    const fileOps = createMockFileOps({ [configFilename]: configContent });
 
-            const fileOps = createMockFileOps({
-                'next.config.ts': configContent,
-            });
+                    const result = await addNextBuildConfig(fileOps);
+                    expect(result).toBe(true);
 
-            const result = await addNextBuildConfig(fileOps);
-            expect(result).toBe(true);
+                    const modifiedContent = await fileOps.readFile(configFilename);
 
-            const modifiedContent = await fileOps.readFile('next.config.ts');
-            expect(modifiedContent).toContain('output: "standalone"');
-            expect(modifiedContent).toContain('typescript: {');
-            expect(modifiedContent).toContain('ignoreBuildErrors: true');
-        });
+                    if (SHOULD_UPDATE_EXPECTED) {
+                        await Bun.write(expectedPath, modifiedContent as string);
+                    }
 
-        test('should add config to next.config.mjs', async () => {
-            const configContent = `/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-}
+                    const expectedContent = await Bun.file(expectedPath).text();
+                    expect(modifiedContent).toBe(expectedContent);
+                });
+            }
+        };
 
-export default nextConfig`;
-
-            const fileOps = createMockFileOps({
-                'next.config.mjs': configContent,
-            });
-
-            const result = await addNextBuildConfig(fileOps);
-            expect(result).toBe(true);
-
-            const modifiedContent = await fileOps.readFile('next.config.mjs');
-            expect(modifiedContent).toContain('output: "standalone"');
-        });
-
-        test('should not duplicate existing properties', async () => {
-            const configContent = `/** @type {import('next').NextConfig} */
-const nextConfig = {
-  reactStrictMode: true,
-  output: 'export',
-  typescript: {
-    ignoreBuildErrors: false,
-    tsconfigPath: './custom-tsconfig.json'
-  },
-  distDir: '.custom-dist'
-}
-
-module.exports = nextConfig`;
-
-            const fileOps = createMockFileOps({
-                'next.config.js': configContent,
-            });
-
-            const result = await addNextBuildConfig(fileOps);
-            expect(result).toBe(true);
-
-            const modifiedContent = await fileOps.readFile('next.config.js');
-
-            // Should update existing values
-            expect(modifiedContent).toContain('output: "standalone"');
-            expect(modifiedContent).toContain('ignoreBuildErrors: true');
-            expect(modifiedContent).toContain(
-                `distDir: process.env.NODE_ENV === "production" ? "${CUSTOM_OUTPUT_DIR}" : ".next"`,
-            );
-
-            // Should preserve existing typescript properties
-            expect(modifiedContent).toContain("tsconfigPath: './custom-tsconfig.json'");
-
-            // Should only have one instance of each property
-            expect((modifiedContent?.match(/output:/g) || []).length).toBe(1);
-            expect((modifiedContent?.match(/typescript:/g) || []).length).toBe(1);
-            expect((modifiedContent?.match(/distDir:/g) || []).length).toBe(1);
-        });
-
-        test('should merge typescript object properties', async () => {
-            const configContent = `/** @type {import('next').NextConfig} */
-const nextConfig = {
-  typescript: {
-    tsconfigPath: './custom-tsconfig.json',
-    typeChecking: true
-  }
-}
-
-module.exports = nextConfig`;
-
-            const fileOps = createMockFileOps({
-                'next.config.js': configContent,
-            });
-
-            const result = await addNextBuildConfig(fileOps);
-            expect(result).toBe(true);
-
-            const modifiedContent = await fileOps.readFile('next.config.js');
-            expect(modifiedContent).toContain('ignoreBuildErrors: true');
-            expect(modifiedContent).toContain("tsconfigPath: './custom-tsconfig.json'");
-            expect(modifiedContent).toContain('typeChecking: true');
-        });
+        runTestCases();
 
         test('should return false when no config file exists', async () => {
             const fileOps = createMockFileOps({});
@@ -228,34 +148,6 @@ module.exports = nextConfig`;
             const modifiedContent = await fileOps.readFile(expectedFile);
             expect(modifiedContent).toContain('output: "standalone"');
         });
-
-        test('should handle config with complex nested objects', async () => {
-            const configContent = `/** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    appDir: true,
-    serverComponentsExternalPackages: ['@prisma/client']
-  },
-  webpack: (config) => {
-    return config;
-  }
-}
-
-module.exports = nextConfig`;
-
-            const fileOps = createMockFileOps({
-                'next.config.js': configContent,
-            });
-
-            const result = await addNextBuildConfig(fileOps);
-            expect(result).toBe(true);
-
-            const modifiedContent = await fileOps.readFile('next.config.js');
-            expect(modifiedContent).toContain('output: "standalone"');
-            expect(modifiedContent).toContain('experimental: {');
-            expect(modifiedContent).toContain('appDir: true');
-            expect(modifiedContent).toContain('webpack: config => {');
-        });
     });
 
     describe('Config Property Addition Logic', () => {
@@ -269,21 +161,6 @@ module.exports = nextConfig`;
             // Test that we can serialize it back
             const serialized = await getContentFromAst(ast);
             expect(serialized).toContain('reactStrictMode: true');
-        });
-
-        test('should handle empty config object', async () => {
-            const emptyConfig = `const nextConfig = {}; module.exports = nextConfig;`;
-            const fileOps = createMockFileOps({
-                'next.config.js': emptyConfig,
-            });
-
-            const result = await addNextBuildConfig(fileOps);
-            expect(result).toBe(true);
-
-            const modifiedContent = await fileOps.readFile('next.config.js');
-            expect(modifiedContent).toContain('output: "standalone"');
-            expect(modifiedContent).toContain('typescript: {');
-            expect(modifiedContent).toContain('ignoreBuildErrors: true');
         });
     });
 });
