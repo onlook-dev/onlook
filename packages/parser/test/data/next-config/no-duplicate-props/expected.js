@@ -8,6 +8,7 @@ const nextConfig = {
         tsconfigPath: './custom-tsconfig.json',
     },
     distDir: process.env.NODE_ENV === 'production' ? '.next-prod' : '.next',
+    eslint: { ignoreDuringBuilds: true },
 };
 
 module.exports = nextConfig;

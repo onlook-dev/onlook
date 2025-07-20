@@ -7,6 +7,7 @@ const nextConfig = {
     },
     output: 'standalone',
     distDir: process.env.NODE_ENV === 'production' ? '.next-prod' : '.next',
+    eslint: { ignoreDuringBuilds: true },
 };
 
 module.exports = nextConfig;

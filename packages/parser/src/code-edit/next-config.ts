@@ -78,6 +78,16 @@ const addTypescriptConfig = (ast: T.File): boolean => {
     );
 };
 
+const addEslintConfig = (ast: T.File): boolean => {
+    return addConfigProperty(
+        ast,
+        'eslint',
+        t.objectExpression([
+            t.objectProperty(t.identifier('ignoreDuringBuilds'), t.booleanLiteral(true)),
+        ]),
+    );
+};
+
 const addDistDirConfig = (ast: T.File): boolean => {
     return addConfigProperty(
         ast,
@@ -135,6 +145,7 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
         const outputExists = addConfigProperty(ast, 'output', t.stringLiteral('standalone'));
         const distDirExists = addDistDirConfig(ast);
         const typescriptExists = addTypescriptConfig(ast);
+        const eslintExists = addEslintConfig(ast);
 
         // Generate the modified code from the AST
         const updatedCode = generate(
@@ -154,9 +165,9 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
         }
 
         console.log(
-            `Successfully updated ${configPath} with standalone output, typescript configuration, and distDir`,
+            `Successfully updated ${configPath} with standalone output, typescript configuration, eslint configuration, and distDir`,
         );
-        return outputExists && typescriptExists && distDirExists;
+        return outputExists && typescriptExists && distDirExists && eslintExists;
     } catch (error) {
         console.error(`Error processing ${configPath}:`, error);
         return false;

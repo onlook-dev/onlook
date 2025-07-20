@@ -1,7 +1,7 @@
 import { JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { type FileOperations } from '@onlook/utility';
 import { describe, expect, test } from 'bun:test';
-import fs from 'fs/promises';
+import fs from 'fs';
 import path from 'path';
 import { getAstFromContent, getContentFromAst } from '../src';
 import { addNextBuildConfig } from '../src/code-edit/next-config';
@@ -35,47 +35,42 @@ describe('Build Config Tests', () => {
     describe('addNextBuildConfig', () => {
         const SHOULD_UPDATE_EXPECTED = false;
         const casesDir = path.resolve(__dirname, 'data/next-config');
+        const testCases = fs.readdirSync(casesDir);
 
-        const runTestCases = async () => {
-            const testCases = await fs.readdir(casesDir);
+        for (const testCase of testCases) {
+            test(`should handle case: ${testCase}`, async () => {
+                const caseDir = path.resolve(casesDir, testCase);
+                const files = fs.readdirSync(caseDir);
 
-            for (const testCase of testCases) {
-                test(`should handle case: ${testCase}`, async () => {
-                    const caseDir = path.resolve(casesDir, testCase);
-                    const files = await fs.readdir(caseDir);
+                const inputFile = files.find((f) => f.startsWith('input.'));
+                const expectedFile = files.find((f) => f.startsWith('expected.'));
 
-                    const inputFile = files.find((f) => f.startsWith('input.'));
-                    const expectedFile = files.find((f) => f.startsWith('expected.'));
+                if (!inputFile || !expectedFile) {
+                    throw new Error(`Test case ${testCase} is missing input or expected file.`);
+                }
 
-                    if (!inputFile || !expectedFile) {
-                        throw new Error(`Test case ${testCase} is missing input or expected file.`);
-                    }
+                const inputPath = path.resolve(caseDir, inputFile);
+                const expectedPath = path.resolve(caseDir, expectedFile);
 
-                    const inputPath = path.resolve(caseDir, inputFile);
-                    const expectedPath = path.resolve(caseDir, expectedFile);
+                const extension = path.extname(inputFile);
+                const configFilename = `next.config${extension}`;
 
-                    const extension = path.extname(inputFile);
-                    const configFilename = `next.config${extension}`;
+                const configContent = await Bun.file(inputPath).text();
+                const fileOps = createMockFileOps({ [configFilename]: configContent });
 
-                    const configContent = await Bun.file(inputPath).text();
-                    const fileOps = createMockFileOps({ [configFilename]: configContent });
+                const result = await addNextBuildConfig(fileOps);
+                expect(result).toBe(true);
 
-                    const result = await addNextBuildConfig(fileOps);
-                    expect(result).toBe(true);
+                const modifiedContent = await fileOps.readFile(configFilename);
 
-                    const modifiedContent = await fileOps.readFile(configFilename);
+                if (SHOULD_UPDATE_EXPECTED) {
+                    await Bun.write(expectedPath, modifiedContent as string);
+                }
 
-                    if (SHOULD_UPDATE_EXPECTED) {
-                        await Bun.write(expectedPath, modifiedContent as string);
-                    }
-
-                    const expectedContent = await Bun.file(expectedPath).text();
-                    expect(modifiedContent).toBe(expectedContent);
-                });
-            }
-        };
-
-        runTestCases();
+                const expectedContent = await Bun.file(expectedPath).text();
+                expect(modifiedContent).toBe(expectedContent);
+            });
+        }
 
         test('should return false when no config file exists', async () => {
             const fileOps = createMockFileOps({});

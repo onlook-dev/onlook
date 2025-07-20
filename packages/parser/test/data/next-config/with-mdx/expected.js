@@ -6,6 +6,7 @@ const withMDX = mdx({
     output: 'standalone',
     distDir: process.env.NODE_ENV === 'production' ? '.next-prod' : '.next',
     typescript: { ignoreBuildErrors: true },
+    eslint: { ignoreDuringBuilds: true },
 });
 
 /** @type {import('next').NextConfig} */
