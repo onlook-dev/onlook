@@ -11,7 +11,7 @@ const baseImport = 'import React from "react";\n';
 // Regex to match import Script from either single or double quotes
 const importScriptRegex = /import Script from ['"]next\/script['"];?/g;
 
-describe('addScriptConfig', () => {
+describe('injectPreloadScript', () => {
     test('adds Script import and Script in <body> if missing', async () => {
         const code = `${baseImport}export default function Document() {\n  return (\n    <html>\n      <head>\n        <title>Test</title>\n      </head>\n      <body>\n        <main />\n      </body>\n    </html>\n  );\n}`;
         const ast = getAstFromContent(code);
