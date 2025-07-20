@@ -6,7 +6,14 @@ export function getAstFromContent(content: string): T.File | null {
     try {
         return parse(content, {
             sourceType: 'module',
-            plugins: ['decorators-legacy', 'classProperties', 'typescript', 'jsx'],
+            plugins: [
+                'typescript',
+                'jsx',
+                ['decorators', { decoratorsBeforeExport: true }],
+                'classStaticBlock',
+                'dynamicImport',
+                'importMeta',
+            ],
         });
     } catch (e) {
         console.error(e);
