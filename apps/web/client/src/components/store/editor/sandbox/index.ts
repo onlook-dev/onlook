@@ -1,5 +1,5 @@
 import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
-import { EXCLUDED_SYNC_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
+import { EXCLUDED_SYNC_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
 import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isRootLayoutFile, isSubdirectory, LogTimer } from '@onlook/utility';
@@ -235,7 +235,7 @@ export class SandboxManager {
 
     isJsxFile(filePath: string): boolean {
         const extension = path.extname(filePath);
-        if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
+        if (!extension || !NEXT_JS_FILE_EXTENSIONS.includes(extension)) {
             return false;
         }
         return true;
@@ -690,7 +690,7 @@ export class SandboxManager {
             layoutFileName = 'layout';
         }
 
-        for (const extension of [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS]) {
+        for (const extension of NEXT_JS_FILE_EXTENSIONS) {
             const layoutPath = path.join(routerConfig.basePath, `${layoutFileName}${extension}`);
             if (await this.fileExists(layoutPath)) {
                 return normalizePath(layoutPath);

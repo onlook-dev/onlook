@@ -1,4 +1,4 @@
-import { JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
 import isSubdir from 'is-subdir';
 import path from 'path';
@@ -95,7 +95,7 @@ export const isRootLayoutFile = (
         routerType === RouterType.APP ? ['app', 'src/app'] : ['pages', 'src/pages'];
     return isTargetFile(filePath, {
         fileName: 'layout',
-        targetExtensions: [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS],
+        targetExtensions: NEXT_JS_FILE_EXTENSIONS,
         potentialPaths,
     });
 };

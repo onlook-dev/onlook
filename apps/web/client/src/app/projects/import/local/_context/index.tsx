@@ -5,7 +5,7 @@ import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
-import { JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
+import { NEXT_JS_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
 import { generate, injectPreloadScript, parse } from '@onlook/parser';
 import { isRootLayoutFile, isTargetFile } from '@onlook/utility';
@@ -164,7 +164,7 @@ export const ProjectCreationProvider = ({
             const hasAppLayout = files.some(
                 (f) => isTargetFile(f.path, {
                     fileName: 'layout',
-                    targetExtensions: [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS],
+                    targetExtensions: NEXT_JS_FILE_EXTENSIONS,
                     potentialPaths: ['app', 'src/app'],
                 })
             );
