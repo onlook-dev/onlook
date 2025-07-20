@@ -154,7 +154,7 @@ describe('Build Config Tests', () => {
                 throw new Error('Failed to get ast');
             }
             // Test that we can serialize it back
-            const serialized = await getContentFromAst(ast);
+            const serialized = await getContentFromAst(ast, simpleConfig);
             expect(serialized).toContain('reactStrictMode: true');
         });
     });

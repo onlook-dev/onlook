@@ -45,8 +45,20 @@ export function getAstFromCodeblock(
     }
 }
 
-export async function getContentFromAst(ast: T.File): Promise<string> {
-    return generate(ast, { retainLines: true, compact: false }).code;
+export async function getContentFromAst(ast: T.File, originalContent: string): Promise<string> {
+    return generate(
+        ast,
+        {
+            retainLines: true,
+            compact: false,
+            comments: true,
+            concise: false,
+            minified: false,
+            jsonCompatibleStrings: false,
+            shouldPrintComment: () => true,
+        },
+        originalContent,
+    ).code;
 }
 
 export function removeIdsFromAst(ast: T.File) {

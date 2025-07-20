@@ -30,7 +30,7 @@ describe('injectPreloadScript', () => {
             const ast = getAstFromContent(inputContent);
             if (!ast) throw new Error('Failed to parse input code');
             const resultAst = injectPreloadScript(ast);
-            const result = await getContentFromAst(resultAst);
+            const result = await getContentFromAst(resultAst, inputContent);
 
             if (SHOULD_UPDATE_EXPECTED) {
                 await Bun.write(expectedPath, result);

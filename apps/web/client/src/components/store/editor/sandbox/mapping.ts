@@ -37,13 +37,13 @@ export class TemplateNodeMapper {
         const { ast: astWithIds, modified } = addOidsToAst(ast);
 
         // Format content then create map
-        const unformattedContent = await getContentFromAst(astWithIds);
+        const unformattedContent = await getContentFromAst(astWithIds, content);
         const formattedContent = await formatContent(filePath, unformattedContent);
         const astWithIdsAndFormatted = getAstFromContent(formattedContent);
         const finalAst = astWithIdsAndFormatted ?? astWithIds;
         const templateNodeMap = createTemplateNodeMap(finalAst, filePath);
         this.updateMapping(templateNodeMap);
-        const newContent = await getContentFromAst(finalAst);
+        const newContent = await getContentFromAst(finalAst, content);
         return {
             modified,
             newContent,
