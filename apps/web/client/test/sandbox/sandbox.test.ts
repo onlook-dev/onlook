@@ -1,4 +1,4 @@
-import { IGNORED_UPLOAD_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { IGNORED_UPLOAD_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 
 // Setup mocks before imports
@@ -165,13 +165,12 @@ describe('SandboxManager', () => {
 
         const testManager = new SandboxManager(mockEditorEngine);
         // Set the session directly
-        // @ts-ignore - accessing private property for testing
         testManager.session.session = testMockSession;
 
         const files = await testManager.listFilesRecursively(
             './',
             IGNORED_UPLOAD_DIRECTORIES,
-            JSX_FILE_EXTENSIONS,
+            NEXT_JS_FILE_EXTENSIONS,
         );
 
         expect(testMockSession.fs.readdir.mock.calls.length).toBeGreaterThan(0);
