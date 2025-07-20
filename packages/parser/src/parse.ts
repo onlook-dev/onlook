@@ -39,7 +39,7 @@ export function getAstFromCodeblock(
 }
 
 export async function getContentFromAst(ast: T.File): Promise<string> {
-    return generate(ast, { retainLines: true, compact: false }).code;
+    return generate(ast, { compact: false }).code;
 }
 
 export function removeIdsFromAst(ast: T.File) {

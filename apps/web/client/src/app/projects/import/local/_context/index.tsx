@@ -8,7 +8,7 @@ import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
 import { generate, injectPreloadScript, parse } from '@onlook/parser';
-import { isTargetFile } from '@onlook/utility';
+import { isRootLayoutFile, isTargetFile } from '@onlook/utility';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
@@ -274,11 +274,7 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
             } else {
                 let content = file.content;
 
-                const isLayout = isTargetFile(file.path, {
-                    fileName: 'layout',
-                    targetExtensions: [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS],
-                    potentialPaths: ['app', 'src/app'],
-                });
+                const isLayout = isRootLayoutFile(file.path);
                 if (isLayout) {
                     try {
                         const ast = parse(content, {

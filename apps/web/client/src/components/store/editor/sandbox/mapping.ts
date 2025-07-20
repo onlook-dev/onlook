@@ -8,6 +8,7 @@ import {
     injectPreloadScript,
 } from '@onlook/parser';
 import { isRootLayoutFile } from '@onlook/utility/src/path';
+import { formatContent } from './helpers';
 
 export class TemplateNodeMapper {
     private oidToTemplateNodeMap = new Map<string, TemplateNode>();
@@ -34,9 +35,15 @@ export class TemplateNodeMapper {
         }
 
         const { ast: astWithIds, modified } = addOidsToAst(ast);
-        const templateNodeMap = createTemplateNodeMap(astWithIds, filePath);
+
+        // Format content then create map
+        const unformattedContent = await getContentFromAst(astWithIds);
+        const formattedContent = await formatContent(filePath, unformattedContent);
+        const astWithIdsAndFormatted = getAstFromContent(formattedContent);
+        const finalAst = astWithIdsAndFormatted ?? astWithIds;
+        const templateNodeMap = createTemplateNodeMap(finalAst, filePath);
         this.updateMapping(templateNodeMap);
-        const newContent = await getContentFromAst(astWithIds);
+        const newContent = await getContentFromAst(finalAst);
         return {
             modified,
             newContent,

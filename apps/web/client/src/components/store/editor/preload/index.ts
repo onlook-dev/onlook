@@ -1,8 +1,8 @@
+import { PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
+import type { SandboxFile } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-import type { SandboxFile } from '@onlook/models';
 import { normalizePath } from '../sandbox/helpers';
-import { PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
 
 export class PreloadScriptManager {
     constructor(private readonly editorEngine: EditorEngine) {
@@ -15,8 +15,7 @@ export class PreloadScriptManager {
      */
     async ensurePreloadScriptFile(): Promise<boolean> {
         try {
-            const session = this.editorEngine.sandbox.session.session;
-            if (!session) {
+            if (!this.editorEngine.sandbox.session.session) {
                 console.warn(
                     '[PreloadScriptManager] No sandbox session available for preload script file check',
                 );
@@ -25,11 +24,10 @@ export class PreloadScriptManager {
             // check if the file exists in the public folder
             const publicScriptPath = normalizePath(`public/${PRELOAD_SCRIPT_FILE_NAME}`);
             const existingFile = await this.editorEngine.sandbox.readFile(publicScriptPath);
-            
+
             if (existingFile && existingFile.type === 'text' && existingFile.content.length > 0) {
                 return true;
             }
-        
 
             const success = await this.copyPreloadScriptToPublic(existingFile);
             if (!success) {
@@ -49,6 +47,11 @@ export class PreloadScriptManager {
      */
     private async copyPreloadScriptToPublic(existingFile: SandboxFile | null): Promise<boolean> {
         try {
+            if (!this.editorEngine.sandbox.session.session) {
+                console.error('[PreloadScriptManager] No sandbox session available for preload script file check');
+                return false;
+            }
+
             let scriptContent: string;
             try {
                 const response = await fetch(`/${PRELOAD_SCRIPT_FILE_NAME}`);
@@ -74,7 +77,6 @@ export class PreloadScriptManager {
             const writeSuccess = await this.editorEngine.sandbox.writeFile(
                 `public/${PRELOAD_SCRIPT_FILE_NAME}`,
                 scriptContent,
-                true,
             );
 
             return writeSuccess;

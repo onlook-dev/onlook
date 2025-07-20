@@ -2,7 +2,7 @@ import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sd
 import { EXCLUDED_SYNC_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
 import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
-import { getBaseName, getDirName, isImageFile, isRootLayoutFile, isSubdirectory, isTargetFile, LogTimer } from '@onlook/utility';
+import { getBaseName, getDirName, isImageFile, isRootLayoutFile, isSubdirectory, LogTimer } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
@@ -10,7 +10,7 @@ import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
 import { FileWatcher } from './file-watcher';
-import { formatContent, normalizePath } from './helpers';
+import { normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
@@ -213,15 +213,16 @@ export class SandboxManager {
         return Object.fromEntries(results);
     }
 
-    async writeFile(path: string, content: string, skipFormat = false): Promise<boolean> {
+    async writeFile(path: string, content: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-        let writeContent = skipFormat ? content : await formatContent(normalizedPath, content);
+        let writeContent = content;
+
         // If the file is a JSX file, we need to process it for mapping before writing
         if (this.isJsxFile(normalizedPath)) {
             try {
                 const { newContent } = await this.templateNodeMap.processFileForMapping(
                     normalizedPath,
-                    writeContent,
+                    content,
                     this.routerConfig?.type,
                 );
                 writeContent = newContent;
