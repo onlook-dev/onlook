@@ -55,8 +55,6 @@ describe('addScriptConfig', () => {
         if (!ast) throw new Error('Failed to parse input code');
         const resultAst = injectPreloadScript(ast);
         const result = await getContentFromAst(resultAst);
-        console.log(result);
-
         expect(result).toMatch(importScriptRegex);
         expect(result).toContain(PRELOAD_SCRIPT_FILE_NAME);
         // Should only be one Script import
@@ -140,5 +138,91 @@ export default function Document() {
         expect(result).toContain(PRELOAD_SCRIPT_FILE_NAME);
         expect(result.match(importScriptRegex)?.length).toBe(1);
         expect(result.match(new RegExp(`src="${PRELOAD_SCRIPT_FILE_NAME}"`))?.length).toBe(1);
+    });
+
+    test('wraps fragment-only return with html/body and injects Script', async () => {
+        const code = `${baseImport}export default function Layout() {\n  return (\n    <>\n      <div>Header</div>\n      <main />\n    </>\n  );\n}`;
+        const ast = getAstFromContent(code);
+        if (!ast) throw new Error('Failed to parse input code');
+        const resultAst = injectPreloadScript(ast);
+        const result = await getContentFromAst(resultAst);
+        expect(result).toContain('<html');
+        expect(result).toContain('<body');
+        expect(result).toContain(PRELOAD_SCRIPT_FILE_NAME);
+    });
+
+    test('wraps plain children return with html/body and injects Script', async () => {
+        const code = `${baseImport}export default function Layout({ children }) {\n  return children;\n}`;
+        const ast = getAstFromContent(code);
+        if (!ast) throw new Error('Failed to parse input code');
+        const resultAst = injectPreloadScript(ast);
+        const result = await getContentFromAst(resultAst);
+        expect(result).toContain('<html');
+        expect(result).toContain('<body');
+        expect(result).toContain(PRELOAD_SCRIPT_FILE_NAME);
+    });
+
+    test('injects Script in first <body> only if multiple exist', async () => {
+        const code = `${baseImport}export default function Layout() {\n  return (\n    <>\n      <body />\n      <body><main /></body>\n    </>\n  );\n}`;
+        const ast = getAstFromContent(code);
+        if (!ast) throw new Error('Failed to parse input code');
+        const resultAst = injectPreloadScript(ast);
+        const result = await getContentFromAst(resultAst);
+        expect(result.match(new RegExp(`src="${PRELOAD_SCRIPT_FILE_NAME}"`, 'g'))?.length).toBe(1);
+        expect(result).not.toContain('<body />');
+    });
+
+    test('preserves body props when adding Script', async () => {
+        const code = `${baseImport}export default function Layout() {\n  return (\n    <html>\n      <body className="custom">\n        <main />\n      </body>\n    </html>\n  );\n}`;
+        const ast = getAstFromContent(code);
+        if (!ast) throw new Error('Failed to parse input code');
+        const resultAst = injectPreloadScript(ast);
+        const result = await getContentFromAst(resultAst);
+        expect(result).toContain('className="custom"');
+        expect(result).toContain(PRELOAD_SCRIPT_FILE_NAME);
+    });
+
+    test('injects Script when only <head> has existing Script', async () => {
+        const code = `${baseImport}import Script from 'next/script';\nexport default function Layout() {\n  return (\n    <html>\n      <head>\n        <Script src="https://example.com/other.js" />\n      </head>\n      <body>\n        <main />\n      </body>\n    </html>\n  );\n}`;
+        const ast = getAstFromContent(code);
+        if (!ast) throw new Error('Failed to parse input code');
+        const resultAst = injectPreloadScript(ast);
+        const result = await getContentFromAst(resultAst);
+        expect(result.match(importScriptRegex)?.length).toBe(1);
+        expect(result.match(new RegExp(`src="${PRELOAD_SCRIPT_FILE_NAME}"`))?.length).toBe(1);
+    });
+
+    test('handles self-closing html and head tags', async () => {
+        const code = `${baseImport}export default function Layout() {\n  return (\n    <html />\n  );\n}`;
+        const ast = getAstFromContent(code);
+        if (!ast) throw new Error('Failed to parse input code');
+        const resultAst = injectPreloadScript(ast);
+        const result = await getContentFromAst(resultAst);
+        expect(result).toContain('<html');
+        expect(result).toContain('<body');
+        expect(result).toContain(PRELOAD_SCRIPT_FILE_NAME);
+    });
+
+    test('wraps conditional ternary returns with no html/body (skipped)', async () => {
+        const code = `${baseImport}export default function Layout() {\n  return true ? <div /> : <span />;\n}`;
+        const ast = getAstFromContent(code);
+        if (!ast) throw new Error('Failed to parse input code');
+        const resultAst = injectPreloadScript(ast);
+        const result = await getContentFromAst(resultAst);
+        // We may choose to skip ternaries for now
+        expect(result).toContain('<html');
+        expect(result).toContain(PRELOAD_SCRIPT_FILE_NAME);
+        expect(result).toContain('{true ?');
+    });
+
+    test('injects Script at bottom of body preserving sibling order', async () => {
+        const code = `${baseImport}export default function Layout() {\n  return (\n    <html>\n      <body>\n        <main />\n        <footer />\n      </body>\n    </html>\n  );\n}`;
+        const ast = getAstFromContent(code);
+        if (!ast) throw new Error('Failed to parse input code');
+        const resultAst = injectPreloadScript(ast);
+        const result = await getContentFromAst(resultAst);
+        const scriptIndex = result.indexOf(PRELOAD_SCRIPT_FILE_NAME);
+        const footerIndex = result.indexOf('<footer');
+        expect(scriptIndex).toBeGreaterThan(footerIndex);
     });
 });

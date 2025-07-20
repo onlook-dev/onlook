@@ -1,5 +1,5 @@
-import { LAYOUT_FILE_CONDITIONS } from '@onlook/constants';
 import type { TemplateNode } from '@onlook/models';
+import { RouterType } from '@onlook/models';
 import {
     addOidsToAst,
     createTemplateNodeMap,
@@ -7,7 +7,7 @@ import {
     getContentFromAst,
     injectPreloadScript,
 } from '@onlook/parser';
-import { isTargetFile } from '@onlook/utility/src/path';
+import { isRootLayoutFile } from '@onlook/utility/src/path';
 
 export class TemplateNodeMapper {
     private oidToTemplateNodeMap = new Map<string, TemplateNode>();
@@ -19,6 +19,7 @@ export class TemplateNodeMapper {
     async processFileForMapping(
         filePath: string,
         content: string,
+        routerType: RouterType = RouterType.APP,
     ): Promise<{
         modified: boolean;
         newContent: string;
@@ -28,7 +29,7 @@ export class TemplateNodeMapper {
             throw new Error(`Failed to get ast for file ${filePath}`);
         }
 
-        if (isTargetFile(filePath, LAYOUT_FILE_CONDITIONS)) {
+        if (isRootLayoutFile(filePath, routerType)) {
             injectPreloadScript(ast);
         }
 

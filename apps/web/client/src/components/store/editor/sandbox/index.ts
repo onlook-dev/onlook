@@ -1,8 +1,8 @@
 import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
-import { EXCLUDED_SYNC_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS, LAYOUT_FILE_CONDITIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
+import { EXCLUDED_SYNC_DIRECTORIES, JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
 import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
-import { getBaseName, getDirName, isImageFile, isSubdirectory, isTargetFile, LogTimer } from '@onlook/utility';
+import { getBaseName, getDirName, isImageFile, isRootLayoutFile, isSubdirectory, isTargetFile, LogTimer } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
@@ -222,6 +222,7 @@ export class SandboxManager {
                 const { newContent } = await this.templateNodeMap.processFileForMapping(
                     normalizedPath,
                     writeContent,
+                    this.routerConfig?.type,
                 );
                 writeContent = newContent;
             } catch (error) {
@@ -495,7 +496,7 @@ export class SandboxManager {
             }
 
             // If this is a layout file, ensure the preload script file exists
-            if (isTargetFile(file.path, LAYOUT_FILE_CONDITIONS)) {
+            if (isRootLayoutFile(file.path, this.routerConfig?.type)) {
                 try {
                     await this.editorEngine.preloadScript.ensurePreloadScriptFile();
                 } catch (error) {
@@ -507,6 +508,7 @@ export class SandboxManager {
             const { modified, newContent } = await this.templateNodeMap.processFileForMapping(
                 file.path,
                 file.content,
+                this.routerConfig?.type,
             );
 
             if (modified || file.content !== newContent) {

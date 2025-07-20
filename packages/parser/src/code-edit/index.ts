@@ -2,6 +2,7 @@ export * from './config';
 export * from './group';
 export * from './image';
 export * from './insert';
+export * from './layout';
 export * from './move';
 export * from './remove';
 export * from './style';
