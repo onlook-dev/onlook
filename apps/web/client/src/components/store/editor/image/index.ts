@@ -13,6 +13,9 @@ import { generateNewFolderPath } from '@onlook/utility';
 export class ImageManager {
     private _imagePaths: string[] = [];
     private _isScanning = false;
+    private _isSelectingImage = false;
+    private _selectedImage: ImageContentData | null = null;
+    private _previewImage: ImageContentData | null = null;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -31,8 +34,33 @@ export class ImageManager {
         return this._imagePaths;
     }
 
+    get isSelectingImage() {
+        return this._isSelectingImage;
+    }
+
     get isScanning() {
         return this._isScanning;
+    }
+
+    get selectedImage() {
+        return this._selectedImage;
+    }
+
+    get previewImage() {
+        return this._previewImage;
+    }
+
+    setPreviewImage(image: ImageContentData | null) {
+        this._previewImage = image;
+    }
+
+    setSelectedImage(image: ImageContentData | null) {
+        this._selectedImage = image;
+    }
+    
+
+    setIsSelectingImage(isSelectingImage: boolean) {
+        this._isSelectingImage = isSelectingImage;
     }
 
     async upload(file: File, destinationFolder: string): Promise<void> {
