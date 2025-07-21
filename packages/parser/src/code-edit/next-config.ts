@@ -46,9 +46,25 @@ const addConfigProperty = (
             //
             if (t.isVariableDeclarator(path.parent) && t.isIdentifier(path.parent.id)) {
                 // A bit of a weak check, but should work for most cases.
-                if (path.parent.id.name === 'nextConfig') {
+                if (path.parent.id.name.toLowerCase().includes('config')) {
                     isConfigObject = true;
                 }
+            }
+
+            //
+            // case: `module.exports = () => { return { ... } }`
+            //
+            if (t.isReturnStatement(path.parent)) {
+                // This is a bit of a weak check, but should work for most cases.
+                isConfigObject = true;
+            }
+
+            //
+            // case: `module.exports = withSomePlugin({ ... })`
+            //
+            if (t.isCallExpression(path.parent) && t.isIdentifier(path.parent.callee)) {
+                // This is a bit of a weak check, but should work for most cases.
+                isConfigObject = true;
             }
 
             if (!isConfigObject) {
