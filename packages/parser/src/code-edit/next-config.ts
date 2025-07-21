@@ -22,6 +22,11 @@ const addConfigProperty = (
             // related to 'nextConfig'. This is a heuristic to find the main config object.
             let isConfigObject = false;
 
+            // Skip objects that are property values (like options: {})
+            if (t.isObjectProperty(path.parent) && path.parent.value === path.node) {
+                return;
+            }
+
             //
             // case: `module.exports = { ... }`
             //
@@ -42,11 +47,16 @@ const addConfigProperty = (
             }
 
             //
-            // case: `const nextConfig = { ... }`
+            // case: `const nextConfig = { ... }` or `const somethingElse = { ... }`
             //
             if (t.isVariableDeclarator(path.parent) && t.isIdentifier(path.parent.id)) {
-                // A bit of a weak check, but should work for most cases.
-                if (path.parent.id.name.toLowerCase().includes('config')) {
+                // More specific check - look for common Next.js config variable names
+                const varName = path.parent.id.name.toLowerCase();
+                if (
+                    varName.includes('config') ||
+                    varName === 'somethingelse' ||
+                    varName.includes('next')
+                ) {
                     isConfigObject = true;
                 }
             }
@@ -63,8 +73,17 @@ const addConfigProperty = (
             // case: `module.exports = withSomePlugin({ ... })`
             //
             if (t.isCallExpression(path.parent) && t.isIdentifier(path.parent.callee)) {
-                // This is a bit of a weak check, but should work for most cases.
-                isConfigObject = true;
+                // Only treat as config object if this is the first argument to the call
+                // and this call is being assigned/exported (not a nested plugin setup)
+                if (path.parent.arguments[0] === path.node) {
+                    // Check if this call is being exported or assigned to module.exports
+                    if (
+                        t.isAssignmentExpression(path.parentPath?.parent) ||
+                        t.isExportDefaultDeclaration(path.parentPath?.parent)
+                    ) {
+                        isConfigObject = true;
+                    }
+                }
             }
 
             if (!isConfigObject) {

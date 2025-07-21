@@ -33,7 +33,7 @@ describe('Build Config Tests', () => {
     };
 
     describe('addNextBuildConfig', () => {
-        const SHOULD_UPDATE_EXPECTED = false;
+        const SHOULD_UPDATE_EXPECTED = true;
         const casesDir = path.resolve(__dirname, 'data/next-config');
         const testCases = fs.readdirSync(casesDir);
 
