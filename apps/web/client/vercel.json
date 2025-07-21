@@ -1,7 +1,7 @@
 {
     "$schema": "https://openapi.vercel.sh/vercel.json",
     "functions": {
-        "/api/trpc/[trpc]": {
+        "src/app/api/trpc/[trpc]/route.ts": {
             "maxDuration": 800
         }
     }
