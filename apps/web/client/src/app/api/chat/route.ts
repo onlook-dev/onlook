@@ -6,6 +6,8 @@ import { ChatType, CLAUDE_MODELS, LLMProvider, type Usage, UsageType } from '@on
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 
+export const maxDuration = 800;
+
 export async function POST(req: NextRequest) {
     try {
         const user = await getSupabaseUser(req);
