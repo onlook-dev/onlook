@@ -18,6 +18,43 @@ const addConfigProperty = (
 
     traverse(ast, {
         ObjectExpression(path) {
+            // Check if this ObjectExpression is part of an export or variable declaration
+            // related to 'nextConfig'. This is a heuristic to find the main config object.
+            let isConfigObject = false;
+
+            //
+            // case: `module.exports = { ... }`
+            //
+            if (
+                t.isAssignmentExpression(path.parent) &&
+                t.isMemberExpression(path.parent.left) &&
+                t.isIdentifier(path.parent.left.object, { name: 'module' }) &&
+                t.isIdentifier(path.parent.left.property, { name: 'exports' })
+            ) {
+                isConfigObject = true;
+            }
+
+            //
+            // case: `export default { ... }`
+            //
+            if (t.isExportDefaultDeclaration(path.parent)) {
+                isConfigObject = true;
+            }
+
+            //
+            // case: `const nextConfig = { ... }`
+            //
+            if (t.isVariableDeclarator(path.parent) && t.isIdentifier(path.parent.id)) {
+                // A bit of a weak check, but should work for most cases.
+                if (path.parent.id.name === 'nextConfig') {
+                    isConfigObject = true;
+                }
+            }
+
+            if (!isConfigObject) {
+                return; // Not the config object, skip.
+            }
+
             const properties = path.node.properties;
             let hasProperty = false;
 
