@@ -1,4 +1,5 @@
 import imageCompression from 'browser-image-compression';
+import { DefaultSettings } from '@onlook/constants';
 
 // Browser-side image compression
 export async function compressImageInBrowser(file: File): Promise<string | undefined> {
@@ -62,4 +63,8 @@ export function canHaveBackgroundImage(tagName: string): boolean {
     const tag = tagName.toLowerCase();
     const backgroundElements = ['div', 'section', 'header', 'footer', 'main', 'article', 'aside'];
     return backgroundElements.includes(tag);
+}
+
+export function imagePathToUrl(imagePath: string): string {
+    return imagePath.replace(new RegExp(`^${DefaultSettings.IMAGE_FOLDER}\/`), '');
 }
