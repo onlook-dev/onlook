@@ -80,6 +80,7 @@ export async function publish({
             await session.disconnect();
         }
     } catch (error) {
+        console.error(error);
         updateDeployment(db, deploymentId, {
             status: DeploymentStatus.FAILED,
             error: error instanceof Error ? error.message : 'Unknown error',
