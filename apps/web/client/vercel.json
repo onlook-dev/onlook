@@ -3,6 +3,9 @@
     "functions": {
         "src/app/api/trpc/[trpc]/route.ts": {
             "maxDuration": 800
+        },
+        "src/app/api/chat/route.ts": {
+            "maxDuration": 800
         }
     }
 }
