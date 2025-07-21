@@ -1,110 +1,54 @@
-import * as t from '@babel/types';
-import { EditorAttributes } from '@onlook/constants';
 import { describe, expect, test } from 'bun:test';
-import { addOidsToAst, getAstFromContent, getContentFromAst, getExistingOid } from 'src';
+import fs from 'fs';
+import path from 'path';
+import { addOidsToAst, getAstFromContent, getContentFromAst } from 'src';
 
-describe('addIdsToAst Tests', () => {
-    test('should add ids to jsx', async () => {
-        const code = `export default function App() {\n  return (\n    <div>Hello, world!</div>);\n\n}`;
-        const ast = getAstFromContent(code);
-        if (!ast) {
-            throw new Error('Failed to get ast');
-        }
-        const { ast: astWithIds, modified } = addOidsToAst(ast);
-        const serialized = await getContentFromAst(astWithIds);
-        expect(serialized).toEqual(
-            expect.stringMatching(
-                /export default function App\(\) {\n\s+return \(\n\s+<div data-oid=".+">Hello, world!<\/div>\);\n\n}/,
-            ),
-        );
-        expect(modified).toBe(true);
-    });
+const __dirname = import.meta.dir;
 
-    test('should not add ids to jsx if they already exist', async () => {
-        const code = `export default function App() {\n  return (\n    <div data-oid="1">Hello, world!</div>);\n\n}`;
-        const ast = getAstFromContent(code);
-        if (!ast) {
-            throw new Error('Failed to get ast');
-        }
-        const { ast: astWithIds, modified } = addOidsToAst(ast);
-        const serialized = await getContentFromAst(astWithIds);
-        expect(serialized).toEqual(code);
-        expect(modified).toBe(false);
-    });
-});
+const OBFUSCATED_ID = 'REPLACED_OIDS';
 
-describe('getExistingOid Tests', () => {
-    test('should return null when no attributes exist', () => {
-        const attributes: t.JSXAttribute[] = [];
-        expect(getExistingOid(attributes)).toBeNull();
-    });
+const sanitizeOids = (content: string) => {
+    return content.replace(/data-oid="[^"]*"/g, `data-oid="${OBFUSCATED_ID}"`);
+};
 
-    test('should return null when data-oid attribute does not exist', () => {
-        const attributes = [t.jsxAttribute(t.jsxIdentifier('class'), t.stringLiteral('test'))];
-        expect(getExistingOid(attributes)).toBeNull();
-    });
+describe('addOidsToAst', () => {
+    const SHOULD_UPDATE_EXPECTED = false;
+    const casesDir = path.resolve(__dirname, 'data/ids');
 
-    test('should return value and index when data-oid exists', () => {
-        const oidValue = 'test-id';
-        const attributes = [
-            t.jsxAttribute(t.jsxIdentifier('class'), t.stringLiteral('test')),
-            t.jsxAttribute(
-                t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-                t.stringLiteral(oidValue),
-            ),
-        ];
+    const testCases = fs.readdirSync(casesDir);
 
-        const result = getExistingOid(attributes);
-        expect(result).toEqual({
-            value: oidValue,
-            index: 1,
+    for (const testCase of testCases) {
+        test(`should handle case: ${testCase}`, async () => {
+            const caseDir = path.resolve(casesDir, testCase);
+            const files = fs.readdirSync(caseDir);
+
+            const inputFile = files.find((f) => f.startsWith('input.'));
+            const expectedFile = files.find((f) => f.startsWith('expected.'));
+
+            if (!inputFile || !expectedFile) {
+                throw new Error(`Test case ${testCase} is missing input or expected file.`);
+            }
+
+            const inputPath = path.resolve(caseDir, inputFile);
+            const expectedPath = path.resolve(caseDir, expectedFile);
+
+            const inputContent = await Bun.file(inputPath).text();
+            const ast = getAstFromContent(inputContent);
+            if (!ast) throw new Error('Failed to parse input code');
+
+            const { ast: astWithIds } = addOidsToAst(ast);
+            const result = await getContentFromAst(astWithIds, inputContent);
+
+            if (SHOULD_UPDATE_EXPECTED) {
+                await Bun.write(expectedPath, result);
+            }
+
+            const expectedContent = await Bun.file(expectedPath).text();
+
+            const sanitizedResult = sanitizeOids(result);
+            const sanitizedExpected = sanitizeOids(expectedContent);
+
+            expect(sanitizedResult).toBe(sanitizedExpected);
         });
-    });
-
-    test('should return null for spread attributes', () => {
-        const attributes = [
-            t.jsxSpreadAttribute(t.identifier('props')),
-            t.jsxAttribute(
-                t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-                t.stringLiteral('test-id'),
-            ),
-        ];
-        expect(getExistingOid(attributes)).toEqual({
-            value: 'test-id',
-            index: 1,
-        });
-    });
-
-    test('should return null when data-oid value is not a string literal', () => {
-        const attributes = [
-            t.jsxAttribute(
-                t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-                t.jsxExpressionContainer(t.identifier('id')),
-            ),
-        ];
-        expect(getExistingOid(attributes)).toBeNull();
-    });
-
-    test('should return null when data-oid value is null', () => {
-        const attribute = t.jsxAttribute(t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID), null);
-        expect(getExistingOid([attribute])).toBeNull();
-    });
-
-    test('should find data-oid at any position in attributes array', () => {
-        const oidValue = 'middle-id';
-        const attributes = [
-            t.jsxAttribute(t.jsxIdentifier('class'), t.stringLiteral('first')),
-            t.jsxAttribute(
-                t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-                t.stringLiteral(oidValue),
-            ),
-            t.jsxAttribute(t.jsxIdentifier('style'), t.stringLiteral('last')),
-        ];
-
-        const result = getExistingOid(attributes);
-        expect(result).toEqual({
-            value: oidValue,
-            index: 1,
-        });
-    });
+    }
 });

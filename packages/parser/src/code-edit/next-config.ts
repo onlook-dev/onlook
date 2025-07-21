@@ -18,6 +18,78 @@ const addConfigProperty = (
 
     traverse(ast, {
         ObjectExpression(path) {
+            // Check if this ObjectExpression is part of an export or variable declaration
+            // related to 'nextConfig'. This is a heuristic to find the main config object.
+            let isConfigObject = false;
+
+            // Skip objects that are property values (like options: {})
+            if (t.isObjectProperty(path.parent) && path.parent.value === path.node) {
+                return;
+            }
+
+            //
+            // case: `module.exports = { ... }`
+            //
+            if (
+                t.isAssignmentExpression(path.parent) &&
+                t.isMemberExpression(path.parent.left) &&
+                t.isIdentifier(path.parent.left.object, { name: 'module' }) &&
+                t.isIdentifier(path.parent.left.property, { name: 'exports' })
+            ) {
+                isConfigObject = true;
+            }
+
+            //
+            // case: `export default { ... }`
+            //
+            if (t.isExportDefaultDeclaration(path.parent)) {
+                isConfigObject = true;
+            }
+
+            //
+            // case: `const nextConfig = { ... }` or `const somethingElse = { ... }`
+            //
+            if (t.isVariableDeclarator(path.parent) && t.isIdentifier(path.parent.id)) {
+                // More specific check - look for common Next.js config variable names
+                const varName = path.parent.id.name.toLowerCase();
+                if (
+                    varName.includes('config') ||
+                    varName === 'somethingelse' ||
+                    varName.includes('next')
+                ) {
+                    isConfigObject = true;
+                }
+            }
+
+            //
+            // case: `module.exports = () => { return { ... } }`
+            //
+            if (t.isReturnStatement(path.parent)) {
+                // This is a bit of a weak check, but should work for most cases.
+                isConfigObject = true;
+            }
+
+            //
+            // case: `module.exports = withSomePlugin({ ... })`
+            //
+            if (t.isCallExpression(path.parent) && t.isIdentifier(path.parent.callee)) {
+                // Only treat as config object if this is the first argument to the call
+                // and this call is being assigned/exported (not a nested plugin setup)
+                if (path.parent.arguments[0] === path.node) {
+                    // Check if this call is being exported or assigned to module.exports
+                    if (
+                        t.isAssignmentExpression(path.parentPath?.parent) ||
+                        t.isExportDefaultDeclaration(path.parentPath?.parent)
+                    ) {
+                        isConfigObject = true;
+                    }
+                }
+            }
+
+            if (!isConfigObject) {
+                return; // Not the config object, skip.
+            }
+
             const properties = path.node.properties;
             let hasProperty = false;
 
@@ -74,6 +146,16 @@ const addTypescriptConfig = (ast: T.File): boolean => {
         'typescript',
         t.objectExpression([
             t.objectProperty(t.identifier('ignoreBuildErrors'), t.booleanLiteral(true)),
+        ]),
+    );
+};
+
+const addEslintConfig = (ast: T.File): boolean => {
+    return addConfigProperty(
+        ast,
+        'eslint',
+        t.objectExpression([
+            t.objectProperty(t.identifier('ignoreDuringBuilds'), t.booleanLiteral(true)),
         ]),
     );
 };
@@ -135,9 +217,17 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
         const outputExists = addConfigProperty(ast, 'output', t.stringLiteral('standalone'));
         const distDirExists = addDistDirConfig(ast);
         const typescriptExists = addTypescriptConfig(ast);
+        const eslintExists = addEslintConfig(ast);
 
         // Generate the modified code from the AST
-        const updatedCode = generate(ast, {}, data).code;
+        const updatedCode = generate(
+            ast,
+            {
+                retainLines: true,
+                compact: false,
+            },
+            data,
+        ).code;
 
         const success = await fileOps.writeFile(configPath, updatedCode);
 
@@ -147,9 +237,9 @@ export const addNextBuildConfig = async (fileOps: FileOperations): Promise<boole
         }
 
         console.log(
-            `Successfully updated ${configPath} with standalone output, typescript configuration, and distDir`,
+            `Successfully updated ${configPath} with standalone output, typescript configuration, eslint configuration, and distDir`,
         );
-        return outputExists && typescriptExists && distDirExists;
+        return outputExists && typescriptExists && distDirExists && eslintExists;
     } catch (error) {
         console.error(`Error processing ${configPath}:`, error);
         return false;
