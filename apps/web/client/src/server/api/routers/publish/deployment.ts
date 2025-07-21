@@ -113,6 +113,7 @@ export const deploymentRouter = createTRPCRouter({
                 message: 'Deployment Success!',
             });
         } catch (error) {
+            console.error(error);
             await updateDeployment(ctx.db, deploymentId, {
                 status: DeploymentStatus.FAILED,
                 message: 'Failed to publish deployment',

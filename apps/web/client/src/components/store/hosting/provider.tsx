@@ -162,7 +162,6 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
                 success: false,
             };
         }
-
     };
 
     // Unpublish function
