@@ -15,6 +15,12 @@ import { SHELL_PROMPT } from './shell';
 import { SUMMARY_PROMPTS } from './summary';
 import { SYSTEM_PROMPT } from './system';
 
+export interface HydrateUserMessageOptions {
+    totalMessages: number;
+    currentMessageIndex: number;
+    lastUserMessageIndex: number;
+}
+
 export function getSystemPrompt() {
     let prompt = '';
     prompt += wrapXml('role', SYSTEM_PROMPT);
@@ -51,6 +57,7 @@ export function getHydratedUserMessage(
     id: string,
     content: UserContent,
     context: ChatMessageContext[],
+    opt: HydrateUserMessageOptions,
 ): Message {
     const files = context.filter((c) => c.type === 'file').map((c) => c);
     const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
@@ -58,11 +65,21 @@ export function getHydratedUserMessage(
     const project = context.filter((c) => c.type === 'project').map((c) => c);
     const images = context.filter((c) => c.type === 'image').map((c) => c);
 
+    // If there are 50 user messages in the contexts, we can trim all of them except
+    // the last one. The logic could be adjusted to trim more or less messages.
+    const trimFileContext = opt.currentMessageIndex < opt.lastUserMessageIndex;
+    // Should the code need to trim other types of contexts, it can be done here.
+
     let prompt = '';
-    let contextPrompt = getFilesContent(files, highlights);
-    if (contextPrompt) {
-        contextPrompt = wrapXml('context', contextPrompt);
-        prompt += contextPrompt;
+
+    // The code currently removes the context entirely, however, it might be
+    // worth trying to replace the context with a summary.
+    if (!trimFileContext) {
+        let contextPrompt = getFilesContent(files, highlights);
+        if (contextPrompt) {
+            contextPrompt = wrapXml('context', contextPrompt);
+            prompt += contextPrompt;
+        }
     }
 
     if (errors.length > 0) {
