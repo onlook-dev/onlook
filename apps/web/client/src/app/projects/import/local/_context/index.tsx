@@ -7,7 +7,7 @@ import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { NEXT_JS_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
-import { generate, injectPreloadScript, parse } from '@onlook/parser';
+import { generate, getAstFromContent, injectPreloadScript } from '@onlook/parser';
 import { isRootLayoutFile, isTargetFile } from '@onlook/utility';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -191,7 +191,6 @@ export const ProjectCreationProvider = ({
         }
     };
 
-
     const nextStep = () => {
         if (currentStep < totalSteps - 2) {
             // -2 because we have 2 final steps
@@ -277,10 +276,11 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
                 const isLayout = isRootLayoutFile(file.path);
                 if (isLayout) {
                     try {
-                        const ast = parse(content, {
-                            sourceType: 'module',
-                            plugins: ['jsx', 'typescript'],
-                        });
+                        const ast = getAstFromContent(content);
+                        if (!ast) {
+                            console.error('Failed to parse layout.tsx');
+                            continue;
+                        }
                         const modifiedAst = injectPreloadScript(ast);
                         content = generate(modifiedAst, {}, content).code;
                     } catch (parseError) {
