@@ -1,1 +1,1 @@
-export const UNITS = ['px', '%', 'em', 'rem'];
+export const UNITS = ['px', '%', 'em', 'rem', 'vh'];

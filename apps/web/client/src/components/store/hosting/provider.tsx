@@ -76,6 +76,7 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
 
     // Mutations
     const { mutateAsync: runCreateDeployment } = api.publish.deployment.create.useMutation();
+    const { mutateAsync: runUpdateDeployment } = api.publish.deployment.update.useMutation();
     const { mutateAsync: runDeployment } = api.publish.deployment.run.useMutation();
     const { mutateAsync: runUnpublish } = api.publish.unpublish.useMutation();
     const { mutateAsync: runCancel } = api.publish.deployment.cancel.useMutation();
@@ -115,7 +116,7 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
     }, [deployments]);
 
     // Publish function
-    const publish = async (params: PublishParams) => {
+    const publish = async (params: PublishParams): Promise<{ success: boolean } | null> => {
         setSubscriptionStates(prev => ({
             ...prev,
             [params.type]: true,
@@ -133,24 +134,34 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
             description: `Deployment ID: ${deployment.deploymentId}`,
         });
 
-        // Refetch the specific deployment
-        await refetch(params.type);
+        try {
+            // Refetch the specific deployment
+            await refetch(params.type);
 
-        const res = await runDeployment({
-            deploymentId: deployment.deploymentId,
-        });
-
-        refetch(params.type);
-
-        if (!res.success) {
-            toast.error('Deployment failed', {
-                description: `Deployment ID: ${deployment.deploymentId}`,
+            await runDeployment({
+                deploymentId: deployment.deploymentId,
             });
-        } else {
-            toast.success('Deployment success!');
-        }
 
-        return res;
+            refetch(params.type);
+
+            toast.success('Deployment success!');
+
+            return {
+                success: true,
+            };
+        } catch (error) {
+            toast.error('Failed to publish deployment');
+            await runUpdateDeployment({
+                deploymentId: deployment.deploymentId,
+                deployment: {
+                    status: DeploymentStatus.FAILED,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                },
+            });
+            return {
+                success: false,
+            };
+        }
     };
 
     // Unpublish function
