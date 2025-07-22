@@ -1,9 +1,17 @@
 ---
-title: Contributing
-description: How to contribute to the Onlook project
+title: Developer Docs & Contributing
+description: Technical documentation for Onlook
 ---
 
-# Contributing to Onlook
+# Developer Docs & Contributing
+
+This section provides technical documentation for developers who want to understand Onlook's architecture, contribute to the project, or extend its functionality.
+
+## Overview
+
+Onlook is structured as a monorepo with several interconnected apps and packages, primarily built using Next.js, React, TypeScript, and Vite.
+
+## Contributing to Onlook
 
 We welcome contributions to Onlook! This guide will help you get started with contributing to the project.
 
@@ -12,10 +20,10 @@ When contributing to this repository, please first discuss the change you wish t
 
 Please note we have a [code of conduct](https://github.com/onlook-dev/onlook/blob/main/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
-## Running the project locally
-You can build the project from source using instructions [here](/docs/developer/running-locally).
+### Running the project locally
+You can build the project from source using instructions [here](/contributing/developers/running-locally).
 
-## Pull Request Process
+### Pull Request Process
 
 1. To create a Pull Request (PR), [create a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) of the project. 
 
@@ -33,20 +41,20 @@ You can build the project from source using instructions [here](/docs/developer/
 
 5. Request a review of one of the maintainers. Once accepted, they will be able to merge your PR. 
 
-## Style guide
+### Style guide
 
 We try to follow guidelines from [Clean Code](https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29) and the boy scoute rule:
 
 "Leave the code cleaner, not messier, than how you found it". 
 
-## Testing
+### Testing
 We use [Bun](https://bun.sh/) for testing.
 
 ```bash
 bun test
 ```
 
-## Linting
+### Linting
 
 We use [ESLint](https://eslint.org/) for linting and [Prettier](https://prettier.io/) for formatting. This runs on every commit.
 
@@ -55,7 +63,7 @@ bun lint
 bun format
 ```
 
-## Type safety
+### Type safety
 
 We use [TypeScript](https://www.typescriptlang.org/) for type safety.
 

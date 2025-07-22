@@ -20,6 +20,7 @@ export const metadata: Metadata = {
     openGraph: {
         url: 'https://onlook.com/',
         type: 'website',
+        siteName: 'Onlook',
         title: 'Onlook – Cursor for Designers',
         description: 'The power of Cursor for your own website. Onlook lets you edit your React website and write your changes back to code in real-time. Iterate and experiment with AI.',
         images: [
