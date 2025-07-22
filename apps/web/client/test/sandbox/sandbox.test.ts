@@ -1,4 +1,4 @@
-import { IGNORED_UPLOAD_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
+import { EXCLUDED_UPLOAD_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 
 // Setup mocks before imports
@@ -169,7 +169,7 @@ describe('SandboxManager', () => {
 
         const files = await testManager.listFilesRecursively(
             './',
-            IGNORED_UPLOAD_DIRECTORIES,
+            EXCLUDED_UPLOAD_DIRECTORIES,
             NEXT_JS_FILE_EXTENSIONS,
         );
 

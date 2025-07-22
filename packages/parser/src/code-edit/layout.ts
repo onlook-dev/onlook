@@ -162,75 +162,116 @@ function createBodyTag(htmlElement: T.JSXElement): void {
 }
 
 function wrapWithHtmlAndBody(ast: T.File): void {
+    let hasWrapped = false;
+    let hasComplexLogic = false;
+
+    // First pass: detect if this is a complex component with hooks, state, or conditionals
+    traverse(ast, {
+        CallExpression(path) {
+            // Check for React hooks or complex function calls
+            if (
+                t.isIdentifier(path.node.callee) &&
+                (path.node.callee.name.startsWith('use') ||
+                    [
+                        'useState',
+                        'useEffect',
+                        'useContext',
+                        'useReducer',
+                        'useMemo',
+                        'useCallback',
+                    ].includes(path.node.callee.name))
+            ) {
+                hasComplexLogic = true;
+            }
+        },
+        IfStatement(path) {
+            hasComplexLogic = true;
+        },
+        VariableDeclarator(path) {
+            // If there are variable declarations inside the component, it's complex
+            hasComplexLogic = true;
+        },
+    });
+
+    // If this component has complex logic, don't wrap anything - just add the script import
+    if (hasComplexLogic) {
+        return;
+    }
+
+    // Only wrap very simple components without any logic
     traverse(ast, {
         ArrowFunctionExpression(path) {
+            if (hasWrapped) return;
+
             const { body } = path.node;
-            if (!t.isJSXElement(body) && !t.isJSXFragment(body)) {
-                return;
+            // Only wrap simple arrow functions that directly return JSX
+            if (t.isJSXElement(body) || t.isJSXFragment(body)) {
+                const children: Array<
+                    T.JSXElement | T.JSXFragment | T.JSXText | T.JSXExpressionContainer
+                > = [getPreloadScript(), t.jsxText('\n'), body];
+
+                const newBody = t.jsxElement(
+                    t.jsxOpeningElement(t.jsxIdentifier('body'), []),
+                    t.jsxClosingElement(t.jsxIdentifier('body')),
+                    children,
+                    false,
+                );
+
+                const html = t.jsxElement(
+                    t.jsxOpeningElement(t.jsxIdentifier('html'), [
+                        t.jsxAttribute(t.jsxIdentifier('lang'), t.stringLiteral('en')),
+                    ]),
+                    t.jsxClosingElement(t.jsxIdentifier('html')),
+                    [newBody],
+                    false,
+                );
+
+                path.node.body = t.blockStatement([t.returnStatement(html)]);
+                hasWrapped = true;
+                path.stop();
             }
-
-            const children: Array<
-                T.JSXElement | T.JSXFragment | T.JSXText | T.JSXExpressionContainer
-            > = [getPreloadScript(), t.jsxText('\n'), body];
-
-            const newBody = t.jsxElement(
-                t.jsxOpeningElement(t.jsxIdentifier('body'), []),
-                t.jsxClosingElement(t.jsxIdentifier('body')),
-                children,
-                false,
-            );
-
-            const html = t.jsxElement(
-                t.jsxOpeningElement(t.jsxIdentifier('html'), [
-                    t.jsxAttribute(t.jsxIdentifier('lang'), t.stringLiteral('en')),
-                ]),
-                t.jsxClosingElement(t.jsxIdentifier('html')),
-                [newBody],
-                false,
-            );
-
-            path.node.body = t.blockStatement([t.returnStatement(html)]);
-            path.stop();
         },
         ReturnStatement(path) {
+            if (hasWrapped) return;
+
+            // Skip early returns - they are inside if/conditional blocks
+            const isInsideConditional = path.findParent(
+                (parent) =>
+                    t.isIfStatement(parent) ||
+                    t.isConditionalExpression(parent) ||
+                    t.isLogicalExpression(parent),
+            );
+            if (isInsideConditional) return;
+
             const arg = path.node.argument;
             if (!arg) return;
 
-            const children: Array<
-                T.JSXElement | T.JSXFragment | T.JSXText | T.JSXExpressionContainer
-            > = [getPreloadScript(), t.jsxText('\n')];
-
+            // Only wrap simple JSX returns
             if (t.isJSXElement(arg) || t.isJSXFragment(arg)) {
-                children.push(arg);
-            } else if (
-                t.isIdentifier(arg) ||
-                t.isMemberExpression(arg) ||
-                t.isCallExpression(arg) ||
-                t.isConditionalExpression(arg)
-            ) {
-                children.push(t.jsxExpressionContainer(arg));
-            } else {
-                return; // skip wrapping unsupported types
+                const children: Array<
+                    T.JSXElement | T.JSXFragment | T.JSXText | T.JSXExpressionContainer
+                > = [getPreloadScript(), t.jsxText('\n'), arg];
+
+                const body = t.jsxElement(
+                    t.jsxOpeningElement(t.jsxIdentifier('body'), []),
+                    t.jsxClosingElement(t.jsxIdentifier('body')),
+                    children,
+                    false,
+                );
+
+                const html = t.jsxElement(
+                    t.jsxOpeningElement(t.jsxIdentifier('html'), [
+                        t.jsxAttribute(t.jsxIdentifier('lang'), t.stringLiteral('en')),
+                    ]),
+                    t.jsxClosingElement(t.jsxIdentifier('html')),
+                    [body],
+                    false,
+                );
+
+                path.node.argument = html;
+                hasWrapped = true;
+                path.stop();
             }
-
-            const body = t.jsxElement(
-                t.jsxOpeningElement(t.jsxIdentifier('body'), []),
-                t.jsxClosingElement(t.jsxIdentifier('body')),
-                children,
-                false,
-            );
-
-            const html = t.jsxElement(
-                t.jsxOpeningElement(t.jsxIdentifier('html'), [
-                    t.jsxAttribute(t.jsxIdentifier('lang'), t.stringLiteral('en')),
-                ]),
-                t.jsxClosingElement(t.jsxIdentifier('html')),
-                [body],
-                false,
-            );
-
-            path.node.argument = html;
-            path.stop();
         },
     });
 }
