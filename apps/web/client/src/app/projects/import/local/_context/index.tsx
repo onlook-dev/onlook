@@ -42,6 +42,41 @@ interface ProjectCreationContextValue {
 
 const ProjectCreationContext = createContext<ProjectCreationContextValue | undefined>(undefined);
 
+
+function detectPortFromPackageJson(packageJsonFile: ProcessedFile | undefined): number {
+    const defaultPort = 3000;
+    
+    if (!packageJsonFile || typeof packageJsonFile.content !== 'string') {
+        return defaultPort;
+    }
+
+    try {
+        const pkg = JSON.parse(packageJsonFile.content) as Record<string, unknown>;
+        const scripts = pkg.scripts as Record<string, string> | undefined;
+        const devScript = scripts?.dev;
+        
+        if (!devScript || typeof devScript !== 'string') {
+            return defaultPort;
+        }
+
+        const portRegex = /(?:PORT=|--port[=\s]|-p\s*?)(\d+)/;
+        const portMatch = portRegex.exec(devScript);
+        
+        if (portMatch?.[1]) {
+            const port = parseInt(portMatch[1], 10);
+            if (port > 0 && port <= 65535) {
+                return port;
+            }
+        }
+        
+        return defaultPort;
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.warn('Failed to parse package.json for port detection:', errorMessage);
+        return defaultPort;
+    }
+}
+
 interface ProjectCreationProviderProps {
     children: ReactNode;
     totalSteps: number;
@@ -86,23 +121,7 @@ export const ProjectCreationProvider = ({
                 (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT
             );
             
-            let detectedPort = 3000;
-            if (packageJsonFile && packageJsonFile.type === ProcessedFileType.TEXT) {
-                try {
-                    const pkg = JSON.parse(packageJsonFile.content);
-                    const devScript = pkg.scripts?.dev;
-                    if (devScript && typeof devScript === 'string') {
-                        const portMatch = devScript.match(/(?:PORT=|--port[=\s]+|-p\s+)(\d+)/);
-                        if (portMatch) {
-                            const port = parseInt(portMatch[1], 10);
-                            if (port > 0 && port < 65536) {
-                                detectedPort = port;
-                            }
-                        }
-                    }
-                } catch {
-                }
-            }
+            const detectedPort = detectPortFromPackageJson(packageJsonFile);
             
             const template = SandboxTemplates[Templates.BLANK];
             const forkedSandbox = await forkSandbox({
