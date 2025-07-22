@@ -130,6 +130,15 @@ export class FramesManager {
         frameData.view.reload();
     }
 
+    goBack(id: string) {
+        const frameData = this.get(id);
+        if (!frameData?.view) {
+            console.error('Frame view not found for go back', id);
+            return;
+        }
+        frameData.view.goBack();
+    }
+
     async delete(id: string) {
         if (!this.canDelete()) {
             console.error('Cannot delete the last frame');

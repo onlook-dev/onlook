@@ -10,6 +10,7 @@ import {
     normalizeRoute,
     renamePageInSandbox,
     scanPagesFromSandbox,
+    scanPagesFromSandboxOptimized,
     updatePageMetadataInSandbox,
     validateNextJsRoute
 } from './helper';
@@ -134,6 +135,7 @@ export class PagesManager {
             if (this.editorEngine?.sandbox?.session?.session) {
                 try {
                     const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox);
+                   // const realPages = await scanPagesFromSandboxOptimized(this.editorEngine.sandbox);
                     this.setPages(realPages);
                     this._isScanning = false;
                     return;
@@ -280,7 +282,7 @@ export class PagesManager {
                 return;
             }
 
-            await frameData.view.loadURL(`${baseUrl}${path}`);
+            frameData.view.loadURL(`${baseUrl}${path}`);
             this.setActivePath(frameData.frame.id, originalPath);
             await frameData.view.processDom();
 
