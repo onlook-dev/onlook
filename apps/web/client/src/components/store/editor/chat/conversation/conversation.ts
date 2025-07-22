@@ -59,11 +59,12 @@ export class ChatConversationImpl implements ChatConversation {
 
 
     getMessagesForStream(): Message[] {
+        const lastUserMessageIndex = this.messages.findLastIndex((m) => m.role === ChatMessageRole.USER);
         return this.messages.map((m, index) =>
             m.toStreamMessage({
                 totalMessages: this.messages.length,
                 currentMessageIndex: index,
-                lastUserMessageIndex: this.messages.findLastIndex((m) => m.role === ChatMessageRole.USER),
+                lastUserMessageIndex,
             }),
         );
     }
