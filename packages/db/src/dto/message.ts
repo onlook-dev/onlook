@@ -1,5 +1,6 @@
 import { ChatMessageRole, type ChatMessage, type ChatMessageContext, type ChatSnapshot } from "@onlook/models";
 import type { TextPart } from "ai";
+import type { MastraMessageV2 } from "@mastra/core/memory";
 import type { Message as DbMessage } from "../schema";
 
 export const toMessage = (dbMessage: DbMessage): ChatMessage => {
@@ -29,6 +30,36 @@ export const toMessage = (dbMessage: DbMessage): ChatMessage => {
             content: dbMessage.content,
             role: dbMessage.role as ChatMessageRole.SYSTEM,
             createdAt: dbMessage.createdAt,
+        }
+    }
+}
+
+export const toOnlookMessageFromMastra = (dbMessage: MastraMessageV2): ChatMessage => {
+    if (dbMessage.role === ChatMessageRole.ASSISTANT) {
+        return {
+            id: dbMessage.id,
+            content: dbMessage.content.parts.find(({ type }) => type === 'text')?.text ?? '',
+            role: dbMessage.role,
+            createdAt: dbMessage.createdAt,
+            parts: [],
+        }
+    } else if (dbMessage.role === ChatMessageRole.USER) {
+        return {
+            id: dbMessage.id,
+            content: dbMessage.content.parts.find(({ type }) => type === 'text')?.text ?? '',
+            role: dbMessage.role,
+            createdAt: dbMessage.createdAt,
+            context: dbMessage.context,
+            parts: [],
+            commitOid: dbMessage.commitOid ?? null,
+        }
+    } else {
+        return {
+            id: dbMessage.id,
+            content: dbMessage.content,
+            role: dbMessage.role as ChatMessageRole.SYSTEM,
+            createdAt: dbMessage.createdAt,
+            parts: []
         }
     }
 }

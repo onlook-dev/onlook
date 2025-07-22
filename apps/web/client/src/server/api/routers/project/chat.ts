@@ -4,6 +4,8 @@ import {
     messageInsertSchema,
     messages,
     toConversation,
+    toOnlookMessageFromMastra,
+    toOnlookConversationFromMastra,
     toMessage,
     type Message,
 } from '@onlook/db';
@@ -11,16 +13,32 @@ import type { ChatMessageRole } from '@onlook/models';
 import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { mastra } from '@/mastra';
 
 const conversationRouter = createTRPCRouter({
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
-            const dbConversations = await ctx.db.query.conversations.findMany({
-                where: eq(conversations.projectId, input.projectId),
-                orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
-            });
-            return dbConversations.map((conversation) => toConversation(conversation));
+
+            const storage = mastra.getStorage()
+
+            if (!storage) {
+                throw new Error('Storage not found');
+            }
+
+            const threadsResult = await storage.getThreadsByResourceIdPaginated({
+                page: 0,
+                perPage: 1000,
+                resourceId: input.projectId,
+            })
+
+            console.log('SUHHHHHHHH DUDE', { threadsResult });
+
+            // const dbConversations = await ctx.db.query.conversations.findMany({
+            //     where: eq(conversations.projectId, input.projectId),
+            //     orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
+            // });
+            return threadsResult.threads.map((thread) => toOnlookConversationFromMastra(thread));
         }),
     create: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -59,11 +77,26 @@ const messageRouter = createTRPCRouter({
     get: protectedProcedure
         .input(z.object({ conversationId: z.string() }))
         .query(async ({ ctx, input }) => {
+            const storage = mastra.getStorage()
+
+            if (!storage) {
+                throw new Error('Storage not found');
+            }
+
+            const messagesResult = await storage.getMessagesPaginated({
+                page: 0,
+                perPage: 1000,
+                threadId: input.conversationId,
+                format: 'v2',
+            })
+
+            console.log('SUHHHHHHHH DUDE MESSAGES', JSON.stringify(messagesResult.messages, null, 2)    );
+
             const dbMessages = await ctx.db.query.messages.findMany({
                 where: eq(messages.conversationId, input.conversationId),
                 orderBy: (messages, { asc }) => [asc(messages.createdAt)],
             });
-            return dbMessages.map((message) => toMessage(message));
+            return messagesResult.messages.map((message) => toOnlookMessageFromMastra(message));
         }),
     upsert: protectedProcedure
         .input(z.object({ message: messageInsertSchema }))

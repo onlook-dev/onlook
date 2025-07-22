@@ -92,7 +92,10 @@ export const getSupabaseUser = async (request: NextRequest) => {
 }
 
 export const streamResponseMastra = async (req: NextRequest) => {
-    const { messages, maxSteps, chatType } = await req.json();
+    const { messages, maxSteps, chatType, conversationId, projectId } = await req.json();
+
+    console.log('SUHHHHHHHH DUDE', { messages, maxSteps, chatType, conversationId, projectId });
+
     const { model, providerOptions } = await initModel({
         provider: LLMProvider.ANTHROPIC,
         model: CLAUDE_MODELS.SONNET_4,
@@ -139,6 +142,8 @@ export const streamResponseMastra = async (req: NextRequest) => {
         onError: (error) => {
             console.error('Error in chat', error);
         },
+        resourceId: projectId,
+        threadId: conversationId,
     })
 
     try {

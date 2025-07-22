@@ -20,6 +20,10 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         id: 'user-chat',
         api: '/api/chat',
         maxSteps: 20,
+        body: {
+            conversationId: editorEngine.chat.getCurrentConversationId(),
+            projectId: editorEngine.projectId,
+        },
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, { finishReason }) => {
             lastMessageRef.current = message;

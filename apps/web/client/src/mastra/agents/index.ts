@@ -1,8 +1,11 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { Agent } from '@mastra/core/agent';
+import type { MastraMemory } from '@mastra/core/memory';
 import type { RuntimeContext } from '@mastra/core/runtime-context';
 import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt } from '@onlook/ai';
 import { ChatType } from '@onlook/models';
+import { memory } from '../memory';
+
 
 export const onlookAgent = new Agent({
     name: 'Onlook',
@@ -48,5 +51,6 @@ export const onlookAgent = new Agent({
             default:
                 return buildToolSet;
         }
-    }
+    },
+    memory: memory as unknown as MastraMemory,
 })

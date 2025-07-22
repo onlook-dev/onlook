@@ -31,6 +31,10 @@ export class ChatManager {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
+    getCurrentConversationId() {
+        return this.conversation.current?.id;
+    }
+
     async getEditMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');

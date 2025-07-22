@@ -11,6 +11,17 @@ export const toConversation = (dbConversation: DbConversation): ChatConversation
     }
 }
 
+export const toOnlookConversationFromMastra = (dbConversation: DbConversation): ChatConversation => {
+    return {
+        id: dbConversation.id,
+        displayName: dbConversation.title,
+        createdAt: dbConversation.createdAt.toISOString(),
+        updatedAt: dbConversation.updatedAt.toISOString(),
+        projectId: dbConversation.resourceId,
+    }
+}
+
+
 export const fromConversation = (conversation: ChatConversation): DbConversation => {
     return {
         id: conversation.id,
