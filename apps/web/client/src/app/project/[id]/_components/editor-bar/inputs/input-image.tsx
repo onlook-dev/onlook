@@ -13,7 +13,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { ToolbarButton } from '../toolbar-button';
@@ -28,11 +28,14 @@ export const InputImage = observer(
         const [isUploading, setIsUploading] = useState(false);
         const [uploadError, setUploadError] = useState<string | null>(null);
         
+        const _previewImage = editorEngine.image.previewImage;
         const selectedImage = editorEngine.image.selectedImage;
-        
+
         const {
             fillOption,
             currentBackgroundImage,
+            isApplyingImage,
+            isApplyingPreview,
             handleFillOptionChange,
             removeBackground,
         } = useBackgroundImage(editorEngine);
@@ -45,7 +48,6 @@ export const InputImage = observer(
         });
 
         const handleSelectFromLibrary = useCallback(() => {
-            editorEngine.image.setIsSelectingImage(true);
             // Open the images tab in the left sidebar
             editorEngine.state.leftPanelTab = LeftPanelTabValue.IMAGES;
             editorEngine.state.leftPanelLocked = true;
@@ -97,33 +99,47 @@ export const InputImage = observer(
 
         const handleFillOptionChangeInternal = useCallback(
             (option: ImageFit) => {
-                handleFillOptionChange(option);
+                void handleFillOptionChange(option);
             },
             [handleFillOptionChange],
         );
 
+        const previewImage = useMemo(() => {
+            return _previewImage?.content ?? currentBackgroundImage;
+        }, [_previewImage, currentBackgroundImage]);
+        
+
         const previewStyle = useMemo(() => {
-            if (selectedImage) {
+
+            
+            if (previewImage) {
+                return { backgroundImage: `url(${previewImage})` };
+            }
+
+            if(selectedImage) {
                 return { backgroundImage: `url(${selectedImage.content})` };
             }
+
             if (currentBackgroundImage) {
                 return { backgroundImage: `url(${currentBackgroundImage})` };
             }
             return { backgroundColor: '#3b82f6' }; // Default blue background
-        }, [selectedImage, currentBackgroundImage]);
+        }, [previewImage, currentBackgroundImage, selectedImage]);
 
-        const previewImage = useMemo(() => {
-            return selectedImage?.content ?? currentBackgroundImage;
-        }, [selectedImage, currentBackgroundImage]);
+        const isAnyLoading = isUploading || isApplyingImage || isApplyingPreview;
 
         const handleClose = useCallback(() => {
-            editorEngine.image.setSelectedImage(null);
             editorEngine.image.setIsSelectingImage(false);
+            onOpenChange(false);
         }, []);
 
         const handleRemoveBackground = useCallback(() => {
-            removeBackground();
+            void removeBackground();
         }, [removeBackground]);
+
+        useEffect(() => {
+            editorEngine.image.setIsSelectingImage(true);
+        }, []);
 
         return (
             <div className="flex flex-col gap-2">
@@ -138,15 +154,21 @@ export const InputImage = observer(
                         <DropdownMenuTrigger asChild>
                             <ToolbarButton
                                 isOpen={isOpen}
-                                className="flex w-10 flex-col items-center justify-center gap-0.5"
+                                className="flex w-10 flex-col items-center justify-center gap-0.5 relative"
+                                disabled={isAnyLoading}
                             >
-                                {selectedImage ? (
+                                {isAnyLoading ? (
+                                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                                ) : previewImage ? (
                                     <div
                                         className="h-6 w-6 bg-cover bg-center"
                                         style={previewStyle}
                                     />
                                 ) : (
                                     <Icons.Image className="h-2 w-2" />
+                                )}
+                                {isApplyingPreview && (
+                                    <div className="absolute inset-0 bg-blue-500/20 rounded animate-pulse" />
                                 )}
                             </ToolbarButton>
                         </DropdownMenuTrigger>
@@ -159,12 +181,20 @@ export const InputImage = observer(
                         <div className="flex flex-col">
                             {/* Header */}
                             <div className="flex items-center justify-between p-3">
-                                <h3 className="text-sm font-medium text-foreground">Image Fill</h3>
+                                <h3 className="text-sm font-medium text-foreground">
+                                    Image Fill
+                                    {isApplyingImage && (
+                                        <span className="ml-2 text-xs text-muted-foreground">
+                                            Applying...
+                                        </span>
+                                    )}
+                                </h3>
                                 <Button
                                     variant="ghost"
                                     size="icon"
                                     className="h-6 w-6 p-0"
                                     onClick={handleClose}
+                                    disabled={isAnyLoading}
                                 >
                                     <Icons.CrossL className="h-4 w-4" />
                                 </Button>
@@ -178,9 +208,19 @@ export const InputImage = observer(
                                             <Button
                                                 variant="outline"
                                                 className="w-32 justify-between bg-background-tertiary/50 border-border hover:bg-background-tertiary/70"
+                                                disabled={isApplyingImage}
                                             >
-                                                {currentFillOptionLabel}
-                                                <Icons.ChevronDown className="h-4 w-4 opacity-50" />
+                                                {isApplyingImage ? (
+                                                    <>
+                                                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin mr-2" />
+                                                        <span className="opacity-50">{currentFillOptionLabel}</span>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {currentFillOptionLabel}
+                                                        <Icons.ChevronDown className="h-4 w-4 opacity-50" />
+                                                    </>
+                                                )}
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-32">
@@ -189,13 +229,19 @@ export const InputImage = observer(
                                                     key={option.value}
                                                     onClick={() => handleFillOptionChangeInternal(option.value)}
                                                     className="text-sm"
+                                                    disabled={isApplyingImage}
                                                 >
                                                     {option.label}
                                                 </DropdownMenuItem>
                                             ))}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                    <Button variant="ghost" size="sm" className="p-2 h-8 w-8">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        className="p-2 h-8 w-8"
+                                        disabled={isAnyLoading}
+                                    >
                                         <Icons.Reset className="h-4 w-4" />
                                     </Button>
                                 </div>
@@ -209,6 +255,13 @@ export const InputImage = observer(
                                                 alt="Preview"
                                                 className="w-full h-full object-cover"
                                             />
+                                            {isApplyingPreview && (
+                                                <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center">
+                                                    <div className="bg-white/90 rounded-full p-2">
+                                                        <Icons.LoadingSpinner className="h-4 w-4 animate-spin text-blue-600" />
+                                                    </div>
+                                                </div>
+                                            )}
                                         </>
                                     ) : (
                                         <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
@@ -222,6 +275,7 @@ export const InputImage = observer(
                                     onClick={handleSelectFromLibrary}
                                     variant="outline"
                                     className="w-full justify-start gap-2 bg-gray-50! hover:bg-gray-200 text-black border-border hover:text-black"
+                                    disabled={isAnyLoading}
                                 >
                                     <div className="flex items-center gap-2">
                                         <Icons.Library className="w-4 h-4" />
@@ -231,7 +285,7 @@ export const InputImage = observer(
                                 <Button
                                     onClick={handleUploadFromComputer}
                                     variant="outline"
-                                    disabled={isUploading}
+                                    disabled={isUploading || isAnyLoading}
                                     className="w-full justify-start gap-2 bg-gray-700 text-white border-border hover:bg-gray-50 disabled:opacity-50"
                                 >
                                     <div className="flex items-center gap-2">
@@ -255,9 +309,14 @@ export const InputImage = observer(
                                         onClick={handleRemoveBackground}
                                         variant="outline"
                                         className="w-full justify-start gap-2 bg-red-50 text-red-600 border-red-200 hover:bg-red-100"
+                                        disabled={isApplyingImage}
                                     >
                                         <div className="flex items-center gap-2">
-                                            <Icons.CrossL className="w-4 h-4" />
+                                            {isApplyingImage ? (
+                                                <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                                <Icons.CrossL className="w-4 h-4" />
+                                            )}
                                             Remove background
                                         </div>
                                     </Button>
