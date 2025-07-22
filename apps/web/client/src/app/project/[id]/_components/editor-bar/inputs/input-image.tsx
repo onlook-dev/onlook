@@ -252,7 +252,7 @@ export const InputImage = observer(() => {
                             <Button
                                 onClick={handleSelectFromLibrary}
                                 variant="outline"
-                                className="w-full justify-start gap-2 bg-gray-50! hover:bg-gray-200 text-black border-border hover:text-black"
+                                className="w-full justify-start gap-2 !bg-gray-50 hover:bg-gray-200 text-black border-border hover:text-black"
                                 disabled={isUploading}
                             >
                                 <div className="flex items-center gap-2">
