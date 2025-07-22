@@ -82,11 +82,33 @@ export const ProjectCreationProvider = ({
                 return;
             }
 
+            const packageJsonFile = projectData.files.find(
+                (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT
+            );
+            
+            let detectedPort = 3000;
+            if (packageJsonFile && packageJsonFile.type === ProcessedFileType.TEXT) {
+                try {
+                    const pkg = JSON.parse(packageJsonFile.content);
+                    const devScript = pkg.scripts?.dev;
+                    if (devScript && typeof devScript === 'string') {
+                        const portMatch = devScript.match(/(?:PORT=|--port[=\s]+|-p\s+)(\d+)/);
+                        if (portMatch) {
+                            const port = parseInt(portMatch[1], 10);
+                            if (port > 0 && port < 65536) {
+                                detectedPort = port;
+                            }
+                        }
+                    }
+                } catch {
+                }
+            }
+            
             const template = SandboxTemplates[Templates.BLANK];
             const forkedSandbox = await forkSandbox({
                 sandbox: {
                     id: template.id,
-                    port: template.port,
+                    port: detectedPort,
                 },
                 config: {
                     title: `Imported project - ${user.id}`,
