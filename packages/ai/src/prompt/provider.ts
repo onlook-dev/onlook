@@ -67,18 +67,19 @@ export function getHydratedUserMessage(
 
     // If there are 50 user messages in the contexts, we can trim all of them except
     // the last one. The logic could be adjusted to trim more or less messages.
-    const trimFileContext = opt.currentMessageIndex < opt.lastUserMessageIndex;
+    const truncateFileContext = opt.currentMessageIndex < opt.lastUserMessageIndex;
     // Should the code need to trim other types of contexts, it can be done here.
 
     let prompt = '';
-
-    // The code currently removes the context entirely, however, it might be
-    // worth trying to replace the context with a summary.
-    if (!trimFileContext) {
-        let contextPrompt = getFilesContent(files, highlights);
+    if (truncateFileContext) {
+        const contextPrompt = getTruncatedFilesContent(files);
         if (contextPrompt) {
-            contextPrompt = wrapXml('context', contextPrompt);
-            prompt += contextPrompt;
+            prompt += wrapXml('truncated-context', contextPrompt);
+        }
+    } else {
+        const contextPrompt = getFilesContent(files, highlights);
+        if (contextPrompt) {
+            prompt += wrapXml('context', contextPrompt);
         }
     }
 
@@ -115,6 +116,23 @@ export function getHydratedUserMessage(
         content: prompt,
         experimental_attachments: attachments,
     };
+}
+
+export function getTruncatedFilesContent(files: FileMessageContext[]) {
+    if (files.length === 0) {
+        return '';
+    }
+    let prompt = '';
+    prompt += `${CONTEXT_PROMPTS.truncatedFilesContentPrefix}\n`;
+    let index = 1;
+    for (const file of files) {
+        let filePrompt = `${file.path}\n`;
+        filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
+        prompt += filePrompt;
+        index++;
+    }
+
+    return prompt;
 }
 
 export function getFilesContent(
