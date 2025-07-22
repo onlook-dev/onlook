@@ -23,10 +23,11 @@
         "drizzle-zod": "^0.7.1",
         "pg": "^8.11.3",
         "postgres": "^3.4.5",
-        "uuid": "^11.1.0"
+        "uuid": "^11.1.0",
+        "@onlook/stripe": "*"
     },
     "devDependencies": {
-        "drizzle-kit": "^0.31.1",
+        "drizzle-kit": "^0.31.4",
         "typescript": "^5.8.2"
     }
 }
