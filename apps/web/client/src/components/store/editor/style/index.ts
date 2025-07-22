@@ -48,7 +48,6 @@ export class StyleManager {
 
     updateMultiple(styles: Record<string, string>) {
         const action = this.getUpdateStyleAction(styles);
-        console.log('action', action);
         this.editorEngine.action.run(action);
         this.updateStyleNoAction(styles);
     }

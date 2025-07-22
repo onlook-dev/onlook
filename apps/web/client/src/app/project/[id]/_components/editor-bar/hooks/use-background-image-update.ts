@@ -87,7 +87,6 @@ export const useBackgroundImage = (editorEngine: EditorEngine) => {
         editorEngine.style.selectedStyle?.styles.computed.backgroundRepeat,
     ]);
 
-    // Apply background image to selected elements
     const applyBackgroundImage = useCallback(
         (imageData: ImageContentData, fillOptionValue: ImageFit) => {
             const selected = editorEngine.elements.selected;
