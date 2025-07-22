@@ -1,38 +1,87 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
-import { imagePathToUrl } from '@onlook/utility';
 import type { ImageContentData } from '@onlook/models';
+import { imagePathToUrl } from '@onlook/utility';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+export enum ImageFit {
+    FILL = 'fill',
+    FIT = 'fit',
+    STRETCH = 'stretch',
+    CENTER = 'center', 
+    TILE = 'tile',
+    AUTO = 'auto',
+}
 
-// Custom hook for background image functionality
+export const IMAGE_FIT_OPTIONS = [
+    { value: ImageFit.FILL, label: 'Fill' },
+    { value: ImageFit.FIT, label: 'Fit' },
+    { value: ImageFit.STRETCH, label: 'Stretch' },
+    { value: ImageFit.CENTER, label: 'Center' },
+    { value: ImageFit.TILE, label: 'Tile' },
+    { value: ImageFit.AUTO, label: 'Auto' },
+] as const;
+
+const FitToStyle: Record<ImageFit, Record<string, string>> = {
+    [ImageFit.FILL]: {
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+    },
+    [ImageFit.FIT]: {
+        backgroundSize: 'contain',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+    },
+    [ImageFit.STRETCH]: {
+        backgroundSize: '100% 100%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+    },
+    [ImageFit.CENTER]: {
+        backgroundSize: 'auto',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+    },
+    [ImageFit.TILE]: {
+        backgroundSize: 'auto',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'repeat',
+    },
+    [ImageFit.AUTO]: {
+        backgroundSize: 'auto',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+    },
+};
+
+const cssToImageFit = (backgroundSize: string, backgroundRepeat: string): ImageFit => {
+    if (backgroundSize === 'cover') return ImageFit.FILL;
+    if (backgroundSize === 'contain') return ImageFit.FIT;
+    if (backgroundSize === '100% 100%') return ImageFit.STRETCH;
+    if (backgroundSize === 'auto' && backgroundRepeat === 'repeat') return ImageFit.TILE;
+    if (backgroundSize === 'auto') return ImageFit.CENTER;
+    return ImageFit.AUTO;
+};
+
 export const useBackgroundImage = (editorEngine: EditorEngine) => {
-    const [fillOption, setFillOption] = useState('Fill');
+    const [fillOption, setFillOption] = useState<ImageFit>(ImageFit.FILL);
 
-    // Get current background image from selected element
     const currentBackgroundImage = useMemo(() => {
         const selectedStyle = editorEngine.style.selectedStyle?.styles.computed.backgroundImage;
         if (selectedStyle && selectedStyle !== 'none') {
-            // Extract URL from CSS url() function
             const urlMatch = /url\(['"]?([^'"]+)['"]?\)/.exec(selectedStyle);
             return urlMatch ? urlMatch[1] : null;
         }
         return null;
     }, [editorEngine.style.selectedStyle?.styles.computed.backgroundImage]);
 
-    // Get current background size and map it to fill option
     const currentBackgroundSize = useMemo(() => {
         const selectedStyle = editorEngine.style.selectedStyle?.styles.computed.backgroundSize;
         const selectedRepeat = editorEngine.style.selectedStyle?.styles.computed.backgroundRepeat;
 
         if (!selectedStyle) return null;
 
-        // Map CSS background-size values back to our fill options
-        if (selectedStyle === 'cover') return 'Fill';
-        if (selectedStyle === 'contain') return 'Fit';
-        if (selectedStyle === '100% 100%') return 'Stretch';
-        if (selectedStyle === 'auto' && selectedRepeat === 'repeat') return 'Tile';
-        if (selectedStyle === 'auto') return 'Center';
-        return 'Auto';
+        return cssToImageFit(selectedStyle, selectedRepeat ?? 'no-repeat');
     }, [
         editorEngine.style.selectedStyle?.styles.computed.backgroundSize,
         editorEngine.style.selectedStyle?.styles.computed.backgroundRepeat,
@@ -40,7 +89,7 @@ export const useBackgroundImage = (editorEngine: EditorEngine) => {
 
     // Apply background image to selected elements
     const applyBackgroundImage = useCallback(
-        (imageData: ImageContentData, fillOptionValue: string) => {
+        (imageData: ImageContentData, fillOptionValue: ImageFit) => {
             const selected = editorEngine.elements.selected;
 
             if (!selected || selected.length === 0) {
@@ -48,29 +97,15 @@ export const useBackgroundImage = (editorEngine: EditorEngine) => {
                 return;
             }
 
-            // Convert image path to URL
             const url = imagePathToUrl(imageData.originPath);
 
-            // Map fill options to CSS background-size values
-            const fillToCssMap: Record<string, string> = {
-                Fill: 'cover', // Fill entire container, may crop
-                Fit: 'contain', // Fit entire image, may have empty space
-                Stretch: '100% 100%', // Stretch to fill, may distort
-                Center: 'auto', // Original size, centered
-                Tile: 'auto', // Original size, repeated
-                Auto: 'auto', // Browser default
-            };
 
-            const backgroundSize = fillToCssMap[fillOptionValue] ?? 'cover';
-            const backgroundRepeat = fillOptionValue === 'Tile' ? 'repeat' : 'no-repeat';
-            const backgroundPosition = 'center';
+            const cssStyles = FitToStyle[fillOptionValue];
 
-            // Apply styles using the style manager
+
             const styles = {
                 backgroundImage: `url('/${url}')`,
-                backgroundSize: backgroundSize,
-                backgroundRepeat: backgroundRepeat,
-                backgroundPosition: backgroundPosition,
+                ...cssStyles,
             };
 
             editorEngine.style.updateMultiple(styles);
@@ -79,7 +114,7 @@ export const useBackgroundImage = (editorEngine: EditorEngine) => {
     );
 
     const handleFillOptionChange = useCallback(
-        (option: string) => {
+        (option: ImageFit) => {
             setFillOption(option);
 
             const selectedImage = editorEngine.image.selectedImage;
@@ -140,5 +175,7 @@ export const useBackgroundImage = (editorEngine: EditorEngine) => {
         handleFillOptionChange,
         applySelectedImageAsBackground,
         removeBackground,
+        ImageFit,
+        IMAGE_FIT_OPTIONS,
     };
 };

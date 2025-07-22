@@ -17,9 +17,8 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { ToolbarButton } from '../toolbar-button';
-import { useBackgroundImage } from '../hooks/use-background-image-update';
-
-const FILL_OPTIONS = ['Fill', 'Fit', 'Stretch', 'Center', 'Tile', 'Auto'];
+import { useBackgroundImage, IMAGE_FIT_OPTIONS } from '../hooks/use-background-image-update';
+import type { ImageFit } from '../hooks/use-background-image-update';
 
 
 export const InputImage = observer(
@@ -29,7 +28,6 @@ export const InputImage = observer(
         const [isUploading, setIsUploading] = useState(false);
         const [uploadError, setUploadError] = useState<string | null>(null);
         
-        const isSelectingImage = editorEngine.image.isSelectingImage;
         const selectedImage = editorEngine.image.selectedImage;
         
         const {
@@ -40,7 +38,7 @@ export const InputImage = observer(
         } = useBackgroundImage(editorEngine);
 
 
-        const currentFillOption = fillOption;
+        const currentFillOptionLabel = IMAGE_FIT_OPTIONS.find(opt => opt.value === fillOption)?.label ?? 'Fill';
 
         const { isOpen, onOpenChange } = useDropdownControl({
             id: 'input-image-dropdown',
@@ -98,7 +96,7 @@ export const InputImage = observer(
         );
 
         const handleFillOptionChangeInternal = useCallback(
-            (option: string) => {
+            (option: ImageFit) => {
                 handleFillOptionChange(option);
             },
             [handleFillOptionChange],
@@ -181,18 +179,18 @@ export const InputImage = observer(
                                                 variant="outline"
                                                 className="w-32 justify-between bg-background-tertiary/50 border-border hover:bg-background-tertiary/70"
                                             >
-                                                {currentFillOption}
+                                                {currentFillOptionLabel}
                                                 <Icons.ChevronDown className="h-4 w-4 opacity-50" />
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-32">
-                                            {FILL_OPTIONS.map((option) => (
+                                            {IMAGE_FIT_OPTIONS.map((option) => (
                                                 <DropdownMenuItem
-                                                    key={option}
-                                                    onClick={() => handleFillOptionChangeInternal(option)}
+                                                    key={option.value}
+                                                    onClick={() => handleFillOptionChangeInternal(option.value)}
                                                     className="text-sm"
                                                 >
-                                                    {option}
+                                                    {option.label}
                                                 </DropdownMenuItem>
                                             ))}
                                         </DropdownMenuContent>
