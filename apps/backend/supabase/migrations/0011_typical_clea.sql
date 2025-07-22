@@ -3,6 +3,8 @@ CREATE TYPE "public"."price_keys" AS ENUM('PRO_MONTHLY_TIER_1', 'PRO_MONTHLY_TIE
 CREATE TYPE "public"."product_type" AS ENUM('free', 'pro');--> statement-breakpoint
 CREATE TYPE "public"."scheduled_subscription_action" AS ENUM('price_change', 'cancellation');--> statement-breakpoint
 CREATE TYPE "public"."usage_types" AS ENUM('message', 'deployment');--> statement-breakpoint
+CREATE TYPE "public"."subscription_status" AS ENUM('active', 'canceled');--> statement-breakpoint
+
 CREATE TABLE "project_settings" (
 	"project_id" uuid NOT NULL,
 	"run_command" text DEFAULT '' NOT NULL,
@@ -39,7 +41,7 @@ CREATE TABLE "subscriptions" (
 	"started_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"ended_at" timestamp with time zone,
-	"status" text NOT NULL,
+	"status" "subscription_status" DEFAULT 'active' NOT NULL,
 	"stripe_customer_id" text NOT NULL,
 	"stripe_subscription_id" text NOT NULL,
 	"stripe_subscription_item_id" text NOT NULL,
