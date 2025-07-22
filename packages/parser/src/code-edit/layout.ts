@@ -1,15 +1,19 @@
 import {
-    DEPRECATED_PRELOAD_SCRIPT_SRC,
+    DEPRECATED_PRELOAD_SCRIPTS,
     PRELOAD_SCRIPT_FILE_NAME,
-    PRELOAD_SCRIPT_SRC,
+    PRELOAD_SCRIPT_ID,
 } from '@onlook/constants';
 import { type t as T, types as t, traverse } from '../packages';
 
-export const injectPreloadScript = (ast: T.File): T.File => {
+export const injectPreloadScript = (ast: T.File): { ast: T.File; modified: boolean } => {
+    let modified = false;
     const hasScriptImport = isScriptImported(ast);
-    if (!hasScriptImport) addScriptImport(ast);
+    if (!hasScriptImport) {
+        addScriptImport(ast);
+        modified = true;
+    }
 
-    removeDeprecatedPreloadScripts(ast);
+    modified = removeDeprecatedPreloadScripts(ast) || modified;
 
     let scriptInjected = false;
     let htmlFound = false;
@@ -29,6 +33,7 @@ export const injectPreloadScript = (ast: T.File): T.File => {
                 if (!scriptInjected) {
                     addScriptToJSXElement(path.node);
                     scriptInjected = true;
+                    modified = true;
                 }
             }
         },
@@ -40,6 +45,7 @@ export const injectPreloadScript = (ast: T.File): T.File => {
                 if (t.isJSXIdentifier(path.node.openingElement.name, { name: 'html' })) {
                     createBodyTag(path.node);
                     scriptInjected = true;
+                    modified = true;
                     path.stop();
                 }
             },
@@ -48,9 +54,10 @@ export const injectPreloadScript = (ast: T.File): T.File => {
 
     if (!scriptInjected && !htmlFound) {
         wrapWithHtmlAndBody(ast);
+        modified = true;
     }
 
-    return ast;
+    return { ast, modified };
 };
 
 function normalizeSelfClosingTag(node: T.JSXElement): void {
@@ -109,10 +116,13 @@ function getPreloadScript(): T.JSXElement {
         t.jsxOpeningElement(
             t.jsxIdentifier('Script'),
             [
-                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME)),
+                t.jsxAttribute(
+                    t.jsxIdentifier('src'),
+                    t.stringLiteral(`/${PRELOAD_SCRIPT_FILE_NAME}`),
+                ),
                 t.jsxAttribute(t.jsxIdentifier('strategy'), t.stringLiteral('beforeInteractive')),
                 t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                t.jsxAttribute(t.jsxIdentifier('id'), t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME)),
+                t.jsxAttribute(t.jsxIdentifier('id'), t.stringLiteral(PRELOAD_SCRIPT_ID)),
             ],
             false,
         ),
@@ -225,7 +235,8 @@ function wrapWithHtmlAndBody(ast: T.File): void {
     });
 }
 
-function removeDeprecatedPreloadScripts(ast: T.File): void {
+function removeDeprecatedPreloadScripts(ast: T.File): boolean {
+    let modified = false;
     traverse(ast, {
         JSXElement(path) {
             const isScript = t.isJSXIdentifier(path.node.openingElement.name, { name: 'Script' });
@@ -242,12 +253,12 @@ function removeDeprecatedPreloadScripts(ast: T.File): void {
             if (
                 src &&
                 t.isStringLiteral(src) &&
-                (src.value.includes(DEPRECATED_PRELOAD_SCRIPT_SRC) ||
-                    src.value.includes(PRELOAD_SCRIPT_FILE_NAME) ||
-                    src.value.includes(PRELOAD_SCRIPT_SRC))
+                DEPRECATED_PRELOAD_SCRIPTS.some((script) => src.value.includes(script))
             ) {
+                modified = true;
                 path.remove();
             }
         },
     });
+    return modified;
 }

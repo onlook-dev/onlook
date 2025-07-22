@@ -1,21 +1,18 @@
-import { CUSTOM_OUTPUT_DIR } from './editor';
+import { CUSTOM_OUTPUT_DIR, PRELOAD_SCRIPT_FILE_NAME } from './editor';
 
 const BASE_EXCLUDED_DIRECTORIES = ['node_modules', 'dist', 'build', '.git', '.next'] as const;
-
+export const EXCLUDED_SYNC_FILES = [PRELOAD_SCRIPT_FILE_NAME] as const;
 export const EXCLUDED_SYNC_DIRECTORIES = [
     ...BASE_EXCLUDED_DIRECTORIES,
+    'out',
     'static',
     CUSTOM_OUTPUT_DIR,
 ];
-
-export const IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_OUTPUT_DIR];
-
+export const EXCLUDED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_OUTPUT_DIR];
 export const EXCLUDED_PUBLISH_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, 'coverage'];
 
 const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
-
 export const JS_FILE_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs'];
-
 // Nextjs allow jsx in js and ts files so we need to support both
 export const NEXT_JS_FILE_EXTENSIONS = [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS];
 

@@ -273,6 +273,7 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
                 });
             } else {
                 let content = file.content;
+                let modified = false;
 
                 const isLayout = isRootLayoutFile(file.path);
                 if (isLayout) {
@@ -281,8 +282,11 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
                             sourceType: 'module',
                             plugins: ['jsx', 'typescript'],
                         });
-                        const modifiedAst = injectPreloadScript(ast);
-                        content = generate(modifiedAst, {}, content).code;
+                        const { ast: modifiedAst, modified: modifiedAstModified } = injectPreloadScript(ast);
+                        modified = modifiedAstModified;
+                        if (modified) {
+                            content = generate(modifiedAst, {}, content).code;
+                        }
                     } catch (parseError) {
                         console.warn(
                             'Failed to add script config to layout.tsx:',
@@ -290,9 +294,11 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
                         );
                     }
                 }
-                await session.fs.writeTextFile(file.path, content, {
-                    overwrite: true,
-                });
+                if (modified) {
+                    await session.fs.writeTextFile(file.path, content, {
+                        overwrite: true,
+                    });
+                }
             }
         } catch (fileError) {
             console.error(`Error uploading file ${file.path}:`, fileError);

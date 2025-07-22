@@ -3,7 +3,7 @@ import {
     type NextJsProjectValidation,
     type ProcessedFile,
 } from '@/app/projects/types';
-import { IGNORED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
+import { EXCLUDED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
@@ -74,7 +74,7 @@ export const NewSelectFolder = () => {
 
             // Skip ignored directories
             if (
-                IGNORED_UPLOAD_DIRECTORIES.some(
+                EXCLUDED_UPLOAD_DIRECTORIES.some(
                     (dir) => relativePath.includes(`${dir}/`) || relativePath.startsWith(`${dir}/`),
                 )
             ) {

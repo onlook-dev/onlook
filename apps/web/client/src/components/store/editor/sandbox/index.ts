@@ -1,5 +1,5 @@
 import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
-import { EXCLUDED_SYNC_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
+import { EXCLUDED_SYNC_DIRECTORIES, EXCLUDED_SYNC_FILES, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
 import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isRootLayoutFile, isSubdirectory, LogTimer } from '@onlook/utility';
@@ -83,7 +83,7 @@ export class SandboxManager {
             }
 
             // Get all file paths
-            const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
+            const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES, EXCLUDED_SYNC_FILES);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
             for (const filePath of allFilePaths) {
@@ -116,7 +116,7 @@ export class SandboxManager {
     /**
      * Optimized flat file discovery - similar to hosting manager approach
      */
-    private async getAllFilePathsFlat(rootDir: string, excludeDirs: string[]): Promise<string[]> {
+    private async getAllFilePathsFlat(rootDir: string, excludeDirs: string[], excludeFiles: readonly string[]): Promise<string[]> {
         if (!this.session.session) {
             throw new Error('No session available for file discovery');
         }
@@ -140,7 +140,9 @@ export class SandboxManager {
                         }
                         this.fileSync.updateDirectoryCache(normalizedPath);
                     } else if (entry.type === 'file') {
-                        allPaths.push(normalizedPath);
+                        if (!excludeFiles.includes(entry.name)) {
+                            allPaths.push(normalizedPath);
+                        }
                     }
                 }
             } catch (error) {

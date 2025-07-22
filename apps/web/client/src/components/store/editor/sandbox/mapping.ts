@@ -25,16 +25,19 @@ export class TemplateNodeMapper {
         modified: boolean;
         newContent: string;
     }> {
+        let modified = false;
         const ast = getAstFromContent(content);
         if (!ast) {
             throw new Error(`Failed to get ast for file ${filePath}`);
         }
 
         if (isRootLayoutFile(filePath, routerType)) {
-            injectPreloadScript(ast);
+            const { ast: modifiedAst, modified: modifiedAstModified } = injectPreloadScript(ast);
+            modified = modifiedAstModified;
         }
 
-        const { ast: astWithIds, modified } = addOidsToAst(ast);
+        const { ast: astWithIds, modified: modifiedAstModified } = addOidsToAst(ast);
+        modified = modifiedAstModified;
 
         // Format content then create map
         const unformattedContent = await getContentFromAst(astWithIds, content);
