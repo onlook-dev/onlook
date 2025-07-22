@@ -8,6 +8,7 @@ import {
 import { TRPCError } from '@trpc/server';
 import { PublishManager } from '../manager';
 import { deployFreestyle } from './deploy';
+import { extractEnvVarsFromSandbox } from './env';
 import { forkBuildSandbox } from './fork';
 import { getProjectUrls, getSandboxId, updateDeployment } from './helpers';
 
@@ -51,6 +52,7 @@ export async function publish({
                 });
             }
 
+
             const publishManager = new PublishManager(session);
             const files = await publishManager.publish({
                 skipBadge: type === DeploymentType.CUSTOM,
@@ -71,10 +73,14 @@ export async function publish({
                 });
             }
 
+            // Note: Prefer user provided env vars over sandbox env vars
+            const sandboxEnvVars = await extractEnvVarsFromSandbox(session);
+            const mergedEnvVars = { ...sandboxEnvVars, ...(envVars ?? {}) };
+
             await deployFreestyle({
                 files,
                 urls: deploymentUrls,
-                envVars: envVars ?? {},
+                envVars: mergedEnvVars,
             });
         } finally {
             await session.disconnect();
