@@ -94,7 +94,7 @@ export const TopBar = observer(({ frame }: { frame: WebFrame }) => {
                 }}
                 ref={toolBarRef}
             >
-                {/* <HoverOnlyTooltip content="Go back" side="top" className="mb-1" hideArrow>
+                <HoverOnlyTooltip content="Go back" side="top" className="mb-1" hideArrow>
                     <Button
                         variant="ghost"
                         size="icon"
@@ -103,7 +103,7 @@ export const TopBar = observer(({ frame }: { frame: WebFrame }) => {
                     >
                         <Icons.ArrowLeft />
                     </Button>
-                </HoverOnlyTooltip> */}
+                </HoverOnlyTooltip>
                 <HoverOnlyTooltip content="Refresh Page" side="top" className="mb-1" hideArrow>
                     <Button
                         variant="ghost"
