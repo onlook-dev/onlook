@@ -1,0 +1,1 @@
+{"version":3,"file":"server-config.mjs","sources":["../../src/mastra/index.ts"],"sourcesContent":["import { Mastra } from '@mastra/core';\nimport { onlookAgent } from './agents';\n\nexport const mastra = new Mastra({\n    agents: {\n        onlookAgent,\n    }\n})"],"names":[],"mappings":"AAGO,MAAA,SAAA;;;;"}

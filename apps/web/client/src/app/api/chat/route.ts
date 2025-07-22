@@ -3,8 +3,10 @@ import { trackEvent } from '@/utils/analytics/server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, CLAUDE_MODELS, LLMProvider, type Usage, UsageType } from '@onlook/models';
+import { mastra } from '@/mastra';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
+import { RuntimeContext } from '@mastra/core/runtime-context';
 
 export async function POST(req: NextRequest) {
     try {
@@ -38,7 +40,7 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        return streamResponse(req);
+        return streamResponseMastra(req);
     } catch (error: any) {
         console.error('Error in chat', error);
         return new Response(JSON.stringify({
@@ -87,6 +89,74 @@ export const getSupabaseUser = async (request: NextRequest) => {
     const supabase = await createSupabaseClient(request);
     const { data: { user } } = await supabase.auth.getUser();
     return user;
+}
+
+export const streamResponseMastra = async (req: NextRequest) => {
+    const { messages, maxSteps, chatType } = await req.json();
+    const { model, providerOptions } = await initModel({
+        provider: LLMProvider.ANTHROPIC,
+        model: CLAUDE_MODELS.SONNET_4,
+    });
+
+    const agent = mastra.getAgent("onlookAgent");
+
+    const runtimeContext = new RuntimeContext()
+
+    runtimeContext.set("chatType", chatType);
+
+    const result = await agent.stream(messages, {
+        maxSteps,
+        runtimeContext,
+        toolCallStreaming: true,
+        maxTokens: 64000,
+        experimental_repairToolCall: async ({ toolCall, tools, parameterSchema, error }) => {
+            if (NoSuchToolError.isInstance(error)) {
+                throw new Error(
+                    `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
+                );
+            }
+            const tool = tools[toolCall.toolName as keyof typeof tools];
+
+            console.warn(
+                `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}, attempting to fix`,
+            );
+
+            const { object: repairedArgs } = await generateObject({
+                model,
+                schema: tool?.parameters,
+                prompt: [
+                    `The model tried to call the tool "${toolCall.toolName}"` +
+                    ` with the following arguments:`,
+                    JSON.stringify(toolCall.args),
+                    `The tool accepts the following schema:`,
+                    JSON.stringify(parameterSchema(toolCall)),
+                    'Please fix the arguments.',
+                ].join('\n'),
+            });
+
+            return { ...toolCall, args: JSON.stringify(repairedArgs) };
+        },
+        onError: (error) => {
+            console.error('Error in chat', error);
+        },
+    })
+
+    try {
+        if (chatType === ChatType.EDIT) {
+            const user = await getSupabaseUser(req);
+            if (!user) {
+                throw new Error('User not found');
+            }
+            const { api } = await createTRPCClient(req);
+            await api.usage.increment({
+                type: UsageType.MESSAGE,
+            });
+        }
+    } catch (error) {
+        console.error('Error in chat usage increment', error);
+    }
+
+    return result.toDataStreamResponse();
 }
 
 export const streamResponse = async (req: NextRequest) => {
