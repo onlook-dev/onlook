@@ -5,8 +5,10 @@ import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
-import { SandboxTemplates, Templates } from '@onlook/constants';
+import { NEXT_JS_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
+import { RouterType } from '@onlook/models';
 import { generate, injectPreloadScript, parse } from '@onlook/parser';
+import { isRootLayoutFile, isTargetFile } from '@onlook/utility';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
@@ -157,19 +159,18 @@ export const ProjectCreationProvider = ({
                 return { isValid: false, error: 'React not found in dependencies' };
             }
 
-            let routerType: 'app' | 'pages' = 'pages';
+            let routerType: RouterType = RouterType.PAGES;
 
             const hasAppLayout = files.some(
-                (f) =>
-                    (f.path.includes('app/layout.') || f.path.includes('src/app/layout.')) &&
-                    (f.path.endsWith('.tsx') ||
-                        f.path.endsWith('.ts') ||
-                        f.path.endsWith('.jsx') ||
-                        f.path.endsWith('.js')),
+                (f) => isTargetFile(f.path, {
+                    fileName: 'layout',
+                    targetExtensions: NEXT_JS_FILE_EXTENSIONS,
+                    potentialPaths: ['app', 'src/app'],
+                })
             );
 
             if (hasAppLayout) {
-                routerType = 'app';
+                routerType = RouterType.APP;
             } else {
                 // Check for Pages Router (pages directory)
                 const hasPagesDir = files.some(
@@ -273,7 +274,7 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
             } else {
                 let content = file.content;
 
-                const isLayout = file.path.endsWith('app/layout.tsx') || file.path.endsWith('src/app/layout.tsx');
+                const isLayout = isRootLayoutFile(file.path);
                 if (isLayout) {
                     try {
                         const ast = parse(content, {

@@ -6,7 +6,14 @@ export function getAstFromContent(content: string): T.File | null {
     try {
         return parse(content, {
             sourceType: 'module',
-            plugins: ['decorators-legacy', 'classProperties', 'typescript', 'jsx'],
+            plugins: [
+                'typescript',
+                'jsx',
+                ['decorators', { decoratorsBeforeExport: true }],
+                'classStaticBlock',
+                'dynamicImport',
+                'importMeta',
+            ],
         });
     } catch (e) {
         console.error(e);
@@ -38,8 +45,21 @@ export function getAstFromCodeblock(
     }
 }
 
-export async function getContentFromAst(ast: T.File): Promise<string> {
-    return generate(ast, { retainLines: true, compact: false }).code;
+export async function getContentFromAst(ast: T.File, originalContent: string): Promise<string> {
+    return generate(
+        ast,
+        {
+            retainLines: true,
+            compact: false,
+            comments: true,
+            concise: false,
+            minified: false,
+            jsonCompatibleStrings: false,
+            shouldPrintComment: () => true,
+            retainFunctionParens: true,
+        },
+        originalContent,
+    ).code;
 }
 
 export function removeIdsFromAst(ast: T.File) {

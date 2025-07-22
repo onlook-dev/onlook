@@ -22,6 +22,6 @@
         "noUnusedLocals": false,
         "noUnusedParameters": false,
         "noPropertyAccessFromIndexSignature": false,
-        "noUncheckedIndexedAccess": true,
+        "noUncheckedIndexedAccess": true
     }
 }

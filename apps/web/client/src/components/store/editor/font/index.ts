@@ -85,7 +85,7 @@ export class FontManager {
      */
     private async scanExistingFonts(): Promise<Font[] | undefined> {
         try {
-            const { layoutPath } = (await this.layoutManager.getRootLayoutPath()) ?? {};
+            const layoutPath = await this.editorEngine.sandbox.getRootLayoutPath();
             if (!layoutPath) {
                 console.log('Could not get layout path');
                 return [];

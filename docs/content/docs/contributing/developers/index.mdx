@@ -1,0 +1,73 @@
+---
+title: Developer Docs & Contributing
+description: Technical documentation for Onlook
+---
+
+# Developer Docs & Contributing
+
+This section provides technical documentation for developers who want to understand Onlook's architecture, contribute to the project, or extend its functionality.
+
+## Overview
+
+Onlook is structured as a monorepo with several interconnected apps and packages, primarily built using Next.js, React, TypeScript, and Vite.
+
+## Contributing to Onlook
+
+We welcome contributions to Onlook! This guide will help you get started with contributing to the project.
+
+When contributing to this repository, please first discuss the change you wish to make via [issues](https://github.com/onlook-dev/onlook/issues),
+[Discord](https://discord.gg/hERDfFZCsH), [email](mailto:contact@onlook.com), or any other method with the owners of this repository before making a change. 
+
+Please note we have a [code of conduct](https://github.com/onlook-dev/onlook/blob/main/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
+
+### Running the project locally
+You can build the project from source using instructions [here](/contributing/developers/running-locally).
+
+### Pull Request Process
+
+1. To create a Pull Request (PR), [create a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo) of the project. 
+
+![fork](/images/contribute-fork.png)
+
+2. Create your changes in your fork and [open a PR from that fork.](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork)
+
+![contribute](/images/contribute-open-pr.png)
+
+3. Update the PR description with details of the changes. Link the issue if relevant.
+
+4. Be sure to check the box to "Allow edits from maintainer". This allows maintainers to update your PR if necessary which speeds up the review process. [See more here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/allowing-changes-to-a-pull-request-branch-created-from-a-fork).
+
+![allow edits](/images/contribute-allow-edits.png)
+
+5. Request a review of one of the maintainers. Once accepted, they will be able to merge your PR. 
+
+### Style guide
+
+We try to follow guidelines from [Clean Code](https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29) and the boy scoute rule:
+
+"Leave the code cleaner, not messier, than how you found it". 
+
+### Testing
+We use [Bun](https://bun.sh/) for testing.
+
+```bash
+bun test
+```
+
+### Linting
+
+We use [ESLint](https://eslint.org/) for linting and [Prettier](https://prettier.io/) for formatting. This runs on every commit.
+
+```bash
+bun lint
+bun format
+```
+
+### Type safety
+
+We use [TypeScript](https://www.typescriptlang.org/) for type safety.
+
+To check types of the web client, run:
+```bash
+cd apps/web/client && bun run typecheck
+```

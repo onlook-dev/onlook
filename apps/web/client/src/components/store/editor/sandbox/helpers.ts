@@ -1,4 +1,4 @@
-import { JS_FILE_EXTENSIONS, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
 import path from 'path';
 import parserEstree from 'prettier/plugins/estree';
 import parserTypescript from 'prettier/plugins/typescript';
@@ -14,14 +14,12 @@ export function normalizePath(p: string): string {
 
 export async function formatContent(filePath: string, content: string): Promise<string> {
     try {
-        // Only format if the file is a .ts or .tsx file
         const extension = path.extname(filePath);
-        if (!JSX_FILE_EXTENSIONS.includes(extension) && !JS_FILE_EXTENSIONS.includes(extension)) {
+        if (!NEXT_JS_FILE_EXTENSIONS.includes(extension)) {
             console.log('Skipping formatting for non-TS/TSX file:', filePath);
             return content;
         }
 
-        // Use browser standalone version with necessary plugins
         const formattedContent = await prettier.format(content, {
             filepath: filePath,
             plugins: [parserEstree, parserTypescript],

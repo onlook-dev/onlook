@@ -5,7 +5,7 @@
     "scripts": {
         "dev": "concurrently \"bun run build:watch\" \"bun run serve\"",
         "serve": "bun --watch server/index.ts",
-        "build": "bun build script/index.ts --outdir=dist --target=browser --minify --sourcemap --external @onlook/utility",
+        "build": "bun build script/index.ts --outdir=../client/public/onlook-preload-script.js --target=browser --minify --external @onlook/utility",
         "build:watch": "bun run build --watch"
     },
     "devDependencies": {

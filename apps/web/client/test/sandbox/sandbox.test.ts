@@ -1,6 +1,5 @@
-import { IGNORED_UPLOAD_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
+import { IGNORED_UPLOAD_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
-import type { SandboxFile } from '@onlook/models';
 
 // Setup mocks before imports
 // Mock localforage before importing anything that uses it
@@ -19,8 +18,8 @@ const mockClear = mock(async () => undefined);
 
 // Mock MobX to avoid strict mode issues
 mock.module('mobx', () => ({
-    makeAutoObservable: mock(() => {}),
-    reaction: mock(() => () => {}),
+    makeAutoObservable: mock(() => { }),
+    reaction: mock(() => () => { }),
     runInAction: mock((fn: any) => fn()),
     action: mock((fn: any) => fn),
 }));
@@ -61,7 +60,7 @@ describe('SandboxManager', () => {
                 modified: false,
             }),
             createTemplateNodeMap: () => new Map(),
-            injectPreloadScript: mock(() => {}),
+            injectPreloadScript: mock(() => { }),
         }));
 
         // Mock utility functions
@@ -122,7 +121,7 @@ describe('SandboxManager', () => {
                 }),
                 watch: mock(async () => mockWatcher),
             },
-            disconnect: mock(async () => {}),
+            disconnect: mock(async () => { }),
         };
 
         // Create mock EditorEngine
@@ -161,18 +160,17 @@ describe('SandboxManager', () => {
                 writeTextFile: mock(async () => true),
                 watch: mock(async () => mockWatcher),
             },
-            disconnect: mock(async () => {}),
+            disconnect: mock(async () => { }),
         };
 
         const testManager = new SandboxManager(mockEditorEngine);
         // Set the session directly
-        // @ts-ignore - accessing private property for testing
         testManager.session.session = testMockSession;
 
         const files = await testManager.listFilesRecursively(
             './',
             IGNORED_UPLOAD_DIRECTORIES,
-            JSX_FILE_EXTENSIONS,
+            NEXT_JS_FILE_EXTENSIONS,
         );
 
         expect(testMockSession.fs.readdir.mock.calls.length).toBeGreaterThan(0);
@@ -242,7 +240,7 @@ describe('SandboxManager', () => {
                 readdir: mock(async () => []),
                 watch: mock(async () => mockWatcher),
             },
-            disconnect: mock(async () => {}),
+            disconnect: mock(async () => { }),
         };
 
         const errorManager = new SandboxManager(mockEditorEngine);

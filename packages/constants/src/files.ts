@@ -5,6 +5,7 @@ const BASE_EXCLUDED_DIRECTORIES = ['node_modules', 'dist', 'build', '.git', '.ne
 export const EXCLUDED_SYNC_DIRECTORIES = [
     ...BASE_EXCLUDED_DIRECTORIES,
     'static',
+    'out',
     CUSTOM_OUTPUT_DIR,
 ];
 
@@ -12,17 +13,12 @@ export const IGNORED_UPLOAD_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, CUSTOM_
 
 export const EXCLUDED_PUBLISH_DIRECTORIES = [...BASE_EXCLUDED_DIRECTORIES, 'coverage'];
 
-export const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
+const JSX_FILE_EXTENSIONS = ['.jsx', '.tsx'];
 
 export const JS_FILE_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs'];
 
-export const LAYOUT_FILE_LOCATION = ['src/app', 'app'];
-
-export const LAYOUT_FILE_CONDITIONS = {
-    fileName: 'layout',
-    targetExtensions: JSX_FILE_EXTENSIONS,
-    potentialPaths: LAYOUT_FILE_LOCATION,
-};
+// Nextjs allow jsx in js and ts files so we need to support both
+export const NEXT_JS_FILE_EXTENSIONS = [...JSX_FILE_EXTENSIONS, ...JS_FILE_EXTENSIONS];
 
 export const SUPPORTED_LOCK_FILES = [
     'bun.lock',
