@@ -5,6 +5,7 @@ const BASE_EXCLUDED_DIRECTORIES = ['node_modules', 'dist', 'build', '.git', '.ne
 export const EXCLUDED_SYNC_DIRECTORIES = [
     ...BASE_EXCLUDED_DIRECTORIES,
     'static',
+    'out',
     CUSTOM_OUTPUT_DIR,
 ];
 
