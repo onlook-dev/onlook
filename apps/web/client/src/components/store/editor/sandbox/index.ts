@@ -230,7 +230,6 @@ export class SandboxManager {
                 console.error(`Error processing file ${normalizedPath}:`, error);
             }
         }
-        console.error('writeFile', normalizedPath);
         return this.fileSync.write(normalizedPath, writeContent, this.writeRemoteFile.bind(this));
     }
 
