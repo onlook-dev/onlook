@@ -13,7 +13,6 @@ const Page = () => {
     };
     const backgroundUrl = useGetBackground('create');
 
-
     return (
         <div className="w-screen h-screen flex flex-col"
             style={{

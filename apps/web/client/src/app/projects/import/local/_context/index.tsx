@@ -162,11 +162,7 @@ export const ProjectCreationProvider = ({
             let routerType: RouterType = RouterType.PAGES;
 
             const hasAppLayout = files.some(
-                (f) => isTargetFile(f.path, {
-                    fileName: 'layout',
-                    targetExtensions: NEXT_JS_FILE_EXTENSIONS,
-                    potentialPaths: ['app', 'src/app'],
-                })
+                (f) => isRootLayoutFile(f.path, RouterType.APP)
             );
 
             if (hasAppLayout) {
@@ -174,7 +170,11 @@ export const ProjectCreationProvider = ({
             } else {
                 // Check for Pages Router (pages directory)
                 const hasPagesDir = files.some(
-                    (f) => f.path.includes('pages/') || f.path.includes('src/pages/'),
+                    (f) => isTargetFile(f.path, {
+                        fileName: 'pages',
+                        targetExtensions: NEXT_JS_FILE_EXTENSIONS,
+                        potentialPaths: ['app', 'src/app'],
+                    })
                 );
 
                 if (!hasPagesDir) {
