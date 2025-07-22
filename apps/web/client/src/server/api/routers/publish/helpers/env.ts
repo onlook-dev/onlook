@@ -3,7 +3,7 @@ import { WebSocketSession } from '@codesandbox/sdk';
 /**
  * Parse .env file content into key-value pairs
  */
-function parseEnvContent(content: string): Record<string, string> {
+export function parseEnvContent(content: string): Record<string, string> {
     const envVars: Record<string, string> = {};
 
     const lines = content.split('\n');
