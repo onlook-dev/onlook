@@ -33,8 +33,7 @@
         "prepare": "husky",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
-        "setup:env": "bun --filter @onlook/scripts build && bun packages/scripts/dist/index.js",
-        "postbuild": "next-sitemap"
+        "setup:env": "bun --filter @onlook/scripts build && bun packages/scripts/dist/index.js"
     },
     "repository": {
         "type": "git",
