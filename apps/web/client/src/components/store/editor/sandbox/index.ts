@@ -498,6 +498,8 @@ export class SandboxManager {
             }
 
             // If this is a layout file, ensure the preload script file exists
+            console.log(isRootLayoutFile(file.path, this.routerConfig?.type));
+            
             if (isRootLayoutFile(file.path, this.routerConfig?.type)) {
                 try {
                     await this.editorEngine.preloadScript.ensurePreloadScriptFile();
