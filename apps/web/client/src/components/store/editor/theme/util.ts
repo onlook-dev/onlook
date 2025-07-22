@@ -1,16 +1,16 @@
-import { parse, traverse, generate } from '@onlook/parser';
 import type {
-    ObjectExpression,
     Node,
+    ObjectExpression,
     ObjectMethod,
     ObjectProperty,
     SpreadElement,
 } from '@babel/types';
+import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 import { SystemTheme } from '@onlook/models/assets';
+import { generate, parse, traverse } from '@onlook/parser';
 import { parseHslValue } from '@onlook/utility';
 import type { Root, Rule } from 'postcss';
 import postcss from 'postcss';
-import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 
 export function addTailwindNestedColor(
     colorObj: ObjectExpression,

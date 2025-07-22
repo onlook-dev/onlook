@@ -512,7 +512,7 @@ export class SandboxManager {
                 this.routerConfig?.type,
             );
 
-            if (modified || file.content !== newContent) {
+            if (modified && file.content !== newContent) {
                 await this.writeFile(file.path, newContent);
             }
         } catch (error) {
