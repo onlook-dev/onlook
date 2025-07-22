@@ -30,6 +30,7 @@ export class FileWatcher {
             });
             this.watcher = watcher
             watcher.onEvent(async (event) => {
+                console.error('file watcher event', event);
                 // Publish the event to all subscribers
                 this.eventBus.publish({
                     type: event.type,

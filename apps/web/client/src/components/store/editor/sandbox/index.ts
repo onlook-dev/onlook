@@ -214,6 +214,7 @@ export class SandboxManager {
     }
 
     async writeFile(path: string, content: string): Promise<boolean> {
+        console.error('writeFile', path, content);
         const normalizedPath = normalizePath(path);
         let writeContent = content;
 
@@ -512,7 +513,7 @@ export class SandboxManager {
                 this.routerConfig?.type,
             );
 
-            if (modified || file.content !== newContent) {
+            if (modified) {
                 await this.writeFile(file.path, newContent);
             }
         } catch (error) {
