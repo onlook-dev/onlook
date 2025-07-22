@@ -13,42 +13,13 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useState } from 'react';
 import { PageModal } from '../../left-panel/page-tab/page-modal';
+import { inferPageFromUrl } from '@onlook/utility';
 
 interface PageSelectorProps {
     frame: WebFrame;
     className?: string;
 }
 
-// Helper function to infer page name from URL path
-const inferPageFromUrl = (url: string): { name: string; path: string } => {
-    try {
-        const urlObj = new URL(url);
-        const pathname = urlObj.pathname;
-        
-        // Handle root path
-        if (pathname === '/' || pathname === '') {
-            return { name: 'Home', path: '/' };
-        }
-        
-        // Remove leading slash and split by slash
-        const segments = pathname.replace(/^\//, '').split('/').filter(Boolean);
-        
-        // Use the last segment as the page name, or create a readable name from path
-        const lastSegment = segments[segments.length - 1];
-        
-        // Convert kebab-case or snake_case to Title Case
-        const pageName = lastSegment
-            ? lastSegment
-                .replace(/[-_]/g, ' ')
-                .replace(/\b\w/g, l => l.toUpperCase())
-            : 'Page';
-            
-        return { name: pageName, path: pathname };
-    } catch (error) {
-        console.error('Failed to parse URL:', error);
-        return { name: 'Unknown Page', path: '/' };
-    }
-};
 
 export const PageSelector = observer(({ frame, className }: PageSelectorProps) => {
     const editorEngine = useEditorEngine();
