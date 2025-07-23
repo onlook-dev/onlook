@@ -4,6 +4,7 @@ export enum LLMProvider {
     GOOGLE_VERTEX = 'google-vertex',
     OPENAI = 'openai',
     GOOGLE_AI_STUDIO = 'google-ai-studio',
+    OPENROUTER = 'openrouter',
 }
 
 export enum CLAUDE_MODELS {
@@ -36,12 +37,21 @@ export enum GEMINI_MODELS {
     GEMINI_2_5_FLASH = 'gemini-2.5-flash',
 }
 
+export enum OPENROUTER_MODELS {
+    QWEN3_CODER = 'qwen/qwen3-coder',
+    CLAUDE_3_5_SONNET = 'anthropic/claude-3.5-sonnet',
+    GPT_4O = 'openai/gpt-4o',
+    GEMINI_2_5_FLASH = 'google/gemini-2.5-flash-lite',
+    LLAMA_3_1_405B = 'meta-llama/llama-3.1-405b-instruct',
+}
+
 interface ModelMapping {
     [LLMProvider.ANTHROPIC]: CLAUDE_MODELS;
     [LLMProvider.BEDROCK]: CLAUDE_MODELS;
     [LLMProvider.GOOGLE_VERTEX]: CLAUDE_MODELS;
     [LLMProvider.OPENAI]: OPENAI_MODELS;
     [LLMProvider.GOOGLE_AI_STUDIO]: GEMINI_MODELS;
+    [LLMProvider.OPENROUTER]: OPENROUTER_MODELS;
 }
 
 export type InitialModelPayload = {

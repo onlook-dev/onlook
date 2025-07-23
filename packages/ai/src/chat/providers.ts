@@ -9,6 +9,7 @@ import {
     GEMINI_MODELS,
     LLMProvider,
     OPENAI_MODELS,
+    OPENROUTER_MODELS,
     VERTEX_MODEL_MAP,
     type InitialModelPayload,
 } from '@onlook/models';
@@ -44,6 +45,11 @@ export async function initModel({
             return {
                 model: await getGoogleProvider(model),
                 providerOptions: { google: { cacheControl: { type: 'ephemeral' } } },
+            };
+        case LLMProvider.OPENROUTER:
+            return {
+                model: await getOpenRouterProvider(model),
+                providerOptions: {},
             };
         default:
             assertNever(provider);
@@ -112,4 +118,15 @@ async function getGoogleProvider(model: GEMINI_MODELS): Promise<LanguageModelV1>
         apiKey: process.env.GOOGLE_AI_STUDIO_API_KEY,
     });
     return google(model);
+}
+
+async function getOpenRouterProvider(model: OPENROUTER_MODELS): Promise<LanguageModelV1> {
+    if (!process.env.OPENROUTER_API_KEY) {
+        throw new Error('OPENROUTER_API_KEY must be set');
+    }
+    const openrouter = createOpenAI({
+        apiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: 'https://openrouter.ai/api/v1',
+    });
+    return openrouter(model);
 }
