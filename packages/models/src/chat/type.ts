@@ -3,5 +3,4 @@ export enum ChatType {
     CREATE = 'create',
     EDIT = 'edit',
     FIX = 'fix',
-    SUGGEST = 'suggest',
 }
