@@ -42,11 +42,10 @@ interface ProjectCreationContextValue {
 
 const ProjectCreationContext = createContext<ProjectCreationContextValue | undefined>(undefined);
 
-
-function detectPortFromPackageJson(packageJsonFile: ProcessedFile | undefined): number {
+export function detectPortFromPackageJson(packageJsonFile: ProcessedFile | undefined): number {
     const defaultPort = 3000;
-    
-    if (!packageJsonFile || typeof packageJsonFile.content !== 'string') {
+
+    if (!packageJsonFile || typeof packageJsonFile.content !== 'string' || packageJsonFile.type !== ProcessedFileType.TEXT) {
         return defaultPort;
     }
 
@@ -54,21 +53,21 @@ function detectPortFromPackageJson(packageJsonFile: ProcessedFile | undefined): 
         const pkg = JSON.parse(packageJsonFile.content) as Record<string, unknown>;
         const scripts = pkg.scripts as Record<string, string> | undefined;
         const devScript = scripts?.dev;
-        
+
         if (!devScript || typeof devScript !== 'string') {
             return defaultPort;
         }
 
         const portRegex = /(?:PORT=|--port[=\s]|-p\s*?)(\d+)/;
         const portMatch = portRegex.exec(devScript);
-        
+
         if (portMatch?.[1]) {
             const port = parseInt(portMatch[1], 10);
             if (port > 0 && port <= 65535) {
                 return port;
             }
         }
-        
+
         return defaultPort;
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -120,14 +119,12 @@ export const ProjectCreationProvider = ({
             const packageJsonFile = projectData.files.find(
                 (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT
             );
-            
-            const detectedPort = detectPortFromPackageJson(packageJsonFile);
-            
+
             const template = SandboxTemplates[Templates.BLANK];
             const forkedSandbox = await forkSandbox({
                 sandbox: {
                     id: template.id,
-                    port: detectedPort,
+                    port: detectPortFromPackageJson(packageJsonFile),
                 },
                 config: {
                     title: `Imported project - ${user.id}`,
