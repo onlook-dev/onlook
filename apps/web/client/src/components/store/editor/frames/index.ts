@@ -130,13 +130,22 @@ export class FramesManager {
         frameData.view.reload();
     }
 
-    goBack(id: string) {
+    async goBack(id: string) {
         const frameData = this.get(id);
         if (!frameData?.view) {
             console.error('Frame view not found for go back', id);
             return;
         }
-        frameData.view.goBack();
+        await this.editorEngine.pages.goBack();
+    }
+
+    async goForward(id: string) {
+        const frameData = this.get(id);
+        if (!frameData?.view) {
+            console.error('Frame view not found for go forward', id);
+            return;
+        }
+        await this.editorEngine.pages.goForward();
     }
 
     async delete(id: string) {

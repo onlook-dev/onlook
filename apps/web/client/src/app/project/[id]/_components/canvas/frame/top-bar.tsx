@@ -63,8 +63,12 @@ export const TopBar = observer(({ frame }: { frame: WebFrame }) => {
         editorEngine.frames.reloadView(frame.id);
     };
 
-    const handleGoBack = () => {
-        editorEngine.frames.goBack(frame.id);
+    const handleGoBack = async () => {
+        await editorEngine.frames.goBack(frame.id);
+    };
+
+    const handleGoForward = async () => {
+        await editorEngine.frames.goForward(frame.id);
     };
 
     const handleClick = () => {
@@ -100,8 +104,20 @@ export const TopBar = observer(({ frame }: { frame: WebFrame }) => {
                         size="icon"
                         className="cursor-pointer"
                         onClick={handleGoBack}
+                        disabled={!editorEngine.pages.canGoBack}
                     >
                         <Icons.ArrowLeft />
+                    </Button>
+                </HoverOnlyTooltip>
+                <HoverOnlyTooltip content="Go forward" side="top" className="mb-1" hideArrow>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="cursor-pointer"
+                        onClick={handleGoForward}
+                        disabled={!editorEngine.pages.canGoForward}
+                    >
+                        <Icons.ArrowRight />
                     </Button>
                 </HoverOnlyTooltip>
                 <HoverOnlyTooltip content="Refresh Page" side="top" className="mb-1" hideArrow>
