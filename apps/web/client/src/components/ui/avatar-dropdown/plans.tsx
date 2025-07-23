@@ -6,12 +6,21 @@ import { FREE_PRODUCT_CONFIG, ProductType, ScheduledSubscriptionAction } from '@
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Progress } from '@onlook/ui/progress';
+import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
+import { useEffect } from 'react';
 
-export const UsageSection = observer(() => {
+export const UsageSection = observer(({ open }: { open: boolean }) => {
     const state = useStateManager();
     const { data: subscription } = api.subscription.get.useQuery();
-    const { data: usageData } = api.usage.get.useQuery();
+    const { data: usageData, refetch: refetchUsage } = api.usage.get.useQuery();
+
+    const debouncedRefetchUsage = debounce(refetchUsage, 1000, { leading: true, trailing: false });
+    useEffect(() => {
+        if (open) {
+            debouncedRefetchUsage();
+        }
+    }, [open]);
 
     const product = subscription?.product ?? FREE_PRODUCT_CONFIG;
     const price = product?.type === ProductType.FREE ? 'Trial' : 'Active';
