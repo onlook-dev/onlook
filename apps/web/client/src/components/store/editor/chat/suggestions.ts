@@ -7,7 +7,7 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatType } from '@onlook/models/chat';
 import { removeContextMessages } from '@onlook/ai/src/prompt/provider';
-
+import { api } from '@/trpc/client';
 
 export class SuggestionManager {
     shouldHide = false;
@@ -34,28 +34,21 @@ export class SuggestionManager {
 
     private async fetchSuggestions(messages: Message[]): Promise<ChatSuggestion[]> {
         try {
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    messages,
-                    chatType: ChatType.SUGGEST,
-                }),
+            const coreMessages = messages.map(msg => ({
+                role: msg.role,
+                content: msg.content,
+            }));
+
+            const suggestions = await api.chat.suggestions.generate.mutate({ 
+                messages: coreMessages 
             });
-
-            if (!res.ok) {
-                return [];
-            }
-
-            return await res.json();
+            
+            return suggestions;
         } catch (error) {
             console.error('Error fetching suggestions:', error);
             return [];
         }
     }
-
 
     async getNextSuggestionsMessages(): Promise<void> {
         const messages = this.editorEngine.chat.conversation.current?.messages ?? [];
@@ -67,95 +60,4 @@ export class SuggestionManager {
         this.suggestions = await this.fetchSuggestions(messages);
         this.isLoadingSuggestions = false;
     }
-
-    // Code to implement if you want to store and get suggestions from storage
-    // async getCurrentProjectSuggestions(project: Project | null) {
-    //     if (!project) {
-    //         return;
-    //     }
-    //     if (this.editorEngine.projectId === project.id) {
-    //         return;
-    //     }
-    //     this._suggestions = await this.getSuggestionsFromStorage(project.id);
-    // }
-
-    // private async getSuggestionsFromStorage(projectId: string): Promise<ChatSuggestion[]> {
-    //     const res: ChatSuggestion[] = [
-    //         {
-    //             title: 'Suggestion 1',
-    //             prompt: 'Suggestion 1 prompt',
-    //         },
-    //         {
-    //             title: 'Suggestion 2',
-    //             prompt: 'Suggestion 2 prompt',
-    //         },
-    //     ];
-    //     return res;
-    // }
-
-    // private saveSuggestionsToStorage() {
-    //     if (!this.editorEngine.projectId) {
-    //         console.error('No project id found');
-    //         return;
-    //     }
-
-    //     console.log('saveSuggestionsToStorage', this._suggestions);
-
-    //     invokeMainChannel(MainChannels.SAVE_SUGGESTIONS, {
-    //         suggestions: {
-    //             id: this.projectId,
-    //             projectId: this.projectId,
-    //             suggestions: this._suggestions,
-    //         } satisfies ProjectSuggestion s,
-    //     });
-    // }
-
-
-    // async getCreatedSuggestionsMessages(
-    //     prompt: string,
-    //     response: string,
-    //     images: ImageMessageContext[],
-    // ): Promise<void> {
-    //     sendAnalytics('generate suggestions');
-    //     const messages = this.getMessages(prompt, response, images);
-    //     this.suggestions = await this.fetchSuggestions(messages);
-    // }
-
-    // private getMessages(
-    //     prompt: string,
-    //     response: string,
-    //     images: ImageMessageContext[],
-    // ): CoreMessage[] {
-    //     const promptContent = `This was my previous prompt: ${prompt}.${images.length > 0 ? 'I also included the images above.' : ''}`;
-
-    //     let content: string | (ImagePart | TextPart)[] = promptContent;
-    //     if (images.length > 0) {
-    //         content = [
-    //             ...images.map((image) => ({
-    //                 type: 'image' as const,
-    //                 image: image.content,
-    //                 mimeType: image.mimeType,
-    //             })),
-    //             {
-    //                 type: 'text' as const,
-    //                 text: promptContent,
-    //             },
-    //         ];
-    //     }
-
-    //     return [
-    //         {
-    //             role: 'user',
-    //             content,
-    //         },
-    //         {
-    //             role: 'assistant',
-    //             content: response,
-    //         },
-    //         {
-    //             role: 'user',
-    //             content: 'What should I prompt next to make this page better?',
-    //         },
-    //     ];
-    // }
 }

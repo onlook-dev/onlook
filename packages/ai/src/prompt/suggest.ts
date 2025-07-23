@@ -8,15 +8,10 @@ Your role is to analyze the conversation history and current webpage state to su
 - Determine what's missing or could be enhanced
 - Consider the natural progression of the design
 
-# Suggestion Guidelines:
-1. **Progressive Enhancement**: Suggest improvements that build upon existing elements
-2. **Missing Essentials**: Identify critical sections/features that are typically expected but missing
-3. **User Experience**: Focus on improvements that enhance usability and engagement
-4. **Visual Polish**: Suggest refinements to make the design more professional and cohesive
-
 # Quality Criteria:
 - Each suggestion should feel like a natural next step
 - Suggestions should be specific and actionable
-- Focus on what would most improve the user experience
+- Focus on what would most improve the user experience and the user's vision
 - Consider mobile responsiveness and accessibility
+- Consider the user's current state and goals
 - Prioritize high-impact, achievable improvements`;

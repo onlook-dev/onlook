@@ -7,10 +7,17 @@ import {
     toMessage,
     type Message,
 } from '@onlook/db';
-import type { ChatMessageRole } from '@onlook/models';
+import type { ChatMessageRole, ChatSuggestion } from '@onlook/models';
 import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { generateObject } from 'ai';
+import { initModel } from '@onlook/ai';
+import { CLAUDE_MODELS, LLMProvider, UsageType } from '@onlook/models';
+import { SUGGESTION_SYSTEM_PROMPT } from '@onlook/ai/src/prompt/suggest';
+import { suggestionSchema } from '@onlook/models/chat';
+import type { CoreMessage } from 'ai';
+import { createCaller } from '../../root';
 
 const conversationRouter = createTRPCRouter({
     get: protectedProcedure
@@ -100,7 +107,55 @@ const messageRouter = createTRPCRouter({
         }),
 })
 
+const suggestionsRouter = createTRPCRouter({
+    generate: protectedProcedure
+        .input(z.object({ 
+            messages: z.array(z.any()).describe("Chat messages to analyze for suggestions")
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const caller = createCaller(ctx);
+            const usage = await caller.usage.get();
+            
+            const dailyExceeded = usage.daily.usageCount >= usage.daily.limitCount;
+            const monthlyExceeded = usage.monthly.usageCount >= usage.monthly.limitCount;
+            
+            if (dailyExceeded || monthlyExceeded) {
+                return [];
+            }
+
+            try {
+                const { model } = await initModel({
+                    provider: LLMProvider.ANTHROPIC,
+                    model: CLAUDE_MODELS.SONNET_4,
+                });
+
+                const { object } = await generateObject({
+                    model,
+                    schema: suggestionSchema,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: SUGGESTION_SYSTEM_PROMPT,
+                        },
+                        ...input.messages as CoreMessage[],
+                        {
+                            role: 'user',
+                            content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.',
+                        },
+                    ],
+                    maxTokens: 10000,
+                });
+
+                return object.suggestions as ChatSuggestion[];
+            } catch (error) {
+                console.error('Error generating suggestions:', error);
+                return [];
+            }
+        }),
+});
+
 export const chatRouter = createTRPCRouter({
     conversation: conversationRouter,
     message: messageRouter,
+    suggestions: suggestionsRouter,
 });
