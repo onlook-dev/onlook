@@ -9,6 +9,12 @@ export const injectPreloadScript = (ast: T.File): T.File => {
     const hasScriptImport = isScriptImported(ast);
     if (!hasScriptImport) addScriptImport(ast);
 
+    const { scriptCount, deprecatedScriptCount, injectedCorrectly } = scanForPreloadScript(ast);
+
+    if (scriptCount === 1 && deprecatedScriptCount === 0 && injectedCorrectly) {
+        return ast;
+    }
+
     removeDeprecatedPreloadScripts(ast);
 
     let scriptInjected = false;
@@ -253,4 +259,61 @@ function removeDeprecatedPreloadScripts(ast: T.File): void {
             }
         },
     });
+}
+
+function scanForPreloadScript(ast: T.File): {
+    scriptCount: number;
+    deprecatedScriptCount: number;
+    injectedCorrectly: boolean;
+} {
+    let scriptCount = 0;
+    let deprecatedScriptCount = 0;
+    let injectedCorrectly = false;
+
+    traverse(ast, {
+        JSXElement(path) {
+            const isScript = t.isJSXIdentifier(path.node.openingElement.name, { name: 'Script' });
+            if (!isScript) return;
+
+            const srcAttr = path.node.openingElement.attributes.find(
+                (attr) =>
+                    t.isJSXAttribute(attr) &&
+                    t.isJSXIdentifier(attr.name, { name: 'src' }) &&
+                    t.isStringLiteral(attr.value),
+            ) as T.JSXAttribute | undefined;
+
+            const src = srcAttr?.value;
+            if (
+                src &&
+                t.isStringLiteral(src) &&
+                (src.value.includes(DEPRECATED_PRELOAD_SCRIPT_SRC) ||
+                    src.value.includes(PRELOAD_SCRIPT_FILE_NAME) ||
+                    src.value.includes(PRELOAD_SCRIPT_SRC))
+            ) {
+                if (src.value.includes(PRELOAD_SCRIPT_FILE_NAME)) {
+                    scriptCount++;
+                    // Check if this script is inside a body tag
+                    const parentBodyPath = path.findParent((parentPath) => {
+                        if (parentPath.isJSXElement()) {
+                            const name = parentPath.node.openingElement.name;
+                            return t.isJSXIdentifier(name, { name: 'body' });
+                        }
+                        return false;
+                    });
+
+                    if (parentBodyPath) {
+                        injectedCorrectly = true;
+                    }
+                } else {
+                    deprecatedScriptCount++;
+                }
+            }
+        },
+    });
+
+    return {
+        scriptCount,
+        deprecatedScriptCount,
+        injectedCorrectly: scriptCount === 1 && injectedCorrectly,
+    };
 }

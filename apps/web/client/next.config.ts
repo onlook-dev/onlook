@@ -12,7 +12,14 @@ const nextConfig: NextConfig = {
     // TODO: Remove this once we have a proper ESLint and TypeScript config
     eslint: {
         ignoreDuringBuilds: true,
-    }
+    },
+    webpack: (config) => {
+        // Prevent webpack from bundling the preload script
+        config.externals = config.externals || [];
+        config.externals.push('/onlook-preload-script.js');
+        
+        return config;
+    },
 };
 
 if (process.env.NODE_ENV === 'development') {
