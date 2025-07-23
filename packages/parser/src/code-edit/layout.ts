@@ -109,7 +109,10 @@ function getPreloadScript(): T.JSXElement {
         t.jsxOpeningElement(
             t.jsxIdentifier('Script'),
             [
-                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME)),
+                t.jsxAttribute(
+                    t.jsxIdentifier('src'),
+                    t.stringLiteral(`/${PRELOAD_SCRIPT_FILE_NAME}`),
+                ),
                 t.jsxAttribute(t.jsxIdentifier('strategy'), t.stringLiteral('beforeInteractive')),
                 t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
                 t.jsxAttribute(t.jsxIdentifier('id'), t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME)),

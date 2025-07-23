@@ -2,6 +2,7 @@ import { MessageContextType } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import path from 'path';
 import {
+    type HydrateUserMessageOptions,
     getCreatePageSystemPrompt,
     getFilesContent,
     getHighlightsContent,
@@ -37,36 +38,46 @@ describe('Prompt', () => {
 
     test('User message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user.txt');
+        const options: HydrateUserMessageOptions = {
+            totalMessages: 1,
+            currentMessageIndex: 0,
+            lastUserMessageIndex: 0,
+        };
 
-        const message = getHydratedUserMessage('test', 'test', [
-            {
-                path: 'test.txt',
-                content: 'test',
-                type: MessageContextType.FILE,
-                displayName: 'test.txt',
-            },
+        const message = getHydratedUserMessage(
+            'test',
+            'test',
+            [
+                {
+                    path: 'test.txt',
+                    content: 'test',
+                    type: MessageContextType.FILE,
+                    displayName: 'test.txt',
+                },
 
-            {
-                path: 'test.txt',
-                start: 1,
-                end: 2,
-                content: 'test',
-                type: MessageContextType.HIGHLIGHT,
-                displayName: 'test.txt',
-            },
+                {
+                    path: 'test.txt',
+                    start: 1,
+                    end: 2,
+                    content: 'test',
+                    type: MessageContextType.HIGHLIGHT,
+                    displayName: 'test.txt',
+                },
 
-            {
-                content: 'test',
-                type: MessageContextType.ERROR,
-                displayName: 'test',
-            },
-            {
-                path: 'test',
-                type: MessageContextType.PROJECT,
-                displayName: 'test',
-                content: '',
-            },
-        ]);
+                {
+                    content: 'test',
+                    type: MessageContextType.ERROR,
+                    displayName: 'test',
+                },
+                {
+                    path: 'test',
+                    type: MessageContextType.PROJECT,
+                    displayName: 'test',
+                    content: '',
+                },
+            ],
+            options,
+        );
 
         const prompt = message.content;
 
@@ -81,7 +92,13 @@ describe('Prompt', () => {
     test('User empty message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user-empty.txt');
 
-        const message = getHydratedUserMessage('test', '', []);
+        const options: HydrateUserMessageOptions = {
+            totalMessages: 1,
+            currentMessageIndex: 0,
+            lastUserMessageIndex: 0,
+        };
+
+        const message = getHydratedUserMessage('test', '', [], options);
         const prompt = message.content;
 
         if (SHOULD_WRITE_USER_MESSAGE) {

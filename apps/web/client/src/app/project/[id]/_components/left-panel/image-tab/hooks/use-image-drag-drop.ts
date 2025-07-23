@@ -1,11 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { sendAnalytics } from '@/utils/analytics';
 import { EditorMode, type ImageContentData } from '@onlook/models';
+import { usePostHog } from 'posthog-js/react';
 import { useCallback, useState } from 'react';
 import { useImagesContext } from '../providers/images-provider';
 
 export const useImageDragDrop = (currentFolder?: string) => {
     const editorEngine = useEditorEngine();
+    const posthog = usePostHog();
     const { uploadOperations } = useImagesContext();
 
     const [isDragging, setIsDragging] = useState(false);
@@ -92,7 +93,7 @@ export const useImageDragDrop = (currentFolder?: string) => {
                 }
                 frame.view.style.pointerEvents = 'none';
             }
-            sendAnalytics('image drag');
+            posthog.capture('image_drag_start');
         },
         [],
     );
