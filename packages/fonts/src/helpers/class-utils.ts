@@ -46,24 +46,24 @@ export function createTemplateLiteralWithFont(
     fontVarExpr: T.Expression,
     originalExpr: T.Expression,
 ): T.TemplateLiteral {
-    const quasis = [
-        t.templateElement({ raw: '', cooked: '' }, false),
-        t.templateElement({ raw: ' ', cooked: ' ' }, false),
-    ];
-
     if (t.isStringLiteral(originalExpr)) {
-        quasis.push(
+        const quasis = [
+            t.templateElement({ raw: '', cooked: '' }, false),
             t.templateElement(
                 {
-                    raw: originalExpr.value,
-                    cooked: originalExpr.value,
+                    raw: ' ' + originalExpr.value,
+                    cooked: ' ' + originalExpr.value,
                 },
                 true,
             ),
-        );
+        ];
         return t.templateLiteral(quasis, [fontVarExpr]);
     } else {
-        quasis.push(t.templateElement({ raw: '', cooked: '' }, true));
+        const quasis = [
+            t.templateElement({ raw: '', cooked: '' }, false),
+            t.templateElement({ raw: ' ', cooked: ' ' }, false),
+            t.templateElement({ raw: '', cooked: '' }, true),
+        ];
         return t.templateLiteral(quasis, [fontVarExpr, originalExpr]);
     }
 }
@@ -279,7 +279,7 @@ export function updateClassNameWithFontVar(
 /**
  * Handles updating className when it's a StringLiteral
  */
-function handleStringLiteralClassName(
+export function handleStringLiteralClassName(
     classNameAttr: T.JSXAttribute,
     fontVarExpr: T.MemberExpression,
 ): boolean {
@@ -310,7 +310,7 @@ function handleStringLiteralClassName(
 /**
  * Handles updating className when it's a JSXExpressionContainer
  */
-function handleJSXExpressionClassName(
+export function handleJSXExpressionClassName(
     classNameAttr: T.JSXAttribute,
     fontVarExpr: T.MemberExpression,
     fontName: string,

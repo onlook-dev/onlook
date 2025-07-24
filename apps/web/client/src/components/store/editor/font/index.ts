@@ -39,9 +39,19 @@ export class FontManager {
             () => this.editorEngine.sandbox.isIndexed,
             async (isIndexedFiles) => {
                 if (isIndexedFiles) {
+                    console.log('isIndexedFiles');
                     await this.loadInitialFonts();
                     await this.getDefaultFont();
                     await this.syncFontsWithConfigs();
+                }
+            },
+        );
+
+        reaction(
+            () => this.editorEngine.sandbox.readFile(this.fontConfigManager.fontConfigPath),
+            (fontConfigFile) => {
+                if (fontConfigFile) {
+                    this.syncFontsWithConfigs();
                 }
             },
         );
@@ -300,6 +310,8 @@ export class FontManager {
             console.error('No sandbox session found');
             return;
         }
+
+        console.log('syncFontsWithConfigs');
 
         try {
             const currentFonts = await this.scanFonts();
