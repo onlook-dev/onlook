@@ -3,7 +3,8 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { ChatType, type ChatMessage, type UserChatMessage } from '@onlook/models';
+import { toOnlookMessageFromVercel, toVercelMessageFromOnlook } from '@onlook/db';
+import { ChatType, type UserChatMessage } from '@onlook/models';
 import type { Message } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
@@ -28,7 +29,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         onFinish: (message, { finishReason }) => {
             lastMessageRef.current = message;
             if (finishReason !== 'tool-calls') {
-                editorEngine.chat.conversation.addMessage(message as unknown as ChatMessage);
+                editorEngine.chat.conversation.addMessage(toOnlookMessageFromVercel(message));
                 lastMessageRef.current = null;
             }
 
@@ -50,7 +51,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             editorEngine.chat.error.handleChatError(error);
 
             if (lastMessageRef.current) {
-                editorEngine.chat.conversation.addMessage(lastMessageRef.current as unknown as ChatMessage);
+                editorEngine.chat.conversation.addMessage(toOnlookMessageFromVercel(lastMessageRef.current));
                 lastMessageRef.current = null;
             }
         },
@@ -59,7 +60,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const sendMessage = async (message: UserChatMessage, type: ChatType = ChatType.EDIT) => {
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
-        chat.setMessages([message as unknown as Message]);
+        chat.setMessages([toVercelMessageFromOnlook(message)]);
         try {
             posthog.capture('user_send_message', {
                 type,
