@@ -57,3 +57,4 @@ export function createCSSRuleString(oid: string, styles: Record<string, StyleCha
         .join(' ');
     return `${oid} { ${cssString} }`;
 }
+

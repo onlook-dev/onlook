@@ -1,53 +1,66 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
+import { api } from '@/trpc/react';
 import { DefaultSettings } from '@onlook/constants';
 import type { PageMetadata } from '@onlook/models';
+import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
-import { memo } from 'react';
+import { createSecureUrl } from '@onlook/utility';
+import { useState } from 'react';
 import { MetadataForm } from './metadata-form';
 import { useMetadataForm } from './use-metadata-form';
 
-export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path: string }) => {
-    const projectsManager = useProjectManager();
-    const domainsManager = useDomainsManager()
+export const PageTab = ({ metadata, path }: { metadata?: PageMetadata; path: string }) => {
     const editorEngine = useEditorEngine();
-    const project = projectsManager.project;
-    const baseUrl = domainsManager.domains.preview?.url ?? domainsManager.domains.preview?.url ?? project?.sandbox.url;
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
+    const baseUrl = domains?.published?.url ?? domains?.preview?.url ?? project?.sandbox?.url;
+
     const {
         title,
+        titleObject,
         description,
         isDirty,
         uploadedImage,
+        isSimpleTitle,
         handleTitleChange,
+        handleTitleTemplateChange,
+        handleTitleAbsoluteChange,
         handleDescriptionChange,
         handleImageSelect,
         handleDiscard,
         setIsDirty,
+        getFinalTitleMetadata,
     } = useMetadataForm({
         initialMetadata: metadata,
     });
+
+    const [isSaving, setIsSaving] = useState(false);
 
     const handleSave = async () => {
         if (!project) {
             return;
         }
+        setIsSaving(true);
         try {
+            const url = createSecureUrl(baseUrl);
+            const finalTitle = getFinalTitleMetadata();
+            const siteTitle = typeof finalTitle === 'string' ? finalTitle : finalTitle.absolute ?? finalTitle.default ?? '';
+
             const updatedMetadata: PageMetadata = {
                 ...metadata,
-                title,
+                title: finalTitle,
                 description,
                 openGraph: {
                     ...metadata?.openGraph,
-                    title: title,
+                    title: siteTitle,
                     description: description,
-                    url: baseUrl || '',
-                    siteName: title,
+                    url: url,
+                    siteName: siteTitle,
                     type: 'website',
                 },
             };
 
             if (!metadata?.metadataBase) {
-                const url = baseUrl?.startsWith('http') ? baseUrl : `https://${baseUrl}`;
                 if (url) {
                     updatedMetadata.metadataBase = new URL(url);
                 }
@@ -69,7 +82,7 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
                             url: imagePath,
                             width: 1200,
                             height: 630,
-                            alt: title,
+                            alt: siteTitle,
                         },
                     ],
                     type: 'website',
@@ -82,6 +95,8 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
         } catch (error) {
             console.error('Failed to update metadata:', error);
             toast.error('Failed to update page metadata. Please try again.');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -90,20 +105,36 @@ export const PageTab = memo(({ metadata, path }: { metadata?: PageMetadata; path
             <div className="flex flex-col gap-2 p-6">
                 <h2 className="text-lg">Page Settings</h2>
             </div>
-            <MetadataForm
-                title={title}
-                description={description}
-                isDirty={isDirty}
-                projectUrl={baseUrl}
-                onTitleChange={handleTitleChange}
-                onDescriptionChange={handleDescriptionChange}
-                onImageSelect={handleImageSelect}
-                onDiscard={handleDiscard}
-                onSave={handleSave}
-                currentMetadata={metadata}
-            />
+            <div className="relative">
+                {editorEngine.pages.isScanning ? (
+                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center">
+                        <div className="flex items-center gap-3 text-foreground-secondary">
+                            <Icons.LoadingSpinner className="h-5 w-5 animate-spin" />
+                            <span className="text-sm">Fetching metadata...</span>
+                        </div>
+                    </div>
+                ) : (
+                    <MetadataForm
+                        title={title}
+                        titleObject={titleObject}
+                        description={description}
+                        isDirty={isDirty}
+                        projectUrl={baseUrl}
+                        isSimpleTitle={isSimpleTitle}
+                        disabled={editorEngine.pages.isScanning}
+                        isSaving={isSaving}
+                        onTitleChange={handleTitleChange}
+                        onTitleTemplateChange={handleTitleTemplateChange}
+                        onTitleAbsoluteChange={handleTitleAbsoluteChange}
+                        onDescriptionChange={handleDescriptionChange}
+                        onImageSelect={handleImageSelect}
+                        onDiscard={handleDiscard}
+                        onSave={handleSave}
+                        currentMetadata={metadata}
+                        isRoot={false}
+                    />
+                )}
+            </div>
         </div>
     );
-});
-
-PageTab.displayName = 'PageTab';
+};

@@ -1,5 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { DefaultSettings } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
+import { urlToRelativePath } from '@onlook/utility/src/image';
 import React, {
     forwardRef,
     useCallback,
@@ -26,7 +28,10 @@ const ImagePicker = forwardRef<
     useEffect(() => {
         const loadImage = async () => {
             if (url) {
-                const image = editorEngine.image.find(url);
+                const relativeUrl = urlToRelativePath(url);
+                const fullPath = `${DefaultSettings.IMAGE_FOLDER}${relativeUrl}`;
+                const image = editorEngine.image.search(fullPath);
+
                 if (image) {
                     const imageContent = await editorEngine.image.readImageContent(image);
                     if (imageContent) {
@@ -77,7 +82,7 @@ const ImagePicker = forwardRef<
 
     const reset = useCallback(async () => {
         if (url) {
-            const image = editorEngine.image.find(url);
+            const image = editorEngine.image.search(url);
             if (image) {
                 const imageContent = await editorEngine.image.readImageContent(image);
                 if (imageContent) {
@@ -93,7 +98,7 @@ const ImagePicker = forwardRef<
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
-    }, [url, editorEngine.image.assets]);
+    }, [url, editorEngine.image.imagePaths]);
 
     useImperativeHandle(
         ref,

@@ -10,24 +10,30 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useTextControl, type TextAlign } from '../hooks/use-text-control';
+import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
+import { ToolbarButton } from '../toolbar-button';
 
 export const TextAlignSelector = observer(
     () => {
         const { handleTextAlignChange, textState } = useTextControl();
+        const { isOpen, onOpenChange } = useDropdownControl({ 
+            id: 'text-align-dropdown' 
+        });
+        
         return (
-            <DropdownMenu>
+            <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
                 <HoverOnlyTooltip
                     content="Text Align"
                     side="bottom"
                     className="mt-1"
                     hideArrow
+                    disabled={isOpen}
                 >
                     <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
-                            className="text-white border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex max-w-9 min-w-9 cursor-pointer items-center justify-center gap-2 rounded-lg border px-2 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        <ToolbarButton
+                            isOpen={isOpen}
+                            className="flex items-center justify-center gap-2 px-2 min-w-10"
                         >
                             {(() => {
                                 switch (textState.textAlign) {
@@ -42,7 +48,7 @@ export const TextAlignSelector = observer(
                                         return <Icons.TextAlignLeft className="h-4 w-4" />;
                                 }
                             })()}
-                        </Button>
+                        </ToolbarButton>
                     </DropdownMenuTrigger>
                 </HoverOnlyTooltip>
                 <DropdownMenuContent

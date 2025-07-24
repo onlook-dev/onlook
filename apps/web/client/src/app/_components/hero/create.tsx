@@ -3,7 +3,7 @@
 import { useAuthContext } from '@/app/auth/auth-context';
 import { DraftImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/draft-image-pill';
 import { useCreateManager } from '@/components/store/create';
-import { userManager } from '@/components/store/user';
+import { api } from '@/trpc/react';
 import { MessageContextType, type ImageMessageContext } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardHeader } from '@onlook/ui/card';
@@ -15,14 +15,13 @@ import { cn } from '@onlook/ui/utils';
 import { compressImageInBrowser } from '@onlook/utility';
 import { AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { usePostHog } from 'posthog-js/react';
 import { useEffect, useRef, useState } from 'react';
 
 export function Create({ cardKey }: { cardKey: number }) {
     const createManager = useCreateManager();
     const router = useRouter();
-    const posthog = usePostHog();
     const imageRef = useRef<HTMLInputElement>(null);
+    const { data: user } = api.user.get.useQuery();
 
     const { setIsAuthModalOpen } = useAuthContext();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -38,7 +37,7 @@ export function Create({ cardKey }: { cardKey: number }) {
     // Restore draft from localStorage if exists
     useEffect(() => {
         const draft = localStorage.getItem('createProjectDraft');
-        if (draft && !!userManager.user?.id) {
+        if (draft && !!user?.id) {
             try {
                 const { prompt, images, timestamp } = JSON.parse(draft);
                 // Only restore if draft is less than 1 hour old
@@ -67,10 +66,7 @@ export function Create({ cardKey }: { cardKey: number }) {
     };
 
     const createProject = async (prompt: string, images: ImageMessageContext[]) => {
-        posthog.capture('user_create_project', {
-            prompt,
-        });
-        if (!userManager.user?.id) {
+        if (!user?.id) {
             console.error('No user ID found');
 
             // Store the current input and images in localStorage
@@ -88,7 +84,7 @@ export function Create({ cardKey }: { cardKey: number }) {
 
         setIsLoading(true);
         try {
-            const project = await createManager.startCreate(userManager.user?.id, prompt, images);
+            const project = await createManager.startCreate(user?.id, prompt, images);
             if (!project) {
                 throw new Error('Failed to create project: No project returned');
             }

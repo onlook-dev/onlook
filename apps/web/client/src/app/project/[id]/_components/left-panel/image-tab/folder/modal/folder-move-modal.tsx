@@ -8,45 +8,36 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import type { FolderNode } from '../../providers/types';
+import { observer } from 'mobx-react-lite';
+import { useFolderContext } from '../../providers/folder-provider';
 
+export const FolderMoveModal = observer(() => {
+    const { moveState, handleMoveModalToggle, onMoveFolder } = useFolderContext();
 
-export default function FolderMoveModal({
-    onMove,
-    isOpen,
-    toggleOpen,
-    isLoading = false,
-    folder,
-    targetFolder,
-}: {
-    onMove: () => void;
-    isOpen: boolean;
-    toggleOpen: () => void;
-    isLoading?: boolean;
-    folder: FolderNode | null;
-    targetFolder: FolderNode | null;
-}) {    
-    const handleMove = () => {
-        if (!isLoading) {
-            onMove();
+    const handleMove = async () => {
+        if (!moveState.isLoading) {
+            await onMoveFolder();
         }
     };
 
     const handleClose = () => {
-        if (!isLoading) {
-            toggleOpen();
+        if (!moveState.isLoading) {
+            handleMoveModalToggle();
         }
     };
 
+    const folder = moveState.folderToMove;
+    const targetFolder = moveState.targetFolder;
+
     return (
-        <AlertDialog open={isOpen} onOpenChange={handleClose}>
+        <AlertDialog open={!!(moveState.folderToMove && moveState.targetFolder)} onOpenChange={handleClose}>
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Move Folder</AlertDialogTitle>
                     <AlertDialogDescription>
                         {folder && targetFolder && (
                             <>
-                                Are you sure you want to move "{folder.name}" to "{targetFolder.name || 'root'}" folder?
+                                Are you sure you want to move &quot;{folder.name}&quot; to &quot;{targetFolder.name || 'root'}&quot; folder?
                                 <span className="block mt-2 text-sm">
                                     This will move the folder to the selected folder location.
                                 </span>
@@ -55,16 +46,20 @@ export default function FolderMoveModal({
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <Button variant={'ghost'} onClick={handleClose} disabled={isLoading}>
+                    <Button 
+                        variant={'ghost'} 
+                        onClick={handleClose} 
+                        disabled={moveState.isLoading}
+                    >
                         Cancel
                     </Button>
                     <Button
                         variant={'default'}
                         className="rounded-md text-sm"
                         onClick={handleMove}
-                        disabled={isLoading}
+                        disabled={moveState.isLoading}
                     >
-                        {isLoading ? (
+                        {moveState.isLoading ? (
                             <>
                                 <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
                                 Moving...
@@ -77,4 +72,4 @@ export default function FolderMoveModal({
             </AlertDialogContent>
         </AlertDialog>
     );
-} 
+}); 

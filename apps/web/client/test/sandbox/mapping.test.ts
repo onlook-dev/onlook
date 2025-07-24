@@ -3,18 +3,25 @@ import { CoreElementType } from '@onlook/models';
 import { beforeEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import { TemplateNodeMapper } from '../../src/components/store/editor/sandbox/mapping';
 
+// Mock the parser functions
+mock.module('@onlook/parser', () => ({
+    addOidsToAst: mock(() => ({ ast: {}, modified: true })),
+    createTemplateNodeMap: mock(() => new Map()),
+    getAstFromContent: mock(() => ({})),
+    getContentFromAst: mock(async () => 'processed content'),
+    injectPreloadScript: mock(() => {}),
+}));
+
+// Mock utility functions
+mock.module('@onlook/utility/src/path', () => ({
+    isTargetFile: mock(() => false),
+}));
+
 describe('TemplateNodeMapper', () => {
     let mapper: TemplateNodeMapper;
-    let mockLocalforage: any;
 
     beforeEach(() => {
-        // Create mock localforage
-        mockLocalforage = {
-            getItem: mock(async () => null),
-            setItem: mock(async () => undefined),
-            removeItem: mock(async () => undefined),
-        };
-        mapper = new TemplateNodeMapper(mockLocalforage);
+        mapper = new TemplateNodeMapper();
     });
 
     const createMockTemplateNode = (id: string, name: string): TemplateNode => {
@@ -50,39 +57,6 @@ describe('TemplateNodeMapper', () => {
         expect(result.size).toBe(2);
         expect(result.has('oid1')).toBe(true);
         expect(result.has('oid2')).toBe(true);
-    });
-
-    test('updateMapping should call localforage.setItem with correct parameters', async () => {
-        // Arrange
-        const nodeMap = new Map<string, TemplateNode>();
-        const testNode = createMockTemplateNode('test-oid', 'TestComponent');
-        nodeMap.set('test-oid', testNode);
-
-        // Act
-        mapper.updateMapping(nodeMap);
-
-        // Allow async operations to complete
-        await new Promise((resolve) => setTimeout(resolve, 0));
-
-        // Assert
-        expect(mockLocalforage.setItem).toHaveBeenCalled();
-        const [key, value] = mockLocalforage.setItem.mock.calls[0];
-        expect(key).toBe('template-node-map');
-        expect(value).toEqual({ 'test-oid': testNode });
-    });
-
-    test('constructor should call localforage.getItem to restore cache', async () => {
-        // Reset mocks
-        mockLocalforage.getItem.mockReset();
-
-        // Create mapper which triggers restoration
-        new TemplateNodeMapper(mockLocalforage);
-
-        // Allow async operations to complete
-        await new Promise((resolve) => setTimeout(resolve, 0));
-
-        // Assert
-        expect(mockLocalforage.getItem).toHaveBeenCalledWith('template-node-map');
     });
 
     test('getTemplateNode should return node for valid oid', () => {
@@ -122,45 +96,31 @@ describe('TemplateNodeMapper', () => {
 
     test('processFileForMapping should handle file content properly', async () => {
         // Arrange
-        const mockReadFile = mock(async (path: string) => {
-            return `
-        function TestComponent() {
-          return <div>Hello World</div>;
-        }
-      `;
-        });
-
-        const mockWriteFile = mock(async (path: string, content: string) => {
-            return true;
-        });
-
-        const processFileSpy = spyOn(mapper, 'updateMapping');
+        const filePath = 'test.tsx';
+        const fileContent = '<div>Test content</div>';
+        const updateMappingSpy = spyOn(mapper, 'updateMapping');
 
         // Act
-        await mapper.processFileForMapping('test.tsx', mockReadFile, mockWriteFile);
+        const result = await mapper.processFileForMapping(filePath, fileContent);
 
         // Assert
-        expect(mockReadFile).toHaveBeenCalledWith('test.tsx');
-        expect(processFileSpy).toHaveBeenCalled();
+        expect(result).toHaveProperty('modified');
+        expect(result).toHaveProperty('newContent');
+        expect(typeof result.modified).toBe('boolean');
+        expect(typeof result.newContent).toBe('string');
+        expect(updateMappingSpy).toHaveBeenCalled();
     });
 
-    test('processFileForMapping should handle errors from readFile', async () => {
+    test('processFileForMapping should return modified content', async () => {
         // Arrange
-        const mockReadFile = mock(async (path: string) => {
-            return null;
-        });
-
-        const mockWriteFile = mock(async (path: string, content: string) => {
-            return true;
-        });
-
-        const consoleSpy = spyOn(console, 'error');
+        const filePath = 'test.tsx';
+        const fileContent = '<div>Original content</div>';
 
         // Act
-        await mapper.processFileForMapping('test.tsx', mockReadFile, mockWriteFile);
+        const result = await mapper.processFileForMapping(filePath, fileContent);
 
         // Assert
-        expect(mockReadFile).toHaveBeenCalledWith('test.tsx');
-        expect(consoleSpy).toHaveBeenCalledWith('Failed to read file test.tsx');
+        expect(result.newContent).toBe('processed content');
+        expect(result.modified).toBe(true);
     });
 });

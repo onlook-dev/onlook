@@ -10,7 +10,6 @@ import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 
 export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
-
     const editorEngine = useEditorEngine();
     const frameData = editorEngine.frames.get(frameId);
 
@@ -40,10 +39,13 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
     });
 
     const updateFrame = (width: number, height: number) => {
-        const newMetadata = computeWindowMetadata(width.toString(), height.toString());
+        const roundedWidth = Math.round(width);
+        const roundedHeight = Math.round(height);
+
+        const newMetadata = computeWindowMetadata(roundedWidth.toString(), roundedHeight.toString());
         setMetadata(newMetadata);
-        const newFrame = { ...frameData.frame, dimension: { width, height } };
-        editorEngine.frames.updateLocally(frameId, newFrame);
+
+        editorEngine.frames.updateAndSaveToStorage(frameData.frame.id, { dimension: { width: roundedWidth, height: roundedHeight } });
     };
 
     const handleDimensionInput = (
@@ -186,7 +188,6 @@ export const FrameDimensions = observer(({ frameId }: { frameId: string }) => {
                     </p>
                 </div>
             </div>
-
         </div>
     );
 });

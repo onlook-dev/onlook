@@ -1,69 +1,63 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
-import { DefaultSettings } from '@onlook/constants';
-import { PublishStatus } from '@onlook/models';
+import { useHostingType } from '@/components/store/hosting';
+import { api } from '@/trpc/react';
+import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
 import { toast } from '@onlook/ui/sonner';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
+import stripAnsi from 'strip-ansi';
 import { UrlSection } from './url';
 
 export const PreviewDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
-    const domainsManager = useDomainsManager();
-    const projectManager = useProjectManager();
-    const project = projectManager.project;
-    const state = editorEngine.hosting.state;
-    const domain = domainsManager.domains.preview;
-    const isLoading = state.status === PublishStatus.LOADING;
-
-    if (!project) {
-        return 'Something went wrong. Project not found.';
-    }
+    const [isLoading, setIsLoading] = useState(false);
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: previewDomain, refetch: refetchPreviewDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
+    const { deployment, publish: runPublish, isDeploying } = useHostingType(DeploymentType.PREVIEW);
 
     const createBaseDomain = async (): Promise<void> => {
-        const domain = await domainsManager.createPreviewDomain();
-        if (!domain) {
+        const previewDomain = await createPreviewDomain({ projectId: editorEngine.projectId });
+        if (!previewDomain) {
             console.error('Failed to create preview domain');
+            toast.error('Failed to create preview domain');
             return;
         }
-
+        await refetchPreviewDomain();
         publish();
     };
 
-    const publish = async () => {
-        if (!domain) {
-            console.error(`No preview domain info found`);
+    const publish = async (): Promise<void> => {
+        if (!project) {
+            console.error('No project found');
+            toast.error('No project found');
             return;
         }
-        const res = await editorEngine.hosting.publishPreview(project.id, {
-            buildScript: DefaultSettings.COMMANDS.build,
-            urls: [domain.url],
-            options: {
-                skipBadge: false,
-                buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-                skipBuild: false,
-            },
-        });
-        if (!res.success) {
-            console.error(res.message);
-            toast.error(res.message);
-            return;
+        setIsLoading(true);
+        try {
+            await runPublish({
+                projectId: editorEngine.projectId
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
         }
-        toast.success('Deployment successful');
     };
 
     const retry = () => {
-        if (!domain) {
+        if (!previewDomain?.url) {
             console.error(`No preview domain info found`);
             return;
         }
-        editorEngine.hosting.resetState();
         publish();
     };
 
     const renderDomain = () => {
-        if (!domain) {
+        if (!previewDomain) {
             return 'Something went wrong';
         }
 
@@ -73,19 +67,24 @@ export const PreviewDomainSection = observer(() => {
                     <h3 className="">
                         Base Domain
                     </h3>
-                    {state.status === PublishStatus.PUBLISHED && domain.publishedAt && (
+                    {deployment && deployment?.status === DeploymentStatus.COMPLETED && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-green-300">Live</p>
                             <p>•</p>
-                            <p>Updated {timeAgo(domain.publishedAt)} ago</p>
+                            <p>Updated {timeAgo(deployment.updatedAt.toISOString())} ago</p>
                         </div>
                     )}
-                    {state.status === PublishStatus.ERROR && (
+                    {deployment?.status === DeploymentStatus.FAILED && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="text-red-500">Error</p>
                         </div>
                     )}
-                    {state.status === PublishStatus.LOADING && (
+                    {deployment?.status === DeploymentStatus.CANCELLED && (
+                        <div className="ml-auto flex items-center gap-2">
+                            <p className="text-foreground-secondary">Cancelled</p>
+                        </div>
+                    )}
+                    {isDeploying && (
                         <div className="ml-auto flex items-center gap-2">
                             <p className="">Updating • In progress</p>
                         </div>
@@ -103,35 +102,24 @@ export const PreviewDomainSection = observer(() => {
                     <h3 className="">Publish</h3>
                 </div>
 
-                <Button onClick={createBaseDomain} className="w-full rounded-md p-3">
-                    Publish my site
+                <Button disabled={isCreatingDomain} onClick={createBaseDomain} className="w-full rounded-md p-3">
+                    {isCreatingDomain ? 'Creating domain...' : 'Publish my site'}
                 </Button>
             </>
         );
     };
 
     const renderActionSection = () => {
-        if (!domain) {
+        if (!previewDomain?.url) {
             return 'Something went wrong';
         }
 
         return (
             <div className="w-full flex flex-col gap-2">
-                <UrlSection url={domain.url} isCopyable={true} />
-                {(state.status === PublishStatus.PUBLISHED ||
-                    state.status === PublishStatus.UNPUBLISHED) && (
-                        <Button
-                            onClick={publish}
-                            variant="outline"
-                            className="w-full rounded-md p-3"
-                            disabled={isLoading}
-                        >
-                            Update
-                        </Button>
-                    )}
-                {state.status === PublishStatus.ERROR && (
+                <UrlSection url={previewDomain.url} isCopyable={true} />
+                {deployment?.status === DeploymentStatus.FAILED || deployment?.status === DeploymentStatus.CANCELLED ? (
                     <div className="w-full flex flex-col gap-2">
-                        <p className="text-red-500 max-h-20 overflow-y-auto">{state.message}</p>
+                        {deployment?.error && <p className="text-red-500 max-h-20 overflow-y-auto">{stripAnsi(deployment?.error)}</p>}
                         <Button
                             variant="outline"
                             className="w-full rounded-md p-3"
@@ -140,6 +128,16 @@ export const PreviewDomainSection = observer(() => {
                             Try Updating Again
                         </Button>
                     </div>
+                ) : (
+                    <Button
+                        onClick={() => publish()}
+                        variant="outline"
+                        className="w-full rounded-md p-3"
+                        disabled={isDeploying || isLoading}
+                    >
+                        {isLoading && <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />}
+                        Update
+                    </Button>
                 )}
             </div>
         );
@@ -147,10 +145,9 @@ export const PreviewDomainSection = observer(() => {
 
     return (
         <div className="p-4 flex flex-col items-center gap-2">
-            {domain?.url
+            {previewDomain?.url
                 ? renderDomain()
                 : renderNoDomain()}
-
         </div>
     );
 });

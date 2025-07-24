@@ -25,11 +25,6 @@ import { TextColor } from './text-inputs/text-color';
 // Group definitions for the text-selected toolbar
 export const TEXT_SELECTED_GROUPS = [
     {
-        key: 'text-dimensions',
-        label: 'Dimensions',
-        components: [<Width />, <Height />],
-    },
-    {
         key: 'text-base',
         label: 'Base',
         components: [<ColorBackground />, <Border />, <BorderColor />, <Radius />],
@@ -62,6 +57,14 @@ export const TEXT_SELECTED_GROUPS = [
     },
 ];
 
+const MUST_EXTEND_GROUPS = [
+    {
+        key: 'text-dimensions',
+        label: 'Dimensions',
+        components: [<Width />, <Height />],
+    },
+];
+
 export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }) => {
     const { visibleCount } = useMeasureGroup({
         availableWidth,
@@ -73,7 +76,7 @@ export const TextSelected = ({ availableWidth = 0 }: { availableWidth?: number }
     });
 
     const visibleGroups = TEXT_SELECTED_GROUPS.slice(0, visibleCount);
-    const overflowGroups = TEXT_SELECTED_GROUPS.slice(visibleCount);
+    const overflowGroups = [...TEXT_SELECTED_GROUPS.slice(visibleCount), ...MUST_EXTEND_GROUPS];
 
     return (
         <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">

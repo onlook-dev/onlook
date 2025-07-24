@@ -6,6 +6,7 @@ import { Input } from '@onlook/ui/input';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { FontFamily } from './font-family';
 import type { FontFile } from './font-files';
 import UploadModal from './upload-modal';
@@ -28,7 +29,21 @@ const FontPanel = observer(() => {
     };
 
     const handleFontUpload = async (fonts: FontFile[]) => {
-        await fontManager.uploadFonts(fonts);
+        try {
+            const success = await fontManager.uploadFonts(fonts);
+            if (success) {
+                toast.success('Fonts uploaded successfully');
+            } else {
+                toast.error('Failed to upload fonts');
+            }
+            return success;
+        } catch (error) {
+            console.error('Font upload failed:', error);
+            toast.error('Failed to upload fonts', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+            return false;
+        }
     };
 
     const performSearch = useCallback(
@@ -39,6 +54,9 @@ const FontPanel = observer(() => {
                     await fontManager.searchFonts(value);
                 } catch (error) {
                     console.error('Failed to search fonts:', error);
+                    toast.error('Failed to search fonts', {
+                        description: error instanceof Error ? error.message : 'Unknown error',
+                    });
                 } finally {
                     setIsLoading(false);
                 }
@@ -82,6 +100,9 @@ const FontPanel = observer(() => {
             await fontManager.fetchNextFontBatch();
         } catch (error) {
             console.error('Failed to load more fonts:', error);
+            toast.error('Failed to load more fonts', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         } finally {
             setIsLoading(false);
         }
@@ -140,15 +161,29 @@ const FontPanel = observer(() => {
                     <div className="flex flex-col gap-1 pt-6 pb-3 border-b border-border">
                         {/* System Fonts Header */}
                         <div className="px-4">
-                            <h3 className="text-sm font-normal text-muted-foreground">
-                                Added fonts
-                            </h3>
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-sm font-normal text-muted-foreground">
+                                    Added fonts
+                                </h3>
+                                {fontManager.isScanning && (
+                                    <Icons.LoadingSpinner className="h-3 w-3 animate-spin text-muted-foreground" />
+                                )}
+                            </div>
                         </div>
 
                         {/* System Font List */}
                         <div className="px-4">
                             <div className="flex flex-col divide-y divide-border">
-                                {!fontManager.fonts.length ? (
+                                {fontManager.isScanning ? (
+                                    <div className="flex justify-center items-center border-dashed border-default border-2 rounded-lg h-20 my-2">
+                                        <div className="flex items-center gap-2">
+                                            <Icons.LoadingSpinner className="h-4 w-4 animate-spin text-muted-foreground" />
+                                            <span className="text-sm text-muted-foreground">
+                                                Scanning fonts...
+                                            </span>
+                                        </div>
+                                    </div>
+                                ) : !fontManager.fonts.length ? (
                                     <div className="flex justify-center items-center border-dashed border-default border-2 rounded-lg h-20 my-2">
                                         <span className="text-sm text-muted-foreground">
                                             No fonts added
@@ -264,6 +299,7 @@ const FontPanel = observer(() => {
                 isOpen={isUploadModalOpen}
                 onOpenChange={setIsUploadModalOpen}
                 onUpload={handleFontUpload}
+                isUploading={fontManager.isUploading}
             />
         </div>
     );

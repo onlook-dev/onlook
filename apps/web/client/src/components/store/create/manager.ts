@@ -1,23 +1,29 @@
 import { api } from '@/trpc/client';
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import type { Project as DbProject } from '@onlook/db';
-import type { ImageMessageContext } from '@onlook/models/chat';
+import { CreateRequestContextType } from '@onlook/models';
+import { type ImageMessageContext } from '@onlook/models/chat';
 import { makeAutoObservable } from "mobx";
 import { v4 as uuidv4 } from 'uuid';
 import { parseRepoUrl } from '../editor/pages/helper';
 
 export class CreateManager {
-    pendingCreationData: {
-        userId: string;
-        project: DbProject;
-        prompt: string;
-        images: ImageMessageContext[];
-    } | null = null;
-
     error: string | null = null;
 
     constructor() {
         makeAutoObservable(this);
+    }
+
+    async generateProjectName(prompt: string): Promise<string> {
+        try {
+            const generatedName = await api.project.generateName.mutate({
+                prompt: prompt,
+            });
+            return generatedName;
+        } catch (error) {
+            console.error('Error generating project name:', error);
+            return 'New Project';
+        }
     }
 
     async startCreate(userId: string, prompt: string, images: ImageMessageContext[]) {
@@ -27,19 +33,37 @@ export class CreateManager {
                 console.error('No user ID found');
                 return;
             }
-            const { sandboxId, previewUrl } = await this.createSandbox();
-            const project = await this.createDefaultProject(sandboxId, previewUrl);
+            const config = {
+                title: `Prompted project - ${userId}`,
+                tags: ['prompt', userId],
+            };
+
+            const [{ sandboxId, previewUrl }, projectName] = await Promise.all([
+                api.sandbox.fork.mutate({
+                    sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
+                    config,
+                }),
+                this.generateProjectName(prompt)
+            ]);
+            const project = this.createDefaultProject(sandboxId, previewUrl, projectName);
             const newProject = await api.project.create.mutate({
                 project,
                 userId,
+                creationData: {
+                    context: [
+                        {
+                            type: CreateRequestContextType.PROMPT,
+                            content: prompt,
+                        },
+                        ...images.map((image) => ({
+                            type: CreateRequestContextType.IMAGE,
+                            content: image.content,
+                            mimeType: image.mimeType,
+                        })),
+                    ],
+                },
             });
 
-            this.pendingCreationData = {
-                userId,
-                project: newProject,
-                prompt,
-                images,
-            };
             return newProject;
         }
         catch (error) {
@@ -48,10 +72,10 @@ export class CreateManager {
         }
     }
 
-    createDefaultProject(sandboxId: string, previewUrl: string): DbProject {
+    createDefaultProject(sandboxId: string, previewUrl: string, name = 'New Project'): DbProject {
         const newProject = {
             id: uuidv4(),
-            name: 'New project',
+            name,
             sandboxId,
             sandboxUrl: previewUrl,
             createdAt: new Date(),
@@ -82,19 +106,15 @@ export class CreateManager {
                 return;
             }
 
-            const { sandboxId, previewUrl } = await this.createSandboxFromGithub(repoUrl, branch);
-            const project = await this.createDefaultProject(sandboxId, previewUrl);
+            const [{ sandboxId, previewUrl }, projectName] = await Promise.all([
+                this.createSandboxFromGithub(repoUrl, branch),
+                this.generateProjectName(`Import from GitHub repository: ${repo}`)
+            ]);
+            const project = this.createDefaultProject(sandboxId, previewUrl, projectName);
             const newProject = await api.project.create.mutate({
                 project,
                 userId,
             });
-
-            this.pendingCreationData = {
-                userId,
-                project: newProject,
-                prompt: "",
-                images: [],
-            };
             return newProject;
         }
         catch (error) {
@@ -109,12 +129,5 @@ export class CreateManager {
             branch
         });
     }
-
-    async createSandbox() {
-        return await api.sandbox.fork.mutate({
-            sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
-        });
-    }
-
 }
 

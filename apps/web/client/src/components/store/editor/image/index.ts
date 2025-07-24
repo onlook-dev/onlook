@@ -1,74 +1,46 @@
-import { api } from '@/trpc/client';
-import { COMPRESSION_IMAGE_PRESETS, DefaultSettings } from '@onlook/constants';
+import { DefaultSettings } from '@onlook/constants';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
 import {
     convertToBase64,
     getBaseName,
-    getDirName,
     getMimeType,
     isImageFile,
 } from '@onlook/utility/src/file';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
+import { generateNewFolderPath } from '@onlook/utility';
 
 export class ImageManager {
-    private images: string[] = [];
+    private _imagePaths: string[] = [];
     private _isScanning = false;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
 
         reaction(
-            () => this.editorEngine.sandbox.isIndexingFiles,
-            (isIndexingFiles) => {
+            () => this.editorEngine.sandbox.isIndexing,
+            async (isIndexingFiles) => {
                 if (!isIndexingFiles) {
-                    this.scanImages();
+                    await this.scanImages();
                 }
             }
         );
+    }
 
-        reaction(
-            () => this.editorEngine.sandbox.listBinaryFiles(DefaultSettings.IMAGE_FOLDER),
-            () => {
-                this.scanImages();
-            }
-        );
+    get imagePaths() {
+        return this._imagePaths;
+    }
 
+    get isScanning() {
+        return this._isScanning;
     }
 
     async upload(file: File, destinationFolder: string): Promise<void> {
         try {
             const path = `${destinationFolder}/${file.name}`;
-            // Convert file to base64 for tRPC transmission
-            const arrayBuffer = await file.arrayBuffer();
-            const base64Data = btoa(
-                Array.from(new Uint8Array(arrayBuffer))
-                    .map((byte: number) => String.fromCharCode(byte))
-                    .join('')
-            );
-
-            const compressionResult = await api.image.compress.mutate({
-                imageData: base64Data,
-                options: COMPRESSION_IMAGE_PRESETS.highQuality,
-            });
-
-            let finalBuffer: Uint8Array;
-
-            if (compressionResult.success && compressionResult.bufferData) {
-                // Convert base64 buffer data back to Uint8Array
-                const compressedBuffer = atob(compressionResult.bufferData);
-                finalBuffer = new Uint8Array(compressedBuffer.length);
-                for (let i = 0; i < compressedBuffer.length; i++) {
-                    finalBuffer[i] = compressedBuffer.charCodeAt(i);
-                }
-            } else {
-                // Fall back to original if compression failed
-                console.warn('Image compression failed, using original:', compressionResult.error);
-                finalBuffer = new Uint8Array(arrayBuffer);
-            }
-
-            await this.editorEngine.sandbox.writeBinaryFile(path, finalBuffer);
-            this.scanImages();
+            const uint8Array = new Uint8Array(await file.arrayBuffer());
+            await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
+            await this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
             throw error;
@@ -78,7 +50,7 @@ export class ImageManager {
     async delete(originPath: string): Promise<void> {
         try {
             await this.editorEngine.sandbox.delete(originPath);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
             throw error;
@@ -87,66 +59,22 @@ export class ImageManager {
 
     async rename(originPath: string, newName: string): Promise<void> {
         try {
-            const basePath = getDirName(originPath);
-            const newPath = `${basePath}/${newName}`;
+            const newPath = generateNewFolderPath(originPath, newName, 'rename');
             await this.editorEngine.sandbox.rename(originPath, newPath);
-            this.scanImages();
+            await this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
             throw error;
         }
     }
 
-    async insert(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {
+    async paste(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {
+        console.log('paste image');
         return;
-        // const targets = this.getTargets();
-        // if (!targets || targets.length === 0) {
-        //     return;
-        // }
-
-        // try {
-        //     const response = await fetch(base64Image);
-        //     const blob = await response.blob();
-        //     const file = new File([blob], 'image', { type: mimeType });
-        //     const compressedBase64 = await compressImage(file);
-        //     if (!compressedBase64) {
-        //         console.error('Failed to compress image');
-        //         return;
-        //     }
-        //     base64Image = compressedBase64;
-        // } catch (error) {
-        //     console.error('Error compressing image:', error);
-        //     return;
-        // }
-
-        // const fileName = `${nanoid(4)}.${mime.getExtension(mimeType)}`;
-        // const action: InsertImageAction = {
-        //     type: 'insert-image',
-        //     targets: targets,
-        //     image: {
-        //         content: base64Image,
-        //         fileName: fileName,
-        //         mimeType: mimeType,
-        //     },
-        // };
-
-        // this.editorEngine.action.run(action);
-        // setTimeout(() => {
-        //     this.scanImages();
-        // }, 2000);
-        // sendAnalytics('image insert', { mimeType });
     }
 
-    get assets() {
-        return this.images;
-    }
-
-    get isScanning() {
-        return this._isScanning;
-    }
-
-    find(url: string) {
-        return this.images.find((img) => url.includes(img));
+    search(name: string) {
+        return this.imagePaths.find((img) => name.includes(img));
     }
 
     remove() {
@@ -170,7 +98,8 @@ export class ImageManager {
 
         return targets;
     }
-    scanImages() {
+
+    async scanImages() {
         if (this._isScanning) {
             return;
         }
@@ -178,34 +107,26 @@ export class ImageManager {
         this._isScanning = true;
 
         try {
-            const files = this.editorEngine.sandbox.listBinaryFiles(
-                DefaultSettings.IMAGE_FOLDER,
-            );
-
+            const files = await this.editorEngine.sandbox.listFilesRecursively(DefaultSettings.IMAGE_FOLDER);
+            if (!files) {
+                console.error('No files found in image folder');
+                return;
+            }
             if (files.length === 0) {
-                this.images = [];
+                this._imagePaths = [];
                 return;
             }
-
-            const imageFiles = files.filter((filePath: string) => isImageFile(filePath));
-
-
-            if (imageFiles.length === 0) {
-                return;
-            }
-
-            this.images = imageFiles;
-
+            this._imagePaths = files.filter((file: string) => isImageFile(file))
         } catch (error) {
             console.error('Error scanning images:', error);
-            this.images = [];
+            this._imagePaths = [];
         } finally {
             this._isScanning = false;
         }
     }
 
     clear() {
-        this.images = [];
+        this._imagePaths = [];
     }
 
     /**
@@ -220,8 +141,8 @@ export class ImageManager {
             }
 
             // Read the binary file using the sandbox
-            const binaryData = await this.editorEngine.sandbox.readBinaryFile(imagePath);
-            if (!binaryData) {
+            const file = await this.editorEngine.sandbox.readFile(imagePath);
+            if (!file || file.type === 'text' || !file.content) {
                 console.warn(`Failed to read binary data for ${imagePath}`);
                 return null;
             }
@@ -230,7 +151,7 @@ export class ImageManager {
             const mimeType = getMimeType(imagePath);
 
             // Convert binary data to base64
-            const base64Data = convertToBase64(binaryData);
+            const base64Data = convertToBase64(file.content);
             const content = `data:${mimeType};base64,${base64Data}`;
 
             return {

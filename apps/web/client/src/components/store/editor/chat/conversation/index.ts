@@ -1,9 +1,11 @@
-import { type ProjectManager } from '@/components/store/project/manager';
+
 import { api } from '@/trpc/client';
-import { type ChatConversation, type ChatMessageContext } from '@onlook/models';
+import type { GitCommit } from '@onlook/git';
+import { ChatMessageRole, type ChatConversation, type ChatMessageContext } from '@onlook/models';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
-import type { ChatManager } from '..';
+import { toast } from 'sonner';
+import type { EditorEngine } from '../../engine';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
@@ -11,10 +13,10 @@ import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
 export class ConversationManager {
     private _current: ChatConversationImpl | null = null;
     private _conversations: ChatConversation[] = [];
+    creatingConversation = false;
 
     constructor(
-        private chatManager: ChatManager,
-        private projectManager: ProjectManager,
+        private editorEngine: EditorEngine,
     ) {
         makeAutoObservable(this);
     }
@@ -27,13 +29,11 @@ export class ConversationManager {
         return this._conversations;
     }
 
-    async fetchOrCreateConversation(projectId: string) {
-        this._conversations = await this.getConversations(projectId);
-
-        if (this.conversations.length > 0 && !!this.conversations[0]) {
-            this._current = ChatConversationImpl.fromJSON(this.conversations[0]);
+    applyConversations(conversations: ChatConversation[]) {
+        this._conversations = conversations.map((c) => ChatConversationImpl.fromJSON(c));
+        if (this._conversations.length !== 0 && this._conversations[0]) {
+            this._current = ChatConversationImpl.fromJSON(this._conversations[0]);
         } else {
-            console.error('No conversations found, creating new conversation');
             this.startNewConversation();
         }
     }
@@ -57,28 +57,26 @@ export class ConversationManager {
         return sorted || [];
     }
 
-    startNewConversation() {
-        if (!this.projectManager.project?.id) {
-            console.error('No project id found');
-            return;
+    async startNewConversation() {
+        try {
+            this.creatingConversation = true;
+            if (this.current && this.current.messages.length === 0 && !this.current.displayName) {
+                throw new Error('Current conversation is already empty.');
+            }
+            const newConversation = await api.chat.conversation.create.mutate({ projectId: this.editorEngine.projectId });
+            this._current = ChatConversationImpl.fromJSON(newConversation);
+            this._conversations.push(this._current);
+        } catch (error) {
+            console.error('Error starting new conversation', error);
+            toast.error('Error starting new conversation.', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+        } finally {
+            this.creatingConversation = false;
         }
-        if (this.current && this.current.messages.length === 0 && !this.current.displayName) {
-            console.error(
-                'Error starting new conversation. Current conversation is already empty.',
-            );
-            return;
-        }
-        console.log('Starting new conversation');
-        this._current = ChatConversationImpl.create(this.projectManager.project.id);
-        this._conversations.push(this._current);
-        this._current.saveConversationToStorage();
     }
 
     selectConversation(id: string) {
-        if (!this.projectManager.project?.id) {
-            console.error('No project id found');
-            return;
-        }
         const match = this.conversations.find((c) => c.id === id);
         if (!match) {
             console.error('No conversation found with id', id);
@@ -90,10 +88,6 @@ export class ConversationManager {
     deleteConversation(id: string) {
         if (!this.current) {
             console.error('No conversation found');
-            return;
-        }
-        if (!this.projectManager.project?.id) {
-            console.error('No project id found');
             return;
         }
 
@@ -126,6 +120,16 @@ export class ConversationManager {
         return newMessage;
     }
 
+    attachCommitToUserMessage(id: string, commit: GitCommit) {
+        const message = this.current?.messages.find((m) => m.id === id && m.role === ChatMessageRole.USER);
+        if (!message) {
+            console.error('No message found with id', id);
+            return;
+        }
+        (message as UserChatMessageImpl).commitOid = commit.oid;
+        this.current?.updateMessage(message);
+    }
+
     async addAssistantMessage(message: Message): Promise<AssistantChatMessageImpl | undefined> {
         if (!this.current) {
             console.error('No conversation found');
@@ -133,7 +137,6 @@ export class ConversationManager {
         }
         const newMessage = AssistantChatMessageImpl.fromMessage(message);
         await this.addMessage(newMessage);
-        this.chatManager.autoApplyCode(newMessage);
         return newMessage;
     }
 
@@ -143,7 +146,6 @@ export class ConversationManager {
             return;
         }
         await this.current.addOrUpdateMessage(message);
-        await this.current.saveConversationToStorage();
     }
 
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {

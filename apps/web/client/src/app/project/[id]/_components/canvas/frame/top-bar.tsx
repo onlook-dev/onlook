@@ -5,11 +5,18 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
+import { useRef } from 'react';
+import { HoverOnlyTooltip } from '../../editor-bar/hover-tooltip';
 
 export const TopBar = observer(
     ({ frame }: { frame: WebFrame }) => {
         const editorEngine = useEditorEngine();
         const isSelected = editorEngine.frames.isSelected(frame.id);
+        const topBarRef = useRef<HTMLDivElement>(null);
+        const urlRef = useRef<HTMLDivElement>(null);
+        const topBarWidth = (topBarRef.current?.clientWidth ?? 0);
+        const urlWidth = (urlRef.current?.clientWidth ?? 0);
+        const shouldShowExternalLink = ((topBarWidth - urlWidth) * editorEngine.canvas.scale) > 250;
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault();
@@ -26,24 +33,17 @@ export const TopBar = observer(
                 const deltaX = (e.clientX - startX) / scale;
                 const deltaY = (e.clientY - startY) / scale;
 
-                frame.position = {
+                const newPosition = {
                     x: startPositionX + deltaX,
                     y: startPositionY + deltaY,
                 };
 
-                editorEngine.frames.updateLocally(frame.id, frame);
+                editorEngine.frames.updateAndSaveToStorage(frame.id, { position: newPosition });
             };
 
             const endMove = (e: MouseEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
-
-                const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
-                const moved = deltaX !== 0 || deltaY !== 0;
-                if (moved) {
-                    editorEngine.frames.updateAndSaveToStorage(frame);
-                }
                 window.removeEventListener('mousemove', handleMove);
                 window.removeEventListener('mouseup', endMove);
             };
@@ -58,7 +58,7 @@ export const TopBar = observer(
         };
 
         const handleReload = () => {
-            editorEngine.frames.reload(frame.id);
+            editorEngine.frames.reloadView(frame.id);
         };
 
         const handleClick = () => {
@@ -67,6 +67,7 @@ export const TopBar = observer(
 
         return (
             <div
+                ref={topBarRef}
                 className={
                     cn(
                         'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
@@ -88,13 +89,29 @@ export const TopBar = observer(
                         transformOrigin: 'left center',
                     }}
                 >
-                    <Button variant="ghost" size="icon" className="cursor-pointer" onClick={handleReload}>
-                        <Icons.Reload />
-                    </Button>
-                    <div className="text-small overflow-hidden text-ellipsis whitespace-nowrap">
-                        {frame.url}
-                    </div>
+                    <HoverOnlyTooltip
+                        content="Refresh Page"
+                        side="top"
+                        className='mb-1'
+                        hideArrow
+                    >
+                        <Button variant="ghost" size="icon" className="cursor-pointer" onClick={handleReload}>
+                            <Icons.Reload />
+                        </Button>
+                    </HoverOnlyTooltip>
+
+                        <div
+                            ref={urlRef}
+                            className="text-small overflow-hidden text-ellipsis whitespace-nowrap">
+                            {frame.url}
+                        </div>
                 </div>
+                <HoverOnlyTooltip
+                    content="Preview in new tab"
+                    side="top"
+                    hideArrow
+                    className='mb-1'
+                >
                 <Link
                     className="absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300"
                     href={frame.url}
@@ -102,13 +119,16 @@ export const TopBar = observer(
                     style={{
                         transform: `scale(${1 / editorEngine.canvas.scale})`,
                         transformOrigin: 'right center',
-                        opacity: editorEngine.canvas.scale < 0.20 ? 0 : 1,
+                        opacity: shouldShowExternalLink ? 1 : 0,
+                        pointerEvents: shouldShowExternalLink ? 'auto' : 'none',
                     }}
                 >
                     <Button variant="ghost" size="icon">
                         <Icons.ExternalLink />
                     </Button>
                 </Link>
+                </HoverOnlyTooltip>
+
             </div>
         );
     },

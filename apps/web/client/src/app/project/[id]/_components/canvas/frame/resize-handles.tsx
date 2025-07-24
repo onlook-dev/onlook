@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { FrameImpl } from '@/components/store/editor/frames/frame';
 import { DefaultSettings } from '@onlook/constants';
+import type { Frame } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import type { MouseEvent } from 'react';
@@ -10,7 +10,7 @@ enum HandleType {
     Bottom = 'bottom',
 }
 
-export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
+export const ResizeHandles = observer(({ frame }: { frame: Frame }) => {
     const editorEngine = useEditorEngine();
     // TODO implement aspect ratio lock
     const aspectRatioLocked = false;
@@ -63,11 +63,7 @@ export const ResizeHandles = observer(({ frame }: { frame: FrameImpl }) => {
                 newHeight = Math.max(newHeight, minHeight);
             }
 
-            frame.dimension = {
-                width: Math.round(newWidth),
-                height: Math.round(newHeight),
-            };
-
+            editorEngine.frames.updateAndSaveToStorage(frame.id, { dimension: { width: Math.round(newWidth), height: Math.round(newHeight) } });
             editorEngine.overlay.undebouncedRefresh();
         };
 

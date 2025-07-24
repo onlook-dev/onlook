@@ -1,25 +1,24 @@
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
-import type { FolderNode } from '../providers/types';
-import { useImagesContext } from '../providers/images-provider';
+import type { FolderNode } from '@onlook/models';
 
 interface FolderTabProps {
     folder: FolderNode;
-    totalItems: number;
+    totalImages: number;
     onSelect: () => void;
     isDisabled: boolean;
+    rootDir: FolderNode;
 }
 
 export default function FolderTab({
     folder,
-    totalItems,
+    totalImages,
     onSelect,
-    isDisabled
+    isDisabled,
+    rootDir
 }: FolderTabProps) {
 
-    const { folderStructure, folderOperations } = useImagesContext();  
-    const { moveState, handleRenameFolder, handleDeleteFolder, handleMoveToFolder } = folderOperations;
     return (
         <div 
             onClick={onSelect} 
@@ -33,17 +32,13 @@ export default function FolderTab({
             </div>
             <div className="flex flex-col flex-1">
                 <p className="text-sm text-gray-200">{folder.name}</p>
-                <span className="text-xs text-gray-200">{totalItems} items</span>
+                <span className="text-xs text-gray-200">{totalImages} image{totalImages !== 1 ? 's' : ''}</span>
             </div>
             
             <FolderDropdownMenu
+                rootDir={rootDir}
                 folder={folder}
-                handleRenameFolder={() => handleRenameFolder(folder)}
-                handleDeleteFolder={() => handleDeleteFolder(folder)}
-                handleMoveToFolder={handleMoveToFolder}
                 isDisabled={isDisabled}
-                folderStructure={folderStructure}
-                selectedTargetFolder={moveState.targetFolder}
             />
         </div>
     );

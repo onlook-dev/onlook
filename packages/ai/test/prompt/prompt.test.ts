@@ -1,10 +1,9 @@
 import { MessageContextType } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import path from 'path';
-import { SEARCH_REPLACE_EXAMPLE_CONVERSATION } from 'src/prompt/edit';
 import {
+    type HydrateUserMessageOptions,
     getCreatePageSystemPrompt,
-    getExampleConversation,
     getFilesContent,
     getHighlightsContent,
     getHydratedUserMessage,
@@ -19,7 +18,6 @@ describe('Prompt', () => {
     const SHOULD_UPDATE_DATA = false;
 
     const SHOULD_WRITE_SYSTEM = SHOULD_UPDATE_DATA;
-    const SHOULD_WRITE_EXAMPLES = SHOULD_UPDATE_DATA;
     const SHOULD_WRITE_USER_MESSAGE = SHOULD_UPDATE_DATA;
     const SHOULD_WRITE_FILE_CONTENT = SHOULD_UPDATE_DATA;
     const SHOULD_WRITE_HIGHLIGHTS = SHOULD_UPDATE_DATA;
@@ -38,50 +36,48 @@ describe('Prompt', () => {
         expect(prompt).toEqual(existing);
     });
 
-    test('Examples should be the same', async () => {
-        const examplesPath = path.resolve(__dirname, './data/examples.txt');
-
-        const prompt = getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION);
-        if (SHOULD_WRITE_EXAMPLES) {
-            await Bun.write(examplesPath, prompt);
-        }
-
-        const existing = await Bun.file(examplesPath).text();
-        expect(prompt).toEqual(existing);
-    });
-
     test('User message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user.txt');
+        const options: HydrateUserMessageOptions = {
+            totalMessages: 1,
+            currentMessageIndex: 0,
+            lastUserMessageIndex: 0,
+        };
 
-        const message = getHydratedUserMessage('test', 'test', [
-            {
-                path: 'test.txt',
-                content: 'test',
-                type: MessageContextType.FILE,
-                displayName: 'test.txt',
-            },
+        const message = getHydratedUserMessage(
+            'test',
+            'test',
+            [
+                {
+                    path: 'test.txt',
+                    content: 'test',
+                    type: MessageContextType.FILE,
+                    displayName: 'test.txt',
+                },
 
-            {
-                path: 'test.txt',
-                start: 1,
-                end: 2,
-                content: 'test',
-                type: MessageContextType.HIGHLIGHT,
-                displayName: 'test.txt',
-            },
+                {
+                    path: 'test.txt',
+                    start: 1,
+                    end: 2,
+                    content: 'test',
+                    type: MessageContextType.HIGHLIGHT,
+                    displayName: 'test.txt',
+                },
 
-            {
-                content: 'test',
-                type: MessageContextType.ERROR,
-                displayName: 'test',
-            },
-            {
-                path: 'test',
-                type: MessageContextType.PROJECT,
-                displayName: 'test',
-                content: '',
-            },
-        ]);
+                {
+                    content: 'test',
+                    type: MessageContextType.ERROR,
+                    displayName: 'test',
+                },
+                {
+                    path: 'test',
+                    type: MessageContextType.PROJECT,
+                    displayName: 'test',
+                    content: '',
+                },
+            ],
+            options,
+        );
 
         const prompt = message.content;
 
@@ -96,7 +92,13 @@ describe('Prompt', () => {
     test('User empty message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user-empty.txt');
 
-        const message = getHydratedUserMessage('test', '', []);
+        const options: HydrateUserMessageOptions = {
+            totalMessages: 1,
+            currentMessageIndex: 0,
+            lastUserMessageIndex: 0,
+        };
+
+        const message = getHydratedUserMessage('test', '', [], options);
         const prompt = message.content;
 
         if (SHOULD_WRITE_USER_MESSAGE) {

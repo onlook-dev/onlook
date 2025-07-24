@@ -26,6 +26,8 @@ export const RightPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const [isChatHistoryOpen, setIsChatHistoryOpen] = useState(false);
+    const [inputValue, setInputValue] = useState('');
+
     const selectedTab = editorEngine.state.rightPanelTab;
     const editPanelWidth = EDIT_PANEL_WIDTHS[selectedTab];
 
@@ -73,9 +75,9 @@ export const RightPanel = observer(() => {
                     </TabsList>
                     <ChatHistory isOpen={isChatHistoryOpen} onOpenChange={setIsChatHistoryOpen} />
                     <TabsContent className="h-full overflow-y-auto" value={EditorTabValue.CHAT}>
-                        <ChatTab />
+                        <ChatTab inputValue={inputValue} setInputValue={setInputValue} />
                     </TabsContent>
-                    <TabsContent className='h-full overflow-y-auto' value={EditorTabValue.DEV}>
+                    <TabsContent forceMount className={cn('h-full overflow-y-auto', editorEngine.state.rightPanelTab !== EditorTabValue.DEV && 'hidden')} value={EditorTabValue.DEV}>
                         <DevTab />
                     </TabsContent>
                 </Tabs>

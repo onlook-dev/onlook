@@ -1,15 +1,17 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 import { SettingsTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 
 export const AdvancedSettingsSection = () => {
+    const stateManager = useStateManager();
     const editorEngine = useEditorEngine();
 
     const openAdvancedSettings = () => {
         editorEngine.state.publishOpen = false;
-        editorEngine.state.settingsTab = SettingsTabValue.DOMAIN;
-        editorEngine.state.settingsOpen = true;
+        stateManager.settingsTab = SettingsTabValue.DOMAIN;
+        stateManager.isSettingsModalOpen = true;
     };
 
     return (

@@ -1,6 +1,5 @@
-import { client } from '@/utils/analytics/server';
+import { trackEvent } from '@/utils/analytics/server';
 import { createClient } from '@/utils/supabase/server';
-import type { User } from '@onlook/db';
 import { NextResponse } from 'next/server';
 import { api } from '~/trpc/server';
 
@@ -14,12 +13,26 @@ export async function GET(request: Request) {
         if (!error) {
             const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
             const isLocalEnv = process.env.NODE_ENV === 'development';
-            const user = await getOrCreateUser(data.user.id);
+            const user = await api.user.upsert({
+                id: data.user.id,
+            });
 
-            trackUserSignedIn(user.id, {
-                name: data.user.user_metadata.name,
-                email: data.user.email,
-                avatar_url: data.user.user_metadata.avatar_url,
+            if (!user) {
+                console.error(`Failed to create user for id: ${data.user.id}`, { user });
+                return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+            }
+
+            trackEvent({
+                distinctId: data.user.id,
+                event: 'user_signed_in',
+                properties: {
+                    name: data.user.user_metadata.name,
+                    email: data.user.email,
+                    avatar_url: data.user.user_metadata.avatar_url,
+                    $set_once: {
+                        signup_date: new Date().toISOString(),
+                    }
+                }
             });
 
             // Redirect to the redirect page which will handle the return URL
@@ -36,36 +49,4 @@ export async function GET(request: Request) {
 
     // return the user to an error page with instructions
     return NextResponse.redirect(`${origin}/auth/auth-code-error`);
-}
-
-async function getOrCreateUser(userId: string): Promise<User> {
-    const user = await api.user.getById(userId);
-    if (!user) {
-        console.log(`User ${userId} not found, creating...`);
-        const newUser = await api.user.create({ id: userId });
-        return newUser;
-    }
-    console.log(`User ${userId} found, returning...`);
-    return user;
-}
-
-function trackUserSignedIn(userId: string, properties: Record<string, any>) {
-    try {
-        if (!client) {
-            console.warn('PostHog client not found, skipping user signed in tracking');
-            return;
-        }
-        client.identify({
-            distinctId: userId,
-            properties: {
-                ...properties,
-                $set_once: {
-                    signup_date: new Date().toISOString(),
-                }
-            }
-        });
-        client.capture({ event: 'user_signed_in', distinctId: userId });
-    } catch (error) {
-        console.error('Error tracking user signed in:', error);
-    }
 }

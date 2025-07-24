@@ -6,6 +6,7 @@ export const toFrame = (dbFrame: DbFrame): WebFrame => {
         id: dbFrame.id,
         url: dbFrame.url,
         type: dbFrame.type as FrameType,
+        canvasId: dbFrame.canvasId,
         position: {
             x: Number(dbFrame.x),
             y: Number(dbFrame.y),
@@ -17,15 +18,28 @@ export const toFrame = (dbFrame: DbFrame): WebFrame => {
     };
 };
 
-export const fromFrame = (canvasId: string, frame: WebFrame): DbFrame => {
+export const fromFrame = (frame: WebFrame): DbFrame => {
     return {
         id: frame.id,
         url: frame.url,
         type: frame.type as FrameType,
         x: frame.position.x.toString(),
         y: frame.position.y.toString(),
-        canvasId: canvasId,
+        canvasId: frame.canvasId,
         width: frame.dimension.width.toString(),
         height: frame.dimension.height.toString(),
+    };
+};
+
+export const fromPartialFrame = (frame: Partial<WebFrame>): Partial<DbFrame> => {
+    return {
+        id: frame.id,
+        url: frame.url,
+        type: frame.type as FrameType,
+        x: frame.position?.x.toString(),
+        y: frame.position?.y.toString(),
+        canvasId: frame.canvasId,
+        width: frame.dimension?.width.toString(),
+        height: frame.dimension?.height.toString(),
     };
 };

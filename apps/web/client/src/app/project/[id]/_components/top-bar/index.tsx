@@ -2,24 +2,30 @@
 
 import { Hotkey } from '@/components/hotkey';
 import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
+import { SettingsTabValue } from '@/components/ui/settings-modal/helpers';
 import { useFeatureFlags } from '@/hooks/use-feature-flags';
+import { transKeys } from '@/i18n/keys';
 import { Button } from '@onlook/ui/button';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
+import { useTranslations } from 'next-intl';
 import { useChatContext } from '../../_hooks/use-chat';
 import { Members } from '../members';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 import { PublishButton } from './publish';
 
-export const TopBar = observer(({ projectId }: { projectId: string }) => {
+export const TopBar = observer(() => {
+    const stateManager = useStateManager();
     const editorEngine = useEditorEngine();
     const { isWaiting } = useChatContext();
     const { isEnabled } = useFeatureFlags();
+    const t = useTranslations();
 
     const UNDO_REDO_BUTTONS = [
         {
@@ -44,7 +50,7 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2 mr-2">
                 {isEnabled('NEXT_PUBLIC_FEATURE_COLLABORATION') && (
-                    <Members projectId={projectId} />
+                    <Members />
                 )}
                 <motion.div
                     className="space-x-0 hidden lg:block"
@@ -77,25 +83,24 @@ export const TopBar = observer(({ projectId }: { projectId: string }) => {
                         </Tooltip>
                     ))}
                 </motion.div>
-                {/* TODO: Enable */}
-                {/* <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8"
-                                onClick={() => {
-                                    editorEngine.settingsTab = SettingsTabValue.VERSIONS;
-                                    editorEngine.isSettingsOpen = true;
-                                }}
-                            >
-                                <Icons.CounterClockwiseClock className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                            {t(transKeys.editor.toolbar.versionHistory)}
-                        </TooltipContent>
-                    </Tooltip> */}
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8"
+                            onClick={() => {
+                                stateManager.settingsTab = SettingsTabValue.VERSIONS;
+                                stateManager.isSettingsModalOpen = true;
+                            }}
+                        >
+                            <Icons.CounterClockwiseClock className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                        {t(transKeys.editor.toolbar.versionHistory)}
+                    </TooltipContent>
+                </Tooltip>
                 <PublishButton />
                 <CurrentUserAvatar className="size-8 cursor-pointer hover:opacity-80" />
             </div>

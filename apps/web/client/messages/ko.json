@@ -227,6 +227,9 @@
                             "placeholder": "메시지를 입력하세요...",
                             "tooltip": "선택한 요소에 대해 AI와 채팅"
                         },
+                        "mode": {
+                            "tooltip": "빌드 모드와 질문 모드 전환"
+                        },
                         "controls": {
                             "newChat": "새 채팅",
                             "history": "채팅 기록"

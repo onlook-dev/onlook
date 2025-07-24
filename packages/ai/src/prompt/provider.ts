@@ -6,36 +6,37 @@ import type {
     ProjectMessageContext,
 } from '@onlook/models';
 import type { Attachment, Message, UserContent } from 'ai';
+import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
-import { CODE_BLOCK_RULES, SEARCH_REPLACE_EXAMPLE_CONVERSATION, SYSTEM_PROMPT } from './edit';
 import { CODE_FENCE } from './format';
 import { wrapXml } from './helpers';
 import { SHELL_PROMPT } from './shell';
-import { PLATFORM_SIGNATURE } from './signatures';
 import { SUMMARY_PROMPTS } from './summary';
+import { SYSTEM_PROMPT } from './system';
+
+export interface HydrateUserMessageOptions {
+    totalMessages: number;
+    currentMessageIndex: number;
+    lastUserMessageIndex: number;
+}
 
 export function getSystemPrompt() {
     let prompt = '';
-
     prompt += wrapXml('role', SYSTEM_PROMPT);
-    prompt += '\n';
-    prompt += wrapXml('code-block-rules', CODE_BLOCK_RULES);
-    prompt += '\n';
-    prompt += wrapXml('shell-prompt', SHELL_PROMPT);
-    prompt += '\n';
-    prompt += wrapXml(
-        'example-conversation',
-        getExampleConversation(SEARCH_REPLACE_EXAMPLE_CONVERSATION),
-    );
-
-    prompt = prompt.replace(PLATFORM_SIGNATURE, 'linux');
+    prompt += wrapXml('shell', SHELL_PROMPT);
     return prompt;
 }
 
 export function getCreatePageSystemPrompt() {
     let prompt = getSystemPrompt() + '\n\n';
     prompt += wrapXml('create-system-prompt', CREATE_NEW_PAGE_SYSTEM_PROMPT);
+    return prompt;
+}
+
+export function getAskModeSystemPrompt() {
+    let prompt = '';
+    prompt += wrapXml('role', ASK_MODE_SYSTEM_PROMPT);
     return prompt;
 }
 
@@ -56,6 +57,7 @@ export function getHydratedUserMessage(
     id: string,
     content: UserContent,
     context: ChatMessageContext[],
+    opt: HydrateUserMessageOptions,
 ): Message {
     const files = context.filter((c) => c.type === 'file').map((c) => c);
     const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
@@ -63,11 +65,22 @@ export function getHydratedUserMessage(
     const project = context.filter((c) => c.type === 'project').map((c) => c);
     const images = context.filter((c) => c.type === 'image').map((c) => c);
 
+    // If there are 50 user messages in the contexts, we can trim all of them except
+    // the last one. The logic could be adjusted to trim more or less messages.
+    const truncateFileContext = opt.currentMessageIndex < opt.lastUserMessageIndex;
+    // Should the code need to trim other types of contexts, it can be done here.
+
     let prompt = '';
-    let contextPrompt = getFilesContent(files, highlights);
-    if (contextPrompt) {
-        contextPrompt = wrapXml('context', contextPrompt);
-        prompt += contextPrompt;
+    if (truncateFileContext) {
+        const contextPrompt = getTruncatedFilesContent(files);
+        if (contextPrompt) {
+            prompt += wrapXml('truncated-context', contextPrompt);
+        }
+    } else {
+        const contextPrompt = getFilesContent(files, highlights);
+        if (contextPrompt) {
+            prompt += wrapXml('context', contextPrompt);
+        }
     }
 
     if (errors.length > 0) {
@@ -103,6 +116,23 @@ export function getHydratedUserMessage(
         content: prompt,
         experimental_attachments: attachments,
     };
+}
+
+export function getTruncatedFilesContent(files: FileMessageContext[]) {
+    if (files.length === 0) {
+        return '';
+    }
+    let prompt = '';
+    prompt += `${CONTEXT_PROMPTS.truncatedFilesContentPrefix}\n`;
+    let index = 1;
+    for (const file of files) {
+        let filePrompt = `${file.path}\n`;
+        filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
+        prompt += filePrompt;
+        index++;
+    }
+
+    return prompt;
 }
 
 export function getFilesContent(
@@ -177,16 +207,7 @@ export function getSummaryPrompt() {
     prompt += wrapXml('summary-format', SUMMARY_PROMPTS.format);
     prompt += wrapXml('summary-reminder', SUMMARY_PROMPTS.reminder);
 
-    prompt += wrapXml('example-conversation', getSummaryExampleConversation());
     prompt += wrapXml('example-summary-output', 'EXAMPLE SUMMARY:\n' + SUMMARY_PROMPTS.summary);
-    return prompt;
-}
-
-export function getSummaryExampleConversation() {
-    let prompt = 'EXAMPLE CONVERSATION:\n';
-    for (const message of SEARCH_REPLACE_EXAMPLE_CONVERSATION) {
-        prompt += `${message.role.toUpperCase()}: ${message.content}\n`;
-    }
     return prompt;
 }
 

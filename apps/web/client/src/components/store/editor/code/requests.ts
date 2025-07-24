@@ -34,9 +34,9 @@ export async function processGroupedRequests(groupedRequests: FileToRequests): P
             throw new Error('No ast found for file');
         }
 
-        const original = await getContentFromAst(ast);
+        const original = await getContentFromAst(ast, content);
         transformAst(ast, oidToRequest);
-        const generated = await getContentFromAst(ast);
+        const generated = await getContentFromAst(ast, content);
         diffs.push({ original, generated, path });
     }
     return diffs;

@@ -1,3 +1,5 @@
+import { NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
+import { RouterType } from '@onlook/models';
 import isSubdir from 'is-subdir';
 import path from 'path';
 
@@ -55,3 +57,45 @@ export function isSubdirectory(filePath: string, directories: string[]): boolean
     }
     return false;
 }
+
+// Utility to check if a file matches the conditions
+export const isTargetFile = (
+    targetFile: string,
+    conditions: { fileName: string; targetExtensions: string[]; potentialPaths: string[] },
+): boolean => {
+    const { fileName, targetExtensions, potentialPaths } = conditions;
+
+    const fileExtWithDot = path.extname(targetFile);
+    if (!fileExtWithDot) {
+        return false;
+    }
+
+    const hasValidExtension = targetExtensions.some((ext) =>
+        ext.startsWith('.') ? ext === fileExtWithDot : ext === fileExtWithDot.slice(1),
+    );
+
+    if (!hasValidExtension) {
+        return false;
+    }
+
+    const baseName = path.basename(targetFile, fileExtWithDot);
+    if (baseName !== fileName) {
+        return false;
+    }
+
+    const dirName = normalize(path.dirname(targetFile));
+    return potentialPaths.some((p) => normalize(p) === dirName);
+};
+
+export const isRootLayoutFile = (
+    filePath: string,
+    routerType: RouterType = RouterType.APP,
+): boolean => {
+    const potentialPaths =
+        routerType === RouterType.APP ? ['app', 'src/app'] : ['pages', 'src/pages'];
+    return isTargetFile(filePath, {
+        fileName: 'layout',
+        targetExtensions: NEXT_JS_FILE_EXTENSIONS,
+        potentialPaths,
+    });
+};

@@ -1,38 +1,39 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useDomainsManager, useProjectManager } from '@/components/store/project';
-import { PublishStatus } from '@onlook/models/hosting';
+import { useHostingType } from '@/components/store/hosting';
+import { api } from '@/trpc/react';
+import { DeploymentStatus, DeploymentType } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { toast } from '@onlook/ui/sonner';
 import { observer } from 'mobx-react-lite';
 
 export const DangerZone = observer(() => {
-    const domainsManager = useDomainsManager();
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
-    const hostingManager = editorEngine.hosting;
-    const previewDomain = domainsManager.domains.preview;
-    const customDomain = domainsManager.domains.custom;
-    const project = projectManager.project;
 
-    if (!project) {
-        return <div>No project found</div>;
-    }
+    const { data: domains } = api.domain.getAll.useQuery({ projectId: editorEngine.projectId });
+    const { deployment: unpublishPreviewDeployment, unpublish: runUnpublishPreview } = useHostingType(DeploymentType.UNPUBLISH_PREVIEW);
+    const { deployment: unpublishCustomDeployment, unpublish: runUnpublishCustom } = useHostingType(DeploymentType.UNPUBLISH_CUSTOM);
 
-    const isUnpublishing = hostingManager?.state.status === PublishStatus.LOADING;
+    const previewDomain = domains?.preview;
+    const customDomain = domains?.published;
 
-    const unpublish = async (urls: string[]) => {
-        const success = await hostingManager.unpublish(project.id, urls);
+    const unpublish = async (type: DeploymentType) => {
+        let unpublishResponse: {
+            deploymentId: string;
+        } | null = null;
+        if (type === DeploymentType.UNPUBLISH_PREVIEW) {
+            unpublishResponse = await runUnpublishPreview(editorEngine.projectId);
+        } else {
+            unpublishResponse = await runUnpublishCustom(editorEngine.projectId);
+        }
 
-        if (!success) {
+        if (unpublishResponse) {
+            toast.success('Project is being unpublished', {
+                description: 'Deployment ID: ' + unpublishResponse.deploymentId,
+            });
+        } else {
             toast.error('Failed to unpublish project', {
                 description: 'Please try again.',
             });
-        } else {
-            toast.success('Project unpublished', {
-                description: 'Your project is no longer publicly accessible.',
-            });
-            editorEngine.state.settingsOpen = false;
-            editorEngine.state.publishOpen = true;
         }
     };
 
@@ -49,15 +50,15 @@ export const DangerZone = observer(() => {
                     <Button
                         onClick={() => {
                             if (previewDomain) {
-                                unpublish([previewDomain.url]);
+                                unpublish(DeploymentType.UNPUBLISH_PREVIEW);
                             }
                         }}
                         className="ml-auto"
                         size="sm"
                         variant="destructive"
-                        disabled={!previewDomain || isUnpublishing}
+                        disabled={!previewDomain || unpublishPreviewDeployment?.status === DeploymentStatus.IN_PROGRESS}
                     >
-                        {isUnpublishing ? 'Unpublishing...' : 'Unpublish'}
+                        {unpublishPreviewDeployment?.status === DeploymentStatus.IN_PROGRESS ? 'Unpublishing...' : 'Unpublish'}
                     </Button>
                 </div>
                 {customDomain && (
@@ -66,13 +67,13 @@ export const DangerZone = observer(() => {
                             Unpublish from {customDomain.url}
                         </p>
                         <Button
-                            onClick={() => unpublish([customDomain.url])}
+                            onClick={() => unpublish(DeploymentType.UNPUBLISH_CUSTOM)}
                             className="ml-auto"
                             size="sm"
                             variant="destructive"
-                            disabled={!customDomain || isUnpublishing}
+                            disabled={!customDomain || unpublishCustomDeployment?.status === DeploymentStatus.IN_PROGRESS}
                         >
-                            {isUnpublishing ? 'Unpublishing...' : 'Unpublish'}
+                            {unpublishCustomDeployment?.status === DeploymentStatus.IN_PROGRESS ? 'Unpublishing...' : 'Unpublish'}
                         </Button>
                     </div>
                 )}

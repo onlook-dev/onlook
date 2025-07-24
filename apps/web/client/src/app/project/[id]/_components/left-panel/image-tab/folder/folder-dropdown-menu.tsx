@@ -13,57 +13,52 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { memo, useCallback, useMemo, useState } from 'react';
-import type { FolderNode } from '../providers/types';
-import { FolderDropdown } from './folder-dropdown';
+import { FolderDropdown } from '../folder-dropdown/folder-dropdown';
+import type { FolderNode } from '@onlook/models';
+import { useFolderContext } from '../providers/folder-provider';
 
 export const FolderDropdownMenu = memo(
     ({
         folder,
-        handleRenameFolder,
-        handleDeleteFolder,
-        handleMoveToFolder,
+        rootDir,
         isDisabled,
         alwaysVisible,
         className,
-        folderStructure,
-        selectedTargetFolder,
     }: {
         folder: FolderNode;
-        handleRenameFolder?: () => void;
-        handleDeleteFolder?: () => void;
-        handleMoveToFolder?: (folder: FolderNode, targetFolder: FolderNode) => void;
+        rootDir: FolderNode;
         isDisabled?: boolean;
         alwaysVisible?: boolean;
         className?: string;
-        folderStructure?: FolderNode;
-        selectedTargetFolder?: FolderNode | null;
     }) => {
         const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+        const { handleRenameFolder, handleDeleteFolder, handleMoveToFolder, moveState } = useFolderContext();
 
         const handleOpenChange = useCallback(
             (isOpen: boolean) => {
                 if (!isDisabled) {
-                    setActiveDropdown(isOpen ? folder?.name : null);
+                    setActiveDropdown(isOpen ? (folder.name ?? null) : null);
                 }
             },
-            [folder?.name, isDisabled],
+            [folder.name, isDisabled],
         );
 
         const handleFolderSelect = useCallback(
             (targetFolder: FolderNode) => {
-                handleMoveToFolder?.(folder, targetFolder);
+                handleMoveToFolder(folder, targetFolder);
             },
             [handleMoveToFolder, folder],
         );
 
         const isVisible = useMemo(() => {
-            return alwaysVisible || activeDropdown === folder.name;
+            return alwaysVisible ? true : activeDropdown === folder.name;
         }, [activeDropdown, folder.name, alwaysVisible]);
 
         return (
             <div
                 className={cn(
-                    ' group-hover:opacity-100 transition-opacity duration-300',
+                    'group-hover:opacity-100 transition-opacity duration-300',
                     isVisible ? 'opacity-100' : 'opacity-0',
                 )}
                 onClick={(e) => e.stopPropagation()}
@@ -92,7 +87,7 @@ export const FolderDropdownMenu = memo(
                             <Button
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleRenameFolder?.();
+                                    handleRenameFolder(folder);
                                 }}
                                 variant={'ghost'}
                                 className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
@@ -110,7 +105,7 @@ export const FolderDropdownMenu = memo(
                                 className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                 onClick={(e) => {
                                     e.stopPropagation();
-                                    handleDeleteFolder?.();
+                                    handleDeleteFolder(folder);
                                 }}
                                 disabled={isDisabled}
                             >
@@ -120,7 +115,7 @@ export const FolderDropdownMenu = memo(
                                 </span>
                             </Button>
                         </DropdownMenuItem>
-                        {folderStructure && (
+                        {rootDir && (
                             <>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuSub>
@@ -135,8 +130,8 @@ export const FolderDropdownMenu = memo(
                                     </DropdownMenuSubTrigger>
                                     <DropdownMenuSubContent className="w-64 p-0" sideOffset={8}>
                                         <FolderDropdown
-                                            rootFolder={folderStructure}
-                                            selectedFolder={selectedTargetFolder || null}
+                                            rootFolder={rootDir}
+                                            selectedFolder={moveState.targetFolder}
                                             onSelectFolder={handleFolderSelect}
                                         />
                                     </DropdownMenuSubContent>

@@ -4,8 +4,10 @@ import type { UserChatMessageImpl } from '@/components/store/editor/chat/message
 import { ChatType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useRef, useState } from 'react';
 import { SentContextPill } from '../context-pills/sent-context-pill';
@@ -21,6 +23,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
     const [isComposing, setIsComposing] = useState(false);
+    const [isRestoring, setIsRestoring] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -76,6 +79,30 @@ export const UserMessage = ({ message }: UserMessageProps) => {
             return;
         }
         sendMessages(newMessages, ChatType.EDIT);
+    };
+
+    const handleRestoreCheckpoint = async () => {
+        try {
+            setIsRestoring(true);
+            if (!message.commitOid) {
+                throw new Error('No commit oid found');
+            }
+            const commit = await editorEngine.versions.getCommitByOid(message.commitOid);
+            if (!commit) {
+                throw new Error('Failed to get commit');
+            }
+            const success = await editorEngine.versions.checkoutCommit(commit);
+            if (!success) {
+                throw new Error('Failed to checkout commit');
+            }
+        } catch (error) {
+            console.error('Failed to restore checkpoint', error);
+            toast.error('Failed to restore checkpoint', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+        } finally {
+            setIsRestoring(false);
+        }
     };
 
     function renderEditingInput() {
@@ -181,6 +208,31 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                     {isEditing ? renderEditingInput() : renderContent()}
                 </div>
             </div>
+            {message.commitOid && (
+                <div className="absolute left-2 top-1/2 -translate-y-1/2">
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                className={cn(
+                                    'text-xs opacity-0 group-hover:opacity-100 hover:opacity-80 rounded-md p-2',
+                                    isRestoring ? 'opacity-100' : 'opacity-0',
+                                )}
+                                onClick={handleRestoreCheckpoint}
+                                disabled={isRestoring}
+                            >
+                                {isRestoring ? (
+                                    <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Icons.Reset className="h-4 w-4" />
+                                )}
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={5}>
+                            {isRestoring ? 'Restoring Checkpoint...' : 'Restore Checkpoint'}
+                        </TooltipContent>
+                    </Tooltip>
+                </div>
+            )}
         </div>
     );
 };

@@ -28,6 +28,11 @@ export class MoveManager {
         this.isDragInProgress = true;
 
         try {
+            if (!frameView.view) {
+                console.error('No frame view found');
+                return;
+            }
+
             const index = (await frameView.view.startDrag(el.domId)) as number;
             if (index === null || index === -1) {
                 this.clear();
@@ -52,8 +57,8 @@ export class MoveManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.get(this.dragTarget.frameId);
-        if (!frameView) {
+        const frameData = this.editorEngine.frames.get(this.dragTarget.frameId);
+        if (!frameData?.view) {
             console.error('No frameView found for drag');
             return;
         }
@@ -67,9 +72,9 @@ export class MoveManager {
             try {
                 const positionType = this.dragTarget.styles?.computed?.position;
                 if (positionType === 'absolute') {
-                    await frameView.view.dragAbsolute(this.dragTarget.domId, x, y, this.dragOrigin);
+                    await frameData.view.dragAbsolute(this.dragTarget.domId, x, y, this.dragOrigin);
                 } else {
-                    await frameView.view.drag(this.dragTarget.domId, dx, dy, x, y);
+                    await frameData.view.drag(this.dragTarget.domId, dx, dy, x, y);
                 }
             } catch (error) {
                 console.error('Error during drag:', error);
@@ -84,8 +89,8 @@ export class MoveManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.get(this.dragTarget.frameId);
-        if (!frameView) {
+        const frameData = this.editorEngine.frames.get(this.dragTarget.frameId);
+        if (!frameData?.view) {
             console.error('No frameView found for drag end');
             await this.endAllDrag();
             return;
@@ -104,7 +109,7 @@ export class MoveManager {
             // Handle absolute positioning
             const position = this.dragTarget.styles?.computed?.position;
             if (position === ('absolute' as const)) {
-                const res = await frameView.view.endDragAbsolute(targetDomId);
+                const res = await frameData.view.endDragAbsolute(targetDomId);
 
                 if (res) {
                     const { left, top } = res;
@@ -116,7 +121,7 @@ export class MoveManager {
                 }
             } else {
                 // Handle regular drag with index changes
-                const res = (await frameView.view.endDrag(targetDomId)) as {
+                const res = (await frameData.view.endDrag(targetDomId)) as {
                     newIndex: number;
                     child: DomElement;
                     parent: DomElement;
@@ -126,7 +131,7 @@ export class MoveManager {
                     const { child, parent, newIndex } = res;
                     if (newIndex !== this.originalIndex) {
                         const moveAction = this.createMoveAction(
-                            frameView.frame.id,
+                            frameData.frame.id,
                             child,
                             parent,
                             newIndex,
@@ -149,6 +154,10 @@ export class MoveManager {
 
         this.editorEngine.frames.getAll().forEach((frameData) => {
             try {
+                if (!frameData.view) {
+                    console.error('No frame view found');
+                    return;
+                }
                 const promise = frameData.view.endAllDrag() as Promise<unknown>;
                 promises.push(promise);
             } catch (error) {
@@ -173,26 +182,26 @@ export class MoveManager {
     }
 
     async shiftElement(element: DomElement, direction: 'up' | 'down'): Promise<void> {
-        const frameView = this.editorEngine.frames.get(element.frameId);
-        if (!frameView) {
+        const frameData = this.editorEngine.frames.get(element.frameId);
+        if (!frameData?.view) {
             return;
         }
 
         try {
             // Get current index and parent
-            const currentIndex = (await frameView.view.getElementIndex(element.domId)) as number;
+            const currentIndex = (await frameData.view.getElementIndex(element.domId)) as number;
 
             if (currentIndex === -1) {
                 return;
             }
 
-            const parent = (await frameView.view.getParentElement(element.domId)) as DomElement;
+            const parent = (await frameData.view.getParentElement(element.domId)) as DomElement;
             if (!parent) {
                 return;
             }
 
             // Get filtered children count for accurate index calculation
-            const childrenCount = (await frameView.view.getChildrenCount(parent.domId)) as number;
+            const childrenCount = (await frameData.view.getChildrenCount(parent.domId)) as number;
 
             // Calculate new index based on direction and bounds
             const newIndex =
@@ -206,7 +215,7 @@ export class MoveManager {
 
             // Create and run move action
             const moveAction = this.createMoveAction(
-                frameView.frame.id,
+                frameData.frame.id,
                 element,
                 parent,
                 newIndex,

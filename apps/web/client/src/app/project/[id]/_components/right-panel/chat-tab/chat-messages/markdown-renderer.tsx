@@ -1,8 +1,6 @@
 import { cn } from '@onlook/ui/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { BashCodeDisplay } from '../code-change-display/bash-code-display';
-import { CollapsibleCodeBlock } from '../code-change-display/collapsible-code-block';
 
 export const MarkdownRenderer = ({
     messageId,
@@ -39,36 +37,6 @@ export const MarkdownRenderer = ({
                             {...props}
                         />
                     ),
-                    code({ node, className, children, ...props }) {
-                        const match = /language-(\w+)(:?.+)?/.exec(className || '');
-                        const language = match?.[1];
-                        const filePath = match?.[2]?.substring(1);
-                        const codeContent = String(children).replace(/\n$/, '');
-
-                        if (language === 'bash') {
-                            return <BashCodeDisplay content={codeContent} isStream={isStream} />;
-                        }
-
-                        if (match && filePath) {
-                            return (
-                                <CollapsibleCodeBlock
-                                    path={filePath}
-                                    content={codeContent}
-                                    messageId={messageId}
-                                    applied={applied}
-                                    isStream={isStream}
-                                    originalContent={codeContent}
-                                    updatedContent={codeContent}
-                                />
-                            );
-                        }
-
-                        return (
-                            <code className={className} {...props}>
-                                {children}
-                            </code>
-                        );
-                    },
                 }}
             >
                 {transformedContent}

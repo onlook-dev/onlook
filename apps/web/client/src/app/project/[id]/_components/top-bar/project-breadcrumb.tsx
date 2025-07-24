@@ -1,10 +1,11 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useProjectManager } from '@/components/store/project';
+import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
-import { sendAnalytics } from '@/utils/analytics';
+import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { uploadBlobToStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
+import { fromPreviewImg } from '@onlook/db';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -20,12 +21,16 @@ import { base64ToBlob, getScreenshotPath } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
+import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectManager();
-    const project = projectManager.project;
+    const stateManager = useStateManager();
+    const posthog = usePostHog();
+
+    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
+    const { mutateAsync: updateProject } = api.project.update.useMutation()
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
     const router = useRouter();
@@ -65,19 +70,19 @@ export const ProjectBreadcrumb = observer(() => {
             return;
         }
 
-        // Update project metadata
+        const dbPreviewImg = fromPreviewImg({
+            type: 'storage',
+            storagePath: {
+                bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
+                path: data?.path,
+            },
+        })
         if (project?.metadata) {
-            projectManager.updatePartialProject({
-                metadata: {
-                    ...project.metadata,
-                    previewImg: {
-                        type: 'storage',
-                        storagePath: {
-                            bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
-                            path: data?.path,
-                        },
-                    }
-                }
+            updateProject({
+                id: project.id,
+                project: {
+                    ...dbPreviewImg,
+                },
             });
         }
     }
@@ -96,10 +101,9 @@ export const ProjectBreadcrumb = observer(() => {
             if (result) {
                 window.open(result.downloadUrl, '_blank');
 
-                sendAnalytics('download project code', {
+                posthog.capture('download_project_code', {
                     projectId: project.id,
                     projectName: project.name,
-                    method: 'codesandbox_download_url'
                 });
 
                 toast.success(t(transKeys.projects.actions.downloadSuccess));
@@ -112,7 +116,7 @@ export const ProjectBreadcrumb = observer(() => {
                 description: error instanceof Error ? error.message : 'Unknown error'
             });
 
-            sendAnalytics('download project code failed', {
+            posthog.capture('download_project_code_failed', {
                 projectId: project.id,
                 error: error instanceof Error ? error.message : 'Unknown error'
             });
@@ -187,7 +191,7 @@ export const ProjectBreadcrumb = observer(() => {
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => router.push(Routes.IMPORT_PROJECT)}>
                         <div className="flex row center items-center group">
-                            <Icons.Upload className="mr-2 group-hover:rotate-12 transition-transform" />
+                            <Icons.Upload className="mr-2" />
                             {t(transKeys.projects.actions.import)}
                         </div>
                     </DropdownMenuItem>
@@ -202,7 +206,7 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => editorEngine.state.settingsOpen = true}>
+                    <DropdownMenuItem onClick={() => stateManager.isSettingsModalOpen = true}>
                         <div className="flex row center items-center group">
                             <Icons.Gear className="mr-2 group-hover:rotate-12 transition-transform" />
                             {t(transKeys.help.menu.openSettings)}

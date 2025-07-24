@@ -60,6 +60,11 @@ export const LayersTab = observer(() => {
             }
             const { view } = frameData;
 
+            if (!view) {
+                console.error('No frame view found');
+                return;
+            }
+
             const originalIndex: number | undefined = await view.getElementIndex(
                 dragNode.data.domId,
             );

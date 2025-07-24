@@ -1,4 +1,4 @@
-import { getHydratedUserMessage } from '@onlook/ai/src/prompt/provider';
+import { getHydratedUserMessage, type HydrateUserMessageOptions } from '@onlook/ai/src/prompt/provider';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { ChatMessageRole, type UserChatMessage } from '@onlook/models/chat';
 import type { Message, TextPart } from 'ai';
@@ -11,6 +11,7 @@ export class UserChatMessageImpl implements UserChatMessage {
     context: ChatMessageContext[] = [];
     parts: TextPart[] = [];
     aiSdkId: string | undefined;
+    commitOid: string | null;
 
     constructor(content: string, context: ChatMessageContext[] = []) {
         this.id = uuidv4();
@@ -18,11 +19,13 @@ export class UserChatMessageImpl implements UserChatMessage {
         this.content = content;
         this.parts = [{ type: 'text', text: content }];
         this.context = context;
+        this.commitOid = null;
     }
 
     static fromJSON(data: UserChatMessage): UserChatMessageImpl {
         const message = new UserChatMessageImpl(data.content, data.context);
         message.id = data.id;
+        message.commitOid = data.commitOid;
         return message;
     }
 
@@ -33,6 +36,7 @@ export class UserChatMessageImpl implements UserChatMessage {
             context: message.context,
             parts: message.parts,
             content: message.content,
+            commitOid: message.commitOid,
         };
     }
 
@@ -44,13 +48,14 @@ export class UserChatMessageImpl implements UserChatMessage {
         return new UserChatMessageImpl(content, context);
     }
 
-    toStreamMessage(): Message {
-        return getHydratedUserMessage(this.id, this.content, this.context);
+    toStreamMessage(opt: HydrateUserMessageOptions): Message {
+        return getHydratedUserMessage(this.id, this.content, this.context, opt);
     }
 
-    updateContent(content: string) {
+    updateMessage(content: string, context: ChatMessageContext[]) {
         this.content = content;
         this.parts = [{ type: 'text', text: content }];
+        this.context = context;
     }
 
     getStringContent(): string {

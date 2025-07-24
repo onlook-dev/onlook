@@ -1,4 +1,4 @@
-import type { ProjectManager } from '@/components/store/project/manager';
+
 import { DEFAULT_COLOR_NAME, TAILWIND_WEB_COLORS } from '@onlook/constants';
 import type {
     ClassReplacement,
@@ -49,18 +49,11 @@ export class ThemeManager {
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
     }
 
     async scanConfig() {
-        const project = this.projectManager.project;
-        if (!project) {
-            console.error('No project found');
-            return;
-        }
-
         try {
             const configResult = await this.scanTailwindConfig();
 
@@ -321,11 +314,6 @@ export class ThemeManager {
     }
 
     async rename(oldName: string, newName: string) {
-        const project = this.projectManager.project;
-        if (!project) {
-            return;
-        }
-
         try {
             await this.updateTailwindColorConfig(oldName, newName, SystemTheme.LIGHT);
 
@@ -392,12 +380,6 @@ export class ThemeManager {
     }
 
     async delete(groupName: string, colorName?: string) {
-        const project = this.projectManager.project;
-        if (!project) {
-            console.error('No project found');
-            return;
-        }
-
         try {
             const colorUpdate = await this.initializeTailwindColorContent();
             if (!colorUpdate) {
@@ -512,12 +494,6 @@ export class ThemeManager {
         theme?: SystemTheme,
         shouldSaveToConfig = false,
     ) {
-        const project = this.projectManager.project;
-        if (!project) {
-            console.error('No project found');
-            return;
-        }
-
         try {
             // For new colors, pass empty originalKey and parentName
             const originalGroupName = camelCase(groupName);
@@ -550,11 +526,10 @@ export class ThemeManager {
     }
 
     async add(newName: string) {
-        const project = this.projectManager.project;
-        if (!project || !newName.trim()) {
+        if (!newName.trim()) {
+            console.error('No color name provided');
             return;
         }
-
         try {
             await this.updateTailwindColorConfig('', '#FFFFFF', newName.trim());
             // Refresh colors
@@ -570,10 +545,6 @@ export class ThemeManager {
         newColor: Color,
         theme?: SystemTheme,
     ) {
-        const project = this.projectManager.project;
-        if (!project) {
-            return;
-        }
         try {
             await this.updateTailwindColorConfig(
                 `${colorFamily}-${index * 100}`,
@@ -595,12 +566,6 @@ export class ThemeManager {
         isDefaultPalette?: boolean,
         theme?: SystemTheme,
     ) {
-        const project = this.projectManager.project;
-        if (!project) {
-            console.error('No project found');
-            return;
-        }
-
         try {
             if (isDefaultPalette) {
                 const colorToDuplicate = this.defaultColors[groupName];
@@ -724,28 +689,15 @@ export class ThemeManager {
                 return null;
             }
 
-            const configContent = await this.editorEngine.sandbox.readFile(configPath);
-            if (!configContent) {
-                console.log('Could not read Tailwind config file');
-                return null;
-            }
-
-            const cssContent = await this.editorEngine.sandbox.readFile(cssPath);
-            if (!cssContent) {
-                console.log('Could not read CSS file');
-                return {
-                    configPath,
-                    configContent: extractColorsFromTailwindConfig(configContent),
-                    cssPath,
-                    cssContent: extractTailwindCssVariables(''),
-                };
-            }
-
+            const configFile = await this.editorEngine.sandbox.readFile(configPath);
+            const cssFile = await this.editorEngine.sandbox.readFile(cssPath);
+            const configContent = configFile && configFile.type === 'text' ? extractColorsFromTailwindConfig(configFile.content) : '';
+            const cssContent = cssFile && cssFile.type === 'text' ? extractTailwindCssVariables(cssFile.content) : '';
             return {
                 configPath,
-                configContent: extractColorsFromTailwindConfig(configContent),
+                configContent,
                 cssPath,
-                cssContent: extractTailwindCssVariables(cssContent),
+                cssContent,
             };
         } catch (error) {
             console.error('Error scanning Tailwind config:', error);
@@ -1012,11 +964,15 @@ export class ThemeManager {
             return null;
         }
 
+        if (files[configPath].type === 'binary' || files[cssPath].type === 'binary') {
+            throw new Error('Config or CSS file is a binary file');
+        }
+
         return {
             configPath,
             cssPath,
-            configContent: files[configPath],
-            cssContent: files[cssPath],
+            configContent: files[configPath].content,
+            cssContent: files[cssPath].content,
         };
     }
 
@@ -1186,16 +1142,15 @@ export class ThemeManager {
     async updateClassReferences(replacements: ClassReplacement[]): Promise<void> {
         const sourceFiles = this.editorEngine.sandbox.listAllFiles();
         const filesToUpdate = sourceFiles.filter((file) => file.endsWith('.tsx')) as string[];
-        const contents = await this.editorEngine.sandbox.readFiles(filesToUpdate);
 
         await Promise.all(
             filesToUpdate.map(async (file) => {
-                const content = contents[file];
-                if (!content) {
+                const foundFile = await this.editorEngine.sandbox.readFile(file);
+                if (!foundFile || foundFile.type === 'binary') {
                     return;
                 }
 
-                const ast = parse(content, {
+                const ast = parse(foundFile.content, {
                     sourceType: 'module',
                     plugins: ['typescript', 'jsx'],
                 });
@@ -1239,7 +1194,7 @@ export class ThemeManager {
 
                 if (updates.size > 0) {
                     transformAst(ast, updates);
-                    const output = generate(ast, { retainLines: true }, content).code;
+                    const output = generate(ast, { retainLines: true }, foundFile.content).code;
                     await this.editorEngine.sandbox.writeFile(file, output);
                 }
             }),

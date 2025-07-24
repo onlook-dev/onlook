@@ -3,6 +3,7 @@ import type { FrameData } from '@/components/store/editor/frames';
 import { getRelativeMousePositionToFrameView } from '@/components/store/editor/overlay/utils';
 import type { DomElement, ElementPosition, WebFrame } from '@onlook/models';
 import { EditorMode, MouseAction } from '@onlook/models';
+import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
@@ -20,7 +21,7 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
     const getRelativeMousePosition = useCallback(
         (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
             const frameData = getFrameData();
-            if (!frameData) {
+            if (!frameData?.view) {
                 return { x: 0, y: 0 };
             }
             return getRelativeMousePositionToFrameView(e, frameData.view);
@@ -30,56 +31,61 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
 
     const handleMouseEvent = useCallback(
         async (e: React.MouseEvent<HTMLDivElement>, action: MouseAction) => {
-            const frameData = getFrameData();
-            if (!frameData) {
-                console.error('Frame data not found');
-                return;
-            }
-            const pos = getRelativeMousePosition(e);
-            const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(
-                action,
-            );
-            const el: DomElement = await frameData.view.getElementAtLoc(
-                pos.x,
-                pos.y,
-                shouldGetStyle,
-            );
-            if (!el) {
-                console.log('No element found');
-                return;
-            }
+            try {
+                const frameData = getFrameData();
+                if (!frameData?.view) {
+                    throw new Error('Frame view not found');
+                }
+                const pos = getRelativeMousePosition(e);
+                const shouldGetStyle = [MouseAction.MOUSE_DOWN, MouseAction.DOUBLE_CLICK].includes(
+                    action,
+                );
+                const el: DomElement = await frameData.view.getElementAtLoc(
+                    pos.x,
+                    pos.y,
+                    shouldGetStyle,
+                );
+                if (!el) {
+                    throw new Error('No element found');
+                }
 
-            switch (action) {
-                case MouseAction.MOVE:
-                    editorEngine.elements.mouseover(el);
-                    if (e.altKey) {
-                        editorEngine.overlay.showMeasurement();
-                    } else {
-                        editorEngine.overlay.removeMeasurement();
-                    }
-                    break;
-                case MouseAction.MOUSE_DOWN:
-                    if (el.tagName.toLocaleLowerCase() === 'body') {
-                        editorEngine.frames.select([frame]);
-                        return;
-                    }
-                    // Ignore right-clicks
-                    if (e.button == 2) {
+                switch (action) {
+                    case MouseAction.MOVE:
+                        editorEngine.elements.mouseover(el);
+                        if (e.altKey) {
+                            if (editorEngine.state.editorMode !== EditorMode.INSERT_IMAGE) {
+                                editorEngine.overlay.showMeasurement();
+                            }
+                        } else {
+                            editorEngine.overlay.removeMeasurement();
+                        }
                         break;
-                    }
-                    if (editorEngine.text.isEditing) {
-                        await editorEngine.text.end();
-                    }
-                    if (e.shiftKey) {
-                        editorEngine.elements.shiftClick(el);
-                    } else {
-                        editorEngine.elements.click([el]);
-                        await editorEngine.move.start(el, pos, frameData);
-                    }
-                    break;
-                case MouseAction.DOUBLE_CLICK:
-                    editorEngine.text.start(el, frameData.view);
-                    break;
+                    case MouseAction.MOUSE_DOWN:
+                        if (el.tagName.toLocaleLowerCase() === 'body') {
+                            editorEngine.frames.select([frame]);
+                            return;
+                        }
+                        // Ignore right-clicks
+                        if (e.button == 2) {
+                            break;
+                        }
+                        if (editorEngine.text.isEditing) {
+                            await editorEngine.text.end();
+                        }
+                        if (e.shiftKey) {
+                            editorEngine.elements.shiftClick(el);
+                        } else {
+                            editorEngine.elements.click([el]);
+                            await editorEngine.move.start(el, pos, frameData);
+                        }
+                        break;
+                    case MouseAction.DOUBLE_CLICK:
+                        editorEngine.text.start(el, frameData.view);
+                        break;
+                }
+            } catch (error) {
+                console.error('Error handling mouse event:', error);
+                return;
             }
         },
         [getRelativeMousePosition, editorEngine],
@@ -162,29 +168,37 @@ export const GestureScreen = observer(({ frame }: { frame: WebFrame }) => {
         e.preventDefault();
         e.stopPropagation();
 
-        // try {
-        //     const propertiesData = e.dataTransfer.getData('application/json');
-        //     if (!propertiesData) {
-        //         console.error('No element properties in drag data');
-        //         return;
-        //     }
+        try {
+            const propertiesData = e.dataTransfer.getData('application/json');
+            if (!propertiesData) {
+                throw new Error('No element properties in drag data');
+            }
 
-        //     const properties = JSON.parse(propertiesData);
+            const properties = JSON.parse(propertiesData);
 
-        //     if (properties.type === 'image') {
-        //         const frameView = getWebview();
-        //         const dropPosition = getRelativeMousePosition(e);
-        //         await editorEngine.insert.insertDroppedImage(frameView, dropPosition, properties);
-        //     } else {
-        //         const frameView = getWebview();
-        //         const dropPosition = getRelativeMousePosition(e);
-        //         await editorEngine.insert.insertDroppedElement(frameView, dropPosition, properties);
-        //     }
+            if (properties.type === 'image') {
+                const frameData = editorEngine.frames.get(frame.id);
+                if (!frameData) {
+                    throw new Error('Frame data not found');
+                }
+                const dropPosition = getRelativeMousePosition(e);
+                await editorEngine.insert.insertDroppedImage(frameData, dropPosition, properties, e.altKey);
+            } else {
+                const frameData = editorEngine.frames.get(frame.id);
+                if (!frameData) {
+                    throw new Error('Frame data not found');
+                }
+                const dropPosition = getRelativeMousePosition(e);
+                await editorEngine.insert.insertDroppedElement(frameData, dropPosition, properties);
+            }
 
-        //     editorEngine.state.editorMode = EditorMode.DESIGN;
-        // } catch (error) {
-        //     console.error('drop operation failed:', error);
-        // }
+            editorEngine.state.editorMode = EditorMode.DESIGN;
+        } catch (error) {
+            console.error('drop operation failed:', error);
+            toast.error('Failed to drop element', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
+        }
     };
 
     const gestureScreenClassName = useMemo(() => {

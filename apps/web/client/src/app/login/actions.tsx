@@ -6,7 +6,8 @@ import { SignInMethod } from '@onlook/models';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-export async function login(provider: SignInMethod, returnUrl?: string) {
+export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl?: string) {
+
     const supabase = await createClient();
     const headersList = await headers();
     let origin = headersList.get('origin');
@@ -28,7 +29,7 @@ export async function login(provider: SignInMethod, returnUrl?: string) {
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-            redirectTo: `${origin}/auth/callback`,
+            redirectTo,
         },
     });
 
@@ -46,9 +47,7 @@ export async function devLogin() {
 
     const supabase = await createClient();
 
-    const {
-        data: { session },
-    } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
 
     if (session) {
         redirect('/');

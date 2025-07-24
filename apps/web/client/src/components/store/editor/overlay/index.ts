@@ -34,6 +34,10 @@ export class OverlayManager {
                 continue;
             }
             const { view } = frameData;
+            if (!view) {
+                console.error('No frame view found');
+                continue;
+            }
             const el: DomElement = await view.getElementByDomId(selectedElement.domId, true);
             if (!el) {
                 console.error('Element not found');
@@ -70,6 +74,11 @@ export class OverlayManager {
         }
 
         const { view } = frameData;
+
+        if (!view) {
+            console.error('No frame view found');
+            return;
+        }
 
         const selectedRect = adaptRectToCanvas(selectedEl.rect, view);
         const hoverRect = adaptRectToCanvas(hoverEl.rect, view);

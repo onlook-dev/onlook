@@ -11,6 +11,7 @@ import { getLocale } from 'next-intl/server';
 import { Inter } from 'next/font/google';
 import { ThemeProvider } from './_components/theme';
 import { AuthProvider } from './auth/auth-context';
+import { faqSchema, organizationSchema } from './seo';
 
 export const metadata: Metadata = {
     title: 'Onlook – Cursor for Designers',
@@ -19,6 +20,7 @@ export const metadata: Metadata = {
     openGraph: {
         url: 'https://onlook.com/',
         type: 'website',
+        siteName: 'Onlook',
         title: 'Onlook – Cursor for Designers',
         description: 'The power of Cursor for your own website. Onlook lets you edit your React website and write your changes back to code in real-time. Iterate and experiment with AI.',
         images: [
@@ -51,26 +53,39 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
     return (
         <html lang={locale} className={inter.variable} suppressHydrationWarning>
+            <head>
+                <link rel="canonical" href="https://onlook.com/" />
+                <meta name="robots" content="index, follow" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+                />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+                />
+            </head>
             <body>
-                <FeatureFlagsProvider>
-                    <PostHogProvider>
-                        <ThemeProvider
-                            attribute="class"
-                            forcedTheme="dark"
-                            enableSystem
-                            disableTransitionOnChange
-                        >
-                            <TRPCReactProvider>
+                <TRPCReactProvider>
+                    <FeatureFlagsProvider>
+                        <PostHogProvider>
+                            <ThemeProvider
+                                attribute="class"
+                                forcedTheme="dark"
+                                enableSystem
+                                disableTransitionOnChange
+                            >
                                 <AuthProvider>
                                     <NextIntlClientProvider>
                                         {children}
                                         <Toaster />
                                     </NextIntlClientProvider>
                                 </AuthProvider>
-                            </TRPCReactProvider>
-                        </ThemeProvider>
-                    </PostHogProvider>
-                </FeatureFlagsProvider>
+                            </ThemeProvider>
+                        </PostHogProvider>
+                    </FeatureFlagsProvider>
+                </TRPCReactProvider>
             </body>
         </html>
     );

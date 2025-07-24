@@ -1,11 +1,10 @@
-import { useProjectManager } from '@/components/store/project';
+import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 
 export const NoVersions = observer(() => {
-    const projectManager = useProjectManager();
-
+    const editorEngine = useEditorEngine();
     return (
         <div className="flex flex-col items-center gap-2 border border-dashed rounded p-12 mt-4">
             <div className="">No backups</div>
@@ -15,15 +14,15 @@ export const NoVersions = observer(() => {
             <Button
                 variant="outline"
                 size="sm"
-                onClick={() => projectManager.versions?.initializeRepo()}
-                disabled={projectManager.versions?.isSaving}
+                onClick={() => editorEngine.versions.initializeRepo()}
+                disabled={editorEngine.versions.isSaving}
             >
-                {projectManager.versions?.isSaving ? (
+                {editorEngine.versions.isSaving ? (
                     <Icons.Shadow className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
                     <Icons.Plus className="h-4 w-4 mr-2" />
                 )}
-                {projectManager.versions?.isSaving ? 'Saving...' : 'Create backup'}
+                {editorEngine.versions.isSaving ? 'Saving...' : 'Create backup'}
             </Button>
         </div>
     );

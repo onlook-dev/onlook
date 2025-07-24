@@ -9,7 +9,6 @@ import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { memo, useCallback, useMemo, useRef } from 'react';
 import type { NodeApi } from 'react-arborist';
-import { twMerge } from 'tailwind-merge';
 import { NodeIcon } from './node-icon';
 
 const isComponentAncestor = (node: NodeApi<LayerNode>): boolean => {
@@ -101,12 +100,12 @@ export const TreeNode = memo(
                     node: LayerNode,
                     action: MouseAction,
                 ) => {
-                    const frameView = editorEngine.frames.get(node.frameId);
-                    if (!frameView) {
+                    const frameData = editorEngine.frames.get(node.frameId);
+                    if (!frameData?.view) {
                         console.error('Failed to get frameView');
                         return;
                     }
-                    const el: DomElement = await frameView.view.getElementByDomId(
+                    const el: DomElement = await frameData.view.getElementByDomId(
                         node.domId,
                         action === MouseAction.MOUSE_DOWN,
                     );
@@ -122,7 +121,7 @@ export const TreeNode = memo(
                         case MouseAction.MOUSE_DOWN:
                             if (isWindow) {
                                 editorEngine.clearUI();
-                                editorEngine.frames.select([frameView.frame]);
+                                editorEngine.frames.select([frameData.frame]);
                                 return;
                             }
                             if (e.shiftKey) {
@@ -172,48 +171,46 @@ export const TreeNode = memo(
 
             const nodeClassName = useMemo(
                 () =>
-                    twMerge(
-                        cn('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
-                            'text-purple-600 dark:text-purple-300':
-                                isComponentAncestor(node) && !node.data.instanceId && !hovered,
-                            'text-purple-500 dark:text-purple-200':
-                                isComponentAncestor(node) && !node.data.instanceId && hovered,
-                            'text-foreground-onlook':
-                                !isComponentAncestor(node) &&
-                                !node.data.instanceId &&
-                                !selected &&
-                                !hovered,
-                            rounded:
-                                (hovered && !isParentSelected && !selected) ||
-                                (selected && node.isLeaf) ||
-                                (selected && node.isClosed) ||
-                                isWindowSelected,
-                            'rounded-t': selected && node.isInternal,
-                            'rounded-b': isParentSelected && parentGroupEnd(node),
-                            'rounded-none': isParentSelected && node.nextSibling,
-                            'bg-background-onlook': hovered,
-                            'bg-[#FA003C] dark:bg-[#FA003C]/90': selected,
-                            'bg-[#FA003C]/10 dark:bg-[#FA003C]/10': isParentSelected,
-                            'bg-[#FA003C]/20 dark:bg-[#FA003C]/20': hovered && isParentSelected,
-                            'text-purple-100 dark:text-purple-100':
-                                node.data.instanceId && selected,
-                            'text-purple-500 dark:text-purple-300':
-                                node.data.instanceId && !selected,
-                            'text-purple-800 dark:text-purple-200':
-                                node.data.instanceId && !selected && hovered,
-                            'bg-purple-700/70 dark:bg-purple-500/50':
-                                node.data.instanceId && selected,
-                            'bg-purple-400/30 dark:bg-purple-900/60':
-                                node.data.instanceId && !selected && hovered && !isParentSelected,
-                            'bg-purple-300/30 dark:bg-purple-900/30':
-                                isParentSelected?.data.instanceId,
-                            'bg-purple-300/50 dark:bg-purple-900/50':
-                                hovered && isParentSelected?.data.instanceId,
-                            'text-white dark:text-primary':
-                                (!node.data.instanceId && selected) || isWindowSelected,
-                            'bg-teal-500': isWindowSelected,
-                        }),
-                    ),
+                    cn('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
+                        'text-purple-600 dark:text-purple-300':
+                            isComponentAncestor(node) && !node.data.instanceId && !hovered,
+                        'text-purple-500 dark:text-purple-200':
+                            isComponentAncestor(node) && !node.data.instanceId && hovered,
+                        'text-foreground-onlook':
+                            !isComponentAncestor(node) &&
+                            !node.data.instanceId &&
+                            !selected &&
+                            !hovered,
+                        rounded:
+                            (hovered && !isParentSelected && !selected) ||
+                            (selected && node.isLeaf) ||
+                            (selected && node.isClosed) ||
+                            isWindowSelected,
+                        'rounded-t': selected && node.isInternal,
+                        'rounded-b': isParentSelected && parentGroupEnd(node),
+                        'rounded-none': isParentSelected && node.nextSibling,
+                        'bg-background-onlook': hovered,
+                        'bg-[#FA003C] dark:bg-[#FA003C]/90': selected,
+                        'bg-[#FA003C]/10 dark:bg-[#FA003C]/10': isParentSelected,
+                        'bg-[#FA003C]/20 dark:bg-[#FA003C]/20': hovered && isParentSelected,
+                        'text-purple-100 dark:text-purple-100':
+                            node.data.instanceId && selected,
+                        'text-purple-500 dark:text-purple-300':
+                            node.data.instanceId && !selected,
+                        'text-purple-800 dark:text-purple-200':
+                            node.data.instanceId && !selected && hovered,
+                        'bg-purple-700/70 dark:bg-purple-500/50':
+                            node.data.instanceId && selected,
+                        'bg-purple-400/30 dark:bg-purple-900/60':
+                            node.data.instanceId && !selected && hovered && !isParentSelected,
+                        'bg-purple-300/30 dark:bg-purple-900/30':
+                            isParentSelected?.data.instanceId,
+                        'bg-purple-300/50 dark:bg-purple-900/50':
+                            hovered && isParentSelected?.data.instanceId,
+                        'text-white dark:text-primary':
+                            (!node.data.instanceId && selected) || isWindowSelected,
+                        'bg-teal-500': isWindowSelected,
+                    }),
                 [hovered, selected, isParentSelected, isWindowSelected, parentGroupEnd, node],
             );
 

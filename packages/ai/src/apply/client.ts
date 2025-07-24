@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 
-const createPrompt = (originalCode: string, updateSnippet: string) => `<code>${originalCode}</code>
-<update>${updateSnippet}</update>`;
+const createPrompt = (originalCode: string, updateSnippet: string, instruction: string) =>
+    `<instruction>${instruction}</instruction>\n<code>${originalCode}</code>\n<update>${updateSnippet}</update>`;
 
 export enum FastApplyProvider {
     MORPH = 'morph',
@@ -11,6 +11,7 @@ export enum FastApplyProvider {
 export async function applyCodeChangeWithMorph(
     originalCode: string,
     updateSnippet: string,
+    instruction: string,
 ): Promise<string | null> {
     const apiKey = process.env.MORPH_API_KEY;
     if (!apiKey) {
@@ -22,11 +23,11 @@ export async function applyCodeChangeWithMorph(
     });
 
     const response = await client.chat.completions.create({
-        model: 'morph-v2',
+        model: 'morph-v3-large',
         messages: [
             {
                 role: 'user',
-                content: createPrompt(originalCode, updateSnippet),
+                content: createPrompt(originalCode, updateSnippet, instruction),
             },
         ],
     });
@@ -67,7 +68,8 @@ export async function applyCodeChangeWithRelace(
 export async function applyCodeChange(
     originalCode: string,
     updateSnippet: string,
-    preferredProvider: FastApplyProvider = FastApplyProvider.RELACE,
+    instruction: string,
+    preferredProvider: FastApplyProvider = FastApplyProvider.MORPH,
 ): Promise<string | null> {
     const providerAttempts = [
         {
@@ -92,11 +94,21 @@ export async function applyCodeChange(
     // Run provider attempts in order of preference
     for (const { provider, applyFn } of providerAttempts) {
         try {
-            const result = await applyFn(originalCode, updateSnippet);
+            const result =
+                provider === FastApplyProvider.MORPH
+                    ? await (applyFn as typeof applyCodeChangeWithMorph)(
+                          originalCode,
+                          updateSnippet,
+                          instruction,
+                      )
+                    : await (applyFn as typeof applyCodeChangeWithRelace)(
+                          originalCode,
+                          updateSnippet,
+                      );
             if (result) return result;
         } catch (error) {
             console.warn(`Code application failed with provider ${provider}:`, error);
-            continue;
+            throw error;
         }
     }
 

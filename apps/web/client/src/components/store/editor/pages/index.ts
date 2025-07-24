@@ -1,5 +1,3 @@
-import type { ProjectManager } from '@/components/store/project/manager';
-import { sendAnalytics } from '@/utils/analytics';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -21,10 +19,10 @@ export class PagesManager {
     private activeRoutesByFrameId: Record<string, string> = {};
     private currentPath = '';
     private groupedRoutes = '';
+    private _isScanning = false;
 
     constructor(
         private editorEngine: EditorEngine,
-        private projectManager: ProjectManager,
     ) {
         makeAutoObservable(this);
     }
@@ -36,6 +34,10 @@ export class PagesManager {
     get activeRoute(): string | undefined {
         const frame = this.getActiveFrame();
         return frame ? this.activeRoutesByFrameId[frame.frame.id] : undefined;
+    }
+
+    get isScanning() {
+        return this._isScanning;
     }
 
     private getActiveFrame(): FrameData | undefined {
@@ -125,22 +127,20 @@ export class PagesManager {
 
     async scanPages() {
         try {
-            const projectId = this.projectManager.project?.id;
-
-            if (!projectId) {
-                console.warn('No project ID found');
-                this.setPages([]); // Clears pages when no project
+            if (this._isScanning) {
                 return;
             }
-
+            this._isScanning = true;
             if (this.editorEngine?.sandbox?.session?.session) {
                 try {
-                    const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox.session.session);
+                    const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox);
                     this.setPages(realPages);
+                    this._isScanning = false;
                     return;
                 } catch (error) {
                     console.error('Failed to scan pages from sandbox:', error);
                     this.setPages([]);
+                    this._isScanning = false;
                 }
             } else {
                 console.log('Sandbox session not available');
@@ -149,15 +149,12 @@ export class PagesManager {
         } catch (error) {
             console.error('Failed to scan pages:', error);
             this.setPages([]);
+        } finally {
+            this._isScanning = false;
         }
     }
 
     public async createPage(baseRoute: string, pageName: string): Promise<void> {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            throw new Error('No project ID found');
-        }
-
         const { valid, error } = validateNextJsRoute(pageName);
         if (!valid) {
             throw new Error(error);
@@ -169,15 +166,10 @@ export class PagesManager {
             throw new Error('This page already exists');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
-        if (!session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
-            await createPageInSandbox(session, normalizedPath);
+            await createPageInSandbox(this.editorEngine.sandbox, normalizedPath);
             await this.scanPages();
-            sendAnalytics('page create');
+            this.editorEngine.posthog.capture('page_create');
         } catch (error) {
             console.error('Failed to create page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -186,11 +178,6 @@ export class PagesManager {
     }
 
     public async renamePage(oldPath: string, newName: string): Promise<void> {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            throw new Error('No project ID found');
-        }
-
         const { valid, error } = validateNextJsRoute(newName);
         if (!valid) {
             throw new Error(error);
@@ -200,15 +187,10 @@ export class PagesManager {
             throw new Error('A page with this name already exists');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
-        if (!session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
-            await renamePageInSandbox(session, oldPath, newName);
+            await renamePageInSandbox(this.editorEngine.sandbox, oldPath, newName);
             await this.scanPages();
-            sendAnalytics('page rename');
+            this.editorEngine.posthog.capture('page_rename');
         } catch (error) {
             console.error('Failed to rename page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -217,24 +199,14 @@ export class PagesManager {
     }
 
     public async duplicatePage(sourcePath: string, targetPath: string): Promise<void> {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            throw new Error('No project ID found');
-        }
-
-        const session = this.editorEngine?.sandbox?.session?.session;
-        if (!session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
             await duplicatePageInSandbox(
-                session,
+                this.editorEngine.sandbox,
                 normalizeRoute(sourcePath),
                 normalizeRoute(targetPath)
             );
             await this.scanPages();
-            sendAnalytics('page duplicate');
+            this.editorEngine.posthog.capture('page_duplicate');
         } catch (error) {
             console.error('Failed to duplicate page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -243,25 +215,15 @@ export class PagesManager {
     }
 
     public async deletePage(pageName: string, isDir: boolean): Promise<void> {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            throw new Error('No project ID found');
-        }
-
         const normalizedPath = normalizeRoute(`${pageName}`);
         if (normalizedPath === '' || normalizedPath === '/') {
             throw new Error('Cannot delete root page');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
-        if (!session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
-            await deletePageInSandbox(session, normalizedPath, isDir);
+            await deletePageInSandbox(this.editorEngine.sandbox, normalizedPath, isDir);
             await this.scanPages();
-            sendAnalytics('page delete');
+            this.editorEngine.posthog.capture('page_delete');
         } catch (error) {
             console.error('Failed to delete page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -270,22 +232,12 @@ export class PagesManager {
     }
 
     public async updateMetadataPage(pagePath: string, metadata: PageMetadata) {
-        const projectId = this.projectManager.project?.id;
-        if (!projectId) {
-            throw new Error('No project ID found');
-        }
-
         if (!doesRouteExist(this.pages, pagePath)) {
             throw new Error('A page with this name does not exist');
         }
 
-        const session = this.editorEngine?.sandbox?.session?.session;
-        if (!session) {
-            throw new Error('No sandbox session available');
-        }
-
         try {
-            await updatePageMetadataInSandbox(session, pagePath, metadata);
+            await updatePageMetadataInSandbox(this.editorEngine.sandbox, pagePath, metadata);
             await this.scanPages();
         } catch (error) {
             console.error('Failed to update metadata:', error);
@@ -295,9 +247,9 @@ export class PagesManager {
     }
 
     async navigateTo(path: string) {
-        const frameView = this.getActiveFrame();
+        const frameData = this.getActiveFrame();
 
-        if (!frameView) {
+        if (!frameData?.view) {
             console.warn('No frameView available');
             return;
         }
@@ -320,7 +272,7 @@ export class PagesManager {
         }
 
         try {
-            const currentUrl = frameView.view.src;
+            const currentUrl = frameData.view.src;
             const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
 
             if (!baseUrl) {
@@ -328,11 +280,13 @@ export class PagesManager {
                 return;
             }
 
-            await frameView.view.loadURL(`${baseUrl}${path}`);
-            this.setActivePath(frameView.frame.id, originalPath);
-            await frameView.view.processDom();
+            await frameData.view.loadURL(`${baseUrl}${path}`);
+            this.setActivePath(frameData.frame.id, originalPath);
+            await frameData.view.processDom();
 
-            sendAnalytics('page navigate');
+            this.editorEngine.posthog.capture('page_navigate', {
+                path,
+            });
         } catch (error) {
             console.error('Navigation failed:', error);
         }
@@ -347,13 +301,14 @@ export class PagesManager {
             return;
         }
 
-        const frameView = this.editorEngine.frames.get(frameId);
-        if (!frameView) {
+        const frameData = this.editorEngine.frames.get(frameId);
+        if (!frameData?.view) {
+            console.error('No frame view found');
             return;
         }
 
         try {
-            const url = frameView.view.src;
+            const url = frameData.view.src;
             if (!url) {
                 return;
             }

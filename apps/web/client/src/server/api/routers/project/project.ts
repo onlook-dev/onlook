@@ -1,10 +1,17 @@
+import { trackEvent } from '@/utils/analytics/server';
+import { initModel } from '@onlook/ai';
 import {
     canvases,
-    createDefaultCanvas, createDefaultFrame, createDefaultUserCanvas,
+    conversations,
+    createDefaultCanvas, createDefaultConversation, createDefaultFrame, createDefaultUserCanvas,
     frames,
+    projectCreateRequestInsertSchema,
+    projectCreateRequests,
     projectInsertSchema,
     projects,
+    projectUpdateSchema,
     toCanvas,
+    toConversation,
     toFrame,
     toProject,
     userCanvases,
@@ -12,12 +19,37 @@ import {
     type Canvas,
     type UserCanvas
 } from '@onlook/db';
-import { ProjectRole } from '@onlook/models';
+import { LLMProvider, OPENROUTER_MODELS, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { projectCreateRequestRouter } from './createRequest';
 
 export const projectRouter = createTRPCRouter({
+    createRequest: projectCreateRequestRouter,
+    list: protectedProcedure
+        .query(async ({ ctx }) => {
+            const fetchedUserProjects = await ctx.db.query.userProjects.findMany({
+                where: eq(userProjects.userId, ctx.user.id),
+                with: {
+                    project: true,
+                },
+            });
+            return fetchedUserProjects.map((userProject) => toProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
+        }),
+    get: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const project = await ctx.db.query.projects.findFirst({
+                where: eq(projects.id, input.projectId),
+            });
+            if (!project) {
+                console.error('project not found');
+                return null;
+            }
+            return toProject(project)
+        }),
     getFullProject: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
@@ -34,7 +66,6 @@ export const projectRouter = createTRPCRouter({
                     },
                     conversations: {
                         orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
-                        limit: 1,
                     },
                 },
             });
@@ -49,10 +80,19 @@ export const projectRouter = createTRPCRouter({
                 project: toProject(project),
                 userCanvas: toCanvas(userCanvas),
                 frames: project.canvas?.frames.map(toFrame) ?? [],
+                conversations: project.conversations.map(toConversation) ?? [],
             };
         }),
     create: protectedProcedure
-        .input(z.object({ project: projectInsertSchema, userId: z.string() }))
+        .input(z.object({
+            project: projectInsertSchema,
+            userId: z.string(),
+            creationData: projectCreateRequestInsertSchema
+                .omit({
+                    projectId: true,
+                })
+                .optional(),
+        }))
         .mutation(async ({ ctx, input }) => {
             return await ctx.db.transaction(async (tx) => {
                 // 1. Insert the new project
@@ -79,8 +119,58 @@ export const projectRouter = createTRPCRouter({
                 const newFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl);
                 await tx.insert(frames).values(newFrame);
 
+                // 5. Create the default conversation
+                const newConversation = createDefaultConversation(newProject.id);
+                await tx.insert(conversations).values(newConversation);
+
+                // 6. Create the creation request
+                if (input.creationData) {
+                    await tx.insert(projectCreateRequests).values({
+                        ...input.creationData,
+                        status: ProjectCreateRequestStatus.PENDING,
+                        projectId: newProject.id,
+                    });
+                }
+
+                trackEvent({
+                    distinctId: input.userId,
+                    event: 'user_create_project',
+                    properties: {
+                        projectId: newProject.id,
+                    },
+                });
                 return newProject;
             });
+        }),
+    generateName: protectedProcedure
+        .input(z.object({
+            prompt: z.string(),
+        }))
+        .mutation(async ({ input }): Promise<string> => {
+            try {
+                const { model, providerOptions } = await initModel({
+                    provider: LLMProvider.OPENROUTER,
+                    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+                });
+
+                const MAX_NAME_LENGTH = 50;
+                const result = await generateText({
+                    model,
+                    prompt: `Generate a concise and meaningful project name (2-4 words maximum) that reflects the main purpose or theme of the project based on user's creation prompt. Generate only the project name, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.prompt}</prompt>`,
+                    providerOptions,
+                    maxTokens: 50,
+                });
+
+                const generatedName = result.text.trim();
+                if (generatedName && generatedName.length > 0 && generatedName.length <= MAX_NAME_LENGTH) {
+                    return generatedName;
+                }
+
+                return 'New Project';
+            } catch (error) {
+                console.error('Error generating project name:', error);
+                return 'New Project';
+            }
         }),
     delete: protectedProcedure
         .input(z.object({ id: z.string() }))
@@ -101,10 +191,10 @@ export const projectRouter = createTRPCRouter({
             });
             return projects.map((project) => toProject(project.project));
         }),
-    update: protectedProcedure.input(projectInsertSchema).mutation(async ({ ctx, input }) => {
-        if (!input.id) {
-            throw new Error('Project ID is required');
-        }
-        await ctx.db.update(projects).set(input).where(eq(projects.id, input.id));
+    update: protectedProcedure.input(z.object({
+        id: z.string(),
+        project: projectUpdateSchema,
+    })).mutation(async ({ ctx, input }) => {
+        await ctx.db.update(projects).set(input.project).where(eq(projects.id, input.id));
     }),
 });

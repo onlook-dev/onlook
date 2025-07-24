@@ -1,13 +1,13 @@
-import { useProjectManager } from '@/components/store/project';
+import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 
 export const NoSavedVersions = observer(() => {
-    const projectsManager = useProjectManager();
+    const editorEngine = useEditorEngine();
 
     const handleSaveLatestCommit = async () => {
-        projectsManager.versions?.saveLatestCommit();
+        editorEngine.versions?.saveLatestCommit();
     };
 
     return (

@@ -24,7 +24,7 @@ export class SessionManager {
         this.session = await connectToSandbox({
             session,
             getSession: async (id) => {
-                return await api.sandbox.get.query({ sandboxId: id, userId });
+                return await api.sandbox.start.mutate({ sandboxId: id, userId });
             },
         });
         this.session.keepActiveWhileConnected(true);
@@ -70,22 +70,18 @@ export class SessionManager {
             // Check if the session is still connected
             const isConnected = await this.ping();
             if (isConnected) {
-                this.isConnecting = false;
                 return;
             }
 
             // Attempt soft reconnect
-            this.isConnecting = true;
             await this.session.reconnect()
 
             const isConnected2 = await this.ping();
             if (isConnected2) {
-                this.isConnecting = false;
                 return;
             }
 
-            this.session = await api.sandbox.get.query({ sandboxId, userId });
-            this.isConnecting = false;
+            await this.start(sandboxId, userId);
         } catch (error) {
             console.error('Failed to reconnect to sandbox', error);
             this.isConnecting = false;
@@ -103,24 +99,7 @@ export class SessionManager {
         }
     }
 
-    async disconnect() {
-        if (!this.session) {
-            console.error('No session found');
-            return;
-        }
-        await this.session.disconnect();
-        this.session = null;
-        this.isConnecting = false;
-        this.terminalSessions.forEach(terminal => {
-            if (terminal.type === 'terminal') {
-                terminal.terminal?.kill();
-                terminal.xterm?.dispose();
-            }
-        });
-        this.terminalSessions.clear();
-    }
-
-    async runCommand(command: string, streamCallback: (output: string) => void): Promise<{
+    async runCommand(command: string, streamCallback?: (output: string) => void): Promise<{
         output: string;
         success: boolean;
         error: string | null;
@@ -129,7 +108,6 @@ export class SessionManager {
             if (!this.session) {
                 throw new Error('No session found');
             }
-
 
             const terminalSession = Array.from(this.terminalSessions.values()).find(session => session.type === CLISessionType.TERMINAL) as TerminalSession | undefined;
 
@@ -145,7 +123,7 @@ export class SessionManager {
 
             await cmd.open();
             const disposer = cmd.onOutput((output) => {
-                streamCallback(output);
+                streamCallback?.(output);
                 terminalSession.xterm?.write(output);
             });
 
@@ -165,5 +143,18 @@ export class SessionManager {
                 error: error instanceof Error ? error.message : 'Unknown error occurred'
             };
         }
+    }
+
+    async clear() {
+        await this.session?.disconnect();
+        this.session = null;
+        this.isConnecting = false;
+        this.terminalSessions.forEach(terminal => {
+            if (terminal.type === 'terminal') {
+                terminal.terminal?.kill();
+                terminal.xterm?.dispose();
+            }
+        });
+        this.terminalSessions.clear();
     }
 }

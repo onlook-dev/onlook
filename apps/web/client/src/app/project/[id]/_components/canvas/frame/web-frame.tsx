@@ -4,10 +4,9 @@ import { useEditorEngine } from '@/components/store/editor';
 import type { WebFrame } from '@onlook/models';
 import {
     PENPAL_PARENT_CHANNEL,
-    promisifyMethod,
     type PenpalChildMethods,
     type PenpalParentMethods,
-    type PromisifiedPendpalChildMethods,
+    type PromisifiedPendpalChildMethods
 } from '@onlook/penpal';
 import { cn } from '@onlook/ui/utils';
 import { debounce } from 'lodash';
@@ -43,20 +42,37 @@ export const WebFrameComponent = observer(
         const editorEngine = useEditorEngine();
         const iframeRef = useRef<HTMLIFrameElement>(null);
         const zoomLevel = useRef(1);
-        const [penpalChild, setPenpalChild] = useState<any>(null);
+        const isConnecting = useRef(false);
         const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
+        const [penpalChild, setPenpalChild] = useState<PenpalChildMethods | null>(null);
 
-        const reloadIframe = () => {
-            const iframe = iframeRef.current;
-            if (!iframe) return;
-            iframe.src = iframe.src;
+        const undebouncedReloadIframe = () => {
+            try {
+                const iframe = iframeRef.current;
+                if (!iframe) return;
+                iframe.src = iframe.src;
+            } catch (error) {
+                console.error('Failed to reload iframe', error);
+            }
         };
+
+        const reloadIframe = debounce(undebouncedReloadIframe, 1000, {
+            leading: true,
+        });
 
         const setupPenpalConnection = () => {
             if (!iframeRef.current?.contentWindow) {
                 console.error('No iframe found');
                 return;
             }
+
+            if (isConnecting.current) {
+                console.log(
+                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection already in progress`,
+                );
+                return;
+            }
+            isConnecting.current = true;
 
             // Destroy any existing connection before creating a new one
             if (connectionRef.current) {
@@ -73,6 +89,15 @@ export const WebFrameComponent = observer(
                 messenger,
                 methods: {
                     getFrameId: () => frame.id,
+                    onWindowMutated: () => {
+                        editorEngine.frameEvent.handleWindowMutated();
+                    },
+                    onWindowResized: () => {
+                        editorEngine.frameEvent.handleWindowResized();
+                    },
+                    onDomProcessed: (data: { layerMap: Record<string, any>; rootNode: any }) => {
+                        editorEngine.frameEvent.handleDomProcessed(frame.id, data);
+                    },
                 } satisfies PenpalParentMethods,
             });
 
@@ -80,27 +105,45 @@ export const WebFrameComponent = observer(
             connectionRef.current = connection;
 
             connection.promise.then((child) => {
+                isConnecting.current = false;
                 if (!child) {
                     console.error(
                         `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
                     );
-                    debouncedReloadIframe();
+                    reloadIframe();
                     return;
                 }
                 const remote = child as unknown as PenpalChildMethods;
                 setPenpalChild(remote);
                 remote.setFrameId(frame.id);
+                remote.handleBodyReady();
                 remote.processDom();
                 console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
             });
 
             connection.promise.catch((error) => {
+                isConnecting.current = false;
                 console.error(
                     `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
                     error,
                 );
-                debouncedReloadIframe();
+                reloadIframe();
             });
+        };
+
+        const promisifyMethod = <T extends (...args: any[]) => any>(
+            method: T | undefined,
+        ): ((...args: Parameters<T>) => Promise<ReturnType<T>>) => {
+            return async (...args: Parameters<T>) => {
+                try {
+                    if (!method) throw new Error('Method not initialized');
+                    return method(...args);
+                } catch (error) {
+                    console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Method failed:`, error);
+                    reloadIframe();
+                    throw error;
+                }
+            };
         };
 
         useImperativeHandle(ref, () => {
@@ -119,7 +162,7 @@ export const WebFrameComponent = observer(
                     iframe.style.transformOrigin = 'top left';
                 },
                 loadURL: (url: string) => {
-                    iframe.src = url;
+                    editorEngine.frames.updateAndSaveToStorage(frame.id, { url });
                 },
                 canGoForward: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
                 canGoBack: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
@@ -176,10 +219,11 @@ export const WebFrameComponent = observer(
                 isChildTextEditable: promisifyMethod(penpalChild?.isChildTextEditable),
                 handleBodyReady: promisifyMethod(penpalChild?.handleBodyReady),
                 captureScreenshot: promisifyMethod(penpalChild?.captureScreenshot),
+                buildLayerTree: promisifyMethod(penpalChild?.buildLayerTree),
             };
 
             // Register the iframe with the editor engine
-            editorEngine.frames.register(frame, iframe as WebFrameView);
+            editorEngine.frames.registerView(frame, iframe as WebFrameView);
 
             return Object.assign(iframe, {
                 ...syncMethods,
@@ -188,7 +232,9 @@ export const WebFrameComponent = observer(
         }, [penpalChild, frame, iframeRef]);
 
         useEffect(() => {
-            setupPenpalConnection();
+            if (!connectionRef.current) {
+                setupPenpalConnection();
+            }
 
             return () => {
                 if (connectionRef.current) {
@@ -196,12 +242,9 @@ export const WebFrameComponent = observer(
                     connectionRef.current = null;
                 }
                 setPenpalChild(null);
+                isConnecting.current = false;
             };
-        }, []);
-
-        const debouncedReloadIframe = debounce(() => {
-            reloadIframe();
-        }, 1000);
+        }, [iframeRef.current?.src]);
 
         return (
             <iframe
@@ -213,7 +256,6 @@ export const WebFrameComponent = observer(
                 allow="geolocation; microphone; camera; midi; encrypted-media"
                 style={{ width: frame.dimension.width, height: frame.dimension.height }}
                 onLoad={setupPenpalConnection}
-                onError={debouncedReloadIframe}
                 {...props}
             />
         );

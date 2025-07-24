@@ -1,20 +1,17 @@
-'use client';
-
-import type { NextJsProjectValidation, ProcessedFile } from '@/app/projects/types';
-import { api } from '@/trpc/client';
 import {
-    COMPRESSION_IMAGE_PRESETS,
-    IGNORED_UPLOAD_DIRECTORIES,
-    IGNORED_UPLOAD_FILES,
-} from '@onlook/constants';
+    ProcessedFileType,
+    type NextJsProjectValidation,
+    type ProcessedFile,
+} from '@/app/projects/types';
+import { IGNORED_UPLOAD_DIRECTORIES, IGNORED_UPLOAD_FILES } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
-import { addBase64Prefix, isBinaryFile } from '@onlook/utility';
+import { isBinaryFile } from '@onlook/utility';
 import { motion } from 'motion/react';
 import { useCallback, useRef, useState } from 'react';
 import { StepContent, StepFooter, StepHeader } from '../../steps';
-import { useProjectCreation } from '../_context/context';
+import { useProjectCreation } from '../_context';
 
 declare module 'react' {
     interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -24,8 +21,14 @@ declare module 'react' {
 }
 
 export const NewSelectFolder = () => {
-    const { projectData, setProjectData, prevStep, nextStep, resetProjectData } =
-        useProjectCreation();
+    const {
+        projectData,
+        setProjectData,
+        prevStep,
+        nextStep,
+        resetProjectData,
+        validateNextJsProject,
+    } = useProjectCreation();
     const [isDragging, setIsDragging] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [error, setError] = useState('');
@@ -33,7 +36,9 @@ export const NewSelectFolder = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const extractProjectName = (files: ProcessedFile[]): string | null => {
-        const packageJsonFile = files.find((f) => f.path.endsWith('package.json') && !f.isBinary);
+        const packageJsonFile = files.find(
+            (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT,
+        );
 
         if (packageJsonFile) {
             try {
@@ -48,22 +53,7 @@ export const NewSelectFolder = () => {
     };
 
     const handleClickUpload = () => {
-        setIsUploading(true);
         fileInputRef.current?.click();
-    };
-
-    const compressImage = async (file: File): Promise<string | undefined> => {
-        const arrayBuffer = await file.arrayBuffer();
-        const base64Data = btoa(
-            Array.from(new Uint8Array(arrayBuffer))
-                .map((byte: number) => String.fromCharCode(byte))
-                .join(''),
-        );
-        const compressionResult = await api.image.compress.mutate({
-            imageData: base64Data,
-            options: COMPRESSION_IMAGE_PRESETS.highQuality,
-        });
-        return compressionResult.bufferData;
     };
 
     const filterAndProcessFiles = async (files: File[]): Promise<ProcessedFile[]> => {
@@ -96,29 +86,7 @@ export const NewSelectFolder = () => {
                 continue;
             }
 
-            // Compress large images files
-            // But not svg
-            if (file.type.startsWith('image/')) {
-                const compressedFile = await compressImage(file);
-
-                if (compressedFile) {
-                    const content = addBase64Prefix(file.type, compressedFile);
-                    processedFiles.push({
-                        path: relativePath,
-                        content,
-                        isBinary: true,
-                    });
-                } else {
-                    // Fallback to original file if compression fails
-                    processedFiles.push({
-                        path: relativePath,
-                        content: await file.arrayBuffer(),
-                        isBinary: true,
-                    });
-                    console.warn(`Using uncompressed image: ${file.name} (compression failed)`);
-                }
-                continue;
-            }
+            let processedFile: ProcessedFile;
 
             // Skip if file is too large
             if (file.size > MAX_FILE_SIZE) {
@@ -127,87 +95,30 @@ export const NewSelectFolder = () => {
             }
 
             // Determine if file is binary
-            const isBinary = isBinaryFile(file.name);
-
+            const type = isBinaryFile(file.name)
+                ? ProcessedFileType.BINARY
+                : ProcessedFileType.TEXT;
             try {
-                let content: string | ArrayBuffer;
-
-                if (isBinary) {
-                    content = await file.arrayBuffer();
+                if (type === ProcessedFileType.BINARY) {
+                    processedFile = {
+                        path: relativePath,
+                        content: await file.arrayBuffer(),
+                        type: ProcessedFileType.BINARY,
+                    };
                 } else {
-                    content = await file.text();
+                    processedFile = {
+                        path: relativePath,
+                        content: await file.text(),
+                        type: ProcessedFileType.TEXT,
+                    };
                 }
 
-                processedFiles.push({
-                    path: relativePath,
-                    content,
-                    isBinary,
-                });
+                processedFiles.push(processedFile);
             } catch (error) {
                 console.warn(`Error reading file ${file.name}:`, error);
             }
         }
         return processedFiles;
-    };
-
-    const validateNextJsProject = async (
-        files: ProcessedFile[],
-    ): Promise<NextJsProjectValidation> => {
-        // Look for package.json
-        const packageJsonFile = files.find((f) => f.path.endsWith('package.json') && !f.isBinary);
-
-        if (!packageJsonFile) {
-            return { isValid: false, error: 'No package.json found' };
-        }
-
-        try {
-            const packageJson = JSON.parse(packageJsonFile.content as string);
-
-            // Check for Next.js in dependencies
-            const hasNext = packageJson.dependencies?.next || packageJson.devDependencies?.next;
-            if (!hasNext) {
-                return { isValid: false, error: 'Next.js not found in dependencies' };
-            }
-
-            // Check for React dependencies
-            const hasReact = packageJson.dependencies?.react || packageJson.devDependencies?.react;
-            if (!hasReact) {
-                return { isValid: false, error: 'React not found in dependencies' };
-            }
-
-            // Determine router type
-            let routerType: 'app' | 'pages' = 'pages';
-
-            // Check for App Router (app directory with layout file)
-            const hasAppLayout = files.some(
-                (f) =>
-                    (f.path.includes('app/layout.') || f.path.includes('src/app/layout.')) &&
-                    (f.path.endsWith('.tsx') ||
-                        f.path.endsWith('.ts') ||
-                        f.path.endsWith('.jsx') ||
-                        f.path.endsWith('.js')),
-            );
-
-            if (hasAppLayout) {
-                routerType = 'app';
-            } else {
-                // Check for Pages Router (pages directory)
-                const hasPagesDir = files.some(
-                    (f) => f.path.includes('pages/') || f.path.includes('src/pages/'),
-                );
-
-                if (!hasPagesDir) {
-                    return {
-                        isValid: false,
-                        error: 'No valid Next.js router structure found (missing app/ or pages/ directory)',
-                    };
-                }
-            }
-
-            return { isValid: true, routerType };
-        } catch (error) {
-            return { isValid: false, error: 'Invalid package.json format' };
-        }
     };
 
     const processProjectFiles = async (fileList: FileList | File[]) => {
@@ -436,10 +347,9 @@ export const NewSelectFolder = () => {
                             w-full h-20 rounded-lg bg-gray-900 border border-gray rounded-lg m-0
                             flex flex-col items-center justify-center gap-4
                             duration-200 cursor-pointer
-                            ${
-                                isDragging
-                                    ? 'border-blue-400 bg-blue-50'
-                                    : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
+                            ${isDragging
+                                ? 'border-blue-400 bg-blue-50'
+                                : 'border-gray-300 bg-gray-50 hover:bg-gray-700'
                             }
                             ${isUploading ? 'pointer-events-none opacity-50' : ''}
                         `}
@@ -472,7 +382,6 @@ export const NewSelectFolder = () => {
                         type="file"
                         style={{ display: 'none' }}
                         onChange={handleFileInputChange}
-                        accept=".js,.jsx,.ts,.tsx,.json,.md,.txt,.css,.scss,.less,.html,.svg,.png,.jpg,.jpeg,.gif,.ico"
                         directory=""
                         webkitdirectory=""
                     />

@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/store/editor';
+import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
 import { Links } from '@onlook/constants';
 import {
@@ -16,12 +16,12 @@ import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 export const HelpDropdown = observer(() => {
-    const editorEngine = useEditorEngine();
+    const stateManager = useStateManager();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const t = useTranslations();
 
     return (
-        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
+        <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen} modal={false}>
             <DropdownMenuTrigger asChild>
                 <button className="w-16 h-16 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2 text-muted-foreground hover:text-foreground">
                     <Icons.QuestionMarkCircled className="w-5 h-5" />
@@ -97,7 +97,7 @@ export const HelpDropdown = observer(() => {
                 </DropdownMenuItem> */}
                 <DropdownMenuItem
                     className="text-sm"
-                    onClick={() => (editorEngine.state.settingsOpen = true)}
+                    onClick={() => (stateManager.isSettingsModalOpen = true)}
                 >
                     <Icons.Gear className="w-4 h-4 mr-2" />
                     {t(transKeys.help.menu.openSettings)}

@@ -1,11 +1,12 @@
-import { useCallback, useState } from 'react';
-import { sendAnalytics } from '@/utils/analytics';
-import { EditorMode, type ImageContentData } from '@onlook/models';
 import { useEditorEngine } from '@/components/store/editor';
+import { EditorMode, type ImageContentData } from '@onlook/models';
+import { usePostHog } from 'posthog-js/react';
+import { useCallback, useState } from 'react';
 import { useImagesContext } from '../providers/images-provider';
 
 export const useImageDragDrop = (currentFolder?: string) => {
     const editorEngine = useEditorEngine();
+    const posthog = usePostHog();
     const { uploadOperations } = useImagesContext();
 
     const [isDragging, setIsDragging] = useState(false);
@@ -23,11 +24,11 @@ export const useImageDragDrop = (currentFolder?: string) => {
                     .filter((item) => item.type.startsWith('image/'))
                     .map((item) => item.getAsFile())
                     .filter((file): file is File => file !== null);
-    
+
                 if (!currentFolder) {
                     throw new Error('No current folder');
                 }
-    
+
                 for (const file of imageFiles) {
                     await uploadOperations.uploadImage(file, currentFolder);
                 }
@@ -80,10 +81,19 @@ export const useImageDragDrop = (currentFolder?: string) => {
                     fileName: image.fileName,
                     content: image.content,
                     mimeType: image.mimeType,
+                    originPath: image.originPath,
                 }),
             );
 
-            sendAnalytics('image drag');
+            editorEngine.state.editorMode = EditorMode.INSERT_IMAGE;
+            for (const frame of editorEngine.frames.getAll()) {
+                if (!frame.view) {
+                    console.error('No frame view found');
+                    continue;
+                }
+                frame.view.style.pointerEvents = 'none';
+            }
+            posthog.capture('image_drag_start');
         },
         [],
     );
@@ -97,10 +107,14 @@ export const useImageDragDrop = (currentFolder?: string) => {
     }, [editorEngine.state]);
 
     const onImageDragEnd = useCallback(() => {
-        // for (const frameView of editorEngine.frames.webviews.values()) {
-        //     frameView.frameView.style.pointerEvents = 'auto';
-        // }
-        // editorEngine.mode = EditorMode.DESIGN;
+        for (const frame of editorEngine.frames.getAll()) {
+            if (!frame.view) {
+                console.error('No frame view found');
+                continue;
+            }
+            frame.view.style.pointerEvents = 'auto';
+        }
+        editorEngine.state.editorMode = EditorMode.DESIGN;
     }, []);
 
     return {

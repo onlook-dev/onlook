@@ -1,5 +1,5 @@
-import { useProjectsManager } from '@/components/store/projects';
 import { transKeys } from '@/i18n/keys';
+import { api } from '@/trpc/react';
 import type { Project } from '@onlook/models';
 import {
     AlertDialog,
@@ -23,26 +23,34 @@ import { cn } from '@onlook/ui/utils';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
 
-export function Settings({ project }: { project: Project }) {
-    const projectsManager = useProjectsManager();
+export function Settings({ project, refetch }: { project: Project; refetch: () => void }) {
     const t = useTranslations();
+    const { mutateAsync: deleteProject } = api.project.delete.useMutation();
+    const { mutateAsync: updateProject } = api.project.update.useMutation();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
-    const [isDirectoryHovered, setIsDirectoryHovered] = useState(false);
 
     useEffect(() => {
         setProjectName(project.name);
     }, [project.name]);
 
-    const handleDeleteProject = () => {
-        projectsManager.deleteProject(project);
+    const handleDeleteProject = async () => {
+        await deleteProject({ id: project.id });
         setShowDeleteDialog(false);
+        refetch();
     };
 
-    const handleRenameProject = () => {
-        projectsManager.updateProject({ ...project, name: projectName });
+    const handleRenameProject = async () => {
+        await updateProject(
+            {
+                id: project.id,
+                project: {
+                    name: projectName,
+                },
+            },
+        );
         setShowRenameDialog(false);
     };
 

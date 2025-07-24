@@ -1,7 +1,7 @@
 import { subscriptions, usageRecords } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { UsageType, type Usage } from '@onlook/models';
-import { FREE_PRODUCT_CONFIG } from '@onlook/stripe';
+import { FREE_PRODUCT_CONFIG, SubscriptionStatus } from '@onlook/stripe';
 import { and, eq, gte, sql } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -10,10 +10,22 @@ export const usageRouter = createTRPCRouter({
     get: protectedProcedure.query(async ({ ctx }) => {
         const user = ctx.user;
 
+        const subscription = await db.query.subscriptions.findFirst({
+            where: and(
+                eq(subscriptions.userId, user.id),
+                eq(subscriptions.status, SubscriptionStatus.ACTIVE),
+            ),
+            with: {
+                price: true,
+            },
+        });
+
         // Calculate date ranges
         const now = new Date();
         const lastDay = new Date(now.getTime() - 24 * 60 * 60 * 1000); // 24 hours ago
-        const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
+        const lastMonth = subscription ?
+            subscription.startedAt : // If subscription exists, use the start date
+            new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
 
 
         // Count records from last day
@@ -40,13 +52,6 @@ export const usageRouter = createTRPCRouter({
 
         let dailyLimitCount = FREE_PRODUCT_CONFIG.dailyLimit;
         let monthlyLimitCount = FREE_PRODUCT_CONFIG.monthlyLimit;
-
-        const subscription = await db.query.subscriptions.findFirst({
-            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, 'active')),
-            with: {
-                price: true,
-            },
-        });
 
         if (subscription) {
             // Monthly and daily limits are the same for PRO subscription

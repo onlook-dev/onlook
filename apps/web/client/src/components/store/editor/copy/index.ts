@@ -37,6 +37,11 @@ export class CopyManager {
             return;
         }
 
+        if (!frameData.view) {
+            console.error('No frame view found');
+            return;
+        }
+
         const targetEl: ActionElement | null = (await frameData.view.getActionElement(
             selectedEl.domId,
         )) as ActionElement | null;
@@ -131,7 +136,7 @@ export class CopyManager {
                     reader.readAsDataURL(blob);
                     reader.onloadend = async () => {
                         const base64data = reader.result as string;
-                        await this.editorEngine.image.insert(base64data, imageType);
+                        await this.editorEngine.image.paste(base64data, imageType);
                     };
                     return true;
                 }
@@ -157,7 +162,7 @@ export class CopyManager {
     async getInsertLocation(selectedEl: DomElement): Promise<ActionLocation | undefined> {
         const frameId = selectedEl.frameId;
         const frameData = this.editorEngine.frames.get(frameId);
-        if (!frameData) {
+        if (!frameData?.view) {
             console.error('Failed to get frameView');
             return;
         }
