@@ -19,7 +19,7 @@ export const useStartProject = () => {
     const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
     const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.canvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
-    const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation();
     const { sendMessage } = useChatContext();

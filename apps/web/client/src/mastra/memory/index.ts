@@ -1,3 +1,9 @@
-import { Memory } from '@mastra/memory'
+import { Memory } from '@mastra/memory';
 
-export const memory = new Memory();
+export const memory = new Memory({
+    options: {
+        threads: {
+            generateTitle: true,
+        },
+    },
+});

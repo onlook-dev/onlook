@@ -156,15 +156,11 @@ export class ConversationManager {
     }
 
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {
-        return api.chat.conversation.get.query({ projectId: id });
+        return api.chat.conversation.getAll.query({ projectId: id });
     }
 
     async deleteConversationInStorage(id: string) {
-        const success = await api.chat.conversation.delete.mutate({ conversationId: id });
-        if (!success) {
-            console.error('Failed to delete conversation in storage', id);
-        }
-        return success;
+        await api.chat.conversation.delete.mutate({ conversationId: id });
     }
 
     clear() {

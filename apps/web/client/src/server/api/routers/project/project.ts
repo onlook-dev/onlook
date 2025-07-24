@@ -2,8 +2,9 @@ import { trackEvent } from '@/utils/analytics/server';
 import { initModel } from '@onlook/ai';
 import {
     canvases,
-    conversations,
-    createDefaultCanvas, createDefaultConversation, createDefaultFrame, createDefaultUserCanvas,
+    createDefaultCanvas,
+    createDefaultFrame,
+    createDefaultUserCanvas,
     frames,
     projectCreateRequestInsertSchema,
     projectCreateRequests,
@@ -63,9 +64,6 @@ export const projectRouter = createTRPCRouter({
                             },
                         },
                     },
-                    conversations: {
-                        orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
-                    },
                 },
             });
             if (!project) {
@@ -116,10 +114,6 @@ export const projectRouter = createTRPCRouter({
                 // 4. Create the default frame
                 const newFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl);
                 await tx.insert(frames).values(newFrame);
-
-                // 5. Create the default conversation
-                const newConversation = createDefaultConversation(newProject.id);
-                await tx.insert(conversations).values(newConversation);
 
                 // 6. Create the creation request
                 if (input.creationData) {

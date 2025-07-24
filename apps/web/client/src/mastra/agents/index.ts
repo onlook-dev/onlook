@@ -1,5 +1,4 @@
 import { Agent } from '@mastra/core/agent';
-import type { MastraMemory } from '@mastra/core/memory';
 import type { RuntimeContext } from '@mastra/core/runtime-context';
 import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
@@ -18,7 +17,7 @@ export const onlookAgent = new Agent({
         runtimeContext: RuntimeContext<OnlookAgentRuntimeContext>
     }) => {
         const chatType = runtimeContext.get(CHAT_TYPE_KEY);
-        let systemPrompt = "";
+        let systemPrompt: string;
 
         switch (chatType) {
             case ChatType.CREATE:
@@ -35,9 +34,7 @@ export const onlookAgent = new Agent({
 
         return systemPrompt;
     },
-    model: async ({ runtimeContext }: {
-        runtimeContext: RuntimeContext<OnlookAgentRuntimeContext>
-    }) => {
+    model: async () => {
         const { model } = await initModel({
             provider: LLMProvider.OPENROUTER,
             model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
@@ -45,9 +42,7 @@ export const onlookAgent = new Agent({
         return model;
     },
     tools: ({ runtimeContext }: {
-        runtimeContext: RuntimeContext<{
-            chatType: ChatType
-        }>
+        runtimeContext: RuntimeContext<OnlookAgentRuntimeContext>
     }) => {
         const chatType = runtimeContext.get("chatType");
         switch (chatType) {
@@ -58,5 +53,5 @@ export const onlookAgent = new Agent({
                 return buildToolSet;
         }
     },
-    memory: memory as MastraMemory,
+    memory,
 })

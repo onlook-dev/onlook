@@ -16,7 +16,6 @@ export const toOnlookMessageFromMastra = (mastraMessage: MastraMessageV2): ChatM
             return {
                 ...mastraMessage,
                 role: mastraMessage.role as ChatMessageRole.USER,
-                // TODO: handle this
                 context: getMastraMessageContext(mastraMessage),
                 snapshots: getMastraMessageOids(mastraMessage),
             } satisfies UserChatMessage;
