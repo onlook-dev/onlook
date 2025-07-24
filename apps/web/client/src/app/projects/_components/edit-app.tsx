@@ -1,5 +1,4 @@
 import { transKeys } from '@/i18n/keys';
-import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
 import type { Project } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
@@ -8,6 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { redirect } from 'next/navigation';
+import { usePostHog } from 'posthog-js/react';
 import type { ComponentProps } from 'react';
 import { useState } from 'react';
 
@@ -19,11 +19,12 @@ interface EditAppButtonProps extends ComponentProps<typeof ButtonMotion> {
 
 export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps) => {
     const t = useTranslations();
+    const posthog = usePostHog();
     const [isLoading, setIsLoading] = useState(false);
 
     const selectProject = (project: Project) => {
         setIsLoading(true);
-        sendAnalytics('open project', { id: project.id });
+        posthog.capture('open_project', { id: project.id });
         redirect(`${Routes.PROJECT}/${project.id}`);
     };
 
