@@ -1,5 +1,3 @@
-
-import { sendAnalytics } from '@/utils/analytics';
 import type { ChatSuggestion, Project } from '@onlook/models';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import type { CoreMessage, CoreSystemMessage, ImagePart, TextPart } from 'ai';
@@ -69,8 +67,6 @@ export class SuggestionManager {
         response: string,
         images: ImageMessageContext[],
     ): Promise<CoreMessage[]> {
-        sendAnalytics('generate suggestions');
-
         const systemMessage: CoreSystemMessage = {
             role: 'system',
             content:

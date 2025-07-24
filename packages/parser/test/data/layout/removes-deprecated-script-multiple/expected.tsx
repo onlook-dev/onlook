@@ -38,6 +38,6 @@ export default function Document() {
                     <Footer data-oid="j7nr0na" />
                 </ThemeProvider>
             
-        <Script src="onlook-preload-script.js" strategy="beforeInteractive" type="module" id="onlook-preload-script.js"></Script>
+        <Script src="/onlook-preload-script.js" strategy="beforeInteractive" type="module" id="onlook-preload-script.js"></Script>
       </body>
         </html>);}

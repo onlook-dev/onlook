@@ -1,4 +1,3 @@
-import { sendAnalytics } from '@/utils/analytics';
 import type { DomElement, LayerNode } from '@onlook/models';
 import { EditorMode } from '@onlook/models';
 import {
@@ -35,7 +34,7 @@ export class ActionManager {
         }
         await this.dispatch(action);
         await this.editorEngine.code.write(action);
-        sendAnalytics('undo');
+        this.editorEngine.posthog.capture('undo');
     }
 
     async redo() {
@@ -45,7 +44,7 @@ export class ActionManager {
         }
         await this.dispatch(action);
         await this.editorEngine.code.write(action);
-        sendAnalytics('redo');
+        this.editorEngine.posthog.capture('redo');
     }
 
     private async dispatch(action: Action) {
