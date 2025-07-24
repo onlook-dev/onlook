@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+<url><loc>https://docs.onlook.dev/robots.txt</loc><lastmod>2025-07-22T17:26:45.140Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/contributing/developers</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/contributing/developers/appendix</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/contributing/developers/architecture</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/contributing/developers/running-locally</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/faq</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/getting-started/core-features</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/getting-started/first-project</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/getting-started/ui-overview</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/migrations/electron-to-web-migration</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/tutorials/figma-to-onlook</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://docs.onlook.dev/tutorials/importing-templates</loc><lastmod>2025-07-22T17:26:45.141Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+</urlset>

@@ -11,6 +11,7 @@ export const fromUser = (user: User): DbUser => {
         avatarUrl: user.avatarUrl,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        stripeCustomerId: user.stripeCustomerId,
     };
 };
 
@@ -24,5 +25,6 @@ export const toUser = (user: DbUser): User => {
         avatarUrl: user.avatarUrl,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        stripeCustomerId: user.stripeCustomerId,
     };
 };
