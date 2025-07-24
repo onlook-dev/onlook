@@ -1,18 +1,19 @@
 
 import { api } from '@/trpc/client';
 import type { GitCommit } from '@onlook/git';
-import { ChatMessageRole, type ChatConversation, type ChatMessage, type ChatMessageContext, type UserChatMessage } from '@onlook/models';
-import type { Message } from 'ai';
+import { ChatMessageRole, MessageSnapshotType, type ChatConversation, type ChatMessage, type ChatMessageContext, type UserChatMessage } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
 import type { EditorEngine } from '../engine';
-import { AssistantChatMessageImpl } from './message/assistant';
-import { UserChatMessageImpl } from './message/user';
+import { getUserChatMessageFromString } from './message';
 
+interface CurrentConversation {
+    conversation: ChatConversation;
+    messages: ChatMessage[];
+}
 export class ConversationManager {
-    private _current: ChatConversation | null = null;
-    private _currentMessages: ChatMessage[] = [];
-    private _conversations: ChatConversation[] = [];
+    current: CurrentConversation | null = null;
+    conversations: ChatConversation[] = [];
     creatingConversation = false;
 
     constructor(
@@ -21,14 +22,29 @@ export class ConversationManager {
         makeAutoObservable(this);
     }
 
-    get current() {
-        return this._current;
+    applyConversations(conversations: ChatConversation[]) {
+        this.conversations = conversations;
+        if (conversations.length > 0 && conversations[0]) {
+            this.current = {
+                conversation: conversations[0],
+                messages: [],
+            };
+        } else {
+            this.startNewConversation();
+        }
     }
 
-    get conversations() {
-        return this._conversations;
+    updateCurrentConversation(conversation: Partial<ChatConversation>) {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        this.current.conversation = {
+            ...this.current.conversation,
+            ...conversation,
+        };
+        // TODO: update in storage
     }
-
     async getConversations(projectId: string): Promise<ChatConversation[]> {
         const res: ChatConversation[] | null = await this.getConversationsFromStorage(projectId);
         if (!res) {
@@ -46,12 +62,15 @@ export class ConversationManager {
     async startNewConversation() {
         try {
             this.creatingConversation = true;
-            if (this._currentMessages.length === 0 && !this.current?.title) {
+            if (this.current?.messages.length === 0 && !this.current?.conversation.title) {
                 throw new Error('Current conversation is already empty.');
             }
             const newConversation = await api.chat.conversation.create.mutate({ projectId: this.editorEngine.projectId });
-            this._current = newConversation;
-            this._conversations.push(this._current);
+            this.current = {
+                conversation: newConversation,
+                messages: [],
+            };
+            this.conversations.push(newConversation);
         } catch (error) {
             console.error('Error starting new conversation', error);
             toast.error('Error starting new conversation.', {
@@ -62,13 +81,22 @@ export class ConversationManager {
         }
     }
 
-    selectConversation(id: string) {
+    async selectConversation(id: string) {
         const match = this.conversations.find((c) => c.id === id);
         if (!match) {
             console.error('No conversation found with id', id);
             return;
         }
-        this._current = match;
+
+        const messages = await this.getMessagesFromStorage(id);
+        this.current = {
+            conversation: match,
+            messages: messages,
+        };
+    }
+
+    async getMessagesFromStorage(id: string): Promise<ChatMessage[]> {
+        return api.chat.message.get.query({ conversationId: id });
     }
 
     deleteConversation(id: string) {
@@ -84,9 +112,9 @@ export class ConversationManager {
         }
         this.conversations.splice(index, 1);
         this.deleteConversationInStorage(id);
-        if (this.current.id === id) {
+        if (this.current?.conversation.id === id) {
             if (this.conversations.length > 0 && !!this.conversations[0]) {
-                this._current = this.conversations[0];
+                this.selectConversation(this.conversations[0].id);
             } else {
                 this.startNewConversation();
             }
@@ -96,42 +124,35 @@ export class ConversationManager {
     async addUserMessage(
         content: string,
         context: ChatMessageContext[],
-    ): Promise<UserChatMessageImpl | undefined> {
+    ): Promise<UserChatMessage> {
         if (!this.current) {
             console.error('No conversation found');
-            return;
+            throw new Error('No conversation found');
         }
-        const newMessage = UserChatMessageImpl.fromStringContent(content, context);
-        await this.addMessage(newMessage);
-        return newMessage;
+        const message = getUserChatMessageFromString(content, context);
+        await this.addMessage(message);
+        return message;
     }
 
     attachCommitToUserMessage(id: string, commit: GitCommit) {
-        const message = this._currentMessages.find((m) => m.id === id && m.role === ChatMessageRole.USER);
+        const message = this.current?.messages.find((m) => m.id === id && m.role === ChatMessageRole.USER);
         if (!message) {
             console.error('No message found with id', id);
             return;
         }
-        (message as UserChatMessage).commitOid = commit.oid;
-        this.current?.updateMessage(message);
+        (message as UserChatMessage).snapshots.push({
+            type: MessageSnapshotType.GIT,
+            oid: commit.oid,
+            createdAt: new Date(),
+        });
     }
 
-    async addAssistantMessage(message: Message): Promise<AssistantChatMessageImpl | undefined> {
+    async addMessage(message: ChatMessage) {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        const newMessage = AssistantChatMessageImpl.fromMessage(message);
-        await this.addMessage(newMessage);
-        return newMessage;
-    }
-
-    private async addMessage(message: ChatMessage) {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-        await this.current.addOrUpdateMessage(message);
+        this.current.messages.push(message);
     }
 
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {
@@ -147,7 +168,7 @@ export class ConversationManager {
     }
 
     clear() {
-        this._current = null;
-        this._conversations = [];
+        this.current = null;
+        this.conversations = [];
     }
 }

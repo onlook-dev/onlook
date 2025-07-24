@@ -2,7 +2,7 @@ import { Agent } from '@mastra/core/agent';
 import type { MastraMemory } from '@mastra/core/memory';
 import type { RuntimeContext } from '@mastra/core/runtime-context';
 import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { ChatType, CLAUDE_MODELS, LLMProvider } from '@onlook/models';
+import { ChatType, LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { memory } from '../memory';
 
 export const ONLOOK_AGENT_KEY = "onlookAgent";
@@ -35,10 +35,12 @@ export const onlookAgent = new Agent({
 
         return systemPrompt;
     },
-    model: async () => {
+    model: async ({ runtimeContext }: {
+        runtimeContext: RuntimeContext<OnlookAgentRuntimeContext>
+    }) => {
         const { model } = await initModel({
-            provider: LLMProvider.ANTHROPIC,
-            model: CLAUDE_MODELS.HAIKU,
+            provider: LLMProvider.OPENROUTER,
+            model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
         });
         return model;
     },

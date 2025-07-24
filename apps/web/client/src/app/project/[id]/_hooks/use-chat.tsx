@@ -3,12 +3,12 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { ChatType } from '@onlook/models';
+import { ChatType, type ChatMessage, type UserChatMessage } from '@onlook/models';
 import type { Message } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers & { sendMessages: (messages: Message[], type: ChatType) => Promise<string | null | undefined> };
+type ExtendedUseChatHelpers = UseChatHelpers & { sendMessage: (message: UserChatMessage, type: ChatType) => Promise<string | null | undefined> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
@@ -28,7 +28,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         onFinish: (message, { finishReason }) => {
             lastMessageRef.current = message;
             if (finishReason !== 'tool-calls') {
-                editorEngine.chat.conversation.addAssistantMessage(message);
+                editorEngine.chat.conversation.addMessage(message as unknown as ChatMessage);
                 lastMessageRef.current = null;
             }
 
@@ -50,16 +50,16 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             editorEngine.chat.error.handleChatError(error);
 
             if (lastMessageRef.current) {
-                editorEngine.chat.conversation.addAssistantMessage(lastMessageRef.current);
+                editorEngine.chat.conversation.addMessage(lastMessageRef.current as unknown as ChatMessage);
                 lastMessageRef.current = null;
             }
         },
     });
 
-    const sendMessages = async (messages: Message[], type: ChatType = ChatType.EDIT) => {
+    const sendMessage = async (message: UserChatMessage, type: ChatType = ChatType.EDIT) => {
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
-        chat.setMessages(messages);
+        chat.setMessages([message as unknown as Message]);
         try {
             posthog.capture('user_send_message', {
                 type,
@@ -74,7 +74,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         });
     };
 
-    return <ChatContext.Provider value={{ ...chat, sendMessages }}>{children}</ChatContext.Provider>;
+    return <ChatContext.Provider value={{ ...chat, sendMessage }}>{children}</ChatContext.Provider>;
 }
 
 export function useChatContext() {

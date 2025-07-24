@@ -1,6 +1,5 @@
 import type { GitCommit } from '@onlook/git';
-import { ChatMessageRole, type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
-import type { Message } from 'ai';
+import { type ChatMessageContext, type UserChatMessage } from '@onlook/models/chat';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
@@ -26,62 +25,58 @@ export class ChatManager {
         makeAutoObservable(this);
     }
 
-    updateCurrentConversation(conversation: Partial<ChatConversation>) {
-        // TODO: implement
-    }
-
     focusChatInput() {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
     getCurrentConversationId() {
-        return this.conversation.current?.id;
+        return this.conversation.current?.conversation.id;
     }
 
-    async getEditMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return null;
-        }
+    async getEditMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage | null> {
+        try {
+            const context = contextOverride ?? await this.context.getChatContext();
+            const userMessage = await this.conversation.addUserMessage(content, context);
 
-        const context = contextOverride ?? await this.context.getChatContext();
-        const userMessage = await this.conversation.addUserMessage(content, context);
-
-        this.updateCurrentConversation({
-            title: content,
-        });
-        if (!userMessage) {
-            console.error('Failed to add user message');
-            return null;
-        }
-        this.createCommit(content).then((commit) => {
-            if (commit) {
-                this.conversation.attachCommitToUserMessage(userMessage.id, commit);
+            this.conversation.updateCurrentConversation({
+                title: content,
+            });
+            if (!userMessage) {
+                console.error('Failed to add user message');
+                return null;
             }
-        });
-        return this.generateStreamMessages();
-    }
-
-    async getAskMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
+            this.createCommit(content).then((commit) => {
+                if (commit) {
+                    this.conversation.attachCommitToUserMessage(userMessage.id, commit);
+                }
+            });
+            return userMessage;
+        } catch (error) {
+            console.error('Error getting edit message', error);
             return null;
         }
-
-        const context = contextOverride ?? await this.context.getChatContext();
-        const userMessage = await this.conversation.addUserMessage(content, context);
-
-        this.updateCurrentConversation({
-            title: content,
-        });
-        if (!userMessage) {
-            console.error('Failed to add user message');
-            return null;
-        }
-        return this.generateStreamMessages();
     }
 
-    async getFixErrorMessages(): Promise<Message[] | null> {
+    async getAskMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage | null> {
+        try {
+            const context = contextOverride ?? await this.context.getChatContext();
+            const userMessage = await this.conversation.addUserMessage(content, context);
+
+            this.conversation.updateCurrentConversation({
+                title: content,
+            });
+            if (!userMessage) {
+                console.error('Failed to add user message');
+                return null;
+            }
+            return userMessage;
+        } catch (error) {
+            console.error('Error getting ask message', error);
+            return null;
+        }
+    }
+
+    async getFixErrorMessage(): Promise<UserChatMessage | null> {
         const errors = this.editorEngine.error.errors;
         if (!this.conversation.current) {
             console.error('No conversation found');
@@ -96,49 +91,37 @@ export class ChatManager {
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
         const errorContexts = this.context.getMessageContext(errors);
         const projectContexts = this.context.getProjectContext();
-        const userMessage = this.conversation.addUserMessage(prompt, [
+        const userMessage = await this.conversation.addUserMessage(prompt, [
             ...errorContexts,
             ...projectContexts,
         ]);
-        this.updateCurrentConversation({
-            title: errors[0]?.content ?? 'Fix errors',
-        });
         if (!userMessage) {
             console.error('Failed to add user message');
             return null;
         }
-        return this.generateStreamMessages();
+        return userMessage
     }
 
-    async getResubmitMessages(id: string, newMessageContent: string) {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return;
-        }
-        const message = this.conversation.current?.messages.find((m) => m.id === id);
-        if (!message) {
-            console.error('No message found with id', id);
-            return;
-        }
-        if (message.role !== ChatMessageRole.USER) {
-            console.error('Can only edit user messages');
-            return;
-        }
+    async getResubmitMessage(id: string, newMessageContent: string): Promise<UserChatMessage | null> {
+        // TODO: implement
+        return null;
 
-        const newContext = await this.context.getRefreshedContext(message.context);
-        message.updateMessage(newMessageContent, newContext);
+        // const message = this.conversation.current?.messages.find((m) => m.id === id);
+        // if (!message) {
+        //     console.error('No message found with id', id);
+        //     return;
+        // }
+        // if (message.role !== ChatMessageRole.USER) {
+        //     console.error('Can only edit user messages');
+        //     return;
+        // }
 
-        await this.conversation.current.removeAllMessagesAfter(message);
-        await this.conversation.current.updateMessage(message);
-        return this.generateStreamMessages();
-    }
+        // const newContext = await this.context.getRefreshedContext(message.context);
+        // message.updateMessage(newMessageContent, newContext);
 
-    private async generateStreamMessages(): Promise<Message[] | null> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return null;
-        }
-        return this.conversation.current.getMessagesForStream();
+        // await this.conversation.current.removeAllMessagesAfter(message);
+        // await this.conversation.current.updateMessage(message);
+        // return this.generateStreamMessages();
     }
 
     async createCommit(userPrompt: string): Promise<GitCommit | null> {

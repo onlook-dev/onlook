@@ -1,6 +1,6 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
-import { ChatType, type UserChatMessage } from '@onlook/models';
+import { ChatType, MessageSnapshotType, type UserChatMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -27,7 +27,7 @@ export const getUserMessageContent = (message: UserChatMessage) => {
 
 export const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
-    const { sendMessages } = useChatContext();
+    const { sendMessage: sendMessageToChat } = useChatContext();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
@@ -35,6 +35,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     const [isRestoring, setIsRestoring] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const commitOid = message.snapshots.find((s) => s.type === MessageSnapshotType.GIT)?.oid;
 
     useEffect(() => {
         if (isEditing && textareaRef.current) {
@@ -82,21 +83,21 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     const sendMessage = async (newContent: string) => {
-        const newMessages = await editorEngine.chat.getResubmitMessages(message.id, newContent);
-        if (!newMessages) {
+        const newMessage = await editorEngine.chat.getResubmitMessage(message.id, newContent);
+        if (!newMessage) {
             console.error('Failed to resubmit message');
             return;
         }
-        sendMessages(newMessages, ChatType.EDIT);
+        sendMessageToChat(newMessage, ChatType.EDIT);
     };
 
     const handleRestoreCheckpoint = async () => {
         try {
             setIsRestoring(true);
-            if (!message.commitOid) {
+            if (!commitOid) {
                 throw new Error('No commit oid found');
             }
-            const commit = await editorEngine.versions.getCommitByOid(message.commitOid);
+            const commit = await editorEngine.versions.getCommitByOid(commitOid);
             if (!commit) {
                 throw new Error('Failed to get commit');
             }
@@ -220,7 +221,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                     )}
                 </div>
             </div>
-            {message.commitOid && (
+            {commitOid && (
                 <div className="absolute left-2 top-1/2 -translate-y-1/2">
                     <Tooltip>
                         <TooltipTrigger asChild>

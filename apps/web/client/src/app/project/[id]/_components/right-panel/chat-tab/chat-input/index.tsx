@@ -26,7 +26,7 @@ export const ChatInput = observer(({
     inputValue: string;
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-    const { sendMessages, stop, isWaiting } = useChatContext();
+    const { sendMessage: sendMessageToChat, stop, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -130,18 +130,18 @@ export const ChatInput = observer(({
         }
         const savedInput = inputValue.trim();
         setInputValue('');
-        
-        const streamMessages = chatMode === ChatType.ASK 
-            ? await editorEngine.chat.getAskMessages(savedInput)
-            : await editorEngine.chat.getEditMessages(savedInput);
-            
-        if (!streamMessages) {
+
+        const message = chatMode === ChatType.ASK
+            ? await editorEngine.chat.getAskMessage(savedInput)
+            : await editorEngine.chat.getEditMessage(savedInput);
+
+        if (!message) {
             toast.error('Failed to send message. Please try again.');
             setInputValue(savedInput);
             return;
         }
 
-        sendMessages(streamMessages, chatMode);
+        sendMessageToChat(message, chatMode);
     }
 
     const getPlaceholderText = () => {
@@ -203,7 +203,7 @@ export const ChatInput = observer(({
     const handleScreenshot = async () => {
         try {
             const framesWithViews = editorEngine.frames.getAll().filter(f => !!f.view);
-            
+
             if (framesWithViews.length === 0) {
                 toast.error('No active frame available for screenshot');
                 return;
@@ -211,7 +211,7 @@ export const ChatInput = observer(({
 
             let screenshotData = null;
             let mimeType = 'image/jpeg';
-            
+
             for (const frame of framesWithViews) {
                 try {
                     if (!frame.view?.captureScreenshot) {
@@ -357,15 +357,15 @@ export const ChatInput = observer(({
             </div>
             <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
                 <div className="flex flex-row items-center gap-1.5">
-                    <ChatModeToggle 
+                    <ChatModeToggle
                         chatMode={chatMode}
                         onChatModeChange={setChatMode}
                         disabled={disabled}
                     />
                 </div>
                 <div className="flex flex-row items-center gap-1.5">
-                    <ActionButtons 
-                        disabled={disabled} 
+                    <ActionButtons
+                        disabled={disabled}
                         handleImageEvent={handleImageEvent}
                         handleScreenshot={handleScreenshot}
                     />

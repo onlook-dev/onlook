@@ -63,7 +63,6 @@ export const streamResponse = async (req: NextRequest) => {
         maxSteps,
         runtimeContext,
         toolCallStreaming: true,
-        maxTokens: 64000,
         experimental_repairToolCall: repairToolCall,
         onError: (error) => {
             console.error('Error in chat', error);
