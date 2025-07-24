@@ -9,6 +9,10 @@ export function extractIdsFromEvent(
     const stripeSubscription = event.data.object;
     const stripeSubscriptionId = stripeSubscription.id;
     const stripeSubscriptionItemId = stripeSubscription.items.data[0]?.id;
+    const stripeSubscriptionScheduleId =
+        typeof stripeSubscription.schedule === 'string'
+            ? stripeSubscription.schedule
+            : stripeSubscription.schedule?.id;
     const stripePriceId = stripeSubscription.items.data[0]?.price?.id;
     const stripeCustomerId = stripeSubscription.customer?.toString();
     const currentPeriodStart = stripeSubscription.items.data[0]?.current_period_start;
@@ -38,6 +42,7 @@ export function extractIdsFromEvent(
         stripeSubscription,
         stripeSubscriptionId,
         stripeSubscriptionItemId,
+        stripeSubscriptionScheduleId,
         stripePriceId,
         stripeCustomerId,
         currentPeriodStart: new Date(currentPeriodStart * 1000),

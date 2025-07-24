@@ -1,7 +1,12 @@
 import { trackEvent } from '@/utils/analytics/server';
 import { prices, rateLimits, subscriptions } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
-import { isTierUpgrade, ScheduledSubscriptionAction, SubscriptionStatus } from '@onlook/stripe';
+import {
+    getSubscriptionSchedule,
+    isTierUpgrade,
+    ScheduledSubscriptionAction,
+    SubscriptionStatus,
+} from '@onlook/stripe';
 import { and, eq } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { v4 as uuid } from 'uuid';
@@ -13,6 +18,7 @@ export const handleSubscriptionUpdated = async (
     const {
         stripeSubscriptionItemId,
         stripeSubscriptionId,
+        stripeSubscriptionScheduleId,
         stripePriceId,
         currentPeriodStart,
         currentPeriodEnd,
@@ -45,12 +51,22 @@ export const handleSubscriptionUpdated = async (
     }
 
     const isUpgrade = isTierUpgrade(currentPrice, newPrice);
-    const isRenewal = stripeSubscription.status === SubscriptionStatus.ACTIVE && +currentPeriodEnd !== +subscription.stripeCurrentPeriodEnd;
+    const isRenewal =
+        stripeSubscription.status === SubscriptionStatus.ACTIVE &&
+        +currentPeriodEnd !== +subscription.stripeCurrentPeriodEnd;
 
     let renew = false;
     // Update subscription if price changed
     if (isUpgrade) {
-        renew = await handleSubscriptionUpgrade(subscription, currentPrice, currentPeriodStart, currentPeriodEnd, stripeSubscriptionItemId, newPrice, isUpgrade);
+        renew = await handleSubscriptionUpgrade(
+            subscription,
+            currentPrice,
+            currentPeriodStart,
+            currentPeriodEnd,
+            stripeSubscriptionItemId,
+            newPrice,
+            isUpgrade,
+        );
     } else if (isRenewal) {
         // Based on the doc/dashboard, it is not possible to programmatically update the current period start and end.
         // If it is updated then the subscription is renewed.
@@ -59,7 +75,13 @@ export const handleSubscriptionUpdated = async (
     }
 
     if (renew) {
-        await handleSubscriptionRenewed(subscription, currentPeriodStart, currentPeriodEnd, stripeSubscriptionItemId, newPrice);
+        await handleSubscriptionRenewed(
+            subscription,
+            currentPeriodStart,
+            currentPeriodEnd,
+            stripeSubscriptionItemId,
+            newPrice,
+        );
     }
 
     if (stripeSubscription.cancel_at) {
@@ -76,6 +98,8 @@ export const handleSubscriptionUpdated = async (
                 .where(eq(subscriptions.id, subscription.id));
         });
         console.log('Subscription cancellation scheduled at ', stripeSubscription.cancel_at);
+    } else {
+        await updateSubscriptionScheduleIfNeeded(subscription.id, stripeSubscriptionScheduleId);
     }
 
     trackEvent({
@@ -87,9 +111,9 @@ export const handleSubscriptionUpdated = async (
             cancellationScheduled: !!stripeSubscription.cancel_at,
             $set: {
                 subscription_updated_at: new Date(),
-            }
-        }
-    })
+            },
+        },
+    });
 
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
 };
@@ -116,8 +140,7 @@ const handleSubscriptionUpgrade = async (
 
         // This is important because a subscription may be upgraded to a higher tier without prorating.
         // In the case of a pro-rated tier increase, the system creates a new rate limit with the delta.
-        const isProRated =
-            isUpgrade && +currentPeriodEnd === +subscription.stripeCurrentPeriodEnd;
+        const isProRated = isUpgrade && +currentPeriodEnd === +subscription.stripeCurrentPeriodEnd;
         const tierIncrease = newPrice.monthlyMessageLimit - currentPrice.monthlyMessageLimit;
         if (isProRated) {
             await tx.insert(rateLimits).values({
@@ -138,7 +161,60 @@ const handleSubscriptionUpgrade = async (
         }
     });
     return renew;
-}
+};
+
+const updateSubscriptionScheduleIfNeeded = async (
+    subscriptionId: string,
+    stripeSubscriptionScheduleId?: string,
+) => {
+    if (!stripeSubscriptionScheduleId) {
+        return;
+    }
+
+    const schedule = await getSubscriptionSchedule({
+        subscriptionScheduleId: stripeSubscriptionScheduleId,
+    });
+
+    // the phases includes the current phase and the next phases
+    // the code does some extra steps of the off chance, it does not include the current
+    // phase and the array is not sorted
+    const phases = schedule.phases
+        // filter out the current phase
+        .filter((_) => _.start_date !== schedule.current_phase?.start_date)
+        .sort((a, b) => a.start_date - b.start_date);
+
+    const endDate = phases[0]?.start_date;
+    const scheduledChangeAt = endDate ? new Date(endDate * 1000) : null;
+
+    const stripePrice = phases[0]?.items[0]?.price;
+    const stripePriceId = typeof stripePrice === 'string' ? stripePrice : stripePrice?.id;
+
+    // If the schedule event is not a price change, then it is not handled here.
+    if (!stripePriceId) {
+        console.log('Stripe Price ID not found.');
+        return;
+    }
+
+    const price = await db.query.prices.findFirst({
+        where: eq(prices.stripePriceId, stripePriceId),
+    });
+
+    if (!price) {
+        throw new Error('Price not found.');
+    }
+
+    await db
+        .update(subscriptions)
+        .set({
+            updatedAt: new Date(),
+            scheduledAction: ScheduledSubscriptionAction.PRICE_CHANGE,
+            scheduledPriceId: price.id,
+            scheduledChangeAt,
+            stripeSubscriptionScheduleId: schedule.id,
+        })
+        .where(eq(subscriptions.id, subscriptionId))
+        .returning();
+};
 
 const handleSubscriptionRenewed = async (
     subscription: typeof subscriptions.$inferSelect,
@@ -210,4 +286,4 @@ const handleSubscriptionRenewed = async (
             })
             .where(eq(subscriptions.id, subscription.id));
     });
-}
+};

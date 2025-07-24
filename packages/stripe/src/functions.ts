@@ -9,7 +9,7 @@ export const createCustomer = async ({ name, email }: { name: string; email: str
 
 export const isTierUpgrade = (currentPrice: Price, newPrice: Price) => {
     return newPrice.monthlyMessageLimit > currentPrice.monthlyMessageLimit;
-}
+};
 
 export const createCheckoutSession = async ({
     priceId,
@@ -25,7 +25,7 @@ export const createCheckoutSession = async ({
     existing?: {
         subscriptionId: string;
         customerId: string;
-    }
+    };
     successUrl: string;
     cancelUrl: string;
 }) => {
@@ -35,10 +35,12 @@ export const createCheckoutSession = async ({
         session = await stripe.checkout.sessions.create({
             mode: 'subscription',
             customer: stripeCustomerId,
-            line_items: [{
-                price: priceId,
-                quantity: 1,
-            }],
+            line_items: [
+                {
+                    price: priceId,
+                    quantity: 1,
+                },
+            ],
             payment_method_types: ['card'],
             metadata: {
                 user_id: userId,
@@ -48,16 +50,18 @@ export const createCheckoutSession = async ({
             cancel_url: cancelUrl,
             subscription_data: {
                 proration_behavior: 'create_prorations',
-            }
+            },
         });
     } else {
         session = await stripe.checkout.sessions.create({
             mode: 'subscription',
             customer: stripeCustomerId,
-            line_items: [{
-                price: priceId,
-                quantity: 1,
-            }],
+            line_items: [
+                {
+                    price: priceId,
+                    quantity: 1,
+                },
+            ],
             payment_method_types: ['card'],
             metadata: {
                 user_id: userId,
@@ -82,7 +86,7 @@ export const createBillingPortalSession = async ({
         customer: customerId,
         return_url: returnUrl,
     });
-}
+};
 
 export const updateSubscription = async ({
     subscriptionId,
@@ -95,13 +99,15 @@ export const updateSubscription = async ({
 }) => {
     const stripe = createStripeClient();
     return stripe.subscriptions.update(subscriptionId, {
-        items: [{
-            id: subscriptionItemId,
-            price: priceId,
-        }],
-        proration_behavior: 'always_invoice'
+        items: [
+            {
+                id: subscriptionItemId,
+                price: priceId,
+            },
+        ],
+        proration_behavior: 'always_invoice',
     });
-}
+};
 
 export const updateSubscriptionNextPeriod = async ({
     subscriptionId,
@@ -166,4 +172,13 @@ export const releaseSubscriptionSchedule = async ({
 }) => {
     const stripe = createStripeClient();
     return await stripe.subscriptionSchedules.release(subscriptionScheduleId);
-}
+};
+
+export const getSubscriptionSchedule = async ({
+    subscriptionScheduleId,
+}: {
+    subscriptionScheduleId: string;
+}) => {
+    const stripe = createStripeClient();
+    return stripe.subscriptionSchedules.retrieve(subscriptionScheduleId);
+};
