@@ -5,6 +5,9 @@ import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPr
 import { ChatType, CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import { memory } from '../memory';
 
+export const ONLOOK_AGENT_KEY = "onlookAgent";
+export const CHAT_TYPE_KEY = "chatType";
+
 export type OnlookAgentRuntimeContext = {
     chatType: ChatType;
 }
@@ -14,7 +17,7 @@ export const onlookAgent = new Agent({
     instructions: ({ runtimeContext }: {
         runtimeContext: RuntimeContext<OnlookAgentRuntimeContext>
     }) => {
-        const chatType = runtimeContext.get("chatType");
+        const chatType = runtimeContext.get(CHAT_TYPE_KEY);
         let systemPrompt = "";
 
         switch (chatType) {

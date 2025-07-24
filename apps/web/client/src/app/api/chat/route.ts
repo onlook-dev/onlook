@@ -1,13 +1,11 @@
 import { mastra } from '@/mastra';
-import type { OnlookAgentRuntimeContext } from '@/mastra/agents';
+import { CHAT_TYPE_KEY, ONLOOK_AGENT_KEY, type OnlookAgentRuntimeContext } from '@/mastra/agents';
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { trackEvent } from '@/utils/analytics/server';
-import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { RuntimeContext } from '@mastra/core/runtime-context';
-import { initModel } from '@onlook/ai';
-import { ChatType, CLAUDE_MODELS, LLMProvider, type Usage, UsageType } from '@onlook/models';
-import { generateObject, NoSuchToolError, type ToolCall, type ToolSet } from 'ai';
+import { ChatType, UsageType } from '@onlook/models';
 import { type NextRequest } from 'next/server';
+import { checkMessageLimit, getSupabaseUser, repairToolCall } from './helpers';
 
 export async function POST(req: NextRequest) {
     try {
@@ -41,7 +39,7 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        return streamResponseMastra(req);
+        return streamResponse(req);
     } catch (error: any) {
         console.error('Error in chat', error);
         return new Response(JSON.stringify({
@@ -55,49 +53,12 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export const checkMessageLimit = async (req: NextRequest): Promise<{
-    exceeded: boolean;
-    usage: Usage;
-}> => {
-    const { api } = await createTRPCClient(req);
-    const usage = await api.usage.get();
-
-    const dailyUsage = usage.daily;
-    const dailyExceeded = dailyUsage.usageCount >= dailyUsage.limitCount;
-    if (dailyExceeded) {
-        return {
-            exceeded: true,
-            usage: dailyUsage,
-        };
-    }
-
-    const monthlyUsage = usage.monthly;
-    const monthlyExceeded = monthlyUsage.usageCount >= monthlyUsage.limitCount;
-    if (monthlyExceeded) {
-        return {
-            exceeded: true,
-            usage: monthlyUsage,
-        };
-    }
-
-    return {
-        exceeded: false,
-        usage: monthlyUsage,
-    };
-}
-
-export const getSupabaseUser = async (request: NextRequest) => {
-    const supabase = await createSupabaseClient(request);
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
-}
-
-export const streamResponseMastra = async (req: NextRequest) => {
+export const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType, conversationId, projectId } = await req.json();
 
-    const agent = mastra.getAgent("onlookAgent");
+    const agent = mastra.getAgent(ONLOOK_AGENT_KEY);
     const runtimeContext = new RuntimeContext<OnlookAgentRuntimeContext>()
-    runtimeContext.set("chatType", chatType);
+    runtimeContext.set(CHAT_TYPE_KEY, chatType);
     const result = await agent.stream(messages, {
         maxSteps,
         runtimeContext,
@@ -127,42 +88,4 @@ export const streamResponseMastra = async (req: NextRequest) => {
     }
 
     return result.toDataStreamResponse();
-}
-
-const repairToolCall = async ({ toolCall, tools, error }: { toolCall: ToolCall<string, any>, tools: ToolSet, error: Error }) => {
-    console.log('repairToolCall', { toolCall, tools, error });
-    if (NoSuchToolError.isInstance(error)) {
-        throw new Error(
-            `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
-        );
-    }
-    const tool = tools[toolCall.toolName as keyof typeof tools];
-
-    console.warn(
-        `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}, attempting to fix`,
-    );
-
-    const { model } = await initModel({
-        provider: LLMProvider.ANTHROPIC,
-        model: CLAUDE_MODELS.SONNET_4,
-    });
-
-    const { object: repairedArgs } = await generateObject({
-        model,
-        schema: tool?.parameters,
-        prompt: [
-            `The model tried to call the tool "${toolCall.toolName}"` +
-            ` with the following arguments:`,
-            JSON.stringify(toolCall.args),
-            `The tool accepts the following schema:`,
-            JSON.stringify(tool?.parameters),
-            'Please fix the arguments.',
-        ].join('\n'),
-    });
-
-    return {
-        ...toolCall,
-        args: JSON.stringify(repairedArgs),
-        toolCallType: 'function' as const
-    };
 }
