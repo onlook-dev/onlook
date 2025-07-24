@@ -77,10 +77,14 @@ export const usageRouter = createTRPCRouter({
         type: z.nativeEnum(UsageType),
     })).mutation(async ({ ctx, input }) => {
         const user = ctx.user;
-        await db.insert(usageRecords).values({
+        const [usageRecord] = await db.insert(usageRecords).values({
             userId: user.id,
             type: input.type,
             timestamp: new Date(),
-        });
+        }).returning();
+        if (!usageRecord) {
+            throw new Error('Failed to increment usage');
+        }
+        return usageRecord;
     }),
 });
