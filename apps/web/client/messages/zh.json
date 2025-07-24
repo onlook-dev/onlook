@@ -130,7 +130,7 @@
             },
             "launch": {
                 "name": "Launch",
-                "price": "$50/月",
+                "price": "$25/月",
                 "description": "适用于初创公司和成长型团队",
                 "features": [
                     "无限制的每日消息",

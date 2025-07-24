@@ -133,7 +133,7 @@ declare const messages: {
             },
             "launch": {
                 "name": "Launch",
-                "price": "$50/month",
+                "price": "$25/month",
                 "description": "Perfect for startups and growing teams",
                 "features": [
                     "Unlimited daily messages",
