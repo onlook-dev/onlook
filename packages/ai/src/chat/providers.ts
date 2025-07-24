@@ -49,7 +49,7 @@ export async function initModel({
         case LLMProvider.OPENROUTER:
             return {
                 model: await getOpenRouterProvider(model),
-                providerOptions: {},
+                providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
             };
         default:
             assertNever(provider);

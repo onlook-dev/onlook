@@ -17,13 +17,13 @@ export const BEDROCK_MODEL_MAP = {
     [CLAUDE_MODELS.SONNET_4]: 'us.anthropic.claude-sonnet-4-20250514-v1:0',
     [CLAUDE_MODELS.SONNET_3_7]: 'us.anthropic.claude-3-7-sonnet-20250219-v1:0',
     [CLAUDE_MODELS.HAIKU]: 'us.anthropic.claude-3-5-haiku-20241022-v1:0',
-};
+} as const;
 
 export const VERTEX_MODEL_MAP = {
     [CLAUDE_MODELS.SONNET_4]: 'claude-sonnet-4@20250514',
     [CLAUDE_MODELS.SONNET_3_7]: 'claude-3-7-sonnet@20250219',
     [CLAUDE_MODELS.HAIKU]: 'claude-3-5-haiku@20241022',
-};
+} as const;
 
 export enum OPENAI_MODELS {
     GPT_4_1 = 'gpt-4.1',
@@ -38,11 +38,8 @@ export enum GEMINI_MODELS {
 }
 
 export enum OPENROUTER_MODELS {
-    QWEN3_CODER = 'qwen/qwen3-coder',
-    CLAUDE_3_5_SONNET = 'anthropic/claude-3.5-sonnet',
-    GPT_4O = 'openai/gpt-4o',
-    GEMINI_2_5_FLASH = 'google/gemini-2.5-flash-lite',
-    LLAMA_3_1_405B = 'meta-llama/llama-3.1-405b-instruct',
+    CLAUDE_3_5_HAIKU = 'anthropic/claude-3.5-haiku',
+    CLAUDE_4_SONNET = 'anthropic/claude-sonnet-4',
 }
 
 interface ModelMapping {
