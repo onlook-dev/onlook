@@ -96,6 +96,11 @@ export const streamResponse = async (req: NextRequest) => {
         model: CLAUDE_MODELS.SONNET_4,
     });
 
+    const user = await getSupabaseUser(req);
+    if (!user) {
+        throw new Error('User not found');
+    }
+
     let systemPrompt: string;
     switch (chatType) {
         case ChatType.CREATE:
@@ -153,15 +158,18 @@ export const streamResponse = async (req: NextRequest) => {
         },
         onError: (error) => {
             console.error('Error in chat', error);
+            trackEvent({
+                distinctId: user.id,
+                event: 'chat_error',
+                properties: {
+                    error: JSON.stringify(error),
+                },
+            });
         },
     });
 
     try {
         if (chatType === ChatType.EDIT) {
-            const user = await getSupabaseUser(req);
-            if (!user) {
-                throw new Error('User not found');
-            }
             const { api } = await createTRPCClient(req);
             await api.usage.increment({
                 type: UsageType.MESSAGE,
