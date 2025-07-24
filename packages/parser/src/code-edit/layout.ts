@@ -261,7 +261,7 @@ function removeDeprecatedPreloadScripts(ast: T.File): void {
     });
 }
 
-function scanForPreloadScript(ast: T.File): {
+export function scanForPreloadScript(ast: T.File): {
     scriptCount: number;
     deprecatedScriptCount: number;
     injectedCorrectly: boolean;

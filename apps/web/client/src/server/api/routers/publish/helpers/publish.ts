@@ -87,7 +87,7 @@ export async function publish({
         }
     } catch (error) {
         console.error(error);
-        updateDeployment(db, deploymentId, {
+        await updateDeployment(db, deploymentId, {
             status: DeploymentStatus.FAILED,
             error: error instanceof Error ? error.message : 'Unknown error',
             progress: 100,
