@@ -309,8 +309,6 @@ export class PagesManager {
             if (addToHistory) {
                 this.addToHistory(originalPath);
             }
-
-            sendAnalytics('page navigate');
         } catch (error) {
             console.error('Navigation failed:', error);
         }
