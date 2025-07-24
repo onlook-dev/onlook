@@ -1,5 +1,5 @@
 import type { GitCommit } from '@onlook/git';
-import { ChatMessageRole, type ChatMessageContext } from '@onlook/models/chat';
+import { ChatMessageRole, type ChatConversation, type ChatMessageContext } from '@onlook/models/chat';
 import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -26,6 +26,10 @@ export class ChatManager {
         makeAutoObservable(this);
     }
 
+    updateCurrentConversation(conversation: Partial<ChatConversation>) {
+        // TODO: implement
+    }
+
     focusChatInput() {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
@@ -43,7 +47,9 @@ export class ChatManager {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
 
-        this.conversation.current.updateName(content);
+        this.updateCurrentConversation({
+            title: content,
+        });
         if (!userMessage) {
             console.error('Failed to add user message');
             return null;
@@ -65,7 +71,9 @@ export class ChatManager {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
 
-        this.conversation.current.updateName(content);
+        this.updateCurrentConversation({
+            title: content,
+        });
         if (!userMessage) {
             console.error('Failed to add user message');
             return null;
@@ -92,7 +100,9 @@ export class ChatManager {
             ...errorContexts,
             ...projectContexts,
         ]);
-        this.conversation.current.updateName(errors[0]?.content ?? 'Fix errors');
+        this.updateCurrentConversation({
+            title: errors[0]?.content ?? 'Fix errors',
+        });
         if (!userMessage) {
             console.error('Failed to add user message');
             return null;
@@ -105,7 +115,7 @@ export class ChatManager {
             console.error('No conversation found');
             return;
         }
-        const message = this.conversation.current.messages.find((m) => m.id === id);
+        const message = this.conversation.current?.messages.find((m) => m.id === id);
         if (!message) {
             console.error('No message found with id', id);
             return;

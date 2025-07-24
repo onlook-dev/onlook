@@ -1,7 +1,7 @@
-import type { Message } from '@ai-sdk/react';
-import type { TextPart } from 'ai';
+import type { MastraMessageV2 } from '@mastra/core/memory';
 import type { CodeDiff } from '../../code/index.ts';
 import { type ChatMessageContext } from './context.ts';
+import type { MessageSnapshot } from './snapshot.ts';
 
 export enum ChatMessageRole {
     USER = 'user',
@@ -9,25 +9,25 @@ export enum ChatMessageRole {
     SYSTEM = 'system',
 }
 
-export interface UserChatMessage extends Message {
-    role: ChatMessageRole.USER;
-    context: ChatMessageContext[];
-    parts: TextPart[];
-    content: string;
-    commitOid: string | null;
+interface BaseChatMessage extends Omit<MastraMessageV2, 'role'> {
+    role: ChatMessageRole;
 }
 
-export interface AssistantChatMessage extends Message {
+export interface UserChatMessage extends BaseChatMessage {
+    role: ChatMessageRole.USER;
+    context: ChatMessageContext[];
+    snapshots: MessageSnapshot[];
+}
+
+export interface AssistantChatMessage extends BaseChatMessage {
     role: ChatMessageRole.ASSISTANT;
     applied: boolean;
-    snapshots: ChatSnapshot;
-    parts: Message['parts'];
-    content: string;
+    snapshots: MessageSnapshot[];
 }
 
 export type ChatSnapshot = Record<string, CodeDiff>;
 
-export interface SystemChatMessage extends Message {
+export interface SystemChatMessage extends BaseChatMessage {
     role: ChatMessageRole.SYSTEM;
 }
 

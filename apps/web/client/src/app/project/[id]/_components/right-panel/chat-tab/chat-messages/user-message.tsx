@@ -1,7 +1,6 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
-import type { UserChatMessageImpl } from '@/components/store/editor/chat/message/user';
-import { ChatType } from '@onlook/models';
+import { ChatType, type UserChatMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -11,9 +10,19 @@ import { cn } from '@onlook/ui/utils';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useRef, useState } from 'react';
 import { SentContextPill } from '../context-pills/sent-context-pill';
+import { MessageContent } from './message-content';
 
 interface UserMessageProps {
-    message: UserChatMessageImpl;
+    message: UserChatMessage;
+}
+
+export const getUserMessageContent = (message: UserChatMessage) => {
+    return message.content.parts.map((part) => {
+        if (part.type === 'text') {
+            return part.text;
+        }
+        return '';
+    }).join('');
 }
 
 export const UserMessage = ({ message }: UserMessageProps) => {
@@ -30,14 +39,14 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     useEffect(() => {
         if (isEditing && textareaRef.current) {
             textareaRef.current.focus();
-            if (editValue === message.getStringContent()) {
+            if (editValue === getUserMessageContent(message)) {
                 textareaRef.current.setSelectionRange(editValue.length, editValue.length);
             }
         }
     }, [isEditing]);
 
     const handleEditClick = () => {
-        setEditValue(message.getStringContent());
+        setEditValue(getUserMessageContent(message));
         setIsEditing(true);
     };
 
@@ -57,7 +66,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     async function handleCopyClick() {
-        const text = message.getStringContent();
+        const text = getUserMessageContent(message);
         await navigator.clipboard.writeText(text);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
@@ -69,7 +78,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     const handleRetry = async () => {
-        await sendMessage(message.getStringContent());
+        await sendMessage(getUserMessageContent(message));
     };
 
     const sendMessage = async (newContent: string) => {
@@ -128,10 +137,6 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                 </div>
             </div>
         );
-    }
-
-    function renderContent() {
-        return <div>{message.getStringContent()}</div>;
     }
 
     function renderButtons() {
@@ -205,7 +210,14 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                     </div>
                 </div>
                 <div className="text-small mt-1">
-                    {isEditing ? renderEditingInput() : renderContent()}
+                    {isEditing ? renderEditingInput() : (
+                        <MessageContent
+                            messageId={message.id}
+                            parts={message.content.parts}
+                            applied={false}
+                            isStream={false}
+                        />
+                    )}
                 </div>
             </div>
             {message.commitOid && (

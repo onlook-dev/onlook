@@ -3,7 +3,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import type { AssistantChatMessageImpl } from '@/components/store/editor/chat/message/assistant';
 import type { UserChatMessageImpl } from '@/components/store/editor/chat/message/user';
 import { transKeys } from '@/i18n/keys';
-import { ChatMessageRole } from '@onlook/models/chat';
+import { ChatMessageRole, type UserChatMessage, type AssistantChatMessage } from '@onlook/models/chat';
 import { ChatMessageList } from '@onlook/ui/chat/chat-message-list';
 import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
@@ -21,7 +21,7 @@ export const ChatMessages = observer(() => {
     const conversation = editorEngine.chat.conversation.current;
     const messages = editorEngine.chat.conversation.current?.messages;
 
-    const renderMessage = (message: AssistantChatMessageImpl | UserChatMessageImpl) => {
+    const renderMessage = (message: AssistantChatMessage | UserChatMessage) => {
         let messageNode;
         switch (message.role) {
             case ChatMessageRole.ASSISTANT:

@@ -1,19 +1,17 @@
+import { mastra } from '@/mastra';
 import {
     conversationInsertSchema,
     conversations,
     messageInsertSchema,
     messages,
-    toConversation,
-    toOnlookMessageFromMastra,
     toOnlookConversationFromMastra,
-    toMessage,
-    type Message,
+    toOnlookMessageFromMastra,
+    type Message
 } from '@onlook/db';
 import type { ChatMessageRole } from '@onlook/models';
 import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { mastra } from '@/mastra';
 
 const conversationRouter = createTRPCRouter({
     get: protectedProcedure
@@ -32,24 +30,24 @@ const conversationRouter = createTRPCRouter({
                 resourceId: input.projectId,
             })
 
-            console.log('SUHHHHHHHH DUDE', { threadsResult });
-
-            // const dbConversations = await ctx.db.query.conversations.findMany({
-            //     where: eq(conversations.projectId, input.projectId),
-            //     orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
-            // });
             return threadsResult.threads.map((thread) => toOnlookConversationFromMastra(thread));
         }),
     create: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .mutation(async ({ ctx, input }) => {
-            const [conversation] = await ctx.db.insert(conversations).values({
-                projectId: input.projectId,
-            }).returning();
-            if (!conversation) {
-                throw new Error('Failed to create conversation');
+            const memory = mastra.getMemory()
+
+            if (!memory) {
+                throw new Error('Storage not found');
             }
-            return toConversation(conversation);
+
+            const thread = await memory.createThread(
+                {
+                    resourceId: input.projectId,
+                },
+            );
+
+            return toOnlookConversationFromMastra(thread);
         }),
     upsert: protectedProcedure
         .input(z.object({ conversation: conversationInsertSchema }))
@@ -76,31 +74,23 @@ const conversationRouter = createTRPCRouter({
 const messageRouter = createTRPCRouter({
     get: protectedProcedure
         .input(z.object({ conversationId: z.string() }))
-        .query(async ({ ctx, input }) => {
+        .query(async ({ input }) => {
             const storage = mastra.getStorage()
 
             if (!storage) {
                 throw new Error('Storage not found');
             }
 
-            const messagesResult = await storage.getMessagesPaginated({
-                page: 0,
-                perPage: 1000,
+            const messagesResult = await storage.getMessages({
                 threadId: input.conversationId,
                 format: 'v2',
             })
-
-            console.log('SUHHHHHHHH DUDE MESSAGES', JSON.stringify(messagesResult.messages, null, 2)    );
-
-            const dbMessages = await ctx.db.query.messages.findMany({
-                where: eq(messages.conversationId, input.conversationId),
-                orderBy: (messages, { asc }) => [asc(messages.createdAt)],
-            });
-            return messagesResult.messages.map((message) => toOnlookMessageFromMastra(message));
+            return messagesResult.map((message) => toOnlookMessageFromMastra(message));
         }),
     upsert: protectedProcedure
         .input(z.object({ message: messageInsertSchema }))
         .mutation(async ({ ctx, input }) => {
+            // TODO: Update mastra threads
             const conversationId = input.message.conversationId;
             if (conversationId) {
                 const conversation = await ctx.db.query.conversations.findFirst({

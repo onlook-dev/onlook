@@ -11,7 +11,6 @@ import {
     projects,
     projectUpdateSchema,
     toCanvas,
-    toConversation,
     toFrame,
     toProject,
     userCanvases,
@@ -50,7 +49,7 @@ export const projectRouter = createTRPCRouter({
             }
             return toProject(project)
         }),
-    getFullProject: protectedProcedure
+    getProjectWithCanvas: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
             const project = await ctx.db.query.projects.findFirst({
@@ -80,7 +79,6 @@ export const projectRouter = createTRPCRouter({
                 project: toProject(project),
                 userCanvas: toCanvas(userCanvas),
                 frames: project.canvas?.frames.map(toFrame) ?? [],
-                conversations: project.conversations.map(toConversation) ?? [],
             };
         }),
     create: protectedProcedure
