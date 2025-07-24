@@ -1,24 +1,51 @@
+// Global styles
 import '@onlook/ui/globals.css';
 import './global.css';
 
+import { baseOptions } from '@/app/layout.config';
+import { source } from '@/lib/source';
+import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { RootProvider } from 'fumadocs-ui/provider';
-import { type Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import type { ReactNode } from 'react';
-
-export const metadata: Metadata = {
-    title: 'Onlook',
-    description: 'Onlook Documentation',
-    icons: [{ rel: 'icon', url: '/favicon.ico' }],
-};
 
 const inter = Inter({
     subsets: ['latin'],
     variable: '--font-inter',
 });
 
+export const metadata = {
+    metadataBase: new URL('https://docs.onlook.dev'),
+    title: {
+        default: 'Onlook Docs',
+        template: '%s – Onlook Docs',
+    },
+    description:
+        'Official documentation for Onlook – an open-source "Cursor for Designers" that lets you visually edit React & Tailwind projects.',
+    openGraph: {
+        siteName: 'Onlook Docs',
+        type: 'website',
+    },
+    twitter: {
+        card: 'summary_large_image',
+        site: '@onlookdev',
+    },
+    robots: {
+        index: true,
+        follow: true,
+    },
+    alternates: {
+        canonical: '/',
+    },
+};
+
+const docsOptions = {
+    ...baseOptions,
+};
+
 const isProduction = process.env.NODE_ENV === 'production';
+
 export default function Layout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" className={inter.variable} suppressHydrationWarning>
@@ -26,8 +53,13 @@ export default function Layout({ children }: { children: ReactNode }) {
                 {isProduction && (
                     <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="beforeInteractive" />
                 )}
-                <RootProvider>{children}</RootProvider>
+                <RootProvider>
+                    <DocsLayout tree={source.pageTree} {...docsOptions}>
+                        {children}
+                    </DocsLayout>
+                </RootProvider>
             </body>
         </html>
     );
 }
+

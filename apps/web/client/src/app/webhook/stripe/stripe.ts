@@ -1,3 +1,4 @@
+import { trackEvent } from '@/utils/analytics/server';
 import { prices, subscriptions, type NewSubscription } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { ScheduledSubscriptionAction, SubscriptionStatus } from '@onlook/stripe';
@@ -69,6 +70,18 @@ export const handleCheckoutSessionCompleted = async (receivedEvent: Stripe.Check
         }
     }).returning()
 
+    trackEvent({
+        distinctId: userId,
+        event: 'user_subscription_created',
+        properties: {
+            priceId: price.id,
+            productId: price.productId,
+            $set: {
+                subscription_created_at: new Date(),
+            }
+        }
+    })
+
     console.log("Checkout session completed: ", data)
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
@@ -88,6 +101,27 @@ export const handleSubscriptionDeleted = async (receivedEvent: Stripe.CustomerSu
     }).where(eq(subscriptions.stripeSubscriptionId, subscriptionId))
 
     console.log("Subscription cancelled: ", res)
+
+    // Track event
+    try {
+        const subscription = await db.query.subscriptions.findFirst({
+            where: eq(subscriptions.stripeSubscriptionId, subscriptionId),
+        })
+        if (subscription) {
+            trackEvent({
+                distinctId: subscription.userId,
+                event: 'user_subscription_cancelled',
+                properties: {
+                    $set: {
+                        subscription_cancelled_at: new Date(),
+                    }
+                }
+            })
+        }
+    } catch (error) {
+        console.error('Error tracking user subscription cancelled: ', error)
+    }
+
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }
 
@@ -180,7 +214,19 @@ export const handleSubscriptionUpdated = async (receivedEvent: Stripe.CustomerSu
         updates.scheduledChangeAt = new Date(stripeSubscription.cancel_at * 1000)
     }
 
-    await db.update(subscriptions).set(updates).where(eq(subscriptions.id, subscription.id));
+    await db.update(subscriptions)
+        .set(updates)
+        .where(eq(subscriptions.id, subscription.id));
+
+    trackEvent({
+        distinctId: subscription.userId,
+        event: 'user_subscription_updated',
+        properties: {
+            priceId: price.id,
+            productId: price.productId,
+            cancellationScheduled: !!stripeSubscription.cancel_at,
+        }
+    })
 
     return new Response(JSON.stringify({ ok: true }), { status: 200 })
 }

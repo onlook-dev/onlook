@@ -5,8 +5,10 @@ import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
-import { SandboxTemplates, Templates } from '@onlook/constants';
+import { NEXT_JS_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
+import { RouterType } from '@onlook/models';
 import { generate, injectPreloadScript, parse } from '@onlook/parser';
+import { isRootLayoutFile, isTargetFile } from '@onlook/utility';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
@@ -39,6 +41,40 @@ interface ProjectCreationContextValue {
 }
 
 const ProjectCreationContext = createContext<ProjectCreationContextValue | undefined>(undefined);
+
+export function detectPortFromPackageJson(packageJsonFile: ProcessedFile | undefined): number {
+    const defaultPort = 3000;
+
+    if (!packageJsonFile || typeof packageJsonFile.content !== 'string' || packageJsonFile.type !== ProcessedFileType.TEXT) {
+        return defaultPort;
+    }
+
+    try {
+        const pkg = JSON.parse(packageJsonFile.content) as Record<string, unknown>;
+        const scripts = pkg.scripts as Record<string, string> | undefined;
+        const devScript = scripts?.dev;
+
+        if (!devScript || typeof devScript !== 'string') {
+            return defaultPort;
+        }
+
+        const portRegex = /(?:PORT=|--port[=\s]|-p\s*?)(\d+)/;
+        const portMatch = portRegex.exec(devScript);
+
+        if (portMatch?.[1]) {
+            const port = parseInt(portMatch[1], 10);
+            if (port > 0 && port <= 65535) {
+                return port;
+            }
+        }
+
+        return defaultPort;
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.warn('Failed to parse package.json for port detection:', errorMessage);
+        return defaultPort;
+    }
+}
 
 interface ProjectCreationProviderProps {
     children: ReactNode;
@@ -80,11 +116,15 @@ export const ProjectCreationProvider = ({
                 return;
             }
 
+            const packageJsonFile = projectData.files.find(
+                (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT
+            );
+
             const template = SandboxTemplates[Templates.BLANK];
             const forkedSandbox = await forkSandbox({
                 sandbox: {
                     id: template.id,
-                    port: template.port,
+                    port: detectPortFromPackageJson(packageJsonFile),
                 },
                 config: {
                     title: `Imported project - ${user.id}`,
@@ -157,19 +197,18 @@ export const ProjectCreationProvider = ({
                 return { isValid: false, error: 'React not found in dependencies' };
             }
 
-            let routerType: 'app' | 'pages' = 'pages';
+            let routerType: RouterType = RouterType.PAGES;
 
             const hasAppLayout = files.some(
-                (f) =>
-                    (f.path.includes('app/layout.') || f.path.includes('src/app/layout.')) &&
-                    (f.path.endsWith('.tsx') ||
-                        f.path.endsWith('.ts') ||
-                        f.path.endsWith('.jsx') ||
-                        f.path.endsWith('.js')),
+                (f) => isTargetFile(f.path, {
+                    fileName: 'layout',
+                    targetExtensions: NEXT_JS_FILE_EXTENSIONS,
+                    potentialPaths: ['app', 'src/app'],
+                })
             );
 
             if (hasAppLayout) {
-                routerType = 'app';
+                routerType = RouterType.APP;
             } else {
                 // Check for Pages Router (pages directory)
                 const hasPagesDir = files.some(
@@ -273,7 +312,7 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
             } else {
                 let content = file.content;
 
-                const isLayout = file.path.endsWith('app/layout.tsx') || file.path.endsWith('src/app/layout.tsx');
+                const isLayout = isRootLayoutFile(file.path);
                 if (isLayout) {
                     try {
                         const ast = parse(content, {

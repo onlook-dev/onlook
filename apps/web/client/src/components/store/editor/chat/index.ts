@@ -1,4 +1,3 @@
-import { sendAnalytics } from '@/utils/analytics';
 import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, type ChatMessageContext } from '@onlook/models/chat';
 import type { Message } from 'ai';
@@ -94,9 +93,6 @@ export class ChatManager {
             console.error('Failed to add user message');
             return null;
         }
-        sendAnalytics('send fix error chat message', {
-            errors: errors.map((e) => e.content),
-        });
         return this.generateStreamMessages();
     }
 

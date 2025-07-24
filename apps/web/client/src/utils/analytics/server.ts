@@ -1,5 +1,5 @@
 import { env } from "@/env";
-import { PostHog } from "posthog-node";
+import { PostHog, type EventMessage } from "posthog-node";
 
 class PostHogSingleton {
     private static instance: PostHog | null = null;
@@ -21,4 +21,12 @@ class PostHogSingleton {
     }
 }
 
-export const client = PostHogSingleton.getInstance();
+const client = PostHogSingleton.getInstance();
+
+export const trackEvent = (props: EventMessage) => {
+    try {
+        client?.capture(props);
+    } catch (error) {
+        console.error('Error tracking event:', error);
+    }
+};

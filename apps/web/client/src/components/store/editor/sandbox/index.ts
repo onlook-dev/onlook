@@ -1,29 +1,29 @@
 import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
-import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
-import { type SandboxFile, type TemplateNode, type RouterType } from '@onlook/models';
+import { EXCLUDED_SYNC_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
+import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
-import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
+import { getBaseName, getDirName, isImageFile, isRootLayoutFile, isSubdirectory, LogTimer } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import type { EditorEngine } from '../engine';
+import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
 import { FileWatcher } from './file-watcher';
-import { formatContent, normalizePath } from './helpers';
+import { normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
-import { detectRouterTypeInSandbox } from '../pages/helper';
 
 export class SandboxManager {
     readonly session: SessionManager;
     readonly fileEventBus: FileEventBus = new FileEventBus();
-    
+
     // Add router configuration
     private _routerConfig: { type: RouterType; basePath: string } | null = null;
 
     private fileWatcher: FileWatcher | null = null;
-    private fileSync: FileSyncManager
-    private templateNodeMap: TemplateNodeMapper
+    private fileSync: FileSyncManager;
+    private templateNodeMap: TemplateNodeMapper;
     private _isIndexed = false;
     private _isIndexing = false;
 
@@ -51,18 +51,20 @@ export class SandboxManager {
     get isIndexing() {
         return this._isIndexing;
     }
-    
+
     get routerConfig(): { type: RouterType; basePath: string } | null {
         return this._routerConfig;
     }
 
     async index(force = false) {
+        console.log('[SandboxManager] Starting indexing, force:', force);
+
         if (this._isIndexing || (this._isIndexed && !force)) {
             return;
         }
 
         if (!this.session.session) {
-            console.error('No session found');
+            console.error('No session found for indexing');
             return;
         }
 
@@ -74,7 +76,9 @@ export class SandboxManager {
             if (!this._routerConfig) {
                 this._routerConfig = await detectRouterTypeInSandbox(this);
                 if (this._routerConfig) {
-                    timer.log(`Router detected: ${this._routerConfig.type} at ${this._routerConfig.basePath}`);
+                    timer.log(
+                        `Router detected: ${this._routerConfig.type} at ${this._routerConfig.basePath}`,
+                    );
                 }
             }
 
@@ -100,6 +104,7 @@ export class SandboxManager {
             await this.watchFiles();
             this._isIndexed = true;
             timer.log('Indexing completed successfully');
+
         } catch (error) {
             console.error('Error during indexing:', error);
             throw error;
@@ -168,7 +173,10 @@ export class SandboxManager {
         }
     }
 
-    private async writeRemoteFile(filePath: string, content: string | Uint8Array): Promise<boolean> {
+    private async writeRemoteFile(
+        filePath: string,
+        content: string | Uint8Array,
+    ): Promise<boolean> {
         if (!this.session.session) {
             console.error('No session found for remote write');
             return false;
@@ -207,29 +215,27 @@ export class SandboxManager {
 
     async writeFile(path: string, content: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-        let writeContent = await formatContent(normalizedPath, content);
+        let writeContent = content;
+
         // If the file is a JSX file, we need to process it for mapping before writing
         if (this.isJsxFile(normalizedPath)) {
             try {
                 const { newContent } = await this.templateNodeMap.processFileForMapping(
                     normalizedPath,
-                    writeContent
+                    content,
+                    this.routerConfig?.type,
                 );
                 writeContent = newContent;
             } catch (error) {
                 console.error(`Error processing file ${normalizedPath}:`, error);
             }
         }
-        return this.fileSync.write(
-            normalizedPath,
-            writeContent,
-            this.writeRemoteFile.bind(this),
-        );
+        return this.fileSync.write(normalizedPath, writeContent, this.writeRemoteFile.bind(this));
     }
 
     isJsxFile(filePath: string): boolean {
         const extension = path.extname(filePath);
-        if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
+        if (!extension || !NEXT_JS_FILE_EXTENSIONS.includes(extension)) {
             return false;
         }
         return true;
@@ -238,11 +244,7 @@ export class SandboxManager {
     async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
         const normalizedPath = normalizePath(path);
         try {
-            return this.fileSync.write(
-                normalizedPath,
-                content,
-                this.writeRemoteFile.bind(this),
-            );
+            return this.fileSync.write(normalizedPath, content, this.writeRemoteFile.bind(this));
         } catch (error) {
             console.error(`Error writing binary file ${normalizedPath}:`, error);
             return false;
@@ -368,7 +370,7 @@ export class SandboxManager {
                         paths: [normalizedPath],
                         timestamp: Date.now(),
                     });
-                    continue
+                    continue;
                 }
 
                 await this.fileSync.delete(normalizedPath);
@@ -378,6 +380,9 @@ export class SandboxManager {
                     paths: [normalizedPath],
                     timestamp: Date.now(),
                 });
+            }
+            if (event.paths.some((path) => path.includes(PRELOAD_SCRIPT_FILE_NAME))) {
+                await this.editorEngine.preloadScript.ensurePreloadScriptFile();
             }
         } else if (eventType === 'change' || eventType === 'add') {
             const session = this.session.session;
@@ -399,7 +404,7 @@ export class SandboxManager {
                 if (stat?.type === 'directory') {
                     const normalizedPath = normalizePath(path);
                     this.fileSync.updateDirectoryCache(normalizedPath);
-                    continue
+                    continue;
                 }
 
                 const normalizedPath = normalizePath(path);
@@ -490,12 +495,23 @@ export class SandboxManager {
                 return;
             }
 
+            // If this is a layout file, ensure the preload script file exists
+            if (isRootLayoutFile(file.path, this.routerConfig?.type)) {
+                try {
+                    await this.editorEngine.preloadScript.ensurePreloadScriptFile();
+                } catch (error) {
+                    console.warn(`[SandboxManager] Failed to ensure preload script file for layout ${file.path}:`, error);
+                    // Continue processing even if preload script file check fails
+                }
+            }
+
             const { modified, newContent } = await this.templateNodeMap.processFileForMapping(
                 file.path,
-                file.content
+                file.content,
+                this.routerConfig?.type,
             );
 
-            if (modified || file.content !== newContent) {
+            if (modified && file.content !== newContent) {
                 await this.writeFile(file.path, newContent);
             }
         } catch (error) {
@@ -512,7 +528,6 @@ export class SandboxManager {
         child: TemplateNode,
         index: number,
     ): Promise<{ instanceId: string; component: string } | null> {
-
         const codeBlock = await this.getCodeBlock(parentOid);
 
         if (codeBlock == null) {
@@ -654,6 +669,35 @@ export class SandboxManager {
             console.error(`Error renaming file ${oldPath} to ${newPath}:`, error);
             return false;
         }
+    }
+
+    /**
+     * Gets the root layout path and router config
+     */
+    async getRootLayoutPath(): Promise<string | null> {
+        const routerConfig = this.routerConfig;
+        if (!routerConfig) {
+            console.log('Could not detect Next.js router type');
+            return null;
+        }
+
+        let layoutFileName: string;
+
+        if (routerConfig.type === RouterType.PAGES) {
+            layoutFileName = '_app';
+        } else {
+            layoutFileName = 'layout';
+        }
+
+        for (const extension of NEXT_JS_FILE_EXTENSIONS) {
+            const layoutPath = path.join(routerConfig.basePath, `${layoutFileName}${extension}`);
+            if (await this.fileExists(layoutPath)) {
+                return normalizePath(layoutPath);
+            }
+        }
+
+        console.log('Could not find layout file');
+        return null;
     }
 
     clear() {

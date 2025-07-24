@@ -74,7 +74,7 @@ export const deploymentRouter = createTRPCRouter({
     }),
     run: protectedProcedure.input(z.object({
         deploymentId: z.string(),
-    })).mutation(async ({ ctx, input }) => {
+    })).mutation(async ({ ctx, input }): Promise<void> => {
         const { deploymentId } = input;
         const existingDeployment = await ctx.db.query.deployments.findFirst({
             where: and(
@@ -112,10 +112,8 @@ export const deploymentRouter = createTRPCRouter({
                 status: DeploymentStatus.COMPLETED,
                 message: 'Deployment Success!',
             });
-            return {
-                success: true,
-            };
         } catch (error) {
+            console.error(error);
             await updateDeployment(ctx.db, deploymentId, {
                 status: DeploymentStatus.FAILED,
                 message: 'Failed to publish deployment',

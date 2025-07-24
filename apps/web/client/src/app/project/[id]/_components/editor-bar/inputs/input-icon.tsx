@@ -32,7 +32,6 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
     const [unitValue, setUnitValue] = useState(unit);
     const { localValue, handleKeyDown, handleChange } = useInputControl(value, onChange);
 
-
     const IconComponent = icon ? Icons[icon] : null;
 
     return (
@@ -43,12 +42,12 @@ export const InputIcon = ({ value, unit = 'px', icon, onChange, onUnitChange }: 
             <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px] w-full">
                 <input
                     type="text"
-                    inputMode="numeric"
-                    pattern="[0-9]*"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     value={localValue}
-                    onChange={(e) => handleChange(Number(e.target.value))}
+                    onChange={(e) => handleChange(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="w-full bg-transparent text-sm text-white focus:outline-none uppercase hover:text-white"
+                    className="w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase hover:text-white"
                 />
 
                 <DropdownMenu modal={false}>
