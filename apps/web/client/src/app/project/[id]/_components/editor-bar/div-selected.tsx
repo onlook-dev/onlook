@@ -19,6 +19,8 @@ import { FontFamilySelector } from './text-inputs/font/font-family-selector';
 import { FontSizeSelector } from './text-inputs/font/font-size';
 import { FontWeightSelector } from './text-inputs/font/font-weight';
 import { TextColor } from './text-inputs/text-color';
+import { AdvancedTypography } from './text-inputs/advanced-typography';
+import { TextAlignSelector } from './text-inputs/text-align';
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [
@@ -34,8 +36,8 @@ export const DIV_SELECTED_GROUPS = [
         components: [<Display />, <Padding />, <Margin />],
     },
     {
-        key: 'typography',
-        label: 'Typography',
+        key: 'font',
+        label: 'Font',
         components: [
             <FontFamilySelector />,
             <InputSeparator />,
@@ -45,9 +47,9 @@ export const DIV_SELECTED_GROUPS = [
         ],
     },
     {
-        key: 'text-color',
-        label: 'Text Color',
-        components: [<TextColor />],
+        key: 'text-typography',
+        label: 'Typography',
+        components: [<TextColor />, <TextAlignSelector />, <AdvancedTypography />],
     },
     {
         key: 'opacity',
