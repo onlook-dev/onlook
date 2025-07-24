@@ -1,18 +1,18 @@
-import { createAnthropic } from '@ai-sdk/anthropic';
 import { Agent } from '@mastra/core/agent';
 import type { MastraMemory } from '@mastra/core/memory';
 import type { RuntimeContext } from '@mastra/core/runtime-context';
-import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt } from '@onlook/ai';
-import { ChatType } from '@onlook/models';
+import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
+import { ChatType, CLAUDE_MODELS, LLMProvider } from '@onlook/models';
 import { memory } from '../memory';
 
+export type OnlookAgentRuntimeContext = {
+    chatType: ChatType;
+}
 
 export const onlookAgent = new Agent({
-    name: 'Onlook',
+    name: 'Onlook Agent',
     instructions: ({ runtimeContext }: {
-        runtimeContext: RuntimeContext<{
-            chatType: ChatType
-        }>
+        runtimeContext: RuntimeContext<OnlookAgentRuntimeContext>
     }) => {
         const chatType = runtimeContext.get("chatType");
         let systemPrompt = "";
@@ -32,11 +32,12 @@ export const onlookAgent = new Agent({
 
         return systemPrompt;
     },
-    model: () => {
-        const anthropic = createAnthropic({
-            apiKey: process.env.ANTHROPIC_API_KEY,
-        })
-        return anthropic("claude-4-sonnet-20250514")
+    model: async () => {
+        const { model } = await initModel({
+            provider: LLMProvider.ANTHROPIC,
+            model: CLAUDE_MODELS.HAIKU,
+        });
+        return model;
     },
     tools: ({ runtimeContext }: {
         runtimeContext: RuntimeContext<{
@@ -52,5 +53,5 @@ export const onlookAgent = new Agent({
                 return buildToolSet;
         }
     },
-    memory: memory as unknown as MastraMemory,
+    memory: memory as MastraMemory,
 })

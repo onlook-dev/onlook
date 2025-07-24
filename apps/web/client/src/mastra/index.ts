@@ -7,5 +7,5 @@ export const mastra = new Mastra({
     agents: {
         onlookAgent,
     },
-    storage: storage as unknown as MastraStorage,
+    storage: storage as MastraStorage,
 })
