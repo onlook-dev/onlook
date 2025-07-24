@@ -169,30 +169,48 @@ export const subscriptionRouter = createTRPCRouter({
             });
         } else {
             // If the new price is lower, we schedule the change for the end of the current period.
-            await updateSubscriptionNextPeriod({
+            const schedule = await updateSubscriptionNextPeriod({
                 subscriptionId: stripeSubscriptionId,
                 priceId: stripePriceId,
             });
+            const endDate = schedule.phases[0]?.end_date;
+            const scheduledChangeAt = endDate ? new Date(endDate * 1000) : null;
+
+            await ctx.db.update(subscriptions).set({
+                updatedAt: new Date(),
+                scheduledChangeAt,
+                scheduledPriceId: newPrice.id,
+                stripeSubscriptionScheduleId: schedule.id,
+            }).where(eq(subscriptions.stripeSubscriptionItemId, stripeSubscriptionItemId)).returning();
         }
     }),
 
     releaseSubscriptionSchedule: protectedProcedure.input(z.object({
         subscriptionScheduleId: z.string(),
     })).mutation(async ({ input, ctx }) => {
-        await releaseSubscriptionSchedule({ subscriptionScheduleId: input.subscriptionScheduleId });
-        const [updatedSubscription] = await ctx.db.update(subscriptions).set({
-            status: SubscriptionStatus.ACTIVE,
-            updatedAt: new Date(),
-            scheduledPriceId: null,
-            stripeSubscriptionScheduleId: null,
-            scheduledChangeAt: null,
-        }).where(eq(subscriptions.stripeSubscriptionScheduleId, input.subscriptionScheduleId)).returning();
-
-        if (!updatedSubscription) {
-            throw new Error('Subscription not found');
+        try {
+            await releaseSubscriptionSchedule({ subscriptionScheduleId: input.subscriptionScheduleId });
+        } catch (error: any) {
+            // If the schedule is already released then the code should update the subscription to reflect that.
+            // This case is supposed to be handled in the webhook but was implemented here just in case.
+            if (!error.toString().includes("You cannot release a subscription schedule that is currently in the `released` status.")) {
+                throw error;
+            }
         }
 
-        return updatedSubscription;
+        const [updatedSubscription] = await ctx.db.update(subscriptions).set({
+             status: SubscriptionStatus.ACTIVE,
+             updatedAt: new Date(),
+             scheduledPriceId: null,
+             stripeSubscriptionScheduleId: null,
+             scheduledChangeAt: null,
+         }).where(eq(subscriptions.stripeSubscriptionScheduleId, input.subscriptionScheduleId)).returning();
+ 
+         if (!updatedSubscription) {
+             throw new Error('Subscription not found');
+         }
+
+         return updatedSubscription;
     }),
 });
 

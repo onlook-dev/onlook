@@ -135,6 +135,11 @@ const handleSubscriptionUpgrade = async (
             // there is another call below in the case where
             .set({
                 priceId: newPrice.id,
+                // in the case of an upgrade, the downgrade if there is one is unscheduled.
+                scheduledAction: null,
+                scheduledChangeAt: null,
+                scheduledPriceId: null,
+                stripeSubscriptionScheduleId: null,
             })
             .where(eq(subscriptions.id, subscription.id));
 
