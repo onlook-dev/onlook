@@ -18,11 +18,12 @@ const inter = Inter({
     variable: '--font-inter',
 });
 
+const isProduction = process.env.NODE_ENV === 'production';
 export default function Layout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" className={inter.variable} suppressHydrationWarning>
             <body className="flex flex-col min-h-screen">
-                {process.env.NODE_ENV === 'production' && (
+                {isProduction && (
                     <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="beforeInteractive" />
                 )}
                 <RootProvider>{children}</RootProvider>

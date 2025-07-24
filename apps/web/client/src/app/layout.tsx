@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 import '@onlook/ui/globals.css';
 
 import { PostHogProvider } from '@/components/posthog-provider';
+import { env } from '@/env';
 import { FeatureFlagsProvider } from '@/hooks/use-feature-flags';
 import { TRPCReactProvider } from '@/trpc/react';
 import { Toaster } from '@onlook/ui/sonner';
@@ -13,6 +14,8 @@ import Script from 'next/script';
 import { ThemeProvider } from './_components/theme';
 import { AuthProvider } from './auth/auth-context';
 import { faqSchema, organizationSchema } from './seo';
+
+const isProduction = env.NODE_ENV === 'production';
 
 export const metadata: Metadata = {
     title: 'Onlook – Cursor for Designers',
@@ -67,7 +70,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 />
             </head>
             <body>
-                {process.env.NODE_ENV === 'production' && (
+                {isProduction && (
                     <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="beforeInteractive" />
                 )}
                 <TRPCReactProvider>
