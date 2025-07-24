@@ -30,7 +30,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const handleLogin = async (method: SignInMethod) => {
         setIsPending(true);
-        await login(method);
+        const returnUrl = localStorage.getItem('returnUrl') || '/';
+        await login(method, returnUrl);
 
         localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
         setTimeout(() => {

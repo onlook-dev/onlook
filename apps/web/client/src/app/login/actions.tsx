@@ -6,9 +6,14 @@ import { SignInMethod } from '@onlook/models';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-export async function login(provider: SignInMethod) {
+export async function login(provider: SignInMethod, returnUrl?: string) {
     const supabase = await createClient();
-    const origin = (await headers()).get('origin');
+    const headersList = await headers();
+    let origin = headersList.get('origin');
+    
+    const redirectTo = returnUrl
+        ? `${origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`
+        : `${origin}/auth/callback`;
 
     // If already session, redirect
     const {
