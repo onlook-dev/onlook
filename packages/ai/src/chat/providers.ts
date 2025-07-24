@@ -14,6 +14,7 @@ import {
     type InitialModelPayload,
 } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { type LanguageModelV1 } from 'ai';
 
 export async function initModel({
@@ -124,9 +125,6 @@ async function getOpenRouterProvider(model: OPENROUTER_MODELS): Promise<Language
     if (!process.env.OPENROUTER_API_KEY) {
         throw new Error('OPENROUTER_API_KEY must be set');
     }
-    const openrouter = createOpenAI({
-        apiKey: process.env.OPENROUTER_API_KEY,
-        baseURL: 'https://openrouter.ai/api/v1',
-    });
+    const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
     return openrouter(model);
 }
