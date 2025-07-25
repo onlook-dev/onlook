@@ -126,90 +126,163 @@ export function removeFontsFromClassName(
                     return false;
                 }
 
-                // Filter out font variable expressions
-                const expressionsToKeep = expr.expressions.filter((e) => {
+                // Track which expressions to keep and their indices
+                const expressionsToKeep: T.Expression[] = [];
+                const expressionIndices: number[] = [];
+
+                expr.expressions.forEach((e, index) => {
                     if (!e) {
-                        return false;
+                        return;
                     }
 
                     try {
+                        let shouldKeep = true;
+
                         if (t.isMemberExpression(e)) {
                             const obj = e.object;
-                            if (!obj) {
-                                return true;
-                            }
-
-                            if (options.fontIds && options.fontIds.length > 0) {
-                                // Remove specific fonts
-                                return !(t.isIdentifier(obj) && options.fontIds.includes(obj.name));
-                            } else if (options.removeAll) {
-                                // Remove all font variables except font-weight classes
-                                const prop = e.property;
-                                if (!prop) {
-                                    return true;
+                            if (obj) {
+                                if (options.fontIds && options.fontIds.length > 0) {
+                                    // Remove specific fonts
+                                    shouldKeep = !(
+                                        t.isIdentifier(obj) && options.fontIds.includes(obj.name)
+                                    );
+                                } else if (options.removeAll) {
+                                    // Remove all font variables except font-weight classes
+                                    const prop = e.property;
+                                    if (prop) {
+                                        shouldKeep = !(
+                                            t.isIdentifier(prop) &&
+                                            (prop.name === 'variable' || prop.name === 'className')
+                                        );
+                                    }
                                 }
-
-                                return !(
-                                    t.isIdentifier(prop) &&
-                                    (prop.name === 'variable' || prop.name === 'className')
-                                );
                             }
                         }
-                        return true;
+
+                        if (shouldKeep && t.isExpression(e)) {
+                            expressionsToKeep.push(e);
+                            expressionIndices.push(index);
+                        }
                     } catch (expressionError) {
                         console.error('Error processing expression:', expressionError);
-                        return true;
+                        if (t.isExpression(e)) {
+                            expressionsToKeep.push(e);
+                            expressionIndices.push(index);
+                        }
                     }
                 });
-
-                // Get the static parts and clean them
-                const staticParts = expr.quasis.map((quasi) => {
-                    if (!quasi || !quasi.value) {
-                        return '';
-                    }
-                    return quasi.value.raw || '';
-                });
-
-                let combinedStatic = staticParts.join('placeholder');
-
-                // Remove font classes if needed
-                try {
-                    if (options.fontIds && options.fontIds.length > 0) {
-                        // Create regex pattern to match any of the specified font IDs
-                        const fontClassPattern = options.fontIds
-                            .map((id) => `font-${id}\\b`)
-                            .join('|');
-                        const fontClassRegex = new RegExp(fontClassPattern, 'g');
-                        combinedStatic = combinedStatic.replace(fontClassRegex, '');
-                    } else if (options.removeAll) {
-                        combinedStatic = combinedStatic.replace(/font-\w+\b/g, (match) =>
-                            FONT_WEIGHT_REGEX.test(match) ? match : '',
-                        );
-                    }
-                } catch (regexError) {
-                    console.error('Error processing font class regex:', regexError);
-                }
-
-                // Split back into parts with placeholders
-                const cleanedParts = combinedStatic.split('placeholder');
 
                 if (expressionsToKeep.length === 0) {
                     // If no expressions left, convert to string literal
-                    classNameAttr.value = t.stringLiteral(
-                        cleanedParts.join('').replace(/\s+/g, ' ').trim(),
-                    );
+                    // Combine all static parts and clean font classes
+                    let allStatic = expr.quasis.map((q) => q.value.raw || '').join('');
+
+                    // Remove font classes if needed
+                    try {
+                        if (options.fontIds && options.fontIds.length > 0) {
+                            const fontClassPattern = options.fontIds
+                                .map((id) => `font-${id}\\b`)
+                                .join('|');
+                            const fontClassRegex = new RegExp(fontClassPattern, 'g');
+                            allStatic = allStatic.replace(fontClassRegex, '');
+                        } else if (options.removeAll) {
+                            allStatic = allStatic.replace(/font-\w+\b/g, (match) =>
+                                FONT_WEIGHT_REGEX.test(match) ? match : '',
+                            );
+                        }
+                    } catch (regexError) {
+                        console.error('Error processing font class regex:', regexError);
+                    }
+
+                    classNameAttr.value = t.stringLiteral(allStatic.replace(/\s+/g, ' ').trim());
                 } else {
                     // Rebuild template literal with remaining expressions
-                    const newQuasis = [];
+                    const newQuasis: T.TemplateElement[] = [];
 
+                    // For each position in the new template literal (before each expression + after last)
                     for (let i = 0; i <= expressionsToKeep.length; i++) {
-                        const raw = i < cleanedParts.length ? cleanedParts[i] : '';
-                        if (!raw) {
-                            console.error('Raw part is undefined');
-                            continue;
+                        let staticContent = '';
+
+                        if (i === 0) {
+                            // Content before first kept expression
+                            // Combine all content from start up to and including the quasi before first kept expression
+                            const firstKeptExprIndex = expressionIndices[0];
+                            if (firstKeptExprIndex !== undefined) {
+                                for (let j = 0; j <= firstKeptExprIndex; j++) {
+                                    const quasi = expr.quasis[j];
+                                    if (quasi && quasi.value) {
+                                        staticContent += quasi.value.raw || '';
+                                    }
+                                }
+                            }
+                        } else if (i === expressionsToKeep.length) {
+                            // Content after last kept expression
+                            const lastKeptExprIndex = expressionIndices[i - 1];
+                            if (lastKeptExprIndex !== undefined) {
+                                for (let j = lastKeptExprIndex + 1; j < expr.quasis.length; j++) {
+                                    const quasi = expr.quasis[j];
+                                    if (quasi && quasi.value) {
+                                        staticContent += quasi.value.raw || '';
+                                    }
+                                }
+                            }
+                        } else {
+                            // Content between two kept expressions
+                            const prevKeptExprIndex = expressionIndices[i - 1];
+                            const currentKeptExprIndex = expressionIndices[i];
+                            if (
+                                prevKeptExprIndex !== undefined &&
+                                currentKeptExprIndex !== undefined
+                            ) {
+                                for (
+                                    let j = prevKeptExprIndex + 1;
+                                    j <= currentKeptExprIndex;
+                                    j++
+                                ) {
+                                    const quasi = expr.quasis[j];
+                                    if (quasi && quasi.value) {
+                                        staticContent += quasi.value.raw || '';
+                                    }
+                                }
+                            }
                         }
+
+                        // Remove font classes from static content
+                        try {
+                            if (options.fontIds && options.fontIds.length > 0) {
+                                const fontClassPattern = options.fontIds
+                                    .map((id) => `font-${id}\\b`)
+                                    .join('|');
+                                const fontClassRegex = new RegExp(fontClassPattern, 'g');
+                                staticContent = staticContent
+                                    .replace(fontClassRegex, '')
+                                    .replace(/\s+/g, ' ');
+                            } else if (options.removeAll) {
+                                staticContent = staticContent
+                                    .replace(/font-\w+\b/g, (match) =>
+                                        FONT_WEIGHT_REGEX.test(match) ? match : '',
+                                    )
+                                    .replace(/\s+/g, ' ');
+                            }
+                        } catch (regexError) {
+                            console.error('Error processing font class regex:', regexError);
+                        }
+
+                        // For the first quasi, ensure it starts correctly (no leading spaces)
+                        if (i === 0 && staticContent.length > 0) {
+                            staticContent = staticContent.replace(/^\s+/, '');
+                        }
+
+                        // For the last quasi, ensure it ends correctly (no trailing spaces)
+                        if (i === expressionsToKeep.length && staticContent.length > 0) {
+                            staticContent = staticContent.replace(/\s+$/, '');
+                        }
+
                         newQuasis.push(
-                            t.templateElement({ raw, cooked: raw }, i === expressionsToKeep.length),
+                            t.templateElement(
+                                { raw: staticContent, cooked: staticContent },
+                                i === expressionsToKeep.length,
+                            ),
                         );
                     }
 

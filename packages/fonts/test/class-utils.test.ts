@@ -7,11 +7,11 @@ import {
     handleJSXExpressionClassName,
     handleStringLiteralClassName,
     createTemplateLiteralWithFont,
+    removeFontsFromClassName,
 } from '../src';
 
 const __dirname = import.meta.dir;
 
-// Helper function to process test cases
 async function processTestCase(
     inputContent: string,
     functionName: 'handleStringLiteralClassName' | 'handleJSXExpressionClassName',
@@ -65,6 +65,106 @@ async function processTestCase(
     const { code } = generate(ast);
     return code;
 }
+
+async function processRemoveFontsTestCase(
+    inputContent: string,
+    options: {
+        fontIds?: string[];
+        removeAll?: boolean;
+    },
+): Promise<string> {
+    const ast = parse(inputContent, {
+        sourceType: 'module',
+        plugins: ['typescript', 'jsx'],
+    });
+
+    // Find the first JSX element with a className attribute
+    let classNameAttr: t.JSXAttribute | null = null;
+
+    const findClassNameAttr = (node: any) => {
+        if (t.isJSXElement(node)) {
+            const attr = node.openingElement.attributes.find(
+                (attr: any) => t.isJSXAttribute(attr) && attr.name?.name === 'className',
+            ) as t.JSXAttribute | undefined;
+            if (attr && !classNameAttr) {
+                classNameAttr = attr;
+            }
+        }
+    };
+
+    // Traverse the AST to find className attributes
+    const traverse = (node: any) => {
+        if (node && typeof node === 'object') {
+            findClassNameAttr(node);
+            for (const key in node) {
+                if (Array.isArray(node[key])) {
+                    node[key].forEach(traverse);
+                } else if (typeof node[key] === 'object') {
+                    traverse(node[key]);
+                }
+            }
+        }
+    };
+
+    traverse(ast);
+
+    if (classNameAttr) {
+        removeFontsFromClassName(classNameAttr, options);
+    }
+
+    const { code } = generate(ast);
+    return code;
+}
+
+describe('removeFontsFromClassName', () => {
+    const SHOULD_UPDATE_EXPECTED = true;
+    const casesDir = path.resolve(__dirname, 'data/remove-fonts-classname');
+
+    // Check if test cases directory exists
+    if (!fs.existsSync(casesDir)) {
+        test.skip('Test cases directory does not exist yet', () => {});
+        return;
+    }
+
+    const testCases = fs.readdirSync(casesDir);
+
+    for (const testCase of testCases) {
+        test(`should handle case: ${testCase}`, async () => {
+            const caseDir = path.resolve(casesDir, testCase);
+            const files = fs.readdirSync(caseDir);
+
+            const inputFile = files.find((f) => f.startsWith('input.'));
+            const expectedFile = files.find((f) => f.startsWith('expected.'));
+            const configFile = files.find((f) => f.startsWith('config.'));
+
+            if (!inputFile || !expectedFile) {
+                throw new Error(`Test case ${testCase} is missing input or expected file.`);
+            }
+
+            const inputPath = path.resolve(caseDir, inputFile);
+            const expectedPath = path.resolve(caseDir, expectedFile);
+            const configPath = configFile ? path.resolve(caseDir, configFile) : null;
+
+            const inputContent = await Bun.file(inputPath).text();
+
+            // Read config if it exists, otherwise use default
+            let options: { fontIds?: string[]; removeAll?: boolean } = {};
+            if (configPath) {
+                const configContent = await Bun.file(configPath).text();
+                options = JSON.parse(configContent);
+            }
+
+            const result = await processRemoveFontsTestCase(inputContent, options);
+
+            if (SHOULD_UPDATE_EXPECTED) {
+                await Bun.write(expectedPath, result);
+            }
+
+            const expectedContent = await Bun.file(expectedPath).text();
+            expect(result).toBe(expectedContent);
+        });
+    }
+});
 
 describe('createTemplateLiteralWithFont', () => {
     test('should create template literal with string literal input', () => {
