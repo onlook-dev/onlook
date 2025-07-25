@@ -1,0 +1,11 @@
+{
+    "font": {
+        "id": "custom-font",
+        "family": "Custom Font",
+        "subsets": ["latin"],
+        "variable": "--font-custom-font",
+        "weight": ["400", "700"],
+        "styles": ["normal"],
+        "type": "local"
+    }
+}
