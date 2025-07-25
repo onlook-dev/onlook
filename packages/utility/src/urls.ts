@@ -82,9 +82,7 @@ export const inferPageFromUrl = (url: string): { name: string; path: string } =>
 
         const lastSegment = segments[segments.length - 1];
 
-        const pageName = lastSegment
-            ? lastSegment.replace(/[-_]/g, ' ').replace(/\b\w/g, (l) => l)
-            : 'page';
+        const pageName = lastSegment ? lastSegment.replace(/[-_]/g, ' ') : 'page';
 
         return { name: pageName, path: pathname };
     } catch (error) {
