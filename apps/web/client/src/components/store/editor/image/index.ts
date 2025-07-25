@@ -1,9 +1,9 @@
 import { DefaultSettings } from '@onlook/constants';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
+import { generateNewFolderPath, toRelativePath } from '@onlook/utility';
 import { convertToBase64, getBaseName, getMimeType, isImageFile } from '@onlook/utility/src/file';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
-import { generateNewFolderPath, toRelativePath } from '@onlook/utility';
 
 export class ImageManager {
     private _imagePaths: string[] = [];
@@ -263,10 +263,7 @@ export class ImageManager {
             const results = await Promise.all(imagePromises);
 
             // Filter out null results
-            const validImages = results.filter(
-                (result): result is ImageContentData => result !== null,
-            );
-
+            const validImages = results.filter((result) => !!result);
             return validImages;
         } catch (error) {
             console.error('Error reading images content:', error);
