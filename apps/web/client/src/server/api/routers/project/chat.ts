@@ -83,6 +83,26 @@ const messageRouter = createTRPCRouter({
             })
             return messagesResult.map((message) => toOnlookMessageFromMastra(message));
         }),
+    update: protectedProcedure
+        .input(z.object({
+            messages: z.array(z.object({
+                id: z.string(),
+                content: z.object({
+                    metadata: z.record(z.string(), z.any()),
+                    parts: z.array(z.any()),
+                }),
+            })),
+        }))
+        .mutation(async ({ input }) => {
+            const storage = mastra.getStorage()
+            if (!storage) {
+                throw new Error('Storage not found');
+            }
+            const messages = await storage.updateMessages({
+                messages: input.messages
+            });
+            return messages.map((message) => toOnlookMessageFromMastra(message));
+        }),
 
     delete: protectedProcedure
         .input(z.object({

@@ -11,6 +11,7 @@ interface CurrentConversation {
     conversation: ChatConversation;
     messages: ChatMessage[];
 }
+
 export class ConversationManager {
     current: CurrentConversation | null = null;
     conversations: ChatConversation[] = [];

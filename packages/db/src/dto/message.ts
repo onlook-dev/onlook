@@ -13,6 +13,7 @@ export const toOnlookMessageFromMastra = (mastraMessage: MastraMessageV2): ChatM
                 snapshots: getMastraMessageOids(mastraMessage),
             } satisfies AssistantChatMessage;
         case ChatMessageRole.USER:
+            // TODO: Format user message
             return {
                 ...mastraMessage,
                 role: mastraMessage.role as ChatMessageRole.USER,
