@@ -55,6 +55,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
                 lastMessageRef.current = null;
             }
         },
+        sendExtraMessageFields: true,
     });
 
     const sendMessage = async (message: UserChatMessage, type: ChatType = ChatType.EDIT) => {
