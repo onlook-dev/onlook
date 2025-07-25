@@ -19,11 +19,10 @@ export const useStartProject = () => {
     const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
     const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.canvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
-    const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation();
-
-    const { sendMessages } = useChatContext();
+    const { sendMessage } = useChatContext();
 
     useEffect(() => {
         if (project) {
@@ -51,6 +50,7 @@ export const useStartProject = () => {
     }, [canvasWithFrames]);
 
     useEffect(() => {
+        console.log('conversations', conversations);
         if (conversations) {
             editorEngine.chat.conversation.applyConversations(conversations);
         }
@@ -78,16 +78,16 @@ export const useStartProject = () => {
             const context: ChatMessageContext[] = [...createContext, ...imageContexts];
             const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
 
-            const messages = await editorEngine.chat.getEditMessages(
+            const message = await editorEngine.chat.getEditMessage(
                 prompt,
                 context,
             );
 
-            if (!messages) {
+            if (!message) {
                 console.error('Failed to get creation messages');
                 throw new Error('Failed to get creation messages');
             }
-            sendMessages(messages, ChatType.CREATE);
+            sendMessage(message, ChatType.CREATE);
 
             try {
                 await updateCreateRequest({

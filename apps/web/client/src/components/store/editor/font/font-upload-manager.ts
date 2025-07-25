@@ -1,5 +1,4 @@
 import type { ParseResult } from '@babel/parser';
-import * as t from '@babel/types';
 import { DefaultSettings } from '@onlook/constants';
 import {
     createLocalFontConfig,
@@ -8,11 +7,12 @@ import {
     mergeLocalFontSources,
 } from '@onlook/fonts';
 import type { FontConfig, FontUploadFile } from '@onlook/models';
+import { types as t, type t as T } from '@onlook/parser';
 import { getFontFileName } from '@onlook/utility';
 import { camelCase } from 'lodash';
+import { makeAutoObservable } from 'mobx';
 import * as pathModule from 'path';
 import type { EditorEngine } from '../engine';
-import { makeAutoObservable, runInAction } from 'mobx';
 
 export class FontUploadManager {
     private _isUploading = false;
@@ -31,8 +31,8 @@ export class FontUploadManager {
     async uploadFonts(
         fontFiles: FontUploadFile[],
         basePath: string,
-        fontConfigAst: ParseResult<t.File>,
-    ): Promise<{ success: boolean; fontConfigAst: ParseResult<t.File> }> {
+        fontConfigAst: ParseResult<T.File>,
+    ): Promise<{ success: boolean; fontConfigAst: ParseResult<T.File> }> {
         this._isUploading = true;
         try {
             if (fontFiles.length === 0) {
@@ -107,7 +107,7 @@ export class FontUploadManager {
     /**
      * Creates font source objects for AST
      */
-    private createFontSrcObjects(fontConfigs: FontConfig[]): t.ObjectExpression[] {
+    private createFontSrcObjects(fontConfigs: FontConfig[]): T.ObjectExpression[] {
         return fontConfigs.map((config: FontConfig) =>
             t.objectExpression([
                 t.objectProperty(t.identifier('path'), t.stringLiteral(config.path)),
@@ -121,11 +121,11 @@ export class FontUploadManager {
      * Updates AST with font configuration
      */
     private async updateAstWithFontConfig(
-        ast: ParseResult<t.File>,
+        ast: ParseResult<T.File>,
         fontName: string,
-        fontsSrc: t.ObjectExpression[],
+        fontsSrc: T.ObjectExpression[],
         fontNameExists: boolean,
-        existingFontNode: t.ExportNamedDeclaration | null,
+        existingFontNode: T.ExportNamedDeclaration | null,
     ): Promise<void> {
         const hasImport = hasLocalFontImport(ast);
 

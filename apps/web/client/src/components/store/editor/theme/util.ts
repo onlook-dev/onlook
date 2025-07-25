@@ -359,7 +359,7 @@ export function extractColorsFromTailwindConfig(fileContent: string): Record<str
                                                 extendProp.key.type === 'Identifier' &&
                                                 extendProp.key.name === 'colors'
                                             ) {
-                                                colors = extractObject(extendProp.value);
+                                                colors = extractObject(extendProp.value as ObjectExpression);
                                             }
                                         });
                                     }

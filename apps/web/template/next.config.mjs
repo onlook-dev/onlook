@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     output: 'standalone',
-    devIndicators: false,
+    devIndicators: {
+        buildActivity: false,
+    },
 };
 export default nextConfig;

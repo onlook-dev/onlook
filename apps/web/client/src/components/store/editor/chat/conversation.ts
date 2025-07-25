@@ -1,18 +1,20 @@
 
 import { api } from '@/trpc/client';
 import type { GitCommit } from '@onlook/git';
-import { ChatMessageRole, type ChatConversation, type ChatMessageContext } from '@onlook/models';
-import type { Message } from 'ai';
+import { ChatMessageRole, MessageSnapshotType, type ChatConversation, type ChatMessage, type ChatMessageContext, type UserChatMessage } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
-import type { EditorEngine } from '../../engine';
-import { AssistantChatMessageImpl } from '../message/assistant';
-import { UserChatMessageImpl } from '../message/user';
-import { ChatConversationImpl, type ChatMessageImpl } from './conversation';
+import type { EditorEngine } from '../engine';
+import { getUserChatMessageFromString } from './message';
+
+interface CurrentConversation {
+    conversation: ChatConversation;
+    messages: ChatMessage[];
+}
 
 export class ConversationManager {
-    private _current: ChatConversationImpl | null = null;
-    private _conversations: ChatConversation[] = [];
+    current: CurrentConversation | null = null;
+    conversations: ChatConversation[] = [];
     creatingConversation = false;
 
     constructor(
@@ -21,35 +23,38 @@ export class ConversationManager {
         makeAutoObservable(this);
     }
 
-    get current() {
-        return this._current;
-    }
-
-    get conversations() {
-        return this._conversations;
-    }
-
-    applyConversations(conversations: ChatConversation[]) {
-        this._conversations = conversations.map((c) => ChatConversationImpl.fromJSON(c));
-        if (this._conversations.length !== 0 && this._conversations[0]) {
-            this._current = ChatConversationImpl.fromJSON(this._conversations[0]);
+    async applyConversations(conversations: ChatConversation[]) {
+        this.conversations = conversations;
+        if (conversations.length > 0 && conversations[0]) {
+            const conversation = conversations[0];
+            const messages = await this.getMessagesFromStorage(conversation.id);
+            this.current = {
+                conversation,
+                messages
+            };
         } else {
             this.startNewConversation();
         }
     }
 
-    setCurrentConversation(conversation: ChatConversation) {
-        this._current = ChatConversationImpl.fromJSON(conversation);
-        this._conversations.push(this._current);
+    updateCurrentConversation(conversation: Partial<ChatConversation>) {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        this.current.conversation = {
+            ...this.current.conversation,
+            ...conversation,
+        };
+        // TODO: update in storage
     }
-
-    async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
+    async getConversations(projectId: string): Promise<ChatConversation[]> {
         const res: ChatConversation[] | null = await this.getConversationsFromStorage(projectId);
         if (!res) {
             console.error('No conversations found');
             return [];
         }
-        const conversations = res?.map((c) => ChatConversationImpl.fromJSON(c));
+        const conversations = res;
 
         const sorted = conversations.sort((a, b) => {
             return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
@@ -60,12 +65,15 @@ export class ConversationManager {
     async startNewConversation() {
         try {
             this.creatingConversation = true;
-            if (this.current && this.current.messages.length === 0 && !this.current.displayName) {
+            if (this.current?.messages.length === 0 && !this.current?.conversation.title) {
                 throw new Error('Current conversation is already empty.');
             }
             const newConversation = await api.chat.conversation.create.mutate({ projectId: this.editorEngine.projectId });
-            this._current = ChatConversationImpl.fromJSON(newConversation);
-            this._conversations.push(this._current);
+            this.current = {
+                conversation: newConversation,
+                messages: [],
+            };
+            this.conversations.push(newConversation);
         } catch (error) {
             console.error('Error starting new conversation', error);
             toast.error('Error starting new conversation.', {
@@ -76,13 +84,22 @@ export class ConversationManager {
         }
     }
 
-    selectConversation(id: string) {
+    async selectConversation(id: string) {
         const match = this.conversations.find((c) => c.id === id);
         if (!match) {
             console.error('No conversation found with id', id);
             return;
         }
-        this._current = ChatConversationImpl.fromJSON(match);
+
+        const messages = await this.getMessagesFromStorage(id);
+        this.current = {
+            conversation: match,
+            messages: messages,
+        };
+    }
+
+    async getMessagesFromStorage(id: string): Promise<ChatMessage[]> {
+        return api.chat.message.get.query({ conversationId: id });
     }
 
     deleteConversation(id: string) {
@@ -98,9 +115,9 @@ export class ConversationManager {
         }
         this.conversations.splice(index, 1);
         this.deleteConversationInStorage(id);
-        if (this.current.id === id) {
+        if (this.current?.conversation.id === id) {
             if (this.conversations.length > 0 && !!this.conversations[0]) {
-                this._current = ChatConversationImpl.fromJSON(this.conversations[0]);
+                this.selectConversation(this.conversations[0].id);
             } else {
                 this.startNewConversation();
             }
@@ -110,14 +127,14 @@ export class ConversationManager {
     async addUserMessage(
         content: string,
         context: ChatMessageContext[],
-    ): Promise<UserChatMessageImpl | undefined> {
+    ): Promise<UserChatMessage> {
         if (!this.current) {
             console.error('No conversation found');
-            return;
+            throw new Error('No conversation found');
         }
-        const newMessage = UserChatMessageImpl.fromStringContent(content, context);
-        await this.addMessage(newMessage);
-        return newMessage;
+        const message = getUserChatMessageFromString(content, context);
+        await this.addMessage(message);
+        return message;
     }
 
     attachCommitToUserMessage(id: string, commit: GitCommit) {
@@ -126,42 +143,31 @@ export class ConversationManager {
             console.error('No message found with id', id);
             return;
         }
-        (message as UserChatMessageImpl).commitOid = commit.oid;
-        this.current?.updateMessage(message);
+        (message as UserChatMessage).snapshots.push({
+            type: MessageSnapshotType.GIT,
+            oid: commit.oid,
+            createdAt: new Date(),
+        });
     }
 
-    async addAssistantMessage(message: Message): Promise<AssistantChatMessageImpl | undefined> {
+    async addMessage(message: ChatMessage) {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        const newMessage = AssistantChatMessageImpl.fromMessage(message);
-        await this.addMessage(newMessage);
-        return newMessage;
-    }
-
-    private async addMessage(message: ChatMessageImpl) {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-        await this.current.addOrUpdateMessage(message);
+        this.current.messages.push(message);
     }
 
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {
-        return api.chat.conversation.get.query({ projectId: id });
+        return api.chat.conversation.getAll.query({ projectId: id });
     }
 
     async deleteConversationInStorage(id: string) {
-        const success = await api.chat.conversation.delete.mutate({ conversationId: id });
-        if (!success) {
-            console.error('Failed to delete conversation in storage', id);
-        }
-        return success;
+        await api.chat.conversation.delete.mutate({ conversationId: id });
     }
 
     clear() {
-        this._current = null;
-        this._conversations = [];
+        this.current = null;
+        this.conversations = [];
     }
 }

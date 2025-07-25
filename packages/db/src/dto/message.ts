@@ -1,62 +1,88 @@
-import { ChatMessageRole, type ChatMessage, type ChatMessageContext, type ChatSnapshot } from "@onlook/models";
-import type { TextPart } from "ai";
-import type { Message as DbMessage } from "../schema";
+import type { MastraMessageV2 } from "@mastra/core/memory";
+import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatMessageContext, type SystemChatMessage, type UserChatMessage } from "@onlook/models";
+import type { Message as VercelMessage } from 'ai';
+import type { MessageSnapshot } from "../../../models/src/chat/message/snapshot";
 
-export const toMessage = (dbMessage: DbMessage): ChatMessage => {
-    if (dbMessage.role === ChatMessageRole.ASSISTANT) {
-        return {
-            id: dbMessage.id,
-            content: dbMessage.content,
-            role: dbMessage.role,
-            createdAt: dbMessage.createdAt,
-            applied: dbMessage.applied,
-            snapshots: dbMessage.snapshots,
-            parts: dbMessage.parts,
-        }
-    } else if (dbMessage.role === ChatMessageRole.USER) {
-        return {
-            id: dbMessage.id,
-            content: dbMessage.content,
-            role: dbMessage.role,
-            createdAt: dbMessage.createdAt,
-            context: dbMessage.context,
-            parts: dbMessage.parts as TextPart[],
-            commitOid: dbMessage.commitOid ?? null,
-        }
-    } else {
-        return {
-            id: dbMessage.id,
-            content: dbMessage.content,
-            role: dbMessage.role as ChatMessageRole.SYSTEM,
-            createdAt: dbMessage.createdAt,
-        }
+export const toOnlookMessageFromMastra = (mastraMessage: MastraMessageV2): ChatMessage => {
+    switch (mastraMessage.role) {
+        case ChatMessageRole.ASSISTANT:
+            return {
+                ...mastraMessage,
+                role: mastraMessage.role as ChatMessageRole.ASSISTANT,
+                applied: false,
+                snapshots: getMastraMessageOids(mastraMessage),
+            } satisfies AssistantChatMessage;
+        case ChatMessageRole.USER:
+            // TODO: Format user message
+            return {
+                ...mastraMessage,
+                role: mastraMessage.role as ChatMessageRole.USER,
+                context: getMastraMessageContext(mastraMessage),
+                snapshots: getMastraMessageOids(mastraMessage),
+            } satisfies UserChatMessage;
+        default:
+            return {
+                ...mastraMessage,
+                role: mastraMessage.role as ChatMessageRole.SYSTEM,
+            } satisfies SystemChatMessage;
     }
 }
 
-export const fromMessage = (conversationId: string, message: ChatMessage): DbMessage => {
-    let snapshots: ChatSnapshot = {};
-    let context: ChatMessageContext[] = [];
-    let commitOid: string | null = null;
-
-    if (message.role === ChatMessageRole.ASSISTANT) {
-        snapshots = message.snapshots;
+export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage => {
+    switch (message.role) {
+        case ChatMessageRole.ASSISTANT:
+            return {
+                ...message,
+                role: message.role as ChatMessageRole.ASSISTANT,
+                applied: false,
+                snapshots: [],
+                content: {
+                    parts: message.parts ?? [],
+                    format: 2,
+                },
+                createdAt: message.createdAt ?? new Date(),
+            } satisfies AssistantChatMessage;
+        case ChatMessageRole.USER:
+            return {
+                ...message,
+                role: message.role as ChatMessageRole.USER,
+                context: [],
+                snapshots: [],
+                content: {
+                    parts: message.parts ?? [],
+                    format: 2,
+                },
+                createdAt: message.createdAt ?? new Date(),
+            } satisfies UserChatMessage;
+        default:
+            return {
+                ...message,
+                role: message.role as ChatMessageRole.SYSTEM,
+                content: {
+                    parts: [],
+                    format: 2,
+                },
+                createdAt: message.createdAt ?? new Date(),
+            } satisfies SystemChatMessage;
     }
+}
 
-    if (message.role === ChatMessageRole.USER) {
-        context = message.context;
-        commitOid = message.commitOid;
-    }
-
+export const toVercelMessageFromOnlook = (message: ChatMessage): VercelMessage => {
     return {
-        id: message.id,
-        content: message.content,
-        role: message.role,
-        createdAt: message.createdAt ?? new Date(),
-        conversationId,
-        applied: message.role === ChatMessageRole.ASSISTANT ? message.applied ?? false : false,
-        snapshots,
-        context,
-        parts: message.parts,
-        commitOid,
-    }
+        ...message,
+        content: message.content.parts.map((part) => {
+            if (part.type === 'text') {
+                return part.text;
+            }
+            return '';
+        }).join(''),
+    } satisfies VercelMessage;
+}
+
+export const getMastraMessageContext = (message: MastraMessageV2): ChatMessageContext[] => {
+    return (message.content.metadata?.context ?? []) as ChatMessageContext[];
+}
+
+export const getMastraMessageOids = (message: MastraMessageV2): MessageSnapshot[] => {
+    return (message.content.metadata?.snapshots ?? []) as MessageSnapshot[];
 }
