@@ -22,12 +22,14 @@ export class ConversationManager {
         makeAutoObservable(this);
     }
 
-    applyConversations(conversations: ChatConversation[]) {
+    async applyConversations(conversations: ChatConversation[]) {
         this.conversations = conversations;
         if (conversations.length > 0 && conversations[0]) {
+            const conversation = conversations[0];
+            const messages = await this.getMessagesFromStorage(conversation.id);
             this.current = {
-                conversation: conversations[0],
-                messages: [],
+                conversation,
+                messages
             };
         } else {
             this.startNewConversation();

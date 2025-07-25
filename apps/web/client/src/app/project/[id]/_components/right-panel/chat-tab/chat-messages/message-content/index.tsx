@@ -15,7 +15,6 @@ export const MessageContent = observer(
         applied: boolean;
         isStream: boolean;
     }) => {
-        console.log(JSON.stringify(parts, null, 2));
         if (!parts) {
             return null;
         }

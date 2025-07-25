@@ -50,6 +50,7 @@ export const useStartProject = () => {
     }, [canvasWithFrames]);
 
     useEffect(() => {
+        console.log('conversations', conversations);
         if (conversations) {
             editorEngine.chat.conversation.applyConversations(conversations);
         }
