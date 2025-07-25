@@ -17,6 +17,12 @@ export function removeFontImportFromFile(
 
     if (importMatch?.[1]) {
         const currentImports = importMatch[1];
+        const importNames = currentImports
+            .split(',')
+            .map((imp) => imp.trim().split(' as ')[0]?.trim());
+        if (!importNames.includes(fontName)) {
+            return null;
+        }
         const newImports = currentImports
             .split(',')
             .map((imp) => imp.trim())
@@ -34,7 +40,7 @@ export function removeFontImportFromFile(
             );
         } else {
             // Remove the entire import statement including the semicolon and optional newline
-            newContent = newContent.replace(new RegExp(`${importRegex.source};?\\n?`), '');
+            newContent = newContent.replace(new RegExp(`${importRegex.source};?\n?`), '');
         }
     } else {
         console.error('No import found');

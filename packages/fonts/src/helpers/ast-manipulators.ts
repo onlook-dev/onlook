@@ -167,22 +167,50 @@ export function removeFontFromTailwindTheme(fontId: string, content: string): st
             if (isTailwindThemeProperty(path)) {
                 const value = path.node.value;
                 if (t.isObjectExpression(value)) {
-                    const fontFamilyProperty = value.properties.find((prop) =>
-                        hasPropertyName(prop, 'fontFamily'),
+                    // Look for extend property within theme
+                    const extendProperty = value.properties.find((prop) =>
+                        hasPropertyName(prop, 'extend'),
                     );
 
-                    if (fontFamilyProperty && t.isObjectProperty(fontFamilyProperty)) {
-                        const fontFamilyValue = fontFamilyProperty.value;
-                        if (t.isObjectExpression(fontFamilyValue)) {
-                            const fontFamilyProps = fontFamilyValue.properties.filter((prop) => {
-                                if (t.isObjectProperty(prop) && t.isIdentifier(prop.key)) {
-                                    return prop.key.name !== fontId;
-                                }
-                                return true;
-                            });
+                    if (extendProperty && t.isObjectProperty(extendProperty)) {
+                        const extendValue = extendProperty.value;
+                        if (t.isObjectExpression(extendValue)) {
+                            // Look for fontFamily within extend
+                            const fontFamilyProperty = extendValue.properties.find((prop) =>
+                                hasPropertyName(prop, 'fontFamily'),
+                            );
 
-                            if (fontFamilyProps.length !== fontFamilyValue.properties.length) {
-                                fontFamilyValue.properties = fontFamilyProps;
+                            if (fontFamilyProperty && t.isObjectProperty(fontFamilyProperty)) {
+                                const fontFamilyValue = fontFamilyProperty.value;
+                                if (t.isObjectExpression(fontFamilyValue)) {
+                                    // Filter out the specified font
+                                    const fontFamilyProps = fontFamilyValue.properties.filter(
+                                        (prop) => {
+                                            if (
+                                                t.isObjectProperty(prop) &&
+                                                t.isIdentifier(prop.key)
+                                            ) {
+                                                return prop.key.name !== fontId;
+                                            }
+                                            return true;
+                                        },
+                                    );
+
+                                    // If font was found and removed
+                                    if (
+                                        fontFamilyProps.length !== fontFamilyValue.properties.length
+                                    ) {
+                                        if (fontFamilyProps.length === 0) {
+                                            // Remove the entire fontFamily property if no fonts left
+                                            extendValue.properties = extendValue.properties.filter(
+                                                (prop) => !hasPropertyName(prop, 'fontFamily'),
+                                            );
+                                        } else {
+                                            // Update with remaining fonts
+                                            fontFamilyValue.properties = fontFamilyProps;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -211,6 +239,7 @@ export function addFontToTailwindTheme(font: Font, content: string): string {
     });
 
     let themeFound = false;
+    let extendFound = false;
 
     const newFontFamilyProperty = createFontFamilyProperty(font);
 
@@ -220,42 +249,61 @@ export function addFontToTailwindTheme(font: Font, content: string): string {
                 themeFound = true;
                 const value = path.node.value;
                 if (t.isObjectExpression(value)) {
-                    const fontFamilyProperty = value.properties.find((prop) =>
-                        hasPropertyName(prop, 'fontFamily'),
+                    // Look for extend property within theme
+                    const extendProperty = value.properties.find((prop) =>
+                        hasPropertyName(prop, 'extend'),
                     );
-                    // If fontFamilyProperty exists, add the new font to the existing fontFamily object
-                    if (fontFamilyProperty && t.isObjectProperty(fontFamilyProperty)) {
-                        const fontFamilyValue = fontFamilyProperty.value;
-                        if (t.isObjectExpression(fontFamilyValue)) {
-                            //Check if the font already exists
-                            const fontExists = fontFamilyValue.properties.some((prop) =>
-                                hasPropertyName(prop, font.id),
+
+                    if (extendProperty && t.isObjectProperty(extendProperty)) {
+                        extendFound = true;
+                        const extendValue = extendProperty.value;
+                        if (t.isObjectExpression(extendValue)) {
+                            // Look for fontFamily within extend
+                            const fontFamilyProperty = extendValue.properties.find((prop) =>
+                                hasPropertyName(prop, 'fontFamily'),
                             );
-                            if (!fontExists) {
-                                // If the font doesn't exist, add it
-                                const fontFamilyProps = fontFamilyValue.properties;
-                                fontFamilyProps.push(
-                                    t.objectProperty(
-                                        t.identifier(font.id),
-                                        t.arrayExpression([
-                                            t.stringLiteral(`var(${font.variable})`),
-                                            t.stringLiteral('sans-serif'),
-                                        ]),
-                                    ),
-                                );
+
+                            if (fontFamilyProperty && t.isObjectProperty(fontFamilyProperty)) {
+                                const fontFamilyValue = fontFamilyProperty.value;
+                                if (t.isObjectExpression(fontFamilyValue)) {
+                                    // Check if the font already exists
+                                    const fontExists = fontFamilyValue.properties.some((prop) =>
+                                        hasPropertyName(prop, font.id),
+                                    );
+                                    if (!fontExists) {
+                                        // Add the new font to existing fontFamily
+                                        fontFamilyValue.properties.push(
+                                            t.objectProperty(
+                                                t.identifier(font.id),
+                                                t.arrayExpression([
+                                                    t.stringLiteral(`var(${font.variable})`),
+                                                    t.stringLiteral('sans-serif'),
+                                                ]),
+                                            ),
+                                        );
+                                    }
+                                }
+                            } else {
+                                // fontFamily doesn't exist in extend, add it
+                                extendValue.properties.push(newFontFamilyProperty);
                             }
                         }
-                    }
-                    // If fontFamilyProperty doesn't exist, create it
-                    else {
-                        value.properties.push(newFontFamilyProperty);
+                    } else {
+                        // extend doesn't exist, create it with fontFamily
+                        value.properties.push(
+                            t.objectProperty(
+                                t.identifier('extend'),
+                                t.objectExpression([newFontFamilyProperty]),
+                            ),
+                        );
+                        extendFound = true;
                     }
                 }
             }
         },
     });
-    // If object property `theme` doesn't exist, create it
 
+    // If theme doesn't exist, create it with extend and fontFamily
     if (!themeFound) {
         traverse(ast, {
             ObjectExpression(path) {
@@ -266,7 +314,12 @@ export function addFontToTailwindTheme(font: Font, content: string): string {
                     path.node.properties.push(
                         t.objectProperty(
                             t.identifier('theme'),
-                            t.objectExpression([newFontFamilyProperty]),
+                            t.objectExpression([
+                                t.objectProperty(
+                                    t.identifier('extend'),
+                                    t.objectExpression([newFontFamilyProperty]),
+                                ),
+                            ]),
                         ),
                     );
                 }
@@ -324,18 +377,21 @@ export function mergeLocalFontSources(
 }
 
 /**
- * Adds a new Google Font import specifier to an existing 'next/font/google' import declaration.
- * Finds the Google Fonts import statement and appends the new font name to the import list,
- * enabling the font to be used in the configuration.
+ * Adds a new Google Font import specifier to the 'next/font/google' import declaration.
+ * If an existing import exists, appends the new font name to the import list.
+ * If no import exists, creates a new import statement for the Google font.
  * 
  * @param ast - The AST file containing import declarations to modify
  * @param importName - The Google Font name to add to the import specifiers (with underscores for spaces)
  
  */
 export function addGoogleFontSpecifier(ast: T.File, importName: string): void {
+    let foundExistingImport = false;
+
     traverse(ast, {
         ImportDeclaration(path: NodePath<T.ImportDeclaration>) {
             if (path.node.source.value === 'next/font/google') {
+                foundExistingImport = true;
                 const newSpecifiers = [...path.node.specifiers];
                 newSpecifiers.push(
                     t.importSpecifier(t.identifier(importName), t.identifier(importName)),
@@ -344,4 +400,23 @@ export function addGoogleFontSpecifier(ast: T.File, importName: string): void {
             }
         },
     });
+
+    // If no existing Google font import was found, create a new one
+    if (!foundExistingImport) {
+        const newImport = t.importDeclaration(
+            [t.importSpecifier(t.identifier(importName), t.identifier(importName))],
+            t.stringLiteral('next/font/google'),
+        );
+
+        let insertionIndex = 0;
+        for (let i = 0; i < ast.program.body.length; i++) {
+            if (t.isImportDeclaration(ast.program.body[i])) {
+                insertionIndex = i + 1;
+            } else {
+                break;
+            }
+        }
+
+        ast.program.body.splice(insertionIndex, 0, newImport);
+    }
 }

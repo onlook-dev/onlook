@@ -1,0 +1,11 @@
+{
+    "font": {
+        "id": "source-sans-pro",
+        "family": "Source Sans Pro",
+        "subsets": ["latin", "cyrillic"],
+        "variable": "--font-source-sans-pro",
+        "weight": ["300", "400", "600"],
+        "styles": ["normal", "italic"],
+        "type": "google"
+    }
+}
