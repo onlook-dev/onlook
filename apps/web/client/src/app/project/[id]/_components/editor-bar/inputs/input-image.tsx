@@ -12,14 +12,14 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
+import { toAbsoluteImagePath } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { HoverOnlyTooltip } from '../hover-tooltip';
-import { useDropdownControl } from '../hooks/use-dropdown-manager';
-import { ToolbarButton } from '../toolbar-button';
-import { useBackgroundImage } from '../hooks/use-background-image-update';
 import type { ImageFit } from '../hooks/use-background-image-update';
-import { toAbsoluteImagePath } from '@onlook/utility';
+import { useBackgroundImage } from '../hooks/use-background-image-update';
+import { useDropdownControl } from '../hooks/use-dropdown-manager';
+import { HoverOnlyTooltip } from '../hover-tooltip';
+import { ToolbarButton } from '../toolbar-button';
 
 export const InputImage = observer(() => {
     const editorEngine = useEditorEngine();
@@ -116,25 +116,26 @@ export const InputImage = observer(() => {
         [onOpenChange],
     );
 
-    useEffect(() => {
-        const loadImage = async () => {
-            if (isOpen) {
-                editorEngine.image.setIsSelectingImage(true);
-                if (currentBackgroundImage) {
-                    const absolutePath = toAbsoluteImagePath(currentBackgroundImage);
+    const loadImage = async () => {
+        editorEngine.image.setIsSelectingImage(true);
+        if (currentBackgroundImage) {
+            const absolutePath = toAbsoluteImagePath(currentBackgroundImage);
 
-                    const content = await editorEngine.image.readImageContent(absolutePath);
-                    if (content) {
-                        editorEngine.image.setSelectedImage(content);
-                    }
-                } else {
-                    editorEngine.image.setSelectedImage(null);
-                }
-            } else {
-                editorEngine.image.setIsSelectingImage(false);
+            const content = await editorEngine.image.readImageContent(absolutePath);
+            if (content) {
+                editorEngine.image.setSelectedImage(content);
             }
-        };
-        loadImage();
+        } else {
+            editorEngine.image.setSelectedImage(null);
+        }
+    };
+
+    useEffect(() => {
+        if (isOpen) {
+            loadImage();
+        } else {
+            editorEngine.image.setIsSelectingImage(false);
+        }
     }, [isOpen]);
 
     return (
