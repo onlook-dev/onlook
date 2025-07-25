@@ -20,6 +20,11 @@ export class PagesManager {
     private currentPath = '';
     private groupedRoutes = '';
     private _isScanning = false;
+    
+    // Navigation history
+    private navigationHistory: string[] = [];
+    private currentHistoryIndex = -1;
+    private maxHistorySize = 50;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -38,6 +43,18 @@ export class PagesManager {
 
     get isScanning() {
         return this._isScanning;
+    }
+
+    get canGoBack(): boolean {
+        return this.currentHistoryIndex > 0;
+    }
+
+    get canGoForward(): boolean {
+        return this.currentHistoryIndex < this.navigationHistory.length - 1;
+    }
+
+    get historyLength(): number {
+        return this.navigationHistory.length;
     }
 
     private getActiveFrame(): FrameData | undefined {
@@ -134,6 +151,7 @@ export class PagesManager {
             if (this.editorEngine?.sandbox?.session?.session) {
                 try {
                     const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox);
+                   // const realPages = await scanPagesFromSandboxOptimized(this.editorEngine.sandbox);
                     this.setPages(realPages);
                     this._isScanning = false;
                     return;
@@ -246,7 +264,7 @@ export class PagesManager {
         }
     }
 
-    async navigateTo(path: string) {
+    async navigateTo(path: string, addToHistory = true) {
         const frameData = this.getActiveFrame();
 
         if (!frameData?.view) {
@@ -280,16 +298,74 @@ export class PagesManager {
                 return;
             }
 
-            await frameData.view.loadURL(`${baseUrl}${path}`);
+            frameData.view.loadURL(`${baseUrl}${path}`);
             this.setActivePath(frameData.frame.id, originalPath);
             await frameData.view.processDom();
 
             this.editorEngine.posthog.capture('page_navigate', {
                 path,
             });
+            // Add to navigation history
+            if (addToHistory) {
+                this.addToHistory(originalPath);
+            }
         } catch (error) {
             console.error('Navigation failed:', error);
         }
+    }
+
+    async goBack(): Promise<void> {
+        if (!this.canGoBack) {
+            console.warn('Cannot go back - no previous history');
+            return;
+        }
+
+        this.currentHistoryIndex--;
+        const previousPath = this.navigationHistory[this.currentHistoryIndex];
+        
+        if (previousPath) {
+            await this.navigateTo(previousPath, false); // Don't add to history
+        }
+    }
+
+    async goForward(): Promise<void> {
+        if (!this.canGoForward) {
+            console.warn('Cannot go forward - no forward history');
+            return;
+        }
+
+        this.currentHistoryIndex++;
+        const nextPath = this.navigationHistory[this.currentHistoryIndex];
+        
+        if (nextPath) {
+            await this.navigateTo(nextPath, false); // Don't add to history
+        }
+    }
+
+    private addToHistory(path: string): void {
+        if (this.navigationHistory[this.currentHistoryIndex] === path) {
+            return;
+        }
+
+        if (this.currentHistoryIndex < this.navigationHistory.length - 1) {
+            this.navigationHistory = this.navigationHistory.slice(0, this.currentHistoryIndex + 1);
+        }
+
+        this.navigationHistory.push(path);
+        this.currentHistoryIndex = this.navigationHistory.length - 1;
+
+        if (this.navigationHistory.length > this.maxHistorySize) {
+            this.navigationHistory = this.navigationHistory.slice(-this.maxHistorySize);
+            this.currentHistoryIndex = this.navigationHistory.length - 1;
+        }
+    }
+
+    public getNavigationHistory(): string[] {
+        return [...this.navigationHistory];
+    }
+
+    public getCurrentHistoryIndex(): number {
+        return this.currentHistoryIndex;
     }
 
     public setCurrentPath(path: string) {
@@ -327,5 +403,7 @@ export class PagesManager {
         this.currentPath = '';
         this.activeRoutesByFrameId = {};
         this.groupedRoutes = '';
+        this.navigationHistory = [];
+        this.currentHistoryIndex = -1;
     }
 }

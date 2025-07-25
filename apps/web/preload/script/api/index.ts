@@ -27,6 +27,8 @@ import { captureScreenshot } from './screenshot';
 import { setFrameId } from './state';
 import { updateStyle } from './style';
 import { getTheme, setTheme } from './theme';
+import { goBack, goForward, navigateTo } from './history';
+
 
 function withTryCatch<T extends (...args: any[]) => any>(fn: T): T {
     return ((...args: any[]) => {
@@ -93,6 +95,11 @@ const rawMethods = {
     insertImage,
     removeImage,
     handleBodyReady,
+
+    // History
+    goBack,
+    goForward,
+    navigateTo,
 }
 
 // Wrap all methods in a try/catch to prevent the preload script from crashing
