@@ -10,6 +10,11 @@ export enum SubscriptionStatus {
     CANCELED = 'canceled',
 }
 
+export enum ScheduledSubscriptionAction {
+    PRICE_CHANGE = 'price_change',
+    CANCELLATION = 'cancellation',
+}
+
 export interface Product {
     name: string;
     type: ProductType;
@@ -37,11 +42,6 @@ export interface Subscription {
     stripeSubscriptionId: string;
     stripeSubscriptionItemId: string;
     stripeCustomerId: string;
-}
-
-export enum ScheduledSubscriptionAction {
-    PRICE_CHANGE = 'price_change',
-    CANCELLATION = 'cancellation',
 }
 
 export interface ScheduledChange {

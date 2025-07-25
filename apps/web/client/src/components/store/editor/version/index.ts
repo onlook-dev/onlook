@@ -1,4 +1,3 @@
-import { sendAnalytics } from '@/utils/analytics';
 import { type GitCommit } from '@onlook/git';
 import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
@@ -119,7 +118,7 @@ export class VersionsManager {
             }
             this.isSaving = true;
 
-            sendAnalytics('versions create commit success', {
+            this.editorEngine.posthog.capture('versions_create_commit_success', {
                 message,
             });
 
@@ -132,7 +131,7 @@ export class VersionsManager {
             if (showToast) {
                 toast.error('Failed to create backup');
             }
-            sendAnalytics('versions create commit failed', {
+            this.editorEngine.posthog.capture('versions_create_commit_failed', {
                 message,
                 error: error instanceof Error ? error.message : 'Unknown error',
             });
@@ -185,7 +184,7 @@ export class VersionsManager {
     };
 
     checkoutCommit = async (commit: GitCommit): Promise<boolean> => {
-        sendAnalytics('versions checkout commit', {
+        this.editorEngine.posthog.capture('versions_checkout_commit', {
             commit: commit.displayName || commit.message,
         });
         const res = await this.createCommit('Save before restoring backup', false);
@@ -198,7 +197,7 @@ export class VersionsManager {
         const restoreResult = await this.gitManager.restoreToCommit(commit.oid);
         if (!restoreResult.success) {
             toast.error('Failed to restore backup');
-            sendAnalytics('versions checkout commit failed', {
+            this.editorEngine.posthog.capture('versions_checkout_commit_failed', {
                 commit: commit.displayName || commit.message,
                 error: restoreResult.error,
             });
@@ -211,7 +210,7 @@ export class VersionsManager {
 
         await this.listCommits();
 
-        sendAnalytics('versions checkout commit success', {
+        this.editorEngine.posthog.capture('versions_checkout_commit_success', {
             commit: commit.displayName || commit.message,
         });
         return true;
@@ -219,7 +218,7 @@ export class VersionsManager {
 
     renameCommit = async (commitOid: string, newName: string): Promise<boolean> => {
         try {
-            sendAnalytics('versions rename commit', {
+            this.editorEngine.posthog.capture('versions_rename_commit', {
                 commit: commitOid,
                 newName,
             });
@@ -250,7 +249,7 @@ export class VersionsManager {
                 description: `Renamed to: "${newName}"`,
             });
 
-            sendAnalytics('versions rename commit success', {
+            this.editorEngine.posthog.capture('versions_rename_commit_success', {
                 commit: commitOid,
                 newName,
             });
@@ -258,7 +257,7 @@ export class VersionsManager {
             return true;
         } catch (error) {
             toast.error('Failed to rename backup');
-            sendAnalytics('versions rename commit failed', {
+            this.editorEngine.posthog.capture('versions_rename_commit_failed', {
                 commit: commitOid,
                 newName,
                 error: error instanceof Error ? error.message : 'Unknown error',
@@ -275,7 +274,7 @@ export class VersionsManager {
         this.savedCommits?.push(commit);
         toast.success('Backup bookmarked!');
 
-        sendAnalytics('versions save commit', {
+        this.editorEngine.posthog.capture('versions_save_commit', {
             commit: commit.displayName || commit.message,
         });
     };
@@ -283,7 +282,7 @@ export class VersionsManager {
     removeSavedCommit = async (commit: GitCommit) => {
         this.savedCommits = this.savedCommits.filter((c) => c.oid !== commit.oid);
 
-        sendAnalytics('versions remove saved commit', {
+        this.editorEngine.posthog.capture('versions_remove_saved_commit', {
             commit: commit.displayName || commit.message,
         });
     };

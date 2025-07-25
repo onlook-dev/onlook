@@ -381,6 +381,9 @@ export class SandboxManager {
                     timestamp: Date.now(),
                 });
             }
+            if (event.paths.some((path) => path.includes(PRELOAD_SCRIPT_FILE_NAME))) {
+                await this.editorEngine.preloadScript.ensurePreloadScriptFile();
+            }
         } else if (eventType === 'change' || eventType === 'add') {
             const session = this.session.session;
             if (!session) {
@@ -412,10 +415,6 @@ export class SandboxManager {
                     timestamp: Date.now(),
                 });
             }
-        }
-
-        if (event.paths.some((path) => path.includes(PRELOAD_SCRIPT_FILE_NAME))) {
-            await this.editorEngine.preloadScript.ensurePreloadScriptFile();
         }
     }
 

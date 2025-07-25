@@ -1,4 +1,3 @@
-import { sendAnalytics } from '@/utils/analytics';
 import type { Action } from '@onlook/models/actions';
 import { jsonClone } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
@@ -85,23 +84,23 @@ export class HistoryManager {
 
         switch (action.type) {
             case 'update-style':
-                sendAnalytics('style action', {
+                this.editorEngine.posthog.capture('style_action', {
                     style: jsonClone(
                         action.targets.length > 0 ? action.targets[0]?.change.updated : {},
                     ),
                 });
                 break;
             case 'insert-element':
-                sendAnalytics('insert action');
+                this.editorEngine.posthog.capture('insert_action');
                 break;
             case 'move-element':
-                sendAnalytics('move action');
+                this.editorEngine.posthog.capture('move_action');
                 break;
             case 'remove-element':
-                sendAnalytics('remove action');
+                this.editorEngine.posthog.capture('remove_action');
                 break;
             case 'edit-text':
-                sendAnalytics('edit text action');
+                this.editorEngine.posthog.capture('edit_text_action');
         }
     };
 

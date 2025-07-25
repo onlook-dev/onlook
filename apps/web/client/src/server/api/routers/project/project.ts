@@ -19,7 +19,7 @@ import {
     type Canvas,
     type UserCanvas
 } from '@onlook/db';
-import { CLAUDE_MODELS, LLMProvider, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import { LLMProvider, OPENROUTER_MODELS, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
 import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -149,8 +149,8 @@ export const projectRouter = createTRPCRouter({
         .mutation(async ({ input }): Promise<string> => {
             try {
                 const { model, providerOptions } = await initModel({
-                    provider: LLMProvider.ANTHROPIC,
-                    model: CLAUDE_MODELS.HAIKU,
+                    provider: LLMProvider.OPENROUTER,
+                    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
                 });
 
                 const MAX_NAME_LENGTH = 50;

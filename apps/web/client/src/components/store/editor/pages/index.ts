@@ -1,4 +1,3 @@
-import { sendAnalytics } from '@/utils/analytics';
 import type { PageMetadata, PageNode } from '@onlook/models/pages';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -170,7 +169,7 @@ export class PagesManager {
         try {
             await createPageInSandbox(this.editorEngine.sandbox, normalizedPath);
             await this.scanPages();
-            sendAnalytics('page create');
+            this.editorEngine.posthog.capture('page_create');
         } catch (error) {
             console.error('Failed to create page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -191,7 +190,7 @@ export class PagesManager {
         try {
             await renamePageInSandbox(this.editorEngine.sandbox, oldPath, newName);
             await this.scanPages();
-            sendAnalytics('page rename');
+            this.editorEngine.posthog.capture('page_rename');
         } catch (error) {
             console.error('Failed to rename page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -207,7 +206,7 @@ export class PagesManager {
                 normalizeRoute(targetPath)
             );
             await this.scanPages();
-            sendAnalytics('page duplicate');
+            this.editorEngine.posthog.capture('page_duplicate');
         } catch (error) {
             console.error('Failed to duplicate page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -224,7 +223,7 @@ export class PagesManager {
         try {
             await deletePageInSandbox(this.editorEngine.sandbox, normalizedPath, isDir);
             await this.scanPages();
-            sendAnalytics('page delete');
+            this.editorEngine.posthog.capture('page_delete');
         } catch (error) {
             console.error('Failed to delete page:', error);
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -285,7 +284,9 @@ export class PagesManager {
             this.setActivePath(frameData.frame.id, originalPath);
             await frameData.view.processDom();
 
-            sendAnalytics('page navigate');
+            this.editorEngine.posthog.capture('page_navigate', {
+                path,
+            });
         } catch (error) {
             console.error('Navigation failed:', error);
         }

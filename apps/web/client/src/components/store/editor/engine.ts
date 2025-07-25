@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import type { PostHog } from 'posthog-js';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
@@ -28,6 +29,8 @@ import { VersionsManager } from './version';
 
 export class EditorEngine {
     readonly projectId: string;
+    readonly posthog: PostHog;
+
     readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
     readonly canvas: CanvasManager = new CanvasManager();
@@ -55,8 +58,9 @@ export class EditorEngine {
     readonly frameEvent: FrameEventManager = new FrameEventManager(this);
     readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
 
-    constructor(projectId: string) {
+    constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
+        this.posthog = posthog;
         makeAutoObservable(this);
     }
 

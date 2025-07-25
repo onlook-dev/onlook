@@ -1,4 +1,4 @@
-import { getHydratedUserMessage } from '@onlook/ai/src/prompt/provider';
+import { getHydratedUserMessage, type HydrateUserMessageOptions } from '@onlook/ai/src/prompt/provider';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { ChatMessageRole, type UserChatMessage } from '@onlook/models/chat';
 import type { Message, TextPart } from 'ai';
@@ -48,8 +48,8 @@ export class UserChatMessageImpl implements UserChatMessage {
         return new UserChatMessageImpl(content, context);
     }
 
-    toStreamMessage(): Message {
-        return getHydratedUserMessage(this.id, this.content, this.context);
+    toStreamMessage(opt: HydrateUserMessageOptions): Message {
+        return getHydratedUserMessage(this.id, this.content, this.context, opt);
     }
 
     updateMessage(content: string, context: ChatMessageContext[]) {

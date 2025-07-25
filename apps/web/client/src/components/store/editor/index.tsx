@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo } from 'react';
 import { EditorEngine } from './engine';
+import { usePostHog } from 'posthog-js/react';
 
 const EditorEngineContext = createContext<EditorEngine | null>(null);
 
@@ -15,7 +16,8 @@ export const EditorEngineProvider = ({ children, projectId }: {
     children: React.ReactNode,
     projectId: string,
 }) => {
-    const editorEngine = useMemo(() => new EditorEngine(projectId), [projectId]);
+    const posthog = usePostHog();
+    const editorEngine = useMemo(() => new EditorEngine(projectId, posthog), [projectId, posthog]);
 
     useEffect(() => {
         return () => {

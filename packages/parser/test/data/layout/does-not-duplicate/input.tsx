@@ -11,7 +11,7 @@ export default function Document() {
                 <main />
                 <Script
                     type="module"
-                    src="onlook-preload-script.js"
+                    src="/onlook-preload-script.js"
                     id="onlook-preload-script"
                     strategy="beforeInteractive"
                 />

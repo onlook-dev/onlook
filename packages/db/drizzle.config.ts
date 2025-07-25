@@ -7,6 +7,7 @@ export default defineConfig({
     out: '../../apps/backend/supabase/migrations',
     dialect: "postgresql",
     schemaFilter: ["public"],
+    verbose: true,
     dbCredentials: {
         url: process.env.SUPABASE_DATABASE_URL ?? DEFAULT_DATABASE_URL,
     },
