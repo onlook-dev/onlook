@@ -325,7 +325,6 @@ export class PagesManager {
         
         if (previousPath) {
             await this.navigateTo(previousPath, false); // Don't add to history
-            sendAnalytics('page navigate back');
         }
     }
 
@@ -340,7 +339,6 @@ export class PagesManager {
         
         if (nextPath) {
             await this.navigateTo(nextPath, false); // Don't add to history
-            sendAnalytics('page navigate forward');
         }
     }
 
