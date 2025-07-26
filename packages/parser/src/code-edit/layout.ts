@@ -244,9 +244,7 @@ export function removeDeprecatedPreloadScripts(ast: T.File): void {
             if (
                 src &&
                 t.isStringLiteral(src) &&
-                DEPRECATED_PRELOAD_SCRIPT_SRCS.some((deprecatedSrc) =>
-                    src.value.includes(deprecatedSrc),
-                )
+                DEPRECATED_PRELOAD_SCRIPT_SRCS.some((deprecatedSrc) => src.value === deprecatedSrc)
             ) {
                 console.log('removing deprecated script', src.value);
                 path.remove();

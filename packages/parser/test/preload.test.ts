@@ -165,7 +165,7 @@ export default function Document() {
     return (
         <html>
             <head>
-                <Script type="module" src="/onlook-preload-script.js" />
+                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
                 <Script type="module" src="https://example.com/other-script.js" />
             </head>
             <body>
@@ -182,7 +182,7 @@ export default function Document() {
         const result = await getContentFromAst(ast, input);
 
         // Should keep both scripts since neither is deprecated
-        expect(result).toContain('src="/onlook-preload-script.js"');
+        expect(result).toContain(`src="${PRELOAD_SCRIPT_SRC}"`);
         expect(result).toContain('src="https://example.com/other-script.js"');
     });
 
@@ -192,8 +192,8 @@ export default function Document() {
     return (
         <html>
             <head>
-                <Script type="module" src="/onlook-preload-script.js" />
-                <Script type="module" src="https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/packages/preload/dist/index.js" />
+                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+                <Script type="module" src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}" />
             </head>
             <body>
                 <main />
@@ -209,10 +209,9 @@ export default function Document() {
         const result = await getContentFromAst(ast, input);
 
         // Should keep the current script
-        expect(result).toContain('src="/onlook-preload-script.js"');
+        expect(result).toContain(`src="${PRELOAD_SCRIPT_SRC}"`);
         // Should remove deprecated scripts
-        expect(result).not.toContain('packages/preload/dist/index.js');
-        expect(result).not.toContain('onlook-dev/web');
+        expect(result).not.toContain(`src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}"`);
     });
 });
 

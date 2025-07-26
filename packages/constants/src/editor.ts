@@ -80,5 +80,6 @@ export const PRELOAD_SCRIPT_SRC = isDev ? LOCAL_PRELOAD_SCRIPT_SRC : CDN_PRELOAD
 export const DEPRECATED_PRELOAD_SCRIPT_SRCS = [
     'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js',
     'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/packages/preload/dist/index.js',
+    // Should be the inverse of PRELOAD_SCRIPT_SRC in order to be removed
     isDev ? CDN_PRELOAD_SCRIPT_SRC : LOCAL_PRELOAD_SCRIPT_SRC,
 ];
