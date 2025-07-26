@@ -188,31 +188,27 @@ export function migrateFontsFromLayout(content: string): {
                 }
 
                 const source = path.node.source.value;
-                if (source === 'next/font/google') {
-                    if (!path.node.specifiers) {
-                        return;
-                    }
-
-                    path.node.specifiers.forEach((specifier) => {
-                        if (t.isImportSpecifier(specifier) && t.isIdentifier(specifier.imported)) {
-                            fontImports[specifier.imported.name] = specifier.imported.name;
-                            path.remove();
-                        }
-                    });
-                } else if (source === 'next/font/local') {
+                if (source === 'next/font/google' || source === 'next/font/local') {
                     if (!path.node.specifiers) {
                         return;
                     }
 
                     path.node.specifiers.forEach((specifier) => {
                         if (
+                            source === 'next/font/google' &&
+                            t.isImportSpecifier(specifier) &&
+                            t.isIdentifier(specifier.imported)
+                        ) {
+                            fontImports[specifier.imported.name] = specifier.imported.name;
+                        } else if (
+                            source === 'next/font/local' &&
                             t.isImportDefaultSpecifier(specifier) &&
                             t.isIdentifier(specifier.local)
                         ) {
                             fontImports[specifier.local.name] = 'localFont';
-                            path.remove();
                         }
                     });
+                    path.remove(); // Remove the entire import declaration
                 }
             },
 

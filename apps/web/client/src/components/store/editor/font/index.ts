@@ -45,6 +45,15 @@ export class FontManager {
                 }
             },
         );
+
+        reaction(
+            () => this.editorEngine.sandbox.readFile(this.fontConfigManager.fontConfigPath),
+            (fontConfigFile) => {
+                if (fontConfigFile) {
+                    this.syncFontsWithConfigs();
+                }
+            },
+        );
     }
 
     get fontConfigPath(): string {

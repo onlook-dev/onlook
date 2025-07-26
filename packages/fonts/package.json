@@ -12,7 +12,8 @@
         "clean": "rm -rf node_modules",
         "lint": "eslint --fix",
         "format": "prettier --write .",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "test": "bun test"
     },
     "keywords": [
         "onlook",
@@ -32,5 +33,8 @@
         "@onlook/typescript": "*",
         "typescript": "^5.5.4"
     },
-    "dependencies": {}
+    "dependencies": {
+        "@onlook/parser": "*",
+        "@babel/types": "^7.22.5"
+    }
 }
