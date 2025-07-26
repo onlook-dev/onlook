@@ -66,7 +66,6 @@ export default function Document() {
     });
 
     test('should identify deprecated script as deprecated for production environment', async () => {
-        process.env.NODE_ENV = 'production';
         const input = `import Script from 'next/script';
 export default function Document() {
     return (
