@@ -1,4 +1,4 @@
-import { PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
+import { LOCAL_PRELOAD_SCRIPT_SRC, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
 import type { SandboxFile } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -22,7 +22,7 @@ export class PreloadScriptManager {
                 return false;
             }
             // check if the file exists in the public folder
-            const publicScriptPath = normalizePath(`public/${PRELOAD_SCRIPT_FILE_NAME}`);
+            const publicScriptPath = normalizePath(`public${LOCAL_PRELOAD_SCRIPT_SRC}`);
             const existingFile = await this.editorEngine.sandbox.readFile(publicScriptPath);
 
             if (existingFile && existingFile.type === 'text' && existingFile.content.length > 0) {
@@ -54,7 +54,7 @@ export class PreloadScriptManager {
 
             let scriptContent: string;
             try {
-                const response = await fetch(`/${PRELOAD_SCRIPT_FILE_NAME}`);
+                const response = await fetch(PRELOAD_SCRIPT_SRC);
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
@@ -75,7 +75,7 @@ export class PreloadScriptManager {
 
             // Write the script content to the CodeSandbox project 
             const writeSuccess = await this.editorEngine.sandbox.writeFile(
-                `public/${PRELOAD_SCRIPT_FILE_NAME}`,
+                `public${LOCAL_PRELOAD_SCRIPT_SRC}`,
                 scriptContent,
             );
 

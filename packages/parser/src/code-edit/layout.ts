@@ -1,6 +1,7 @@
 import {
-    DEPRECATED_PRELOAD_SCRIPT_SRC,
-    PRELOAD_SCRIPT_FILE_NAME,
+    CDN_PRELOAD_SCRIPT_SRC,
+    DEPRECATED_PRELOAD_SCRIPT_SRCS,
+    LOCAL_PRELOAD_SCRIPT_SRC,
     PRELOAD_SCRIPT_SRC,
 } from '@onlook/constants';
 import { type t as T, types as t, traverse } from '../packages';
@@ -115,13 +116,10 @@ function getPreloadScript(): T.JSXElement {
         t.jsxOpeningElement(
             t.jsxIdentifier('Script'),
             [
-                t.jsxAttribute(
-                    t.jsxIdentifier('src'),
-                    t.stringLiteral(`/${PRELOAD_SCRIPT_FILE_NAME}`),
-                ),
+                t.jsxAttribute(t.jsxIdentifier('src'), t.stringLiteral(`${PRELOAD_SCRIPT_SRC}`)),
                 t.jsxAttribute(t.jsxIdentifier('strategy'), t.stringLiteral('beforeInteractive')),
                 t.jsxAttribute(t.jsxIdentifier('type'), t.stringLiteral('module')),
-                t.jsxAttribute(t.jsxIdentifier('id'), t.stringLiteral(PRELOAD_SCRIPT_FILE_NAME)),
+                t.jsxAttribute(t.jsxIdentifier('id'), t.stringLiteral(PRELOAD_SCRIPT_SRC)),
             ],
             false,
         ),
@@ -140,7 +138,7 @@ function addScriptToJSXElement(node: T.JSXElement): void {
                 (attr) =>
                     t.isJSXAttribute(attr) &&
                     t.isJSXIdentifier(attr.name, { name: 'src' }) &&
-                    t.isStringLiteral(attr.value, { value: PRELOAD_SCRIPT_FILE_NAME }),
+                    t.isStringLiteral(attr.value, { value: PRELOAD_SCRIPT_SRC }),
             ),
     );
     if (!alreadyInjected) {
@@ -234,7 +232,7 @@ function wrapWithHtmlAndBody(ast: T.File): void {
     });
 }
 
-function removeDeprecatedPreloadScripts(ast: T.File): void {
+export function removeDeprecatedPreloadScripts(ast: T.File): void {
     traverse(ast, {
         JSXElement(path) {
             const isScript = t.isJSXIdentifier(path.node.openingElement.name, { name: 'Script' });
@@ -251,9 +249,9 @@ function removeDeprecatedPreloadScripts(ast: T.File): void {
             if (
                 src &&
                 t.isStringLiteral(src) &&
-                (src.value.includes(DEPRECATED_PRELOAD_SCRIPT_SRC) ||
-                    src.value.includes(PRELOAD_SCRIPT_FILE_NAME) ||
-                    src.value.includes(PRELOAD_SCRIPT_SRC))
+                DEPRECATED_PRELOAD_SCRIPT_SRCS.some((deprecatedSrc) =>
+                    src.value.includes(deprecatedSrc),
+                )
             ) {
                 path.remove();
             }
@@ -286,11 +284,13 @@ export function scanForPreloadScript(ast: T.File): {
             if (
                 src &&
                 t.isStringLiteral(src) &&
-                (src.value.includes(DEPRECATED_PRELOAD_SCRIPT_SRC) ||
-                    src.value.includes(PRELOAD_SCRIPT_FILE_NAME) ||
-                    src.value.includes(PRELOAD_SCRIPT_SRC))
+                [
+                    LOCAL_PRELOAD_SCRIPT_SRC,
+                    CDN_PRELOAD_SCRIPT_SRC,
+                    ...DEPRECATED_PRELOAD_SCRIPT_SRCS,
+                ].some((deprecatedSrc) => src.value.includes(deprecatedSrc))
             ) {
-                if (src.value.includes(PRELOAD_SCRIPT_FILE_NAME)) {
+                if (src.value.includes(PRELOAD_SCRIPT_SRC)) {
                     scriptCount++;
                     // Check if this script is inside a body tag
                     const parentBodyPath = path.findParent((parentPath) => {

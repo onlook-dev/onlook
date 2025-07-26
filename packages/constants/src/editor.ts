@@ -71,11 +71,12 @@ export const DefaultSettings = {
 
 export const DEFAULT_COLOR_NAME = 'DEFAULT';
 
-export const PRELOAD_SCRIPT_SRC =
-    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js';
-
-export const DEPRECATED_PRELOAD_SCRIPT_SRC = 'onlook-dev/web';
-
+export const DEPRECATED_PRELOAD_SCRIPT_SRCS = [
+    'onlook-dev/web',
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/packages/preload/dist/index.js',
+];
 export const CDN_PRELOAD_SCRIPT_SRC =
     'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/client/public/onlook-preload-script.js';
-export const LOCAL_PRELOAD_SCRIPT_SRC = `onlook-preload-script.js`;
+export const LOCAL_PRELOAD_SCRIPT_SRC = `/onlook-preload-script.js`;
+export const PRELOAD_SCRIPT_SRC =
+    process.env.NODE_ENV === 'development' ? LOCAL_PRELOAD_SCRIPT_SRC : CDN_PRELOAD_SCRIPT_SRC;
