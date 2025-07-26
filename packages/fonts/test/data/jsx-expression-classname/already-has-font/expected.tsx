@@ -1,7 +1,7 @@
 import React from 'react';
 const inter = {
-    variable: 'inter-variable',
+  variable: 'inter-variable'
 };
 export function Component() {
-    return <div className={`${inter.variable} bg-blue-500`} />;
+  return <div className={`${inter.variable} bg-blue-500`} />;
 }

@@ -1,4 +1,5 @@
 import React from 'react';
+
 export function Component() {
-  return <div className="" />;
-}
+    return <div className={styles} />;
+} 

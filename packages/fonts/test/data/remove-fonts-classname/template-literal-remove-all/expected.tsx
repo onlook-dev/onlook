@@ -1,10 +1,10 @@
 import React from 'react';
 const inter = {
-    variable: 'inter-variable',
+  variable: 'inter-variable'
 };
 const roboto = {
-    variable: 'roboto-variable',
+  variable: 'roboto-variable'
 };
 export function Component() {
-    return <div className="text-lg bg-blue-500" />;
+  return <div className="text-lg bg-blue-500" />;
 }

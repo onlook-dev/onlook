@@ -8,7 +8,7 @@ export interface TestCaseConfig {
     expectedFileName?: string; // defaults to 'expected' if not specified
 }
 
-export type TestProcessor<T = any> = (input: T) => Promise<string> | string;
+export type TestProcessor<T = any> = (input: T, filePath?: string) => Promise<string> | string;
 export type InputParser<T = any> = (content: string, filePath?: string) => T | Promise<T>;
 
 /**
@@ -67,7 +67,7 @@ export function runDataDrivenTests<T = string>(
                 : (inputContent as T);
 
             // Process input through the provided processor
-            const result = await processor(parsedInput);
+            const result = await processor(parsedInput, inputPath);
 
             // Compare with expected output
             const expectedContent = await Bun.file(expectedPath).text();

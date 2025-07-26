@@ -5,17 +5,29 @@
             "id": "inter",
             "family": "Inter",
             "type": "google",
-            "subsets": ["latin"],
-            "weight": ["400", "700"],
-            "styles": ["normal"],
+            "subsets": [
+                "latin"
+            ],
+            "weight": [
+                "400",
+                "700"
+            ],
+            "styles": [
+                "normal"
+            ],
             "variable": "--font-inter"
         },
         {
             "id": "roboto",
             "family": "Roboto",
             "type": "google",
-            "subsets": ["latin"],
-            "weight": ["300", "400"],
+            "subsets": [
+                "latin"
+            ],
+            "weight": [
+                "300",
+                "400"
+            ],
             "styles": [],
             "variable": "--font-roboto"
         },
@@ -24,8 +36,13 @@
             "family": "brandFont",
             "type": "local",
             "subsets": [],
-            "weight": ["400", "700"],
-            "styles": ["normal"],
+            "weight": [
+                "400",
+                "700"
+            ],
+            "styles": [
+                "normal"
+            ],
             "variable": "--font-brand"
         }
     ]
