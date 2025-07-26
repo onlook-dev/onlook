@@ -33,6 +33,7 @@
     },
     "dependencies": {
         "@onlook/fonts": "*",
+        "@onlook/constants": "*",
         "browser-image-compression": "^2.0.2",
         "culori": "^4.0.1",
         "free-email-domains": "^1.2.16",

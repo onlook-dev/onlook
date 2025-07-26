@@ -25,25 +25,25 @@ const ImagePicker = forwardRef<
 
     const editorEngine = useEditorEngine();
 
-    useEffect(() => {
-        const loadImage = async () => {
-            if (url) {
-                const relativeUrl = urlToRelativePath(url);
-                const fullPath = `${DefaultSettings.IMAGE_FOLDER}${relativeUrl}`;
-                const image = editorEngine.image.search(fullPath);
+    const loadImage = async (url: string) => {
+        const relativeUrl = urlToRelativePath(url);
+        const fullPath = `${DefaultSettings.IMAGE_FOLDER}${relativeUrl}`;
+        const image = editorEngine.image.search(fullPath);
 
-                if (image) {
-                    const imageContent = await editorEngine.image.readImageContent(image);
-                    if (imageContent) {
-                        setSelectedImage(imageContent.content);
-                    }
-                }
-            } else {
-                setSelectedImage(null);
+        if (image) {
+            const imageContent = await editorEngine.image.readImageContent(image);
+            if (imageContent) {
+                setSelectedImage(imageContent.content);
             }
-        };
+        }
+    };
 
-        loadImage();
+    useEffect(() => {
+        if (url) {
+            loadImage(url);
+        } else {
+            setSelectedImage(null);
+        }
     }, [url]);
 
     const handleDragOver = useCallback((e: React.DragEvent) => {

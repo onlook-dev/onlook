@@ -486,6 +486,7 @@
       "name": "@onlook/utility",
       "version": "0.0.0",
       "dependencies": {
+        "@onlook/constants": "*",
         "@onlook/fonts": "*",
         "browser-image-compression": "^2.0.2",
         "culori": "^4.0.1",
