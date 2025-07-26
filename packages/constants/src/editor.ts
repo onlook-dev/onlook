@@ -80,4 +80,5 @@ export const PRELOAD_SCRIPT_SRC = isDev ? LOCAL_PRELOAD_SCRIPT_SRC : CDN_PRELOAD
 export const DEPRECATED_PRELOAD_SCRIPT_SRCS = [
     'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js',
     'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/packages/preload/dist/index.js',
+    isDev ? CDN_PRELOAD_SCRIPT_SRC : LOCAL_PRELOAD_SCRIPT_SRC,
 ];
