@@ -24,10 +24,7 @@ describe('removeFontDeclaration', () => {
         content: string;
     }): Promise<string> => {
         const result = removeFontDeclaration(input.font, input.content);
-        return generate(result.ast, {
-            retainLines: false,
-            compact: false,
-        }).code;
+        return generate(result.ast).code;
     };
 
     // Custom input parser for removeFontDeclaration tests
@@ -47,7 +44,6 @@ describe('removeFontDeclaration', () => {
     runDataDrivenTests(
         {
             casesDir: path.resolve(__dirname, 'data/ast-manipulators/remove-font-declaration'),
-            shouldUpdateExpected: false,
             inputFileName: 'config',
             expectedFileName: 'expected',
         },
@@ -86,7 +82,6 @@ describe('addFontToTailwindTheme', () => {
     runDataDrivenTests(
         {
             casesDir: path.resolve(__dirname, 'data/ast-manipulators/add-font-to-tailwind-theme'),
-            shouldUpdateExpected: false,
             inputFileName: 'config',
             expectedFileName: 'expected',
         },
@@ -128,7 +123,6 @@ describe('removeFontFromTailwindTheme', () => {
                 __dirname,
                 'data/ast-manipulators/remove-font-from-tailwind-theme',
             ),
-            shouldUpdateExpected: false,
             inputFileName: 'config',
             expectedFileName: 'expected',
         },
@@ -168,16 +162,12 @@ describe('addGoogleFontSpecifier', () => {
 
         addGoogleFontSpecifier(ast, input.importName);
 
-        return generate(ast, {
-            retainLines: false,
-            compact: false,
-        }).code;
+        return generate(ast).code;
     };
 
     runDataDrivenTests(
         {
             casesDir: path.resolve(__dirname, 'data/ast-manipulators/add-google-font-specifier'),
-            shouldUpdateExpected: false,
             inputFileName: 'config',
             expectedFileName: 'expected',
         },

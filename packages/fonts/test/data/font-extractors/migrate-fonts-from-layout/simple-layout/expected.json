@@ -1,5 +1,5 @@
 {
-    "layoutContent": "import React from 'react';\nexport default function Layout({\n  children\n}: {\n  children: React.ReactNode;\n}) {\n  return <html className=\"\">\n      <body className=\"\">\n        {children}\n      </body>\n    </html>;\n}",
+    "layoutContent": "import React from 'react';\nexport default function Layout({\n  children\n}: {\n  children: React.ReactNode;\n}) {\n  return <html className=\"\">\n            <body className=\"\">{children}</body>\n        </html>;\n}",
     "fonts": [
         {
             "id": "inter",

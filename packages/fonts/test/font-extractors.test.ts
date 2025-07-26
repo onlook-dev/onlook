@@ -1,5 +1,4 @@
 import { describe, test, expect } from 'bun:test';
-import type { Font } from '@onlook/models';
 import {
     parseFontDeclarations,
     buildFontConfiguration,
@@ -14,13 +13,12 @@ const __dirname = import.meta.dir;
 describe('parseFontDeclarations', () => {
     const processParseFontDeclarations = (content: string): string => {
         const fonts = parseFontDeclarations(content);
-        return JSON.stringify(fonts, null, 2);
+        return JSON.stringify(fonts, null, 4);
     };
 
     runDataDrivenTests(
         {
             casesDir: path.resolve(__dirname, 'data/font-extractors/parse-font-declarations'),
-            shouldUpdateExpected: false,
             inputFileName: 'input',
             expectedFileName: 'expected',
         },
@@ -159,14 +157,13 @@ describe('migrateFontsFromLayout', () => {
                 fonts: result.fonts,
             },
             null,
-            2,
+            4,
         );
     };
 
     runDataDrivenTests(
         {
             casesDir: path.resolve(__dirname, 'data/font-extractors/migrate-fonts-from-layout'),
-            shouldUpdateExpected: false,
             inputFileName: 'input',
             expectedFileName: 'expected',
         },
@@ -211,20 +208,5 @@ describe('migrateFontsFromLayout', () => {
         const result = migrateFontsFromLayout(content);
         expect(result.fonts).toHaveLength(1);
         expect(result.fonts[0].variable).toBe('--font-inter');
-    });
-});
-
-describe('debug complex-layout migrateFontsFromLayout', () => {
-    test('print output for complex-layout', () => {
-        const fs = require('fs');
-        const input = fs.readFileSync(
-            path.resolve(
-                __dirname,
-                'data/font-extractors/migrate-fonts-from-layout/complex-layout/input.tsx',
-            ),
-            'utf8',
-        );
-        const result = migrateFontsFromLayout(input);
-        console.log(JSON.stringify(result, null, 2));
     });
 });

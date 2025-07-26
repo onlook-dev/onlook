@@ -16,16 +16,12 @@ const parseConfig = (content: string): Font => {
 // Font processor that generates code from font config
 const processFontConfig = async (font: Font): Promise<string> => {
     const ast = generateFontVariableExport(font);
-    return generate(ast, {
-        retainLines: false,
-        compact: false,
-    }).code;
+    return generate(ast).code;
 };
 
 // Test configuration
 const testConfig: TestCaseConfig = {
     casesDir: path.resolve(__dirname, 'data/generate-font-variable-export'),
-    shouldUpdateExpected: false,
     inputFileName: 'config',
     expectedFileName: 'expected',
 };
