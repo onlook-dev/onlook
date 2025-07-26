@@ -5,6 +5,8 @@ import {
 } from '@onlook/constants';
 import { type t as T, types as t, traverse } from '../packages';
 
+const POSTHOG_IFRAME_SCRIPT_NAME = 'posthog-iframe.js';
+
 export const injectPreloadScript = (ast: T.File): T.File => {
     const hasScriptImport = isScriptImported(ast);
     if (!hasScriptImport) addScriptImport(ast);
@@ -131,8 +133,48 @@ function getPreloadScript(): T.JSXElement {
     );
 }
 
+function getPostHogScript(): T.JSXElement {
+    return t.jsxElement(
+        t.jsxOpeningElement(
+            t.jsxIdentifier('Script'),
+            [
+                t.jsxAttribute(
+                    t.jsxIdentifier('src'),
+                    t.stringLiteral('https://app.posthog.com/static/array.js'),
+                ),
+                t.jsxAttribute(t.jsxIdentifier('strategy'), t.stringLiteral('beforeInteractive')),
+                t.jsxAttribute(t.jsxIdentifier('id'), t.stringLiteral('posthog-js')),
+            ],
+            false,
+        ),
+        t.jsxClosingElement(t.jsxIdentifier('Script')),
+        [],
+        false,
+    );
+}
+
+function getPostHogIframeScript(): T.JSXElement {
+    return t.jsxElement(
+        t.jsxOpeningElement(
+            t.jsxIdentifier('Script'),
+            [
+                t.jsxAttribute(
+                    t.jsxIdentifier('src'),
+                    t.stringLiteral(`/${POSTHOG_IFRAME_SCRIPT_NAME}`),
+                ),
+                t.jsxAttribute(t.jsxIdentifier('strategy'), t.stringLiteral('afterInteractive')),
+                t.jsxAttribute(t.jsxIdentifier('id'), t.stringLiteral(POSTHOG_IFRAME_SCRIPT_NAME)),
+            ],
+            false,
+        ),
+        t.jsxClosingElement(t.jsxIdentifier('Script')),
+        [],
+        false,
+    );
+}
+
 function addScriptToJSXElement(node: T.JSXElement): void {
-    const alreadyInjected = node.children.some(
+    const preloadAlreadyInjected = node.children.some(
         (child) =>
             t.isJSXElement(child) &&
             t.isJSXIdentifier(child.openingElement.name, { name: 'Script' }) &&
@@ -140,12 +182,49 @@ function addScriptToJSXElement(node: T.JSXElement): void {
                 (attr) =>
                     t.isJSXAttribute(attr) &&
                     t.isJSXIdentifier(attr.name, { name: 'src' }) &&
-                    t.isStringLiteral(attr.value, { value: PRELOAD_SCRIPT_FILE_NAME }),
+                    t.isStringLiteral(attr.value, { value: `/${PRELOAD_SCRIPT_FILE_NAME}` }),
             ),
     );
-    if (!alreadyInjected) {
+
+    const posthogAlreadyInjected = node.children.some(
+        (child) =>
+            t.isJSXElement(child) &&
+            t.isJSXIdentifier(child.openingElement.name, { name: 'Script' }) &&
+            child.openingElement.attributes.some(
+                (attr) =>
+                    t.isJSXAttribute(attr) &&
+                    t.isJSXIdentifier(attr.name, { name: 'id' }) &&
+                    t.isStringLiteral(attr.value, { value: 'posthog-js' }),
+            ),
+    );
+
+    const posthogIframeAlreadyInjected = node.children.some(
+        (child) =>
+            t.isJSXElement(child) &&
+            t.isJSXIdentifier(child.openingElement.name, { name: 'Script' }) &&
+            child.openingElement.attributes.some(
+                (attr) =>
+                    t.isJSXAttribute(attr) &&
+                    t.isJSXIdentifier(attr.name, { name: 'src' }) &&
+                    t.isStringLiteral(attr.value, { value: `/${POSTHOG_IFRAME_SCRIPT_NAME}` }),
+            ),
+    );
+
+    if (!preloadAlreadyInjected) {
         node.children.push(t.jsxText('\n'));
         node.children.push(getPreloadScript());
+        node.children.push(t.jsxText('\n'));
+    }
+
+    if (!posthogAlreadyInjected) {
+        node.children.push(t.jsxText('\n'));
+        node.children.push(getPostHogScript());
+        node.children.push(t.jsxText('\n'));
+    }
+
+    if (!posthogIframeAlreadyInjected) {
+        node.children.push(t.jsxText('\n'));
+        node.children.push(getPostHogIframeScript());
         node.children.push(t.jsxText('\n'));
     }
 }
@@ -154,7 +233,13 @@ function createBodyTag(htmlElement: T.JSXElement): void {
     const body = t.jsxElement(
         t.jsxOpeningElement(t.jsxIdentifier('body'), []),
         t.jsxClosingElement(t.jsxIdentifier('body')),
-        [getPreloadScript()],
+        [
+            getPreloadScript(),
+            t.jsxText('\n'),
+            getPostHogScript(),
+            t.jsxText('\n'),
+            getPostHogIframeScript(),
+        ],
         false,
     );
     htmlElement.children.push(t.jsxText('\n'), body, t.jsxText('\n'));
@@ -170,7 +255,15 @@ function wrapWithHtmlAndBody(ast: T.File): void {
 
             const children: Array<
                 T.JSXElement | T.JSXFragment | T.JSXText | T.JSXExpressionContainer
-            > = [getPreloadScript(), t.jsxText('\n'), body];
+            > = [
+                getPreloadScript(),
+                t.jsxText('\n'),
+                getPostHogScript(),
+                t.jsxText('\n'),
+                getPostHogIframeScript(),
+                t.jsxText('\n'),
+                body,
+            ];
 
             const newBody = t.jsxElement(
                 t.jsxOpeningElement(t.jsxIdentifier('body'), []),
@@ -197,7 +290,14 @@ function wrapWithHtmlAndBody(ast: T.File): void {
 
             const children: Array<
                 T.JSXElement | T.JSXFragment | T.JSXText | T.JSXExpressionContainer
-            > = [getPreloadScript(), t.jsxText('\n')];
+            > = [
+                getPreloadScript(),
+                t.jsxText('\n'),
+                getPostHogScript(),
+                t.jsxText('\n'),
+                getPostHogIframeScript(),
+                t.jsxText('\n'),
+            ];
 
             if (t.isJSXElement(arg) || t.isJSXFragment(arg)) {
                 children.push(arg);

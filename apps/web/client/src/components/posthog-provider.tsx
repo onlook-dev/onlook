@@ -21,6 +21,7 @@ export const PostHogProvider = observer(({ children }: { children: React.ReactNo
             capture_pageview: 'history_change',
             capture_pageleave: true,
             capture_exceptions: true,
+            session_recording: {},
         })
     }, [])
 
