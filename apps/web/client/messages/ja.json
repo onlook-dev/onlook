@@ -29,7 +29,7 @@
             },
             "launch": {
                 "name": "Launch",
-                "price": "$50/月",
+                "price": "$25/月",
                 "description": "スタートアップや成長中のチームに最適",
                 "features": [
                     "無制限の毎日のメッセージ",

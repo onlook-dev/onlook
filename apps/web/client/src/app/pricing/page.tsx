@@ -39,7 +39,7 @@ const plans: PlanData[] = [
         name: 'Free',
         basePrice: '$0',
         description: 'Explore core features at no cost — perfect for light, personal projects.',
-        features: ['10 messages / month', '50 monthly limit', 'Public and private projects'],
+        features: ['10 messages / month', '25 monthly limit', 'Public and private projects'],
     },
     {
         key: PlanKey.PRO,

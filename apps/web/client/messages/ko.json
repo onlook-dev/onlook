@@ -130,7 +130,7 @@
             },
             "launch": {
                 "name": "Launch",
-                "price": "$50/월",
+                "price": "$25/월",
                 "description": "스타트업과 성장 중인 팀에 적합",
                 "features": [
                     "무제한 일일 메시지",

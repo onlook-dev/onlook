@@ -130,7 +130,7 @@
             },
             "launch": {
                 "name": "Launch",
-                "price": "$50/mes",
+                "price": "$25/mes",
                 "description": "Perfecto para startups y equipos en crecimiento",
                 "features": [
                     "Mensajes diarios ilimitados",

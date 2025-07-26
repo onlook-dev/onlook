@@ -163,7 +163,7 @@ export const streamResponse = async (req: NextRequest) => {
                 throw new Error('User not found');
             }
             const { api } = await createTRPCClient(req);
-            await api.usage.increment({
+            const usageRecord = await api.usage.increment({
                 type: UsageType.MESSAGE,
             });
         }
