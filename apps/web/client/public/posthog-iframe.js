@@ -1,7 +1,9 @@
 (function() {
-    function initializePostHog() {
+    function initializePostHog(retryCount = 0) {
         if (typeof posthog === 'undefined') {
-            setTimeout(initializePostHog, 100);
+            if (retryCount < 10) {
+                setTimeout(() => initializePostHog(retryCount + 1), 100);
+            }
             return;
         }
 

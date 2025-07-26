@@ -181,8 +181,8 @@ function addScriptToJSXElement(node: T.JSXElement): void {
             child.openingElement.attributes.some(
                 (attr) =>
                     t.isJSXAttribute(attr) &&
-                    t.isJSXIdentifier(attr.name, { name: 'src' }) &&
-                    t.isStringLiteral(attr.value, { value: `/${PRELOAD_SCRIPT_FILE_NAME}` }),
+                    t.isJSXIdentifier(attr.name, { name: 'id' }) &&
+                    t.isStringLiteral(attr.value, { value: PRELOAD_SCRIPT_FILE_NAME }),
             ),
     );
 
