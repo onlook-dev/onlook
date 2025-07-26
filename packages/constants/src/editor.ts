@@ -74,7 +74,7 @@ export const DEFAULT_COLOR_NAME = 'DEFAULT';
 
 const CDN_PRELOAD_SCRIPT_SRC =
     'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/client/public/onlook-preload-script.js';
-const LOCAL_PRELOAD_SCRIPT_SRC = `/onlook-preload-script.js`;
+export const LOCAL_PRELOAD_SCRIPT_SRC = `/onlook-preload-script.js`;
 export const PRELOAD_SCRIPT_SRC = isDev ? LOCAL_PRELOAD_SCRIPT_SRC : CDN_PRELOAD_SCRIPT_SRC;
 
 export const DEPRECATED_PRELOAD_SCRIPT_SRCS = [
