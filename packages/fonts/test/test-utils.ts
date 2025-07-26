@@ -4,7 +4,6 @@ import path from 'path';
 
 export interface TestCaseConfig {
     casesDir: string;
-    shouldUpdateExpected: boolean;
     inputFileName?: string; // defaults to 'input' if not specified
     expectedFileName?: string; // defaults to 'expected' if not specified
 }
@@ -25,12 +24,7 @@ export function runDataDrivenTests<T = string>(
     processor: TestProcessor<T>,
     inputParser?: InputParser<T>,
 ): void {
-    const {
-        casesDir,
-        shouldUpdateExpected,
-        inputFileName = 'input',
-        expectedFileName = 'expected',
-    } = config;
+    const { casesDir, inputFileName = 'input', expectedFileName = 'expected' } = config;
 
     // Check if test cases directory exists
     if (!fs.existsSync(casesDir)) {
@@ -74,11 +68,6 @@ export function runDataDrivenTests<T = string>(
 
             // Process input through the provided processor
             const result = await processor(parsedInput);
-
-            // Update expected file if flag is set
-            if (shouldUpdateExpected) {
-                await Bun.write(expectedPath, result);
-            }
 
             // Compare with expected output
             const expectedContent = await Bun.file(expectedPath).text();

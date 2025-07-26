@@ -9,7 +9,7 @@ import {
     createTemplateLiteralWithFont,
     removeFontsFromClassName,
 } from '../src';
-import { runDataDrivenTests, type TestCaseConfig } from './test-utils';
+import { runDataDrivenTests } from './test-utils';
 
 const __dirname = import.meta.dir;
 
@@ -314,7 +314,6 @@ describe('handleStringLiteralClassName', () => {
     runDataDrivenTests(
         {
             casesDir: path.resolve(__dirname, 'data/string-literal-classname'),
-            shouldUpdateExpected: false,
         },
         (inputContent: string) => processTestCase(inputContent, 'handleStringLiteralClassName'),
     );
@@ -324,7 +323,6 @@ describe('handleJSXExpressionClassName', () => {
     runDataDrivenTests(
         {
             casesDir: path.resolve(__dirname, 'data/jsx-expression-classname'),
-            shouldUpdateExpected: false,
         },
         (inputContent: string) => processTestCase(inputContent, 'handleJSXExpressionClassName'),
     );
