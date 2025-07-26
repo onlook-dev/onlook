@@ -237,7 +237,7 @@ describe('scanForPreloadScript', () => {
         },
         'removes-deprecated-script-multiple': {
             scriptCount: 0,
-            deprecatedScriptCount: 1,
+            deprecatedScriptCount: 2,
             injectedCorrectly: false,
         },
         'injects-at-bottom': {

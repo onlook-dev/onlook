@@ -10,10 +10,10 @@ export default function Document() {
   return (
     <html lang="en" suppressHydrationWarning data-oid="o7v_4be">
             <head data-oid="795jc-7">
-                <Script
-          type="module"
-          src="https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js"
-          data-oid="m4pfglr" />
+                
+
+
+
 
 
                 
