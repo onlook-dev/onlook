@@ -76,4 +76,6 @@ export const PRELOAD_SCRIPT_SRC =
 
 export const DEPRECATED_PRELOAD_SCRIPT_SRC = 'onlook-dev/web';
 
-export const PRELOAD_SCRIPT_FILE_NAME = `onlook-preload-script.js`;
+export const CDN_PRELOAD_SCRIPT_SRC =
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/client/public/onlook-preload-script.js';
+export const LOCAL_PRELOAD_SCRIPT_SRC = `onlook-preload-script.js`;
