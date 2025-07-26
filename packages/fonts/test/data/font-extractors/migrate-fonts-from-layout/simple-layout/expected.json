@@ -5,8 +5,13 @@
             "id": "inter",
             "family": "Inter",
             "type": "google",
-            "subsets": ["latin"],
-            "weight": ["400", "700"],
+            "subsets": [
+                "latin"
+            ],
+            "weight": [
+                "400",
+                "700"
+            ],
             "styles": [],
             "variable": "--font-inter"
         },

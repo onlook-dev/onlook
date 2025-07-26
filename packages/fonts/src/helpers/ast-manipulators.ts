@@ -17,7 +17,14 @@ import {
  * @returns Object containing removal status, files to delete, and modified AST
  
  */
-export function removeFontDeclaration(font: Font, content: string) {
+export function removeFontDeclaration(
+    font: Font,
+    content: string,
+): {
+    removedFont: boolean;
+    fontFilesToDelete: string[];
+    ast: T.File;
+} {
     const ast = parse(content, {
         sourceType: 'module',
         plugins: ['typescript', 'jsx'],

@@ -4,8 +4,14 @@
         "family": "customFont",
         "type": "local",
         "subsets": [],
-        "weight": ["400", "700"],
-        "styles": ["normal", "italic"],
+        "weight": [
+            "400",
+            "700"
+        ],
+        "styles": [
+            "normal",
+            "italic"
+        ],
         "variable": "--font-custom"
     },
     {
@@ -22,8 +28,13 @@
         "family": "brandFont",
         "type": "local",
         "subsets": [],
-        "weight": ["300", "400"],
-        "styles": ["normal"],
+        "weight": [
+            "300",
+            "400"
+        ],
+        "styles": [
+            "normal"
+        ],
         "variable": "--font-brand"
     }
 ]
