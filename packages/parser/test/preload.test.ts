@@ -1,5 +1,5 @@
 import * as t from '@babel/types';
-import { PRELOAD_SCRIPT_SRC } from '@onlook/constants';
+import { DEPRECATED_PRELOAD_SCRIPT_SRCS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
 import { describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
@@ -11,6 +11,107 @@ import {
 } from 'src';
 
 const __dirname = import.meta.dir;
+
+describe('Environment-dependent behavior', () => {
+    test('should remove correct deprecated scripts for current environment', async () => {
+        const input = `import Script from 'next/script';
+export default function Document() {
+    return (
+        <html>
+            <head>
+                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+                <Script type="module" src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}" />
+            </head>
+            <body>
+                <main />
+            </body>
+        </html>
+    );
+}`;
+
+        const ast = getAstFromContent(input);
+        if (!ast) throw new Error('Failed to parse input code');
+
+        removeDeprecatedPreloadScripts(ast);
+        const result = await getContentFromAst(ast, input);
+
+        // Current environment script should remain
+        expect(result).toContain(`src="${PRELOAD_SCRIPT_SRC}"`);
+        // Deprecated script for current environment should be removed
+        expect(result).not.toContain(`src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}"`);
+        // Other deprecated scripts should also be removed
+        expect(result).not.toContain(`src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}"`);
+    });
+
+    test('should scan correctly for production environment script', async () => {
+        const input = `import Script from 'next/script';
+export default function Document() {
+    return (
+        <html>
+            <body>
+                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+            </body>
+        </html>
+    );
+}`;
+
+        const ast = getAstFromContent(input);
+        if (!ast) throw new Error('Failed to parse input code');
+
+        const result = scanForPreloadScript(ast);
+
+        expect(result.scriptCount).toBe(1);
+        expect(result.deprecatedScriptCount).toBe(0);
+        expect(result.injectedCorrectly).toBe(true);
+    });
+
+    test('should identify deprecated script as deprecated for production environment', async () => {
+        process.env.NODE_ENV = 'production';
+        const input = `import Script from 'next/script';
+export default function Document() {
+    return (
+        <html>
+            <body>
+                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+                <Script type="module" src="${DEPRECATED_PRELOAD_SCRIPT_SRCS[0]}" />
+            </body>
+        </html>
+    );
+}`;
+
+        const ast = getAstFromContent(input);
+        if (!ast) throw new Error('Failed to parse input code');
+
+        const result = scanForPreloadScript(ast);
+
+        expect(result.scriptCount).toBe(1);
+        expect(result.deprecatedScriptCount).toBe(1);
+        expect(result.injectedCorrectly).toBe(true);
+    });
+
+    test('should handle mixed current and deprecated scripts for development environment', async () => {
+        process.env.NODE_ENV = 'development';
+        const input = `import Script from 'next/script';
+export default function Document() {
+    return (
+        <html>
+            <body>
+                <Script type="module" src="${PRELOAD_SCRIPT_SRC}" />
+            </body>
+        </html>
+    );
+}`;
+
+        const ast = getAstFromContent(input);
+        if (!ast) throw new Error('Failed to parse input code');
+
+        const result = scanForPreloadScript(ast);
+
+        expect(result.scriptCount).toBe(1);
+        expect(result.deprecatedScriptCount).toBe(0);
+        expect(result.injectedCorrectly).toBe(true);
+    });
+});
 
 describe('removeDeprecatedPreloadScripts', () => {
     const SHOULD_UPDATE_EXPECTED = false;
@@ -94,7 +195,6 @@ export default function Document() {
             <head>
                 <Script type="module" src="/onlook-preload-script.js" />
                 <Script type="module" src="https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/packages/preload/dist/index.js" />
-                <Script type="module" src="https://some-url/onlook-dev/web/script.js" />
             </head>
             <body>
                 <main />
@@ -134,12 +234,12 @@ describe('scanForPreloadScript', () => {
         },
         'removes-deprecated-script': {
             scriptCount: 0,
-            deprecatedScriptCount: 1,
+            deprecatedScriptCount: 0,
             injectedCorrectly: false,
         },
         'removes-deprecated-script-multiple': {
             scriptCount: 0,
-            deprecatedScriptCount: 2,
+            deprecatedScriptCount: 1,
             injectedCorrectly: false,
         },
         'injects-at-bottom': {

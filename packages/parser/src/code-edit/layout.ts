@@ -1,9 +1,4 @@
-import {
-    CDN_PRELOAD_SCRIPT_SRC,
-    DEPRECATED_PRELOAD_SCRIPT_SRCS,
-    LOCAL_PRELOAD_SCRIPT_SRC,
-    PRELOAD_SCRIPT_SRC,
-} from '@onlook/constants';
+import { DEPRECATED_PRELOAD_SCRIPT_SRCS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
 import { type t as T, types as t, traverse } from '../packages';
 
 export const injectPreloadScript = (ast: T.File): T.File => {
@@ -253,6 +248,7 @@ export function removeDeprecatedPreloadScripts(ast: T.File): void {
                     src.value.includes(deprecatedSrc),
                 )
             ) {
+                console.log('removing deprecated script', src.value);
                 path.remove();
             }
         },
@@ -281,32 +277,25 @@ export function scanForPreloadScript(ast: T.File): {
             ) as T.JSXAttribute | undefined;
 
             const src = srcAttr?.value;
-            if (
-                src &&
-                t.isStringLiteral(src) &&
-                [
-                    LOCAL_PRELOAD_SCRIPT_SRC,
-                    CDN_PRELOAD_SCRIPT_SRC,
-                    ...DEPRECATED_PRELOAD_SCRIPT_SRCS,
-                ].some((deprecatedSrc) => src.value.includes(deprecatedSrc))
-            ) {
-                if (src.value.includes(PRELOAD_SCRIPT_SRC)) {
-                    scriptCount++;
-                    // Check if this script is inside a body tag
-                    const parentBodyPath = path.findParent((parentPath) => {
-                        if (parentPath.isJSXElement()) {
-                            const name = parentPath.node.openingElement.name;
-                            return t.isJSXIdentifier(name, { name: 'body' });
-                        }
-                        return false;
-                    });
-
-                    if (parentBodyPath) {
-                        injectedCorrectly = true;
+            if (!src || !t.isStringLiteral(src)) return;
+            if (src.value === PRELOAD_SCRIPT_SRC) {
+                scriptCount++;
+                // Check if this script is inside a body tag
+                const parentBodyPath = path.findParent((parentPath) => {
+                    if (parentPath.isJSXElement()) {
+                        const name = parentPath.node.openingElement.name;
+                        return t.isJSXIdentifier(name, { name: 'body' });
                     }
-                } else {
-                    deprecatedScriptCount++;
+                    return false;
+                });
+
+                if (parentBodyPath) {
+                    injectedCorrectly = true;
                 }
+            } else if (
+                DEPRECATED_PRELOAD_SCRIPT_SRCS.some((deprecatedSrc) => src.value === deprecatedSrc)
+            ) {
+                deprecatedScriptCount++;
             }
         },
     });

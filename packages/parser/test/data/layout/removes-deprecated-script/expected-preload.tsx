@@ -4,7 +4,7 @@ export default function Document() {
     <html>
             <head>
                 <title>Test</title>
-                
+                <Script type="module" src="https://some-url/onlook-dev/web/script.js" />
             </head>
             <body>
                 <main />
