@@ -13,9 +13,14 @@ import { runDataDrivenTests } from './test-utils';
 
 const __dirname = import.meta.dir;
 
-async function processTestCase(
+// Helper function to find and process className attributes in JSX
+async function processClassNameAttribute(
     inputContent: string,
-    functionName: 'handleStringLiteralClassName' | 'handleJSXExpressionClassName',
+    processor: (
+        classNameAttr: t.JSXAttribute,
+        fontVarExpr?: t.MemberExpression,
+        fontName?: string,
+    ) => boolean | void,
     fontName = 'inter',
 ): Promise<string> {
     const ast = parse(inputContent, {
@@ -56,15 +61,32 @@ async function processTestCase(
     traverse(ast);
 
     if (classNameAttr) {
-        if (functionName === 'handleStringLiteralClassName') {
-            handleStringLiteralClassName(classNameAttr, fontVarExpr);
-        } else {
-            handleJSXExpressionClassName(classNameAttr, fontVarExpr, fontName);
+        const shouldSkipCodeGeneration = processor(classNameAttr, fontVarExpr, fontName);
+        if (shouldSkipCodeGeneration) {
+            return inputContent;
         }
     }
 
     const { code } = generate(ast);
     return code;
+}
+
+async function processTestCase(
+    inputContent: string,
+    functionName: 'handleStringLiteralClassName' | 'handleJSXExpressionClassName',
+    fontName = 'inter',
+): Promise<string> {
+    return processClassNameAttribute(
+        inputContent,
+        (classNameAttr, fontVarExpr, fontName) => {
+            if (functionName === 'handleStringLiteralClassName') {
+                handleStringLiteralClassName(classNameAttr, fontVarExpr!);
+            } else {
+                handleJSXExpressionClassName(classNameAttr, fontVarExpr!, fontName!);
+            }
+        },
+        fontName,
+    );
 }
 
 async function processRemoveFontsTestCase(
@@ -74,109 +96,39 @@ async function processRemoveFontsTestCase(
         removeAll?: boolean;
     },
 ): Promise<string> {
-    const ast = parse(inputContent, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
-
-    // Find the first JSX element with a className attribute
-    let classNameAttr: t.JSXAttribute | null = null;
-
-    const findClassNameAttr = (node: any) => {
-        if (t.isJSXElement(node)) {
-            const attr = node.openingElement.attributes.find(
-                (attr: any) => t.isJSXAttribute(attr) && attr.name?.name === 'className',
-            ) as t.JSXAttribute | undefined;
-            if (attr && !classNameAttr) {
-                classNameAttr = attr;
-            }
-        }
-    };
-
-    // Traverse the AST to find className attributes
-    const traverse = (node: any) => {
-        if (node && typeof node === 'object') {
-            findClassNameAttr(node);
-            for (const key in node) {
-                if (Array.isArray(node[key])) {
-                    node[key].forEach(traverse);
-                } else if (typeof node[key] === 'object') {
-                    traverse(node[key]);
-                }
-            }
-        }
-    };
-
-    traverse(ast);
-
-    if (classNameAttr) {
+    return processClassNameAttribute(inputContent, (classNameAttr) => {
         removeFontsFromClassName(classNameAttr, options);
-    }
-
-    const { code } = generate(ast);
-    return code;
+    });
 }
 
 async function processCreateTemplateLiteralTestCase(
     inputContent: string,
     fontName = 'inter',
 ): Promise<string> {
-    const ast = parse(inputContent, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
+    return processClassNameAttribute(
+        inputContent,
+        (classNameAttr, fontVarExpr) => {
+            if (!classNameAttr.value) return true;
 
-    const fontVarExpr = t.memberExpression(t.identifier(fontName), t.identifier('variable'));
+            let originalExpr: t.Expression;
+            const attrValue = classNameAttr.value;
 
-    // Find the first JSX element with a className attribute
-    let classNameAttr: t.JSXAttribute | null = null;
-
-    const findClassNameAttr = (node: any) => {
-        if (t.isJSXElement(node)) {
-            const attr = node.openingElement.attributes.find(
-                (attr: any) => t.isJSXAttribute(attr) && attr.name?.name === 'className',
-            ) as t.JSXAttribute | undefined;
-            if (attr && !classNameAttr) {
-                classNameAttr = attr;
+            if (t.isStringLiteral(attrValue)) {
+                originalExpr = attrValue;
+            } else if (
+                t.isJSXExpressionContainer(attrValue) &&
+                t.isExpression(attrValue.expression)
+            ) {
+                originalExpr = attrValue.expression;
+            } else {
+                return true;
             }
-        }
-    };
 
-    // Traverse the AST to find className attributes
-    const traverse = (node: any) => {
-        if (node && typeof node === 'object') {
-            findClassNameAttr(node);
-            for (const key in node) {
-                if (Array.isArray(node[key])) {
-                    node[key].forEach(traverse);
-                } else if (typeof node[key] === 'object') {
-                    traverse(node[key]);
-                }
-            }
-        }
-    };
-
-    traverse(ast);
-
-    if (classNameAttr && classNameAttr.value) {
-        // Apply createTemplateLiteralWithFont to the className value
-        let originalExpr: t.Expression;
-        const attrValue = classNameAttr.value;
-
-        if (t.isStringLiteral(attrValue)) {
-            originalExpr = attrValue;
-        } else if (t.isJSXExpressionContainer(attrValue) && t.isExpression(attrValue.expression)) {
-            originalExpr = attrValue.expression;
-        } else {
-            return inputContent; // No valid expression to transform
-        }
-
-        const newTemplateLiteral = createTemplateLiteralWithFont(fontVarExpr, originalExpr);
-        classNameAttr.value = t.jsxExpressionContainer(newTemplateLiteral);
-    }
-
-    const { code } = generate(ast);
-    return code;
+            const newTemplateLiteral = createTemplateLiteralWithFont(fontVarExpr!, originalExpr);
+            classNameAttr.value = t.jsxExpressionContainer(newTemplateLiteral);
+        },
+        fontName,
+    );
 }
 
 describe('removeFontsFromClassName', () => {

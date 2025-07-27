@@ -1,16 +1,39 @@
 import { describe } from 'bun:test';
 import { generate, parse } from '@onlook/parser';
 import type { Font } from '@onlook/models';
+import * as t from '@babel/types';
 import {
     removeFontDeclaration,
     addFontToTailwindTheme,
     removeFontFromTailwindTheme,
     addGoogleFontSpecifier,
+    mergeLocalFontSources,
 } from '../src/helpers/ast-manipulators';
+import { findFontExportDeclaration } from '../src/helpers/validators';
 import { runDataDrivenTests } from './test-utils';
 import path from 'path';
 
 const __dirname = import.meta.dir;
+
+function createFontSources(
+    sources: Array<{ path: string; weight?: string; style?: string }>,
+): t.ObjectExpression[] {
+    return sources.map((source) => {
+        const properties: t.ObjectProperty[] = [];
+
+        properties.push(t.objectProperty(t.identifier('path'), t.stringLiteral(source.path)));
+        if (source.weight) {
+            properties.push(
+                t.objectProperty(t.identifier('weight'), t.stringLiteral(source.weight)),
+            );
+        }
+        if (source.style) {
+            properties.push(t.objectProperty(t.identifier('style'), t.stringLiteral(source.style)));
+        }
+
+        return t.objectExpression(properties);
+    });
+}
 
 function makeDataDrivenTest<T>(
     testName: string,
@@ -83,4 +106,30 @@ makeDataDrivenTest(
     },
     path.resolve(__dirname, 'data/ast-manipulators/add-google-font-specifier'),
     (config, inputContent) => ({ importName: config.importName, content: inputContent }),
+);
+
+makeDataDrivenTest(
+    'mergeLocalFontSources',
+    async (input: { fontName: string; newSources: any[]; content: string }) => {
+        const ast = parse(input.content, {
+            sourceType: 'module',
+            plugins: ['typescript', 'jsx'],
+        });
+
+        const { existingFontNode } = findFontExportDeclaration(ast, input.fontName);
+        if (!existingFontNode) {
+            throw new Error(`Font export declaration for "${input.fontName}" not found`);
+        }
+
+        const fontsSrc = createFontSources(input.newSources);
+
+        mergeLocalFontSources(ast, existingFontNode, input.fontName, fontsSrc);
+        return generate(ast).code;
+    },
+    path.resolve(__dirname, 'data/ast-manipulators/merge-local-font-sources'),
+    (config, inputContent) => ({
+        fontName: config.fontName,
+        newSources: config.newSources,
+        content: inputContent,
+    }),
 );
