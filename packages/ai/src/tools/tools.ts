@@ -10,6 +10,8 @@ import {
     readFilesTool,
     TERMINAL_COMMAND_TOOL_NAME,
     terminalCommandTool,
+    SAVE_IMAGE_TOOL_NAME,
+    saveImageTool,
 } from './files';
 import {
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
@@ -28,6 +30,7 @@ export const buildToolSet: ToolSet = {
     [CREATE_FILE_TOOL_NAME]: createFileTool,
     [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
     [SCRAPE_URL_TOOL_NAME]: scrapeUrlTool,
+    [SAVE_IMAGE_TOOL_NAME]: saveImageTool,
 };
 
 export const askToolSet: ToolSet = {

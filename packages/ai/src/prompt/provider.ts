@@ -3,6 +3,7 @@ import type {
     ErrorMessageContext,
     FileMessageContext,
     HighlightMessageContext,
+    ImageMessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
 import type { Attachment, Message, UserContent } from 'ai';
@@ -93,6 +94,11 @@ export function getHydratedUserMessage(
         if (projectContext) {
             prompt += getProjectContext(projectContext);
         }
+    }
+
+    if (images.length > 0) {
+        let imagePrompt = getImagesContext(images);
+        prompt += imagePrompt;
     }
 
     const textContent =
@@ -214,4 +220,19 @@ export function getSummaryPrompt() {
 export function getProjectContext(project: ProjectMessageContext) {
     const content = `${CONTEXT_PROMPTS.projectContextPrefix} ${project.path}`;
     return wrapXml('project-info', content);
+}
+
+export function getImagesContext(images: ImageMessageContext[]): string {
+    if (images.length === 0) {
+        return '';
+    }
+    let imageBlock = `${CONTEXT_PROMPTS.imageContextPrefix}\n`;
+
+    for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+        const imageName = `image-${i + 1}`;
+        const content = `${imageName}, File ID: ${image?.fileId}`;
+        imageBlock += wrapXml('image', content) + '\n';
+    }
+    return wrapXml('images', imageBlock);
 }
