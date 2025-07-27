@@ -12,7 +12,7 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
-import { toAbsoluteImagePath } from '@onlook/utility';
+import { addImageFolderPrefix } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ImageFit } from '../hooks/use-background-image-update';
@@ -53,73 +53,64 @@ export const InputImage = observer(() => {
         fileInputRef.current?.click();
     }, []);
 
-    const handleFileChange = useCallback(
-        async (e: React.ChangeEvent<HTMLInputElement>) => {
-            const file = e.target.files?.[0];
-            if (!file?.type.startsWith('image/')) {
-                setUploadError('Please select a valid image file');
-                return;
-            }
+    const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file?.type.startsWith('image/')) {
+            setUploadError('Please select a valid image file');
+            return;
+        }
 
-            setIsUploading(true);
-            setUploadError(null);
+        setIsUploading(true);
+        setUploadError(null);
 
-            try {
-                await editorEngine.image.upload(file, DefaultSettings.IMAGE_FOLDER);
+        try {
+            await editorEngine.image.upload(file, DefaultSettings.IMAGE_FOLDER);
 
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const result = event.target?.result as string;
-                    const imageData: ImageContentData = {
-                        originPath: `${DefaultSettings.IMAGE_FOLDER}/${file.name}`,
-                        content: result,
-                        fileName: file.name,
-                        mimeType: file.type,
-                    };
-
-                    editorEngine.image.setSelectedImage(imageData);
-                    editorEngine.image.setPreviewImage(imageData);
-                    setIsUploading(false);
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const result = event.target?.result as string;
+                const imageData: ImageContentData = {
+                    originPath: `${DefaultSettings.IMAGE_FOLDER}/${file.name}`,
+                    content: result,
+                    fileName: file.name,
+                    mimeType: file.type,
                 };
-                reader.readAsDataURL(file);
-            } catch (error) {
-                console.error('Failed to upload image:', error);
-                setUploadError(error instanceof Error ? error.message : 'Failed to upload image');
+
+                editorEngine.image.setSelectedImage(imageData);
+                editorEngine.image.setPreviewImage(imageData);
                 setIsUploading(false);
-            }
+            };
+            reader.readAsDataURL(file);
+        } catch (error) {
+            console.error('Failed to upload image:', error);
+            setUploadError(error instanceof Error ? error.message : 'Failed to upload image');
+            setIsUploading(false);
+        }
 
-            e.target.value = '';
-        },
-        [editorEngine],
-    );
+        e.target.value = '';
+    }, []);
 
-    const handleFillOptionChangeInternal = useCallback(
-        (option: ImageFit) => {
-            handleFillOptionChange(option);
-        },
-        [handleFillOptionChange],
-    );
+    const handleFillOptionChangeInternal = (option: ImageFit) => {
+        handleFillOptionChange(option);
+    };
 
-    const handleClose = useCallback(() => {
+    const handleClose = () => {
         editorEngine.image.setIsSelectingImage(false);
         editorEngine.image.setPreviewImage(null);
         editorEngine.image.setSelectedImage(null);
         onOpenChange(false);
-    }, [editorEngine.image, onOpenChange]);
+    };
 
-    const handleOpenChange = useCallback(
-        (open: boolean) => {
-            if (open) {
-                onOpenChange(true);
-            }
-        },
-        [onOpenChange],
-    );
+    const handleOpenChange = (open: boolean) => {
+        if (open) {
+            onOpenChange(true);
+        }
+    };
 
     const loadImage = async () => {
         editorEngine.image.setIsSelectingImage(true);
         if (currentBackgroundImage) {
-            const absolutePath = toAbsoluteImagePath(currentBackgroundImage);
+            const absolutePath = addImageFolderPrefix(currentBackgroundImage);
 
             const content = await editorEngine.image.readImageContent(absolutePath);
             if (content) {

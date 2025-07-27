@@ -1,6 +1,6 @@
 import { DefaultSettings } from '@onlook/constants';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
-import { generateNewFolderPath, toRelativePath } from '@onlook/utility';
+import { generateNewFolderPath, stripImageFolderPrefix } from '@onlook/utility';
 import { convertToBase64, getBaseName, getMimeType, isImageFile } from '@onlook/utility/src/file';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -56,12 +56,12 @@ export class ImageManager {
             }
 
             if (image?.originPath) {
-                const url = toRelativePath(image.originPath);
+                const url = stripImageFolderPrefix(image.originPath);
                 this.editorEngine.style.updateMultiple({
                     backgroundImage: `url('/${url}')`,
                 });
             } else if (this.selectedImage?.originPath) {
-                const url = toRelativePath(this.selectedImage.originPath);
+                const url = stripImageFolderPrefix(this.selectedImage.originPath);
                 this.editorEngine.style.updateMultiple({
                     backgroundImage: `url('/${url}')`,
                 });
@@ -92,7 +92,7 @@ export class ImageManager {
             }
 
             try {
-                const url = toRelativePath(image.originPath);
+                const url = stripImageFolderPrefix(image.originPath);
 
                 if (!url) {
                     throw new Error('Failed to generate relative path');

@@ -104,7 +104,7 @@ export const useBackgroundImage = (editorEngine: EditorEngine) => {
                 });
             }
         },
-        [editorEngine],
+        [],
     );
 
     const handleFillOptionChange = useCallback(

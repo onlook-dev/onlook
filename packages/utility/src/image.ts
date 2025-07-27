@@ -73,7 +73,7 @@ export function canHaveBackgroundImage(tagName: string): boolean {
  * @param imagePath
  * @returns url
  */
-export function toRelativePath(imagePath: string): string {
+export function stripImageFolderPrefix(imagePath: string): string {
     return imagePath.replace(new RegExp(`^${DefaultSettings.IMAGE_FOLDER}\/`), '');
 }
 
@@ -89,7 +89,7 @@ export function toRelativePath(imagePath: string): string {
  * @returns url
  */
 
-export function toAbsoluteImagePath(imagePath: string): string {
+export function addImageFolderPrefix(imagePath: string): string {
     const relativePath = urlToRelativePath(imagePath);
 
     // Remove url() wrapper
