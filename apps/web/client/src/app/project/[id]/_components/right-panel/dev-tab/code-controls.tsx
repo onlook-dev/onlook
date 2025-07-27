@@ -36,9 +36,9 @@ export const CodeControls = observer(() => {
                             <Icons.FilePlus className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom" hideArrow>
+                    <TooltipContent side="bottom" hideArrow className='mt-1'>
                         <p>New File</p>
-                        <TooltipArrow className="fill-foreground" />
+                        {/* <TooltipArrow className="fill-foreground" /> */}
                     </TooltipContent>
                 </Tooltip>
                 <Tooltip>
@@ -52,9 +52,9 @@ export const CodeControls = observer(() => {
                             <Icons.DirectoryPlus className="h-4 w-4" />
                         </Button>
                     </TooltipTrigger>
-                    <TooltipContent side="bottom" hideArrow>
+                    <TooltipContent side="bottom" hideArrow className='mt-1'>
                         <p>New Folder</p>
-                        <TooltipArrow className="fill-foreground" />
+                        {/* <TooltipArrow className="fill-foreground" /> */}
                     </TooltipContent>
                 </Tooltip>
                 <Tooltip>

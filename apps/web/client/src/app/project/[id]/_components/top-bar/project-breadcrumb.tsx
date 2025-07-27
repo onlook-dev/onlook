@@ -78,7 +78,7 @@ export const ProjectBreadcrumb = observer(() => {
             },
         })
         if (project?.metadata) {
-            updateProject({
+            await updateProject({
                 id: project.id,
                 project: {
                     ...dbPreviewImg,
@@ -206,7 +206,9 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => stateManager.isSettingsModalOpen = true}>
+                    <DropdownMenuItem 
+                        className='cursor-pointer'
+                        onClick={() => stateManager.isSettingsModalOpen = true}>
                         <div className="flex row center items-center group">
                             <Icons.Gear className="mr-2 group-hover:rotate-12 transition-transform" />
                             {t(transKeys.help.menu.openSettings)}

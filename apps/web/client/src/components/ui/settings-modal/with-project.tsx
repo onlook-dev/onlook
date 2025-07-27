@@ -7,7 +7,7 @@ import { cn } from '@onlook/ui/utils';
 import { capitalizeFirstLetter } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import DomainTab from './domain';
 import { SettingsTabValue, type SettingTab } from './helpers';
 import { PreferencesTab } from './preferences-tab';
@@ -17,6 +17,31 @@ import { VersionsTab } from './versions';
 import { PageTab } from './site/page';
 import type { PageNode } from '@onlook/models';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+
+function TruncatedLabelWithTooltip({ label }: { label: string }) {
+    const [isTruncated, setIsTruncated] = useState(false);
+    const spanRef = useRef<HTMLSpanElement>(null);
+    useEffect(() => {
+        const el = spanRef.current;
+        if (el) {
+            setIsTruncated(el.scrollWidth > el.clientWidth);
+        }
+    }, [label]);
+    return isTruncated ? (
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <span ref={spanRef} className="truncate">
+                    {label}
+                </span>
+            </TooltipTrigger>
+            <TooltipContent side='right'>
+                {label}
+            </TooltipContent>
+        </Tooltip>
+    ) : (
+        <span ref={spanRef} className="truncate">{label}</span>
+    );
+}
 
 export const SettingsModalWithProjects = observer(() => {
     const editorEngine = useEditorEngine();
@@ -174,20 +199,7 @@ export const SettingsModalWithProjects = observer(() => {
                                                             }
                                                         >
                                                             {tab.icon}
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <span className="truncate">
-                                                                        {capitalizeFirstLetter(
-                                                                            tab.label.toLowerCase(),
-                                                                        )}
-                                                                    </span>
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    {capitalizeFirstLetter(
-                                                                        tab.label.toLowerCase(),
-                                                                    )}
-                                                                </TooltipContent>
-                                                            </Tooltip>
+                                                            <TruncatedLabelWithTooltip label={capitalizeFirstLetter(tab.label.toLowerCase())} />
                                                         </Button>
                                                     ))}
                                                 </div>

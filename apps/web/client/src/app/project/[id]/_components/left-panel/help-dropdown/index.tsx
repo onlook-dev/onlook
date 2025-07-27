@@ -8,7 +8,7 @@ import {
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
-    DropdownMenuTrigger
+    DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -96,7 +96,7 @@ export const HelpDropdown = observer(() => {
                     {t(transKeys.help.menu.shortcuts)}
                 </DropdownMenuItem> */}
                 <DropdownMenuItem
-                    className="text-sm"
+                    className="text-sm cursor-pointer"
                     onClick={() => (stateManager.isSettingsModalOpen = true)}
                 >
                     <Icons.Gear className="w-4 h-4 mr-2" />
@@ -110,20 +110,28 @@ export const HelpDropdown = observer(() => {
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-48 ml-2">
                         <DropdownMenuItem
+                            className="cursor-pointer"
                             onClick={() => window.open('https://onlook.com', '_blank')}
                         >
                             <Icons.Globe className="w-4 h-4 mr-2" />
                             {t(transKeys.help.menu.contactUs.website)}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => window.open(Links.DISCORD, '_blank')}>
+                        <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => window.open(Links.DISCORD, '_blank')}
+                        >
                             <Icons.DiscordLogo className="w-4 h-4 mr-2" />
                             {t(transKeys.help.menu.contactUs.discord)}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => window.open(Links.GITHUB, '_blank')}>
+                        <DropdownMenuItem
+                            className="cursor-pointer"
+                            onClick={() => window.open(Links.GITHUB, '_blank')}
+                        >
                             <Icons.GitHubLogo className="w-4 h-4 mr-2" />
                             {t(transKeys.help.menu.contactUs.github)}
                         </DropdownMenuItem>
                         <DropdownMenuItem
+                            className="cursor-pointer"
                             onClick={() => window.open('mailto:support@onlook.com', '_blank')}
                         >
                             <Icons.EnvelopeClosed className="w-4 h-4 mr-2" />
@@ -131,7 +139,10 @@ export const HelpDropdown = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem onClick={() => window.open(Links.OPEN_ISSUE, '_blank')}>
+                <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={() => window.open(Links.OPEN_ISSUE, '_blank')}
+                >
                     <Icons.ExclamationTriangle className="w-4 h-4 mr-2" />
                     {t(transKeys.help.menu.reportIssue)}
                 </DropdownMenuItem>
