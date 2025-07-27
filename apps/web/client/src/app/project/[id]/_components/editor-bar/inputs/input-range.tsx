@@ -15,7 +15,20 @@ interface InputRangeProps {
     unit?: string;
     onChange?: (value: number) => void;
     onUnitChange?: (unit: string) => void;
+    customIncrements?: number[];
+    useTailwindClasses?: boolean;
 }
+
+export const STANDARD_INCREMENTS = [0, 0.25, 0.5, 0.75, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16];
+
+const TAILWIND_RADIUS_MAP: Record<number, string> = {
+    2: 'rounded-xs',
+    4: 'rounded-sm', 
+    6: 'rounded-md',
+    8: 'rounded-lg',
+    12: 'rounded-xl',
+    16: 'rounded-2xl',
+};
 
 export const InputRange = ({
     value,
@@ -23,6 +36,8 @@ export const InputRange = ({
     unit = 'px',
     onChange,
     onUnitChange,
+    customIncrements,
+    useTailwindClasses = false,
 }: InputRangeProps) => {
     const [localValue, setLocalValue] = useState(String(value));
     const rangeRef = useRef<HTMLInputElement>(null);
@@ -88,11 +103,21 @@ export const InputRange = ({
         }
     };
 
+    const findClosestIncrement = (targetValue: number): number => {
+        if (!customIncrements) return targetValue;
+        
+        return customIncrements.reduce((closest, current) => {
+            return Math.abs(current - targetValue) < Math.abs(closest - targetValue) ? current : closest;
+        });
+    };
+
     const handleMouseMove = (e: MouseEvent) => {
         if (isDragging && rangeRef.current) {
             const rect = rangeRef.current.getBoundingClientRect();
             const percentage = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-            const newValue = Math.round(percentage * 500);
+            const maxValue = customIncrements ? Math.max(...customIncrements) : 500;
+            const rawValue = percentage * maxValue;
+            const newValue = customIncrements ? findClosestIncrement(rawValue) : Math.round(rawValue);
             setLocalValue(String(newValue));
             debouncedOnChange(newValue);
         }
@@ -104,6 +129,9 @@ export const InputRange = ({
         document.removeEventListener('mouseup', handleMouseUp);
     };
 
+    const maxValue = customIncrements ? Math.max(...customIncrements) : 500;
+    const currentValue = customIncrements ? findClosestIncrement(Number(localValue)) : Number(localValue);
+
     return (
         <div className="flex items-center gap-2">
             <div className="flex-1 flex items-center gap-2">
@@ -111,10 +139,11 @@ export const InputRange = ({
                     ref={rangeRef}
                     type="range"
                     min="0"
-                    max="500"
-                    value={Number(localValue)}
+                    max={maxValue}
+                    value={currentValue}
                     onChange={(e) => {
-                        const newValue = Number(e.target.value);
+                        const rawValue = Number(e.target.value);
+                        const newValue = customIncrements ? findClosestIncrement(rawValue) : rawValue;
                         setLocalValue(String(newValue));
                         debouncedOnChange(newValue);
                     }}

@@ -55,7 +55,7 @@ export const UsageSection = observer(() => {
             )}
             <Progress value={usagePercent} className="w-full" />
             <Button className="w-full flex items-center justify-center gap-2 bg-blue-400 text-white hover:bg-blue-500" onClick={handleGetMoreCredits}>
-                <Icons.Sparkles className="mr-1 h-4 w-4" /> Get more Credits
+                <Icons.Sparkles className="h-4 w-4" /> Get more Credits
             </Button>
         </div>
     );
