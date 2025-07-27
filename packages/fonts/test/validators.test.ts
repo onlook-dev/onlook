@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'bun:test';
-import { parse, traverse, types as t } from '@onlook/parser';
+import { parse, traverse, types as t, type t as T, NodePath } from '@onlook/parser';
 import {
     isTailwindThemeProperty,
     hasPropertyName,
@@ -10,8 +10,8 @@ import {
 } from '../src/helpers/validators';
 
 // Helper to get NodePath for a property
-function getObjectPropertyPath(ast, key): import('@onlook/parser').NodePath<any> | null {
-    let foundPath: import('@onlook/parser').NodePath<any> | null = null;
+function getObjectPropertyPath(ast: T.File, key: string): NodePath<T.ObjectProperty> | null {
+    let foundPath: NodePath<T.ObjectProperty> | null = null;
     traverse(ast, {
         ObjectProperty(path) {
             if (t.isIdentifier(path.node.key) && path.node.key.name === key) {

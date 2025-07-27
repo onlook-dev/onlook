@@ -40,7 +40,7 @@ export class FontManager {
             async (isIndexedFiles) => {
                 if (isIndexedFiles) {
                     await this.loadInitialFonts();
-                    await this.getDefaultFont();
+                    await this.getCurrentDefaultFont();
                     await this.syncFontsWithConfigs();
                 }
             },
@@ -287,9 +287,9 @@ export class FontManager {
     /**
      * Gets the default font from the project
      */
-    private async getDefaultFont(): Promise<string | null> {
+    private async getCurrentDefaultFont(): Promise<string | null> {
         try {
-            const defaultFont = await this.layoutManager.getDefaultFont();
+            const defaultFont = await this.layoutManager.getCurrentDefaultFont();
             if (defaultFont) {
                 this._defaultFont = defaultFont;
             }

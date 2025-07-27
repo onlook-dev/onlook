@@ -8,6 +8,79 @@ import {
 } from './validators';
 
 /**
+ * Checks if a declaration is a localFont declaration that should be preserved
+ */
+function isPreservedLocalFontDeclaration(
+    declaration: T.VariableDeclarator,
+    fontIdToRemove: string,
+): boolean {
+    return (
+        declaration &&
+        t.isIdentifier(declaration.id) &&
+        declaration.id.name !== fontIdToRemove &&
+        t.isCallExpression(declaration.init) &&
+        t.isIdentifier(declaration.init.callee) &&
+        declaration.init.callee.name === 'localFont'
+    );
+}
+
+/**
+ * Checks if a declaration is the target font to be removed
+ */
+function isTargetFontDeclaration(
+    declaration: T.VariableDeclarator,
+    fontIdToRemove: string,
+): boolean {
+    return declaration && t.isIdentifier(declaration.id) && declaration.id.name === fontIdToRemove;
+}
+
+/**
+ * Checks if a declaration is a localFont call with proper structure
+ */
+function isLocalFontCall(declaration: T.VariableDeclarator): boolean {
+    return (
+        t.isCallExpression(declaration.init) &&
+        t.isIdentifier(declaration.init.callee) &&
+        declaration.init.callee.name === 'localFont' &&
+        declaration.init.arguments.length > 0 &&
+        t.isObjectExpression(declaration.init.arguments[0])
+    );
+}
+
+/**
+ * Extracts font file paths from a local font configuration
+ */
+function extractFontFilePaths(declaration: T.VariableDeclarator): string[] {
+    const fontFiles: string[] = [];
+
+    if (!isLocalFontCall(declaration) || !declaration.init) {
+        return fontFiles;
+    }
+
+    const callExpression = declaration.init as T.CallExpression;
+    const fontConfig = callExpression.arguments[0] as T.ObjectExpression;
+    const srcProp = fontConfig.properties.find((prop) => hasPropertyName(prop, 'src'));
+
+    if (srcProp && t.isObjectProperty(srcProp) && t.isArrayExpression(srcProp.value)) {
+        srcProp.value.elements.forEach((element) => {
+            if (t.isObjectExpression(element)) {
+                const pathProp = element.properties.find((prop) => hasPropertyName(prop, 'path'));
+
+                if (pathProp && t.isObjectProperty(pathProp) && t.isStringLiteral(pathProp.value)) {
+                    let fontFilePath = pathProp.value.value;
+                    if (fontFilePath.startsWith('./')) {
+                        fontFilePath = fontFilePath.substring(2); // Remove './' prefix
+                    }
+                    fontFiles.push(fontFilePath);
+                }
+            }
+        });
+    }
+
+    return fontFiles;
+}
+
+/**
  * Removes a font from the configuration AST by eliminating its import, export declaration, and associated files.
  * Handles both Google Fonts and local fonts, cleaning up unused imports and tracking files for deletion.
  * For local fonts, extracts file paths from the src configuration for cleanup.
@@ -55,92 +128,40 @@ export function removeFontDeclaration(
         },
 
         ExportNamedDeclaration(path) {
-            if (t.isVariableDeclaration(path.node.declaration)) {
-                const declarations = path.node.declaration.declarations;
+            if (!t.isVariableDeclaration(path.node.declaration)) {
+                return;
+            }
 
-                for (let i = 0; i < declarations.length; i++) {
-                    const declaration = declarations[i];
+            const declarations = path.node.declaration.declarations;
 
-                    // Check if this is a localFont declaration (not the one being removed)
-                    if (
-                        declaration &&
-                        t.isIdentifier(declaration.id) &&
-                        declaration.id.name !== fontIdToRemove &&
-                        t.isCallExpression(declaration.init) &&
-                        t.isIdentifier(declaration.init.callee) &&
-                        declaration.init.callee.name === 'localFont'
-                    ) {
-                        hasRemainingLocalFonts = true;
+            for (let i = 0; i < declarations.length; i++) {
+                const declaration = declarations[i];
+                if (!declaration) continue;
+
+                if (isPreservedLocalFontDeclaration(declaration, fontIdToRemove)) {
+                    hasRemainingLocalFonts = true;
+                    continue;
+                }
+
+                if (isTargetFontDeclaration(declaration, fontIdToRemove)) {
+                    if (isLocalFontCall(declaration)) {
+                        const extractedPaths = extractFontFilePaths(declaration);
+                        fontFilesToDelete.push(...extractedPaths);
                     }
 
-                    if (
-                        declaration &&
-                        t.isIdentifier(declaration.id) &&
-                        declaration.id.name === fontIdToRemove
-                    ) {
-                        // Extract font file paths from the local font configuration
-                        if (
-                            t.isCallExpression(declaration.init) &&
-                            t.isIdentifier(declaration.init.callee) &&
-                            declaration.init.callee.name === 'localFont' &&
-                            declaration.init.arguments.length > 0 &&
-                            t.isObjectExpression(declaration.init.arguments[0])
-                        ) {
-                            const fontConfig = declaration.init.arguments[0];
-                            const srcProp = fontConfig.properties.find(
-                                (prop) =>
-                                    t.isObjectProperty(prop) &&
-                                    t.isIdentifier(prop.key) &&
-                                    prop.key.name === 'src',
-                            );
-
-                            if (
-                                srcProp &&
-                                t.isObjectProperty(srcProp) &&
-                                t.isArrayExpression(srcProp.value)
-                            ) {
-                                // Loop through the src array to find font file paths
-                                srcProp.value.elements.forEach((element) => {
-                                    if (t.isObjectExpression(element)) {
-                                        const pathProp = element.properties.find(
-                                            (prop) =>
-                                                t.isObjectProperty(prop) &&
-                                                t.isIdentifier(prop.key) &&
-                                                prop.key.name === 'path',
-                                        );
-
-                                        if (
-                                            pathProp &&
-                                            t.isObjectProperty(pathProp) &&
-                                            t.isStringLiteral(pathProp.value)
-                                        ) {
-                                            // Get the path value
-                                            let fontFilePath = pathProp.value.value;
-                                            if (fontFilePath.startsWith('./')) {
-                                                fontFilePath = fontFilePath.substring(2); // Remove './' prefix
-                                            }
-                                            fontFilesToDelete.push(fontFilePath);
-                                        }
-                                    }
-                                });
-                            }
-                        }
-
-                        if (declarations.length === 1) {
-                            path.remove();
-                        } else {
-                            declarations.splice(i, 1);
-                        }
-                        removedFont = true;
-                        break;
+                    if (declarations.length === 1) {
+                        path.remove();
+                    } else {
+                        declarations.splice(i, 1);
                     }
+                    removedFont = true;
+                    break;
                 }
             }
         },
     });
 
     if (!hasRemainingLocalFonts) {
-        // Remove the localFont import if no localFont declarations remain
         traverse(ast, {
             ImportDeclaration(path) {
                 if (path.node.source.value === 'next/font/local') {
@@ -246,7 +267,6 @@ export function addFontToTailwindTheme(font: Font, content: string): string {
     });
 
     let themeFound = false;
-    let extendFound = false;
 
     const newFontFamilyProperty = createFontFamilyProperty(font);
 
@@ -262,7 +282,6 @@ export function addFontToTailwindTheme(font: Font, content: string): string {
                     );
 
                     if (extendProperty && t.isObjectProperty(extendProperty)) {
-                        extendFound = true;
                         const extendValue = extendProperty.value;
                         if (t.isObjectExpression(extendValue)) {
                             // Look for fontFamily within extend
@@ -303,7 +322,6 @@ export function addFontToTailwindTheme(font: Font, content: string): string {
                                 t.objectExpression([newFontFamilyProperty]),
                             ),
                         );
-                        extendFound = true;
                     }
                 }
             }

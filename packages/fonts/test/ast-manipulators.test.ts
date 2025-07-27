@@ -12,28 +12,9 @@ import {
 import { findFontExportDeclaration } from '../src/helpers/validators';
 import { runDataDrivenTests } from './test-utils';
 import path from 'path';
+import { createFontSrcObjects } from '../src/helpers/ast-generators';
 
 const __dirname = import.meta.dir;
-
-function createFontSources(
-    sources: Array<{ path: string; weight?: string; style?: string }>,
-): t.ObjectExpression[] {
-    return sources.map((source) => {
-        const properties: t.ObjectProperty[] = [];
-
-        properties.push(t.objectProperty(t.identifier('path'), t.stringLiteral(source.path)));
-        if (source.weight) {
-            properties.push(
-                t.objectProperty(t.identifier('weight'), t.stringLiteral(source.weight)),
-            );
-        }
-        if (source.style) {
-            properties.push(t.objectProperty(t.identifier('style'), t.stringLiteral(source.style)));
-        }
-
-        return t.objectExpression(properties);
-    });
-}
 
 function makeDataDrivenTest<T>(
     testName: string,
@@ -121,7 +102,7 @@ makeDataDrivenTest(
             throw new Error(`Font export declaration for "${input.fontName}" not found`);
         }
 
-        const fontsSrc = createFontSources(input.newSources);
+        const fontsSrc = createFontSrcObjects(input.newSources);
 
         mergeLocalFontSources(ast, existingFontNode, input.fontName, fontsSrc);
         return generate(ast).code;

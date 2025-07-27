@@ -1,6 +1,7 @@
 import type { ParseResult } from '@babel/parser';
 import { DefaultSettings } from '@onlook/constants';
 import {
+    createFontSrcObjects,
     createLocalFontConfig,
     findFontExportDeclaration,
     hasLocalFontImport,
@@ -48,7 +49,7 @@ export class FontUploadManager {
             const { fontNameExists, existingFontNode } = findFontExportDeclaration(fontConfigAst, fontName);
 
             const fontConfigs = await this.processFontFiles(fontFiles, baseFontName, basePath);
-            const fontsSrc = this.createFontSrcObjects(fontConfigs);
+            const fontsSrc = createFontSrcObjects(fontConfigs);
 
             await this.updateAstWithFontConfig(
                 fontConfigAst,
@@ -101,19 +102,6 @@ export class FontUploadManager {
                     style,
                 };
             }),
-        );
-    }
-
-    /**
-     * Creates font source objects for AST
-     */
-    private createFontSrcObjects(fontConfigs: FontConfig[]): T.ObjectExpression[] {
-        return fontConfigs.map((config: FontConfig) =>
-            t.objectExpression([
-                t.objectProperty(t.identifier('path'), t.stringLiteral(config.path)),
-                t.objectProperty(t.identifier('weight'), t.stringLiteral(config.weight)),
-                t.objectProperty(t.identifier('style'), t.stringLiteral(config.style)),
-            ]),
         );
     }
 

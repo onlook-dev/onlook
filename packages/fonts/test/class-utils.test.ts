@@ -4,16 +4,17 @@ import fs from 'fs';
 import path from 'path';
 import { generate, parse } from '@onlook/parser';
 import {
-    handleJSXExpressionClassName,
-    handleStringLiteralClassName,
+    updateJSXExpressionClassNameWithFont,
+    updateStringLiteralClassNameWithFont,
     createTemplateLiteralWithFont,
     removeFontsFromClassName,
+    createStringLiteralWithFont,
+    updateTemplateLiteralWithFontClass,
 } from '../src';
 import { runDataDrivenTests } from './test-utils';
 
 const __dirname = import.meta.dir;
 
-// Helper function to find and process className attributes in JSX
 async function processClassNameAttribute(
     inputContent: string,
     processor: (
@@ -73,16 +74,16 @@ async function processClassNameAttribute(
 
 async function processTestCase(
     inputContent: string,
-    functionName: 'handleStringLiteralClassName' | 'handleJSXExpressionClassName',
+    functionName: 'updateStringLiteralClassNameWithFont' | 'updateJSXExpressionClassNameWithFont',
     fontName = 'inter',
 ): Promise<string> {
     return processClassNameAttribute(
         inputContent,
         (classNameAttr, fontVarExpr, fontName) => {
-            if (functionName === 'handleStringLiteralClassName') {
-                handleStringLiteralClassName(classNameAttr, fontVarExpr!);
+            if (functionName === 'updateStringLiteralClassNameWithFont') {
+                updateStringLiteralClassNameWithFont(classNameAttr, fontVarExpr!);
             } else {
-                handleJSXExpressionClassName(classNameAttr, fontVarExpr!, fontName!);
+                updateJSXExpressionClassNameWithFont(classNameAttr, fontVarExpr!, fontName!);
             }
         },
         fontName,
@@ -166,20 +167,147 @@ describe('createTemplateLiteralWithFont', () => {
     );
 });
 
-describe('handleStringLiteralClassName', () => {
+describe('updateStringLiteralClassNameWithFont', () => {
     runDataDrivenTests(
         {
-            casesDir: path.resolve(__dirname, 'data/string-literal-classname'),
+            casesDir: path.resolve(
+                __dirname,
+                'data/update-classname-with-font-var/string-literal-classname',
+            ),
         },
-        (inputContent: string) => processTestCase(inputContent, 'handleStringLiteralClassName'),
+        (inputContent: string) =>
+            processTestCase(inputContent, 'updateStringLiteralClassNameWithFont'),
     );
 });
 
-describe('handleJSXExpressionClassName', () => {
+describe('updateJSXExpressionClassNameWithFont', () => {
     runDataDrivenTests(
         {
-            casesDir: path.resolve(__dirname, 'data/jsx-expression-classname'),
+            casesDir: path.resolve(
+                __dirname,
+                'data/update-classname-with-font-var/jsx-expression-classname',
+            ),
         },
-        (inputContent: string) => processTestCase(inputContent, 'handleJSXExpressionClassName'),
+        (inputContent: string) =>
+            processTestCase(inputContent, 'updateJSXExpressionClassNameWithFont'),
+    );
+});
+
+describe('createStringLiteralWithFont', () => {
+    test('should add font class when no font class exists', () => {
+        const result = createStringLiteralWithFont('font-inter', 'text-lg text-gray-900');
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('font-inter text-lg text-gray-900');
+    });
+
+    test('should replace existing font class when one exists', () => {
+        const result = createStringLiteralWithFont(
+            'font-roboto',
+            'font-inter text-lg text-gray-900',
+        );
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('font-roboto text-lg text-gray-900');
+    });
+
+    test('should handle empty className string', () => {
+        const result = createStringLiteralWithFont('font-inter', '');
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('font-inter');
+    });
+
+    test('should handle className with only whitespace', () => {
+        const result = createStringLiteralWithFont('font-inter', '   ');
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('font-inter');
+    });
+
+    test('should handle className with multiple spaces between classes', () => {
+        const result = createStringLiteralWithFont('font-inter', 'text-lg   text-gray-900');
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('font-inter text-lg   text-gray-900');
+    });
+
+    test('should handle font class that starts with font- but is not at the beginning', () => {
+        const result = createStringLiteralWithFont('font-inter', 'text-lg font-bold text-gray-900');
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('text-lg font-inter text-gray-900');
+    });
+
+    test('should handle complex className with various font-related classes', () => {
+        const result = createStringLiteralWithFont(
+            'font-inter',
+            'font-sans font-bold text-lg text-gray-900 hover:text-black',
+        );
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('font-inter font-bold text-lg text-gray-900 hover:text-black');
+    });
+
+    test('should handle className that ends with font class', () => {
+        const result = createStringLiteralWithFont('font-inter', 'text-lg font-sans');
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('text-lg font-inter');
+    });
+
+    test('should handle className with only a font class', () => {
+        const result = createStringLiteralWithFont('font-inter', 'font-sans');
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('font-inter');
+    });
+
+    test('should handle className with leading and trailing spaces', () => {
+        const result = createStringLiteralWithFont('font-inter', '  text-lg text-gray-900  ');
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('font-inter   text-lg text-gray-900');
+    });
+
+    test('should handle multiple font classes and replace only the first one', () => {
+        const result = createStringLiteralWithFont(
+            'font-inter',
+            'font-sans font-bold font-extrabold text-lg',
+        );
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('font-inter font-bold font-extrabold text-lg');
+    });
+
+    test('should handle font class with numbers and special characters', () => {
+        const result = createStringLiteralWithFont(
+            'font-inter',
+            'text-lg font-roboto-400 text-gray-900',
+        );
+
+        expect(result.type).toBe('StringLiteral');
+        expect(result.value).toBe('text-lg font-inter text-gray-900');
+    });
+});
+
+describe('updateTemplateLiteralWithFontClass', () => {
+    runDataDrivenTests(
+        {
+            casesDir: path.resolve(__dirname, 'data/update-template-literal-with-font-class'),
+        },
+        (inputContent: string) =>
+            processClassNameAttribute(inputContent, (classNameAttr) => {
+                const fontClassName = 'font-inter';
+                if (t.isJSXExpressionContainer(classNameAttr.value)) {
+                    const expr = classNameAttr.value.expression;
+                    if (t.isTemplateLiteral(expr)) {
+                        const result = updateTemplateLiteralWithFontClass(expr, fontClassName);
+                        if (!result) {
+                            console.warn('Failed to update template literal with font class');
+                        }
+                    }
+                }
+            }),
     );
 });

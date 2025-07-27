@@ -1,12 +1,13 @@
 import type { ParseResult } from '@babel/parser';
 import {
-    cleanComma,
+    addFontImportToFile,
     createStringLiteralWithFont,
     findFontClass,
     getFontRootElements,
     removeFontImportFromFile,
     removeFontsFromClassName,
     updateClassNameWithFontVar,
+    updateTemplateLiteralWithFontClass,
 } from '@onlook/fonts';
 import type { CodeDiff, Font } from '@onlook/models';
 import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
@@ -35,7 +36,7 @@ export class LayoutManager {
             const context = await this.getLayoutContext();
             if (!context) return false;
 
-            const { layoutPath, targetElements, layoutContent } = context;
+            const { layoutPath, targetElements } = context;
 
             const fontName = camelCase(fontId);
             let updatedAst = false;
@@ -46,7 +47,11 @@ export class LayoutManager {
                 updatedAst = updateClassNameWithFontVar(classNameAttr, fontName);
 
                 if (updatedAst) {
-                    await this.updateFileWithImport(layoutPath, layoutContent, ast, fontName);
+                    const newContent = addFontImportToFile(this.fontImportPath, fontName, ast);
+                    if (!newContent) {
+                        return;
+                    }
+                    await this.editorEngine.sandbox.writeFile(layoutPath, newContent);
                 }
             });
 
@@ -139,16 +144,7 @@ export class LayoutManager {
                 } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
                     const expr = classNameAttr.value.expression;
                     if (t.isTemplateLiteral(expr)) {
-                        const newQuasis = [
-                            t.templateElement(
-                                { raw: fontClassName + ' ', cooked: fontClassName + ' ' },
-                                false,
-                            ),
-                            ...expr.quasis.slice(1),
-                        ];
-
-                        expr.quasis = newQuasis;
-                        updatedAst = true;
+                        updatedAst = updateTemplateLiteralWithFontClass(expr, fontClassName);
                     }
                 }
                 if (updatedAst) {
@@ -167,9 +163,9 @@ export class LayoutManager {
         return result;
     }
     /**
-     * Detects the current font being used in a file
+     * Detects the current default font being used in a file
      */
-    async detectCurrentFont(filePath: string, targetElements: string[]): Promise<string | null> {
+    async detectCurrentDefaultFont(filePath: string, targetElements: string[]): Promise<string | null> {
         let currentFont: string | null = null;
         const normalizedFilePath = normalizePath(filePath);
 
@@ -191,61 +187,20 @@ export class LayoutManager {
     }
 
     /**
-     * Gets the default font from the project
+     * Gets the current default font from the project
      */
-    async getDefaultFont(): Promise<string | null> {
+    async getCurrentDefaultFont(): Promise<string | null> {
         try {
             const context = await this.getLayoutContext();
             if (!context) return null;
             const { layoutPath, targetElements } = context;
-            const defaultFont = await this.detectCurrentFont(layoutPath, targetElements);
+            const defaultFont = await this.detectCurrentDefaultFont(layoutPath, targetElements);
 
             return defaultFont;
         } catch (error) {
             console.error('Error getting current font:', error);
             return null;
         }
-    }
-
-    /**
-     * Updates a file with a font import if needed
-     */
-    private async updateFileWithImport(
-        filePath: string,
-        content: string,
-        ast: ParseResult<T.File>,
-        fontName: string,
-    ): Promise<void> {
-        const sandbox = this.editorEngine.sandbox;
-        if (!sandbox) {
-            return;
-        }
-
-        const { code } = generate(ast);
-        const importRegex = new RegExp(
-            `import\\s*{([^}]*)}\\s*from\\s*['"]${this.fontImportPath}['"]`,
-        );
-
-        const importMatch = content.match(importRegex);
-
-        let newContent = code;
-
-        if (importMatch?.[1]) {
-            const currentImports = importMatch[1];
-            if (currentImports && !currentImports.includes(fontName)) {
-                const newImports = cleanComma(currentImports.trim() + `, ${fontName}`);
-
-                newContent = newContent.replace(
-                    importRegex,
-                    `import { ${newImports} } from '${this.fontImportPath}'`,
-                );
-            }
-        } else {
-            const fontImport = `import { ${fontName} } from '${this.fontImportPath}';`;
-            newContent = fontImport + '\n' + newContent;
-        }
-
-        await sandbox.writeFile(filePath, newContent);
     }
 
     private async traverseClassName(
@@ -294,9 +249,9 @@ export class LayoutManager {
                             t.stringLiteral(''),
                         );
                         path.node.attributes.push(newClassNameAttr);
-                        callback(newClassNameAttr, ast);
+                        void callback(newClassNameAttr, ast);
                     } else {
-                        callback(classNameAttr, ast);
+                        void callback(classNameAttr, ast);
                     }
 
                     if (!allElements) {
