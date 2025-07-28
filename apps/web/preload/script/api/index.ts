@@ -28,7 +28,6 @@ import { setFrameId } from './state';
 import { updateStyle } from './style';
 import { getTheme, setTheme } from './theme';
 
-
 function withTryCatch<T extends (...args: any[]) => any>(fn: T): T {
     return ((...args: any[]) => {
         try {
