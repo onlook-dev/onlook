@@ -14,7 +14,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
-import { InputRange } from "../inputs/input-range";
+import { InputRange, STANDARD_INCREMENTS } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 import { ToolbarButton } from "../toolbar-button";
 
@@ -153,11 +153,11 @@ export const Margin = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="gap-1 flex items-center min-w-10"
+                        className={`gap-1 flex items-center min-w-10 ${marginValue ? 'text-foreground-primary' : ''}`}
                     >
-                        <MarginIcon className="h-4 min-h-4 w-4 min-w-4" />
+                        <MarginIcon className={`h-4 min-h-4 w-4 min-w-4 ${marginValue ? 'text-foreground-primary' : ''}`} />
                         {marginValue && (
-                            <span className="text-small data-[state=open]:text-white">{marginValue}</span>
+                            <span className="text-small text-foreground-primary data-[state=open]:text-white">{marginValue}</span>
                         )}
                     </ToolbarButton>
                 </DropdownMenuTrigger>
@@ -192,6 +192,7 @@ export const Margin = observer(() => {
                         onChange={(value) => handleBoxChange('margin', value.toString())}
                         unit={boxState.margin.unit}
                         onUnitChange={(unit) => handleUnitChange('margin', unit)}
+                        customIncrements={STANDARD_INCREMENTS}
                     />
                 ) : (
                     <SpacingInputs

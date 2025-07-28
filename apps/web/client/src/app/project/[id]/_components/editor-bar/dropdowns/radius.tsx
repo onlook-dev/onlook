@@ -12,7 +12,7 @@ import { useState } from "react";
 import { useBoxControl } from "../hooks/use-box-control";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
-import { InputRange } from "../inputs/input-range";
+import { InputRange, STANDARD_INCREMENTS } from "../inputs/input-range";
 import { SpacingInputs } from "../inputs/spacing-inputs";
 import { ToolbarButton } from "../toolbar-button";
 
@@ -106,11 +106,11 @@ export const Radius = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="gap-1 flex items-center min-w-10"
+                        className={`gap-1 flex items-center min-w-10 ${radiusValue ? 'text-foreground-primary' : ''}`}
                     >
-                        <RadiusIcon className="h-4 min-h-4 w-4 min-w-4" />
+                        <RadiusIcon className={`h-4 min-h-4 w-4 min-w-4 ${radiusValue ? 'text-foreground-primary' : ''}`} />
                         {radiusValue && (
-                            <span className="text-small data-[state=open]:text-white">{radiusValue}</span>
+                            <span className="text-small text-foreground-primary data-[state=open]:text-white">{radiusValue}</span>
                         )}
                     </ToolbarButton>
                 </DropdownMenuTrigger>
@@ -142,6 +142,8 @@ export const Radius = observer(() => {
                         onChange={(value) => handleBoxChange('borderRadius', value.toString())}
                         unit={boxState.borderRadius.unit}
                         onUnitChange={(unit) => handleUnitChange('borderRadius', unit)}
+                        customIncrements={STANDARD_INCREMENTS}
+                        useTailwindClasses={true}
                     />
                 ) : (
                     <SpacingInputs
