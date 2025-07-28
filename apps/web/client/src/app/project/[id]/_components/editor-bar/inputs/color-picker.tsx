@@ -43,7 +43,7 @@ const ColorGroup = ({
         if (selectedRef.current) {
             selectedRef.current.scrollIntoView({ block: 'center' });
         }
-    }, [selectedColor, expanded]);
+    }, [ expanded]);
 
     return (
         <div className="w-full group">
