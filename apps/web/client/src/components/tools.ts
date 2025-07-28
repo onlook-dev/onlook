@@ -6,7 +6,8 @@ import type {
     LIST_FILES_TOOL_PARAMETERS,
     READ_FILES_TOOL_PARAMETERS,
     SCRAPE_URL_TOOL_PARAMETERS,
-    TERMINAL_COMMAND_TOOL_PARAMETERS
+    TERMINAL_COMMAND_TOOL_PARAMETERS,
+    SAVE_IMAGE_TOOL_PARAMETERS
 } from '@onlook/ai';
 import {
     CREATE_FILE_TOOL_NAME,
@@ -18,60 +19,50 @@ import {
     READ_STYLE_GUIDE_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_NAME,
+    SAVE_IMAGE_TOOL_NAME,
 } from '@onlook/ai';
-import type { SandboxFile } from '@onlook/models';
+import type { ImageMessageContext, SandboxFile } from '@onlook/models';
+import { ChatMessageRole, MessageContextType } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
 import { z } from 'zod';
+import type { UserChatMessageImpl } from './store/editor/chat/message/user';
+
+type ToolHandler = (args: any, editorEngine: EditorEngine) => Promise<any>;
+
+
+const toolHandlers: Record<string, ToolHandler> = {
+    [LIST_FILES_TOOL_NAME]: handleListFiles,
+    [READ_FILES_TOOL_NAME]: handleReadFiles,
+    [READ_STYLE_GUIDE_TOOL_NAME]: handleReadStyleGuide,
+    [ONLOOK_INSTRUCTIONS_TOOL_NAME]: async () => ONLOOK_INSTRUCTIONS,
+    [EDIT_FILE_TOOL_NAME]: handleEditFile,
+    [CREATE_FILE_TOOL_NAME]: handleCreateFile,
+    [TERMINAL_COMMAND_TOOL_NAME]: handleTerminalCommand,
+    [SCRAPE_URL_TOOL_NAME]: handleScrapeUrl,
+    [SAVE_IMAGE_TOOL_NAME]: handleCreateImage
+};
+
 
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
+    const { toolName, args } = toolCall;
+    const handler = toolHandlers[toolName];
+
+    if (!handler) {
+        return `Unknown tool call: ${toolName}`;
+    }
+
     try {
-        const toolName = toolCall.toolName;
-        if (toolName === LIST_FILES_TOOL_NAME) {
-            return await handleListFilesTool(
-                toolCall.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
-                editorEngine,
-            );
-        } else if (toolName === READ_FILES_TOOL_NAME) {
-            return await handleReadFilesTool(
-                toolCall.args as z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
-                editorEngine,
-            );
-        } else if (toolName === READ_STYLE_GUIDE_TOOL_NAME) {
-            const result = await handleReadStyleGuideTool(editorEngine);
-            return result;
-        } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
-            const result = ONLOOK_INSTRUCTIONS;
-            return result;
-        } else if (toolName === EDIT_FILE_TOOL_NAME) {
-            return await handleEditFileTool(
-                toolCall.args as z.infer<typeof EDIT_FILE_TOOL_PARAMETERS>,
-                editorEngine,
-            );
-        } else if (toolName === CREATE_FILE_TOOL_NAME) {
-            return await handleCreateFileTool(
-                toolCall.args as z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
-                editorEngine,
-            );
-        } else if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
-            return await handleTerminalCommandTool(
-                toolCall.args as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
-                editorEngine,
-            );
-        } else if (toolName === SCRAPE_URL_TOOL_NAME) {
-            return await handleScrapeUrlTool(
-                toolCall.args as z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
-            );
-        } else {
-            throw new Error(`Unknown tool call: ${toolCall.toolName}`);
-        }
+        console.log(`Executing tool: ${toolName}`, args);
+        return await handler(args, editorEngine);
     } catch (error) {
-        console.error('Error handling tool call', error);
-        return 'error handling tool call ' + error;
+        console.error(`Error handling tool call "${toolName}":`, error);
+        // Return a user-friendly error message.
+        return error instanceof Error ? error.message : 'An unknown error occurred.';
     }
 }
 
-async function handleListFilesTool(
+async function handleListFiles(
     args: z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<{ path: string; type: 'file' | 'directory' }[]> {
@@ -85,7 +76,7 @@ async function handleListFilesTool(
     }));
 }
 
-async function handleReadFilesTool(
+async function handleReadFiles(
     args: z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<{ path: string; content: string; type: 'text' | 'binary' }[]> {
@@ -114,7 +105,7 @@ async function handleReadFilesTool(
     return files;
 }
 
-async function handleReadStyleGuideTool(editorEngine: EditorEngine): Promise<{
+async function handleReadStyleGuide(editorEngine: EditorEngine): Promise<{
     configPath: string;
     cssPath: string;
     configContent: string;
@@ -127,7 +118,7 @@ async function handleReadStyleGuideTool(editorEngine: EditorEngine): Promise<{
     return result;
 }
 
-async function handleEditFileTool(
+async function handleEditFile(
     args: z.infer<typeof EDIT_FILE_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<string> {
@@ -161,7 +152,7 @@ async function handleEditFileTool(
     return 'File edited!';
 }
 
-async function handleCreateFileTool(
+async function handleCreateFile(
     args: z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<string> {
@@ -176,7 +167,7 @@ async function handleCreateFileTool(
     return 'File created';
 }
 
-async function handleTerminalCommandTool(
+async function handleTerminalCommand(
     args: z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<{
@@ -187,7 +178,7 @@ async function handleTerminalCommandTool(
     return await editorEngine.sandbox.session.runCommand(args.command);
 }
 
-async function handleScrapeUrlTool(
+async function handleScrapeUrl(
     args: z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
 ): Promise<string> {
     try {
@@ -208,5 +199,71 @@ async function handleScrapeUrlTool(
     } catch (error) {
         console.error('Error scraping URL:', error);
         throw new Error(`Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+async function handleCreateImage(
+    args: z.infer<typeof SAVE_IMAGE_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+): Promise<string> {
+    const { path, fileId } = args;
+
+    const imageContext = editorEngine.chat.conversation.current?.messages
+        .filter((m): m is UserChatMessageImpl => m.role === ChatMessageRole.USER)
+        .flatMap(userMessage => userMessage.context)
+        .find(
+            (c): c is ImageMessageContext =>
+                c.type === MessageContextType.IMAGE && c.fileId === fileId,
+        );
+    if (!imageContext) {
+        const errorMessage = `Error: Could not find an image in the context with fileId "${fileId}".`;
+        console.error(errorMessage);
+        return errorMessage;
+    }
+
+    const decodeBase64Image = (base64String: string): Uint8Array => {
+        const commaIndex = base64String.indexOf(',');
+        if (commaIndex === -1) {
+            throw new Error('Invalid base64 string: missing data URI scheme.');
+        }
+
+        const base64Data = base64String.substring(commaIndex + 1);
+
+        const binaryString = atob(base64Data);
+
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+
+        return bytes;
+    }
+
+
+    try {
+        const imageData = decodeBase64Image(imageContext.content);
+
+        await editorEngine.sandbox.writeBinaryFile(path, imageData);
+        
+        // Remove the image context after saving the image
+        editorEngine.chat.context.context = editorEngine.chat.context.context.filter(
+            (c) => {
+                if (c.type !== MessageContextType.IMAGE) {
+                    return true;
+                }
+                return c.fileId !== fileId;
+            }
+        );
+
+        const successMessage = `Successfully saved image to ${path}.`;
+        console.log(successMessage);
+        return successMessage;
+
+    } catch (error) {
+        const errorMessage = `Error: Failed to save image to path "${path}". Reason: ${error instanceof Error ? error.message : String(error)}`;
+        console.error(errorMessage, error);
+        return errorMessage;
     }
 }
