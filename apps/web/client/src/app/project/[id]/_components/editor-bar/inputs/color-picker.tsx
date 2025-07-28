@@ -730,23 +730,23 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             >
                 {!isCreatingNewColor && (
                     <TabsList className="bg-transparent px-2 m-0 gap-2 justify-between w-full">
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                             <TabsTrigger
                                 value={TabValue.BRAND}
-                                className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                                className="flex items-center justify-center px-1.5 py-1 text-xs border border-foreground-primary/20 rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
                             >
                                 Brand
                             </TabsTrigger>
 
                             <TabsTrigger
                                 value={TabValue.CUSTOM}
-                                className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                                className="flex items-center justify-center px-1.5 py-1 text-xs border border-foreground-primary/20 rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
                             >
                                 Custom
                             </TabsTrigger>
                             <TabsTrigger
                                 value={TabValue.GRADIENT}
-                                className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                                className="flex items-center justify-center px-1.5 py-1 text-xs border border-foreground-primary/20 rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
                             >
                                 Gradient
                             </TabsTrigger>
