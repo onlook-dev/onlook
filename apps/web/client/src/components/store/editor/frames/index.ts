@@ -12,6 +12,142 @@ export interface FrameData {
     view: WebFrameView | null;
     selected: boolean;
 }
+export class FrameNavigationManager {
+    private frameNavigationHistory = new Map<string, string[]>();
+    private frameCurrentHistoryIndex = new Map<string, number>();
+    private maxHistorySize = 50;
+
+    constructor() {
+        makeAutoObservable(this);
+    }
+
+    canGoBack(frameId: string): boolean {
+        const history = this.frameNavigationHistory.get(frameId);
+        const currentIndex = this.frameCurrentHistoryIndex.get(frameId);
+
+        if (!history || currentIndex === undefined) {
+            return false;
+        }
+        return currentIndex > 0;
+    }
+
+    canGoForward(frameId: string): boolean {
+        const history = this.frameNavigationHistory.get(frameId);
+        const currentIndex = this.frameCurrentHistoryIndex.get(frameId);
+
+        if (!history || currentIndex === undefined) {
+            return false;
+        }
+        return currentIndex < history.length - 1;
+    }
+
+    getHistoryLength(frameId: string): number {
+        const history = this.frameNavigationHistory.get(frameId);
+        return history ? history.length : 0;
+    }
+
+    getCurrentHistoryIndex(frameId: string): number {
+        return this.frameCurrentHistoryIndex.get(frameId) ?? -1;
+    }
+
+    getNavigationHistory(frameId: string): string[] {
+        const history = this.frameNavigationHistory.get(frameId);
+        return history ? [...history] : [];
+    }
+
+    addToHistory(frameId: string, path: string): void {
+        let history = this.frameNavigationHistory.get(frameId);
+        let currentIndex = this.frameCurrentHistoryIndex.get(frameId);
+
+        if (!history) {
+            history = [];
+            currentIndex = 0;
+        }
+
+        // Ensure currentIndex is properly initialized
+        currentIndex ??= 0;
+
+        if (history[currentIndex] === path) {
+            return;
+        }
+
+        // Remove forward history if we're not at the end
+        if (currentIndex < history.length - 1) {
+            history = history.slice(0, currentIndex + 1);
+        }
+
+        // Add new path to history
+        history.push(path);
+        currentIndex = history.length - 1;
+
+        // Trim history if it exceeds max size
+        if (history.length > this.maxHistorySize) {
+            history = history.slice(-this.maxHistorySize);
+            currentIndex = history.length - 1;
+        }
+
+        this.frameNavigationHistory.set(frameId, history);
+        this.frameCurrentHistoryIndex.set(frameId, currentIndex);
+    }
+
+    goBack(frameId: string): string | null {
+        if (!this.canGoBack(frameId)) {
+            return null;
+        }
+
+        const history = this.frameNavigationHistory.get(frameId);
+        const currentIndex = this.frameCurrentHistoryIndex.get(frameId);
+
+        if (!history || currentIndex === undefined) {
+            return null;
+        }
+
+        const previousIndex = currentIndex - 1;
+
+        if (previousIndex < 0 || previousIndex >= history.length) {
+            return null;
+        }
+
+        this.frameCurrentHistoryIndex.set(frameId, previousIndex);
+        return history[previousIndex] ?? null;
+    }
+
+    goForward(frameId: string): string | null {
+        if (!this.canGoForward(frameId)) {
+            return null;
+        }
+
+        const history = this.frameNavigationHistory.get(frameId);
+        const currentIndex = this.frameCurrentHistoryIndex.get(frameId);
+
+        if (!history || currentIndex === undefined) {
+            return null;
+        }
+
+        const nextIndex = currentIndex + 1;
+
+        if (nextIndex < 0 || nextIndex >= history.length) {
+            return null;
+        }
+
+        this.frameCurrentHistoryIndex.set(frameId, nextIndex);
+        return history[nextIndex] ?? null;
+    }
+
+    clearHistory(frameId: string): void {
+        this.frameNavigationHistory.delete(frameId);
+        this.frameCurrentHistoryIndex.delete(frameId);
+    }
+
+    clearAllHistory(): void {
+        this.frameNavigationHistory.clear();
+        this.frameCurrentHistoryIndex.clear();
+    }
+
+    removeFrame(frameId: string): void {
+        this.clearHistory(frameId);
+    }
+}
 
 function roundDimensions(frame: WebFrame): WebFrame {
     return {
@@ -30,10 +166,9 @@ function roundDimensions(frame: WebFrame): WebFrame {
 export class FramesManager {
     private _frameIdToData = new Map<string, FrameData>();
     private disposers: Array<() => void> = [];
+    private navigationManager = new FrameNavigationManager();
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -50,7 +185,7 @@ export class FramesManager {
             this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
         }
     }
-    
+
     get selected(): FrameData[] {
         return Array.from(this._frameIdToData.values()).filter((w) => w.selected);
     }
@@ -81,7 +216,6 @@ export class FramesManager {
 
     select(frames: Frame[]) {
         this.deselectAll();
-
         for (const frame of frames) {
             this.updateFrameSelection(frame.id, true);
         }
@@ -108,11 +242,13 @@ export class FramesManager {
         this.deregisterAll();
         this.disposers.forEach((dispose) => dispose());
         this.disposers = [];
+        this.navigationManager.clearAllHistory();
     }
 
     disposeFrame(frameId: string) {
         this._frameIdToData.delete(frameId);
         this.editorEngine?.ast?.mappings?.remove(frameId);
+        this.navigationManager.removeFrame(frameId);
     }
 
     reloadAllViews() {
@@ -130,22 +266,107 @@ export class FramesManager {
         frameData.view.reload();
     }
 
-    async goBack(id: string) {
-        const frameData = this.get(id);
-        if (!frameData?.view) {
-            console.error('Frame view not found for go back', id);
-            return;
-        }
-        await this.editorEngine.pages.goBack();
+    // Navigation history methods
+    get canGoBack(): boolean {
+        const selectedFrame = this.selected[0];
+        return selectedFrame ? this.navigationManager.canGoBack(selectedFrame.frame.id) : false;
     }
 
-    async goForward(id: string) {
-        const frameData = this.get(id);
-        if (!frameData?.view) {
-            console.error('Frame view not found for go forward', id);
+    get canGoForward(): boolean {
+        const selectedFrame = this.selected[0];
+        return selectedFrame ? this.navigationManager.canGoForward(selectedFrame.frame.id) : false;
+    }
+
+    get historyLength(): number {
+        const selectedFrame = this.selected[0];
+        return selectedFrame ? this.navigationManager.getHistoryLength(selectedFrame.frame.id) : 0;
+    }
+
+    get currentHistoryIndex(): number {
+        const selectedFrame = this.selected[0];
+        return selectedFrame
+            ? this.navigationManager.getCurrentHistoryIndex(selectedFrame.frame.id)
+            : -1;
+    }
+
+    getNavigationHistory(frameId?: string): string[] {
+        const targetFrameId = frameId ?? this.selected[0]?.frame.id;
+        return targetFrameId ? this.navigationManager.getNavigationHistory(targetFrameId) : [];
+    }
+
+    addToHistory(path: string, frameId?: string): void {
+        const targetFrameId = frameId ?? this.selected[0]?.frame.id;
+        if (targetFrameId) {
+            this.navigationManager.addToHistory(targetFrameId, path);
+        }
+    }
+
+    async goBack(frameId?: string): Promise<void> {
+        const targetFrameId = frameId ?? this.selected[0]?.frame.id;
+        if (!targetFrameId) {
+            console.warn('No frame selected for navigation');
             return;
         }
-        await this.editorEngine.pages.goForward();
+
+        const previousPath = this.navigationManager.goBack(targetFrameId);
+        console.log('goBack', previousPath);
+
+        if (previousPath) {
+            await this.navigateToPath(targetFrameId, previousPath, false);
+        }
+    }
+
+    async goForward(frameId?: string): Promise<void> {
+        const targetFrameId = frameId ?? this.selected[0]?.frame.id;
+        if (!targetFrameId) {
+            console.warn('No frame selected for navigation');
+            return;
+        }
+
+        const nextPath = this.navigationManager.goForward(targetFrameId);
+        console.log('goForward', nextPath);
+        if (nextPath) {
+            await this.navigateToPath(targetFrameId, nextPath, false);
+        }
+    }
+
+    private async navigateToPath(
+        frameId: string,
+        path: string,
+        addToHistory = true,
+    ): Promise<void> {
+        const frameData = this.get(frameId);
+        if (!frameData?.view) {
+            console.warn('No frame view available for navigation');
+            return;
+        }
+
+        try {
+            const currentUrl = frameData.view.src;
+            const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
+
+            if (!baseUrl) {
+                console.warn('No base URL found');
+                return;
+            }
+
+            frameData.view.loadURL(`${baseUrl}${path}`);
+
+            // Update pages manager active path
+            this.editorEngine.pages.setActivePath(frameId, path);
+            await frameData.view.processDom();
+
+            this.editorEngine.posthog.capture('page_navigate', {
+                path,
+            });
+
+            // Add to navigation history
+            if (addToHistory) {
+                this.addToHistory(path, frameId);
+            }
+        } catch (error) {
+            console.error('Navigation failed:', error);
+        }
     }
 
     async delete(id: string) {
@@ -173,9 +394,7 @@ export class FramesManager {
     }
 
     async create(frame: WebFrame) {
-        const success = await api.frame.create.mutate(
-            fromFrame(roundDimensions(frame)),
-        );
+        const success = await api.frame.create.mutate(fromFrame(roundDimensions(frame)));
 
         if (success) {
             this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
@@ -245,20 +464,20 @@ export class FramesManager {
         return this.selected.length > 0;
     }
 
-    duplicateSelected() {
+    async duplicateSelected() {
         for (const frame of this.selected) {
-             this.duplicate(frame.frame.id);
+            await this.duplicate(frame.frame.id);
         }
     }
 
-    deleteSelected() {
+    async deleteSelected() {
         if (!this.canDelete()) {
             console.error('Cannot delete the last frame');
             return;
         }
 
         for (const frame of this.selected) {
-            this.delete(frame.frame.id);
+            await this.delete(frame.frame.id);
         }
     }
 }

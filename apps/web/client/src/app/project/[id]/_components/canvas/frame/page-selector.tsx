@@ -133,7 +133,11 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
     };
 
     return (
-        <DropdownMenu>
+        <DropdownMenu onOpenChange={(open) => {
+            if (open) {
+                editorEngine.frames.select([frame]);
+            }
+        }}>
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"

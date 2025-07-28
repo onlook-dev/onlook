@@ -20,11 +20,6 @@ export class PagesManager {
     private currentPath = '';
     private groupedRoutes = '';
     private _isScanning = false;
-    
-    // Navigation history
-    private navigationHistory: Record<string, string[]> = {};
-    private currentHistoryIndex: Record<string, number> = {};
-    private maxHistorySize = 50;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -43,30 +38,6 @@ export class PagesManager {
 
     get isScanning() {
         return this._isScanning;
-    }
-
-    get canGoBack(): boolean {
-        const frameId = this.getActiveFrame()?.frame.id;
-        if (!frameId || !this.navigationHistory[frameId] || this.currentHistoryIndex[frameId] === undefined) {
-            return false;
-        }
-        return this.currentHistoryIndex[frameId] > 0;
-    }
-
-    get canGoForward(): boolean {
-        const frameId = this.getActiveFrame()?.frame.id;
-        if (!frameId || !this.navigationHistory[frameId] || this.currentHistoryIndex[frameId] === undefined) {
-            return false;
-        }
-        return this.currentHistoryIndex[frameId] < this.navigationHistory[frameId].length - 1;
-    }
-
-    get historyLength(): number {
-        const frameId = this.getActiveFrame()?.frame.id;
-        if (!frameId || !this.navigationHistory[frameId]) {
-            return 0;
-        }
-        return this.navigationHistory[frameId].length;
     }
 
     private getActiveFrame(): FrameData | undefined {
@@ -317,101 +288,13 @@ export class PagesManager {
             this.editorEngine.posthog.capture('page_navigate', {
                 path,
             });
-            // Add to navigation history
+            
             if (addToHistory) {
-                this.addToHistory(frameData.frame.id, originalPath);
+                this.editorEngine.frames.addToHistory(originalPath, frameData.frame.id);
             }
         } catch (error) {
             console.error('Navigation failed:', error);
         }
-    }
-
-    async goBack(): Promise<void> {
-        if (!this.canGoBack) {
-            console.warn('Cannot go back - no previous history');
-            return;
-        }
-
-        const frameId = this.getActiveFrame()?.frame.id;
-        if (!frameId || !this.navigationHistory[frameId] || this.currentHistoryIndex[frameId] === undefined) {
-            return;
-        }
-
-        this.currentHistoryIndex[frameId]--;
-        const previousPath = this.navigationHistory[frameId][this.currentHistoryIndex[frameId]];
-        
-        if (previousPath) {
-            await this.navigateTo(previousPath, false); // Don't add to history
-        }
-    }
-
-    async goForward(): Promise<void> {
-        if (!this.canGoForward) {
-            console.warn('Cannot go forward - no forward history');
-            return;
-        }
-
-        const frameId = this.getActiveFrame()?.frame.id;
-        if (!frameId || !this.navigationHistory[frameId] || this.currentHistoryIndex[frameId] === undefined) {
-            return;
-        }
-
-        this.currentHistoryIndex[frameId]++;
-        const nextPath = this.navigationHistory[frameId][this.currentHistoryIndex[frameId]];
-        
-        if (nextPath) {
-            await this.navigateTo(nextPath, false); // Don't add to history
-        }
-    }
-
-    private addToHistory(frameId: string, path: string): void {
-        // Initialize history for this frame if it doesn't exist
-        if (!this.navigationHistory[frameId]) {
-            this.navigationHistory[frameId] = [];
-            this.currentHistoryIndex[frameId] = -1;
-        }
-
-        // Ensure currentHistoryIndex is properly initialized
-        this.currentHistoryIndex[frameId] ??= -1;
-
-        const history = this.navigationHistory[frameId];
-        const currentIndex = this.currentHistoryIndex[frameId];
-
-        // Check if we're already at this path
-        if (history[currentIndex] === path) {
-            return;
-        }
-
-        // Remove forward history if we're not at the end
-        if (currentIndex < history.length - 1) {
-            this.navigationHistory[frameId] = history.slice(0, currentIndex + 1);
-        }
-
-        // Add new path to history
-        this.navigationHistory[frameId].push(path);
-        this.currentHistoryIndex[frameId] = this.navigationHistory[frameId].length - 1;
-
-        // Trim history if it exceeds max size
-        if (this.navigationHistory[frameId].length > this.maxHistorySize) {
-            this.navigationHistory[frameId] = this.navigationHistory[frameId].slice(-this.maxHistorySize);
-            this.currentHistoryIndex[frameId] = this.navigationHistory[frameId].length - 1;
-        }
-    }
-
-    public getNavigationHistory(frameId?: string): string[] {
-        const targetFrameId = frameId ?? this.getActiveFrame()?.frame.id;
-        if (!targetFrameId || !this.navigationHistory[targetFrameId]) {
-            return [];
-        }
-        return [...this.navigationHistory[targetFrameId]];
-    }
-
-    public getCurrentHistoryIndex(frameId?: string): number {
-        const targetFrameId = frameId ?? this.getActiveFrame()?.frame.id;
-        if (!targetFrameId || !this.currentHistoryIndex[targetFrameId]) {
-            return -1;
-        }
-        return this.currentHistoryIndex[targetFrameId];
     }
 
     public setCurrentPath(path: string) {
@@ -449,7 +332,5 @@ export class PagesManager {
         this.currentPath = '';
         this.activeRoutesByFrameId = {};
         this.groupedRoutes = '';
-        this.navigationHistory = {};
-        this.currentHistoryIndex = {};
     }
 }
