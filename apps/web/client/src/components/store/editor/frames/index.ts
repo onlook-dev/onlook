@@ -24,7 +24,6 @@ export class FrameNavigationManager {
     canGoBack(frameId: string): boolean {
         const history = this.frameNavigationHistory.get(frameId);
         const currentIndex = this.frameCurrentHistoryIndex.get(frameId);
-
         if (!history || currentIndex === undefined) {
             return false;
         }
@@ -200,6 +199,10 @@ export class FramesManager {
 
     registerView(frame: Frame, view: WebFrameView) {
         this._frameIdToData.set(frame.id, { frame, view, selected: false });
+        if (this.navigationManager.getNavigationHistory(frame.id).length === 0) {
+            const framePathname = new URL(view.src).pathname;
+            this.navigationManager.addToHistory(frame.id, framePathname);
+        }
     }
 
     deregister(frame: Frame) {
@@ -309,7 +312,6 @@ export class FramesManager {
         }
 
         const previousPath = this.navigationManager.goBack(targetFrameId);
-        console.log('goBack', previousPath);
 
         if (previousPath) {
             await this.navigateToPath(targetFrameId, previousPath, false);
@@ -324,17 +326,13 @@ export class FramesManager {
         }
 
         const nextPath = this.navigationManager.goForward(targetFrameId);
-        console.log('goForward', nextPath);
+
         if (nextPath) {
             await this.navigateToPath(targetFrameId, nextPath, false);
         }
     }
 
-    private async navigateToPath(
-        frameId: string,
-        path: string,
-        addToHistory = true,
-    ): Promise<void> {
+    async navigateToPath(frameId: string, path: string, addToHistory = true): Promise<void> {
         const frameData = this.get(frameId);
         if (!frameData?.view) {
             console.warn('No frame view available for navigation');
@@ -350,11 +348,9 @@ export class FramesManager {
                 return;
             }
 
-            frameData.view.loadURL(`${baseUrl}${path}`);
+            await this.updateAndSaveToStorage(frameId, { url: `${baseUrl}${path}` });
 
-            // Update pages manager active path
             this.editorEngine.pages.setActivePath(frameId, path);
-            await frameData.view.processDom();
 
             this.editorEngine.posthog.capture('page_navigate', {
                 path,

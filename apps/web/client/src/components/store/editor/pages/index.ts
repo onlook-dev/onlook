@@ -272,29 +272,8 @@ export class PagesManager {
             this.groupedRoutes = '';
         }
 
-        try {
-            const currentUrl = frameData.view.src;
-            const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
-
-            if (!baseUrl) {
-                console.warn('No base URL found');
-                return;
-            }
-
-            frameData.view.loadURL(`${baseUrl}${path}`);
-            this.setActivePath(frameData.frame.id, originalPath);
-            await frameData.view.processDom();
-
-            this.editorEngine.posthog.capture('page_navigate', {
-                path,
-            });
-            
-            if (addToHistory) {
-                this.editorEngine.frames.addToHistory(originalPath, frameData.frame.id);
-            }
-        } catch (error) {
-            console.error('Navigation failed:', error);
-        }
+        await this.editorEngine.frames.navigateToPath(frameData.frame.id, path, addToHistory);
+        this.setActivePath(frameData.frame.id, originalPath);
     }
 
     public setCurrentPath(path: string) {

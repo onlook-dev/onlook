@@ -121,7 +121,7 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
 
     const handlePageSelect = async (page: PageNode) => {
         try {
-            await editorEngine.pages.navigateTo(page.path);
+            await editorEngine.frames.navigateToPath(frame.id, page.path);
         } catch (error) {
             console.error('Failed to navigate to page:', error);
         }

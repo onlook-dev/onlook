@@ -6,7 +6,7 @@ import {
     PENPAL_PARENT_CHANNEL,
     type PenpalChildMethods,
     type PenpalParentMethods,
-    type PromisifiedPendpalChildMethods
+    type PromisifiedPendpalChildMethods,
 } from '@onlook/penpal';
 import { cn } from '@onlook/ui/utils';
 import { debounce } from 'lodash';
@@ -16,6 +16,7 @@ import {
     forwardRef,
     useEffect,
     useImperativeHandle,
+    useMemo,
     useRef,
     useState,
     type IframeHTMLAttributes,
@@ -23,12 +24,7 @@ import {
 
 export type WebFrameView = HTMLIFrameElement & {
     setZoomLevel: (level: number) => void;
-    loadURL: (url: string) => void;
     supportsOpenDevTools: () => boolean;
-    canGoForward: () => boolean;
-    canGoBack: () => boolean;
-    goForward: () => void;
-    goBack: () => void;
     reload: () => void;
     isLoading: () => boolean;
 } & PromisifiedPendpalChildMethods;
@@ -146,40 +142,10 @@ export const WebFrameComponent = observer(
             };
         };
 
-        useImperativeHandle(ref, () => {
-            const iframe = iframeRef.current;
-            if (!iframe) {
-                console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Iframe - Not found`);
-                return {} as WebFrameView;
-            }
+        const remoteMethods = useMemo(() => {
+            if (!penpalChild) return {};
 
-            const syncMethods = {
-                supportsOpenDevTools: () =>
-                    !!iframe.contentWindow && 'openDevTools' in iframe.contentWindow,
-                setZoomLevel: (level: number) => {
-                    zoomLevel.current = level;
-                    iframe.style.transform = `scale(${level})`;
-                    iframe.style.transformOrigin = 'top left';
-                },
-                loadURL: (url: string) => {
-                    editorEngine.frames.updateAndSaveToStorage(frame.id, { url });
-                },
-                canGoForward: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
-                canGoBack: () => (iframe.contentWindow?.history?.length ?? 0) > 0,
-                goForward: () => iframe.contentWindow?.history.forward(),
-                goBack: () => iframe.contentWindow?.history.back(),
-                reload: () => reloadIframe(),
-                isLoading: () => iframe.contentDocument?.readyState !== 'complete',
-            };
-
-            if (!penpalChild) {
-                console.warn(
-                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: iframeRemote is null`,
-                );
-                return Object.assign(iframe, syncMethods) as WebFrameView;
-            }
-
-            const remoteMethods = {
+            return {
                 processDom: promisifyMethod(penpalChild?.processDom),
                 getElementAtLoc: promisifyMethod(penpalChild?.getElementAtLoc),
                 getElementByDomId: promisifyMethod(penpalChild?.getElementByDomId),
@@ -221,6 +187,33 @@ export const WebFrameComponent = observer(
                 captureScreenshot: promisifyMethod(penpalChild?.captureScreenshot),
                 buildLayerTree: promisifyMethod(penpalChild?.buildLayerTree),
             };
+        }, [penpalChild]);
+
+        useImperativeHandle(ref, () => {
+            const iframe = iframeRef.current;
+            if (!iframe) {
+                console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Iframe - Not found`);
+                return {} as WebFrameView;
+            }
+
+            const syncMethods = {
+                supportsOpenDevTools: () =>
+                    !!iframe.contentWindow && 'openDevTools' in iframe.contentWindow,
+                setZoomLevel: (level: number) => {
+                    zoomLevel.current = level;
+                    iframe.style.transform = `scale(${level})`;
+                    iframe.style.transformOrigin = 'top left';
+                },
+                reload: () => reloadIframe(),
+                isLoading: () => iframe.contentDocument?.readyState !== 'complete',
+            };
+
+            if (!penpalChild) {
+                console.warn(
+                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: iframeRemote is null`,
+                );
+                return Object.assign(iframe, syncMethods) as WebFrameView;
+            }
 
             // Register the iframe with the editor engine
             editorEngine.frames.registerView(frame, iframe as WebFrameView);
@@ -232,10 +225,6 @@ export const WebFrameComponent = observer(
         }, [penpalChild, frame, iframeRef]);
 
         useEffect(() => {
-            if (!connectionRef.current) {
-                setupPenpalConnection();
-            }
-
             return () => {
                 if (connectionRef.current) {
                     connectionRef.current.destroy();
@@ -244,7 +233,7 @@ export const WebFrameComponent = observer(
                 setPenpalChild(null);
                 isConnecting.current = false;
             };
-        }, [iframeRef.current?.src]);
+        }, []);
 
         return (
             <iframe
