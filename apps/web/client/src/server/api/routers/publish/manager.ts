@@ -1,5 +1,5 @@
 import { type WebSocketSession } from '@codesandbox/sdk';
-import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, PRELOAD_SCRIPT_FILE_NAME, SUPPORTED_LOCK_FILES } from '@onlook/constants';
+import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, LOCAL_PRELOAD_SCRIPT_SRC, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
@@ -270,7 +270,7 @@ export class PublishManager {
             filePath.includes('/dist/') ||
             filePath.includes('/build/') ||
             filePath.includes('/coverage/') ||
-            filePath.endsWith(PRELOAD_SCRIPT_FILE_NAME);
+            filePath.endsWith(LOCAL_PRELOAD_SCRIPT_SRC);
     }
 
     private categorizeFiles(filePaths: string[]): { binaryFiles: string[], textFiles: string[] } {

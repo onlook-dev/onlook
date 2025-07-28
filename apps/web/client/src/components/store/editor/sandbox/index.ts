@@ -1,10 +1,11 @@
 import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
-import { EXCLUDED_SYNC_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_FILE_NAME } from '@onlook/constants';
+import { EXCLUDED_SYNC_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
 import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import { getBaseName, getDirName, isImageFile, isRootLayoutFile, isSubdirectory, LogTimer } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
+import { env } from 'process';
 import type { EditorEngine } from '../engine';
 import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
@@ -14,6 +15,7 @@ import { normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
+const isDev = env.NODE_ENV === 'development';
 export class SandboxManager {
     readonly session: SessionManager;
     readonly fileEventBus: FileEventBus = new FileEventBus();
@@ -381,7 +383,7 @@ export class SandboxManager {
                     timestamp: Date.now(),
                 });
             }
-            if (event.paths.some((path) => path.includes(PRELOAD_SCRIPT_FILE_NAME))) {
+            if (isDev && event.paths.some((path) => path.includes(PRELOAD_SCRIPT_SRC))) {
                 await this.editorEngine.preloadScript.ensurePreloadScriptFile();
             }
         } else if (eventType === 'change' || eventType === 'add') {
