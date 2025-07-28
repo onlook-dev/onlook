@@ -59,6 +59,8 @@ export const streamResponse = async (req: NextRequest) => {
     const agent = mastra.getAgent(ONLOOK_AGENT_KEY);
     const runtimeContext = new RuntimeContext<OnlookAgentRuntimeContext>()
     runtimeContext.set(CHAT_TYPE_KEY, chatType);
+    console.log('messages', (messages))
+
     const result = await agent.stream(messages, {
         maxSteps,
         runtimeContext,

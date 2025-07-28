@@ -1,7 +1,7 @@
 import type { MastraMessageV2 } from "@mastra/core/memory";
+import type { MessageSnapshot } from "@onlook/models";
 import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatMessageContext, type SystemChatMessage, type UserChatMessage } from "@onlook/models";
 import type { Message as VercelMessage } from 'ai';
-import type { MessageSnapshot } from "../../../models/src/chat/message/snapshot";
 
 export const toOnlookMessageFromMastra = (mastraMessage: MastraMessageV2): ChatMessage => {
     switch (mastraMessage.role) {
@@ -10,7 +10,7 @@ export const toOnlookMessageFromMastra = (mastraMessage: MastraMessageV2): ChatM
                 ...mastraMessage,
                 role: mastraMessage.role as ChatMessageRole.ASSISTANT,
                 applied: false,
-                snapshots: getMastraMessageOids(mastraMessage),
+                snapshots: getMessageSnapshotsFromMastra(mastraMessage),
             } satisfies AssistantChatMessage;
         case ChatMessageRole.USER:
             // TODO: Format user message
@@ -18,13 +18,32 @@ export const toOnlookMessageFromMastra = (mastraMessage: MastraMessageV2): ChatM
                 ...mastraMessage,
                 role: mastraMessage.role as ChatMessageRole.USER,
                 context: getMastraMessageContext(mastraMessage),
-                snapshots: getMastraMessageOids(mastraMessage),
+                snapshots: getMessageSnapshotsFromMastra(mastraMessage),
             } satisfies UserChatMessage;
         default:
             return {
                 ...mastraMessage,
                 role: mastraMessage.role as ChatMessageRole.SYSTEM,
             } satisfies SystemChatMessage;
+    }
+}
+
+export const toMastraMessageFromOnlook = (message: ChatMessage): MastraMessageV2 => {
+    return {
+        ...message,
+        role: message.role as MastraMessageV2['role'],
+        content: getMastraMessageContentFromOnlook(message),
+    } satisfies MastraMessageV2;
+}
+
+export const getMastraMessageContentFromOnlook = (message: ChatMessage): MastraMessageV2['content'] => {
+    return {
+        format: 2,
+        parts: message.content.parts,
+        metadata: {
+            applied: false,
+            snapshots: getMessageSnapshotsFromOnlook(message),
+        }
     }
 }
 
@@ -83,6 +102,10 @@ export const getMastraMessageContext = (message: MastraMessageV2): ChatMessageCo
     return (message.content.metadata?.context ?? []) as ChatMessageContext[];
 }
 
-export const getMastraMessageOids = (message: MastraMessageV2): MessageSnapshot[] => {
+export const getMessageSnapshotsFromMastra = (message: MastraMessageV2): MessageSnapshot[] => {
+    return (message.content.metadata?.snapshots ?? []) as MessageSnapshot[];
+}
+
+export const getMessageSnapshotsFromOnlook = (message: ChatMessage): MessageSnapshot[] => {
     return (message.content.metadata?.snapshots ?? []) as MessageSnapshot[];
 }

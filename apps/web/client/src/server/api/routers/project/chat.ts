@@ -23,7 +23,7 @@ const conversationRouter = createTRPCRouter({
         .input(z.object({ projectId: z.string() }))
         .mutation(async ({ input }) => {
             const { onlookAgent } = mastra.getAgents()
-            const memory = onlookAgent.getMemory()
+            const memory = await onlookAgent.getMemory()
             if (!memory) {
                 throw new Error('Memory not found');
             }
@@ -81,6 +81,7 @@ const messageRouter = createTRPCRouter({
                 threadId: input.conversationId,
                 format: 'v2',
             })
+            console.log('messagesResult', messagesResult)
             return messagesResult.map((message) => toOnlookMessageFromMastra(message));
         }),
     update: protectedProcedure
