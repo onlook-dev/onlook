@@ -70,7 +70,7 @@ export const userRouter = createTRPCRouter({
             }).returning();
 
             if (!existingUser) {
-                trackEvent({
+                await trackEvent({
                     distinctId: input.id,
                     event: 'user_first_signup',
                     properties: {
