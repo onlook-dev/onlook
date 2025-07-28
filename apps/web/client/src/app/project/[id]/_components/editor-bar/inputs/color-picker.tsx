@@ -40,11 +40,9 @@ const ColorGroup = ({
     }, [isExpanded]);
 
     useEffect(() => {
-        setTimeout(() => {
-            if (selectedRef.current) {
-                selectedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
+        if (selectedRef.current) {
+            selectedRef.current.scrollIntoView({ block: 'center' });
+        }
     }, [selectedColor, expanded]);
 
     return (
