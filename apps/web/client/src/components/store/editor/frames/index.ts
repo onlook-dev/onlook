@@ -50,7 +50,7 @@ export class FramesManager {
             this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
         }
     }
-
+    
     get selected(): FrameData[] {
         return Array.from(this._frameIdToData.values()).filter((w) => w.selected);
     }
@@ -216,10 +216,10 @@ export class FramesManager {
             const newFrame = { ...existingFrame.frame, ...frame };
             this._frameIdToData.set(frameId, { ...existingFrame, frame: newFrame });
         }
-        this.saveToStorage(frameId, frame);
+        await this.saveToStorage(frameId, frame);
     }
 
-    saveToStorage = debounce(this.undebouncedSaveToStorage, 1000);
+    saveToStorage = debounce(this.undebouncedSaveToStorage.bind(this), 1000);
 
     async undebouncedSaveToStorage(frameId: string, frame: Partial<WebFrame>) {
         try {
@@ -247,7 +247,7 @@ export class FramesManager {
 
     duplicateSelected() {
         for (const frame of this.selected) {
-            this.duplicate(frame.frame.id);
+             this.duplicate(frame.frame.id);
         }
     }
 

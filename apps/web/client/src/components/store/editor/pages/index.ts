@@ -22,8 +22,8 @@ export class PagesManager {
     private _isScanning = false;
     
     // Navigation history
-    private navigationHistory: string[] = [];
-    private currentHistoryIndex = -1;
+    private navigationHistory: Record<string, string[]> = {};
+    private currentHistoryIndex: Record<string, number> = {};
     private maxHistorySize = 50;
 
     constructor(
@@ -46,15 +46,27 @@ export class PagesManager {
     }
 
     get canGoBack(): boolean {
-        return this.currentHistoryIndex > 0;
+        const frameId = this.getActiveFrame()?.frame.id;
+        if (!frameId || !this.navigationHistory[frameId] || this.currentHistoryIndex[frameId] === undefined) {
+            return false;
+        }
+        return this.currentHistoryIndex[frameId] > 0;
     }
 
     get canGoForward(): boolean {
-        return this.currentHistoryIndex < this.navigationHistory.length - 1;
+        const frameId = this.getActiveFrame()?.frame.id;
+        if (!frameId || !this.navigationHistory[frameId] || this.currentHistoryIndex[frameId] === undefined) {
+            return false;
+        }
+        return this.currentHistoryIndex[frameId] < this.navigationHistory[frameId].length - 1;
     }
 
     get historyLength(): number {
-        return this.navigationHistory.length;
+        const frameId = this.getActiveFrame()?.frame.id;
+        if (!frameId || !this.navigationHistory[frameId]) {
+            return 0;
+        }
+        return this.navigationHistory[frameId].length;
     }
 
     private getActiveFrame(): FrameData | undefined {
@@ -151,7 +163,7 @@ export class PagesManager {
             if (this.editorEngine?.sandbox?.session?.session) {
                 try {
                     const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox);
-                   // const realPages = await scanPagesFromSandboxOptimized(this.editorEngine.sandbox);
+
                     this.setPages(realPages);
                     this._isScanning = false;
                     return;
@@ -307,7 +319,7 @@ export class PagesManager {
             });
             // Add to navigation history
             if (addToHistory) {
-                this.addToHistory(originalPath);
+                this.addToHistory(frameData.frame.id, originalPath);
             }
         } catch (error) {
             console.error('Navigation failed:', error);
@@ -320,8 +332,13 @@ export class PagesManager {
             return;
         }
 
-        this.currentHistoryIndex--;
-        const previousPath = this.navigationHistory[this.currentHistoryIndex];
+        const frameId = this.getActiveFrame()?.frame.id;
+        if (!frameId || !this.navigationHistory[frameId] || this.currentHistoryIndex[frameId] === undefined) {
+            return;
+        }
+
+        this.currentHistoryIndex[frameId]--;
+        const previousPath = this.navigationHistory[frameId][this.currentHistoryIndex[frameId]];
         
         if (previousPath) {
             await this.navigateTo(previousPath, false); // Don't add to history
@@ -334,38 +351,67 @@ export class PagesManager {
             return;
         }
 
-        this.currentHistoryIndex++;
-        const nextPath = this.navigationHistory[this.currentHistoryIndex];
+        const frameId = this.getActiveFrame()?.frame.id;
+        if (!frameId || !this.navigationHistory[frameId] || this.currentHistoryIndex[frameId] === undefined) {
+            return;
+        }
+
+        this.currentHistoryIndex[frameId]++;
+        const nextPath = this.navigationHistory[frameId][this.currentHistoryIndex[frameId]];
         
         if (nextPath) {
             await this.navigateTo(nextPath, false); // Don't add to history
         }
     }
 
-    private addToHistory(path: string): void {
-        if (this.navigationHistory[this.currentHistoryIndex] === path) {
+    private addToHistory(frameId: string, path: string): void {
+        // Initialize history for this frame if it doesn't exist
+        if (!this.navigationHistory[frameId]) {
+            this.navigationHistory[frameId] = [];
+            this.currentHistoryIndex[frameId] = -1;
+        }
+
+        // Ensure currentHistoryIndex is properly initialized
+        this.currentHistoryIndex[frameId] ??= -1;
+
+        const history = this.navigationHistory[frameId];
+        const currentIndex = this.currentHistoryIndex[frameId];
+
+        // Check if we're already at this path
+        if (history[currentIndex] === path) {
             return;
         }
 
-        if (this.currentHistoryIndex < this.navigationHistory.length - 1) {
-            this.navigationHistory = this.navigationHistory.slice(0, this.currentHistoryIndex + 1);
+        // Remove forward history if we're not at the end
+        if (currentIndex < history.length - 1) {
+            this.navigationHistory[frameId] = history.slice(0, currentIndex + 1);
         }
 
-        this.navigationHistory.push(path);
-        this.currentHistoryIndex = this.navigationHistory.length - 1;
+        // Add new path to history
+        this.navigationHistory[frameId].push(path);
+        this.currentHistoryIndex[frameId] = this.navigationHistory[frameId].length - 1;
 
-        if (this.navigationHistory.length > this.maxHistorySize) {
-            this.navigationHistory = this.navigationHistory.slice(-this.maxHistorySize);
-            this.currentHistoryIndex = this.navigationHistory.length - 1;
+        // Trim history if it exceeds max size
+        if (this.navigationHistory[frameId].length > this.maxHistorySize) {
+            this.navigationHistory[frameId] = this.navigationHistory[frameId].slice(-this.maxHistorySize);
+            this.currentHistoryIndex[frameId] = this.navigationHistory[frameId].length - 1;
         }
     }
 
-    public getNavigationHistory(): string[] {
-        return [...this.navigationHistory];
+    public getNavigationHistory(frameId?: string): string[] {
+        const targetFrameId = frameId ?? this.getActiveFrame()?.frame.id;
+        if (!targetFrameId || !this.navigationHistory[targetFrameId]) {
+            return [];
+        }
+        return [...this.navigationHistory[targetFrameId]];
     }
 
-    public getCurrentHistoryIndex(): number {
-        return this.currentHistoryIndex;
+    public getCurrentHistoryIndex(frameId?: string): number {
+        const targetFrameId = frameId ?? this.getActiveFrame()?.frame.id;
+        if (!targetFrameId || !this.currentHistoryIndex[targetFrameId]) {
+            return -1;
+        }
+        return this.currentHistoryIndex[targetFrameId];
     }
 
     public setCurrentPath(path: string) {
@@ -403,7 +449,7 @@ export class PagesManager {
         this.currentPath = '';
         this.activeRoutesByFrameId = {};
         this.groupedRoutes = '';
-        this.navigationHistory = [];
-        this.currentHistoryIndex = -1;
+        this.navigationHistory = {};
+        this.currentHistoryIndex = {};
     }
 }
