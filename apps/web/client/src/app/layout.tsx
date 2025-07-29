@@ -72,7 +72,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </head>
             <body>
                 {isProduction && (
-                    <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="afterInteractive" />
+                    <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="lazyOnload" />
                 )}
                 <TRPCReactProvider>
                     <FeatureFlagsProvider>
