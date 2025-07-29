@@ -131,8 +131,6 @@ export const ChatInput = observer(({
         const savedInput = inputValue.trim();
         setInputValue('');
 
-        editorEngine.chat.suggestions.setSendingMessage(true);
-
         const streamMessages = chatMode === ChatType.ASK
             ? await editorEngine.chat.getAskMessages(savedInput)
             : await editorEngine.chat.getEditMessages(savedInput);

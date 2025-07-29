@@ -4,6 +4,7 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { useChatContext } from '../../../_hooks/use-chat';
 
 export interface SuggestionsRef {
     handleTabNavigation: () => boolean;
@@ -21,22 +22,21 @@ export const Suggestions = observer(
         }
     >(({ disabled, inputValue, setInput, onSuggestionFocus }, ref) => {
         const editorEngine = useEditorEngine();
+        const { isWaiting } = useChatContext();
         const { data: settings } = api.user.settings.get.useQuery();
         const [focusedIndex, setFocusedIndex] = useState<number>(-1);
         const buttonRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
         const suggestions = editorEngine.chat.suggestions.suggestions;
-        const isLoadingSuggestions = editorEngine.chat.suggestions.isLoadingSuggestions;
         const shouldHideSuggestions =
-            editorEngine.chat.suggestions.shouldHide ||
-            editorEngine.chat.suggestions.isSendingMessage ||
+            suggestions.length === 0 ||
+            isWaiting ||
             !settings?.chat?.showSuggestions ||
             disabled ||
             inputValue.trim().length > 0 ||
             editorEngine.error.errors.length > 0;
 
         const shouldShowLoading =
-            isLoadingSuggestions &&
             !shouldHideSuggestions &&
             inputValue.trim().length === 0;
 

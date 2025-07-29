@@ -46,8 +46,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             console.error('Error in chat', error);
             editorEngine.chat.error.handleChatError(error);
 
-            editorEngine.chat.suggestions.setSendingMessage(false);
-
             if (lastMessageRef.current) {
                 editorEngine.chat.conversation.addAssistantMessage(lastMessageRef.current);
                 lastMessageRef.current = null;

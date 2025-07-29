@@ -5,8 +5,6 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 export class SuggestionManager {
-    shouldHide = false;
-    isSendingMessage = false;
     isLoadingSuggestions = false;
     private _suggestions: ChatSuggestion[] = [];
 
@@ -22,11 +20,6 @@ export class SuggestionManager {
         this._suggestions = suggestions;
     }
 
-    setSendingMessage(isSending: boolean) {
-        this._suggestions = [];
-        this.isSendingMessage = isSending;
-    }
-
     async generateSuggestions(): Promise<void> {
         if (!this.editorEngine.chat.conversation.current) {
             throw new Error('No conversation id');
@@ -37,7 +30,6 @@ export class SuggestionManager {
         const messages = this.editorEngine.chat.conversation.current.messages.slice(-5);
         removeContextMessages(messages);
 
-        this.setSendingMessage(false);
         this.isLoadingSuggestions = true;
 
         const coreMessages = messages.map(msg => ({
