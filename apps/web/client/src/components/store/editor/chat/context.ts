@@ -181,7 +181,6 @@ export class ChatContext {
                         content: file.content,
                         displayName: pagePath.split('/').pop() || 'page.tsx',
                     }
-                    console.log('defaultPageContext', defaultPageContext);
                     return defaultPageContext
                 }
             }

@@ -223,8 +223,6 @@ export class VersionsManager {
                 newName,
             });
 
-            console.log('renameCommit', commitOid, newName);
-
             const result = await this.gitManager.addCommitNote(commitOid, newName);
             if (!result.success) {
                 toast.error('Failed to rename backup');

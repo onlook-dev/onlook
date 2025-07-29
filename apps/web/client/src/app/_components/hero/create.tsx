@@ -309,7 +309,7 @@ export function Create({ cardKey }: { cardKey: number }) {
                                 onDragLeave={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    if (e.currentTarget && !e.currentTarget.contains(e.relatedTarget as Node)) {
+                                    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
                                         handleDragStateChange(false, e);
                                     }
                                 }}
