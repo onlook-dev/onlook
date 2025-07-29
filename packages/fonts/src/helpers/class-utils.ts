@@ -183,10 +183,21 @@ export function updateStringLiteralClassNameWithFont(
         return false;
     }
 
-    classNameAttr.value = t.jsxExpressionContainer(
-        createTemplateLiteralWithFont(fontVarExpr, t.stringLiteral(classNameAttr.value.value)),
-    );
-
+    if (classNameAttr.value.value === '') {
+        classNameAttr.value = t.jsxExpressionContainer(
+            t.templateLiteral(
+                [
+                    t.templateElement({ raw: '', cooked: '' }, false),
+                    t.templateElement({ raw: '', cooked: '' }, true),
+                ],
+                [fontVarExpr],
+            ),
+        );
+    } else {
+        classNameAttr.value = t.jsxExpressionContainer(
+            createTemplateLiteralWithFont(fontVarExpr, t.stringLiteral(classNameAttr.value.value)),
+        );
+    }
     return true;
 }
 

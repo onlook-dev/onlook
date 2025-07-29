@@ -161,29 +161,6 @@ export class LayoutManager {
 
         return result;
     }
-    /**
-     * Detects the current default font being used in a file
-     */
-    async detectCurrentDefaultFont(filePath: string, targetElements: string[]): Promise<string | null> {
-        let currentFont: string | null = null;
-        const normalizedFilePath = normalizePath(filePath);
-
-        await this.traverseClassName(normalizedFilePath, targetElements, (classNameAttr) => {
-            if (t.isStringLiteral(classNameAttr.value)) {
-                currentFont = findFontClass(classNameAttr.value.value);
-            } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
-                const expr = classNameAttr.value.expression;
-                if (t.isTemplateLiteral(expr)) {
-                    const firstQuasi = expr.quasis[0];
-                    if (firstQuasi) {
-                        currentFont = findFontClass(firstQuasi.value.raw);
-                    }
-                }
-            }
-        });
-
-        return currentFont;
-    }
 
     /**
      * Gets the current default font from the project
@@ -193,8 +170,24 @@ export class LayoutManager {
             const context = await this.getLayoutContext();
             if (!context) return null;
             const { layoutPath, targetElements } = context;
-            const defaultFont = await this.detectCurrentDefaultFont(layoutPath, targetElements);
-
+            let defaultFont: string | null = null;
+            const normalizedFilePath = normalizePath(layoutPath);
+    
+            await this.traverseClassName(normalizedFilePath, targetElements, (classNameAttr) => {
+                if (t.isStringLiteral(classNameAttr.value)) {
+                    defaultFont = findFontClass(classNameAttr.value.value);
+                } else if (t.isJSXExpressionContainer(classNameAttr.value)) {
+                    const expr = classNameAttr.value.expression;
+                    if (!expr || !t.isTemplateLiteral(expr)) {
+                        return;
+                    }
+                    const firstQuasi = expr.quasis[0];
+                    if (firstQuasi) {
+                        defaultFont = findFontClass(firstQuasi.value.raw);
+                    }
+                }
+            });
+    
             return defaultFont;
         } catch (error) {
             console.error('Error getting current font:', error);

@@ -358,7 +358,7 @@ export class FontManager {
         }
 
         await Promise.all([
-            this.fontConfigManager.ensureConfigFileExists(),
+            this.fontConfigManager.ensureFontConfigFileExists(),
             ensureTailwindConfigExists(sandbox),
         ]);
     }

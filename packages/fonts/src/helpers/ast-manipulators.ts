@@ -6,7 +6,7 @@ import {
     isTailwindThemeProperty,
     isValidLocalFontDeclaration,
 } from './validators';
-import { createAndInsertImport } from 'src/utils';
+import { createAndInsertImport } from '@onlook/fonts';
 
 /**
  * Finds the fontFamily property within the Tailwind theme structure.

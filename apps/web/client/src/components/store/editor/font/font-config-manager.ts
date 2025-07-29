@@ -102,7 +102,7 @@ export class FontConfigManager {
             const importName = font.family.replace(/\s+/g, '_');
             const fontName = camelCase(font.id);
 
-            await this.ensureConfigFileExists();
+            await this.ensureFontConfigFileExists();
 
             const fontConfig = await this.readFontConfigFile();
             if (!fontConfig) {
@@ -252,7 +252,7 @@ export class FontConfigManager {
     /**
      * Ensures the font configuration file exists
      */
-    async ensureConfigFileExists(): Promise<void> {
+    async ensureFontConfigFileExists(): Promise<void> {
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
