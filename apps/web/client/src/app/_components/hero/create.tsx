@@ -15,13 +15,11 @@ import { cn } from '@onlook/ui/utils';
 import { compressImageInBrowser } from '@onlook/utility';
 import { AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { usePostHog } from 'posthog-js/react';
 import { useEffect, useRef, useState } from 'react';
 
 export function Create({ cardKey }: { cardKey: number }) {
     const createManager = useCreateManager();
     const router = useRouter();
-    const posthog = usePostHog();
     const imageRef = useRef<HTMLInputElement>(null);
     const { data: user } = api.user.get.useQuery();
 
@@ -68,9 +66,6 @@ export function Create({ cardKey }: { cardKey: number }) {
     };
 
     const createProject = async (prompt: string, images: ImageMessageContext[]) => {
-        posthog.capture('user_create_project', {
-            prompt,
-        });
         if (!user?.id) {
             console.error('No user ID found');
 
@@ -168,7 +163,11 @@ export function Create({ cardKey }: { cardKey: number }) {
                 (await new Promise<string>((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onloadend = () => {
-                        resolve(reader.result as string);
+                        if (typeof reader.result === 'string') {
+                            resolve(reader.result);
+                        } else {
+                            reject(new Error('Failed to read file'));
+                        }
                     };
                     reader.onerror = reject;
                     reader.readAsDataURL(file);

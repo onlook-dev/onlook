@@ -5,8 +5,8 @@ import { users } from '../user/user';
 import { prices } from './price';
 import { products } from './product';
 
-export const scheduledSubscriptionAction = pgEnum('scheduled_subscription_action', ScheduledSubscriptionAction);
 export const subscriptionStatusEnum = pgEnum('subscription_status', SubscriptionStatus);
+export const scheduledSubscriptionAction = pgEnum('scheduled_subscription_action', ScheduledSubscriptionAction);
 
 export const subscriptions = pgTable('subscriptions', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -20,7 +20,7 @@ export const subscriptions = pgTable('subscriptions', {
     startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     endedAt: timestamp('ended_at', { withTimezone: true }),
-    status: subscriptionStatusEnum('status').notNull(),
+    status: subscriptionStatusEnum('status').default(SubscriptionStatus.ACTIVE).notNull(),
 
     // Stripe
     stripeCustomerId: text('stripe_customer_id').notNull(),

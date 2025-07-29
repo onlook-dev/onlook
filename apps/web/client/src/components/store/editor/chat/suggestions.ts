@@ -1,13 +1,9 @@
-
-import { sendAnalytics } from '@/utils/analytics';
-import type { ChatSuggestion, Project } from '@onlook/models';
-import type { ImageMessageContext } from '@onlook/models/chat';
-import type { CoreMessage, CoreSystemMessage, ImagePart, Message, TextPart } from 'ai';
+import { api } from '@/trpc/client';
+import { removeContextMessages } from '@onlook/ai/src/prompt/provider';
+import type { ChatSuggestion } from '@onlook/models';
+import type { Message } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-import { ChatType } from '@onlook/models/chat';
-import { removeContextMessages } from '@onlook/ai/src/prompt/provider';
-import { api } from '@/trpc/client';
 
 export class SuggestionManager {
     shouldHide = false;
@@ -32,17 +28,18 @@ export class SuggestionManager {
         this.isSendingMessage = isSending;
     }
 
-    private async fetchSuggestions(messages: Message[]): Promise<ChatSuggestion[]> {
+    private async generateSuggestions(conversationId: string, messages: Message[]): Promise<ChatSuggestion[]> {
         try {
             const coreMessages = messages.map(msg => ({
                 role: msg.role,
                 content: msg.content,
             }));
 
-            const suggestions = await api.chat.suggestions.generate.mutate({ 
-                messages: coreMessages 
+            const suggestions = await api.chat.suggestions.generate.mutate({
+                conversationId,
+                messages: coreMessages
             });
-            
+
             return suggestions;
         } catch (error) {
             console.error('Error fetching suggestions:', error);
@@ -51,13 +48,17 @@ export class SuggestionManager {
     }
 
     async getNextSuggestionsMessages(): Promise<void> {
-        const messages = this.editorEngine.chat.conversation.current?.messages ?? [];
+        if (!this.editorEngine.chat.conversation.current) {
+            throw new Error('No conversation id');
+        }
+
+        const messages = this.editorEngine.chat.conversation.current.messages;
         removeContextMessages(messages);
-        
+
         this.setSendingMessage(false);
         this.isLoadingSuggestions = true;
 
-        this.suggestions = await this.fetchSuggestions(messages);
+        this.suggestions = await this.generateSuggestions(this.editorEngine.chat.conversation.current.id, messages);
         this.isLoadingSuggestions = false;
     }
 }

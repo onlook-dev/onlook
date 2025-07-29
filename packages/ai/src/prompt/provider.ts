@@ -16,6 +16,12 @@ import { SUMMARY_PROMPTS } from './summary';
 import { SYSTEM_PROMPT } from './system';
 import { SUGGESTION_SYSTEM_PROMPT } from './suggest';
 
+export interface HydrateUserMessageOptions {
+    totalMessages: number;
+    currentMessageIndex: number;
+    lastUserMessageIndex: number;
+}
+
 export function getSystemPrompt() {
     let prompt = '';
     prompt += wrapXml('role', SYSTEM_PROMPT);
@@ -66,6 +72,7 @@ export function getHydratedUserMessage(
     id: string,
     content: UserContent,
     context: ChatMessageContext[],
+    opt: HydrateUserMessageOptions,
 ): Message {
     const files = context.filter((c) => c.type === 'file').map((c) => c);
     const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
@@ -73,11 +80,22 @@ export function getHydratedUserMessage(
     const project = context.filter((c) => c.type === 'project').map((c) => c);
     const images = context.filter((c) => c.type === 'image').map((c) => c);
 
+    // If there are 50 user messages in the contexts, we can trim all of them except
+    // the last one. The logic could be adjusted to trim more or less messages.
+    const truncateFileContext = opt.currentMessageIndex < opt.lastUserMessageIndex;
+    // Should the code need to trim other types of contexts, it can be done here.
+
     let prompt = '';
-    let contextPrompt = getFilesContent(files, highlights);
-    if (contextPrompt) {
-        contextPrompt = wrapXml('context', contextPrompt);
-        prompt += contextPrompt;
+    if (truncateFileContext) {
+        const contextPrompt = getTruncatedFilesContent(files);
+        if (contextPrompt) {
+            prompt += wrapXml('truncated-context', contextPrompt);
+        }
+    } else {
+        const contextPrompt = getFilesContent(files, highlights);
+        if (contextPrompt) {
+            prompt += wrapXml('context', contextPrompt);
+        }
     }
 
     if (errors.length > 0) {
@@ -113,6 +131,23 @@ export function getHydratedUserMessage(
         content: prompt,
         experimental_attachments: attachments,
     };
+}
+
+export function getTruncatedFilesContent(files: FileMessageContext[]) {
+    if (files.length === 0) {
+        return '';
+    }
+    let prompt = '';
+    prompt += `${CONTEXT_PROMPTS.truncatedFilesContentPrefix}\n`;
+    let index = 1;
+    for (const file of files) {
+        let filePrompt = `${file.path}\n`;
+        filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
+        prompt += filePrompt;
+        index++;
+    }
+
+    return prompt;
 }
 
 export function getFilesContent(

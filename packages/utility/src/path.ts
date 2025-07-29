@@ -1,3 +1,5 @@
+import { NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
+import { RouterType } from '@onlook/models';
 import isSubdir from 'is-subdir';
 import path from 'path';
 
@@ -83,4 +85,17 @@ export const isTargetFile = (
 
     const dirName = normalize(path.dirname(targetFile));
     return potentialPaths.some((p) => normalize(p) === dirName);
+};
+
+export const isRootLayoutFile = (
+    filePath: string,
+    routerType: RouterType = RouterType.APP,
+): boolean => {
+    const potentialPaths =
+        routerType === RouterType.APP ? ['app', 'src/app'] : ['pages', 'src/pages'];
+    return isTargetFile(filePath, {
+        fileName: 'layout',
+        targetExtensions: NEXT_JS_FILE_EXTENSIONS,
+        potentialPaths,
+    });
 };

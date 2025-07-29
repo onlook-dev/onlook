@@ -5,6 +5,7 @@ import {
     ChatMessageRole,
     type AssistantChatMessage,
     type ChatConversation,
+    type ChatSuggestion,
     type UserChatMessage
 } from '@onlook/models/chat';
 import type { Message } from 'ai';
@@ -21,6 +22,7 @@ export class ChatConversationImpl implements ChatConversation {
     messages: ChatMessageImpl[] = [];
     createdAt: string;
     updatedAt: string;
+    suggestions: ChatSuggestion[] = [];
 
     private constructor(conversation: ChatConversation, fetchMessages = false) {
         this.id = conversation.id;
@@ -59,7 +61,14 @@ export class ChatConversationImpl implements ChatConversation {
 
 
     getMessagesForStream(): Message[] {
-        return this.messages.map((m) => m.toStreamMessage());
+        const lastUserMessageIndex = this.messages.findLastIndex((m) => m.role === ChatMessageRole.USER);
+        return this.messages.map((m, index) =>
+            m.toStreamMessage({
+                totalMessages: this.messages.length,
+                currentMessageIndex: index,
+                lastUserMessageIndex,
+            }),
+        );
     }
 
     async addOrUpdateMessage(message: ChatMessageImpl) {

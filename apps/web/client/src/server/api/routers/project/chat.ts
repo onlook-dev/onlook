@@ -1,3 +1,5 @@
+import { initModel } from '@onlook/ai';
+import { SUGGESTION_SYSTEM_PROMPT } from '@onlook/ai/src/prompt/suggest';
 import {
     conversationInsertSchema,
     conversations,
@@ -8,16 +10,14 @@ import {
     type Message,
 } from '@onlook/db';
 import type { ChatMessageRole, ChatSuggestion } from '@onlook/models';
+import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
+import { ChatSuggestionsSchema } from '@onlook/models/chat';
+import type { CoreMessage } from 'ai';
+import { generateObject } from 'ai';
 import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { generateObject } from 'ai';
-import { initModel } from '@onlook/ai';
-import { CLAUDE_MODELS, LLMProvider, UsageType } from '@onlook/models';
-import { SUGGESTION_SYSTEM_PROMPT } from '@onlook/ai/src/prompt/suggest';
-import { suggestionSchema } from '@onlook/models/chat';
-import type { CoreMessage } from 'ai';
 import { createCaller } from '../../root';
+import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 const conversationRouter = createTRPCRouter({
     get: protectedProcedure
@@ -109,16 +109,17 @@ const messageRouter = createTRPCRouter({
 
 const suggestionsRouter = createTRPCRouter({
     generate: protectedProcedure
-        .input(z.object({ 
-            messages: z.array(z.any()).describe("Chat messages to analyze for suggestions")
+        .input(z.object({
+            conversationId: z.string(),
+            messages: z.array(z.any()),
         }))
         .mutation(async ({ ctx, input }) => {
             const caller = createCaller(ctx);
             const usage = await caller.usage.get();
-            
+
             const dailyExceeded = usage.daily.usageCount >= usage.daily.limitCount;
             const monthlyExceeded = usage.monthly.usageCount >= usage.monthly.limitCount;
-            
+
             if (dailyExceeded || monthlyExceeded) {
                 return [];
             }
@@ -126,12 +127,12 @@ const suggestionsRouter = createTRPCRouter({
             try {
                 const { model } = await initModel({
                     provider: LLMProvider.ANTHROPIC,
-                    model: CLAUDE_MODELS.SONNET_4,
+                    model: CLAUDE_MODELS.HAIKU,
                 });
 
                 const { object } = await generateObject({
                     model,
-                    schema: suggestionSchema,
+                    schema: ChatSuggestionsSchema,
                     messages: [
                         {
                             role: 'system',
@@ -146,7 +147,13 @@ const suggestionsRouter = createTRPCRouter({
                     maxTokens: 10000,
                 });
 
-                return object.suggestions as ChatSuggestion[];
+                const suggestions = object satisfies ChatSuggestion[];
+
+                await ctx.db.update(conversations).set({
+                    suggestions,
+                }).where(eq(conversations.id, input.conversationId));
+
+                return suggestions;
             } catch (error) {
                 console.error('Error generating suggestions:', error);
                 return [];

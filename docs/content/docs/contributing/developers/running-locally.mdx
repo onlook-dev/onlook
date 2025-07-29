@@ -1,0 +1,130 @@
+---
+title: Running Locally
+description: Setup instructions for contributors
+---
+
+# Running Onlook Locally
+
+This guide will set you up with running Onlook locally. This involves a Next.js app, a Supabase backend, and the ability to run the dev containers with Codesandbox.
+
+## Prerequisites
+
+These are the prerequisites for running Onlook locally.
+
+- [Bun](https://bun.sh) - Enables running the monorepo
+- [Docker](https://docs.docker.com/get-started/get-docker/) - Enables running the Supabase backend
+- [Node](https://nodejs.org/en/download/) – Minimum version `v20.16.0` or latest
+
+## Setup
+
+### 1. Clone the repository
+
+   ```bash
+   git clone https://github.com/onlook-dev/onlook.git
+   cd onlook
+   ```
+
+### 2. Install dependencies
+
+   ```bash
+   bun install
+   ```
+
+### 3. Run backend
+
+   Make sure you have Docker running from the instructions above.
+
+   ```bash
+   bun backend:start
+   ```
+
+    Grab the `anon key` and `service role key` from the output. We'll use these in step 5 and 7.
+
+### 4. Get API keys
+
+#### a. Get Codesandbox API key
+
+1. Go to [Codesandbox Dashboard](https://codesandbox.io/dashboard)
+2. Click on settings in the left menu, your workspace setting should open
+3. Navigate to the "API" tab
+4. Click "Create API Token" and generate an API token
+5. Copy the token and save it for the environment setup step
+
+Note: We plan on enabling running the dev containers with Docker Desktop in the future after we figure out the best API integration. 
+
+#### b. Get Anthropic API key
+
+    Request an API key from Anthropic. This is used for chatting with your project. https://console.anthropic.com/settings/keys
+
+#### c. Get Fast Apply API key
+
+    For applying AI code, SOTA is to use fast apply models in order to resolve the code change. There are two options for Fast Apply providers:
+
+    - [MorphLLM](https://morphllm.com/dashboard)
+    - [Relace](https://app.relace.ai/settings/api-keys)
+
+    You only need to get one of the keys and set it in the environment variables in later steps.
+
+### 5. Set environment variables
+
+Run the interactive environment setup script:
+
+```bash
+bun run setup:env
+```
+
+Note: If you'd prefer manually setting up the environment variables, see the [appendix](/contributing/developers/appendix) for instructions.
+
+### 6. Initialize the database
+
+Set up the database schema. You will need to run this command every time there's a change to the database schema.
+
+Note: If prompted for interaction such as choosing an option, cd into `packages/db` and run `bun run db:push` to use interactive mode.
+   ```bash
+   bun db:push
+   ```
+
+### 7. Seed the database with test data
+
+Seed the database with test data. This will create test users and projects.
+   ```bash
+   bun db:seed
+   ```
+
+### 8. Run development server
+
+   ```bash
+   bun dev
+   ```
+
+Go to [http://localhost:3000](http://localhost:3000) to see the app running. You're all set!
+
+## Common Issues
+
+#### Codesandbox Preview
+
+Codesandbox may ask you to confirm to proceed. You can click the button by switching to Preview mode in onlook, and click the "Yes, proceed to preview" link and switch back. The UI should render properly inside the iframe after that.
+
+![Codesandbox confirmation mode](/images/csb-proceed-to-preview.png)
+
+![Switch to Preview mode](/images/visual-switch-to-preview.png)
+
+#### Refreshing pages
+
+If you encounter issues with reloading pages and being unauthenticated then check your node version, install a more recent version, re-install dependencies and restart the project.
+Minimum version `v20.16.0` or latest is recommended.
+
+Avoid version `v20.11.0` of Node as it has shown this issue in the past.
+
+```bash
+node --version
+```
+
+## What's Next?
+
+Now that you have Onlook running locally, explore these resources to make your first contribution or learn more about the architecture. Understanding how Onlook works will help you contribute more effectively to this visual editor for React and TailwindCSS.
+
+<Cards>
+  <Card title="Learn about Architecture" href="/contributing/developers/architecture" />
+  <Card title="How to Contribute" href="/contributing/developers" />
+</Cards>
