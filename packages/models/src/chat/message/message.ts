@@ -11,6 +11,7 @@ export enum ChatMessageRole {
 
 interface BaseChatMessage extends Omit<MastraMessageV2, 'role'> {
     role: ChatMessageRole;
+    vercelId?: string;
 }
 
 export interface UserChatMessage extends BaseChatMessage {

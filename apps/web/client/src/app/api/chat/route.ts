@@ -60,6 +60,7 @@ export const streamResponse = async (req: NextRequest) => {
     const runtimeContext = new RuntimeContext<OnlookAgentRuntimeContext>()
     runtimeContext.set(CHAT_TYPE_KEY, chatType);
     console.log('messages', (messages))
+    console.log('conversationId', conversationId, 'projectId', projectId)
 
     const result = await agent.stream(messages, {
         maxSteps,

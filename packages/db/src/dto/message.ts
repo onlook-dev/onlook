@@ -2,6 +2,7 @@ import type { MastraMessageV2 } from "@mastra/core/memory";
 import type { MessageSnapshot } from "@onlook/models";
 import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatMessageContext, type SystemChatMessage, type UserChatMessage } from "@onlook/models";
 import type { Message as VercelMessage } from 'ai';
+import { v4 as uuidv4 } from 'uuid';
 
 export const toOnlookMessageFromMastra = (mastraMessage: MastraMessageV2): ChatMessage => {
     switch (mastraMessage.role) {
@@ -48,22 +49,28 @@ export const getMastraMessageContentFromOnlook = (message: ChatMessage): MastraM
 }
 
 export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage => {
+    const baseMessage = {
+        ...message,
+        id: uuidv4(),
+        vercelId: message.id,
+        createdAt: message.createdAt ?? new Date(),
+    }
+
     switch (message.role) {
         case ChatMessageRole.ASSISTANT:
             return {
-                ...message,
-                role: message.role as ChatMessageRole.ASSISTANT,
-                applied: false,
-                snapshots: [],
+                ...baseMessage,
                 content: {
                     parts: message.parts ?? [],
                     format: 2,
                 },
-                createdAt: message.createdAt ?? new Date(),
+                role: message.role as ChatMessageRole.ASSISTANT,
+                applied: false,
+                snapshots: [],
             } satisfies AssistantChatMessage;
         case ChatMessageRole.USER:
             return {
-                ...message,
+                ...baseMessage,
                 role: message.role as ChatMessageRole.USER,
                 context: [],
                 snapshots: [],
@@ -71,17 +78,15 @@ export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage =
                     parts: message.parts ?? [],
                     format: 2,
                 },
-                createdAt: message.createdAt ?? new Date(),
             } satisfies UserChatMessage;
         default:
             return {
-                ...message,
+                ...baseMessage,
                 role: message.role as ChatMessageRole.SYSTEM,
                 content: {
                     parts: [],
                     format: 2,
                 },
-                createdAt: message.createdAt ?? new Date(),
             } satisfies SystemChatMessage;
     }
 }

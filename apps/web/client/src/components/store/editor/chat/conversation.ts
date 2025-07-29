@@ -37,7 +37,7 @@ export class ConversationManager {
         }
     }
 
-    updateCurrentConversation(conversation: Partial<ChatConversation>) {
+    async updateCurrentConversation(conversation: Partial<ChatConversation>) {
         if (!this.current) {
             console.error('No conversation found');
             return;
@@ -46,8 +46,9 @@ export class ConversationManager {
             ...this.current.conversation,
             ...conversation,
         };
-        // TODO: update in storage
+        await this.updateConversationInStorage(this.current.conversation);
     }
+
     async getConversations(projectId: string): Promise<ChatConversation[]> {
         const res: ChatConversation[] | null = await this.getConversationsFromStorage(projectId);
         if (!res) {
@@ -133,7 +134,7 @@ export class ConversationManager {
             throw new Error('No conversation found');
         }
         const message = getUserChatMessageFromString(content, context);
-        await this.addMessage(message);
+        await this.addOrReplaceMessage(message);
         return message;
     }
 
@@ -150,16 +151,30 @@ export class ConversationManager {
         });
     }
 
-    async addMessage(message: ChatMessage) {
+    async addOrReplaceMessage(message: ChatMessage) {
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        this.current.messages.push(message);
+        this.current.conversation.updatedAt = new Date();
+
+        // Add or replace the message
+        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.vercelId && m.vercelId === message.vercelId));
+        if (index === -1) {
+            console.log('adding message', message);
+            this.current.messages.push(message);
+        } else {
+            console.log('replacing message', message);
+            this.current.messages[index] = message;
+        }
     }
 
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {
         return api.chat.conversation.getAll.query({ projectId: id });
+    }
+
+    async updateConversationInStorage(conversation: ChatConversation) {
+        await api.chat.conversation.update.mutate({ conversationId: conversation.id, title: conversation.title ?? '', metadata: conversation.metadata ?? {} });
     }
 
     async deleteConversationInStorage(id: string) {
