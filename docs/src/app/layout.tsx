@@ -51,7 +51,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         <html lang="en" className={inter.variable} suppressHydrationWarning>
             <body className="flex flex-col min-h-screen">
                 {isProduction && (
-                    <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="beforeInteractive" />
+                    <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="afterInteractive" />
                 )}
                 <RootProvider>
                     <DocsLayout tree={source.pageTree} {...docsOptions}>
