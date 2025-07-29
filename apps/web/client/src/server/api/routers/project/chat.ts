@@ -114,7 +114,7 @@ const suggestionsRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const { model } = await initModel({
                 provider: LLMProvider.OPENROUTER,
-                model: OPENROUTER_MODELS.OPEN_AI_O4_MINI,
+                model: OPENROUTER_MODELS.OPEN_AI_GPT_4_1_NANO,
             });
             const { object } = await generateObject({
                 model,

@@ -153,6 +153,7 @@ export const streamResponse = async (req: NextRequest) => {
         },
         onError: (error) => {
             console.error('Error in chat', error);
+            throw error;
         },
     });
 
