@@ -1,7 +1,6 @@
 import { describe } from 'bun:test';
 import { generate, parse } from '@onlook/parser';
 import type { Font } from '@onlook/models';
-import * as t from '@babel/types';
 import {
     removeFontDeclaration,
     addFontToTailwindTheme,

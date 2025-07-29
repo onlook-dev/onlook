@@ -8,7 +8,7 @@ import {
 import { runDataDrivenTests } from './test-utils';
 import { describe } from 'bun:test';
 import path from 'path';
-import { parse, types as t } from '@onlook/parser';
+import { types as t } from '@onlook/parser';
 
 const __dirname = import.meta.dir;
 

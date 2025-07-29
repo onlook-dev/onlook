@@ -4,7 +4,7 @@ import {
     buildFontConfiguration,
     migrateFontsFromLayout,
 } from '../src/helpers/font-extractors';
-import { runDataDrivenTests, type TestCaseConfig } from './test-utils';
+import { runDataDrivenTests } from './test-utils';
 import { parse, traverse, type t as T } from '@onlook/parser';
 import path from 'path';
 

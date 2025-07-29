@@ -34,7 +34,6 @@
         "typescript": "^5.5.4"
     },
     "dependencies": {
-        "@onlook/parser": "*",
-        "@babel/types": "^7.22.5"
+        "@onlook/parser": "*"
     }
 }

@@ -1,8 +1,7 @@
 import { describe, expect, test } from 'bun:test';
-import * as t from '@babel/types';
 import fs from 'fs';
 import path from 'path';
-import { generate, parse } from '@onlook/parser';
+import { generate, parse, types as t, type t as T } from '@onlook/parser';
 import {
     updateJSXExpressionClassNameWithFont,
     updateStringLiteralClassNameWithFont,
@@ -18,8 +17,8 @@ const __dirname = import.meta.dir;
 async function processClassNameAttribute(
     inputContent: string,
     processor: (
-        classNameAttr: t.JSXAttribute,
-        fontVarExpr?: t.MemberExpression,
+        classNameAttr: T.JSXAttribute,
+        fontVarExpr?: T.MemberExpression,
         fontName?: string,
     ) => boolean | void,
     fontName = 'inter',
@@ -32,13 +31,13 @@ async function processClassNameAttribute(
     const fontVarExpr = t.memberExpression(t.identifier(fontName), t.identifier('variable'));
 
     // Find the first JSX element with a className attribute
-    let classNameAttr: t.JSXAttribute | null = null;
+    let classNameAttr: T.JSXAttribute | null = null;
 
     const findClassNameAttr = (node: any) => {
         if (t.isJSXElement(node)) {
             const attr = node.openingElement.attributes.find(
                 (attr: any) => t.isJSXAttribute(attr) && attr.name?.name === 'className',
-            ) as t.JSXAttribute | undefined;
+            ) as T.JSXAttribute | undefined;
             if (attr && !classNameAttr) {
                 classNameAttr = attr;
             }
@@ -111,7 +110,7 @@ async function processCreateTemplateLiteralTestCase(
         (classNameAttr, fontVarExpr) => {
             if (!classNameAttr.value) return true;
 
-            let originalExpr: t.Expression;
+            let originalExpr: T.Expression;
             const attrValue = classNameAttr.value;
 
             if (t.isStringLiteral(attrValue)) {
