@@ -42,10 +42,6 @@ export const ChatInput = observer(({
     };
 
     useEffect(() => {
-        editorEngine.chat.suggestions.generateSuggestions();
-    }, []);
-
-    useEffect(() => {
         if (textareaRef.current && !isWaiting) {
             focusInput();
         }

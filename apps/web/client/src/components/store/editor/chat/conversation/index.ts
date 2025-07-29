@@ -31,7 +31,9 @@ export class ConversationManager {
 
     set current(conversation: ChatConversationImpl | null) {
         this._current = conversation;
-        this.editorEngine.chat.suggestions.suggestions = conversation?.suggestions ?? [];
+        if (conversation?.suggestions) {
+            this.editorEngine.chat.suggestions.suggestions = conversation.suggestions;
+        }
     }
 
     applyConversations(conversations: ChatConversation[]) {

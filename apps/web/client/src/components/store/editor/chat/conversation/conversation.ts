@@ -30,6 +30,7 @@ export class ChatConversationImpl implements ChatConversation {
         this.createdAt = conversation.createdAt;
         this.updatedAt = conversation.updatedAt;
         this.displayName = conversation.displayName;
+        this.suggestions = conversation.suggestions;
 
         if (fetchMessages) {
             this.getMessagesFromStorage().then((messages) => {
