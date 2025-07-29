@@ -52,7 +52,8 @@ export class SuggestionManager {
             throw new Error('No conversation id');
         }
 
-        const messages = this.editorEngine.chat.conversation.current.messages;
+        // Limit to last 5 messages
+        const messages = this.editorEngine.chat.conversation.current.messages.slice(-5);
         removeContextMessages(messages);
 
         this.setSendingMessage(false);
