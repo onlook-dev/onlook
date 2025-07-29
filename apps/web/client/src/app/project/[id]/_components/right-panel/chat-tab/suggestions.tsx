@@ -35,8 +35,8 @@ export const Suggestions = observer(
             inputValue.trim().length > 0 ||
             editorEngine.error.errors.length > 0;
 
-        const shouldShowLoading = 
-            isLoadingSuggestions && 
+        const shouldShowLoading =
+            isLoadingSuggestions &&
             !shouldHideSuggestions &&
             inputValue.trim().length === 0;
 
@@ -97,55 +97,45 @@ export const Suggestions = observer(
                     initial={false}
                     transition={{ duration: 0.2 }}
                 >
-                    {shouldShowLoading ? (
-                        <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary"                        >
-                            <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
-                            <span className="text-xs">Loading suggestions...</span>
-                        </motion.div>
-                    ) : (
-                        suggestions.map((suggestion, index) => (
-                            <motion.button
-                                ref={(el) => {
-                                    buttonRefs.current[index] = el;
-                                }}
-                                initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
-                                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                                transition={{
-                                    delay: 0.1 + index * 0.1,
-                                    duration: 0.3,
-                                    ease: 'easeOut',
-                                }}
-                                key={suggestion.title}
-                                className="text-xs flex border border-blue-500/20 items-center gap-2 p-2 
+                    {suggestions.map((suggestion, index) => (
+                        <motion.button
+                            ref={(el) => {
+                                buttonRefs.current[index] = el;
+                            }}
+                            initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+                            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                            transition={{
+                                delay: 0.1 + index * 0.1,
+                                duration: 0.3,
+                                ease: 'easeOut',
+                            }}
+                            key={suggestion.title}
+                            className="text-xs flex border border-blue-500/20 items-center gap-2 p-2 
                                 text-left text-blue-300 bg-blue-500/10 rounded-lg transition-all 
                                 relative hover:bg-blue-500/20 
                                 focus:outline-none focus:ring-2 focus:ring-blue-500 
                                 focus:border-blue-400/40 focus:bg-blue-500/30 
                                 focus:text-blue-200 focus:shadow-[0_0_15px_rgba(59,130,246,0.3)]"
-                                onClick={() => setInput(suggestion.prompt)}
-                                onFocus={() => {
-                                    setFocusedIndex(index);
-                                    onSuggestionFocus?.(true);
-                                }}
-                                onBlur={(e) => {
-                                    // Don't reset focus if we're moving to another suggestion
-                                    const isMovingToAnotherSuggestion = buttonRefs.current.includes(
-                                        e.relatedTarget as HTMLButtonElement,
-                                    );
-                                    if (!isMovingToAnotherSuggestion) {
-                                        setFocusedIndex(-1);
-                                        onSuggestionFocus?.(false);
-                                    }
-                                }}
-                            >
-                                <Icons.Lightbulb className="w-4 h-4" />
-                                {suggestion.title}
-                            </motion.button>
-                        ))
-                    )}
+                            onClick={() => setInput(suggestion.prompt)}
+                            onFocus={() => {
+                                setFocusedIndex(index);
+                                onSuggestionFocus?.(true);
+                            }}
+                            onBlur={(e) => {
+                                // Don't reset focus if we're moving to another suggestion
+                                const isMovingToAnotherSuggestion = buttonRefs.current.includes(
+                                    e.relatedTarget as HTMLButtonElement,
+                                );
+                                if (!isMovingToAnotherSuggestion) {
+                                    setFocusedIndex(-1);
+                                    onSuggestionFocus?.(false);
+                                }
+                            }}
+                        >
+                            <Icons.Lightbulb className="w-4 h-4" />
+                            {suggestion.title}
+                        </motion.button>
+                    ))}
                 </motion.div>
             </motion.div>
         );
