@@ -29,7 +29,8 @@ export class CodeManager {
     }
 
     viewSourceFile(fileName: string) {
-        console.log('viewSourceFile', fileName);
+        this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
+        this.editorEngine.ide.openFile(fileName);
     }
 
     async viewCodeBlock(oid: string) {
