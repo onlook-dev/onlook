@@ -61,7 +61,7 @@ export class ChatContext {
                 return { ...c, content: codeBlock } satisfies HighlightMessageContext;
             }
             return c;
-        })) as ChatMessageContext[];
+        })) satisfies ChatMessageContext[];
     }
 
     private async getImageContext(): Promise<ImageMessageContext[]> {
