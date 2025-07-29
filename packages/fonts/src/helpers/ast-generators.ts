@@ -20,7 +20,7 @@ import { camelCase } from 'lodash';
  *   display: 'swap'
  * }
  */
-export function createFontConfigAst(font: Font): T.ObjectExpression {
+function createFontConfigAst(font: Font): T.ObjectExpression {
     return t.objectExpression([
         t.objectProperty(
             t.identifier('subsets'),

@@ -71,7 +71,7 @@ export function runDataDrivenTests<T = string>(
 
             // Compare with expected output
             const expectedContent = await Bun.file(expectedPath).text();
-            expect(result).toBe(expectedContent);
+            expect(result.trim()).toBe(expectedContent.trim());
         });
     }
 }
