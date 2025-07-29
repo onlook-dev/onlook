@@ -1,17 +1,16 @@
 import { generate, traverse, types as t, type t as T, type NodePath } from '@onlook/parser';
+import { createAndInsertImport } from 'src/utils';
 
 /**
  * Removes a font import from a file using AST traversal
  * @param fontImportPath - The import path to remove the font import from (e.g. './fonts')
  * @param fontName - The font name to remove from the import
- * @param fileContent - The original file content (unused in AST-based approach)
  * @param ast - The parsed AST of the file
  * @returns The updated file content with the font import removed, or null if no changes made
  */
 export function removeFontImportFromFile(
     fontImportPath: string,
     fontName: string,
-    fileContent: string,
     ast: T.File,
 ): string | null {
     let foundImport = false;
@@ -56,7 +55,7 @@ export function removeFontImportFromFile(
  * Adds a font import to a file using AST traversal
  * @param fontImportPath - The import path to add the font import to (e.g. './fonts')
  * @param fontName - The font name to add to the import
- * @param ast - The parsed AST of the file
+ * @param ast - The AST file to modify
  * @returns The updated file content with the font import added, or null if no changes needed
  */
 export function addFontImportToFile(
@@ -97,21 +96,7 @@ export function addFontImportToFile(
     }
 
     if (!foundExistingImport) {
-        const newImport = t.importDeclaration(
-            [t.importSpecifier(t.identifier(fontName), t.identifier(fontName))],
-            t.stringLiteral(fontImportPath),
-        );
-
-        let insertionIndex = 0;
-        for (let i = 0; i < ast.program.body.length; i++) {
-            if (t.isImportDeclaration(ast.program.body[i])) {
-                insertionIndex = i + 1;
-            } else {
-                break;
-            }
-        }
-
-        ast.program.body.splice(insertionIndex, 0, newImport);
+        createAndInsertImport(ast, fontName, fontImportPath);
     }
 
     return generate(ast).code;

@@ -330,8 +330,8 @@ export class FontManager {
 
             if (addedFonts.length > 0) {
                 for (const font of addedFonts) {
-                    await this.layoutManager.addFontVariableToRootLayout(font.id);
                     await addFontToTailwindConfig(font, sandbox);
+                    await this.layoutManager.addFontVariableToRootLayout(font.id);
                 }
             }
 

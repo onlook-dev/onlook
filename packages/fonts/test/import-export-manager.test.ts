@@ -11,14 +11,14 @@ describe('removeFontImportFromFile', () => {
     test('removes a single named import (removes the whole line)', () => {
         const content = "import { Inter } from './fonts';\nconst x = 1;";
         const ast = parse(content, { sourceType: 'module', plugins: ['typescript', 'jsx'] });
-        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', content, ast);
+        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', ast);
         expect(result).toBe('const x = 1;');
     });
 
     test('removes one of multiple named imports', () => {
         const content = "import { Inter, Roboto } from './fonts';\nconst x = 1;";
         const ast = parse(content, { sourceType: 'module', plugins: ['typescript', 'jsx'] });
-        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', content, ast);
+        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', ast);
         expect(result).toContain('import { Roboto } from');
         expect(result).toContain('./fonts');
         expect(result).not.toContain('Inter');
@@ -27,7 +27,7 @@ describe('removeFontImportFromFile', () => {
     test('removes a named import with alias', () => {
         const content = "import { Inter as MyInter, Roboto } from './fonts';\nconst x = 1;";
         const ast = parse(content, { sourceType: 'module', plugins: ['typescript', 'jsx'] });
-        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', content, ast);
+        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', ast);
         expect(result).toContain('import { Roboto } from');
         expect(result).toContain('./fonts');
         expect(result).not.toContain('Inter as MyInter');
@@ -36,7 +36,7 @@ describe('removeFontImportFromFile', () => {
     test('removes import with extra spaces and newlines', () => {
         const content = `import {\n  Inter,\n  Roboto\n} from './fonts';\nconst x = 1;`;
         const ast = parse(content, { sourceType: 'module', plugins: ['typescript', 'jsx'] });
-        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', content, ast);
+        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', ast);
         expect(result).toContain('Roboto');
         expect(result).not.toContain('Inter');
     });
@@ -44,14 +44,14 @@ describe('removeFontImportFromFile', () => {
     test('returns null if import is not found', () => {
         const content = "import { Roboto } from './fonts';\nconst x = 1;";
         const ast = parse(content, { sourceType: 'module', plugins: ['typescript', 'jsx'] });
-        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', content, ast);
+        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', ast);
         expect(result).toBeNull();
     });
 
     test('does not remove anything if import path does not match', () => {
         const content = "import { Inter } from 'next/font/local';\nconst x = 1;";
         const ast = parse(content, { sourceType: 'module', plugins: ['typescript', 'jsx'] });
-        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', content, ast);
+        const result = removeFontImportFromFile(FONT_IMPORT_PATH, 'Inter', ast);
         expect(result).toBeNull();
     });
 });

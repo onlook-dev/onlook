@@ -3,6 +3,11 @@ import { types as t, type t as T } from '@onlook/parser';
 const FONT_WEIGHT_REGEX =
     /font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black)/;
 
+type FontRemovalOptions = {
+    fontIds?: string[];
+    removeAll?: boolean;
+};
+
 /**
  * Helper function to find font class in a string of class names
  */
@@ -174,28 +179,15 @@ export function updateStringLiteralClassNameWithFont(
     classNameAttr: T.JSXAttribute,
     fontVarExpr: T.MemberExpression,
 ): boolean {
-    if (t.isStringLiteral(classNameAttr.value)) {
-        if (classNameAttr.value.value === '') {
-            classNameAttr.value = t.jsxExpressionContainer(
-                t.templateLiteral(
-                    [
-                        t.templateElement({ raw: '', cooked: '' }, false),
-                        t.templateElement({ raw: '', cooked: '' }, true),
-                    ],
-                    [fontVarExpr],
-                ),
-            );
-        } else {
-            classNameAttr.value = t.jsxExpressionContainer(
-                createTemplateLiteralWithFont(
-                    fontVarExpr,
-                    t.stringLiteral(classNameAttr.value.value),
-                ),
-            );
-        }
-        return true;
+    if (!t.isStringLiteral(classNameAttr.value)) {
+        return false;
     }
-    return false;
+
+    classNameAttr.value = t.jsxExpressionContainer(
+        createTemplateLiteralWithFont(fontVarExpr, t.stringLiteral(classNameAttr.value.value)),
+    );
+
+    return true;
 }
 
 /**
@@ -206,40 +198,52 @@ export function updateJSXExpressionClassNameWithFont(
     fontVarExpr: T.MemberExpression,
     fontName: string,
 ): boolean {
-    if (t.isJSXExpressionContainer(classNameAttr.value)) {
-        const expr = classNameAttr.value.expression;
-
-        if (t.isTemplateLiteral(expr)) {
-            const hasFont = expr.expressions.some(
-                (e) =>
-                    t.isMemberExpression(e) &&
-                    t.isIdentifier(e.object) &&
-                    e.object.name === fontName &&
-                    t.isIdentifier(e.property) &&
-                    e.property.name === 'variable',
-            );
-
-            if (!hasFont) {
-                if (expr.expressions.length > 0) {
-                    const lastQuasi = expr.quasis[expr.quasis.length - 1];
-                    if (lastQuasi) {
-                        lastQuasi.value.raw = lastQuasi.value.raw + ' ';
-                        lastQuasi.value.cooked = lastQuasi.value.cooked + ' ';
-                    }
-                }
-                expr.expressions.push(fontVarExpr);
-                if (expr.quasis.length <= expr.expressions.length) {
-                    expr.quasis.push(t.templateElement({ raw: '', cooked: '' }, true));
-                }
-                return true;
-            }
-        } else if (t.isIdentifier(expr) || t.isMemberExpression(expr)) {
-            classNameAttr.value = t.jsxExpressionContainer(
-                createTemplateLiteralWithFont(fontVarExpr, expr),
-            );
-            return true;
-        }
+    if (!t.isJSXExpressionContainer(classNameAttr.value)) {
+        return false;
     }
+
+    const expr = classNameAttr.value.expression;
+
+    if (t.isTemplateLiteral(expr)) {
+        const isFontAlreadyPresent = expr.expressions.some(
+            (e) =>
+                t.isMemberExpression(e) &&
+                t.isIdentifier(e.object) &&
+                e.object.name === fontName &&
+                t.isIdentifier(e.property) &&
+                e.property.name === 'variable',
+        );
+
+        if (isFontAlreadyPresent) {
+            return false;
+        }
+
+        if (expr.expressions.length > 0) {
+            // Add space to the last quasi if it exists
+            const lastQuasi = expr.quasis[expr.quasis.length - 1];
+            if (lastQuasi) {
+                lastQuasi.value.raw = lastQuasi.value.raw + ' ';
+                lastQuasi.value.cooked = lastQuasi.value.cooked + ' ';
+            }
+        }
+
+        expr.expressions.push(fontVarExpr);
+
+        // Add a new quasi if there are more expressions than quasis
+        if (expr.quasis.length <= expr.expressions.length) {
+            expr.quasis.push(t.templateElement({ raw: '', cooked: '' }, true));
+        }
+
+        return true;
+    }
+
+    if (t.isIdentifier(expr) || t.isMemberExpression(expr)) {
+        classNameAttr.value = t.jsxExpressionContainer(
+            createTemplateLiteralWithFont(fontVarExpr, expr),
+        );
+        return true;
+    }
+
     return false;
 }
 
@@ -332,72 +336,36 @@ function removeFontFromTemplateLiteral(
 ): boolean {
     if (!expr.quasis || !expr.expressions) return false;
 
-    const shouldRemoveExpression = (e: T.Expression): boolean => {
-        if (!t.isMemberExpression(e) || !e.object) return false;
-
-        if (options.fontIds?.length) {
-            return t.isIdentifier(e.object) && options.fontIds.includes(e.object.name);
-        }
-
-        if (options.removeAll && e.property) {
-            return (
-                t.isIdentifier(e.property) && ['variable', 'className'].includes(e.property.name)
-            );
-        }
-
-        return false;
-    };
-
-    const cleanFontClasses = (text: string): string => {
-        if (options.fontIds?.length) {
-            const pattern = options.fontIds.map((id) => `font-${id}\\b`).join('|');
-            return text.replace(new RegExp(pattern, 'g'), '');
-        }
-
-        if (options.removeAll) {
-            return text.replace(/font-\w+\b/g, (match) =>
-                FONT_WEIGHT_REGEX.test(match) ? match : '',
-            );
-        }
-
-        return text;
-    };
-
     try {
         // Filter expressions to keep (only process actual expressions, not TSTypes)
-        const keptExpressions = expr.expressions
-            .filter((e): e is T.Expression => t.isExpression(e))
-            .filter((e) => !shouldRemoveExpression(e));
+        const validExpressions = getValidExpressions(expr);
+        const keptExpressions = filterExpressionsToKeep(validExpressions, options);
 
         if (keptExpressions.length === 0) {
-            const allText = expr.quasis.map((q) => q.value.raw || '').join('');
-            const cleanedText = cleanFontClasses(allText).replace(/\s+/g, ' ').trim();
-
-            expr.quasis = [t.templateElement({ raw: cleanedText, cooked: cleanedText }, true)];
-            expr.expressions = [];
-            return true;
+            return convertToSimpleTemplate(expr, options);
         }
 
         // Rebuild template with kept expressions
         const newQuasis: T.TemplateElement[] = [];
         const newExpressions: T.Expression[] = [];
-        let quasiIndex = 0;
         let accumulatedText = '';
+
+        const addQuasi = (quasi: T.TemplateElement | undefined): void => {
+            if (quasi) {
+                accumulatedText += quasi.value.raw || '';
+            }
+        };
 
         for (let i = 0; i < expr.expressions.length; i++) {
             const e = expr.expressions[i];
+            const quasis = expr.quasis[i];
             if (!t.isExpression(e)) continue;
 
             // Add the quasi before this expression
-            if (quasiIndex < expr.quasis.length) {
-                accumulatedText += expr.quasis[quasiIndex]?.value.raw || '';
-                quasiIndex++;
-            }
+            addQuasi(quasis);
 
-            if (shouldRemoveExpression(e)) {
-                continue;
-            } else {
-                let cleanedText = cleanFontClasses(accumulatedText);
+            if (!shouldRemoveExpression(e, options)) {
+                let cleanedText = cleanFontClasses(accumulatedText, options);
                 if (newQuasis.length === 0) {
                     cleanedText = cleanedText.replace(/^\s+/, '');
                 }
@@ -407,11 +375,12 @@ function removeFontFromTemplateLiteral(
             }
         }
 
-        if (quasiIndex < expr.quasis.length) {
-            accumulatedText += expr.quasis[quasiIndex]?.value.raw || '';
+        if (expr.quasis.length > expr.expressions.length) {
+            const finalQuasi = expr.quasis[expr.quasis.length - 1];
+            addQuasi(finalQuasi);
         }
 
-        let finalText = cleanFontClasses(accumulatedText);
+        let finalText = cleanFontClasses(accumulatedText, options);
         finalText = finalText.replace(/\s+$/, '');
         newQuasis.push(t.templateElement({ raw: finalText, cooked: finalText }, true));
 
@@ -422,4 +391,65 @@ function removeFontFromTemplateLiteral(
         console.error('Error processing template literal:', error);
         return false;
     }
+}
+
+function cleanFontClasses(
+    text: string,
+    options: {
+        fontIds?: string[];
+        removeAll?: boolean;
+    },
+): string {
+    if (options.fontIds?.length) {
+        return cleanSpecificFontClasses(text, options.fontIds);
+    }
+
+    if (options.removeAll) {
+        return cleanAllFontClasses(text);
+    }
+
+    return text;
+}
+
+function cleanSpecificFontClasses(text: string, fontIds: string[]): string {
+    const pattern = fontIds.map((id) => `font-${id}\\b`).join('|');
+    return text.replace(new RegExp(pattern, 'g'), '');
+}
+
+function cleanAllFontClasses(text: string): string {
+    return text.replace(/font-\w+\b/g, (match) => (FONT_WEIGHT_REGEX.test(match) ? match : ''));
+}
+
+function filterExpressionsToKeep(
+    expressions: T.Expression[],
+    options: FontRemovalOptions,
+): T.Expression[] {
+    return expressions.filter((expr) => !shouldRemoveExpression(expr, options));
+}
+
+function shouldRemoveExpression(e: T.Expression, options: FontRemovalOptions): boolean {
+    if (!t.isMemberExpression(e) || !e.object) return false;
+
+    if (options.fontIds?.length) {
+        return t.isIdentifier(e.object) && options.fontIds.includes(e.object.name);
+    }
+
+    if (options.removeAll && e.property) {
+        return t.isIdentifier(e.property) && ['variable', 'className'].includes(e.property.name);
+    }
+
+    return false;
+}
+
+function getValidExpressions(expr: T.TemplateLiteral): T.Expression[] {
+    return expr.expressions.filter((e): e is T.Expression => t.isExpression(e));
+}
+
+function convertToSimpleTemplate(expr: T.TemplateLiteral, options: FontRemovalOptions): boolean {
+    const allText = expr.quasis.map((q) => q.value.raw || '').join('');
+    const cleanedText = cleanFontClasses(allText, options).replace(/\s+/g, ' ').trim();
+
+    expr.quasis = [t.templateElement({ raw: cleanedText, cooked: cleanedText }, true)];
+    expr.expressions = [];
+    return true;
 }

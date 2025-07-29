@@ -75,7 +75,7 @@ export class LayoutManager {
         try {
             const context = await this.getLayoutContext();
             if (!context) return false;
-            const { layoutPath, targetElements, layoutContent } = context;
+            const { layoutPath, targetElements } = context;
 
             let updatedAst = false;
             let ast: ParseResult<T.File> | null = null;
@@ -104,7 +104,6 @@ export class LayoutManager {
                 const newContent = removeFontImportFromFile(
                     this.fontImportPath,
                     fontName,
-                    layoutContent,
                     ast,
                 );
                 if (!newContent) {
@@ -123,13 +122,13 @@ export class LayoutManager {
      * Updates the default font in a layout file by modifying className attributes
      */
     async updateDefaultFontInRootLayout(font: Font): Promise<CodeDiff | null> {
+        const context = await this.getLayoutContext();
+        if (!context) return null;
+
+        const { layoutPath, targetElements, layoutContent } = context;
         let updatedAst = false;
         const fontClassName = `font-${font.id}`;
         let result = null;
-
-        const context = await this.getLayoutContext();
-        if (!context) return null;
-        const { layoutPath, targetElements, layoutContent } = context;
 
         await this.traverseClassName(
             layoutPath,
