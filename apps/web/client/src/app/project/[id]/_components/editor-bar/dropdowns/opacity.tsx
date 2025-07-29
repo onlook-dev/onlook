@@ -84,7 +84,7 @@ export const Opacity = observer(() => {
                         />
                         <span
                             onClick={(e) => e.stopPropagation()}
-                            className="pr-2 cursor-text text-muted-foreground text-xs pointer-events-none select-none bg-transparent group-hover:text-foreground-primary transition-colors duration-150">
+                            className="pr-2 text-muted-foreground text-xs bg-transparent">
                             %
                         </span>
                     </ToolbarButton>
