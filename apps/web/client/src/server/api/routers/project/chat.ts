@@ -10,13 +10,12 @@ import {
     type Message,
 } from '@onlook/db';
 import type { ChatMessageRole, ChatSuggestion } from '@onlook/models';
-import { CLAUDE_MODELS, LLMProvider } from '@onlook/models';
+import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { ChatSuggestionsSchema } from '@onlook/models/chat';
 import type { CoreMessage } from 'ai';
 import { generateObject } from 'ai';
 import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
-import { createCaller } from '../../root';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 const conversationRouter = createTRPCRouter({
@@ -84,7 +83,6 @@ const messageRouter = createTRPCRouter({
                     throw new Error(`Conversation not found`);
                 }
             }
-
             const normalizedMessage = {
                 ...input.message,
                 role: input.message.role as ChatMessageRole,
@@ -114,50 +112,37 @@ const suggestionsRouter = createTRPCRouter({
             messages: z.array(z.any()),
         }))
         .mutation(async ({ ctx, input }) => {
-            const caller = createCaller(ctx);
-            const usage = await caller.usage.get();
-
-            const dailyExceeded = usage.daily.usageCount >= usage.daily.limitCount;
-            const monthlyExceeded = usage.monthly.usageCount >= usage.monthly.limitCount;
-
-            if (dailyExceeded || monthlyExceeded) {
-                return [];
-            }
-
+            const { model } = await initModel({
+                provider: LLMProvider.OPENROUTER,
+                model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+            });
+            const { object } = await generateObject({
+                model,
+                schema: ChatSuggestionsSchema,
+                messages: [
+                    {
+                        role: 'system',
+                        content: SUGGESTION_SYSTEM_PROMPT,
+                    },
+                    ...input.messages as CoreMessage[],
+                    {
+                        role: 'user',
+                        content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.',
+                    },
+                ],
+                maxTokens: 10000,
+            });
+            const suggestions = object.suggestions satisfies ChatSuggestion[];
             try {
-                const { model } = await initModel({
-                    provider: LLMProvider.ANTHROPIC,
-                    model: CLAUDE_MODELS.HAIKU,
-                });
-
-                const { object } = await generateObject({
-                    model,
-                    schema: ChatSuggestionsSchema,
-                    messages: [
-                        {
-                            role: 'system',
-                            content: SUGGESTION_SYSTEM_PROMPT,
-                        },
-                        ...input.messages as CoreMessage[],
-                        {
-                            role: 'user',
-                            content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.',
-                        },
-                    ],
-                    maxTokens: 10000,
-                });
-
-                const suggestions = object satisfies ChatSuggestion[];
-
-                await ctx.db.update(conversations).set({
-                    suggestions,
-                }).where(eq(conversations.id, input.conversationId));
-
-                return suggestions;
+                await ctx.db
+                    .update(conversations)
+                    .set({
+                        suggestions,
+                    }).where(eq(conversations.id, input.conversationId));
             } catch (error) {
-                console.error('Error generating suggestions:', error);
-                return [];
+                console.error('Error updating conversation suggestions:', error);
             }
+            return suggestions;
         }),
 });
 

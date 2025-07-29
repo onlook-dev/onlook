@@ -15,8 +15,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { InputContextPills } from '../context-pills/input-context-pills';
-import { type SuggestionsRef } from '../suggestions';
-import { Suggestions } from '../suggestions';
+import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
 
@@ -43,10 +42,7 @@ export const ChatInput = observer(({
     };
 
     useEffect(() => {
-        const messages = editorEngine.chat.conversation.current?.messages;
-        if (messages && messages.length > 0) {
-            editorEngine.chat.suggestions.getNextSuggestionsMessages();
-        }
+        editorEngine.chat.suggestions.generateSuggestions();
     }, []);
 
     useEffect(() => {
@@ -138,13 +134,13 @@ export const ChatInput = observer(({
         }
         const savedInput = inputValue.trim();
         setInputValue('');
-        
+
         editorEngine.chat.suggestions.setSendingMessage(true);
-        
-        const streamMessages = chatMode === ChatType.ASK 
+
+        const streamMessages = chatMode === ChatType.ASK
             ? await editorEngine.chat.getAskMessages(savedInput)
             : await editorEngine.chat.getEditMessages(savedInput);
-            
+
         if (!streamMessages) {
             toast.error('Failed to send message. Please try again.');
             setInputValue(savedInput);
@@ -213,7 +209,7 @@ export const ChatInput = observer(({
     const handleScreenshot = async () => {
         try {
             const framesWithViews = editorEngine.frames.getAll().filter(f => !!f.view);
-            
+
             if (framesWithViews.length === 0) {
                 toast.error('No active frame available for screenshot');
                 return;
@@ -221,7 +217,7 @@ export const ChatInput = observer(({
 
             let screenshotData = null;
             let mimeType = 'image/jpeg';
-            
+
             for (const frame of framesWithViews) {
                 try {
                     if (!frame.view?.captureScreenshot) {
@@ -366,15 +362,15 @@ export const ChatInput = observer(({
             </div>
             <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
                 <div className="flex flex-row items-center gap-1.5">
-                    <ChatModeToggle 
+                    <ChatModeToggle
                         chatMode={chatMode}
                         onChatModeChange={setChatMode}
                         disabled={disabled}
                     />
                 </div>
                 <div className="flex flex-row items-center gap-1.5">
-                    <ActionButtons 
-                        disabled={disabled} 
+                    <ActionButtons
+                        disabled={disabled}
                         handleImageEvent={handleImageEvent}
                         handleScreenshot={handleScreenshot}
                     />
