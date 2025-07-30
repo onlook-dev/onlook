@@ -109,7 +109,7 @@ export class FrameEventManager {
 
     async handleDomProcessed(frameId: string, data: { layerMap: Record<string, LayerNode>; rootNode: LayerNode }): Promise<void> {
         try {
-            const layerMapConverted = new Map(Object.entries(data.layerMap)) as Map<string, LayerNode>;
+            const layerMapConverted = new Map(Object.entries(data.layerMap));
 
             const frameData = this.editorEngine.frames.get(frameId);
             if (!frameData) {
@@ -121,6 +121,21 @@ export class FrameEventManager {
             await this.editorEngine.overlay.refresh();
         } catch (error) {
             console.error('Error handling DOM processed:', error);
+        }
+    }
+
+    async handleNavigation(frameId: string, data: { url: string }): Promise<void> {
+        try {
+            this.editorEngine.frames.addToHistory(data.url, frameId);
+            await this.editorEngine.frames.updateAndSaveToStorage(frameId, {
+                url: data.url,
+            });
+
+            console.log(`Navigation detected in frame ${frameId}:`, {
+                url: data.url,
+            });
+        } catch (error) {
+            console.error('Error handling navigation:', error);
         }
     }
 

@@ -94,6 +94,9 @@ export const WebFrameComponent = observer(
                     onDomProcessed: (data: { layerMap: Record<string, any>; rootNode: any }) => {
                         editorEngine.frameEvent.handleDomProcessed(frame.id, data);
                     },
+                    onNavigation: (data: { url: string }) => {
+                        editorEngine.frameEvent.handleNavigation(frame.id, data);
+                    },
                 } satisfies PenpalParentMethods,
             });
 
@@ -143,7 +146,9 @@ export const WebFrameComponent = observer(
         };
 
         const remoteMethods = useMemo(() => {
-            if (!penpalChild) return {};
+            if (!penpalChild) {
+                return {} as PromisifiedPendpalChildMethods;
+            }
 
             return {
                 processDom: promisifyMethod(penpalChild?.processDom),
@@ -186,7 +191,7 @@ export const WebFrameComponent = observer(
                 handleBodyReady: promisifyMethod(penpalChild?.handleBodyReady),
                 captureScreenshot: promisifyMethod(penpalChild?.captureScreenshot),
                 buildLayerTree: promisifyMethod(penpalChild?.buildLayerTree),
-            };
+            } as PromisifiedPendpalChildMethods;
         }, [penpalChild]);
 
         useImperativeHandle(ref, () => {
@@ -212,7 +217,7 @@ export const WebFrameComponent = observer(
                 console.warn(
                     `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: iframeRemote is null`,
                 );
-                return Object.assign(iframe, syncMethods) as WebFrameView;
+                return Object.assign(iframe, syncMethods, remoteMethods) as WebFrameView;
             }
 
             // Register the iframe with the editor engine
@@ -221,7 +226,7 @@ export const WebFrameComponent = observer(
             return Object.assign(iframe, {
                 ...syncMethods,
                 ...remoteMethods,
-            }) satisfies WebFrameView;
+            }) as WebFrameView;
         }, [penpalChild, frame, iframeRef]);
 
         useEffect(() => {
