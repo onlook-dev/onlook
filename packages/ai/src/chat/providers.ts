@@ -33,12 +33,10 @@ export async function initModel({ provider, model }: InitialModelPayload): Promi
         case LLMProvider.GOOGLE_VERTEX:
             return {
                 model: await getVertexProvider(model),
-                providerOptions: {},
             };
         case LLMProvider.OPENAI:
             return {
                 model: await getOpenAIProvider(model),
-                providerOptions: { openai: { cacheControl: { type: 'ephemeral' } } },
             };
         case LLMProvider.GOOGLE_AI_STUDIO:
             return {

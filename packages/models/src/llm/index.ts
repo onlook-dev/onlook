@@ -64,6 +64,6 @@ export type InitialModelPayload = {
 
 export type ModelConfig = {
     model: LanguageModelV1;
-    providerOptions: Record<string, any>;
+    providerOptions?: Record<string, any>;
     headers?: Record<string, string>;
 };
