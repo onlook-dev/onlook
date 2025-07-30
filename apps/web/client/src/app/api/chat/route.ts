@@ -1,10 +1,21 @@
+import { env } from '@/env';
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { trackEvent } from '@/utils/analytics/server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { ChatType, CLAUDE_MODELS, LLMProvider, type Usage, UsageType } from '@onlook/models';
+import { ChatType, CLAUDE_MODELS, type InitialModelPayload, LLMProvider, OPENROUTER_MODELS, type Usage, UsageType } from '@onlook/models';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
+
+const isProd = env.NODE_ENV === 'production';
+
+const MainModelConfig: InitialModelPayload = isProd ? {
+    provider: LLMProvider.OPENROUTER,
+    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+} : {
+    provider: LLMProvider.ANTHROPIC,
+    model: CLAUDE_MODELS.SONNET_4,
+};
 
 export async function POST(req: NextRequest) {
     try {
@@ -91,10 +102,7 @@ export const getSupabaseUser = async (request: NextRequest) => {
 
 export const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType } = await req.json();
-    const { model, providerOptions } = await initModel({
-        provider: LLMProvider.ANTHROPIC,
-        model: CLAUDE_MODELS.SONNET_4,
-    });
+    const { model, providerOptions, headers } = await initModel(MainModelConfig);
 
     let systemPrompt: string;
     switch (chatType) {
@@ -112,6 +120,7 @@ export const streamResponse = async (req: NextRequest) => {
     const toolSet = chatType === ChatType.ASK ? askToolSet : buildToolSet;
     const result = streamText({
         model,
+        headers,
         messages: [
             {
                 role: 'system',

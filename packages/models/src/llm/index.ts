@@ -1,3 +1,5 @@
+import type { LanguageModelV1 } from 'ai';
+
 export enum LLMProvider {
     ANTHROPIC = 'anthropic',
     BEDROCK = 'bedrock',
@@ -59,3 +61,9 @@ export type InitialModelPayload = {
         model: ModelMapping[K];
     };
 }[keyof ModelMapping];
+
+export type ModelConfig = {
+    model: LanguageModelV1;
+    providerOptions?: Record<string, any>;
+    headers?: Record<string, string>;
+};
