@@ -49,17 +49,15 @@ export async function initModel({
                 'HTTP-Referer': 'https://onlook.com',
                 'X-Title': 'Onlook',
             };
+            const isClaude =
+                requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET ||
+                requestedModel === OPENROUTER_MODELS.CLAUDE_3_5_HAIKU;
+            providerOptions = isClaude
+                ? { anthropic: { cacheControl: { type: 'ephemeral' } } }
+                : undefined;
             break;
         default:
             assertNever(requestedProvider);
-    }
-
-    const isClaude =
-        requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET ||
-        requestedModel === OPENROUTER_MODELS.CLAUDE_3_5_HAIKU;
-
-    if (isClaude) {
-        providerOptions = { anthropic: { cacheControl: { type: 'ephemeral' } } };
     }
 
     return {
