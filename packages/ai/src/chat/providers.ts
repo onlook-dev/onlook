@@ -41,12 +41,16 @@ export async function initModel({ provider, model }: InitialModelPayload): Promi
         case LLMProvider.GOOGLE_AI_STUDIO:
             return {
                 model: await getGoogleProvider(model),
-                providerOptions: { google: { cacheControl: { type: 'ephemeral' } } },
             };
         case LLMProvider.OPENROUTER:
+            const isClaude =
+                model === OPENROUTER_MODELS.CLAUDE_4_SONNET ||
+                model === OPENROUTER_MODELS.CLAUDE_3_5_HAIKU;
             return {
                 model: await getOpenRouterProvider(model),
-                providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
+                providerOptions: isClaude
+                    ? { anthropic: { cacheControl: { type: 'ephemeral' } } }
+                    : undefined,
                 headers: {
                     'HTTP-Referer': 'https://onlook.com',
                     'X-Title': 'Onlook',
