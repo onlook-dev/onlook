@@ -99,7 +99,7 @@ export const ChatInput = observer(({
             e.stopPropagation();
 
             // Only let natural tab order continue if handleTabNavigation returns false
-            const handled = suggestionRef.current?.handleTabNavigation();
+            const handled = suggestionRef.current?.handleTabNavigation(e.shiftKey);
             if (!handled) {
                 // Focus the textarea
                 textareaRef.current?.focus();
@@ -129,7 +129,6 @@ export const ChatInput = observer(({
             return;
         }
         const savedInput = inputValue.trim();
-        setInputValue('');
 
         const streamMessages = chatMode === ChatType.ASK
             ? await editorEngine.chat.getAskMessages(savedInput)
@@ -141,7 +140,8 @@ export const ChatInput = observer(({
             return;
         }
 
-        sendMessages(streamMessages, chatMode);
+        await sendMessages(streamMessages, chatMode);
+        setInputValue('');
     }
 
     const getPlaceholderText = () => {

@@ -7,7 +7,7 @@ import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useChatContext } from '../../../_hooks/use-chat';
 
 export interface SuggestionsRef {
-    handleTabNavigation: () => boolean;
+    handleTabNavigation: (reverse: boolean) => boolean;
     handleEnterSelection: () => boolean;
 }
 
@@ -34,19 +34,17 @@ export const Suggestions = observer(
             !settings?.chat?.showSuggestions ||
             disabled ||
             inputValue.trim().length > 0 ||
+            editorEngine.chat.error.hasError() ||
             editorEngine.error.errors.length > 0;
 
-        const shouldShowLoading =
-            !shouldHideSuggestions &&
-            inputValue.trim().length === 0;
-
-        const handleTabNavigation = () => {
+        const handleTabNavigation = (reverse: boolean) => {
             if (shouldHideSuggestions || suggestions.length === 0) {
                 return false;
             }
 
             // Calculate next index
-            const nextIndex = focusedIndex === -1 ? 0 : focusedIndex + 1;
+            const defaultIndex = reverse ? suggestions.length - 1 : 0;
+            const nextIndex = focusedIndex === -1 ? defaultIndex : focusedIndex + 1;
 
             // If we would exceed the suggestions, return false to move to chat input
             if (nextIndex >= suggestions.length) {
@@ -86,14 +84,14 @@ export const Suggestions = observer(
             <motion.div
                 tabIndex={-1}
                 className="flex flex-col overflow-hidden"
-                animate={{ height: shouldHideSuggestions && !shouldShowLoading ? 0 : 'auto' }}
+                animate={{ height: shouldHideSuggestions ? 0 : 'auto' }}
                 initial={false}
                 transition={{ duration: 0.3, ease: 'easeOut' }}
             >
                 <motion.div
                     tabIndex={-1}
                     className="flex flex-col gap-2 p-2"
-                    animate={{ opacity: shouldHideSuggestions && !shouldShowLoading ? 0 : 1 }}
+                    animate={{ opacity: shouldHideSuggestions ? 0 : 1 }}
                     initial={false}
                     transition={{ duration: 0.2 }}
                 >
