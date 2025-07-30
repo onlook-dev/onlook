@@ -18,47 +18,55 @@ import { assertNever } from '@onlook/utility';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { type LanguageModelV1 } from 'ai';
 
-export async function initModel({ provider, model }: InitialModelPayload): Promise<ModelConfig> {
-    switch (provider) {
+export async function initModel({
+    provider: requestedProvider,
+    model: requestedModel,
+}: InitialModelPayload): Promise<ModelConfig> {
+    let model: LanguageModelV1;
+    let providerOptions: Record<string, any> | undefined;
+    let headers: Record<string, string> | undefined;
+
+    switch (requestedProvider) {
         case LLMProvider.ANTHROPIC:
-            return {
-                model: await getAnthropicProvider(model),
-                providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
-            };
+            model = await getAnthropicProvider(requestedModel);
+            break;
         case LLMProvider.BEDROCK:
-            return {
-                model: await getBedrockProvider(model),
-                providerOptions: { bedrock: { cachePoint: { type: 'default' } } },
-            };
+            model = await getBedrockProvider(requestedModel);
+            providerOptions = { bedrock: { cachePoint: { type: 'default' } } };
+            break;
         case LLMProvider.GOOGLE_VERTEX:
-            return {
-                model: await getVertexProvider(model),
-            };
+            model = await getVertexProvider(requestedModel);
+            break;
         case LLMProvider.OPENAI:
-            return {
-                model: await getOpenAIProvider(model),
-            };
+            model = await getOpenAIProvider(requestedModel);
+            break;
         case LLMProvider.GOOGLE_AI_STUDIO:
-            return {
-                model: await getGoogleProvider(model),
-            };
+            model = await getGoogleProvider(requestedModel);
+            break;
         case LLMProvider.OPENROUTER:
-            const isClaude =
-                model === OPENROUTER_MODELS.CLAUDE_4_SONNET ||
-                model === OPENROUTER_MODELS.CLAUDE_3_5_HAIKU;
-            return {
-                model: await getOpenRouterProvider(model),
-                providerOptions: isClaude
-                    ? { anthropic: { cacheControl: { type: 'ephemeral' } } }
-                    : undefined,
-                headers: {
-                    'HTTP-Referer': 'https://onlook.com',
-                    'X-Title': 'Onlook',
-                },
+            model = await getOpenRouterProvider(requestedModel);
+            headers = {
+                'HTTP-Referer': 'https://onlook.com',
+                'X-Title': 'Onlook',
             };
+            break;
         default:
-            assertNever(provider);
+            assertNever(requestedProvider);
     }
+
+    const isClaude =
+        requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET ||
+        requestedModel === OPENROUTER_MODELS.CLAUDE_3_5_HAIKU;
+
+    if (isClaude) {
+        providerOptions = { anthropic: { cacheControl: { type: 'ephemeral' } } };
+    }
+
+    return {
+        model,
+        providerOptions,
+        headers,
+    };
 }
 
 async function getAnthropicProvider(model: CLAUDE_MODELS): Promise<LanguageModelV1> {
