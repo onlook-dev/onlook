@@ -1,6 +1,6 @@
 import { DEFAULT_COLOR_NAME } from '@onlook/constants';
 import { SystemTheme } from '@onlook/models/assets';
-import { generate, parse, traverse, type t as T } from '@onlook/parser';
+import { generate, getAstFromContent, parse, traverse, type t as T } from '@onlook/parser';
 import { parseHslValue } from '@onlook/utility';
 import type { Root, Rule } from 'postcss';
 import postcss from 'postcss';
@@ -321,10 +321,10 @@ export function extractTailwindCssVariables(content: string) {
 
 export function extractColorsFromTailwindConfig(fileContent: string): Record<string, any> {
     try {
-        const ast = parse(fileContent, {
-            sourceType: 'module',
-            plugins: ['typescript'],
-        });
+        const ast = getAstFromContent(fileContent);
+        if (!ast) {
+            throw new Error(`Failed to parse file in extractColorsFromTailwindConfig`);
+        }
 
         let colors: Record<string, any> = {};
 

@@ -1,12 +1,19 @@
+import { createAndInsertImport } from '@onlook/fonts';
 import type { Font } from '@onlook/models';
-import { parse, traverse, generate, type t as T, types as t, type NodePath } from '@onlook/parser';
+import {
+    generate,
+    getAstFromContent,
+    types as t,
+    traverse,
+    type NodePath,
+    type t as T,
+} from '@onlook/parser';
 import { createFontFamilyProperty } from './ast-generators';
 import {
     hasPropertyName,
     isTailwindThemeProperty,
     isValidLocalFontDeclaration,
 } from './validators';
-import { createAndInsertImport } from '@onlook/fonts';
 
 /**
  * Finds the fontFamily property within the Tailwind theme structure.
@@ -161,11 +168,10 @@ export function removeFontDeclaration(
     fontFilesToDelete: string[];
     ast: T.File;
 } {
-    const ast = parse(content, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
-
+    const ast = getAstFromContent(content);
+    if (!ast) {
+        throw new Error(`Failed to parse file in removeFontDeclaration`);
+    }
     const fontIdToRemove = font.id;
     const importToRemove = font.family.replace(/\s+/g, '_');
     let removedFont = false;
@@ -248,10 +254,10 @@ export function removeFontDeclaration(
  
  */
 export function removeFontFromTailwindTheme(fontId: string, content: string): string {
-    const ast = parse(content, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
+    const ast = getAstFromContent(content);
+    if (!ast) {
+        throw new Error(`Failed to parse file in removeFontFromTailwindTheme`);
+    }
 
     traverse(ast, {
         ObjectProperty(path) {
@@ -309,10 +315,10 @@ export function removeFontFromTailwindTheme(fontId: string, content: string): st
  
  */
 export function addFontToTailwindTheme(font: Font, content: string): string {
-    const ast = parse(content, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
+    const ast = getAstFromContent(content);
+    if (!ast) {
+        throw new Error(`Failed to parse file in addFontToTailwindTheme`);
+    }
 
     let themeFound = false;
 
