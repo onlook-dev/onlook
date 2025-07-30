@@ -1,5 +1,4 @@
 import { api } from '@/trpc/client';
-import { removeContextMessages } from '@onlook/ai/src/prompt/provider';
 import type { ChatSuggestion } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -25,10 +24,9 @@ export class SuggestionManager {
             throw new Error('No conversation id');
         }
 
-        const conversationId = this.editorEngine.chat.conversation.current.id;
         // Limit to last 5 messages
         const messages = this.editorEngine.chat.conversation.current.messages.slice(-5);
-        removeContextMessages(messages);
+        const conversationId = this.editorEngine.chat.conversation.current.id;
 
         this.isLoadingSuggestions = true;
 

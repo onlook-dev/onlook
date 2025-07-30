@@ -12,9 +12,9 @@ import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
 import { CODE_FENCE } from './format';
 import { wrapXml } from './helpers';
 import { SHELL_PROMPT } from './shell';
+import { SUGGESTION_SYSTEM_PROMPT } from './suggest';
 import { SUMMARY_PROMPTS } from './summary';
 import { SYSTEM_PROMPT } from './system';
-import { SUGGESTION_SYSTEM_PROMPT } from './suggest';
 
 export interface HydrateUserMessageOptions {
     totalMessages: number;
@@ -58,14 +58,6 @@ export function getExampleConversation(
         prompt += `${message.role.toUpperCase()}: ${message.content}\n`;
     }
     return prompt;
-}
-
-export function removeContextMessages(messages: Message[]) {
-    for (const m of messages) {
-        if ('context' in m) {
-            m.context = [];
-        }
-    }
 }
 
 export function getHydratedUserMessage(
