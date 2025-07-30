@@ -1,4 +1,3 @@
-import type { ParseResult } from '@babel/parser';
 import {
     addFontImportToFile,
     createStringLiteralWithFont,
@@ -10,7 +9,7 @@ import {
     updateTemplateLiteralWithFontClass,
 } from '@onlook/fonts';
 import type { CodeDiff, Font } from '@onlook/models';
-import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
+import { generate, getAstFromContent, types as t, traverse, type t as T } from '@onlook/parser';
 import { camelCase } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -18,7 +17,7 @@ import { normalizePath } from '../sandbox/helpers';
 
 type TraverseCallback = (
     classNameAttr: T.JSXAttribute,
-    ast: ParseResult<T.File>,
+    ast: T.File,
 ) => void | Promise<void>;
 
 export class LayoutManager {
@@ -78,7 +77,7 @@ export class LayoutManager {
             const { layoutPath, targetElements } = context;
 
             let updatedAst = false;
-            let ast: ParseResult<T.File> | null = null;
+            let ast: T.File | null = null;
             const fontName = camelCase(fontId);
 
             // Traverse the className attributes in the layout file
@@ -172,7 +171,7 @@ export class LayoutManager {
             const { layoutPath, targetElements } = context;
             let defaultFont: string | null = null;
             const normalizedFilePath = normalizePath(layoutPath);
-    
+
             await this.traverseClassName(normalizedFilePath, targetElements, (classNameAttr) => {
                 if (t.isStringLiteral(classNameAttr.value)) {
                     defaultFont = findFontClass(classNameAttr.value.value);
@@ -187,7 +186,7 @@ export class LayoutManager {
                     }
                 }
             });
-    
+
             return defaultFont;
         } catch (error) {
             console.error('Error getting current font:', error);
@@ -214,10 +213,10 @@ export class LayoutManager {
                 return;
             }
             const content = file.content;
-            const ast = parse(content, {
-                sourceType: 'module',
-                plugins: ['typescript', 'jsx'],
-            });
+            const ast = getAstFromContent(content);
+            if (!ast) {
+                throw new Error(`Failed to parse file ${filePath}`);
+            }
 
             traverse(ast, {
                 JSXOpeningElement: (path) => {

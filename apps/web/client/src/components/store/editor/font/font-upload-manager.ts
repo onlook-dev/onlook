@@ -1,4 +1,3 @@
-import type { ParseResult } from '@babel/parser';
 import { DefaultSettings } from '@onlook/constants';
 import {
     createFontSrcObjects,
@@ -32,8 +31,8 @@ export class FontUploadManager {
     async uploadFonts(
         fontFiles: FontUploadFile[],
         basePath: string,
-        fontConfigAst: ParseResult<T.File>,
-    ): Promise<{ success: boolean; fontConfigAst: ParseResult<T.File> }> {
+        fontConfigAst: T.File,
+    ): Promise<{ success: boolean; fontConfigAst: T.File }> {
         this._isUploading = true;
         try {
             if (fontFiles.length === 0) {
@@ -109,7 +108,7 @@ export class FontUploadManager {
      * Updates AST with font configuration
      */
     private async updateAstWithFontConfig(
-        ast: ParseResult<T.File>,
+        ast: T.File,
         fontName: string,
         fontsSrc: T.ObjectExpression[],
         fontNameExists: boolean,

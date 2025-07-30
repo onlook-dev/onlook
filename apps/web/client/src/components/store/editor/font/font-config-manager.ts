@@ -1,4 +1,3 @@
-import type { ParseResult } from '@babel/parser';
 import { DefaultSettings } from '@onlook/constants';
 import {
     addGoogleFontSpecifier,
@@ -9,7 +8,7 @@ import {
     validateGoogleFontSetup,
 } from '@onlook/fonts';
 import { RouterType, type CodeDiff, type Font } from '@onlook/models';
-import { generate, parse, types as t, type t as T } from '@onlook/parser';
+import { generate, getAstFromContent, types as t, type t as T } from '@onlook/parser';
 import { camelCase } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -219,7 +218,7 @@ export class FontConfigManager {
      */
     async readFontConfigFile(): Promise<
         | {
-            ast: ParseResult<T.File>;
+            ast: T.File;
             content: string;
         }
         | undefined
@@ -238,10 +237,10 @@ export class FontConfigManager {
         const content = file.content;
 
         // Parse the file content using Babel
-        const ast = parse(content, {
-            sourceType: 'module',
-            plugins: ['typescript', 'jsx'],
-        });
+        const ast = getAstFromContent(content);
+        if (!ast) {
+            throw new Error('Failed to parse font config file');
+        }
 
         return {
             ast,
