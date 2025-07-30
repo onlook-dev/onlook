@@ -112,17 +112,19 @@ const suggestionsRouter = createTRPCRouter({
             messages: z.array(z.any()),
         }))
         .mutation(async ({ ctx, input }) => {
-            const { model } = await initModel({
+            const { model, headers, providerOptions } = await initModel({
                 provider: LLMProvider.OPENROUTER,
                 model: OPENROUTER_MODELS.OPEN_AI_GPT_4_1_NANO,
             });
             const { object } = await generateObject({
                 model,
+                headers,
                 schema: ChatSuggestionsSchema,
                 messages: [
                     {
                         role: 'system',
                         content: SUGGESTION_SYSTEM_PROMPT,
+                        providerOptions,
                     },
                     ...input.messages as CoreMessage[],
                     {

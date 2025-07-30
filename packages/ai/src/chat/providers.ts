@@ -12,15 +12,13 @@ import {
     OPENROUTER_MODELS,
     VERTEX_MODEL_MAP,
     type InitialModelPayload,
+    type ModelConfig,
 } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { type LanguageModelV1 } from 'ai';
 
-export async function initModel({
-    provider,
-    model,
-}: InitialModelPayload): Promise<{ model: LanguageModelV1; providerOptions: Record<string, any> }> {
+export async function initModel({ provider, model }: InitialModelPayload): Promise<ModelConfig> {
     switch (provider) {
         case LLMProvider.ANTHROPIC:
             return {
@@ -51,6 +49,10 @@ export async function initModel({
             return {
                 model: await getOpenRouterProvider(model),
                 providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
+                headers: {
+                    'HTTP-Referer': 'https://onlook.com',
+                    'X-Title': 'Onlook',
+                },
             };
         default:
             assertNever(provider);
