@@ -12,8 +12,7 @@
         "clean": "rm -rf node_modules",
         "lint": "eslint --fix",
         "format": "prettier --write .",
-        "typecheck": "tsc --noEmit",
-        "test": "bun test"
+        "typecheck": "tsc --noEmit"
     },
     "keywords": [
         "onlook",
