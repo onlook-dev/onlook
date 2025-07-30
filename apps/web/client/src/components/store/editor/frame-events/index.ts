@@ -109,7 +109,7 @@ export class FrameEventManager {
 
     async handleDomProcessed(frameId: string, data: { layerMap: Record<string, LayerNode>; rootNode: LayerNode }): Promise<void> {
         try {
-            const layerMapConverted = new Map(Object.entries(data.layerMap)) as Map<string, LayerNode>;
+            const layerMapConverted = new Map(Object.entries(data.layerMap));
 
             const frameData = this.editorEngine.frames.get(frameId);
             if (!frameData) {
@@ -123,6 +123,19 @@ export class FrameEventManager {
             console.error('Error handling DOM processed:', error);
         }
     }
+
+    async handleNavigation(frameId: string, data: { url: string }): Promise<void> {
+        try {
+            // TODO: Will update after https://github.com/onlook-dev/onlook/pull/2515
+            //this.editorEngine.frames.addToHistory(data.url, frameId);
+            await this.editorEngine.frames.updateAndSaveToStorage(frameId, {
+                url: data.url,
+            });
+        } catch (error) {
+            console.error('Error handling navigation:', error);
+        }
+    }
+
 
     private async validateAndCleanSelections(): Promise<void> {
         const selectedElements = this.editorEngine.elements.selected;
