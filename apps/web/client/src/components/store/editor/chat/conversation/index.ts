@@ -29,18 +29,25 @@ export class ConversationManager {
         return this._conversations;
     }
 
+    set current(conversation: ChatConversationImpl | null) {
+        this._current = conversation;
+        if (conversation?.suggestions) {
+            this.editorEngine.chat.suggestions.suggestions = conversation.suggestions;
+        }
+    }
+
     applyConversations(conversations: ChatConversation[]) {
         this._conversations = conversations.map((c) => ChatConversationImpl.fromJSON(c));
         if (this._conversations.length !== 0 && this._conversations[0]) {
-            this._current = ChatConversationImpl.fromJSON(this._conversations[0]);
+            this.current = ChatConversationImpl.fromJSON(this._conversations[0]);
         } else {
             this.startNewConversation();
         }
     }
 
     setCurrentConversation(conversation: ChatConversation) {
-        this._current = ChatConversationImpl.fromJSON(conversation);
-        this._conversations.push(this._current);
+        this.current = ChatConversationImpl.fromJSON(conversation);
+        this._conversations.push(this.current);
     }
 
     async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
@@ -64,8 +71,8 @@ export class ConversationManager {
                 throw new Error('Current conversation is already empty.');
             }
             const newConversation = await api.chat.conversation.create.mutate({ projectId: this.editorEngine.projectId });
-            this._current = ChatConversationImpl.fromJSON(newConversation);
-            this._conversations.push(this._current);
+            this.current = ChatConversationImpl.fromJSON(newConversation);
+            this._conversations.push(this.current);
         } catch (error) {
             console.error('Error starting new conversation', error);
             toast.error('Error starting new conversation.', {
@@ -82,7 +89,7 @@ export class ConversationManager {
             console.error('No conversation found with id', id);
             return;
         }
-        this._current = ChatConversationImpl.fromJSON(match);
+        this.current = ChatConversationImpl.fromJSON(match);
     }
 
     deleteConversation(id: string) {
@@ -100,7 +107,7 @@ export class ConversationManager {
         this.deleteConversationInStorage(id);
         if (this.current.id === id) {
             if (this.conversations.length > 0 && !!this.conversations[0]) {
-                this._current = ChatConversationImpl.fromJSON(this.conversations[0]);
+                this.current = ChatConversationImpl.fromJSON(this.conversations[0]);
             } else {
                 this.startNewConversation();
             }

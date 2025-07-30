@@ -12,6 +12,7 @@ import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
 import { CODE_FENCE } from './format';
 import { wrapXml } from './helpers';
 import { SHELL_PROMPT } from './shell';
+import { SUGGESTION_SYSTEM_PROMPT } from './suggest';
 import { SUMMARY_PROMPTS } from './summary';
 import { SYSTEM_PROMPT } from './system';
 
@@ -31,6 +32,12 @@ export function getSystemPrompt() {
 export function getCreatePageSystemPrompt() {
     let prompt = getSystemPrompt() + '\n\n';
     prompt += wrapXml('create-system-prompt', CREATE_NEW_PAGE_SYSTEM_PROMPT);
+    return prompt;
+}
+
+export function getSuggestionSystemPrompt() {
+    let prompt = '';
+    prompt += wrapXml('role', SUGGESTION_SYSTEM_PROMPT);
     return prompt;
 }
 
