@@ -23,7 +23,7 @@ export function Hero() {
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
                     Cursor for<br />
-                    <span className={`italic font-normal ${vujahdayScript.className} text-[4.75rem] ml-1 leading-[1.0]`}>Designers</span>
+                    <span className={`italic font-normal ${vujahdayScript.className} text-[4.6rem] ml-1 leading-[1.0]`}>Designers</span>
                 </motion.h1>
                 <motion.p
                     className="text-lg text-foreground-secondary max-w-xl text-center mt-2"
