@@ -176,7 +176,7 @@ For a full walkthrough, check out our
 #### AI
 
 - [AI SDK](https://ai-sdk.dev/) - LLM client
-- [Anthropic](https://ai-sdk.dev/) - LLM model provider
+- [OpenRouter](https://openrouter.ai/) - LLM model provider
 - [Morph Fast Apply](https://morphllm.com) - Fast apply model provider
 - [Relace](https://relace.ai) - Fast apply model provider
 

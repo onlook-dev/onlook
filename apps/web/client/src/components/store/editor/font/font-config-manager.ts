@@ -286,8 +286,6 @@ export class FontConfigManager {
                 }
             }
             this.setFontConfigPath(fontConfigPath);
-            console.log('this.fontConfigPath', this.fontConfigPath);
-            console.log('routerConfig', fontConfigPath);
         }
     }
 }

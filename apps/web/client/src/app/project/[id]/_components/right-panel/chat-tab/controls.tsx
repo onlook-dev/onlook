@@ -3,7 +3,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { observer } from 'mobx-react-lite';
 
 export const ChatControls = observer(() => {
@@ -32,7 +31,6 @@ export const ChatControls = observer(() => {
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
                     <p>New Chat</p>
-                    <TooltipArrow className="fill-foreground" />
                 </TooltipContent>
             </Tooltip>
         </div>
