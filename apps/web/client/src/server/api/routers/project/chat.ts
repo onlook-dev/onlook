@@ -1,3 +1,5 @@
+import { initModel } from '@onlook/ai';
+import { SUGGESTION_SYSTEM_PROMPT } from '@onlook/ai/src/prompt/suggest';
 import {
     conversationInsertSchema,
     conversations,
@@ -7,7 +9,11 @@ import {
     toMessage,
     type Message,
 } from '@onlook/db';
-import type { ChatMessageRole } from '@onlook/models';
+import type { ChatMessageRole, ChatSuggestion } from '@onlook/models';
+import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
+import { ChatSuggestionsSchema } from '@onlook/models/chat';
+import type { CoreMessage } from 'ai';
+import { generateObject } from 'ai';
 import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -77,7 +83,6 @@ const messageRouter = createTRPCRouter({
                     throw new Error(`Conversation not found`);
                 }
             }
-
             const normalizedMessage = {
                 ...input.message,
                 role: input.message.role as ChatMessageRole,
@@ -100,7 +105,50 @@ const messageRouter = createTRPCRouter({
         }),
 })
 
+const suggestionsRouter = createTRPCRouter({
+    generate: protectedProcedure
+        .input(z.object({
+            conversationId: z.string(),
+            messages: z.array(z.any()),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const { model, headers } = await initModel({
+                provider: LLMProvider.OPENROUTER,
+                model: OPENROUTER_MODELS.OPEN_AI_GPT_4_1_NANO,
+            });
+            const { object } = await generateObject({
+                model,
+                headers,
+                schema: ChatSuggestionsSchema,
+                messages: [
+                    {
+                        role: 'system',
+                        content: SUGGESTION_SYSTEM_PROMPT,
+                    },
+                    ...input.messages as CoreMessage[],
+                    {
+                        role: 'user',
+                        content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.',
+                    },
+                ],
+                maxTokens: 10000,
+            });
+            const suggestions = object.suggestions satisfies ChatSuggestion[];
+            try {
+                await ctx.db
+                    .update(conversations)
+                    .set({
+                        suggestions,
+                    }).where(eq(conversations.id, input.conversationId));
+            } catch (error) {
+                console.error('Error updating conversation suggestions:', error);
+            }
+            return suggestions;
+        }),
+});
+
 export const chatRouter = createTRPCRouter({
     conversation: conversationRouter,
     message: messageRouter,
+    suggestions: suggestionsRouter,
 });

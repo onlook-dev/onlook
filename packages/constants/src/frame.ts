@@ -24,6 +24,7 @@ export const DEVICE_OPTIONS: DeviceOptions = {
     Laptop: {
         'MacBook Air': '1280x832',
         MacBook: '1152x700',
+        'MacBook Air 15': '1536x960',
         'MacBook Pro 14': '1512x982',
         'MacBook Pro 16': '1728x1117',
         'MacBook Pro': '1440x900',

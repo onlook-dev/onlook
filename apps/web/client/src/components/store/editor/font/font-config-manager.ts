@@ -1,5 +1,4 @@
 import type { ParseResult } from '@babel/parser';
-import * as t from '@babel/types';
 import { DefaultSettings } from '@onlook/constants';
 import {
     addGoogleFontSpecifier,
@@ -10,7 +9,7 @@ import {
     validateGoogleFontSetup,
 } from '@onlook/fonts';
 import { RouterType, type CodeDiff, type Font } from '@onlook/models';
-import { generate, parse } from '@onlook/parser';
+import { generate, parse, types as t, type t as T } from '@onlook/parser';
 import { camelCase } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -126,7 +125,7 @@ export class FontConfigManager {
             }
 
             // Add the font declaration to the font config file
-            const exportDeclaration: t.ExportNamedDeclaration = generateFontVariableExport(font);
+            const exportDeclaration: T.ExportNamedDeclaration = generateFontVariableExport(font);
             ast.program.body.push(exportDeclaration);
 
             // Add or update the import if needed
@@ -220,7 +219,7 @@ export class FontConfigManager {
      */
     async readFontConfigFile(): Promise<
         | {
-            ast: ParseResult<t.File>;
+            ast: ParseResult<T.File>;
             content: string;
         }
         | undefined
@@ -287,8 +286,6 @@ export class FontConfigManager {
                 }
             }
             this.setFontConfigPath(fontConfigPath);
-            console.log('this.fontConfigPath', this.fontConfigPath);
-            console.log('routerConfig', fontConfigPath);
         }
     }
 }

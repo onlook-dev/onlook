@@ -67,8 +67,7 @@ export const DeviceSelector = observer(() => {
         if (
             category &&
             deviceName &&
-            DEVICE_OPTIONS[category] &&
-            DEVICE_OPTIONS[category][deviceName] &&
+            DEVICE_OPTIONS[category]?.[deviceName] &&
             deviceName !== 'Custom'
         ) {
             const [w, h] = DEVICE_OPTIONS[category][deviceName].split('x').map(Number);
@@ -83,11 +82,11 @@ export const DeviceSelector = observer(() => {
 
     return (
         <Select value={device} onValueChange={handleDeviceChange}>
-            <HoverOnlyTooltip content="Device" side="bottom" sideOffset={10}>  
-                    <SelectTrigger className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none">
-                        <DeviceIcon deviceType={deviceType} orientation={metadata.orientation} />
-                        <span className="font-medium">{deviceType}</span>
-                    </SelectTrigger>
+            <HoverOnlyTooltip content="Device" side="bottom" sideOffset={10}>
+                <SelectTrigger className="flex items-center gap-2 text-muted-foreground dark:bg-transparent border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none">
+                    <DeviceIcon deviceType={deviceType} orientation={metadata.orientation} />
+                    <span className="font-medium">{deviceType}</span>
+                </SelectTrigger>
             </HoverOnlyTooltip>
             <SelectContent>
                 {Object.entries(DEVICE_OPTIONS).map(([category, devices]) => (

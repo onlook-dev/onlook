@@ -19,7 +19,7 @@ import {
     type Canvas,
     type UserCanvas
 } from '@onlook/db';
-import { CLAUDE_MODELS, LLMProvider, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import { LLMProvider, OPENROUTER_MODELS, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
 import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -148,14 +148,15 @@ export const projectRouter = createTRPCRouter({
         }))
         .mutation(async ({ input }): Promise<string> => {
             try {
-                const { model, providerOptions } = await initModel({
-                    provider: LLMProvider.ANTHROPIC,
-                    model: CLAUDE_MODELS.HAIKU,
+                const { model, providerOptions, headers } = await initModel({
+                    provider: LLMProvider.OPENROUTER,
+                    model: OPENROUTER_MODELS.OPEN_AI_GPT_4_1_NANO,
                 });
 
                 const MAX_NAME_LENGTH = 50;
                 const result = await generateText({
                     model,
+                    headers,
                     prompt: `Generate a concise and meaningful project name (2-4 words maximum) that reflects the main purpose or theme of the project based on user's creation prompt. Generate only the project name, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.prompt}</prompt>`,
                     providerOptions,
                     maxTokens: 50,

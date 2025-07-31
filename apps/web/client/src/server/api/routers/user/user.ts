@@ -1,3 +1,4 @@
+import { trackEvent } from '@/utils/analytics/server';
 import { callUserWebhook } from '@/utils/n8n/webhook';
 import { toUser, userInsertSchema, users, type User } from '@onlook/db';
 import { extractNames } from '@onlook/utility';
@@ -69,6 +70,18 @@ export const userRouter = createTRPCRouter({
             }).returning();
 
             if (!existingUser) {
+                await trackEvent({
+                    distinctId: input.id,
+                    event: 'user_first_signup',
+                    properties: {
+                        email: userData.email,
+                        firstName: userData.firstName,
+                        lastName: userData.lastName,
+                        displayName: userData.displayName,
+                        source: 'web beta',
+                    },
+                });
+
                 await callUserWebhook({
                     email: userData.email,
                     firstName: userData.firstName,
