@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
     useEffect(() => {
-        localforage.getItem(LAST_SIGN_IN_METHOD_KEY).then((lastSignInMethod: unknown) => {
+        localforage.getItem(LAST_SIGN_IN_METHOD_KEY).then((lastSignInMethod) => {
             setLastSignInMethod(lastSignInMethod as SignInMethod | null);
         });
     }, []);

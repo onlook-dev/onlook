@@ -12,49 +12,59 @@ import {
     OPENROUTER_MODELS,
     VERTEX_MODEL_MAP,
     type InitialModelPayload,
+    type ModelConfig,
 } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { type LanguageModelV1 } from 'ai';
 
 export async function initModel({
-    provider,
-    model,
-}: InitialModelPayload): Promise<{ model: LanguageModelV1; providerOptions: Record<string, any> }> {
-    switch (provider) {
+    provider: requestedProvider,
+    model: requestedModel,
+}: InitialModelPayload): Promise<ModelConfig> {
+    let model: LanguageModelV1;
+    let providerOptions: Record<string, any> | undefined;
+    let headers: Record<string, string> | undefined;
+
+    switch (requestedProvider) {
         case LLMProvider.ANTHROPIC:
-            return {
-                model: await getAnthropicProvider(model),
-                providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
-            };
+            model = await getAnthropicProvider(requestedModel);
+            break;
         case LLMProvider.BEDROCK:
-            return {
-                model: await getBedrockProvider(model),
-                providerOptions: { bedrock: { cachePoint: { type: 'default' } } },
-            };
+            model = await getBedrockProvider(requestedModel);
+            providerOptions = { bedrock: { cachePoint: { type: 'default' } } };
+            break;
         case LLMProvider.GOOGLE_VERTEX:
-            return {
-                model: await getVertexProvider(model),
-                providerOptions: {},
-            };
+            model = await getVertexProvider(requestedModel);
+            break;
         case LLMProvider.OPENAI:
-            return {
-                model: await getOpenAIProvider(model),
-                providerOptions: { openai: { cacheControl: { type: 'ephemeral' } } },
-            };
+            model = await getOpenAIProvider(requestedModel);
+            break;
         case LLMProvider.GOOGLE_AI_STUDIO:
-            return {
-                model: await getGoogleProvider(model),
-                providerOptions: { google: { cacheControl: { type: 'ephemeral' } } },
-            };
+            model = await getGoogleProvider(requestedModel);
+            break;
         case LLMProvider.OPENROUTER:
-            return {
-                model: await getOpenRouterProvider(model),
-                providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } },
+            model = await getOpenRouterProvider(requestedModel);
+            headers = {
+                'HTTP-Referer': 'https://onlook.com',
+                'X-Title': 'Onlook',
             };
+            const isClaude =
+                requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET ||
+                requestedModel === OPENROUTER_MODELS.CLAUDE_3_5_HAIKU;
+            providerOptions = isClaude
+                ? { anthropic: { cacheControl: { type: 'ephemeral' } } }
+                : undefined;
+            break;
         default:
-            assertNever(provider);
+            assertNever(requestedProvider);
     }
+
+    return {
+        model,
+        providerOptions,
+        headers,
+    };
 }
 
 async function getAnthropicProvider(model: CLAUDE_MODELS): Promise<LanguageModelV1> {

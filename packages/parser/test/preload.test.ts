@@ -333,7 +333,7 @@ describe('scanForPreloadScript', () => {
         const scriptWithoutSrc = t.jsxElement(
             t.jsxOpeningElement(
                 t.jsxIdentifier('Script'),
-                [t.jsxAttribute(t.jsxIdentifier('strategy'), t.stringLiteral('beforeInteractive'))],
+                [t.jsxAttribute(t.jsxIdentifier('strategy'), t.stringLiteral('afterInteractive'))],
                 false,
             ),
             t.jsxClosingElement(t.jsxIdentifier('Script')),

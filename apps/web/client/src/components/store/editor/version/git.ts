@@ -205,31 +205,8 @@ export class GitManager {
     /**
      * Run a git command through the sandbox session
      */
-    private async runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
-        try {
-            if (!this.editorEngine?.sandbox?.session) {
-                return {
-                    success: false,
-                    output: '',
-                    error: 'No session available',
-                };
-            }
-
-            let result = await this.editorEngine.sandbox.session.runCommand(command + (ignoreError ? ' 2>/dev/null || true' : ''));
-
-            if (!result.success) {
-                throw new Error(result.error ?? 'Failed to run command');
-            }
-
-            return result;
-        } catch (error) {
-            console.error(`Error running command: ${command}`, error);
-            return {
-                success: false,
-                output: '',
-                error: error instanceof Error ? error.message : 'Unknown error',
-            };
-        }
+    private runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
+        return this.editorEngine.sandbox.session.runCommand(command + (ignoreError ? ' 2>/dev/null || true' : ''));
     }
 
     /**
