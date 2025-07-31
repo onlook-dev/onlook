@@ -8,5 +8,6 @@ export const createDefaultConversation = (projectId: string): DbConversation => 
         createdAt: new Date(),
         updatedAt: new Date(),
         displayName: 'New Conversation',
+        suggestions: [],
     };
 };

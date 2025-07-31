@@ -7,6 +7,7 @@ import { source } from '@/lib/source';
 import { DocsLayout } from 'fumadocs-ui/layouts/docs';
 import { RootProvider } from 'fumadocs-ui/provider';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import type { ReactNode } from 'react';
 
 const inter = Inter({
@@ -43,10 +44,15 @@ const docsOptions = {
     ...baseOptions,
 };
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 export default function Layout({ children }: { children: ReactNode }) {
     return (
         <html lang="en" className={inter.variable} suppressHydrationWarning>
             <body className="flex flex-col min-h-screen">
+                {isProduction && (
+                    <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="lazyOnload" />
+                )}
                 <RootProvider>
                     <DocsLayout tree={source.pageTree} {...docsOptions}>
                         {children}

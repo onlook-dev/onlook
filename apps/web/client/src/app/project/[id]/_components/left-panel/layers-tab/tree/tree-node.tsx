@@ -4,7 +4,6 @@ import type { DomElement, LayerNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { memo, useCallback, useMemo, useRef } from 'react';
@@ -370,7 +369,6 @@ export const TreeNode = memo(
                                 sideOffset={sideOffset()}
                                 className="animation-none max-w-[200px] shadow"
                             >
-                                <TooltipArrow className="fill-foreground" />
                                 <p>{node.data.textContent}</p>
                             </TooltipContent>
                         </TooltipPortal>

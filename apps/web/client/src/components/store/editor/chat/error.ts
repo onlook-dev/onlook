@@ -9,6 +9,10 @@ export class ChatErrorManager {
         makeAutoObservable(this);
     }
 
+    hasError() {
+        return this.message !== null || this.usage !== null;
+    }
+
     handleChatError(error: Error) {
         // Try to parse error message as JSON
         try {

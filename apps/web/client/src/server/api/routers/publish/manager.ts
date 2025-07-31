@@ -1,5 +1,5 @@
-import { WebSocketSession } from '@codesandbox/sdk';
-import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, SUPPORTED_LOCK_FILES } from '@onlook/constants';
+import { type WebSocketSession } from '@codesandbox/sdk';
+import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, LOCAL_PRELOAD_SCRIPT_SRC, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
@@ -269,7 +269,8 @@ export class PublishManager {
             filePath.includes('/.next/') ||
             filePath.includes('/dist/') ||
             filePath.includes('/build/') ||
-            filePath.includes('/coverage/');
+            filePath.includes('/coverage/') ||
+            filePath.endsWith(LOCAL_PRELOAD_SCRIPT_SRC);
     }
 
     private categorizeFiles(filePaths: string[]): { binaryFiles: string[], textFiles: string[] } {
@@ -277,7 +278,7 @@ export class PublishManager {
         const textFiles: string[] = [];
 
         for (const filePath of filePaths) {
-            const fileName = filePath.split('/').pop() || '';
+            const fileName = filePath.split('/').pop() ?? '';
             if (isBinaryFile(fileName)) {
                 binaryFiles.push(filePath);
             } else {

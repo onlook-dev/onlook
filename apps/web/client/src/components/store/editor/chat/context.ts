@@ -47,17 +47,21 @@ export class ChatContext {
                     console.error('No file content found for file', c.path);
                     return c;
                 }
-                return { ...c, content: fileContent };
+                if (fileContent.type === 'binary') {
+                    console.error('File is binary', c.path);
+                    return c;
+                }
+                return { ...c, content: fileContent.content } satisfies FileMessageContext;
             } else if (c.type === MessageContextType.HIGHLIGHT) {
                 const codeBlock = await this.editorEngine.sandbox.getCodeBlock(c.path);
                 if (codeBlock === null) {
                     console.error('No code block found for node', c.path);
                     return c;
                 }
-                return { ...c, content: codeBlock };
+                return { ...c, content: codeBlock } satisfies HighlightMessageContext;
             }
             return c;
-        })) as ChatMessageContext[];
+        })) satisfies ChatMessageContext[];
     }
 
     private async getImageContext(): Promise<ImageMessageContext[]> {
