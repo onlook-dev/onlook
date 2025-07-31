@@ -46,6 +46,10 @@ export const subscriptionRelations = relations(subscriptions, ({ one, many }) =>
         fields: [subscriptions.priceId],
         references: [prices.id],
     }),
+    user: one(users, {
+        fields: [subscriptions.userId],
+        references: [users.id],
+    }),
 }));
 
 export type NewSubscription = typeof subscriptions.$inferInsert;
