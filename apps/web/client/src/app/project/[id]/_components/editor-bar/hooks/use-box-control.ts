@@ -189,6 +189,15 @@ export const useBoxControl = (type: BoxType) => {
         } else {
             editorEngine.style.update(property, cssValue);
         }
+
+        setBoxState(prevState => ({
+            ...prevState,
+            [property]: {
+                ...currentState,
+                num: parsedValue ? Number(parsedValue) : undefined,
+                value: cssValue || '--'
+            }
+        }));
     }, [boxState, editorEngine.style, type]);
 
     const handleUnitChange = useCallback((property: CSSBoxProperty, unit: string) => {
