@@ -31,7 +31,7 @@ export const subscriptionRouter = createTRPCRouter({
         });
 
         if (!subscription) {
-            console.error('No active subscription found for user', user.id);
+            console.log('No active subscription found for user', user.id);
             return null;
         }
 

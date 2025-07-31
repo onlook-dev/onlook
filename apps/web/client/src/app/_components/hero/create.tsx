@@ -163,7 +163,11 @@ export function Create({ cardKey }: { cardKey: number }) {
                 (await new Promise<string>((resolve, reject) => {
                     const reader = new FileReader();
                     reader.onloadend = () => {
-                        resolve(reader.result as string);
+                        if (typeof reader.result === 'string') {
+                            resolve(reader.result);
+                        } else {
+                            reject(new Error('Failed to read file'));
+                        }
                     };
                     reader.onerror = reject;
                     reader.readAsDataURL(file);

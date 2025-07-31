@@ -25,6 +25,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             lastMessageRef.current = message;
             if (finishReason !== 'tool-calls') {
                 editorEngine.chat.conversation.addAssistantMessage(message);
+                editorEngine.chat.suggestions.generateSuggestions();
                 lastMessageRef.current = null;
             }
 

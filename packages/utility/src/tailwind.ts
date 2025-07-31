@@ -675,9 +675,10 @@ export const propertyMap: Map<
                               currentColor: 'border-current',
                               currentcolor: 'border-current',
                           }[val] ??
-                          (propertyMap.get('border-style') as Record<string, string>)[v] ??
+                          (propertyMap.get('border-style') satisfies Record<string, string>)[v] ??
                           `border-[${v}]`)
-                        : ((propertyMap.get('border-style') as Record<string, string>)[v] ?? ''),
+                        : ((propertyMap.get('border-style') satisfies Record<string, string>)[v] ??
+                          ''),
                 )
                 .filter((v) => v !== '')
                 .join(' ');
@@ -718,7 +719,7 @@ export const propertyMap: Map<
     [
         'border-bottom-style',
         (val) =>
-            (propertyMap.get('border-style') as Record<string, string>)[val]
+            (propertyMap.get('border-style') satisfies Record<string, string>)[val]
                 ? `[border-bottom-style:${val}]`
                 : '',
     ],
@@ -771,7 +772,7 @@ export const propertyMap: Map<
     [
         'border-left-style',
         (val) =>
-            (propertyMap.get('border-style') as Record<string, string>)[val]
+            (propertyMap.get('border-style') satisfies Record<string, string>)[val]
                 ? `[border-left-style:${val}]`
                 : '',
     ],
@@ -826,7 +827,7 @@ export const propertyMap: Map<
     [
         'border-right-style',
         (val) =>
-            (propertyMap.get('border-style') as Record<string, string>)[val]
+            (propertyMap.get('border-style') satisfies Record<string, string>)[val]
                 ? `[border-right-style:${val}]`
                 : '',
     ],
@@ -876,7 +877,7 @@ export const propertyMap: Map<
     [
         'border-top-style',
         (val) =>
-            (propertyMap.get('border-style') as Record<string, string>)[val]
+            (propertyMap.get('border-style') satisfies Record<string, string>)[val]
                 ? `[border-top-style:${val}]`
                 : '',
     ],
@@ -3521,9 +3522,9 @@ export const CssToTailwindTranslator = (
         .filter((v) => v !== null)
         .forEach((v) => {
             if (Array.isArray(v)) {
-                dataArray.push(...(v as ResultCode[]));
+                dataArray.push(...(v satisfies ResultCode[]));
             } else {
-                dataArray.push(v as ResultCode);
+                dataArray.push(v satisfies ResultCode);
             }
         });
     return {
