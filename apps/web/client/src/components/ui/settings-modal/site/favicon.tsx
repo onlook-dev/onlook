@@ -19,22 +19,22 @@ export const Favicon = forwardRef<
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
-        const loadImage = async () => {
-            if (url) {
-                const relativeUrl = urlToRelativePath(url);
-                const fullPath = `${DefaultSettings.IMAGE_FOLDER}${relativeUrl}`;
-                const image = editorEngine.image.search(fullPath);
-                if (image) {
-                    const imageContent = await editorEngine.image.readImageContent(image);
-                    if (imageContent) {
-                        setSelectedImage(imageContent.content);
-                    }
-                }
-            }
-        };
-
-        loadImage();
+        if (url) {
+            loadImage(url);
+        }
     }, [url]);
+
+    const loadImage = async (url: string) => {
+        const relativeUrl = urlToRelativePath(url);
+        const fullPath = `${DefaultSettings.IMAGE_FOLDER}${relativeUrl}`;
+        const image = editorEngine.image.search(fullPath);
+        if (image) {
+            const imageContent = await editorEngine.image.readImageContent(image);
+            if (imageContent) {
+                setSelectedImage(imageContent.content);
+            }
+        }
+    };
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
