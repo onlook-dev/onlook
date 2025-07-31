@@ -40,6 +40,24 @@ export const UsageSection = observer(({ open }: { open: boolean }) => {
         state.isSubscriptionModalOpen = true;
     };
 
+
+    const getSubscriptionChangeMessage = () => {
+        let message = '';
+        if (subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.PRICE_CHANGE && subscription.scheduledChange.price) {
+            message = `Your ${subscription.scheduledChange.price.monthlyMessageLimit} messages a month plan starts on ${subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+        } else if (subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION) {
+            message = `Your subscription will end on ${subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+        }
+
+        if (message) {
+            return (
+                <div className="text-amber text-mini text-balance">
+                    {message}
+                </div>
+            );
+        }
+    }
+
     return (
         <div className="p-4 w-full text-sm flex flex-col gap-4">
             <div className="flex justify-between items-center">
@@ -52,16 +70,7 @@ export const UsageSection = observer(({ open }: { open: boolean }) => {
                     <div className="text-muted-foreground">{usage.period === 'day' ? 'daily' : 'monthly'} chats used</div>
                 </div>
             </div>
-            {subscription?.scheduledChange?.price && (
-                <div className="text-amber text-mini text-balance">
-                    Your {subscription.scheduledChange.price.monthlyMessageLimit} messages a month plan starts on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                </div>
-            )}
-            {subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION && (
-                <div className="text-amber text-mini text-balance">
-                    Your subscription will end on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                </div>
-            )}
+            {getSubscriptionChangeMessage()}
             <Progress value={usagePercent} className="w-full" />
             <Button className="w-full flex items-center justify-center gap-2 bg-blue-400 text-white hover:bg-blue-500" onClick={handleGetMoreCredits}>
                 <Icons.Sparkles className="mr-1 h-4 w-4" /> Get more Credits

@@ -70,6 +70,20 @@ const conversation0 = {
     displayName: 'Test Conversation',
     createdAt: new Date(),
     updatedAt: new Date(),
+    suggestions: [
+        {
+            title: 'Test Suggestion',
+            prompt: 'Test Prompt',
+        },
+        {
+            title: 'Test Suggestion 2',
+            prompt: 'Test Prompt 2',
+        },
+        {
+            title: 'Test Suggestion 3',
+            prompt: 'Test Prompt 3',
+        },
+    ],
 } satisfies Conversation;
 
 const context0 = {
