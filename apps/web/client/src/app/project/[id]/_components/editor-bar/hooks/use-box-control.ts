@@ -180,7 +180,18 @@ export const useBoxControl = (type: BoxType) => {
 
         const cssValue = parsedValue ? `${parsedValue}${currentState.unit}` : '';
         
-        // Update local state immediately for instant UI feedback
+        // Update CSS first to ensure DOM reflects the change
+        if (type === 'radius' && property === 'borderRadius') {
+            editorEngine.style.update('borderRadius', cssValue);
+        } else if (type === 'border' && property === 'borderWidth') {
+            editorEngine.style.update('borderWidth', cssValue);
+        } else if ((type === 'margin' || type === 'padding') && property === type) {
+            editorEngine.style.update(property, cssValue);
+        } else {
+            editorEngine.style.update(property, cssValue);
+        }
+
+        // Update local state after CSS to ensure synchronization
         setBoxState(prevState => ({
             ...prevState,
             [property]: {
@@ -189,19 +200,6 @@ export const useBoxControl = (type: BoxType) => {
                 value: cssValue || '--'
             }
         }));
-
-        // Update CSS with slight delay to batch updates
-        setTimeout(() => {
-            if (type === 'radius' && property === 'borderRadius') {
-                editorEngine.style.update('borderRadius', cssValue);
-            } else if (type === 'border' && property === 'borderWidth') {
-                editorEngine.style.update('borderWidth', cssValue);
-            } else if ((type === 'margin' || type === 'padding') && property === type) {
-                editorEngine.style.update(property, cssValue);
-            } else {
-                editorEngine.style.update(property, cssValue);
-            }
-        }, 50);
     }, [boxState, editorEngine.style, type]);
 
     const handleUnitChange = useCallback((property: CSSBoxProperty, unit: string) => {

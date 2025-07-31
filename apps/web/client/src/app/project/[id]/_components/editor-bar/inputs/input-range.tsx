@@ -47,14 +47,7 @@ export const InputRange = ({
     const debouncedOnChange = useMemo(
         () => debounce((newValue: number) => {
             onChange?.(newValue);
-        }, 300),
-        [onChange]
-    );
-
-    const immediateOnChange = useMemo(
-        () => (newValue: number) => {
-            onChange?.(newValue);
-        },
+        }, 150),
         [onChange]
     );
 
@@ -126,7 +119,7 @@ export const InputRange = ({
             const rawValue = percentage * maxValue;
             const newValue = customIncrements ? findClosestIncrement(rawValue) : Math.round(rawValue);
             setLocalValue(String(newValue));
-            immediateOnChange(newValue);
+            debouncedOnChange(newValue);
         }
     };
 
@@ -152,7 +145,7 @@ export const InputRange = ({
                         const rawValue = Number(e.target.value);
                         const newValue = customIncrements ? findClosestIncrement(rawValue) : rawValue;
                         setLocalValue(String(newValue));
-                        immediateOnChange(newValue);
+                        debouncedOnChange(newValue);
                     }}
                     onMouseDown={handleMouseDown}
                     className="flex-1 h-3 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer relative
