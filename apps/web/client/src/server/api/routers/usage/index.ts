@@ -1,9 +1,9 @@
 import { rateLimits, subscriptions, usageRecords } from '@onlook/db';
 import { UsageType, type Usage } from '@onlook/models';
 import { FREE_PRODUCT_CONFIG, SubscriptionStatus } from '@onlook/stripe';
-import { add } from 'date-fns/add';
 import { startOfDay } from 'date-fns/startOfDay';
 import { startOfMonth } from 'date-fns/startOfMonth';
+import { sub } from 'date-fns/sub';
 import { and, desc, eq, gt, gte, lt, lte, ne, sql, sum } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -22,12 +22,15 @@ export const usageRouter = createTRPCRouter({
 
         // if no subscription then user is on a free plan
         if (!subscription) {
-            const dayStart = startOfDay(now);
-            const dayEnd = add(dayStart, { days: 1 });
-            const monthStart = startOfMonth(now);
-            const monthEnd = add(monthStart, { months: 1 });
+            // Previous day
+            const dayStart = startOfDay(sub(now, { days: 1 })); // Start of YESTERDAY
+            const dayEnd = startOfDay(now);                     // Start of today (end of yesterday)
 
-            // Count records from current day
+            // Previous month  
+            const monthStart = startOfMonth(sub(now, { months: 1 })); // Start of LAST MONTH
+            const monthEnd = startOfMonth(now);                       // Start of this month (end of last month)
+
+            // Count records from previous day
             const lastDayCount = await ctx.db
                 .select({ count: sql<number>`count(*)` })
                 .from(usageRecords)
@@ -39,7 +42,7 @@ export const usageRouter = createTRPCRouter({
                     )
                 );
 
-            // Count records from current month
+            // Count records from previous month
             const lastMonthCount = await ctx.db
                 .select({ count: sql<number>`count(*)` })
                 .from(usageRecords)
