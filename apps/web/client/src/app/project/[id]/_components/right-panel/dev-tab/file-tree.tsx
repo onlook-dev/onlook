@@ -190,7 +190,7 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
             width: filesWidth ?? 250,
             height: filesHeight ?? 300,
         }),
-        [filesWidth, filesHeight],
+        [filesWidth, filesHeight, editorEngine.state.rightPanelTab],
     );
 
     const handleRefresh = async () => {
