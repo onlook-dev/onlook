@@ -6,8 +6,7 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { debounce } from 'lodash';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 interface InputRangeProps {
     value: number;
@@ -47,12 +46,9 @@ export const InputRange = ({
         onChange?.(newValue);
     }, [onChange]);
 
-    // Only update localValue when value prop changes and we're not currently editing
     useEffect(() => {
-        if (!document.activeElement?.classList.contains('input-range-text')) {
-            setLocalValue(String(value));
-        }
-    }, [value]);
+        setLocalValue(String(value));
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
