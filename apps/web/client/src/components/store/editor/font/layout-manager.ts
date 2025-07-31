@@ -39,20 +39,24 @@ export class LayoutManager {
 
             const fontName = camelCase(fontId);
             let updatedAst = false;
+            let ast: T.File | null = null;
             let targetElementFound = false;
 
-            await this.traverseClassName(layoutPath, targetElements, async (classNameAttr, ast) => {
+            await this.traverseClassName(layoutPath, targetElements, async (classNameAttr, currentAst) => {
+                ast = currentAst;
                 targetElementFound = true;
                 updatedAst = updateClassNameWithFontVar(classNameAttr, fontName);
+            });
 
-                if (updatedAst) {
+            if (updatedAst) {
+                if (ast) {
                     const newContent = addFontImportToFile(this.fontImportPath, fontName, ast);
                     if (!newContent) {
-                        return;
+                        return false;
                     }
                     await this.editorEngine.sandbox.writeFile(layoutPath, newContent);
                 }
-            });
+            }
 
             if (!targetElementFound) {
                 console.log(

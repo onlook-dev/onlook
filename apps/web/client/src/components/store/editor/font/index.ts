@@ -5,11 +5,16 @@ import type { Font } from '@onlook/models/assets';
 import { generate } from '@onlook/parser';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
+import type { FileEvent } from '../sandbox/file-event-bus';
 import { FontConfigManager } from './font-config-manager';
 import { FontSearchManager } from './font-search-manager';
 import { FontUploadManager } from './font-upload-manager';
 import { LayoutManager } from './layout-manager';
-import { addFontToTailwindConfig, ensureTailwindConfigExists, removeFontFromTailwindConfig } from './tailwind-config';
+import {
+    addFontToTailwindConfig,
+    ensureTailwindConfigExists,
+    removeFontFromTailwindConfig,
+} from './tailwind-config';
 
 export class FontManager {
     private _fonts: Font[] = [];
@@ -36,15 +41,46 @@ export class FontManager {
 
         // React to sandbox connection status
         reaction(
-            () => this.editorEngine.sandbox.isIndexed,
-            async (isIndexedFiles) => {
-                if (isIndexedFiles) {
-                    await this.loadInitialFonts();
-                    await this.getCurrentDefaultFont();
-                    await this.syncFontsWithConfigs();
+            () => {
+                return {
+                    isIndexing: this.editorEngine.sandbox.isIndexing,
+                    isIndexed: this.editorEngine.sandbox.isIndexed,
+                };
+            },
+            (sandboxStatus) => {
+                if (sandboxStatus.isIndexed && !sandboxStatus.isIndexing) {
+                    this.loadInitialFonts();
+                    this.getCurrentDefaultFont();
+                    this.syncFontsWithConfigs();
+                    this.setupFontConfigFileWatcher();
                 }
             },
         );
+    }
+
+    private setupFontConfigFileWatcher(): void {
+        if (this.fontConfigFileWatcher) {
+            this.fontConfigFileWatcher();
+        }
+
+        this.fontConfigFileWatcher = this.editorEngine.sandbox.fileEventBus.subscribe(
+            '*',
+            this.handleFileEvent.bind(this),
+        );
+    }
+
+    private async handleFileEvent(event: FileEvent): Promise<void> {
+        try {
+            const { paths } = event;
+
+            if (!paths.some((path) => path.includes(this.fontConfigManager.fontConfigPath))) {
+                return;
+            }
+
+            await this.syncFontsWithConfigs();
+        } catch (error) {
+            console.error('Error handling file event in FontManager:', error);
+        }
     }
 
     get fontConfigPath(): string {
