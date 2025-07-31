@@ -10,16 +10,15 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { cn } from '@onlook/ui/utils';
+import { inferPageFromUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useState } from 'react';
 import { PageModal } from '../../left-panel/page-tab/page-modal';
-import { inferPageFromUrl } from '@onlook/utility';
 
 interface PageSelectorProps {
     frame: WebFrame;
     className?: string;
 }
-
 
 export const PageSelector = observer(({ frame, className }: PageSelectorProps) => {
     const editorEngine = useEditorEngine();
@@ -31,11 +30,11 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
     // Render pages recursively with indentation
     const renderPageItems = (pages: PageNode[], depth = 0): React.ReactElement[] => {
         const items: React.ReactElement[] = [];
-        
+
         for (const page of pages) {
             const isCurrentPage = currentPage?.id === page.id;
             const hasChildren = page.children && page.children.length > 0;
-            
+
             items.push(
                 <DropdownMenuItem
                     key={page.id}
@@ -58,13 +57,13 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
                     </div>
                 </DropdownMenuItem>
             );
-            
+
             // Render children recursively
             if (page.children && page.children.length > 0) {
                 items.push(...renderPageItems(page.children, depth + 1));
             }
         }
-        
+
         return items;
     };
 
@@ -82,7 +81,7 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
     const allPages = useMemo(() => {
         return flattenPages(editorEngine.pages.tree);
     }, [editorEngine.pages.tree]);
-    
+
     useEffect(() => {
         if (editorEngine.sandbox.routerConfig) {
             editorEngine.pages.scanPages();
