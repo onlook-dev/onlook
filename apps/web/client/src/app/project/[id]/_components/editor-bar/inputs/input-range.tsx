@@ -43,20 +43,9 @@ export const InputRange = ({
     const rangeRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
 
-    // Create debounced onChange handler for CSS updates
-    const debouncedOnChange = useMemo(
-        () => debounce((newValue: number) => {
-            onChange?.(newValue);
-        }, 150),
-        [onChange]
-    );
-
-    // Cleanup debounce on unmount
-    useEffect(() => {
-        return () => {
-            debouncedOnChange.cancel();
-        };
-    }, [debouncedOnChange]);
+    const handleValueChange = useCallback((newValue: number) => {
+        onChange?.(newValue);
+    }, [onChange]);
 
     // Only update localValue when value prop changes and we're not currently editing
     useEffect(() => {
@@ -73,7 +62,7 @@ export const InputRange = ({
     const handleBlur = () => {
         const numValue = Number(localValue);
         if (!isNaN(numValue)) {
-            debouncedOnChange(numValue);
+            handleValueChange(numValue);
         } else {
             setLocalValue(String(value));
         }
@@ -88,7 +77,7 @@ export const InputRange = ({
             if (!isNaN(currentValue)) {
                 const newValue = currentValue + (step * direction);
                 setLocalValue(String(newValue));
-                debouncedOnChange(newValue);
+                handleValueChange(newValue);
             }
         } else if (e.key === 'Enter') {
             handleBlur();
@@ -119,7 +108,7 @@ export const InputRange = ({
             const rawValue = percentage * maxValue;
             const newValue = customIncrements ? findClosestIncrement(rawValue) : Math.round(rawValue);
             setLocalValue(String(newValue));
-            debouncedOnChange(newValue);
+            handleValueChange(newValue);
         }
     };
 
@@ -145,7 +134,7 @@ export const InputRange = ({
                         const rawValue = Number(e.target.value);
                         const newValue = customIncrements ? findClosestIncrement(rawValue) : rawValue;
                         setLocalValue(String(newValue));
-                        debouncedOnChange(newValue);
+                        handleValueChange(newValue);
                     }}
                     onMouseDown={handleMouseDown}
                     className="flex-1 h-3 bg-background-tertiary/50 rounded-full appearance-none cursor-pointer relative
