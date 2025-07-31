@@ -1,5 +1,3 @@
-// Backfill stripe subscriptions with current period start and end
-
 import { type Price } from '@/schema/subscription/price';
 import type { Product } from '@/schema/subscription/product';
 import { rateLimits } from '@/schema/subscription/rate-limits';
@@ -60,12 +58,6 @@ export const getStripeItems = async (subscriptions: DbSubscription[]) => {
 }
 
 const insertRateLimit = async (tx: PgTransaction<any, any, any>, item: StripeItem) => {
-
-    if (!item.subscription.endedAt) {
-        console.log(`Subscription ${item.subscription.id} has no end date`);
-        return;
-    }
-
     // One month from the start date. NOT SURE IF THIS IS CORRECT.
     const endDate = new Date(item.subscription.startedAt.getTime() + 30 * 24 * 60 * 60 * 1000);
     console.log(`End date: ${endDate}`);
@@ -117,7 +109,7 @@ export const backfillSubscriptions = async () => {
                 stripeCustomerId: item.stripeCustomerId,
             }).where(eq(users.id, item.subscription.userId));
 
-            // Insert rate limit
+            // Insert rate limit based on usage records and subscription price
             await insertRateLimit(tx, item);
         });
     }
