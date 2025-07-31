@@ -272,6 +272,184 @@ export const generateGradientCSS = (gradient: GradientState): string => {
     }
 };
 
+export const parseGradientFromCSS = (cssValue: string): GradientState | null => {
+    try {
+        const normalized = cssValue.trim();
+
+        const extractGradientParams = (css: string, gradientType: string): string | null => {
+            const startIndex = css.indexOf(`${gradientType}(`);
+            if (startIndex === -1) return null;
+
+            const openParenIndex = startIndex + gradientType.length + 1;
+            let parenCount = 0;
+            let endIndex = openParenIndex;
+
+            // Find the matching closing parenthesis
+            for (let i = openParenIndex; i < css.length; i++) {
+                if (css[i] === '(') {
+                    parenCount++;
+                } else if (css[i] === ')') {
+                    if (parenCount === 0) {
+                        endIndex = i;
+                        break;
+                    }
+                    parenCount--;
+                }
+            }
+
+            return css.substring(openParenIndex, endIndex);
+        };
+
+        const parseDirectionalAngle = (direction: string): number => {
+            const directions: Record<string, number> = {
+                'to right': 0,
+                'to left': 180,
+                'to top': 270,
+                'to bottom': 90,
+                'to top right': 315,
+                'to top left': 225,
+                'to bottom right': 45,
+                'to bottom left': 135,
+            };
+            return directions[direction.toLowerCase()] ?? 90;
+        };
+
+        const parseColorStops = (stopsString: string): { color: string; position: number }[] => {
+            const stops: { color: string; position: number }[] = [];
+
+            const stopMatches = stopsString.split(/,(?![^()]*\))/);
+
+            stopMatches.forEach((stop, index) => {
+                const trimmed = stop.trim();
+                if (!trimmed) return;
+
+                const colorMatch =
+                    /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/.exec(
+                        trimmed,
+                    );
+
+                if (colorMatch?.[1]) {
+                    const color = colorMatch[1];
+                    const position = colorMatch[2]
+                        ? parseFloat(colorMatch[2])
+                        : (index / Math.max(1, stopMatches.length - 1)) * 100;
+                    stops.push({ color, position });
+                }
+            });
+
+            return stops;
+        };
+
+        let type: GradientState['type'] = 'linear';
+        let angle = 90;
+        let stopsString = '';
+
+        const linearParams = extractGradientParams(normalized, 'linear-gradient');
+        if (linearParams) {
+            type = 'linear';
+
+            const directionalMatch =
+                /^(to\s+(?:top|bottom|left|right)(?:\s+(?:top|bottom|left|right))?)\s*,?\s*(.*)/i.exec(
+                    linearParams,
+                );
+            if (directionalMatch && directionalMatch[1] && directionalMatch[2]) {
+                const direction = directionalMatch[1];
+                angle = parseDirectionalAngle(direction);
+                stopsString = directionalMatch[2];
+            } else {
+                // Check for angle in degrees
+                const angleMatch = /^(\d+)deg\s*,?\s*(.*)/.exec(linearParams);
+                if (angleMatch && angleMatch[1] && angleMatch[2]) {
+                    angle = parseInt(angleMatch[1]);
+                    stopsString = angleMatch[2];
+                } else {
+                    // No angle specified, use default
+                    stopsString = linearParams;
+                }
+            }
+        } else {
+            // Parse radial gradients
+            const radialParams = extractGradientParams(normalized, 'radial-gradient');
+            if (radialParams) {
+                // Check if it's a diamond gradient (ellipse 80% 80% pattern)
+                if (radialParams.includes('ellipse 80% 80%')) {
+                    type = 'diamond';
+                    stopsString = radialParams.replace(
+                        /^ellipse\s+80%\s+80%\s+at\s+center,?\s*/,
+                        '',
+                    );
+                } else {
+                    type = 'radial';
+                    stopsString = radialParams.replace(/^(circle|ellipse).*?,?\s*/, '');
+                }
+            } else {
+                // Parse conic gradients
+                const conicParams = extractGradientParams(normalized, 'conic-gradient');
+                if (conicParams) {
+                    const angleMatch = /^from\s+(\d+)deg\s*,?\s*(.*)/.exec(conicParams);
+
+                    if (angleMatch && angleMatch[1] && angleMatch[2]) {
+                        angle = parseInt(angleMatch[1]);
+                        stopsString = angleMatch[2];
+                    } else {
+                        stopsString = conicParams;
+                    }
+
+                    // Parse stops first to check for angular pattern
+                    const tempStops = parseColorStops(stopsString);
+
+                    // Check if it's an angular gradient (has duplicate end color at 100%)
+                    const firstStop = tempStops[0];
+                    const lastStop = tempStops[tempStops.length - 1];
+                    const isAngular =
+                        tempStops.length >= 3 &&
+                        firstStop &&
+                        lastStop &&
+                        firstStop.color === lastStop.color &&
+                        Math.abs(lastStop.position - 100) < 1;
+
+                    if (isAngular) {
+                        type = 'angular';
+                        // Remove the duplicate end color for angular gradients
+                        tempStops.pop();
+                        // Reconstruct stopsString without the duplicate
+                        stopsString = tempStops
+                            .map((stop) =>
+                                stop.position === Math.round(stop.position)
+                                    ? `${stop.color} ${Math.round(stop.position)}%`
+                                    : `${stop.color} ${stop.position}%`,
+                            )
+                            .join(', ');
+                    } else {
+                        type = 'conic';
+                    }
+                } else {
+                    return null;
+                }
+            }
+        }
+
+        const stops: GradientStop[] = [];
+        const parsedStops = parseColorStops(stopsString);
+
+        parsedStops.forEach((stop, index) => {
+            stops.push({
+                id: `stop-${index + 1}`,
+                color: stop.color,
+                position: Math.round(stop.position),
+                opacity: 100, // Default opacity for parsed gradients
+            });
+        });
+
+        if (stops.length < 2) return null;
+
+        return { type, angle, stops };
+    } catch (error) {
+        console.warn('Failed to parse gradient:', error);
+        return null;
+    }
+};
+
 const PercentageInput: React.FC<{
     value: number;
     onChange: (value: number) => void;

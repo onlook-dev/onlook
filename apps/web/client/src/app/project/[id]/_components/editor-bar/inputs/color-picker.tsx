@@ -16,6 +16,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGradientUpdate } from '../hooks/use-gradient-update';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { hasGradient } from '../utils/gradient';
+import { parseGradientFromCSS } from '@onlook/ui/color-picker/Gradient';
 
 const ColorGroup = ({
     name,
@@ -137,119 +138,6 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         isCreatingNewColor ? TabValue.CUSTOM : TabValue.BRAND,
     );
 
-
-    const parseGradientFromCSS = useCallback((cssValue: string): GradientState | null => {
-        try {
-            const normalized = cssValue.trim();
-
-            const linearMatch = /linear-gradient\(([^)]+)\)/.exec(normalized);
-            const radialMatch = /radial-gradient\(([^)]+)\)/.exec(normalized);
-            const conicMatch = /conic-gradient\(([^)]+)\)/.exec(normalized);
-
-            let type: GradientState['type'] = 'linear';
-            let angle = 90;
-            let stopsString = '';
-
-            if (linearMatch?.[1]) {
-                type = 'linear';
-                const params = linearMatch[1];
-                const angleMatch = /(\d+)deg/.exec(params);
-                if (angleMatch?.[1]) {
-                    angle = parseInt(angleMatch[1]);
-                    stopsString = params.replace(/^\d+deg,?\s*/, '');
-                } else {
-                    stopsString = params;
-                }
-            } else if (radialMatch?.[1]) {
-                const params = radialMatch[1];
-                // Check if it's a diamond gradient (ellipse 80% 80% pattern)
-                if (params.includes('ellipse 80% 80%')) {
-                    type = 'diamond';
-                    stopsString = params.replace(/^ellipse\s+80%\s+80%\s+at\s+center,?\s*/, '');
-                } else {
-                    type = 'radial';
-                    stopsString = params.replace(/^(circle|ellipse).*?,?\s*/, '');
-                }
-            } else if (conicMatch?.[1]) {
-                const params = conicMatch[1];
-                const angleMatch = /from\s+(\d+)deg/.exec(params);
-
-                if (angleMatch?.[1]) {
-                    angle = parseInt(angleMatch[1]);
-                    stopsString = params.replace(/^from\s+\d+deg,?\s*/, '');
-                } else {
-                    stopsString = params;
-                }
-
-                // Parse stops first to check for angular pattern
-                const stopMatches = stopsString.split(/,(?![^()]*\))/);
-                const tempStops: { color: string; position: number }[] = [];
-
-                stopMatches.forEach((stop, index) => {
-                    const trimmed = stop.trim();
-                    const match = /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/.exec(trimmed);
-                    if (match?.[1]) {
-                        const color = match[1];
-                        const position = match[2]
-                            ? parseFloat(match[2])
-                            : (index / Math.max(1, stopMatches.length - 1)) * 100;
-                        tempStops.push({ color, position });
-                    }
-                });
-
-                // Check if it's an angular gradient (has duplicate end color at 100%)
-                const firstStop = tempStops[0];
-                const lastStop = tempStops[tempStops.length - 1];
-                const isAngular = tempStops.length >= 3 &&
-                    firstStop && lastStop &&
-                    firstStop.color === lastStop.color &&
-                    Math.abs(lastStop.position - 100) < 1;
-
-                if (isAngular) {
-                    type = 'angular';
-                    // Remove the duplicate end color for angular gradients
-                    tempStops.pop();
-                    // Reconstruct stopsString without the duplicate
-                    stopsString = tempStops.map(stop =>
-                            stop.position === Math.round(stop.position)
-                                ? `${stop.color} ${Math.round(stop.position)}%`
-                            : `${stop.color} ${stop.position}%`
-                    ).join(', ');
-                } else {
-                    type = 'conic';
-                }
-            } else {
-                return null;
-            }
-
-            const stops: GradientStop[] = [];
-            const stopMatches = stopsString.split(/,(?![^()]*\))/);
-
-            stopMatches.forEach((stop, index) => {
-                const trimmed = stop.trim();
-                const match = /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/.exec(trimmed);
-                if (match?.[1]) {
-                    const color = match[1];
-                    const position = match[2]
-                        ? parseFloat(match[2])
-                        : (index / Math.max(1, stopMatches.length - 1)) * 100;
-                    stops.push({
-                        id: `stop-${index + 1}`,
-                        color,
-                        position: Math.round(position),
-                        opacity: 100, // Default opacity for parsed gradients
-                    });
-                }
-            });
-
-            if (stops.length < 2) return null;
-
-            return { type, angle, stops };
-        } catch (error) {
-            console.warn('Failed to parse gradient:', error);
-            return null;
-        }
-    }, []);
 
     const isColorRemoved = (colorToCheck: Color) => colorToCheck.isEqual(Color.from('transparent'));
 
@@ -465,10 +353,16 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             ? editorEngine.style.selectedStyle?.styles.computed.backgroundImage
             : undefined;
 
-        const activeGradientSource = computedBackgroundImage || backgroundImage;
+        const activeGradientSource = computedBackgroundImage ?? backgroundImage;
+
+        console.log('computedBackgroundImage', computedBackgroundImage);
+        console.log('backgroundImage', backgroundImage);
+        console.log('activeGradientSource', activeGradientSource);
+        console.log('hasGradient', hasGradient(activeGradientSource));
 
         if (hasGradient(activeGradientSource)) {
             const parsed = parseGradientFromCSS(activeGradientSource!);
+            console.log('parsed', parsed);
             if (parsed && parsed.stops.length > 0) {
                 setGradientState(parsed);
                 setActiveTab(TabValue.GRADIENT);

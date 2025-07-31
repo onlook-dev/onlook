@@ -36,6 +36,11 @@ export const ColorBackground = observer(() => {
         return { backgroundColor: colorHex };
     }, [backgroundImage, colorHex]);
 
+    console.log(backgroundImage);
+    console.log(colorHex);
+    console.log(previewStyle);
+    console.log(tempColor);
+
     return (
         <div className="flex flex-col gap-2">
             <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
