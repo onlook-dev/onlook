@@ -8,6 +8,7 @@ import { db } from '@onlook/db/src/client';
 import { UsageType } from '@onlook/models';
 import { SubscriptionStatus } from '@onlook/stripe';
 import { createStripeClient } from '@onlook/stripe/src/client';
+import { add } from 'date-fns/add';
 import { and, count, eq, gte, lt } from 'drizzle-orm';
 import type { PgTransaction } from 'drizzle-orm/pg-core';
 import { v4 as uuid } from 'uuid';
@@ -62,7 +63,7 @@ export const getStripeItems = async (subscriptions: DbSubscription[]) => {
 const insertRateLimit = async (tx: PgTransaction<any, any, any>, item: StripeItem) => {
     console.log(`Inserting rate limit for subscription ${item.subscription.id}`);
     // One month from the start date. NOT SURE IF THIS IS CORRECT.
-    const endDate = new Date(item.subscription.startedAt.getTime() + 30 * 24 * 60 * 60 * 1000);
+    const endDate = add(item.subscription.startedAt, { months: 1 });
     console.log(`End date: ${endDate}`);
 
     // Count usage records within the current period

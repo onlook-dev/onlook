@@ -3,3 +3,8 @@ export interface Usage {
     usageCount: number;
     limitCount: number;
 }
+
+export interface UsageResult {
+    daily: Usage;
+    monthly: Usage;
+}

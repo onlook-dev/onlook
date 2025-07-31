@@ -1,100 +1,31 @@
 import { rateLimits, subscriptions, usageRecords } from '@onlook/db';
-import { UsageType, type Usage } from '@onlook/models';
+import { UsageType, type UsageResult } from '@onlook/models';
 import { FREE_PRODUCT_CONFIG, SubscriptionStatus } from '@onlook/stripe';
 import { startOfDay } from 'date-fns/startOfDay';
 import { startOfMonth } from 'date-fns/startOfMonth';
 import { sub } from 'date-fns/sub';
 import { and, desc, eq, gt, gte, lt, lte, ne, sql, sum } from 'drizzle-orm';
+import type { PgTransaction } from 'drizzle-orm/pg-core';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const usageRouter = createTRPCRouter({
-    get: protectedProcedure.query(async ({ ctx }) => {
+    get: protectedProcedure.query(async ({ ctx }): Promise<UsageResult> => {
         const user = ctx.user;
+        return ctx.db.transaction(async (tx) => {
+            // Calculate date ranges
+            const now = new Date();
+            // If the user has an active subscription then they can use their rate limits (including carry-over)
+            const subscription = await tx.query.subscriptions.findFirst({
+                where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, SubscriptionStatus.ACTIVE)),
+            });
 
-        // Calculate date ranges
-        const now = new Date();
-
-        // If the user has an active subscription then they can use their rate limits (including carry-over)
-        const subscription = await ctx.db.query.subscriptions.findFirst({
-            where: and(eq(subscriptions.userId, user.id), eq(subscriptions.status, SubscriptionStatus.ACTIVE)),
+            // if no subscription then user is on a free plan
+            if (!subscription) {
+                return getFreePlanUsage(tx, user.id, now);
+            }
+            return getSubscriptionUsage(tx, user.id, now);
         });
-
-        // if no subscription then user is on a free plan
-        if (!subscription) {
-            // Previous day
-            const dayStart = startOfDay(sub(now, { days: 1 })); // Start of YESTERDAY
-            const dayEnd = startOfDay(now);                     // Start of today (end of yesterday)
-
-            // Previous month  
-            const monthStart = startOfMonth(sub(now, { months: 1 })); // Start of LAST MONTH
-            const monthEnd = startOfMonth(now);                       // Start of this month (end of last month)
-
-            // Count records from previous day
-            const lastDayCount = await ctx.db
-                .select({ count: sql<number>`count(*)` })
-                .from(usageRecords)
-                .where(
-                    and(
-                        eq(usageRecords.userId, user.id),
-                        gte(usageRecords.timestamp, dayStart),
-                        lt(usageRecords.timestamp, dayEnd),
-                    )
-                );
-
-            // Count records from previous month
-            const lastMonthCount = await ctx.db
-                .select({ count: sql<number>`count(*)` })
-                .from(usageRecords)
-                .where(
-                    and(
-                        eq(usageRecords.userId, user.id),
-                        gte(usageRecords.timestamp, monthStart),
-                        lt(usageRecords.timestamp, monthEnd),
-                    )
-                );
-
-            return {
-                daily: {
-                    period: 'day',
-                    usageCount: lastDayCount[0]?.count || 0,
-                    limitCount: FREE_PRODUCT_CONFIG.dailyLimit,
-                } satisfies Usage,
-                monthly: {
-                    period: 'month',
-                    usageCount: lastMonthCount[0]?.count || 0,
-                    limitCount: FREE_PRODUCT_CONFIG.monthlyLimit,
-                } satisfies Usage,
-            };
-        }
-
-        const limit = await ctx.db
-            .select({ left: sum(rateLimits.left), max: sum(rateLimits.max) })
-            .from(rateLimits)
-            .where(and(
-                eq(rateLimits.userId, user.id),
-                lte(rateLimits.startedAt, now),
-                gt(rateLimits.endedAt, now),
-            ))
-            .then(res => ({
-                left: res[0]?.left ? parseInt(res[0]?.left, 10) : 0,
-                max: res[0]?.max ? parseInt(res[0]?.max, 10) : 0,
-            }));
-
-        return {
-            daily: {
-                period: 'day',
-                // technically, this is the monthly value, since subscriptions don't have daily limits
-                // the code returns the monthly limits, which is technically correct.
-                usageCount: limit.max - limit.left,
-                limitCount: limit.max,
-            } satisfies Usage,
-            monthly: {
-                period: 'month',
-                usageCount: limit.max - limit.left,
-                limitCount: limit.max,
-            } satisfies Usage,
-        };
     }),
 
     increment: protectedProcedure.input(z.object({
@@ -173,3 +104,88 @@ export const usageRouter = createTRPCRouter({
         });
     }),
 });
+
+export const getFreePlanUsage = async (
+    tx: PgTransaction<any, any, any>,
+    userId: string,
+    now: Date,
+): Promise<UsageResult> => {
+    // Previous day
+    const dayStart = startOfDay(sub(now, { days: 1 })); // Start of YESTERDAY
+    const dayEnd = startOfDay(now);                     // Start of today (end of yesterday)
+
+    // Previous month  
+    const monthStart = startOfMonth(sub(now, { months: 1 })); // Start of LAST MONTH
+    const monthEnd = startOfMonth(now);                       // Start of this month (end of last month)
+
+    // Count records from previous day
+    const lastDayCount = await tx
+        .select({ count: sql<number>`count(*)` })
+        .from(usageRecords)
+        .where(
+            and(
+                eq(usageRecords.userId, userId),
+                gte(usageRecords.timestamp, dayStart),
+                lt(usageRecords.timestamp, dayEnd),
+            )
+        );
+
+    // Count records from previous month
+    const lastMonthCount = await tx
+        .select({ count: sql<number>`count(*)` })
+        .from(usageRecords)
+        .where(
+            and(
+                eq(usageRecords.userId, userId),
+                gte(usageRecords.timestamp, monthStart),
+                lt(usageRecords.timestamp, monthEnd),
+            )
+        );
+
+    return {
+        daily: {
+            period: 'day',
+            usageCount: lastDayCount[0]?.count || 0,
+            limitCount: FREE_PRODUCT_CONFIG.dailyLimit,
+        },
+        monthly: {
+            period: 'month',
+            usageCount: lastMonthCount[0]?.count || 0,
+            limitCount: FREE_PRODUCT_CONFIG.monthlyLimit,
+        },
+    };
+}
+
+const getSubscriptionUsage = async (
+    tx: PgTransaction<any, any, any>,
+    userId: string,
+    now: Date,
+): Promise<UsageResult> => {
+    const limit = await tx
+        .select({ left: sum(rateLimits.left), max: sum(rateLimits.max) })
+        .from(rateLimits)
+        .where(and(
+            eq(rateLimits.userId, userId),
+            lte(rateLimits.startedAt, now),
+            gt(rateLimits.endedAt, now),
+        ))
+        .then(res => ({
+            left: res[0]?.left ? parseInt(res[0]?.left, 10) : 0,
+            max: res[0]?.max ? parseInt(res[0]?.max, 10) : 0,
+        }));
+
+    return {
+        daily: {
+            period: 'day',
+            // technically, this is the monthly value, since subscriptions don't have daily limits
+            // the code returns the monthly limits, which is technically correct.
+            usageCount: limit.max - limit.left,
+            limitCount: limit.max,
+        },
+        monthly: {
+            period: 'month',
+            usageCount: limit.max - limit.left,
+            limitCount: limit.max,
+        },
+    };
+}
