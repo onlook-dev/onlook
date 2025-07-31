@@ -67,7 +67,7 @@ export const Opacity = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="mr-1 group h-8 flex items-center gap-1"
+                        className="group h-8 flex items-center gap-1"
                         onClick={handleInputAreaClick}
                     >
                         <Input
