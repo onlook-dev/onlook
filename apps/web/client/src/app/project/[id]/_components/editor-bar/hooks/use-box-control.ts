@@ -180,16 +180,7 @@ export const useBoxControl = (type: BoxType) => {
 
         const cssValue = parsedValue ? `${parsedValue}${currentState.unit}` : '';
         
-        if (type === 'radius' && property === 'borderRadius') {
-            editorEngine.style.update('borderRadius', cssValue);
-        } else if (type === 'border' && property === 'borderWidth') {
-            editorEngine.style.update('borderWidth', cssValue);
-        } else if ((type === 'margin' || type === 'padding') && property === type) {
-            editorEngine.style.update(property, cssValue);
-        } else {
-            editorEngine.style.update(property, cssValue);
-        }
-
+        // Update local state immediately for instant UI feedback
         setBoxState(prevState => ({
             ...prevState,
             [property]: {
@@ -198,6 +189,19 @@ export const useBoxControl = (type: BoxType) => {
                 value: cssValue || '--'
             }
         }));
+
+        // Update CSS with slight delay to batch updates
+        setTimeout(() => {
+            if (type === 'radius' && property === 'borderRadius') {
+                editorEngine.style.update('borderRadius', cssValue);
+            } else if (type === 'border' && property === 'borderWidth') {
+                editorEngine.style.update('borderWidth', cssValue);
+            } else if ((type === 'margin' || type === 'padding') && property === type) {
+                editorEngine.style.update(property, cssValue);
+            } else {
+                editorEngine.style.update(property, cssValue);
+            }
+        }, 50);
     }, [boxState, editorEngine.style, type]);
 
     const handleUnitChange = useCallback((property: CSSBoxProperty, unit: string) => {
@@ -221,6 +225,16 @@ export const useBoxControl = (type: BoxType) => {
         if (!currentState) return;
 
         const newValue = `${value}${currentState.unit}`;
+
+        // Update local state immediately
+        setBoxState(prevState => ({
+            ...prevState,
+            [property]: {
+                ...currentState,
+                num: value,
+                value: newValue
+            }
+        }));
 
         // Update CSS
         editorEngine.style.update(property, newValue);
