@@ -11,15 +11,21 @@ export interface ChatSuggestion {
     prompt: string;
 }
 
-export const ChatSuggestionSchema = z.object({
-    title: z
-        .string()
-        .describe(
-            'The display title of the suggestion. This will be shown to the user. Keep it concise but descriptive.',
-        ),
-    prompt: z
-        .string()
-        .describe(
-            'The prompt for the suggestion. This will be used to generate the suggestion. Make this as detailed and specific as possible.',
-        ),
+export const ChatSuggestionsSchema = z.object({
+    suggestions: z
+        .array(
+            z.object({
+                title: z
+                    .string()
+                    .describe(
+                        'The display title of the suggestion. This will be shown to the user. Keep it concise but descriptive.',
+                    ),
+                prompt: z
+                    .string()
+                    .describe(
+                        'The prompt for the suggestion. This will be used to generate the suggestion. Make this as detailed and specific as possible.',
+                    ),
+            }),
+        )
+        .length(3),
 });

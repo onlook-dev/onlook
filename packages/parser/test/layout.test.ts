@@ -6,7 +6,7 @@ import { getAstFromContent, getContentFromAst, injectPreloadScript } from 'src';
 const __dirname = import.meta.dir;
 
 describe('injectPreloadScript', () => {
-    const SHOULD_UPDATE_EXPECTED = false;
+    const SHOULD_UPDATE_EXPECTED = true;
     const casesDir = path.resolve(__dirname, 'data/layout');
 
     const testCases = fs.readdirSync(casesDir);

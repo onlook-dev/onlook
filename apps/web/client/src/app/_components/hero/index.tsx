@@ -22,9 +22,8 @@ export function Hero() {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    Make your<br />
-                    <span className="font-light">designs </span>
-                    <span className={`italic font-normal ${vujahdayScript.className} text-[4.75rem] ml-1 leading-[1.0]`}>real</span>
+                    Cursor for<br />
+                    <span className={`italic font-normal ${vujahdayScript.className} text-[4.6rem] ml-1 leading-[1.0]`}>Designers</span>
                 </motion.h1>
                 <motion.p
                     className="text-lg text-foreground-secondary max-w-xl text-center mt-2"

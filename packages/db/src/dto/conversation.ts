@@ -8,6 +8,7 @@ export const toConversation = (dbConversation: DbConversation): ChatConversation
         createdAt: dbConversation.createdAt.toISOString(),
         updatedAt: dbConversation.updatedAt.toISOString(),
         projectId: dbConversation.projectId,
+        suggestions: dbConversation.suggestions || [],
     }
 }
 
@@ -18,5 +19,6 @@ export const fromConversation = (conversation: ChatConversation): DbConversation
         createdAt: new Date(conversation.createdAt),
         updatedAt: new Date(conversation.updatedAt),
         projectId: conversation.projectId,
+        suggestions: conversation.suggestions,
     }
 }

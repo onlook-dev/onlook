@@ -171,7 +171,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                     ),
                 },
                 ...TOOL_ITEMS,
-            ].filter(Boolean) as MenuItem[];
+            ].filter((item): item is MenuItem => item !== false);
 
             menuItems = [updatedToolItems, GROUP_ITEMS, EDITING_ITEMS];
         }
