@@ -124,15 +124,32 @@ export class FrameEventManager {
         }
     }
 
-    async handleNavigation(frameId: string, data: { url: string }): Promise<void> {
+    async handleNavigation(frameId: string, data: { pathname: string }): Promise<void> {
         try {
-            this.editorEngine.frames.addToHistory(data.url, frameId);
-            await this.editorEngine.frames.updateAndSaveToStorage(frameId, {
-                url: data.url,
-            });
+            const frameData = this.editorEngine.frames.get(frameId);
+            if (!frameData?.view) {
+                console.warn('Frame not found for navigation');
+                return;
+            }
 
-            console.log(`Navigation detected in frame ${frameId}:`, {
-                url: data.url,
+
+            const currentUrl = frameData.view.src;
+            const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
+
+            if (!baseUrl) {
+                return;
+            }
+
+            const newUrl = `${baseUrl}${data.pathname}`;
+
+            if (newUrl === currentUrl) {
+                return;
+            }
+
+            this.editorEngine.frames.addToHistory(data.pathname, frameId);
+
+            await this.editorEngine.frames.updateAndSaveToStorage(frameId, {
+                url: newUrl,
             });
         } catch (error) {
             console.error('Error handling navigation:', error);

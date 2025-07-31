@@ -8,7 +8,7 @@ export type PenpalParentMethods = {
     }) => void;
     onWindowResized: () => void;
     onDomProcessed: (data: { layerMap: Record<string, LayerNode>; rootNode: LayerNode }) => void;
-    onNavigation: (data: { url: string }) => void;
+    onNavigation: (data: { pathname: string }) => void;
 };
 
 // Parent methods should be treated as promises

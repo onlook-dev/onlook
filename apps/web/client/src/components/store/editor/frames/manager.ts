@@ -136,26 +136,12 @@ export class FramesManager {
     }
 
     // Navigation history methods
-    get canGoBack(): boolean {
-        const selectedFrame = this.selected[0];
-        return selectedFrame ? this.navigationManager.canGoBack(selectedFrame.frame.id) : false;
+    canGoBack(frameId: string): boolean {
+        return this.navigationManager.canGoBack(frameId);
     }
 
-    get canGoForward(): boolean {
-        const selectedFrame = this.selected[0];
-        return selectedFrame ? this.navigationManager.canGoForward(selectedFrame.frame.id) : false;
-    }
-
-    get historyLength(): number {
-        const selectedFrame = this.selected[0];
-        return selectedFrame ? this.navigationManager.getHistoryLength(selectedFrame.frame.id) : 0;
-    }
-
-    get currentHistoryIndex(): number {
-        const selectedFrame = this.selected[0];
-        return selectedFrame
-            ? this.navigationManager.getCurrentHistoryIndex(selectedFrame.frame.id)
-            : -1;
+    canGoForward(frameId: string): boolean {
+        return this.navigationManager.canGoForward(frameId);
     }
 
     getNavigationHistory(frameId?: string): string[] {

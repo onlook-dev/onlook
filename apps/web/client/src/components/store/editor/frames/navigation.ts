@@ -45,7 +45,7 @@ export class FrameNavigationManager {
     }
 
     addToHistory(frameId: string, path: string): void {
-        let navigationObject = this.frameIdToNavigationObject.get(frameId) ?? {
+        const navigationObject = this.frameIdToNavigationObject.get(frameId) ?? {
             history: [],
             currentIndex: 0,
         };

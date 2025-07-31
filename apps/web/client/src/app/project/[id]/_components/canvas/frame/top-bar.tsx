@@ -105,7 +105,7 @@ export const TopBar = observer(
                             size="icon"
                             className="cursor-pointer"
                             onClick={handleGoBack}
-                            disabled={!editorEngine.frames.canGoBack}
+                            disabled={!editorEngine.frames.canGoBack(frame.id)}
                         >
                             <Icons.ArrowLeft />
                         </Button>
@@ -116,7 +116,7 @@ export const TopBar = observer(
                             size="icon"
                             className="cursor-pointer"
                             onClick={handleGoForward}
-                            disabled={!editorEngine.frames.canGoForward}
+                            disabled={!editorEngine.frames.canGoForward(frame.id)}
                         >
                             <Icons.ArrowRight />
                         </Button>

@@ -1,57 +1,36 @@
 import { penpalParent } from '../index';
 
-let lastUrl = window.location.href;
-
-export function listenToNavigationChanges() {    
+export function listenToNavigationChanges() {
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
-    
+
     // Override pushState
-    history.pushState = function(...args) {
+    history.pushState = function (...args) {
         originalPushState.apply(history, args);
-        setTimeout(() => {
-            notifyNavigationChange();
-        }, 100);
+        console.log('pushState', args);
+        if (args[2]) {
+            notifyNavigationChange(args[2]);
+        }
     };
-    
+
     // Override replaceState
-    history.replaceState = function(...args) {
+    history.replaceState = function (...args) {
         originalReplaceState.apply(history, args);
-        setTimeout(() => {
-            notifyNavigationChange();
-        }, 100);
+        console.log('replaceState', args);
+        if (args[2]) {
+            notifyNavigationChange(args[2]);
+        }
     };
-    
-    // Listen for popstate events
-    window.addEventListener('popstate', () => {
-        setTimeout(() => {
-            notifyNavigationChange();
-        }, 100);
-    });
-    
-    // Listen for hash changes
-    window.addEventListener('hashchange', () => {
-        setTimeout(() => {
-            notifyNavigationChange();
-        }, 100);
-    });
 }
 
-function notifyNavigationChange() {
+function notifyNavigationChange(pathname: string) {
     if (penpalParent) {
         try {
-            const currentUrl = window.location.href;
-            if (currentUrl !== lastUrl) {
-                lastUrl = currentUrl;
-
-                penpalParent.onNavigation({
-                    url: currentUrl,
-                });
-            }
-
-
+            penpalParent.onNavigation({
+                pathname,
+            });
         } catch (error) {
             console.error('Failed to notify navigation change:', error);
         }
     }
-} 
+}

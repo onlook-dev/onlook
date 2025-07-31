@@ -94,7 +94,7 @@ export const WebFrameComponent = observer(
                     onDomProcessed: (data: { layerMap: Record<string, any>; rootNode: any }) => {
                         editorEngine.frameEvent.handleDomProcessed(frame.id, data);
                     },
-                    onNavigation: (data: { url: string }) => {
+                    onNavigation: (data: { pathname: string }) => {
                         editorEngine.frameEvent.handleNavigation(frame.id, data);
                     },
                 } satisfies PenpalParentMethods,
