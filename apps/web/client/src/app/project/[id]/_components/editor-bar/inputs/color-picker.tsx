@@ -733,20 +733,20 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         <div className="flex gap-1">
                             <TabsTrigger
                                 value={TabValue.BRAND}
-                                className="flex items-center justify-center px-1.5 py-1 text-xs border border-foreground-primary/20 rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
+                                className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
                             >
                                 Brand
                             </TabsTrigger>
 
                             <TabsTrigger
                                 value={TabValue.CUSTOM}
-                                className="flex items-center justify-center px-1.5 py-1 text-xs border border-foreground-primary/20 rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
+                                className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
                             >
                                 Custom
                             </TabsTrigger>
                             <TabsTrigger
                                 value={TabValue.GRADIENT}
-                                className="flex items-center justify-center px-1.5 py-1 text-xs border border-foreground-primary/20 rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
+                                className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
                             >
                                 Gradient
                             </TabsTrigger>
