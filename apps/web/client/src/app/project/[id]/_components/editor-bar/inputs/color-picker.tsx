@@ -4,8 +4,7 @@ import type { TailwindColor } from '@onlook/models/style';
 import {
     ColorPicker,
     Gradient,
-    type GradientState,
-    type GradientStop,
+    type GradientState
 } from '@onlook/ui/color-picker';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -355,14 +354,9 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
 
         const activeGradientSource = computedBackgroundImage ?? backgroundImage;
 
-        console.log('computedBackgroundImage', computedBackgroundImage);
-        console.log('backgroundImage', backgroundImage);
-        console.log('activeGradientSource', activeGradientSource);
-        console.log('hasGradient', hasGradient(activeGradientSource));
 
         if (hasGradient(activeGradientSource)) {
             const parsed = parseGradientFromCSS(activeGradientSource!);
-            console.log('parsed', parsed);
             if (parsed && parsed.stops.length > 0) {
                 setGradientState(parsed);
                 setActiveTab(TabValue.GRADIENT);

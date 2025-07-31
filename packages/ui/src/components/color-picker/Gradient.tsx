@@ -241,7 +241,9 @@ export const generateGradientCSS = (gradient: GradientState): string => {
             const angularStops = [...sortedStops];
             if (angularStops.length > 0) {
                 const firstStop = angularStops[0];
-                if (firstStop) {
+                const lastStop = angularStops[angularStops.length - 1];
+                // If the last stop is not at 100%, add a stop at 100% with the same color as the first stop
+                if (lastStop && lastStop.position !== 100 && firstStop) {
                     angularStops.push({
                         id: generateId(),
                         color: firstStop.color,
@@ -329,7 +331,7 @@ export const parseGradientFromCSS = (cssValue: string): GradientState | null => 
                     );
 
                 if (colorMatch?.[1]) {
-                    const color = colorMatch[1];
+                    const color = Color.from(colorMatch[1]).toHex6();
                     const position = colorMatch[2]
                         ? parseFloat(colorMatch[2])
                         : (index / Math.max(1, stopMatches.length - 1)) * 100;
@@ -398,21 +400,20 @@ export const parseGradientFromCSS = (cssValue: string): GradientState | null => 
                     // Parse stops first to check for angular pattern
                     const tempStops = parseColorStops(stopsString);
 
-                    // Check if it's an angular gradient (has duplicate end color at 100%)
                     const firstStop = tempStops[0];
                     const lastStop = tempStops[tempStops.length - 1];
+                    const secondLastStop = tempStops[tempStops.length - 2];
+
                     const isAngular =
-                        tempStops.length >= 3 &&
+                        tempStops.length === 3 &&
                         firstStop &&
                         lastStop &&
-                        firstStop.color === lastStop.color &&
+                        secondLastStop &&
+                        secondLastStop.color === lastStop.color &&
                         Math.abs(lastStop.position - 100) < 1;
 
                     if (isAngular) {
                         type = 'angular';
-                        // Remove the duplicate end color for angular gradients
-                        tempStops.pop();
-                        // Reconstruct stopsString without the duplicate
                         stopsString = tempStops
                             .map((stop) =>
                                 stop.position === Math.round(stop.position)

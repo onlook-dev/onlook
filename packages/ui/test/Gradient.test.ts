@@ -11,8 +11,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 45,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -25,8 +25,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -39,9 +39,9 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 50, opacity: 100 },
-                    { id: 'stop-3', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FFFF00', position: 50, opacity: 100 },
+                    { id: 'stop-3', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -54,8 +54,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 180,
                 stops: [
-                    { id: 'stop-1', color: 'rgb(255, 0, 0)', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: 'rgb(0, 255, 0)', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -69,8 +69,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 270,
                 stops: [
-                    { id: 'stop-1', color: 'rgba(255, 0, 0, 0.5)', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: 'rgba(0, 255, 0, 0.8)', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -83,8 +83,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 135,
                 stops: [
-                    { id: 'stop-1', color: 'hsl(0, 100%, 50%)', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: 'hsl(120, 100%, 50%)', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -97,8 +97,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 45,
                 stops: [
-                    { id: 'stop-1', color: 'red', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: 'blue', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#0000FF', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -111,8 +111,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -125,9 +125,9 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 45,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 26, opacity: 100 },
-                    { id: 'stop-3', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FFFF00', position: 26, opacity: 100 },
+                    { id: 'stop-3', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -141,8 +141,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 0,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -155,8 +155,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 0,
                 stops: [
-                    { id: 'stop-1', color: 'rgb(59, 130, 246)', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: 'rgb(6, 182, 212)', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#3B82F6', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#06B6D4', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -169,8 +169,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 180,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -183,8 +183,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 270,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -197,8 +197,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -211,8 +211,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 315,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -225,8 +225,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 135,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -241,8 +241,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'radial',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -255,8 +255,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'radial',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -269,9 +269,9 @@ describe('parseGradientFromCSS', () => {
                 type: 'radial',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 50, opacity: 100 },
-                    { id: 'stop-3', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FFFF00', position: 50, opacity: 100 },
+                    { id: 'stop-3', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -286,8 +286,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'conic',
                 angle: 0,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -300,8 +300,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'conic',
                 angle: 45,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -314,8 +314,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'conic',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -328,41 +328,43 @@ describe('parseGradientFromCSS', () => {
                 type: 'conic',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 50, opacity: 100 },
-                    { id: 'stop-3', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FFFF00', position: 50, opacity: 100 },
+                    { id: 'stop-3', color: '#00FF00', position: 100, opacity: 100 },
+                ],
+            });
+        });
+
+        test('should parse conic gradient with four colors', () => {
+            const css =
+                'conic-gradient(from 0deg, rgb(255, 107, 107) 0%, rgb(254, 202, 87) 33%, rgb(72, 202, 228) 66%, rgb(255, 107, 107) 100%)';
+            const result = parseGradientFromCSS(css);
+
+            expect(result).toEqual({
+                type: 'conic',
+                angle: 0,
+                stops: [
+                    { id: 'stop-1', color: '#FF6B6B', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FECA57', position: 33, opacity: 100 },
+                    { id: 'stop-3', color: '#48CAE4', position: 66, opacity: 100 },
+                    { id: 'stop-4', color: '#FF6B6B', position: 100, opacity: 100 },
                 ],
             });
         });
     });
 
     describe('Angular Gradients', () => {
-        test('should parse angular gradient (conic with duplicate end color)', () => {
-            const css = 'conic-gradient(from 0deg, #ff0000 0%, #ffff00 50%, #ff0000 100%)';
+        test('should parse angular gradient with three stops', () => {
+            const css = 'conic-gradient(from 0deg, #ff9a9e, #fecfef, #fecfef)';
             const result = parseGradientFromCSS(css);
 
             expect(result).toEqual({
                 type: 'angular',
                 angle: 0,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 50, opacity: 100 },
-                ],
-            });
-        });
-
-        test('should parse angular gradient with three stops', () => {
-            const css =
-                'conic-gradient(from 45deg, #ff0000 0%, #ffff00 25%, #00ff00 50%, #ff0000 100%)';
-            const result = parseGradientFromCSS(css);
-
-            expect(result).toEqual({
-                type: 'angular',
-                angle: 45,
-                stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 25, opacity: 100 },
-                    { id: 'stop-3', color: '#00ff00', position: 50, opacity: 100 },
+                    { id: 'stop-1', color: '#FF9A9E', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FECFEF', position: 50, opacity: 100 },
+                    { id: 'stop-3', color: '#FECFEF', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -375,9 +377,9 @@ describe('parseGradientFromCSS', () => {
                 type: 'conic',
                 angle: 0,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 50, opacity: 100 },
-                    { id: 'stop-3', color: '#ff0000', position: 75, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FFFF00', position: 50, opacity: 100 },
+                    { id: 'stop-3', color: '#FF0000', position: 75, opacity: 100 },
                 ],
             });
         });
@@ -390,9 +392,9 @@ describe('parseGradientFromCSS', () => {
                 type: 'conic',
                 angle: 0,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 50, opacity: 100 },
-                    { id: 'stop-3', color: '#0000ff', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FFFF00', position: 50, opacity: 100 },
+                    { id: 'stop-3', color: '#0000FF', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -407,8 +409,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'diamond',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -422,9 +424,9 @@ describe('parseGradientFromCSS', () => {
                 type: 'diamond',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 50, opacity: 100 },
-                    { id: 'stop-3', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FFFF00', position: 50, opacity: 100 },
+                    { id: 'stop-3', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -467,8 +469,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 90, // Excessive whitespace causes angle parsing to fail, defaults to 90deg
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -481,14 +483,13 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 45,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 50, opacity: 100 },
-                    { id: 'stop-3', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FFFF00', position: 50, opacity: 100 },
+                    { id: 'stop-3', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
 
-        // Complex color formats are now fully supported
         test('should handle complex color formats', () => {
             const css =
                 'linear-gradient(45deg, #ff0000 0%, rgba(0, 255, 0, 0.5) 50%, hsl(240, 100%, 50%) 100%)';
@@ -498,9 +499,9 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 45,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: 'rgba(0, 255, 0, 0.5)', position: 50, opacity: 100 },
-                    { id: 'stop-3', color: 'hsl(240, 100%, 50%)', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 50, opacity: 100 },
+                    { id: 'stop-3', color: '#0000FF', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -513,8 +514,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 45,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#00ff00', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -528,8 +529,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 45,
                 stops: [
-                    { id: 'stop-1', color: 'rgb(255, 0, 0)', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: 'rgba(0, 255, 0, 0.5)', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#00FF00', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -544,8 +545,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 45,
                 stops: [
-                    { id: 'stop-1', color: '#ff6b6b', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#feca57', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#FF6B6B', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FECA57', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -558,8 +559,8 @@ describe('parseGradientFromCSS', () => {
                 type: 'linear',
                 angle: 90,
                 stops: [
-                    { id: 'stop-1', color: '#48cae4', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#023e8a', position: 100, opacity: 100 },
+                    { id: 'stop-1', color: '#48CAE4', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#023E8A', position: 100, opacity: 100 },
                 ],
             });
         });
@@ -570,15 +571,16 @@ describe('parseGradientFromCSS', () => {
             const result = parseGradientFromCSS(css);
 
             expect(result).toEqual({
-                type: 'angular',
+                type: 'conic',
                 angle: 0,
                 stops: [
-                    { id: 'stop-1', color: '#ff0000', position: 0, opacity: 100 },
-                    { id: 'stop-2', color: '#ffff00', position: 17, opacity: 100 },
-                    { id: 'stop-3', color: '#00ff00', position: 33, opacity: 100 },
-                    { id: 'stop-4', color: '#00ffff', position: 50, opacity: 100 },
-                    { id: 'stop-5', color: '#0000ff', position: 67, opacity: 100 },
-                    { id: 'stop-6', color: '#ff00ff', position: 83, opacity: 100 },
+                    { id: 'stop-1', color: '#FF0000', position: 0, opacity: 100 },
+                    { id: 'stop-2', color: '#FFFF00', position: 17, opacity: 100 },
+                    { id: 'stop-3', color: '#00FF00', position: 33, opacity: 100 },
+                    { id: 'stop-4', color: '#00FFFF', position: 50, opacity: 100 },
+                    { id: 'stop-5', color: '#0000FF', position: 67, opacity: 100 },
+                    { id: 'stop-6', color: '#FF00FF', position: 83, opacity: 100 },
+                    { id: 'stop-7', color: '#FF0000', position: 100, opacity: 100 },
                 ],
             });
         });
