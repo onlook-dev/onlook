@@ -107,7 +107,7 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                                             <Icons.Trash className="w-4 h-4" />
                                                         </Button>
                                                     </TooltipTrigger>
-                                                    <TooltipContent side="right" className="mt-1">
+                                                    <TooltipContent side="right">
                                                         <p className="font-normal">
                                                             Delete Conversation
                                                         </p>
