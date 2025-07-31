@@ -3,7 +3,6 @@ import type { WebFrame } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 import { useRef } from 'react';
@@ -32,7 +31,7 @@ export const TopBar = observer(
             const startPositionX = frame.position.x;
             const startPositionY = frame.position.y;
 
-            const undebouncedHandleMove = async (e: MouseEvent) => {
+            const handleMove = async (e: MouseEvent) => {
                 const scale = editorEngine.canvas.scale;
                 const deltaX = (e.clientX - startX) / scale;
                 const deltaY = (e.clientY - startY) / scale;
@@ -42,16 +41,12 @@ export const TopBar = observer(
                     y: startPositionY + deltaY,
                 };
 
-                await editorEngine.frames.updateAndSaveToStorage(frame.id, { position: newPosition });
+                editorEngine.frames.updateAndSaveToStorage(frame.id, { position: newPosition });
             };
-
-            const handleMove = debounce(undebouncedHandleMove, 16);
 
             const endMove = (e: MouseEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
-                // Cancel any pending debounced calls
-                handleMove.cancel();
                 window.removeEventListener('mousemove', handleMove);
                 window.removeEventListener('mouseup', endMove);
             };
