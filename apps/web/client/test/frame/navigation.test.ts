@@ -36,6 +36,31 @@ describe('FrameNavigationManager', () => {
             expect(navigationManager.getNavigationHistory(testFrameId)).toEqual(['/page1']);
             expect(navigationManager.getCurrentHistoryIndex(testFrameId)).toBe(0);
         });
+
+        it('should not add duplicate consecutive pages when they are different', () => {
+            navigationManager.addToHistory(testFrameId, '/page1');
+            navigationManager.addToHistory(testFrameId, '/page1');
+            navigationManager.addToHistory(testFrameId, '/page2');
+            navigationManager.addToHistory(testFrameId, '/page2');
+
+            expect(navigationManager.getNavigationHistory(testFrameId)).toEqual(['/page1', '/page2']);
+            expect(navigationManager.getCurrentHistoryIndex(testFrameId)).toBe(1);
+        });
+
+        it('should not add duplicate page when it matches top of stack', () => {
+            navigationManager.addToHistory(testFrameId, '/page1');
+            navigationManager.addToHistory(testFrameId, '/page1');
+            navigationManager.addToHistory(testFrameId, '/page2');
+            navigationManager.addToHistory(testFrameId, '/page2');
+            navigationManager.addToHistory(testFrameId, '/page1');
+
+            expect(navigationManager.getNavigationHistory(testFrameId)).toEqual([
+                '/page1',
+                '/page2',
+                '/page1'
+            ]);
+            expect(navigationManager.getCurrentHistoryIndex(testFrameId)).toBe(2);
+        });
     });
 
     describe('canGoBack', () => {
@@ -121,7 +146,7 @@ describe('FrameNavigationManager', () => {
         it('should clear all frame histories', () => {
             const frameId1 = 'frame-1';
             const frameId2 = 'frame-2';
-            
+
             navigationManager.addToHistory(frameId1, '/page1');
             navigationManager.addToHistory(frameId2, '/page2');
 
