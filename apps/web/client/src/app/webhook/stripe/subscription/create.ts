@@ -1,4 +1,3 @@
-import { getFreePlanUsage } from '@/server/api/routers/usage';
 import { trackEvent } from '@/utils/analytics/server';
 import { prices, rateLimits, subscriptions, users } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
@@ -74,16 +73,13 @@ export const handleSubscriptionCreated = async (
             throw new Error('No subscription was upserted.');
         }
 
-        const freeUsage = await getFreePlanUsage(tx, user.id, currentPeriodStart);
-        const left = Math.max(0, freeUsage.monthly.limitCount - freeUsage.monthly.usageCount);
-
         const [rateLimit] = await tx
             .insert(rateLimits)
             .values({
                 userId: user.id,
                 subscriptionId: data.id,
                 max: price.monthlyMessageLimit,
-                left,
+                left: price.monthlyMessageLimit,
                 startedAt: currentPeriodStart,
                 endedAt: currentPeriodEnd,
                 carryOverKey: uuid(),
