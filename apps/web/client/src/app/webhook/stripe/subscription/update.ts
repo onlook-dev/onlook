@@ -84,6 +84,7 @@ export const handleSubscriptionUpdated = async (
         );
     }
 
+    // If the subscription is cancelled, schedule the cancellation in database for display purposes.
     if (stripeSubscription.cancel_at) {
         const cancelAt = new Date(stripeSubscription.cancel_at * 1000);
         await db.transaction(async (tx) => {
@@ -173,6 +174,14 @@ const updateSubscriptionScheduleIfNeeded = async (
     stripeSubscriptionScheduleId?: string,
 ) => {
     if (!stripeSubscriptionScheduleId) {
+        // If there is no schedule, clear the scheduled action and price change on.
+        await db.update(subscriptions).set({
+            scheduledAction: null,
+            scheduledChangeAt: null,
+            scheduledPriceId: null,
+            stripeSubscriptionScheduleId: null,
+            updatedAt: new Date(),
+        }).where(eq(subscriptions.id, subscriptionId));
         return;
     }
 
