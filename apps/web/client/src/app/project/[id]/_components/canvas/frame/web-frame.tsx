@@ -44,6 +44,9 @@ export const WebFrameComponent = observer(
         const zoomLevel = useRef(1);
         const isConnecting = useRef(false);
         const connectionRef = useRef<ReturnType<typeof connect> | null>(null);
+        const retryCount = useRef(0);
+        const maxRetries = 3;
+        const baseDelay = 1000;
         const [penpalChild, setPenpalChild] = useState<PenpalChildMethods | null>(null);
 
         const undebouncedReloadIframe = () => {
@@ -60,10 +63,27 @@ export const WebFrameComponent = observer(
             leading: true,
         });
 
-        const retrySetupPenpalConnection = () => {
+        const retrySetupPenpalConnection = (error?: Error) => {
+            if (retryCount.current >= maxRetries) {
+                console.error(
+                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Max retries (${maxRetries}) reached, reloading iframe`,
+                    error,
+                );
+                retryCount.current = 0;
+                reloadIframe();
+                return;
+            }
+
+            retryCount.current += 1;
+            const delay = baseDelay * Math.pow(2, retryCount.current - 1);
+            
+            console.log(
+                `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Retrying connection attempt ${retryCount.current}/${maxRetries} in ${delay}ms`,
+            );
+
             setTimeout(() => {
                 setupPenpalConnection();
-            }, 1000);
+            }, delay);
         };
 
         const setupPenpalConnection = () => {
@@ -111,34 +131,40 @@ export const WebFrameComponent = observer(
                 // Store the connection reference
                 connectionRef.current = connection;
 
-                connection.promise.then((child) => {
-                    isConnecting.current = false;
-                    if (!child) {
+                connection.promise
+                    .then((child) => {
+                        isConnecting.current = false;
+                        if (!child) {
+                            const error = new Error('Failed to setup penpal connection: child is null');
+                            console.error(
+                                `${PENPAL_PARENT_CHANNEL} (${frame.id}) - ${error.message}`,
+                            );
+                            retrySetupPenpalConnection(error);
+                            return;
+                        }
+                        
+                        // Reset retry count on successful connection
+                        retryCount.current = 0;
+                        
+                        const remote = child as unknown as PenpalChildMethods;
+                        setPenpalChild(remote);
+                        remote.setFrameId(frame.id);
+                        remote.handleBodyReady();
+                        remote.processDom();
+                        console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
+                    })
+                    .catch((error) => {
+                        isConnecting.current = false;
                         console.error(
-                            `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
+                            `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
+                            error,
                         );
-                        throw new Error('Failed to setup penpal connection: child is null');
-                    }
-                    const remote = child as unknown as PenpalChildMethods;
-                    setPenpalChild(remote);
-                    remote.setFrameId(frame.id);
-                    remote.handleBodyReady();
-                    remote.processDom();
-                    console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
-                });
-
-                connection.promise.catch((error) => {
-                    isConnecting.current = false;
-                    console.error(
-                        `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
-                        error,
-                    );
-                    throw new Error('Failed to setup penpal connection');
-                });
+                        retrySetupPenpalConnection(error);
+                    });
             } catch (error) {
+                isConnecting.current = false;
                 console.error('Failed to setup penpal connection', error);
-                reloadIframe();
-                retrySetupPenpalConnection();
+                retrySetupPenpalConnection(error as Error);
             }
         };
 
