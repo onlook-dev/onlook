@@ -65,8 +65,9 @@ export const terminalCommandTool = tool({
 });
 
 export const SANDBOX_TOOL_NAME = 'restart_dev_server';
+export const SANDBOX_TOOL_PARAMETERS = z.object({});
 export const sandboxTool = tool({
     description:
         'Restart the development server. This should only be used if absolutely necessary such as if updating dependencies, clearing next cache, or if the server is not responding.',
-    parameters: z.object({}),
+    parameters: SANDBOX_TOOL_PARAMETERS,
 });
