@@ -27,6 +27,30 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
     // Get inferred current page from URL immediately
     const inferredCurrentPage = useMemo(() => inferPageFromUrl(frame.url), [frame.url]);
 
+    // Flatten the page tree to get all pages for finding current page
+    const flattenPages = (pages: PageNode[]): PageNode[] => {
+        return pages.reduce<PageNode[]>((acc, page) => {
+            acc.push(page);
+            if (page.children) {
+                acc.push(...flattenPages(page.children));
+            }
+            return acc;
+        }, []);
+    };
+
+    const allPages = useMemo(() => {
+        return flattenPages(editorEngine.pages.tree);
+    }, [editorEngine.pages.tree]);
+
+    // Find the current page based on the frame URL
+    const currentPage = useMemo(() => {
+        const framePathname = new URL(frame.url).pathname;
+        return allPages.find(page => {
+            const pagePath = page.path === '/' ? '' : page.path;
+            return framePathname === pagePath || framePathname === page.path;
+        });
+    }, [frame.url, allPages]);
+
     // Render pages recursively with indentation
     const renderPageItems = (pages: PageNode[], depth = 0): React.ReactElement[] => {
         const items: React.ReactElement[] = [];
@@ -67,35 +91,11 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
         return items;
     };
 
-    // Flatten the page tree to get all pages for finding current page
-    const flattenPages = (pages: PageNode[]): PageNode[] => {
-        return pages.reduce<PageNode[]>((acc, page) => {
-            acc.push(page);
-            if (page.children) {
-                acc.push(...flattenPages(page.children));
-            }
-            return acc;
-        }, []);
-    };
-
-    const allPages = useMemo(() => {
-        return flattenPages(editorEngine.pages.tree);
-    }, [editorEngine.pages.tree]);
-
     useEffect(() => {
         if (editorEngine.sandbox.routerConfig) {
             editorEngine.pages.scanPages();
         }
     }, [editorEngine.sandbox.routerConfig]);
-
-    // Find the current page based on the frame URL
-    const currentPage = useMemo(() => {
-        const framePathname = new URL(frame.url).pathname;
-        return allPages.find(page => {
-            const pagePath = page.path === '/' ? '' : page.path;
-            return framePathname === pagePath || framePathname === page.path;
-        });
-    }, [frame.url, allPages]);
 
     const displayPages = useMemo(() => {
         if (allPages.length > 0) {
