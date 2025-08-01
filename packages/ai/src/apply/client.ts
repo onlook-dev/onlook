@@ -69,8 +69,6 @@ export async function applyCodeChangeWithRelace(
             : undefined,
     };
 
-    console.log('data', data);
-
     const response = await fetch(url, {
         method: 'POST',
         headers,
