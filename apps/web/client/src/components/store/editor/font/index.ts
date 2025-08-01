@@ -72,12 +72,13 @@ export class FontManager {
     private async handleFileEvent(event: FileEvent): Promise<void> {
         try {
             const { paths } = event;
-            
-            if (!this.fontConfigManager.fontConfigPath) {
+            const fontConfigPath = this.fontConfigManager.fontConfigPath;
+
+            if (!fontConfigPath) {
                 return;
             }
 
-            if (!paths.some((path) => path.includes(this.fontConfigManager.fontConfigPath))) {
+            if (!paths.some((path) => path.includes(fontConfigPath))) {
                 return;
             }
 
