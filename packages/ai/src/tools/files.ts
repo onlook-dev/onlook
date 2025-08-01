@@ -63,3 +63,10 @@ export const terminalCommandTool = tool({
     description: 'Run a Bash command in the terminal',
     parameters: TERMINAL_COMMAND_TOOL_PARAMETERS,
 });
+
+export const SANDBOX_TOOL_NAME = 'restart_dev_server';
+export const sandboxTool = tool({
+    description:
+        'Restart the development server. This should only be used if absolutely necessary such as if updating dependencies, clearing next cache, or if the server is not responding.',
+    parameters: z.object({}),
+});

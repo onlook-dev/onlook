@@ -5,6 +5,7 @@ import {
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
     READ_FILES_TOOL_NAME,
     READ_STYLE_GUIDE_TOOL_NAME,
+    SANDBOX_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_NAME
 } from '@onlook/ai';
@@ -22,6 +23,7 @@ const TOOL_ICONS: Record<string, any> = {
     [CREATE_FILE_TOOL_NAME]: Icons.FilePlus,
     [TERMINAL_COMMAND_TOOL_NAME]: Icons.Terminal,
     [SCRAPE_URL_TOOL_NAME]: Icons.Globe,
+    [SANDBOX_TOOL_NAME]: Icons.Cube,
 };
 
 export function ToolCallSimple({

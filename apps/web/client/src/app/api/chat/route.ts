@@ -186,7 +186,7 @@ export const streamResponse = async (req: NextRequest) => {
                     .then(({ api }) => api.usage.revertIncrement({ usageRecordId, rateLimitId }))
                     .catch(error => console.error('Error in chat usage decrement', error));
             }
-            throw error;
+            throw error.error;
         },
     });
 
