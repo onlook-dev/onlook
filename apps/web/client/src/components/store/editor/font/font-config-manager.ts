@@ -31,9 +31,6 @@ export class FontConfigManager {
     }
 
     get fontConfigPath(): string | null {
-        if (!this._fontConfigPath) {
-            return null;
-        }
         return this._fontConfigPath;
     }
 
