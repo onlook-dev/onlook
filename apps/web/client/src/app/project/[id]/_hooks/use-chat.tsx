@@ -36,8 +36,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
                 editorEngine.chat.error.handleChatError(new Error('Output length limit reached'));
             } else if (finishReason === 'content-filter') {
                 editorEngine.chat.error.handleChatError(new Error('Content filter error'));
-            } else if (finishReason === 'error') {
-                editorEngine.chat.error.handleChatError(new Error('Error in chat'));
             } else if (finishReason === 'other' || finishReason === 'unknown') {
                 editorEngine.chat.error.handleChatError(new Error('Unknown finish reason'));
             }

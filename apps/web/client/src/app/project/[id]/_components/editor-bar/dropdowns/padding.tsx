@@ -124,7 +124,7 @@ export const Padding = observer(() => {
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
-            <HoverOnlyTooltip content="Padding" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
+            <HoverOnlyTooltip content="Padding" side="bottom">
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}

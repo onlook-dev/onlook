@@ -179,7 +179,7 @@
             }
         },
         "footer": {
-            "unusedMessages": "未使用的聊天消息不会结转到下个月"
+            "unusedMessages": "未使用的聊天消息会结转到下个月"
         }
     },
     "editor": {

@@ -16,6 +16,7 @@ import {
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
     READ_FILES_TOOL_NAME,
     READ_STYLE_GUIDE_TOOL_NAME,
+    SANDBOX_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_NAME,
 } from '@onlook/ai';
@@ -62,6 +63,8 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             return await handleScrapeUrlTool(
                 toolCall.args as z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
             );
+        } else if (toolName === SANDBOX_TOOL_NAME) {
+            return await handleSandboxTool(editorEngine);
         } else {
             throw new Error(`Unknown tool call: ${toolCall.toolName}`);
         }
@@ -145,10 +148,16 @@ async function handleEditFileTool(
         throw new Error('Binary files are not supported for editing');
     }
 
+    const metadata = {
+        projectId: editorEngine.projectId,
+        conversationId: editorEngine.chat.conversation.current?.id,
+    };
+
     const updatedContent = await api.code.applyDiff.mutate({
         originalCode: originalFile.content,
         updateSnippet: args.content,
         instruction: args.instruction,
+        metadata,
     });
     if (!updatedContent.result) {
         throw new Error('Error applying code change: ' + updatedContent.error);
@@ -208,5 +217,14 @@ async function handleScrapeUrlTool(
     } catch (error) {
         console.error('Error scraping URL:', error);
         throw new Error(`Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+async function handleSandboxTool(editorEngine: EditorEngine): Promise<string> {
+    const result = await editorEngine.sandbox.session.restartDevServer();
+    if (result) {
+        return 'Dev server restarted';
+    } else {
+        return 'Failed to restart dev server';
     }
 }

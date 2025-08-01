@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { useState } from 'react';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 import { ToolbarButton } from '../toolbar-button';
 import type { FrameData } from '@/components/store/editor/frames';
 
@@ -39,40 +39,33 @@ export function WindowActionsGroup({ frameData }: { frameData: FrameData }) {
 
     return (
         <>
-            <Tooltip key="duplicate">
-                <TooltipTrigger asChild>
+            <HoverOnlyTooltip content="Duplicate Window" side="bottom" sideOffset={10}>
+                <ToolbarButton
+                    className="flex items-center w-10"
+                    onClick={duplicateWindow}
+                    disabled={isDuplicating}
+                >
+                    {isDuplicating ? (
+                        <Icons.LoadingSpinner className="size-4 min-size-4 animate-spin" />
+                    ) : (
+                        <Icons.Copy className="size-4 min-size-4" />
+                    )}
+                </ToolbarButton>
+            </HoverOnlyTooltip>
+            {editorEngine.frames.canDelete() && (
+                <HoverOnlyTooltip content="Delete Window" side="bottom" sideOffset={10}>
                     <ToolbarButton
                         className="flex items-center w-10"
-                        onClick={duplicateWindow}
-                        disabled={isDuplicating}
+                        disabled={!editorEngine.frames.canDelete() || isDeleting}
+                        onClick={deleteWindow}
                     >
-                        {isDuplicating ? (
+                        {isDeleting ? (
                             <Icons.LoadingSpinner className="size-4 min-size-4 animate-spin" />
                         ) : (
-                            <Icons.Copy className="size-4 min-size-4" />
+                            <Icons.Trash className="size-4 min-size-4" />
                         )}
                     </ToolbarButton>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Duplicate Window</TooltipContent>
-            </Tooltip>
-            {editorEngine.frames.canDelete() && (
-                <Tooltip key="delete">
-                    <TooltipTrigger asChild>
-                        <ToolbarButton
-                            className="flex items-center w-10"
-                            disabled={!editorEngine.frames.canDelete() || isDeleting}
-                            onClick={deleteWindow}
-                        >
-                            {isDeleting ? (
-                                <Icons.LoadingSpinner className="size-4 min-size-4 animate-spin" />
-                            ) : (
-                                <Icons.Trash className="size-4 min-size-4" />
-                            )}
-                        </ToolbarButton>
-
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">Delete Window</TooltipContent>
-                </Tooltip>
+                </HoverOnlyTooltip>
             )}
         </>
     );

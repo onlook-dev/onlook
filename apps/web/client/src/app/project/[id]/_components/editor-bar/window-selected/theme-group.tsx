@@ -1,8 +1,8 @@
 import { SystemTheme } from '@onlook/models/assets';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { useEffect, useState } from 'react';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 import { ToolbarButton } from '../toolbar-button';
 import { type FrameData } from '@/components/store/editor/frames';
 
@@ -33,39 +33,30 @@ export function ThemeGroup({ frameData }: { frameData: FrameData }) {
 
     return (
         <>
-            <Tooltip key="system">
-                <TooltipTrigger asChild>
+            <HoverOnlyTooltip content="System Theme" side="bottom" sideOffset={10}>
                     <ToolbarButton
                         className={`w-10 ${theme === SystemTheme.SYSTEM ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50 text-foreground-onlook'}`}
                         onClick={() => changeTheme(SystemTheme.SYSTEM)}
                     >
                         <Icons.Laptop className="h-4 w-4" />
                     </ToolbarButton>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">System Theme</TooltipContent>
-            </Tooltip>
-            <Tooltip key="dark">
-                <TooltipTrigger asChild>
+            </HoverOnlyTooltip>
+            <HoverOnlyTooltip content="Dark Theme" side="bottom" sideOffset={10}>
                     <ToolbarButton
                         className={`w-10 ${theme === SystemTheme.DARK ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50 text-foreground-onlook'}`}
                         onClick={() => changeTheme(SystemTheme.DARK)}
                     >
                         <Icons.Moon className="h-4 w-4" />
                     </ToolbarButton>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Dark Theme</TooltipContent>
-            </Tooltip>
-            <Tooltip key="light">
-                <TooltipTrigger asChild>
+            </HoverOnlyTooltip>
+            <HoverOnlyTooltip content="Light Theme" side="bottom" sideOffset={10}>
                     <ToolbarButton
                         className={`w-10 ${theme === SystemTheme.LIGHT ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50 text-foreground-onlook'}`}
                         onClick={() => changeTheme(SystemTheme.LIGHT)}
                     >
                         <Icons.Sun className="h-4 w-4" />
                     </ToolbarButton>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Light Theme</TooltipContent>
-            </Tooltip>
+            </HoverOnlyTooltip>
         </>
     );
 } 
