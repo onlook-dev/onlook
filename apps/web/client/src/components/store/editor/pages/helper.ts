@@ -254,7 +254,6 @@ const scanAppDirectory = async (
         const [pageFileResult, layoutFileResult] = fileResults;
         const children = childResults.flat();
 
-
         let pageMetadata: PageMetadata | undefined;
         let layoutMetadata: PageMetadata | undefined;
 
