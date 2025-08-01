@@ -1,5 +1,5 @@
 import type { Font } from '@onlook/models';
-import { parse, traverse, generate, type t as T, types as t } from '@onlook/parser';
+import { generate, getAstFromContent, type t as T, types as t, traverse } from '@onlook/parser';
 import { removeFontsFromClassName } from './class-utils';
 
 /**
@@ -11,10 +11,10 @@ import { removeFontsFromClassName } from './class-utils';
  * @returns Array of Font objects containing extracted font configurations
  */
 export const parseFontDeclarations = (content: string): Font[] => {
-    const ast = parse(content, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
+    const ast = getAstFromContent(content);
+    if (!ast) {
+        throw new Error(`Failed to parse file in parseFontDeclarations`);
+    }
 
     const fontImports: Record<string, string> = {};
     const fonts: Font[] = [];
@@ -172,10 +172,10 @@ export function migrateFontsFromLayout(content: string): {
     fonts: Font[];
 } {
     try {
-        const ast = parse(content, {
-            sourceType: 'module',
-            plugins: ['typescript', 'jsx'],
-        });
+        const ast = getAstFromContent(content);
+        if (!ast) {
+            throw new Error(`Failed to parse file in migrateFontsFromLayout`);
+        }
 
         const fontImports: Record<string, string> = {};
         const fontVariables: string[] = [];
@@ -188,31 +188,27 @@ export function migrateFontsFromLayout(content: string): {
                 }
 
                 const source = path.node.source.value;
-                if (source === 'next/font/google') {
-                    if (!path.node.specifiers) {
-                        return;
-                    }
-
-                    path.node.specifiers.forEach((specifier) => {
-                        if (t.isImportSpecifier(specifier) && t.isIdentifier(specifier.imported)) {
-                            fontImports[specifier.imported.name] = specifier.imported.name;
-                            path.remove();
-                        }
-                    });
-                } else if (source === 'next/font/local') {
+                if (source === 'next/font/google' || source === 'next/font/local') {
                     if (!path.node.specifiers) {
                         return;
                     }
 
                     path.node.specifiers.forEach((specifier) => {
                         if (
+                            source === 'next/font/google' &&
+                            t.isImportSpecifier(specifier) &&
+                            t.isIdentifier(specifier.imported)
+                        ) {
+                            fontImports[specifier.imported.name] = specifier.imported.name;
+                        } else if (
+                            source === 'next/font/local' &&
                             t.isImportDefaultSpecifier(specifier) &&
                             t.isIdentifier(specifier.local)
                         ) {
                             fontImports[specifier.local.name] = 'localFont';
-                            path.remove();
                         }
                     });
+                    path.remove(); // Remove the entire import declaration
                 }
             },
 

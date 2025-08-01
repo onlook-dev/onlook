@@ -1,0 +1,15 @@
+{
+    "fontName": "customFont",
+    "newSources": [
+        {
+            "path": "./fonts/custom-black.woff2",
+            "weight": "900",
+            "style": "normal"
+        },
+        {
+            "path": "./fonts/custom-light.woff2", 
+            "weight": "300",
+            "style": "normal"
+        }
+    ]
+} 

@@ -1,0 +1,52 @@
+[
+    {
+        "id": "inter",
+        "family": "Inter",
+        "type": "google",
+        "subsets": [
+            "latin"
+        ],
+        "weight": [
+            "400",
+            "700"
+        ],
+        "styles": [
+            "normal"
+        ],
+        "variable": "--font-inter"
+    },
+    {
+        "id": "roboto",
+        "family": "Roboto",
+        "type": "google",
+        "subsets": [
+            "latin",
+            "latin-ext"
+        ],
+        "weight": [
+            "300",
+            "400",
+            "500",
+            "700"
+        ],
+        "styles": [
+            "normal",
+            "italic"
+        ],
+        "variable": "--font-roboto"
+    },
+    {
+        "id": "openSans",
+        "family": "Open Sans",
+        "type": "google",
+        "subsets": [
+            "latin"
+        ],
+        "weight": [
+            "400",
+            "600"
+        ],
+        "styles": [],
+        "variable": "--font-open-sans"
+    }
+]

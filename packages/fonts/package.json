@@ -32,5 +32,7 @@
         "@onlook/typescript": "*",
         "typescript": "^5.5.4"
     },
-    "dependencies": {}
+    "dependencies": {
+        "@onlook/parser": "*"
+    }
 }
