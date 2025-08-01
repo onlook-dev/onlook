@@ -96,13 +96,7 @@ export async function applyCodeChange(
             applyFn:
                 preferredProvider === FastApplyProvider.MORPH
                     ? applyCodeChangeWithMorph
-                    : (originalCode: string, updateSnippet: string, instruction: string) =>
-                          applyCodeChangeWithRelace(
-                              originalCode,
-                              updateSnippet,
-                              instruction,
-                              metadata,
-                          ),
+                    : applyCodeChangeWithRelace,
         },
         {
             provider:
@@ -111,13 +105,7 @@ export async function applyCodeChange(
                     : FastApplyProvider.MORPH,
             applyFn:
                 preferredProvider === FastApplyProvider.MORPH
-                    ? (originalCode: string, updateSnippet: string, instruction: string) =>
-                          applyCodeChangeWithRelace(
-                              originalCode,
-                              updateSnippet,
-                              instruction,
-                              metadata,
-                          )
+                    ? applyCodeChangeWithRelace
                     : applyCodeChangeWithMorph,
         },
     ];
