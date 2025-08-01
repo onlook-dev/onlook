@@ -179,7 +179,7 @@
             }
         },
         "footer": {
-            "unusedMessages": "Los mensajes de chat no utilizados no se transfieren al siguiente mes"
+            "unusedMessages": "Los mensajes de chat no utilizados se transferirán al siguiente mes"
         }
     },
     "editor": {

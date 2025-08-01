@@ -34,6 +34,8 @@ export const memberRouter = createTRPCRouter({
                     displayName: member.user.displayName ?? '',
                     // @ts-expect-error - TODO: Fix this later
                     avatarUrl: member.user.avatarUrl ?? '',
+                    // @ts-expect-error - TODO: Fix this later
+                    stripeCustomerId: member.user.stripeCustomerId ?? null,
                 }),
             }));
         }),

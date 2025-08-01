@@ -11,6 +11,7 @@ import {
     products,
     projectCustomDomains,
     projects,
+    rateLimits,
     subscriptions,
     usageRecords,
     userCanvases,
@@ -21,6 +22,7 @@ import {
     type Price,
     type Product,
     type Project,
+    type RateLimit,
     type Subscription,
     type User,
 } from '@onlook/db';
@@ -31,7 +33,7 @@ import {
     ProjectRole,
     type ChatMessageContext,
 } from '@onlook/models';
-import { PriceKey, ProductType } from '@onlook/stripe';
+import { PriceKey, ProductType, SubscriptionStatus } from '@onlook/stripe';
 import { v4 as uuidv4 } from 'uuid';
 import { SEED_USER } from './constants';
 
@@ -44,6 +46,7 @@ const user0 = {
     avatarUrl: SEED_USER.AVATAR_URL,
     createdAt: new Date(),
     updatedAt: new Date(),
+    stripeCustomerId: null,
 } satisfies User;
 
 const project0 = {
@@ -69,6 +72,20 @@ const conversation0 = {
     displayName: 'Test Conversation',
     createdAt: new Date(),
     updatedAt: new Date(),
+    suggestions: [
+        {
+            title: 'Test Suggestion',
+            prompt: 'Test Prompt',
+        },
+        {
+            title: 'Test Suggestion 2',
+            prompt: 'Test Prompt 2',
+        },
+        {
+            title: 'Test Suggestion 3',
+            prompt: 'Test Prompt 3',
+        },
+    ],
 } satisfies Conversation;
 
 const context0 = {
@@ -176,7 +193,7 @@ const subscription0 = {
     priceId: price0.id,
     startedAt: new Date(),
     updatedAt: new Date(),
-    status: 'active',
+    status: SubscriptionStatus.ACTIVE,
     stripeCustomerId: 'cus_1234567890',
     stripeSubscriptionId: 'sub_1234567890',
     stripeSubscriptionScheduleId: null,
@@ -185,7 +202,23 @@ const subscription0 = {
     scheduledPriceId: null,
     scheduledChangeAt: null,
     endedAt: null,
+    stripeCurrentPeriodStart: new Date(),
+    stripeCurrentPeriodEnd: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
 } satisfies Subscription;
+
+const rateLimit0 = {
+    id: uuidv4(),
+    userId: user0.id,
+    subscriptionId: subscription0.id,
+    max: 100,
+    left: 100,
+    startedAt: new Date(),
+    endedAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+    carryOverKey: uuidv4(),
+    carryOverTotal: 0,
+    stripeSubscriptionItemId: subscription0.stripeSubscriptionItemId,
+    updatedAt: new Date(),
+} satisfies RateLimit;
 
 export const seedDb = async () => {
     console.log('Seeding the database...');
@@ -195,6 +228,7 @@ export const seedDb = async () => {
         await tx.insert(products).values([product0]);
         await tx.insert(prices).values([price0]);
         await tx.insert(subscriptions).values([subscription0]);
+        await tx.insert(rateLimits).values([rateLimit0]);
         await tx.insert(projects).values([project0]);
         await tx.insert(userProjects).values([
             {
@@ -222,6 +256,7 @@ export const resetDb = async () => {
         await tx.delete(userCanvases);
         await tx.delete(userProjects);
         await tx.delete(usageRecords);
+        await tx.delete(rateLimits);
         await tx.delete(subscriptions);
         await tx.delete(prices);
         await tx.delete(products);

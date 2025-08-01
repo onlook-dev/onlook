@@ -19,6 +19,23 @@ export const SubscriptionModal = observer(() => {
     const backgroundUrl = useGetBackground('create');
     const { subscription } = useSubscription();
 
+    const getSubscriptionChangeMessage = () => {
+        let message = '';
+        if (subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.PRICE_CHANGE && subscription.scheduledChange.price) {
+            message = `Your ${subscription.scheduledChange.price.monthlyMessageLimit} messages a month plan starts on ${subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+        } else if (subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION) {
+            message = `Your subscription will end on ${subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
+        }
+
+        if (message) {
+            return (
+                <div className="text-foreground-secondary/80 text-balance">
+                    {message}
+                </div>
+            );
+        }
+    }
+
     return (
         <AnimatePresence>
             {state.isSubscriptionModalOpen && (
@@ -61,18 +78,7 @@ export const SubscriptionModal = observer(() => {
                                                     : t(transKeys.pricing.titles.choosePlan)
                                                 }
                                             </h1 >
-                                            {subscription?.scheduledChange?.price && (
-                                                <div className="text-foreground-secondary/80 text-balance">
-                                                    Your {subscription.scheduledChange.price.monthlyMessageLimit} messages a month plan starts on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                                                </div>
-                                            )}
-                                            {
-                                                subscription?.scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION && (
-                                                    <div className="text-foreground-secondary/80 text-balance">
-                                                        Your subscription will be cancelled on {subscription.scheduledChange.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                                                    </div>
-                                                )
-                                            }
+                                            {getSubscriptionChangeMessage()}
                                         </div >
                                     </motion.div>
                                     <div className="flex gap-4">
