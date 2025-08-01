@@ -77,7 +77,7 @@
         "octokit": "^5.0.3",
         "penpal": "^7.0.4",
         "posthog-js": "^1.246.0",
-        "posthog-node": "^4.17.2",
+        "posthog-node": "^5.6.0",
         "prosemirror-commands": "^1.7.1",
         "prosemirror-history": "^1.4.1",
         "prosemirror-keymap": "^1.2.2",
