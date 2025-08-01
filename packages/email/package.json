@@ -33,7 +33,7 @@
         "@onlook/typescript": "*"
     },
     "dependencies": {
-        "@react-email/components": "0.0.41",
+        "@react-email/components": "0.4.0",
         "react": "19.1.0",
         "react-dom": "19.1.0",
         "react-email": "4.0.15",
