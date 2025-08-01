@@ -103,7 +103,10 @@ export const TopBar = observer(
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="cursor-pointer"
+                            className={cn(
+                                'cursor-pointer',
+                                !editorEngine.frames.navigation.canGoBack(frame.id) && 'hidden',
+                            )}
                             onClick={handleGoBack}
                             disabled={!editorEngine.frames.navigation.canGoBack(frame.id)}
                         >
@@ -114,7 +117,10 @@ export const TopBar = observer(
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="cursor-pointer"
+                            className={cn(
+                                'cursor-pointer',
+                                !editorEngine.frames.navigation.canGoForward(frame.id) && 'hidden',
+                            )}
                             onClick={handleGoForward}
                             disabled={!editorEngine.frames.navigation.canGoForward(frame.id)}
                         >
