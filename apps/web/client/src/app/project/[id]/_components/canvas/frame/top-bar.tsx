@@ -92,7 +92,7 @@ export const TopBar = observer(
                 onClick={handleClick}
             >
                 <div
-                    className="flex flex-row items-center gap-1"
+                    className="flex flex-row items-center"
                     style={{
                         transform: `scale(${1 / editorEngine.canvas.scale})`,
                         transformOrigin: 'left center',
