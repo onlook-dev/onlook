@@ -37,6 +37,10 @@ export async function applyCodeChangeWithMorph(
 export async function applyCodeChangeWithRelace(
     originalCode: string,
     updateSnippet: string,
+    instruction: string,
+    userId: string,
+    projectId: string,
+    conversationId: string,
 ): Promise<string | null> {
     const apiKey = process.env.RELACE_API_KEY;
     if (!apiKey) {
@@ -51,6 +55,12 @@ export async function applyCodeChangeWithRelace(
     const data = {
         initialCode: originalCode,
         editSnippet: updateSnippet,
+        instructions: instruction,
+        relaceMetadata: {
+            onlookUserId: userId,
+            onlookProjectId: projectId,
+            onlookConversationId: conversationId,
+        },
     };
 
     const response = await fetch(url, {
@@ -70,6 +80,9 @@ export async function applyCodeChange(
     updateSnippet: string,
     instruction: string,
     preferredProvider: FastApplyProvider = FastApplyProvider.RELACE,
+    userId: string,
+    projectId: string,
+    conversationId: string,
 ): Promise<string | null> {
     const providerAttempts = [
         {
@@ -77,7 +90,8 @@ export async function applyCodeChange(
             applyFn:
                 preferredProvider === FastApplyProvider.MORPH
                     ? applyCodeChangeWithMorph
-                    : applyCodeChangeWithRelace,
+                    : (originalCode: string, updateSnippet: string, instruction: string) => 
+                          applyCodeChangeWithRelace(originalCode, updateSnippet, instruction, userId, projectId, conversationId),
         },
         {
             provider:
@@ -86,7 +100,8 @@ export async function applyCodeChange(
                     : FastApplyProvider.MORPH,
             applyFn:
                 preferredProvider === FastApplyProvider.MORPH
-                    ? applyCodeChangeWithRelace
+                    ? (originalCode: string, updateSnippet: string, instruction: string) => 
+                          applyCodeChangeWithRelace(originalCode, updateSnippet, instruction, userId, projectId, conversationId)
                     : applyCodeChangeWithMorph,
         },
     ];
@@ -104,6 +119,10 @@ export async function applyCodeChange(
                     : await (applyFn as typeof applyCodeChangeWithRelace)(
                           originalCode,
                           updateSnippet,
+                          instruction,
+                          userId,
+                          projectId,
+                          conversationId,
                       );
             if (result) return result;
         } catch (error) {
