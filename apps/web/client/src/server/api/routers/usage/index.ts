@@ -1,8 +1,6 @@
 import { rateLimits, subscriptions, usageRecords } from '@onlook/db';
 import { UsageType, type UsageResult } from '@onlook/models';
 import { FREE_PRODUCT_CONFIG, SubscriptionStatus } from '@onlook/stripe';
-import { startOfDay } from 'date-fns/startOfDay';
-import { startOfMonth } from 'date-fns/startOfMonth';
 import { sub } from 'date-fns/sub';
 import { and, desc, eq, gt, gte, lt, lte, ne, sql, sum } from 'drizzle-orm';
 import type { PgTransaction } from 'drizzle-orm/pg-core';
@@ -111,12 +109,12 @@ export const getFreePlanUsage = async (
     now: Date,
 ): Promise<UsageResult> => {
     // Previous day
-    const dayStart = startOfDay(sub(now, { days: 1 })); // Start of YESTERDAY
-    const dayEnd = startOfDay(now);                     // Start of today (end of yesterday)
+    const dayEnd = now;
+    const dayStart = sub(now, { days: 1 });
 
     // Previous month  
-    const monthStart = startOfMonth(sub(now, { months: 1 })); // Start of LAST MONTH
-    const monthEnd = startOfMonth(now);                       // Start of this month (end of last month)
+    const monthEnd = now;
+    const monthStart = sub(now, { months: 1 });
 
     // Count records from previous day
     const lastDayCount = await tx

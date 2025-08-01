@@ -15,7 +15,7 @@ export const subscriptionRouter = createTRPCRouter({
                 isNull(legacySubscriptions.redeemAt),
             ),
         });
-        return subscription;
+        return subscription ?? null;
     }),
     get: protectedProcedure.query(async ({ ctx }) => {
         const user = ctx.user;
@@ -199,18 +199,18 @@ export const subscriptionRouter = createTRPCRouter({
         }
 
         const [updatedSubscription] = await ctx.db.update(subscriptions).set({
-             status: SubscriptionStatus.ACTIVE,
-             updatedAt: new Date(),
-             scheduledPriceId: null,
-             stripeSubscriptionScheduleId: null,
-             scheduledChangeAt: null,
-         }).where(eq(subscriptions.stripeSubscriptionScheduleId, input.subscriptionScheduleId)).returning();
- 
-         if (!updatedSubscription) {
-             throw new Error('Subscription not found');
-         }
+            status: SubscriptionStatus.ACTIVE,
+            updatedAt: new Date(),
+            scheduledPriceId: null,
+            stripeSubscriptionScheduleId: null,
+            scheduledChangeAt: null,
+        }).where(eq(subscriptions.stripeSubscriptionScheduleId, input.subscriptionScheduleId)).returning();
 
-         return updatedSubscription;
+        if (!updatedSubscription) {
+            throw new Error('Subscription not found');
+        }
+
+        return updatedSubscription;
     }),
 });
 
