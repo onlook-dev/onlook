@@ -34,7 +34,7 @@
     },
     "dependencies": {
         "@react-email/components": "0.0.41",
-        "react": "19.1.0",
+        "react": "19.1.1",
         "react-dom": "19.1.0",
         "react-email": "4.0.15",
         "resend": "^4.5.1"

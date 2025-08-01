@@ -82,7 +82,7 @@
         "prosemirror-history": "^1.4.1",
         "prosemirror-keymap": "^1.2.2",
         "psl": "^1.15.0",
-        "react": "^19.0.0",
+        "react": "^19.1.1",
         "react-arborist": "^3.4.3",
         "react-codemirror-merge": "4.23.10",
         "react-dom": "^19.0.0",
