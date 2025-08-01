@@ -131,9 +131,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
                 <ContextMenuTrigger>
                     <div
                         style={style}
-                        className={cn(
-                            'flex items-center h-6 cursor-pointer hover:bg-background-hover rounded',
-                        )}
+                        className="flex items-center h-6 cursor-pointer hover:bg-background-hover rounded"
                         onClick={handleClick}
                     >
                         <span className="w-4 h-4 flex-none relative">
