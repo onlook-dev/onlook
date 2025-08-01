@@ -159,6 +159,8 @@ const getSubscriptionUsage = async (
     userId: string,
     now: Date,
 ): Promise<UsageResult> => {
+    // Selects all valid rate limits for the user (i.e. not expired)
+    // and sums the left and max values
     const limit = await tx
         .select({ left: sum(rateLimits.left), max: sum(rateLimits.max) })
         .from(rateLimits)

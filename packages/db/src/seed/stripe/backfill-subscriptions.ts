@@ -6,6 +6,7 @@ import { usageRecords } from '@/schema/subscription/usage';
 import { users } from '@/schema/user/user';
 import { db } from '@onlook/db/src/client';
 import { UsageType } from '@onlook/models';
+import { SubscriptionStatus } from '@onlook/stripe';
 import { createStripeClient } from '@onlook/stripe/src/client';
 import { and, asc, count, eq, gte, lt } from 'drizzle-orm';
 import type { PgTransaction } from 'drizzle-orm/pg-core';
@@ -60,6 +61,10 @@ export const getStripeItems = async (subscriptions: DbSubscription[]) => {
 }
 
 const insertRateLimit = async (tx: PgTransaction<any, any, any>, item: StripeItem) => {
+    if (item.subscription.status !== SubscriptionStatus.ACTIVE) {
+        return;
+    }
+
     console.log(`Inserting rate limit for subscription ${item.subscription.id}`);
 
     // Count usage records within the current period
@@ -91,8 +96,9 @@ const insertRateLimit = async (tx: PgTransaction<any, any, any>, item: StripeIte
     }
 
     console.log(`Inserting rate limit for subscription ${item.subscription.id}: ${JSON.stringify(insertValue, null, 2)}`);
+
     // Insert rate limit record
-    await tx.insert(rateLimits).values(insertValue)
+    await tx.insert(rateLimits).values(insertValue).onConflictDoNothing();
 }
 
 export const backfillSubscriptions = async () => {
