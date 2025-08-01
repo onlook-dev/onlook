@@ -20,6 +20,7 @@ import {
     BorderSolidIcon,
     BorderTopIcon,
     BoxIcon,
+    BoxModelIcon,
     ButtonIcon,
     ChatBubbleIcon,
     CheckCircledIcon,
@@ -1460,6 +1461,7 @@ export const Icons = {
     Button: ButtonIcon,
     Bookmark: BookmarkIcon,
     BookmarkFilled: BookmarkFilledIcon,
+    BoxModel: BoxModelIcon,
 
     ChatBubble: ChatBubbleIcon,
     Check: CheckIcon,
