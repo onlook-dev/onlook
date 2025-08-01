@@ -124,38 +124,6 @@ export class FrameEventManager {
         }
     }
 
-    async handleNavigation(frameId: string, data: { pathname: string }): Promise<void> {
-        try {
-            const frameData = this.editorEngine.frames.get(frameId);
-            if (!frameData?.view) {
-                console.warn('Frame not found for navigation');
-                return;
-            }
-
-
-            const currentUrl = frameData.view.src;
-            const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
-
-            if (!baseUrl) {
-                return;
-            }
-
-            const newUrl = `${baseUrl}${data.pathname}`;
-
-            if (newUrl === currentUrl) {
-                return;
-            }
-
-            this.editorEngine.frames.addToHistory(data.pathname, frameId);
-
-            await this.editorEngine.frames.updateAndSaveToStorage(frameId, {
-                url: newUrl,
-            });
-        } catch (error) {
-            console.error('Error handling navigation:', error);
-        }
-    }
-
     private async validateAndCleanSelections(): Promise<void> {
         const selectedElements = this.editorEngine.elements.selected;
         const stillValidElements = await Promise.all(

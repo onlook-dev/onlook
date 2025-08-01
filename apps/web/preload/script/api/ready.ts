@@ -1,11 +1,9 @@
 import { processDom } from './dom.ts';
 import { listenForDomChanges } from './events/index.ts';
 import { cssManager } from './style/css-manager.ts';
-import { listenToNavigationChanges } from './navigation.ts';
 
 export function handleBodyReady() {
     listenForDomChanges(); 
-    listenToNavigationChanges();   
     keepDomUpdated();
     cssManager.injectDefaultStyles();
 }
