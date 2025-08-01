@@ -7,4 +7,5 @@ export interface User {
     email: string | null;
     createdAt: Date;
     updatedAt: Date;
+    stripeCustomerId: string | null;
 }

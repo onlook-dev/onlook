@@ -1,5 +1,3 @@
-import type { ParseResult } from '@babel/parser';
-import { DefaultSettings } from '@onlook/constants';
 import {
     addGoogleFontSpecifier,
     generateFontVariableExport,
@@ -9,7 +7,7 @@ import {
     validateGoogleFontSetup,
 } from '@onlook/fonts';
 import { RouterType, type CodeDiff, type Font } from '@onlook/models';
-import { generate, parse, types as t, type t as T } from '@onlook/parser';
+import { generate, getAstFromContent, types as t, type t as T } from '@onlook/parser';
 import { camelCase } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -32,11 +30,7 @@ export class FontConfigManager {
         );
     }
 
-    get fontConfigPath(): string {
-        if (!this._fontConfigPath) {
-            // Fallback to default if not yet determined
-            return normalizePath(DefaultSettings.FONT_CONFIG);
-        }
+    get fontConfigPath(): string | null {
         return this._fontConfigPath;
     }
 
@@ -102,7 +96,7 @@ export class FontConfigManager {
             const importName = font.family.replace(/\s+/g, '_');
             const fontName = camelCase(font.id);
 
-            await this.ensureConfigFileExists();
+            await this.ensureFontConfigFileExists();
 
             const fontConfig = await this.readFontConfigFile();
             if (!fontConfig) {
@@ -141,6 +135,11 @@ export class FontConfigManager {
 
             // Generate and write the updated code back to the file
             const { code } = generate(ast);
+
+            if (!this.fontConfigPath) {
+                return false;
+            }
+
             const success = await this.editorEngine.sandbox.writeFile(this.fontConfigPath, code);
 
             if (!success) {
@@ -164,6 +163,10 @@ export class FontConfigManager {
         try {
             const { content } = (await this.readFontConfigFile()) ?? {};
             if (!content) {
+                return false;
+            }
+
+            if (!this.fontConfigPath) {
                 return false;
             }
 
@@ -219,7 +222,7 @@ export class FontConfigManager {
      */
     async readFontConfigFile(): Promise<
         | {
-            ast: ParseResult<T.File>;
+            ast: T.File;
             content: string;
         }
         | undefined
@@ -227,6 +230,10 @@ export class FontConfigManager {
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
+            return;
+        }
+
+        if (!this.fontConfigPath) {
             return;
         }
 
@@ -238,10 +245,10 @@ export class FontConfigManager {
         const content = file.content;
 
         // Parse the file content using Babel
-        const ast = parse(content, {
-            sourceType: 'module',
-            plugins: ['typescript', 'jsx'],
-        });
+        const ast = getAstFromContent(content);
+        if (!ast) {
+            throw new Error('Failed to parse font config file');
+        }
 
         return {
             ast,
@@ -252,10 +259,18 @@ export class FontConfigManager {
     /**
      * Ensures the font configuration file exists
      */
-    async ensureConfigFileExists(): Promise<void> {
+    async ensureFontConfigFileExists(): Promise<void> {
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
+            return;
+        }
+
+        if (sandbox.isIndexing) {
+            return;
+        }
+
+        if (!this.fontConfigPath) {
             return;
         }
 

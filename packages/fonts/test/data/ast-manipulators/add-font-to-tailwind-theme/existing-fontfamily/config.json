@@ -1,0 +1,11 @@
+{
+    "font": {
+        "id": "poppins",
+        "family": "Poppins",
+        "subsets": ["latin"],
+        "variable": "--font-poppins",
+        "weight": ["400", "600"],
+        "styles": ["normal"],
+        "type": "google"
+    }
+}

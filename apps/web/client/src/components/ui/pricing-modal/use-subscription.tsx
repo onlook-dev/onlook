@@ -14,11 +14,13 @@ export const useSubscription = () => {
     const scheduledChange = subscription?.scheduledChange;
 
     useEffect(() => {
-        if (isCheckingSubscription && (isPro || scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION)) {
-            if (isPro) {
-                toast.success('Subscription activated successfully!');
-            } else {
+        if (isCheckingSubscription && isPro) {
+            if (scheduledChange?.scheduledAction === ScheduledSubscriptionAction.PRICE_CHANGE) {
+                toast.success('Subscription updated successfully!');
+            } else if (scheduledChange?.scheduledAction === ScheduledSubscriptionAction.CANCELLATION) {
                 toast.success('Subscription cancelled successfully!');
+            } else {
+                toast.success('Subscription activated successfully!');
             }
             setIsCheckingSubscription(false);
         }

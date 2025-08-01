@@ -32,6 +32,15 @@ export class SessionManager {
         await this.createTerminalSessions(this.session);
     }
 
+    async restartDevServer(): Promise<boolean> {
+        const task = await this.session?.tasks.get('dev');
+        if (task) {
+            await task.restart();
+            return true;
+        }
+        return false;
+    }
+
     getTerminalSession(id: string) {
         return this.terminalSessions.get(id) as TerminalSession | undefined;
     }

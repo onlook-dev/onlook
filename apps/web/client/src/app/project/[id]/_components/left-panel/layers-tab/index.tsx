@@ -101,7 +101,7 @@ export const LayersTab = observer(() => {
             );
             editorEngine.action.run(moveAction);
         },
-        [editorEngine],
+        [],
     );
 
     const disableDrop = useCallback(

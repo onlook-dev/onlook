@@ -67,7 +67,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     ];
 
     return (
-        <Popover open={open} onOpenChange={setOpen}>
+        <Popover open={open} onOpenChange={setOpen} >
             <PopoverTrigger asChild>
                 <button>
                     <Avatar className={className}>
@@ -76,7 +76,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                     </Avatar>
                 </button>
             </PopoverTrigger>
-            <PopoverContent className="w-72 p-0">
+            <PopoverContent className="w-72 p-0" >
                 <div className="flex items-center gap-2 p-3 select-none">
                     <div className="flex flex-col">
                         <span className="text-smallPlus">{user?.firstName ?? user?.displayName}</span>
@@ -84,7 +84,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
                     </div>
                 </div>
                 <Separator />
-                <UsageSection />
+                <UsageSection open={open} />
                 <Separator />
                 <div className="p-2 flex flex-col items-start">
                     {BUTTONS.map((button) => (

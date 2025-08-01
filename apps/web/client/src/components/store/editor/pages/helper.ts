@@ -1,10 +1,10 @@
 import type { ReaddirEntry } from '@codesandbox/sdk';
 import type { PageMetadata, PageNode, SandboxFile } from '@onlook/models';
-import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
+import { RouterType } from '@onlook/models';
+import { generate, getAstFromContent, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
 import type { SandboxManager } from '../sandbox';
 import { formatContent } from '../sandbox/helpers';
-import { RouterType } from '@onlook/models';
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     children,
@@ -117,10 +117,10 @@ const joinPath = (...parts: string[]): string => {
 // Helper function to extract metadata from file content
 const extractMetadata = async (content: string): Promise<PageMetadata | undefined> => {
     try {
-        const ast = parse(content, {
-            sourceType: 'module',
-            plugins: ['typescript', 'jsx'],
-        });
+        const ast = getAstFromContent(content);
+        if (!ast) {
+            throw new Error('Failed to parse page file');
+        }
 
         let metadata: PageMetadata | undefined;
 
@@ -231,9 +231,9 @@ const scanAppDirectory = async (
 
     if (pageFile) {
         const fileReadPromises: Array<Promise<SandboxFile | null>> = [];
-        
+
         fileReadPromises.push(sandboxManager.readFile(`${dir}/${pageFile.name}`));
-        
+
         if (layoutFile) {
             fileReadPromises.push(sandboxManager.readFile(`${dir}/${layoutFile.name}`));
         } else {
@@ -313,7 +313,7 @@ const scanAppDirectory = async (
             const fullPath = `${dir}/${entry.name}`;
             const relativePath = joinPath(parentPath, entry.name);
             const children = await scanAppDirectory(sandboxManager, fullPath, relativePath);
-            
+
             if (children.length > 0) {
                 const dirPath = relativePath.replace(/\\/g, '/');
                 const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
@@ -442,7 +442,7 @@ const scanPagesDirectory = async (
             }
         }
     }
-    
+
     return nodes;
 };
 
@@ -823,10 +823,10 @@ async function updateMetadataInFile(
     const content = file.content
 
     // Parse the file content using Babel
-    const ast = parse(content, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
+    const ast = getAstFromContent(content);
+    if (!ast) {
+        throw new Error(`Failed to parse file ${filePath}`);
+    }
 
     let hasMetadataImport = false;
     let metadataNode: T.ExportNamedDeclaration | null = null;

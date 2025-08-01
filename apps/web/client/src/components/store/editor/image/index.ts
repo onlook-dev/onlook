@@ -1,18 +1,16 @@
 import { DefaultSettings } from '@onlook/constants';
 import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
-import {
-    convertToBase64,
-    getBaseName,
-    getMimeType,
-    isImageFile,
-} from '@onlook/utility/src/file';
+import { generateNewFolderPath, stripImageFolderPrefix } from '@onlook/utility';
+import { convertToBase64, getBaseName, getMimeType, isImageFile } from '@onlook/utility/src/file';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
-import { generateNewFolderPath } from '@onlook/utility';
 
 export class ImageManager {
     private _imagePaths: string[] = [];
     private _isScanning = false;
+    private _isSelectingImage = false;
+    private _selectedImage: ImageContentData | null = null;
+    private _previewImage: ImageContentData | null = null;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -23,7 +21,7 @@ export class ImageManager {
                 if (!isIndexingFiles) {
                     await this.scanImages();
                 }
-            }
+            },
         );
     }
 
@@ -31,8 +29,91 @@ export class ImageManager {
         return this._imagePaths;
     }
 
+    get isSelectingImage() {
+        return this._isSelectingImage;
+    }
+
     get isScanning() {
         return this._isScanning;
+    }
+
+    get selectedImage() {
+        return this._selectedImage;
+    }
+
+    get previewImage() {
+        return this._previewImage;
+    }
+
+    setPreviewImage(image: ImageContentData | null) {
+        try {
+            this._previewImage = image;
+            const selected = this.editorEngine.elements.selected;
+
+            if (!selected || selected.length === 0) {
+                console.warn('No elements selected to apply background image');
+                return;
+            }
+
+            if (image?.originPath) {
+                const url = stripImageFolderPrefix(image.originPath);
+                this.editorEngine.style.updateMultiple({
+                    backgroundImage: `url('/${url}')`,
+                });
+            } else if (this.selectedImage?.originPath) {
+                const url = stripImageFolderPrefix(this.selectedImage.originPath);
+                this.editorEngine.style.updateMultiple({
+                    backgroundImage: `url('/${url}')`,
+                });
+            } else {
+                this.editorEngine.style.updateMultiple({
+                    backgroundImage: 'none',
+                });
+            }
+        } catch (error) {
+            console.error('Failed to set preview image:', error);
+        }
+    }
+
+    setSelectedImage(image: ImageContentData | null) {
+        try {
+            this._selectedImage = image;
+
+            const selected = this.editorEngine.elements.selected;
+
+            if (!selected || selected.length === 0) {
+                console.warn('No elements selected to apply background image');
+                return;
+            }
+
+            if (!image?.originPath) {
+                console.warn('Image origin path is missing');
+                return;
+            }
+
+            try {
+                const url = stripImageFolderPrefix(image.originPath);
+
+                if (!url) {
+                    throw new Error('Failed to generate relative path');
+                }
+
+                const styles = {
+                    backgroundImage: `url('/${url}')`,
+                };
+
+                this.editorEngine.style.updateMultiple(styles);
+            } catch (urlError) {
+                console.error('Failed to process image path:', urlError);
+                throw new Error('Invalid image path');
+            }
+        } catch (error) {
+            console.error('Failed to apply background image:', error);
+        }
+    }
+
+    setIsSelectingImage(isSelectingImage: boolean) {
+        this._isSelectingImage = isSelectingImage;
     }
 
     async upload(file: File, destinationFolder: string): Promise<void> {
@@ -107,7 +188,9 @@ export class ImageManager {
         this._isScanning = true;
 
         try {
-            const files = await this.editorEngine.sandbox.listFilesRecursively(DefaultSettings.IMAGE_FOLDER);
+            const files = await this.editorEngine.sandbox.listFilesRecursively(
+                DefaultSettings.IMAGE_FOLDER,
+            );
             if (!files) {
                 console.error('No files found in image folder');
                 return;
@@ -116,7 +199,7 @@ export class ImageManager {
                 this._imagePaths = [];
                 return;
             }
-            this._imagePaths = files.filter((file: string) => isImageFile(file))
+            this._imagePaths = files.filter((file: string) => isImageFile(file));
         } catch (error) {
             console.error('Error scanning images:', error);
             this._imagePaths = [];
@@ -176,12 +259,11 @@ export class ImageManager {
 
         try {
             // Process all images in parallel
-            const imagePromises = imagePaths.map(path => this.readImageContent(path));
+            const imagePromises = imagePaths.map((path) => this.readImageContent(path));
             const results = await Promise.all(imagePromises);
 
             // Filter out null results
-            const validImages = results.filter((result): result is ImageContentData => result !== null);
-
+            const validImages = results.filter((result) => !!result);
             return validImages;
         } catch (error) {
             console.error('Error reading images content:', error);
