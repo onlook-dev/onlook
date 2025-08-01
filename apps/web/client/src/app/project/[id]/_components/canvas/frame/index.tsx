@@ -20,7 +20,7 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
                 <TopBar frame={frame as WebFrame} />
             </RightClickMenu>
             <div className="relative">
-                <ResizeHandles frame={frame} isResizing={isResizing} setIsResizing={setIsResizing} />
+                <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
                 {frame.type === FrameType.WEB && (
                     <WebFrameComponent frame={frame as WebFrame} ref={webFrameRef} />
                 )}

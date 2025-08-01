@@ -11,7 +11,7 @@ enum HandleType {
 }
 
 export const ResizeHandles = observer((
-    { frame, isResizing, setIsResizing }: { frame: Frame, isResizing: boolean, setIsResizing: (isResizing: boolean) => void }) => {
+    { frame, setIsResizing }: { frame: Frame, setIsResizing: (isResizing: boolean) => void }) => {
     const editorEngine = useEditorEngine();
     // TODO implement aspect ratio lock
     const aspectRatioLocked = false;
