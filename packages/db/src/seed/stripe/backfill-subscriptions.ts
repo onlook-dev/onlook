@@ -6,9 +6,8 @@ import { usageRecords } from '@/schema/subscription/usage';
 import { users } from '@/schema/user/user';
 import { db } from '@onlook/db/src/client';
 import { UsageType } from '@onlook/models';
-import { SubscriptionStatus } from '@onlook/stripe';
 import { createStripeClient } from '@onlook/stripe/src/client';
-import { and, count, eq, gte, lt } from 'drizzle-orm';
+import { and, asc, count, eq, gte, lt } from 'drizzle-orm';
 import type { PgTransaction } from 'drizzle-orm/pg-core';
 import { v4 as uuid } from 'uuid';
 
@@ -27,11 +26,12 @@ interface DbSubscription extends Subscription {
 
 export const getAllSubscriptions = async (): Promise<DbSubscription[]> => {
     const subs = (await db.query.subscriptions.findMany({
-        where: eq(subscriptions.status, SubscriptionStatus.ACTIVE),
+        // where: eq(subscriptions.status, SubscriptionStatus.ACTIVE),
         with: {
             product: true,
             price: true,
-        }
+        },
+        orderBy: asc(subscriptions.startedAt),
     }));
 
     return subs;
@@ -116,7 +116,7 @@ export const backfillSubscriptions = async () => {
             // Update user
             await tx.update(users).set({
                 stripeCustomerId: item.stripeCustomerId,
-            }).where(eq(users.id, item.subscription.userId));
+            }).where(eq(users.id, item.subscription.userId))
 
             console.log(`Inserting rate limit for subscription ${item.subscription.id}`);
             // Insert rate limit based on usage records and subscription price
