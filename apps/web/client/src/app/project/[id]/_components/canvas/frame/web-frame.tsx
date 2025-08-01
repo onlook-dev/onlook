@@ -60,75 +60,86 @@ export const WebFrameComponent = observer(
             leading: true,
         });
 
+        const retrySetupPenpalConnection = () => {
+            setTimeout(() => {
+                setupPenpalConnection();
+            }, 1000);
+        };
+
         const setupPenpalConnection = () => {
-            if (!iframeRef.current?.contentWindow) {
-                console.error('No iframe found');
-                return;
-            }
+            try {
+                if (!iframeRef.current?.contentWindow) {
+                    console.error('No iframe found');
+                    throw new Error('No iframe found');
+                }
 
-            if (isConnecting.current) {
-                console.log(
-                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection already in progress`,
-                );
-                return;
-            }
-            isConnecting.current = true;
-
-            // Destroy any existing connection before creating a new one
-            if (connectionRef.current) {
-                connectionRef.current.destroy();
-                connectionRef.current = null;
-            }
-
-            const messenger = new WindowMessenger({
-                remoteWindow: iframeRef.current.contentWindow,
-                allowedOrigins: ['*'],
-            });
-
-            const connection = connect({
-                messenger,
-                methods: {
-                    getFrameId: () => frame.id,
-                    onWindowMutated: () => {
-                        editorEngine.frameEvent.handleWindowMutated();
-                    },
-                    onWindowResized: () => {
-                        editorEngine.frameEvent.handleWindowResized();
-                    },
-                    onDomProcessed: (data: { layerMap: Record<string, any>; rootNode: any }) => {
-                        editorEngine.frameEvent.handleDomProcessed(frame.id, data);
-                    },
-                } satisfies PenpalParentMethods,
-            });
-
-            // Store the connection reference
-            connectionRef.current = connection;
-
-            connection.promise.then((child) => {
-                isConnecting.current = false;
-                if (!child) {
-                    console.error(
-                        `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
+                if (isConnecting.current) {
+                    console.log(
+                        `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Connection already in progress`,
                     );
-                    reloadIframe();
                     return;
                 }
-                const remote = child as unknown as PenpalChildMethods;
-                setPenpalChild(remote);
-                remote.setFrameId(frame.id);
-                remote.handleBodyReady();
-                remote.processDom();
-                console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
-            });
+                isConnecting.current = true;
 
-            connection.promise.catch((error) => {
-                isConnecting.current = false;
-                console.error(
-                    `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
-                    error,
-                );
+                // Destroy any existing connection before creating a new one
+                if (connectionRef.current) {
+                    connectionRef.current.destroy();
+                    connectionRef.current = null;
+                }
+
+                const messenger = new WindowMessenger({
+                    remoteWindow: iframeRef.current.contentWindow,
+                    allowedOrigins: ['*'],
+                });
+
+                const connection = connect({
+                    messenger,
+                    methods: {
+                        getFrameId: () => frame.id,
+                        onWindowMutated: () => {
+                            editorEngine.frameEvent.handleWindowMutated();
+                        },
+                        onWindowResized: () => {
+                            editorEngine.frameEvent.handleWindowResized();
+                        },
+                        onDomProcessed: (data: { layerMap: Record<string, any>; rootNode: any }) => {
+                            editorEngine.frameEvent.handleDomProcessed(frame.id, data);
+                        },
+                    } satisfies PenpalParentMethods,
+                });
+
+                // Store the connection reference
+                connectionRef.current = connection;
+
+                connection.promise.then((child) => {
+                    isConnecting.current = false;
+                    if (!child) {
+                        console.error(
+                            `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: child is null`,
+                        );
+                        throw new Error('Failed to setup penpal connection: child is null');
+                    }
+                    const remote = child as unknown as PenpalChildMethods;
+                    setPenpalChild(remote);
+                    remote.setFrameId(frame.id);
+                    remote.handleBodyReady();
+                    remote.processDom();
+                    console.log(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Penpal connection set `);
+                });
+
+                connection.promise.catch((error) => {
+                    isConnecting.current = false;
+                    console.error(
+                        `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection:`,
+                        error,
+                    );
+                    throw new Error('Failed to setup penpal connection');
+                });
+            } catch (error) {
+                console.error('Failed to setup penpal connection', error);
                 reloadIframe();
-            });
+                retrySetupPenpalConnection();
+            }
         };
 
         const promisifyMethod = <T extends (...args: any[]) => any>(
