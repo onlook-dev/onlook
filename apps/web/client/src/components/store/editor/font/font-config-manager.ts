@@ -1,4 +1,3 @@
-import { DefaultSettings } from '@onlook/constants';
 import {
     addGoogleFontSpecifier,
     generateFontVariableExport,
@@ -31,10 +30,9 @@ export class FontConfigManager {
         );
     }
 
-    get fontConfigPath(): string {
+    get fontConfigPath(): string | null {
         if (!this._fontConfigPath) {
-            // Fallback to default if not yet determined
-            return normalizePath(DefaultSettings.FONT_CONFIG);
+            return null;
         }
         return this._fontConfigPath;
     }
@@ -140,6 +138,11 @@ export class FontConfigManager {
 
             // Generate and write the updated code back to the file
             const { code } = generate(ast);
+
+            if (!this.fontConfigPath) {
+                return false;
+            }
+
             const success = await this.editorEngine.sandbox.writeFile(this.fontConfigPath, code);
 
             if (!success) {
@@ -163,6 +166,10 @@ export class FontConfigManager {
         try {
             const { content } = (await this.readFontConfigFile()) ?? {};
             if (!content) {
+                return false;
+            }
+
+            if (!this.fontConfigPath) {
                 return false;
             }
 
@@ -229,6 +236,10 @@ export class FontConfigManager {
             return;
         }
 
+        if (!this.fontConfigPath) {
+            return;
+        }
+
         const file = await sandbox.readFile(this.fontConfigPath);
         if (!file || file.type === 'binary') {
             console.error("Font config file is empty or doesn't exist");
@@ -255,6 +266,14 @@ export class FontConfigManager {
         const sandbox = this.editorEngine.sandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
+            return;
+        }
+
+        if (sandbox.isIndexing) {
+            return;
+        }
+
+        if (!this.fontConfigPath) {
             return;
         }
 

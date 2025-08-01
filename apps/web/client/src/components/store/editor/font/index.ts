@@ -72,6 +72,10 @@ export class FontManager {
     private async handleFileEvent(event: FileEvent): Promise<void> {
         try {
             const { paths } = event;
+            
+            if (!this.fontConfigManager.fontConfigPath) {
+                return;
+            }
 
             if (!paths.some((path) => path.includes(this.fontConfigManager.fontConfigPath))) {
                 return;
@@ -83,7 +87,7 @@ export class FontManager {
         }
     }
 
-    get fontConfigPath(): string {
+    get fontConfigPath(): string | null {
         return this.fontConfigManager.fontConfigPath;
     }
 
@@ -230,6 +234,9 @@ export class FontManager {
 
             if (result.success) {
                 const { code } = generate(result.fontConfigAst);
+                if (!this.fontConfigManager.fontConfigPath) {
+                    return false;
+                }
                 await this.editorEngine.sandbox.writeFile(
                     this.fontConfigManager.fontConfigPath,
                     code,
