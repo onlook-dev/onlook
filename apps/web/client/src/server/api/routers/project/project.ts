@@ -1,4 +1,5 @@
 import { trackEvent } from '@/utils/analytics/server';
+import { getSuggestionModelConfig } from '@/utils/model-config';
 import { initModel } from '@onlook/ai';
 import {
     canvases,
@@ -19,7 +20,7 @@ import {
     type Canvas,
     type UserCanvas
 } from '@onlook/db';
-import { LLMProvider, OPENROUTER_MODELS, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import { ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
 import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -148,10 +149,7 @@ export const projectRouter = createTRPCRouter({
         }))
         .mutation(async ({ input }): Promise<string> => {
             try {
-                const { model, providerOptions, headers } = await initModel({
-                    provider: LLMProvider.OPENROUTER,
-                    model: OPENROUTER_MODELS.OPEN_AI_GPT_4_1_NANO,
-                });
+                const { model, providerOptions, headers } = await initModel(getSuggestionModelConfig());
 
                 const MAX_NAME_LENGTH = 50;
                 const result = await generateText({

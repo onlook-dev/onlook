@@ -1,21 +1,13 @@
-import { env } from '@/env';
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { trackEvent } from '@/utils/analytics/server';
+import { getMainModelConfig } from '@/utils/model-config';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { ChatType, CLAUDE_MODELS, type InitialModelPayload, LLMProvider, OPENROUTER_MODELS, type Usage, UsageType } from '@onlook/models';
+import { ChatType, type Usage, UsageType } from '@onlook/models';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 
-const isProd = env.NODE_ENV === 'production';
-
-const MainModelConfig: InitialModelPayload = isProd ? {
-    provider: LLMProvider.OPENROUTER,
-    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
-} : {
-    provider: LLMProvider.ANTHROPIC,
-    model: CLAUDE_MODELS.SONNET_4,
-};
+const MainModelConfig = getMainModelConfig();
 
 export async function POST(req: NextRequest) {
     try {

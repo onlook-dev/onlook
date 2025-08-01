@@ -68,7 +68,12 @@ export async function initModel({
 }
 
 async function getAnthropicProvider(model: CLAUDE_MODELS): Promise<LanguageModelV1> {
-    const anthropic = createAnthropic();
+    if (!process.env.ANTHROPIC_API_KEY) {
+        throw new Error('ANTHROPIC_API_KEY must be set');
+    }
+    const anthropic = createAnthropic({
+        apiKey: process.env.ANTHROPIC_API_KEY,
+    });
     return anthropic(model, {
         cacheControl: true,
     });
@@ -127,6 +132,10 @@ async function getGoogleProvider(model: GEMINI_MODELS): Promise<LanguageModelV1>
     }
     const google = createGoogleGenerativeAI({
         apiKey: process.env.GOOGLE_AI_STUDIO_API_KEY,
+        // 支持自定义代理服务器地址
+        baseURL:
+            process.env.GOOGLE_AI_STUDIO_BASE_URL ||
+            'https://generativelanguage.googleapis.com/v1beta',
     });
     return google(model);
 }

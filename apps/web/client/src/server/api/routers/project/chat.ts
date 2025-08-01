@@ -10,8 +10,8 @@ import {
     type Message,
 } from '@onlook/db';
 import type { ChatMessageRole, ChatSuggestion } from '@onlook/models';
-import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { ChatSuggestionsSchema } from '@onlook/models/chat';
+import { getSuggestionModelConfig } from '@/utils/model-config';
 import type { CoreMessage } from 'ai';
 import { generateObject } from 'ai';
 import { eq, inArray } from 'drizzle-orm';
@@ -112,10 +112,7 @@ const suggestionsRouter = createTRPCRouter({
             messages: z.array(z.any()),
         }))
         .mutation(async ({ ctx, input }) => {
-            const { model, headers } = await initModel({
-                provider: LLMProvider.OPENROUTER,
-                model: OPENROUTER_MODELS.OPEN_AI_GPT_4_1_NANO,
-            });
+            const { model, headers } = await initModel(getSuggestionModelConfig());
             const { object } = await generateObject({
                 model,
                 headers,
