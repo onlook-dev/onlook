@@ -1,5 +1,11 @@
 import OpenAI from 'openai';
 
+export interface ApplyCodeChangeMetadata {
+    userId?: string;
+    projectId?: string;
+    conversationId?: string;
+}
+
 const createPrompt = (originalCode: string, updateSnippet: string, instruction: string) =>
     `<instruction>${instruction}</instruction>\n<code>${originalCode}</code>\n<update>${updateSnippet}</update>`;
 
@@ -38,9 +44,7 @@ export async function applyCodeChangeWithRelace(
     originalCode: string,
     updateSnippet: string,
     instruction: string,
-    userId: string,
-    projectId: string,
-    conversationId: string,
+    metadata?: ApplyCodeChangeMetadata,
 ): Promise<string | null> {
     const apiKey = process.env.RELACE_API_KEY;
     if (!apiKey) {
@@ -56,12 +60,16 @@ export async function applyCodeChangeWithRelace(
         initialCode: originalCode,
         editSnippet: updateSnippet,
         instructions: instruction,
-        relaceMetadata: {
-            onlookUserId: userId,
-            onlookProjectId: projectId,
-            onlookConversationId: conversationId,
-        },
+        relaceMetadata: metadata
+            ? {
+                  onlookUserId: metadata.userId,
+                  onlookProjectId: metadata.projectId,
+                  onlookConversationId: metadata.conversationId,
+              }
+            : undefined,
     };
+
+    console.log('data', data);
 
     const response = await fetch(url, {
         method: 'POST',
@@ -79,10 +87,8 @@ export async function applyCodeChange(
     originalCode: string,
     updateSnippet: string,
     instruction: string,
+    metadata?: ApplyCodeChangeMetadata,
     preferredProvider: FastApplyProvider = FastApplyProvider.RELACE,
-    userId: string,
-    projectId: string,
-    conversationId: string,
 ): Promise<string | null> {
     const providerAttempts = [
         {
@@ -90,8 +96,13 @@ export async function applyCodeChange(
             applyFn:
                 preferredProvider === FastApplyProvider.MORPH
                     ? applyCodeChangeWithMorph
-                    : (originalCode: string, updateSnippet: string, instruction: string) => 
-                          applyCodeChangeWithRelace(originalCode, updateSnippet, instruction, userId, projectId, conversationId),
+                    : (originalCode: string, updateSnippet: string, instruction: string) =>
+                          applyCodeChangeWithRelace(
+                              originalCode,
+                              updateSnippet,
+                              instruction,
+                              metadata,
+                          ),
         },
         {
             provider:
@@ -100,8 +111,13 @@ export async function applyCodeChange(
                     : FastApplyProvider.MORPH,
             applyFn:
                 preferredProvider === FastApplyProvider.MORPH
-                    ? (originalCode: string, updateSnippet: string, instruction: string) => 
-                          applyCodeChangeWithRelace(originalCode, updateSnippet, instruction, userId, projectId, conversationId)
+                    ? (originalCode: string, updateSnippet: string, instruction: string) =>
+                          applyCodeChangeWithRelace(
+                              originalCode,
+                              updateSnippet,
+                              instruction,
+                              metadata,
+                          )
                     : applyCodeChangeWithMorph,
         },
     ];
@@ -120,9 +136,7 @@ export async function applyCodeChange(
                           originalCode,
                           updateSnippet,
                           instruction,
-                          userId,
-                          projectId,
-                          conversationId,
+                          metadata,
                       );
             if (result) return result;
         } catch (error) {

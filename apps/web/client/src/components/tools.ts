@@ -145,10 +145,16 @@ async function handleEditFileTool(
         throw new Error('Binary files are not supported for editing');
     }
 
+    const metadata = {
+        projectId: editorEngine.projectId,
+        conversationId: editorEngine.chat.conversation.current?.id,
+    };
+
     const updatedContent = await api.code.applyDiff.mutate({
         originalCode: originalFile.content,
         updateSnippet: args.content,
         instruction: args.instruction,
+        metadata,
     });
     if (!updatedContent.result) {
         throw new Error('Error applying code change: ' + updatedContent.error);
