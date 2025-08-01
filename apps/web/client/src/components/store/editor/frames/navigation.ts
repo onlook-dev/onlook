@@ -13,6 +13,12 @@ export class FrameNavigationManager {
         makeAutoObservable(this);
     }
 
+    registerFrame(frameId: string, framePathname: string): void {
+        if (this.getNavigationHistory(frameId).length === 0) {
+            this.addToHistory(frameId, framePathname);
+        }
+    }
+
     canGoBack(frameId: string): boolean {
         const navigationObject = this.frameIdToNavigationObject.get(frameId);
         if (!navigationObject) {

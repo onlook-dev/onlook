@@ -30,8 +30,8 @@ function roundDimensions(frame: WebFrame): WebFrame {
 
 export class FramesManager {
     private _frameIdToData = new Map<string, FrameData>();
-    private disposers: Array<() => void> = [];
-    private navigationManager = new FrameNavigationManager();
+    private _navigation = new FrameNavigationManager();
+    private _disposers: Array<() => void> = [];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -55,6 +55,10 @@ export class FramesManager {
         return Array.from(this._frameIdToData.values()).filter((w) => w.selected);
     }
 
+    get navigation(): FrameNavigationManager {
+        return this._navigation;
+    }
+
     getAll(): FrameData[] {
         return Array.from(this._frameIdToData.values());
     }
@@ -65,10 +69,8 @@ export class FramesManager {
 
     registerView(frame: Frame, view: WebFrameView) {
         this._frameIdToData.set(frame.id, { frame, view, selected: false });
-        if (this.navigationManager.getNavigationHistory(frame.id).length === 0) {
-            const framePathname = new URL(view.src).pathname;
-            this.navigationManager.addToHistory(frame.id, framePathname);
-        }
+        const framePathname = new URL(view.src).pathname;
+        this._navigation.registerFrame(frame.id, framePathname);
     }
 
     deregister(frame: Frame) {
@@ -109,15 +111,15 @@ export class FramesManager {
 
     clear() {
         this.deregisterAll();
-        this.disposers.forEach((dispose) => dispose());
-        this.disposers = [];
-        this.navigationManager.clearAllHistory();
+        this._disposers.forEach((dispose) => dispose());
+        this._disposers = [];
+        this._navigation.clearAllHistory();
     }
 
     disposeFrame(frameId: string) {
         this._frameIdToData.delete(frameId);
         this.editorEngine?.ast?.mappings?.remove(frameId);
-        this.navigationManager.removeFrame(frameId);
+        this._navigation.removeFrame(frameId);
     }
 
     reloadAllViews() {
@@ -136,51 +138,17 @@ export class FramesManager {
     }
 
     // Navigation history methods
-    canGoBack(frameId: string): boolean {
-        return this.navigationManager.canGoBack(frameId);
-    }
-
-    canGoForward(frameId: string): boolean {
-        return this.navigationManager.canGoForward(frameId);
-    }
-
-    getNavigationHistory(frameId?: string): string[] {
-        const targetFrameId = frameId ?? this.selected[0]?.frame.id;
-        return targetFrameId ? this.navigationManager.getNavigationHistory(targetFrameId) : [];
-    }
-
-    addToHistory(path: string, frameId?: string): void {
-        const targetFrameId = frameId ?? this.selected[0]?.frame.id;
-        if (targetFrameId) {
-            this.navigationManager.addToHistory(targetFrameId, path);
-        }
-    }
-
-    async goBack(frameId?: string): Promise<void> {
-        const targetFrameId = frameId ?? this.selected[0]?.frame.id;
-        if (!targetFrameId) {
-            console.warn('No frame selected for navigation');
-            return;
-        }
-
-        const previousPath = this.navigationManager.goBack(targetFrameId);
-
+    async goBack(frameId: string): Promise<void> {
+        const previousPath = this._navigation.goBack(frameId);
         if (previousPath) {
-            await this.navigateToPath(targetFrameId, previousPath, false);
+            await this.navigateToPath(frameId, previousPath, false);
         }
     }
 
-    async goForward(frameId?: string): Promise<void> {
-        const targetFrameId = frameId ?? this.selected[0]?.frame.id;
-        if (!targetFrameId) {
-            console.warn('No frame selected for navigation');
-            return;
-        }
-
-        const nextPath = this.navigationManager.goForward(targetFrameId);
-
+    async goForward(frameId: string): Promise<void> {
+        const nextPath = this._navigation.goForward(frameId);
         if (nextPath) {
-            await this.navigateToPath(targetFrameId, nextPath, false);
+            await this.navigateToPath(frameId, nextPath, false);
         }
     }
 
@@ -210,7 +178,7 @@ export class FramesManager {
 
             // Add to navigation history
             if (addToHistory) {
-                this.addToHistory(path, frameId);
+                this._navigation.addToHistory(frameId, path);
             }
         } catch (error) {
             console.error('Navigation failed:', error);
@@ -235,7 +203,6 @@ export class FramesManager {
 
         if (success) {
             this.disposeFrame(frameData.frame.id);
-            this._frameIdToData.delete(id);
         } else {
             console.error('Failed to delete frame');
         }
