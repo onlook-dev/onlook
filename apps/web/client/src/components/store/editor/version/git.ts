@@ -157,7 +157,7 @@ export class GitManager {
      */
     async listCommits(maxRetries = 2): Promise<GitCommit[]> {
         let lastError: Error | null = null;
-        
+
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
                 // Use a more robust format with unique separators and handle multiline messages
@@ -171,7 +171,7 @@ export class GitManager {
 
                 // If git command failed but didn't throw, treat as error for retry logic
                 lastError = new Error(`Git command failed: ${result.error || 'Unknown error'}`);
-                
+
                 if (attempt < maxRetries) {
                     // Wait before retry with exponential backoff
                     await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
@@ -182,18 +182,18 @@ export class GitManager {
             } catch (error) {
                 lastError = error instanceof Error ? error : new Error(String(error));
                 console.warn(`Attempt ${attempt + 1} failed to list commits:`, lastError.message);
-                
+
                 if (attempt < maxRetries) {
                     // Wait before retry with exponential backoff
                     await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
                     continue;
                 }
-                
+
                 console.error('All attempts failed to list commits', lastError);
                 return [];
             }
         }
-        
+
         return [];
     }
 
@@ -211,7 +211,7 @@ export class GitManager {
         const sanitizedDisplayName = sanitizeCommitMessage(displayName);
         const escapedDisplayName = prepareCommitMessage(sanitizedDisplayName);
         return this.runCommand(
-            `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} add -f -m ${escapedDisplayName} ${commitOid}`,
+            `git --no-pager notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} add -f -m ${escapedDisplayName} ${commitOid}`,
         );
     }
 
@@ -221,7 +221,7 @@ export class GitManager {
     async getCommitNote(commitOid: string): Promise<string | null> {
         try {
             const result = await this.runCommand(
-                `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} show ${commitOid}`,
+                `git --no-pager notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} show ${commitOid}`,
                 true,
             );
             if (result.success && result.output) {
