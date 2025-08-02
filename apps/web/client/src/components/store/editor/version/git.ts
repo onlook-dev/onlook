@@ -1,11 +1,9 @@
 import { type GitCommit } from '@onlook/git';
 import type { EditorEngine } from '../engine';
-import { Shescape } from 'shescape';
+import { escape as shellEscape } from 'shellwords';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 export const COMMIT_MESSAGE_MAX_LENGTH = 72;
-
-const shescape = new Shescape({ shell: true });
 
 export interface GitStatus {
     files: string[];
@@ -152,7 +150,7 @@ export class GitManager {
         const truncatedMessage = message.length > COMMIT_MESSAGE_MAX_LENGTH 
             ? `${message.slice(0, COMMIT_MESSAGE_MAX_LENGTH - 3)}...`
             : message;
-        const escapedMessage = shescape.quote(truncatedMessage);
+        const escapedMessage = shellEscape(truncatedMessage);
         return this.runCommand(`git commit --allow-empty --no-verify -m ${escapedMessage}`);
     }
 
@@ -190,7 +188,7 @@ export class GitManager {
         const truncatedDisplayName = displayName.length > COMMIT_MESSAGE_MAX_LENGTH 
             ? `${displayName.slice(0, COMMIT_MESSAGE_MAX_LENGTH - 3)}...`
             : displayName;
-        const escapedDisplayName = shescape.quote(truncatedDisplayName);
+        const escapedDisplayName = shellEscape(truncatedDisplayName);
         return this.runCommand(
             `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} add -f -m ${escapedDisplayName} ${commitOid}`,
         );

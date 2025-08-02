@@ -90,7 +90,7 @@
         "react-markdown": "^10.1.0",
         "remark-gfm": "^4.0.1",
         "server-only": "^0.0.1",
-        "shescape": "^2.1.6",
+        "shellwords": "^1.1.1",
         "shiki": "^3.2.2",
         "strip-ansi": "^7.1.0",
         "superjson": "^2.2.1",
