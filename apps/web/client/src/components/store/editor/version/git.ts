@@ -1,19 +1,11 @@
 import { type GitCommit } from '@onlook/git';
 import type { EditorEngine } from '../engine';
+import { Shescape } from 'shescape';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 export const COMMIT_MESSAGE_MAX_LENGTH = 72;
 
-function escapeCommitMessage(message: string): string {
-    return message
-        .replace(/\\/g, '\\\\')
-        .replace(/"/g, '\\"')
-        .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r')
-        .replace(/\t/g, '\\t')
-        .replace(/\|/g, '\\|')
-        .replace(/[\x00-\x1F\x7F]/g, '');
-}
+const shescape = new Shescape({ shell: true });
 
 export interface GitStatus {
     files: string[];
@@ -160,8 +152,8 @@ export class GitManager {
         const truncatedMessage = message.length > COMMIT_MESSAGE_MAX_LENGTH 
             ? `${message.slice(0, COMMIT_MESSAGE_MAX_LENGTH - 3)}...`
             : message;
-        const escapedMessage = escapeCommitMessage(truncatedMessage);
-        return this.runCommand(`git commit --allow-empty --no-verify -m "${escapedMessage}"`);
+        const escapedMessage = shescape.quote(truncatedMessage);
+        return this.runCommand(`git commit --allow-empty --no-verify -m ${escapedMessage}`);
     }
 
     /**
@@ -198,9 +190,9 @@ export class GitManager {
         const truncatedDisplayName = displayName.length > COMMIT_MESSAGE_MAX_LENGTH 
             ? `${displayName.slice(0, COMMIT_MESSAGE_MAX_LENGTH - 3)}...`
             : displayName;
-        const escapedDisplayName = escapeCommitMessage(truncatedDisplayName);
+        const escapedDisplayName = shescape.quote(truncatedDisplayName);
         return this.runCommand(
-            `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} add -f -m "${escapedDisplayName}" ${commitOid}`,
+            `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} add -f -m ${escapedDisplayName} ${commitOid}`,
         );
     }
 
@@ -258,13 +250,7 @@ export class GitManager {
                 const hash = parts[0]?.trim();
                 const authorLine = parts[1]?.trim();
                 const dateLine = parts[2]?.trim();
-                const message = parts.slice(3).join('|').trim()
-                    .replace(/\\n/g, '\n')
-                    .replace(/\\r/g, '\r')
-                    .replace(/\\t/g, '\t')
-                    .replace(/\\\|/g, '|')
-                    .replace(/\\"/g, '"')
-                    .replace(/\\\\/g, '\\');
+                const message = parts.slice(3).join('|').trim();
 
                 if (!hash || !authorLine || !dateLine) continue;
 
