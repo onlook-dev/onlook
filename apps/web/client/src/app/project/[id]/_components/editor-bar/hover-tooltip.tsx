@@ -1,5 +1,4 @@
 import { Tooltip, TooltipTrigger, TooltipContent } from "@onlook/ui/tooltip";
-import { useState } from "react";
 import type { ReactNode } from "react";
 
 interface HoverOnlyTooltipProps {
@@ -9,6 +8,7 @@ interface HoverOnlyTooltipProps {
   className?: string;
   hideArrow?: boolean;
   disabled?: boolean;
+  sideOffset?: number;
 }
 
 export function HoverOnlyTooltip({
@@ -16,22 +16,18 @@ export function HoverOnlyTooltip({
   content,
   side = "bottom",
   className,
-  hideArrow = false,
+  hideArrow = true,
   disabled = false,
+  sideOffset = 5,
 }: HoverOnlyTooltipProps) {
-  const [hovered, setHovered] = useState(false);
+  if (disabled) {
+    return <>{children}</>;
+  }
 
   return (
-    <Tooltip open={hovered && !disabled}>
-      <TooltipTrigger
-        asChild
-        onMouseEnter={() => !disabled && setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        onBlur={() => setHovered(false)}
-      >
-        {children}
-      </TooltipTrigger>
-      <TooltipContent side={side} className={className} hideArrow={hideArrow}>
+    <Tooltip disableHoverableContent>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent side={side} className={className} hideArrow={hideArrow} sideOffset={sideOffset}>
         {content}
       </TooltipContent>
     </Tooltip>

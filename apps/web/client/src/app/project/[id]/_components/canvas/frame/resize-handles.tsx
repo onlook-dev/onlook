@@ -10,7 +10,8 @@ enum HandleType {
     Bottom = 'bottom',
 }
 
-export const ResizeHandles = observer(({ frame }: { frame: Frame }) => {
+export const ResizeHandles = observer((
+    { frame, setIsResizing }: { frame: Frame, setIsResizing: (isResizing: boolean) => void }) => {
     const editorEngine = useEditorEngine();
     // TODO implement aspect ratio lock
     const aspectRatioLocked = false;
@@ -19,6 +20,7 @@ export const ResizeHandles = observer(({ frame }: { frame: Frame }) => {
     const startResize = (e: MouseEvent, types: HandleType[]) => {
         e.preventDefault();
         e.stopPropagation();
+        setIsResizing(true);
 
         const startX = e.clientX;
         const startY = e.clientY;
@@ -70,7 +72,7 @@ export const ResizeHandles = observer(({ frame }: { frame: Frame }) => {
         const stopResize = (e: MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
-
+            setIsResizing(false);
             window.removeEventListener('mousemove', resize as unknown as EventListener);
             window.removeEventListener('mouseup', stopResize as unknown as EventListener);
         };

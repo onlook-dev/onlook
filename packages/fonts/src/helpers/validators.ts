@@ -1,4 +1,10 @@
-import { parse, traverse, type t as T, types as t, type NodePath } from '@onlook/parser';
+import {
+    getAstFromContent,
+    types as t,
+    traverse,
+    type NodePath,
+    type t as T,
+} from '@onlook/parser';
 
 /**
  * Validates if an AST object property represents a Tailwind CSS theme configuration.
@@ -132,10 +138,10 @@ export function validateGoogleFontSetup(
         return { hasGoogleFontImport: false, hasImportName: false, hasFontExport: false };
     }
 
-    const ast = parse(content, {
-        sourceType: 'module',
-        plugins: ['typescript', 'jsx'],
-    });
+    const ast = getAstFromContent(content);
+    if (!ast) {
+        throw new Error(`Failed to parse file in validateGoogleFontSetup`);
+    }
 
     let hasGoogleFontImport = false;
     let hasImportName = false;

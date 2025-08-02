@@ -1,7 +1,7 @@
+import type { FileNode } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { forwardRef } from 'react';
 import type { RowRendererProps } from 'react-arborist';
-import type { FileNode } from '@onlook/models';
 
 export const FileTreeRow = forwardRef<
     HTMLDivElement,
@@ -14,14 +14,13 @@ export const FileTreeRow = forwardRef<
             className={cn(
                 'outline-none h-6 cursor-pointer min-w-0 w-auto rounded',
                 'text-foreground-onlook/70',
-                !attrs['aria-selected'] && [
+                attrs['aria-selected'] ? [
+                    'bg-red-500/90 dark:bg-red-500/90',
+                    'text-primary dark:text-primary',
+                    'hover:bg-red-500/90 dark:hover:bg-red-500/90',
+                ] : [
                     isHighlighted && 'bg-background-onlook text-foreground-primary',
                     'hover:text-foreground-primary hover:bg-background-onlook',
-                ],
-                attrs['aria-selected'] && [
-                    '!bg-[#FA003C] dark:!bg-[#FA003C]',
-                    '!text-primary dark:!text-primary',
-                    '![&]:hover:bg-[#FA003C] dark:[&]:hover:bg-[#FA003C]',
                 ],
             )}
         >
@@ -29,5 +28,3 @@ export const FileTreeRow = forwardRef<
         </div>
     );
 });
-
-FileTreeRow.displayName = 'FileTreeRow';

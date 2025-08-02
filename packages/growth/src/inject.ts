@@ -1,4 +1,4 @@
-import { generate, parse, types as t, traverse } from '@onlook/parser';
+import { generate, getAstFromContent, types as t, traverse } from '@onlook/parser';
 import { type FileOperations } from '@onlook/utility';
 import { getLayoutPath } from './helpers';
 import { builtWithScript } from './script';
@@ -29,10 +29,10 @@ export async function injectBuiltWithScript(
         }
 
         // Parse the layout file
-        const ast = parse(layoutContent, {
-            sourceType: 'module',
-            plugins: ['jsx', 'typescript'],
-        });
+        const ast = getAstFromContent(layoutContent);
+        if (!ast) {
+            throw new Error(`Failed to parse file in injectBuiltWithScript`);
+        }
 
         let hasScriptImport = false;
         let scriptAdded = false;

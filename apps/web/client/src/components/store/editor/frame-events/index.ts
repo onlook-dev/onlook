@@ -109,7 +109,7 @@ export class FrameEventManager {
 
     async handleDomProcessed(frameId: string, data: { layerMap: Record<string, LayerNode>; rootNode: LayerNode }): Promise<void> {
         try {
-            const layerMapConverted = new Map(Object.entries(data.layerMap)) as Map<string, LayerNode>;
+            const layerMapConverted = new Map(Object.entries(data.layerMap));
 
             const frameData = this.editorEngine.frames.get(frameId);
             if (!frameData) {

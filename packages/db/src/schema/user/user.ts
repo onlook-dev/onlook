@@ -19,6 +19,7 @@ export const users = pgTable('users', {
     email: text('email'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    stripeCustomerId: text('stripe_customer_id'),
 }).enableRLS();
 
 export const usersRelations = relations(users, ({ many, one }) => ({

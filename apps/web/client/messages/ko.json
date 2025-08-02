@@ -179,7 +179,7 @@
             }
         },
         "footer": {
-            "unusedMessages": "사용하지 않은 채팅 메시지는 다음 달로 이월되지 않습니다."
+            "unusedMessages": "사용하지 않은 채팅 메시지는 다음 달로 이월됩니다."
         }
     },
     "editor": {

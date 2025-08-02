@@ -1,0 +1,11 @@
+{
+    "font": {
+        "id": "roboto",
+        "family": "Roboto",
+        "subsets": ["latin"],
+        "variable": "--font-roboto",
+        "weight": ["300", "400"],
+        "styles": ["normal"],
+        "type": "google"
+    }
+}

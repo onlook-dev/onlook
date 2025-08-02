@@ -32,6 +32,15 @@ export class SessionManager {
         await this.createTerminalSessions(this.session);
     }
 
+    async restartDevServer(): Promise<boolean> {
+        const task = await this.session?.tasks.get('dev');
+        if (task) {
+            await task.restart();
+            return true;
+        }
+        return false;
+    }
+
     getTerminalSession(id: string) {
         return this.terminalSessions.get(id) as TerminalSession | undefined;
     }
@@ -108,30 +117,11 @@ export class SessionManager {
             if (!this.session) {
                 throw new Error('No session found');
             }
-
-            const terminalSession = Array.from(this.terminalSessions.values()).find(session => session.type === CLISessionType.TERMINAL) as TerminalSession | undefined;
-
-            if (!terminalSession?.terminal) {
-                throw new Error('No terminal session found');
-            }
-
-            const cmd = await this.session.commands.runBackground(command, {
-                name: 'user command'
-            });
-
-            terminalSession.xterm?.write(command + '\n');
-
-            await cmd.open();
-            const disposer = cmd.onOutput((output) => {
-                streamCallback?.(output);
-                terminalSession.xterm?.write(output);
-            });
-
-            const finalOutput = await cmd.waitUntilComplete();
-
-            disposer.dispose();
+            streamCallback?.(command + '\n');
+            const output = await this.session.commands.run(command);
+            streamCallback?.(output);
             return {
-                output: finalOutput,
+                output,
                 success: true,
                 error: null
             };

@@ -1,4 +1,4 @@
-import type { Font } from '@onlook/models';
+import type { Font, FontConfig } from '@onlook/models';
 import { types as t, type t as T } from '@onlook/parser';
 import { camelCase } from 'lodash';
 
@@ -20,7 +20,7 @@ import { camelCase } from 'lodash';
  *   display: 'swap'
  * }
  */
-export function createFontConfigAst(font: Font): T.ObjectExpression {
+function createFontConfigAst(font: Font): T.ObjectExpression {
     return t.objectExpression([
         t.objectProperty(
             t.identifier('subsets'),
@@ -158,4 +158,39 @@ export function createLocalFontConfig(
 
     ast.program.body.push(exportDeclaration);
     return ast;
+}
+
+/**
+ * Creates an array of object expressions for font source configuration.
+ * Generates an object expression for each source with path, weight, and style properties.
+ *
+ * @param sources - Array of source objects containing path, weight, and style properties
+ * @returns Array of object expressions with font source configuration
+ *
+ * @example
+ * // Input: [{ path: './fonts/custom.woff2', weight: '400', style: 'normal' }]
+ * // Generated output:
+ * [{
+ *   path: './fonts/custom.woff2',
+ *   weight: '400',
+ *   style: 'normal'
+ * }]
+ *
+ */
+export function createFontSrcObjects(sources: FontConfig[]): T.ObjectExpression[] {
+    return sources.map((source) => {
+        const properties: T.ObjectProperty[] = [];
+
+        properties.push(t.objectProperty(t.identifier('path'), t.stringLiteral(source.path)));
+        if (source.weight) {
+            properties.push(
+                t.objectProperty(t.identifier('weight'), t.stringLiteral(source.weight)),
+            );
+        }
+        if (source.style) {
+            properties.push(t.objectProperty(t.identifier('style'), t.stringLiteral(source.style)));
+        }
+
+        return t.objectExpression(properties);
+    });
 }

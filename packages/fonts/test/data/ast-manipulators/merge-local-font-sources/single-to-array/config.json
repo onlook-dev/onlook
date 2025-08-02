@@ -1,0 +1,10 @@
+{
+    "fontName": "singleFont",
+    "newSources": [
+        {
+            "path": "./fonts/single-bold.woff2",
+            "weight": "700",
+            "style": "normal"
+        }
+    ]
+} 
