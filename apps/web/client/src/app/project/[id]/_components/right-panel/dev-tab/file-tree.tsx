@@ -336,12 +336,12 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
                 </div>
                 <div ref={treeContainerRef} className="min-w-full h-full overflow-x-auto text-xs w-full h-full px-2 flex-1">
                     {isLoading ? (
-                        <div className="flex flex-col justify-center items-center h-full text-sm text-foreground/50">
+                        <div className="flex flex-col justify-start items-center h-full text-sm text-foreground/50 pt-4">
                             <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>
                             <span>Loading files...</span>
                         </div>
                     ) : filteredFiles.length === 0 ? (
-                        <div className="flex justify-center items-center h-full text-sm text-foreground/50">
+                        <div className="flex justify-center items-start h-full text-sm text-foreground/50 pt-4">
                             {files.length === 0 ? 'No files found' : 'No files match your search'}
                         </div>
                     ) : (
