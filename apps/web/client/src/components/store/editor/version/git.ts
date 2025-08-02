@@ -1,6 +1,6 @@
+import { prepareCommitMessage, sanitizeCommitMessage } from '@/utils/git';
 import { type GitCommit } from '@onlook/git';
 import stripAnsi from 'strip-ansi';
-import { prepareCommitMessage, sanitizeCommitMessage } from '../../../../utils/git';
 import type { EditorEngine } from '../engine';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
@@ -155,23 +155,46 @@ export class GitManager {
     /**
      * List commits with formatted output
      */
-    async listCommits(): Promise<GitCommit[]> {
-        try {
-            // Use a more robust format with unique separators and handle multiline messages
-            const result = await this.runCommand(
-                'git --no-pager log --pretty=format:"COMMIT_START%n%H%n%an <%ae>%n%ad%n%B%nCOMMIT_END" --date=iso',
-            );
+    async listCommits(maxRetries = 2): Promise<GitCommit[]> {
+        let lastError: Error | null = null;
+        
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                // Use a more robust format with unique separators and handle multiline messages
+                const result = await this.runCommand(
+                    'git --no-pager log --pretty=format:"COMMIT_START%n%H%n%an <%ae>%n%ad%n%B%nCOMMIT_END" --date=iso',
+                );
 
-            console.error('result', result);
-            if (result.success && result.output) {
-                return this.parseGitLog(result.output);
+                if (result.success && result.output) {
+                    return this.parseGitLog(result.output);
+                }
+
+                // If git command failed but didn't throw, treat as error for retry logic
+                lastError = new Error(`Git command failed: ${result.error || 'Unknown error'}`);
+                
+                if (attempt < maxRetries) {
+                    // Wait before retry with exponential backoff
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                    continue;
+                }
+
+                return [];
+            } catch (error) {
+                lastError = error instanceof Error ? error : new Error(String(error));
+                console.warn(`Attempt ${attempt + 1} failed to list commits:`, lastError.message);
+                
+                if (attempt < maxRetries) {
+                    // Wait before retry with exponential backoff
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                    continue;
+                }
+                
+                console.error('All attempts failed to list commits', lastError);
+                return [];
             }
-
-            return [];
-        } catch (error) {
-            console.error('Failed to list commits', error);
-            return [];
         }
+        
+        return [];
     }
 
     /**

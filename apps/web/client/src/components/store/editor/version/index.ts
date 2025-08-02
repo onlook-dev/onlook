@@ -1,7 +1,7 @@
+import { sanitizeCommitMessage } from '@/utils/git';
 import { type GitCommit } from '@onlook/git';
 import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
-import { sanitizeCommitMessage } from '../../../../utils/git';
 import type { EditorEngine } from '../engine';
 import { GitManager } from './git';
 
@@ -17,6 +17,11 @@ export class VersionsManager {
     isSaving = false;
     isLoadingCommits = false;
     private gitManager: GitManager;
+    private listCommitsPromise: Promise<GitCommit[]> | null = null;
+    private lastFetchTime: number = 0;
+    private readonly CACHE_TTL_MS = 5000; // 5 seconds cache
+    private debounceTimer: NodeJS.Timeout | null = null;
+    private readonly DEBOUNCE_MS = 300; // 300ms debounce
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -110,8 +115,8 @@ export class VersionsManager {
                 };
             }
 
-            // Refresh the commits list
-            const commits = await this.listCommits();
+            // Refresh the commits list after creating commit
+            const commits = await this.listCommits(true);
 
             if (showToast) {
                 toast.success('Backup created successfully!', {
@@ -147,9 +152,64 @@ export class VersionsManager {
         }
     };
 
-    listCommits = async () => {
-        this.isLoadingCommits = true;
+    listCommits = async (forceRefresh = false): Promise<GitCommit[]> => {
+        const now = Date.now();
+        
+        // Return cached data if it's still fresh and not forcing refresh
+        if (!forceRefresh && this.commits && (now - this.lastFetchTime) < this.CACHE_TTL_MS) {
+            return this.commits;
+        }
+
+        // Return existing promise if already in progress
+        if (this.listCommitsPromise) {
+            return this.listCommitsPromise;
+        }
+
+        // Create and store the promise
+        this.listCommitsPromise = this.performListCommits();
+
         try {
+            const result = await this.listCommitsPromise;
+            this.lastFetchTime = now;
+            return result;
+        } catch (error) {
+            // Reset cache time on error so next call will retry
+            this.lastFetchTime = 0;
+            throw error;
+        } finally {
+            // Clear the promise when complete
+            this.listCommitsPromise = null;
+        }
+    };
+
+    /**
+     * Debounced version of listCommits - useful for rapid successive calls
+     * like when multiple components are mounting or user interactions trigger multiple calls
+     */
+    listCommitsDebounced = (): Promise<GitCommit[]> => {
+        return new Promise((resolve, reject) => {
+            // Clear existing timer
+            if (this.debounceTimer) {
+                clearTimeout(this.debounceTimer);
+            }
+
+            // Set new timer
+            this.debounceTimer = setTimeout(async () => {
+                try {
+                    const result = await this.listCommits();
+                    resolve(result);
+                } catch (error) {
+                    reject(error);
+                } finally {
+                    this.debounceTimer = null;
+                }
+            }, this.DEBOUNCE_MS);
+        });
+    };
+
+    private performListCommits = async (): Promise<GitCommit[]> => {
+        try {
+            this.isLoadingCommits = true;
             this.commits = await this.gitManager.listCommits();
 
             // Enhance commits with display names from notes
@@ -210,7 +270,7 @@ export class VersionsManager {
             description: `Your project has been restored to version "${commit.displayName || commit.message}"`,
         });
 
-        await this.listCommits();
+        await this.listCommits(true); // Force refresh after checkout
 
         this.editorEngine.posthog.capture('versions_checkout_commit_success', {
             commit: commit.displayName || commit.message,
@@ -303,5 +363,25 @@ export class VersionsManager {
         toast.success('Latest backup bookmarked!');
     };
 
-    dispose() { }
+    /**
+     * Invalidates the commit cache, forcing the next listCommits call to fetch fresh data
+     */
+    invalidateCommitsCache = (): void => {
+        this.lastFetchTime = 0;
+        this.commits = null;
+        
+        // Cancel any pending debounced calls
+        if (this.debounceTimer) {
+            clearTimeout(this.debounceTimer);
+            this.debounceTimer = null;
+        }
+    };
+
+    dispose() { 
+        // Clean up timers
+        if (this.debounceTimer) {
+            clearTimeout(this.debounceTimer);
+            this.debounceTimer = null;
+        }
+    }
 }
