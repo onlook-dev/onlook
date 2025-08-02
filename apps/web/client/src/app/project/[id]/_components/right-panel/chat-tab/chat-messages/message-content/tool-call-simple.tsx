@@ -7,6 +7,7 @@ import {
     READ_STYLE_GUIDE_TOOL_NAME,
     SANDBOX_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
+    SEARCH_WEB_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_NAME
 } from '@onlook/ai';
 import { Icons } from '@onlook/ui/icons';
@@ -23,6 +24,7 @@ const TOOL_ICONS: Record<string, any> = {
     [CREATE_FILE_TOOL_NAME]: Icons.FilePlus,
     [TERMINAL_COMMAND_TOOL_NAME]: Icons.Terminal,
     [SCRAPE_URL_TOOL_NAME]: Icons.Globe,
+    [SEARCH_WEB_TOOL_NAME]: Icons.MagnifyingGlass,
     [SANDBOX_TOOL_NAME]: Icons.Cube,
 };
 
@@ -82,6 +84,13 @@ export function ToolCallSimple({
                     }
                 } else {
                     label = "Visiting URL";
+                }
+            } else if (toolName === SEARCH_WEB_TOOL_NAME) {
+                if (toolInvocation.args && 'query' in toolInvocation.args) {
+                    const query = toolInvocation.args.query as string;
+                    label = "Searching \"" + (query.length > 30 ? query.substring(0, 30) + "..." : query) + "\"";
+                } else {
+                    label = "Searching web";
                 }
             } else {
                 label = toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());

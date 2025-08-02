@@ -19,7 +19,7 @@ import {
     READ_STYLE_GUIDE_TOOL_NAME,
     readStyleGuideTool,
 } from './guides';
-import { SCRAPE_URL_TOOL_NAME, scrapeUrlTool } from './web';
+import { SCRAPE_URL_TOOL_NAME, scrapeUrlTool, SEARCH_WEB_TOOL_NAME, searchWebTool } from './web';
 
 export const buildToolSet: ToolSet = {
     [LIST_FILES_TOOL_NAME]: listFilesTool,
@@ -30,6 +30,7 @@ export const buildToolSet: ToolSet = {
     [CREATE_FILE_TOOL_NAME]: createFileTool,
     [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
     [SCRAPE_URL_TOOL_NAME]: scrapeUrlTool,
+    [SEARCH_WEB_TOOL_NAME]: searchWebTool,
     [SANDBOX_TOOL_NAME]: sandboxTool,
 };
 
@@ -39,4 +40,5 @@ export const askToolSet: ToolSet = {
     [ONLOOK_INSTRUCTIONS_TOOL_NAME]: onlookInstructionsTool,
     [READ_STYLE_GUIDE_TOOL_NAME]: readStyleGuideTool,
     [SCRAPE_URL_TOOL_NAME]: scrapeUrlTool,
+    [SEARCH_WEB_TOOL_NAME]: searchWebTool,
 };

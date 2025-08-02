@@ -18,12 +18,14 @@ import {
     READ_STYLE_GUIDE_TOOL_NAME,
     SANDBOX_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
+    SEARCH_WEB_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_NAME,
 } from '@onlook/ai';
 import type { SandboxFile } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
-import { z } from 'zod';
+import { type z } from 'zod';
+import type { SearchWebCategory } from '@onlook/ai';
 
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
     try {
@@ -63,6 +65,18 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             return await handleScrapeUrlTool(
                 toolCall.args as z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
             );
+        } else if (toolName === SEARCH_WEB_TOOL_NAME) {
+            return await handleSearchWebTool(
+                toolCall.args as {
+                    query: string;
+                    numResults?: number;
+                    type?: 'neural' | 'keyword' | 'auto';
+                    includeText?: boolean;
+                    category?: SearchWebCategory;
+                    includeDomains?: string[];
+                    excludeDomains?: string[];
+                },
+            );
         } else if (toolName === SANDBOX_TOOL_NAME) {
             return await handleSandboxTool(editorEngine);
         } else {
@@ -70,7 +84,7 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
         }
     } catch (error) {
         console.error('Error handling tool call', error);
-        return 'error handling tool call ' + error;
+        return `error handling tool call: ${error instanceof Error ? error.message : 'Unknown error'}`;
     }
 }
 
@@ -217,6 +231,39 @@ async function handleScrapeUrlTool(
     } catch (error) {
         console.error('Error scraping URL:', error);
         throw new Error(`Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+}
+
+async function handleSearchWebTool(
+    args: {
+        query: string;
+        numResults?: number;
+        type?: 'neural' | 'keyword' | 'auto';
+        includeText?: boolean;
+        category?: SearchWebCategory;
+        includeDomains?: string[];
+        excludeDomains?: string[];
+    },
+): Promise<string> {
+    try {
+        const result = await api.code.searchWeb.mutate({
+            query: args.query,
+            numResults: args.numResults ?? 10,
+            type: args.type ?? 'auto',
+            includeText: args.includeText ?? true,
+            category: args.category ,
+            includeDomains: args.includeDomains,
+            excludeDomains: args.excludeDomains,
+        });
+
+        if (!result.result) {
+            throw new Error(`Failed to search web: ${result.error ?? 'Unknown error'}`);
+        }
+
+        return result.result;
+    } catch (error) {
+        console.error('Error searching web:', error);
+        throw new Error(`Failed to search web for "${args.query}": ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 
