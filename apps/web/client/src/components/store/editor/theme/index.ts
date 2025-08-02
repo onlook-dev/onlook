@@ -13,12 +13,12 @@ import type { CodeDiffRequest } from '@onlook/models/code';
 import type { TailwindColor } from '@onlook/models/style';
 import {
     generate,
+    getAstFromContent,
     getNodeClasses,
     isColorsObjectProperty,
     isObjectExpression,
-    parse,
     transformAst,
-    traverse,
+    traverse
 } from '@onlook/parser';
 import { getOidFromJsxElement } from '@onlook/parser/src/code-edit/helpers';
 import { Color } from '@onlook/utility';
@@ -391,10 +391,10 @@ export class ThemeManager {
             const camelCaseName = camelCase(groupName);
 
             // Update config file
-            const updateAst = parse(configContent, {
-                sourceType: 'module',
-                plugins: ['typescript', 'jsx'],
-            });
+            const updateAst = getAstFromContent(configContent);
+            if (!updateAst) {
+                throw new Error(`Failed to parse file ${configPath}`);
+            }
 
             traverse(updateAst, {
                 ObjectProperty(path) {
@@ -712,10 +712,10 @@ export class ThemeManager {
         newColor: string,
         theme?: SystemTheme,
     ): Promise<boolean> {
-        const updateAst = parse(configContent, {
-            sourceType: 'module',
-            plugins: ['typescript', 'jsx'],
-        });
+        const updateAst = getAstFromContent(configContent);
+        if (!updateAst) {
+            throw new Error(`Failed to parse file ${configPath}`);
+        }
 
         let isUpdated = false;
         // Update the specific shade base on tailwinds color scale
@@ -925,10 +925,10 @@ export class ThemeManager {
         }
 
         // Update config file
-        const updateAst = parse(configContent, {
-            sourceType: 'module',
-            plugins: ['typescript', 'jsx'],
-        });
+        const updateAst = getAstFromContent(configContent);
+        if (!updateAst) {
+            throw new Error(`Failed to parse file ${configPath}`);
+        }
 
         traverse(updateAst, {
             ObjectProperty(path) {
@@ -1150,10 +1150,10 @@ export class ThemeManager {
                     return;
                 }
 
-                const ast = parse(foundFile.content, {
-                    sourceType: 'module',
-                    plugins: ['typescript', 'jsx'],
-                });
+                const ast = getAstFromContent(foundFile.content);
+                if (!ast) {
+                    throw new Error(`Failed to parse file ${file}`);
+                }
 
                 const updates = new Map<string, CodeDiffRequest>();
 

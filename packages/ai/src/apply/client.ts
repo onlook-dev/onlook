@@ -1,5 +1,11 @@
 import OpenAI from 'openai';
 
+export interface ApplyCodeChangeMetadata {
+    userId?: string;
+    projectId?: string;
+    conversationId?: string;
+}
+
 const createPrompt = (originalCode: string, updateSnippet: string, instruction: string) =>
     `<instruction>${instruction}</instruction>\n<code>${originalCode}</code>\n<update>${updateSnippet}</update>`;
 
@@ -37,6 +43,8 @@ export async function applyCodeChangeWithMorph(
 export async function applyCodeChangeWithRelace(
     originalCode: string,
     updateSnippet: string,
+    instruction: string,
+    metadata?: ApplyCodeChangeMetadata,
 ): Promise<string | null> {
     const apiKey = process.env.RELACE_API_KEY;
     if (!apiKey) {
@@ -51,6 +59,14 @@ export async function applyCodeChangeWithRelace(
     const data = {
         initialCode: originalCode,
         editSnippet: updateSnippet,
+        instructions: instruction,
+        relaceMetadata: metadata
+            ? {
+                  onlookUserId: metadata.userId,
+                  onlookProjectId: metadata.projectId,
+                  onlookConversationId: metadata.conversationId,
+              }
+            : undefined,
     };
 
     const response = await fetch(url, {
@@ -69,7 +85,8 @@ export async function applyCodeChange(
     originalCode: string,
     updateSnippet: string,
     instruction: string,
-    preferredProvider: FastApplyProvider = FastApplyProvider.MORPH,
+    metadata?: ApplyCodeChangeMetadata,
+    preferredProvider: FastApplyProvider = FastApplyProvider.RELACE,
 ): Promise<string | null> {
     const providerAttempts = [
         {
@@ -104,6 +121,8 @@ export async function applyCodeChange(
                     : await (applyFn as typeof applyCodeChangeWithRelace)(
                           originalCode,
                           updateSnippet,
+                          instruction,
+                          metadata,
                       );
             if (result) return result;
         } catch (error) {

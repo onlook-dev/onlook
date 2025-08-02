@@ -20,6 +20,7 @@ import {
     BorderSolidIcon,
     BorderTopIcon,
     BoxIcon,
+    BoxModelIcon,
     ButtonIcon,
     ChatBubbleIcon,
     CheckCircledIcon,
@@ -1418,6 +1419,24 @@ export const Icons = {
             />
         </svg>
     ),
+    Library: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="17"
+            height="18"
+            viewBox="0 0 17 18"
+            fill="none"
+            className={className}
+            {...props}
+        >
+            <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M10.3264 2.5957L15.0808 15.0758L13.7569 15.5801L9.00256 3.10003L10.3264 2.5957ZM3.54167 2.62438V15.3744H2.125V2.62438H3.54167ZM7.08333 2.62438V15.3744H5.66667V2.62438H7.08333Z"
+                fill="currentColor"
+            />
+        </svg>
+    ),
 
     ArrowDown: ArrowDownIcon,
     ArrowLeft: ArrowLeftIcon,
@@ -1442,6 +1461,7 @@ export const Icons = {
     Button: ButtonIcon,
     Bookmark: BookmarkIcon,
     BookmarkFilled: BookmarkFilledIcon,
+    BoxModel: BoxModelIcon,
 
     ChatBubble: ChatBubbleIcon,
     Check: CheckIcon,

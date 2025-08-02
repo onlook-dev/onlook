@@ -115,15 +115,12 @@ export const ProCard = ({
 
             setIsCheckingOut(true);
             const stripePriceId = await getPriceId({ priceKey: selectedTier as PriceKey });
-            const res = await updateSubscription({
+            await updateSubscription({
                 stripePriceId,
                 stripeSubscriptionId: subscription.stripeSubscriptionId,
                 stripeSubscriptionItemId: subscription.stripeSubscriptionItemId,
             });
 
-            if (!res) {
-                throw new Error('No response from update subscription');
-            }
             refetchSubscription();
             toast.success('Subscription updated!');
         } catch (error) {

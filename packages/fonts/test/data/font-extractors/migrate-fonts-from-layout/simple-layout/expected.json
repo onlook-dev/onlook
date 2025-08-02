@@ -1,0 +1,28 @@
+{
+    "layoutContent": "import React from 'react';\nexport default function Layout({\n  children\n}: {\n  children: React.ReactNode;\n}) {\n  return <html className=\"\">\n            <body className=\"\">{children}</body>\n        </html>;\n}",
+    "fonts": [
+        {
+            "id": "inter",
+            "family": "Inter",
+            "type": "google",
+            "subsets": [
+                "latin"
+            ],
+            "weight": [
+                "400",
+                "700"
+            ],
+            "styles": [],
+            "variable": "--font-inter"
+        },
+        {
+            "id": "customFont",
+            "family": "customFont",
+            "type": "local",
+            "subsets": [],
+            "weight": [],
+            "styles": [],
+            "variable": "--font-custom"
+        }
+    ]
+}

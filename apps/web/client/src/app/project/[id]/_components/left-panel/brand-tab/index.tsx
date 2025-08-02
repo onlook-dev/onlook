@@ -22,8 +22,10 @@ export const BrandTab = observer(() => {
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
-        editorEngine.font.scanFonts();
-    }, []);
+        if (editorEngine.font.fontConfigPath) {
+            editorEngine.font.scanFonts();
+        }
+    }, [editorEngine.font.fontConfigPath]);
 
     // Sample colors for the brand palette
     const brandColors = [

@@ -13,16 +13,16 @@ export function createOid(): string {
     return `${generateCustomId()}`;
 }
 
-export function getOid(node: HTMLElement): string | undefined {
-    return node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
+export function getOid(node: HTMLElement): string | null {
+    return node.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
 }
 
-export function getInstanceId(node: HTMLElement): string | undefined {
-    return node.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string;
+export function getInstanceId(node: HTMLElement): string | null {
+    return node.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID);
 }
 
-export function getDomId(node: HTMLElement): string | undefined {
-    return node.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string;
+export function getDomId(node: HTMLElement): string | null {
+    return node.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
 }
 
 /**

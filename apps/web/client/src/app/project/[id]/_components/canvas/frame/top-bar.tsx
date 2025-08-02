@@ -7,16 +7,19 @@ import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 import { useRef } from 'react';
 import { HoverOnlyTooltip } from '../../editor-bar/hover-tooltip';
+import { PageSelector } from './page-selector';
 
 export const TopBar = observer(
     ({ frame }: { frame: WebFrame }) => {
         const editorEngine = useEditorEngine();
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const topBarRef = useRef<HTMLDivElement>(null);
-        const urlRef = useRef<HTMLDivElement>(null);
-        const topBarWidth = (topBarRef.current?.clientWidth ?? 0);
-        const urlWidth = (urlRef.current?.clientWidth ?? 0);
-        const shouldShowExternalLink = ((topBarWidth - urlWidth) * editorEngine.canvas.scale) > 250;
+        const toolBarRef = useRef<HTMLDivElement>(null);
+        const topBarWidth = topBarRef.current?.clientWidth ?? 0;
+        const toolBarWidth = toolBarRef.current?.clientWidth ?? 0;
+        const padding = 210;
+        const shouldShowExternalLink =
+            (topBarWidth - toolBarWidth - padding) * editorEngine.canvas.scale > 250;
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault();
@@ -28,7 +31,7 @@ export const TopBar = observer(
             const startPositionX = frame.position.x;
             const startPositionY = frame.position.y;
 
-            const handleMove = (e: MouseEvent) => {
+            const handleMove = async (e: MouseEvent) => {
                 const scale = editorEngine.canvas.scale;
                 const deltaX = (e.clientX - startX) / scale;
                 const deltaY = (e.clientY - startY) / scale;
@@ -61,6 +64,14 @@ export const TopBar = observer(
             editorEngine.frames.reloadView(frame.id);
         };
 
+        const handleGoBack = async () => {
+            await editorEngine.frames.goBack(frame.id);
+        };
+
+        const handleGoForward = async () => {
+            await editorEngine.frames.goForward(frame.id);
+        };
+
         const handleClick = () => {
             editorEngine.frames.select([frame]);
         };
@@ -68,12 +79,10 @@ export const TopBar = observer(
         return (
             <div
                 ref={topBarRef}
-                className={
-                    cn(
-                        'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
-                        isSelected && 'text-teal-400 fill-teal-400',
-                    )
-                }
+                className={cn(
+                    'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
+                    isSelected && 'text-teal-400 fill-teal-400',
+                )}
                 style={{
                     height: `${28 / editorEngine.canvas.scale}px`,
                     width: `${frame.dimension.width}px`,
@@ -83,54 +92,70 @@ export const TopBar = observer(
                 onClick={handleClick}
             >
                 <div
-                    className="flex flex-row items-center gap-2"
+                    className="flex flex-row items-center"
                     style={{
                         transform: `scale(${1 / editorEngine.canvas.scale})`,
                         transformOrigin: 'left center',
                     }}
+                    ref={toolBarRef}
                 >
-                    <HoverOnlyTooltip
-                        content="Refresh Page"
-                        side="top"
-                        className='mb-1'
-                        hideArrow
-                    >
-                        <Button variant="ghost" size="icon" className="cursor-pointer" onClick={handleReload}>
+                    <HoverOnlyTooltip content="Go back" side="top" className="mb-1" hideArrow>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className={cn(
+                                'cursor-pointer',
+                                !editorEngine.frames.navigation.canGoBack(frame.id) && 'hidden',
+                            )}
+                            onClick={handleGoBack}
+                            disabled={!editorEngine.frames.navigation.canGoBack(frame.id)}
+                        >
+                            <Icons.ArrowLeft />
+                        </Button>
+                    </HoverOnlyTooltip>
+                    <HoverOnlyTooltip content="Go forward" side="top" className="mb-1" hideArrow>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className={cn(
+                                'cursor-pointer',
+                                !editorEngine.frames.navigation.canGoForward(frame.id) && 'hidden',
+                            )}
+                            onClick={handleGoForward}
+                            disabled={!editorEngine.frames.navigation.canGoForward(frame.id)}
+                        >
+                            <Icons.ArrowRight />
+                        </Button>
+                    </HoverOnlyTooltip>
+                    <HoverOnlyTooltip content="Refresh Page" side="top" className="mb-1" hideArrow>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="cursor-pointer"
+                            onClick={handleReload}
+                        >
                             <Icons.Reload />
                         </Button>
                     </HoverOnlyTooltip>
-
-                        <div
-                            ref={urlRef}
-                            className="text-small overflow-hidden text-ellipsis whitespace-nowrap">
-                            {frame.url}
-                        </div>
+                    <PageSelector frame={frame} />
                 </div>
-                <HoverOnlyTooltip
-                    content="Preview in new tab"
-                    side="top"
-                    hideArrow
-                    className='mb-1'
-                >
-                <Link
-                    className="absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300"
-                    href={frame.url}
-                    target="_blank"
-                    style={{
-                        transform: `scale(${1 / editorEngine.canvas.scale})`,
-                        transformOrigin: 'right center',
-                        opacity: shouldShowExternalLink ? 1 : 0,
-                        pointerEvents: shouldShowExternalLink ? 'auto' : 'none',
-                    }}
-                >
-                    <Button variant="ghost" size="icon">
-                        <Icons.ExternalLink />
-                    </Button>
-                </Link>
+                <HoverOnlyTooltip content="Preview in new tab" side="top" hideArrow className="mb-1">
+                    <Link
+                        className="absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300"
+                        href={frame.url.replace(/\[([^\]]+)\]/g, 'temp-$1')} // Dynamic routes are not supported so we replace them with a temporary value
+                        target="_blank"
+                        style={{
+                            transform: `scale(${1 / editorEngine.canvas.scale})`,
+                            transformOrigin: 'right center',
+                            opacity: shouldShowExternalLink ? 1 : 0,
+                            pointerEvents: shouldShowExternalLink ? 'auto' : 'none',
+                        }}
+                    >
+                        <Button variant="ghost" size="icon">
+                            <Icons.ExternalLink />
+                        </Button>
+                    </Link>
                 </HoverOnlyTooltip>
-
             </div>
         );
-    },
-);
-
+    });

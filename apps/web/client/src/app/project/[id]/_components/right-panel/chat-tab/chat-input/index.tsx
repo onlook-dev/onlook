@@ -15,7 +15,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { InputContextPills } from '../context-pills/input-context-pills';
-import { type SuggestionsRef } from '../suggestions';
+import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
 
@@ -45,7 +45,7 @@ export const ChatInput = observer(({
         if (textareaRef.current && !isWaiting) {
             focusInput();
         }
-    }, [editorEngine.chat.conversation.current?.messages.length]);
+    }, [editorEngine.chat.conversation.current?.messages]);
 
     useEffect(() => {
         if (editorEngine.state.rightPanelTab === EditorTabValue.CHAT) {
@@ -99,7 +99,7 @@ export const ChatInput = observer(({
             e.stopPropagation();
 
             // Only let natural tab order continue if handleTabNavigation returns false
-            const handled = suggestionRef.current?.handleTabNavigation();
+            const handled = suggestionRef.current?.handleTabNavigation(e.shiftKey);
             if (!handled) {
                 // Focus the textarea
                 textareaRef.current?.focus();
@@ -129,7 +129,6 @@ export const ChatInput = observer(({
             return;
         }
         const savedInput = inputValue.trim();
-        setInputValue('');
 
         const message = chatMode === ChatType.ASK
             ? await editorEngine.chat.getAskMessage(savedInput)
@@ -141,7 +140,8 @@ export const ChatInput = observer(({
             return;
         }
 
-        sendMessageToChat(message, chatMode);
+        await sendMessageToChat(message, chatMode);
+        setInputValue('');
     }
 
     const getPlaceholderText = () => {
@@ -300,8 +300,7 @@ export const ChatInput = observer(({
                 }
             }}
         >
-            {/* TODO: Reenable suggestions */}
-            {/* <Suggestions
+            <Suggestions
                 ref={suggestionRef}
                 disabled={disabled}
                 inputValue={inputValue}
@@ -319,7 +318,7 @@ export const ChatInput = observer(({
                         textareaRef.current?.focus();
                     }
                 }}
-            /> */}
+            />
             <div className="flex flex-col w-full p-4">
                 <InputContextPills />
                 <Textarea

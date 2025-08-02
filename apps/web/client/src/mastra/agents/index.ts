@@ -1,8 +1,19 @@
+import { env } from '@/env';
 import { Agent } from '@mastra/core/agent';
 import type { RuntimeContext } from '@mastra/core/runtime-context';
 import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { ChatType, LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
+import { ChatType, CLAUDE_MODELS, LLMProvider, OPENROUTER_MODELS, type InitialModelPayload } from '@onlook/models';
 import { memory } from '../memory';
+
+const isProd = env.NODE_ENV === 'production';
+
+const MainModelConfig: InitialModelPayload = isProd ? {
+    provider: LLMProvider.OPENROUTER,
+    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+} : {
+    provider: LLMProvider.ANTHROPIC,
+    model: CLAUDE_MODELS.SONNET_4,
+};
 
 export const ONLOOK_AGENT_KEY = "onlookAgent";
 export const CHAT_TYPE_KEY = "chatType";
@@ -35,10 +46,7 @@ export const onlookAgent = new Agent({
         return systemPrompt;
     },
     model: async () => {
-        const { model } = await initModel({
-            provider: LLMProvider.OPENROUTER,
-            model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
-        });
+        const { model } = await initModel(MainModelConfig);
         return model;
     },
     tools: ({ runtimeContext }: {

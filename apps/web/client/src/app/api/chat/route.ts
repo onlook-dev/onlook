@@ -59,35 +59,66 @@ export const streamResponse = async (req: NextRequest) => {
     const agent = mastra.getAgent(ONLOOK_AGENT_KEY);
     const runtimeContext = new RuntimeContext<OnlookAgentRuntimeContext>()
     runtimeContext.set(CHAT_TYPE_KEY, chatType);
-    console.log('messages', (messages))
-    console.log('conversationId', conversationId, 'projectId', projectId)
+
+    // Updating the usage record and rate limit is done here to avoid
+    // abuse in the case where a single user sends many concurrent requests.
+    // If the call below fails, the user will not be penalized.
+    let usageRecordId: string | undefined;
+    let rateLimitId: string | undefined;
+    if (chatType === ChatType.EDIT) {
+        const user = await getSupabaseUser(req);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const { api } = await createTRPCClient(req);
+        const incrementRes = await api.usage.increment({
+            type: UsageType.MESSAGE,
+        });
+        usageRecordId = incrementRes?.usageRecordId;
+        rateLimitId = incrementRes?.rateLimitId;
+    }
 
     const result = await agent.stream(messages, {
+        headers: {
+            'HTTP-Referer': 'https://onlook.com',
+            'X-Title': 'Onlook',
+        },
         maxSteps,
         runtimeContext,
         toolCallStreaming: true,
         experimental_repairToolCall: repairToolCall,
-        onError: (error) => {
+        onError: async (error) => {
             console.error('Error in chat', error);
+            // if there was an error with the API, do not penalize the user
+            if (usageRecordId && rateLimitId) {
+                await createTRPCClient(req)
+                    .then(({ api }) => api.usage.revertIncrement({ usageRecordId, rateLimitId }))
+                    .catch(error => console.error('Error in chat usage decrement', error));
+            }
         },
         resourceId: projectId,
         threadId: conversationId,
     })
 
-    try {
-        if (chatType === ChatType.EDIT) {
-            const user = await getSupabaseUser(req);
-            if (!user) {
-                throw new Error('User not found');
-            }
-            const { api } = await createTRPCClient(req);
-            await api.usage.increment({
-                type: UsageType.MESSAGE,
-            });
+    return result.toDataStreamResponse(
+        {
+            getErrorMessage: errorHandler,
         }
-    } catch (error) {
-        console.error('Error in chat usage increment', error);
+    );
+}
+
+export function errorHandler(error: unknown) {
+    if (error == null) {
+        return 'unknown error';
     }
 
-    return result.toDataStreamResponse();
+    if (typeof error === 'string') {
+        return error;
+    }
+
+    if (error instanceof Error) {
+        return error.message;
+    }
+
+    return JSON.stringify(error);
 }

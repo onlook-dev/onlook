@@ -1,0 +1,49 @@
+{
+    "layoutContent": "import React from 'react';\nexport default function RootLayout({\n  children\n}: {\n  children: React.ReactNode;\n}) {\n  return <html lang=\"en\" className=\"\">\n            <head>\n                <title>My App</title>\n            </head>\n            <body className=\"antialiased\">\n                <main className=\"\">\n                    <header className=\"\">\n                        <h1>Welcome</h1>\n                    </header>\n                    {children}\n                </main>\n            </body>\n        </html>;\n}",
+    "fonts": [
+        {
+            "id": "inter",
+            "family": "Inter",
+            "type": "google",
+            "subsets": [
+                "latin"
+            ],
+            "weight": [
+                "400",
+                "700"
+            ],
+            "styles": [
+                "normal"
+            ],
+            "variable": "--font-inter"
+        },
+        {
+            "id": "roboto",
+            "family": "Roboto",
+            "type": "google",
+            "subsets": [
+                "latin"
+            ],
+            "weight": [
+                "300",
+                "400"
+            ],
+            "styles": [],
+            "variable": "--font-roboto"
+        },
+        {
+            "id": "brandFont",
+            "family": "brandFont",
+            "type": "local",
+            "subsets": [],
+            "weight": [
+                "400",
+                "700"
+            ],
+            "styles": [
+                "normal"
+            ],
+            "variable": "--font-brand"
+        }
+    ]
+}

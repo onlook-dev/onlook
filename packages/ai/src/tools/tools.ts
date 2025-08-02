@@ -8,6 +8,8 @@ import {
     listFilesTool,
     READ_FILES_TOOL_NAME,
     readFilesTool,
+    SANDBOX_TOOL_NAME,
+    sandboxTool,
     TERMINAL_COMMAND_TOOL_NAME,
     terminalCommandTool,
 } from './files';
@@ -28,6 +30,7 @@ export const buildToolSet: ToolSet = {
     [CREATE_FILE_TOOL_NAME]: createFileTool,
     [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
     [SCRAPE_URL_TOOL_NAME]: scrapeUrlTool,
+    [SANDBOX_TOOL_NAME]: sandboxTool,
 };
 
 export const askToolSet: ToolSet = {

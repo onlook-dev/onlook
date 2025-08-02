@@ -4,13 +4,14 @@ import type { TailwindColor } from '@onlook/models/style';
 import {
     ColorPicker,
     Gradient,
-    type GradientState,
-    type GradientStop,
+    type GradientState
 } from '@onlook/ui/color-picker';
+import { parseGradientFromCSS } from '@onlook/ui/color-picker/Gradient';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
+import { cn } from '@onlook/ui/utils';
 import { Color, toNormalCase, type Palette } from '@onlook/utility';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGradientUpdate } from '../hooks/use-gradient-update';
@@ -40,12 +41,10 @@ const ColorGroup = ({
     }, [isExpanded]);
 
     useEffect(() => {
-        setTimeout(() => {
-            if (selectedRef.current) {
-                selectedRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
-    }, [selectedColor, expanded]);
+        if (selectedRef.current) {
+            selectedRef.current.scrollIntoView({ block: 'center' });
+        }
+    }, [expanded]);
 
     return (
         <div className="w-full group">
@@ -105,6 +104,7 @@ interface ColorPickerProps {
     onChangeEnd: (color: Color | TailwindColor) => void;
     backgroundImage?: string;
     isCreatingNewColor?: boolean;
+    hideGradient?: boolean;
 }
 
 export const ColorPickerContent: React.FC<ColorPickerProps> = ({
@@ -113,6 +113,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     onChangeEnd,
     backgroundImage,
     isCreatingNewColor,
+    hideGradient = false,
 }) => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [palette, setPalette] = useState<Palette>(color.palette);
@@ -137,119 +138,6 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
         isCreatingNewColor ? TabValue.CUSTOM : TabValue.BRAND,
     );
 
-
-    const parseGradientFromCSS = useCallback((cssValue: string): GradientState | null => {
-        try {
-            const normalized = cssValue.trim();
-
-            const linearMatch = /linear-gradient\(([^)]+)\)/.exec(normalized);
-            const radialMatch = /radial-gradient\(([^)]+)\)/.exec(normalized);
-            const conicMatch = /conic-gradient\(([^)]+)\)/.exec(normalized);
-
-            let type: GradientState['type'] = 'linear';
-            let angle = 90;
-            let stopsString = '';
-
-            if (linearMatch?.[1]) {
-                type = 'linear';
-                const params = linearMatch[1];
-                const angleMatch = /(\d+)deg/.exec(params);
-                if (angleMatch?.[1]) {
-                    angle = parseInt(angleMatch[1]);
-                    stopsString = params.replace(/^\d+deg,?\s*/, '');
-                } else {
-                    stopsString = params;
-                }
-            } else if (radialMatch?.[1]) {
-                const params = radialMatch[1];
-                // Check if it's a diamond gradient (ellipse 80% 80% pattern)
-                if (params.includes('ellipse 80% 80%')) {
-                    type = 'diamond';
-                    stopsString = params.replace(/^ellipse\s+80%\s+80%\s+at\s+center,?\s*/, '');
-                } else {
-                    type = 'radial';
-                    stopsString = params.replace(/^(circle|ellipse).*?,?\s*/, '');
-                }
-            } else if (conicMatch?.[1]) {
-                const params = conicMatch[1];
-                const angleMatch = /from\s+(\d+)deg/.exec(params);
-
-                if (angleMatch?.[1]) {
-                    angle = parseInt(angleMatch[1]);
-                    stopsString = params.replace(/^from\s+\d+deg,?\s*/, '');
-                } else {
-                    stopsString = params;
-                }
-
-                // Parse stops first to check for angular pattern
-                const stopMatches = stopsString.split(/,(?![^()]*\))/);
-                const tempStops: { color: string; position: number }[] = [];
-
-                stopMatches.forEach((stop, index) => {
-                    const trimmed = stop.trim();
-                    const match = /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/.exec(trimmed);
-                    if (match?.[1]) {
-                        const color = match[1];
-                        const position = match[2]
-                            ? parseFloat(match[2])
-                            : (index / Math.max(1, stopMatches.length - 1)) * 100;
-                        tempStops.push({ color, position });
-                    }
-                });
-
-                // Check if it's an angular gradient (has duplicate end color at 100%)
-                const firstStop = tempStops[0];
-                const lastStop = tempStops[tempStops.length - 1];
-                const isAngular = tempStops.length >= 3 &&
-                    firstStop && lastStop &&
-                    firstStop.color === lastStop.color &&
-                    Math.abs(lastStop.position - 100) < 1;
-
-                if (isAngular) {
-                    type = 'angular';
-                    // Remove the duplicate end color for angular gradients
-                    tempStops.pop();
-                    // Reconstruct stopsString without the duplicate
-                    stopsString = tempStops.map(stop =>
-                            stop.position === Math.round(stop.position)
-                                ? `${stop.color} ${Math.round(stop.position)}%`
-                            : `${stop.color} ${stop.position}%`
-                    ).join(', ');
-                } else {
-                    type = 'conic';
-                }
-            } else {
-                return null;
-            }
-
-            const stops: GradientStop[] = [];
-            const stopMatches = stopsString.split(/,(?![^()]*\))/);
-
-            stopMatches.forEach((stop, index) => {
-                const trimmed = stop.trim();
-                const match = /^(#[0-9a-fA-F]{3,8}|rgb\([^)]+\)|rgba\([^)]+\)|hsl\([^)]+\)|hsla\([^)]+\)|[a-zA-Z]+)\s*(\d+(?:\.\d+)?)?%?/.exec(trimmed);
-                if (match?.[1]) {
-                    const color = match[1];
-                    const position = match[2]
-                        ? parseFloat(match[2])
-                        : (index / Math.max(1, stopMatches.length - 1)) * 100;
-                    stops.push({
-                        id: `stop-${index + 1}`,
-                        color,
-                        position: Math.round(position),
-                        opacity: 100, // Default opacity for parsed gradients
-                    });
-                }
-            });
-
-            if (stops.length < 2) return null;
-
-            return { type, angle, stops };
-        } catch (error) {
-            console.warn('Failed to parse gradient:', error);
-            return null;
-        }
-    }, []);
 
     const isColorRemoved = (colorToCheck: Color) => colorToCheck.isEqual(Color.from('transparent'));
 
@@ -465,7 +353,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             ? editorEngine.style.selectedStyle?.styles.computed.backgroundImage
             : undefined;
 
-        const activeGradientSource = computedBackgroundImage || backgroundImage;
+        const activeGradientSource = computedBackgroundImage ?? backgroundImage;
 
         if (hasGradient(activeGradientSource)) {
             const parsed = parseGradientFromCSS(activeGradientSource!);
@@ -732,49 +620,53 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             >
                 {!isCreatingNewColor && (
                     <TabsList className="bg-transparent px-2 m-0 gap-2 justify-between w-full">
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                             <TabsTrigger
                                 value={TabValue.BRAND}
-                                className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                                className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
                             >
                                 Brand
                             </TabsTrigger>
 
                             <TabsTrigger
                                 value={TabValue.CUSTOM}
-                                className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                                className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
                             >
                                 Custom
                             </TabsTrigger>
-                            <TabsTrigger
-                                value={TabValue.GRADIENT}
-                                className="bg-transparent text-xs p-1 hover:text-foreground-primary"
-                            >
-                                Gradient
-                            </TabsTrigger>
+                            {!hideGradient && (
+                                <TabsTrigger
+                                    value={TabValue.GRADIENT}
+                                    className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
+                                >
+                                    Gradient
+                                </TabsTrigger>
+                            )}
                         </div>
                         {!isCreatingNewColor && (
                             <HoverOnlyTooltip
-                                content="Remove Background Color"
+                                content="Remove Color"
                                 side="bottom"
                                 className="mt-1"
                                 hideArrow
                                 disabled={isColorRemoved(color)}
                             >
                                 <button
-                                    className={`p-1 rounded transition-colors ${
+                                    className={cn(
+                                        'p-1 rounded transition-colors',
                                         isColorRemoved(color)
                                             ? 'bg-background-secondary'
                                             : 'hover:bg-background-tertiary'
-                                    }`}
+                                    )}
                                     onClick={handleRemoveColor}
                                 >
                                     <Icons.SquareX
-                                        className={`h-4 w-4 ${
+                                        className={cn(
+                                            'h-4 w-4',
                                             isColorRemoved(color)
                                                 ? 'text-foreground-primary'
                                                 : 'text-foreground-tertiary'
-                                        }`}
+                                        )}
                                     />
                                 </button>
                             </HoverOnlyTooltip>
@@ -877,11 +769,10 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         <div className="flex flex-row items-center justify-between w-full px-2 py-1">
                             <span className="text-foreground-secondary text-small">Presets</span>
                             <button
-                                className={`px-1 py-1 text-xs transition-colors w-6 h-6 flex items-center justify-center rounded ${
-                                    viewMode === 'grid'
-                                        ? 'text-foreground-secondary hover:text-foreground-primary hover:bg-background-hover'
-                                        : 'text-foreground-primary bg-background-secondary'
-                                }`}
+                                className={`px-1 py-1 text-xs transition-colors w-6 h-6 flex items-center justify-center rounded ${viewMode === 'grid'
+                                    ? 'text-foreground-secondary hover:text-foreground-primary hover:bg-background-hover'
+                                    : 'text-foreground-primary bg-background-secondary'
+                                    }`}
                                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                                 title="Toggle view mode"
                             >

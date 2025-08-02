@@ -7,7 +7,7 @@ import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { NEXT_JS_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
-import { generate, injectPreloadScript, parse } from '@onlook/parser';
+import { generate, getAstFromContent, injectPreloadScript } from '@onlook/parser';
 import { isRootLayoutFile, isTargetFile } from '@onlook/utility';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
@@ -315,10 +315,10 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
                 const isLayout = isRootLayoutFile(file.path);
                 if (isLayout) {
                     try {
-                        const ast = parse(content, {
-                            sourceType: 'module',
-                            plugins: ['jsx', 'typescript'],
-                        });
+                        const ast = getAstFromContent(content);
+                        if (!ast) {
+                            throw new Error('Failed to parse layout file');
+                        }
                         const modifiedAst = injectPreloadScript(ast);
                         content = generate(modifiedAst, {}, content).code;
                     } catch (parseError) {

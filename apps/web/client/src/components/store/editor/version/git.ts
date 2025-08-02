@@ -1,4 +1,6 @@
+import { prepareCommitMessage, sanitizeCommitMessage } from '@/utils/git';
 import { type GitCommit } from '@onlook/git';
+import stripAnsi from 'strip-ansi';
 import type { EditorEngine } from '../engine';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
@@ -145,28 +147,54 @@ export class GitManager {
      * Create a commit
      */
     async commit(message: string): Promise<GitCommandResult> {
-        const escapedMessage = message.replace(/\"/g, '\\"');
-        return this.runCommand(`git commit --allow-empty --no-verify -m "${escapedMessage}"`);
+        const sanitizedMessage = sanitizeCommitMessage(message);
+        const escapedMessage = prepareCommitMessage(sanitizedMessage);
+        return this.runCommand(`git commit --allow-empty --no-verify -m ${escapedMessage}`);
     }
 
     /**
      * List commits with formatted output
      */
-    async listCommits(): Promise<GitCommit[]> {
-        try {
-            const result = await this.runCommand(
-                'git log --pretty=format:"%H|%an <%ae>|%ad|%s" --date=iso',
-            );
+    async listCommits(maxRetries = 2): Promise<GitCommit[]> {
+        let lastError: Error | null = null;
 
-            if (result.success && result.output) {
-                return this.parseGitLog(result.output);
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+                // Use a more robust format with unique separators and handle multiline messages
+                const result = await this.runCommand(
+                    'git --no-pager log --pretty=format:"COMMIT_START%n%H%n%an <%ae>%n%ad%n%B%nCOMMIT_END" --date=iso',
+                );
+
+                if (result.success && result.output) {
+                    return this.parseGitLog(result.output);
+                }
+
+                // If git command failed but didn't throw, treat as error for retry logic
+                lastError = new Error(`Git command failed: ${result.error || 'Unknown error'}`);
+
+                if (attempt < maxRetries) {
+                    // Wait before retry with exponential backoff
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                    continue;
+                }
+
+                return [];
+            } catch (error) {
+                lastError = error instanceof Error ? error : new Error(String(error));
+                console.warn(`Attempt ${attempt + 1} failed to list commits:`, lastError.message);
+
+                if (attempt < maxRetries) {
+                    // Wait before retry with exponential backoff
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                    continue;
+                }
+
+                console.error('All attempts failed to list commits', lastError);
+                return [];
             }
-
-            return [];
-        } catch (error) {
-            console.error('Failed to list commits', error);
-            return [];
         }
+
+        return [];
     }
 
     /**
@@ -180,9 +208,10 @@ export class GitManager {
      * Add a display name note to a commit
      */
     async addCommitNote(commitOid: string, displayName: string): Promise<GitCommandResult> {
-        const escapedDisplayName = displayName.replace(/\"/g, '\\"');
+        const sanitizedDisplayName = sanitizeCommitMessage(displayName);
+        const escapedDisplayName = prepareCommitMessage(sanitizedDisplayName);
         return this.runCommand(
-            `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} add -f -m "${escapedDisplayName}" ${commitOid}`,
+            `git --no-pager notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} add -f -m ${escapedDisplayName} ${commitOid}`,
         );
     }
 
@@ -192,10 +221,14 @@ export class GitManager {
     async getCommitNote(commitOid: string): Promise<string | null> {
         try {
             const result = await this.runCommand(
-                `git notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} show ${commitOid}`,
+                `git --no-pager notes --ref=${ONLOOK_DISPLAY_NAME_NOTE_REF} show ${commitOid}`,
                 true,
             );
-            return result.success ? this.formatGitLogOutput(result.output) : null;
+            if (result.success && result.output) {
+                const cleanOutput = this.formatGitLogOutput(result.output);
+                return cleanOutput || null;
+            }
+            return null;
         } catch (error) {
             console.warn('Failed to get commit note', error);
             return null;
@@ -205,31 +238,8 @@ export class GitManager {
     /**
      * Run a git command through the sandbox session
      */
-    private async runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
-        try {
-            if (!this.editorEngine?.sandbox?.session) {
-                return {
-                    success: false,
-                    output: '',
-                    error: 'No session available',
-                };
-            }
-
-            let result = await this.editorEngine.sandbox.session.runCommand(command + (ignoreError ? ' 2>/dev/null || true' : ''));
-
-            if (!result.success) {
-                throw new Error(result.error ?? 'Failed to run command');
-            }
-
-            return result;
-        } catch (error) {
-            console.error(`Error running command: ${command}`, error);
-            return {
-                success: false,
-                output: '',
-                error: error instanceof Error ? error.message : 'Unknown error',
-            };
-        }
+    private runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
+        return this.editorEngine.sandbox.session.runCommand(command + (ignoreError ? ' 2>/dev/null || true' : ''));
     }
 
     /**
@@ -243,71 +253,77 @@ export class GitManager {
         }
 
         const commits: GitCommit[] = [];
-        const lines = cleanOutput.split('\n').filter((line) => line.trim());
 
-        for (const line of lines) {
-            if (!line.trim()) continue;
+        // Split by COMMIT_START and COMMIT_END markers
+        const commitBlocks = cleanOutput.split('COMMIT_START').filter(block => block.trim());
 
-            // Handle the new format: <hash>|<author>|<date>|<message>
-            // The hash might have a prefix that we need to handle
-            let cleanLine = line;
+        for (const block of commitBlocks) {
+            // Remove COMMIT_END if present
+            const cleanBlock = block.replace(/COMMIT_END\s*$/, '').trim();
+            if (!cleanBlock) continue;
 
-            // If line starts with escape sequences followed by =, extract everything after =
-            const escapeMatch = cleanLine.match(/^[^\w]*=?(.+)$/);
-            if (escapeMatch) {
-                cleanLine = escapeMatch[1] || '';
+            // Split the block into lines
+            const lines = cleanBlock.split('\n');
+
+            if (lines.length < 4) continue; // Need at least hash, author, date, and message
+
+            const hash = lines[0]?.trim();
+            const authorLine = lines[1]?.trim();
+            const dateLine = lines[2]?.trim();
+
+            // Everything from line 3 onwards is the commit message (including empty lines)
+            const messageLines = lines.slice(3);
+            // Join all message lines and trim only leading/trailing whitespace
+            const message = messageLines.join('\n').trim();
+
+            if (!hash || !authorLine || !dateLine) continue;
+
+            // Parse author name and email
+            const authorMatch = authorLine.match(/^(.+?)\s*<(.+?)>$/);
+            const authorName = authorMatch?.[1]?.trim() || authorLine;
+            const authorEmail = authorMatch?.[2]?.trim() || '';
+
+            // Parse date to timestamp
+            let timestamp: number;
+            try {
+                timestamp = Math.floor(new Date(dateLine).getTime() / 1000);
+                // Validate timestamp
+                if (isNaN(timestamp) || timestamp < 0) {
+                    timestamp = Math.floor(Date.now() / 1000);
+                }
+            } catch (error) {
+                console.warn('Failed to parse commit date:', dateLine, error);
+                timestamp = Math.floor(Date.now() / 1000);
             }
 
-            const parts = cleanLine.split('|');
-            if (parts.length >= 4) {
-                const hash = parts[0]?.trim();
-                const authorLine = parts[1]?.trim();
-                const dateLine = parts[2]?.trim();
-                const message = parts.slice(3).join('|').trim();
+            // Use the first line of the message as display name, or the full message if it's short
+            const displayMessage = message.split('\n')[0] || 'No message';
 
-                if (!hash || !authorLine || !dateLine) continue;
-
-                // Parse author name and email
-                const authorMatch = authorLine.match(/^(.+?)\s*<(.+?)>$/);
-                const authorName = authorMatch?.[1]?.trim() || authorLine;
-                const authorEmail = authorMatch?.[2]?.trim() || '';
-
-                // Parse date to timestamp
-                const timestamp = Math.floor(new Date(dateLine).getTime() / 1000);
-
-                commits.push({
-                    oid: hash,
-                    message: message || 'No message',
-                    author: {
-                        name: authorName,
-                        email: authorEmail,
-                    },
-                    timestamp: timestamp,
-                    displayName: message || null,
-                });
-            }
+            commits.push({
+                oid: hash,
+                message: message || 'No message',
+                author: {
+                    name: authorName,
+                    email: authorEmail,
+                },
+                timestamp: timestamp,
+                displayName: displayMessage,
+            });
         }
 
         return commits;
     }
 
     private formatGitLogOutput(input: string): string {
-        // Handle sequences with ESC characters anywhere within them
-        // Pattern to match sequences like [?1h<ESC>= and [K<ESC>[?1l<ESC>>
-        const ansiWithEscPattern = /\[[0-9;?a-zA-Z\x1b]*[a-zA-Z=>/]*/g;
+        // Use strip-ansi library for robust ANSI escape sequence removal
+        let cleanOutput = stripAnsi(input);
 
-        // Handle standard ANSI escape sequences starting with ESC
-        const ansiEscapePattern = /\x1b\[[0-9;?a-zA-Z]*[a-zA-Z=>/]*/g;
+        // Remove any remaining control characters except newline and tab
+        cleanOutput = cleanOutput.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
 
-        // Handle control characters
-        const controlChars = /[\x00-\x09\x0B-\x1F\x7F]/g;
+        // Remove null bytes
+        cleanOutput = cleanOutput.replace(/\0/g, '');
 
-        const cleanOutput = input
-            .replace(ansiWithEscPattern, '') // Remove sequences with ESC chars in middle
-            .replace(ansiEscapePattern, '') // Remove standard ESC sequences
-            .replace(controlChars, '') // Remove control characters
-            .trim();
-
-        return cleanOutput;
+        return cleanOutput.trim();
     }
 }
