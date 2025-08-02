@@ -20,9 +20,10 @@ interface FileTreeNodeProps {
     node: NodeApi<FileNode>;
     style: React.CSSProperties;
     files?: string[];
+    contentMatches?: Map<string, number>;
 }
 
-export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style, files = [] }) => {
+export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style, files = [], contentMatches }) => {
     const editorEngine = useEditorEngine();
     const isDirectory = node.data.isDirectory;
     const [fileModalOpen, setFileModalOpen] = useState(false);
@@ -148,6 +149,11 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
                         </span>
                         {getFileIcon()}
                         <span className="truncate">{node.data.name}</span>
+                        {!isDirectory && contentMatches?.has(node.data.path) && (
+                            <span className="ml-1 px-1.5 py-0.5 text-xs bg-primary/10 text-primary rounded-full font-medium min-w-[20px] text-center">
+                                {contentMatches.get(node.data.path)}
+                            </span>
+                        )}
                     </div>
                 </ContextMenuTrigger>
                 <ContextMenuContent>
