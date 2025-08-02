@@ -6,6 +6,7 @@ import type {
     LIST_FILES_TOOL_PARAMETERS,
     READ_FILES_TOOL_PARAMETERS,
     SCRAPE_URL_TOOL_PARAMETERS,
+    SEARCH_WEB_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_PARAMETERS
 } from '@onlook/ai';
 import {
@@ -25,7 +26,6 @@ import type { SandboxFile } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
 import { type z } from 'zod';
-import type { SearchWebCategory } from '@onlook/ai';
 
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
     try {
@@ -67,15 +67,7 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             );
         } else if (toolName === SEARCH_WEB_TOOL_NAME) {
             return await handleSearchWebTool(
-                toolCall.args as {
-                    query: string;
-                    numResults?: number;
-                    type?: 'neural' | 'keyword' | 'auto';
-                    includeText?: boolean;
-                    category?: SearchWebCategory;
-                    includeDomains?: string[];
-                    excludeDomains?: string[];
-                },
+                toolCall.args as z.infer<typeof SEARCH_WEB_TOOL_PARAMETERS>,
             );
         } else if (toolName === SANDBOX_TOOL_NAME) {
             return await handleSandboxTool(editorEngine);
@@ -235,15 +227,7 @@ async function handleScrapeUrlTool(
 }
 
 async function handleSearchWebTool(
-    args: {
-        query: string;
-        numResults?: number;
-        type?: 'neural' | 'keyword' | 'auto';
-        includeText?: boolean;
-        category?: SearchWebCategory;
-        includeDomains?: string[];
-        excludeDomains?: string[];
-    },
+    args: z.infer<typeof SEARCH_WEB_TOOL_PARAMETERS>,
 ): Promise<string> {
     try {
         const result = await api.code.searchWeb.mutate({

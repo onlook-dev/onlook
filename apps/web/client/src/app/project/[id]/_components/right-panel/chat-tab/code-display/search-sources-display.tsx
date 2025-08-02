@@ -22,7 +22,6 @@ interface SearchSourcesDisplayProps {
     results: SearchResult[];
     totalResults: number;
     searchTime: string;
-    isStream?: boolean;
 }
 
 export const SearchSourcesDisplay = observer(({

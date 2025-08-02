@@ -45,7 +45,6 @@ export const ToolCallDisplay = ({
                             results={Array.isArray(searchResult.results) ? searchResult.results : []}
                             totalResults={Number(searchResult.totalResults) || 0}
                             searchTime={String(searchResult.searchTime || '0ms')}
-                            isStream={isStream}
                         />
                     );
                 }
