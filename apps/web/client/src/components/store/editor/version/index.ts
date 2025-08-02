@@ -1,6 +1,7 @@
 import { type GitCommit } from '@onlook/git';
 import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
+import { sanitizeCommitMessage } from '../../../../utils/git';
 import type { EditorEngine } from '../engine';
 import { GitManager } from './git';
 
@@ -95,8 +96,9 @@ export class VersionsManager {
             //Check config is set
             await this.gitManager.ensureGitConfig();
 
-            // Create the commit
-            const commitResult = await this.gitManager.commit(message);
+            // Create the commit with sanitized message
+            const sanitizedMessage = sanitizeCommitMessage(message);
+            const commitResult = await this.gitManager.commit(sanitizedMessage);
             if (!commitResult.success) {
                 if (showToast) {
                     toast.error('Failed to create backup');
@@ -113,13 +115,13 @@ export class VersionsManager {
 
             if (showToast) {
                 toast.success('Backup created successfully!', {
-                    description: `Created backup: "${message}"`,
+                    description: `Created backup: "${sanitizedMessage}"`,
                 });
             }
             this.isSaving = true;
 
             this.editorEngine.posthog.capture('versions_create_commit_success', {
-                message,
+                message: sanitizedMessage,
             });
 
             const latestCommit = commits.length > 0 ? commits[0] ?? null : null;

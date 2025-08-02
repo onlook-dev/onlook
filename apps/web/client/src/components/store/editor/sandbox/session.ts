@@ -118,7 +118,9 @@ export class SessionManager {
                 throw new Error('No session found');
             }
             streamCallback?.(command + '\n');
+            console.error('runCommand', command);
             const output = await this.session.commands.run(command);
+            console.error('output', output);
             streamCallback?.(output);
             return {
                 output,
