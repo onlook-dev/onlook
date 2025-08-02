@@ -64,7 +64,7 @@ export const UploadModal = observer(({
             if (availableDirectories.includes('assets')) {
                 return 'assets';
             }
-            return 'public';
+            return availableDirectories.includes('public') ? 'public' : 'root';
         }
         
         // For non-image files, use last selected directory or current file's directory
