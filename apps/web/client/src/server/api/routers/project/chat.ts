@@ -1,107 +1,132 @@
+import { mastra } from '@/mastra';
 import { initModel } from '@onlook/ai';
 import { SUGGESTION_SYSTEM_PROMPT } from '@onlook/ai/src/prompt/suggest';
 import {
-    conversationInsertSchema,
-    conversations,
-    messageInsertSchema,
-    messages,
-    toConversation,
-    toMessage,
-    type Message,
+    toOnlookConversationFromMastra,
+    toOnlookMessageFromMastra,
 } from '@onlook/db';
-import type { ChatMessageRole, ChatSuggestion } from '@onlook/models';
+import type { ChatSuggestion } from '@onlook/models';
 import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { ChatSuggestionsSchema } from '@onlook/models/chat';
 import type { CoreMessage } from 'ai';
 import { generateObject } from 'ai';
-import { eq, inArray } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 const conversationRouter = createTRPCRouter({
-    get: protectedProcedure
+    getAll: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
-            const dbConversations = await ctx.db.query.conversations.findMany({
-                where: eq(conversations.projectId, input.projectId),
-                orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
-            });
-            return dbConversations.map((conversation) => toConversation(conversation));
+            const storage = mastra.getStorage()
+            if (!storage) {
+                throw new Error('Storage not found');
+            }
+            const threadsResult = await storage.getThreadsByResourceId({
+                resourceId: input.projectId,
+            })
+            return threadsResult.map((thread) => toOnlookConversationFromMastra(thread));
         }),
     create: protectedProcedure
         .input(z.object({ projectId: z.string() }))
-        .mutation(async ({ ctx, input }) => {
-            const [conversation] = await ctx.db.insert(conversations).values({
-                projectId: input.projectId,
-            }).returning();
-            if (!conversation) {
-                throw new Error('Failed to create conversation');
+        .mutation(async ({ input }) => {
+            const { onlookAgent } = mastra.getAgents()
+            const memory = await onlookAgent.getMemory()
+            if (!memory) {
+                throw new Error('Memory not found');
             }
-            return toConversation(conversation);
+            const thread = await memory.createThread({
+                resourceId: input.projectId,
+            });
+
+            return toOnlookConversationFromMastra(thread);
         }),
-    upsert: protectedProcedure
-        .input(z.object({ conversation: conversationInsertSchema }))
-        .mutation(async ({ ctx, input }) => {
-            return await ctx.db
-                .insert(conversations)
-                .values(input.conversation)
-                .onConflictDoUpdate({
-                    target: [conversations.id],
-                    set: {
-                        ...input.conversation,
-                    },
-                });
+    update: protectedProcedure
+        .input(z.object({
+            conversationId: z.string(),
+            title: z.string(),
+            metadata: z.record(z.string(), z.any()),
+        }))
+        .mutation(async ({ input }) => {
+            const storage = mastra.getStorage()
+            if (!storage) {
+                throw new Error('Storage not found');
+            }
+            const thread = await storage.updateThread({
+                id: input.conversationId,
+                title: input.title,
+                metadata: input.metadata,
+            });
+
+            return toOnlookConversationFromMastra(thread);
         }),
     delete: protectedProcedure
-        .input(z.object({ conversationId: z.string() }))
-        .mutation(async ({ ctx, input }) => {
-            return await ctx.db
-                .delete(conversations)
-                .where(eq(conversations.id, input.conversationId));
+        .input(z.object({
+            conversationId: z.string()
+        }))
+        .mutation(async ({ input }) => {
+            const storage = mastra.getStorage()
+            if (!storage) {
+                throw new Error('Storage not found');
+            }
+            await storage.deleteThread({
+                threadId: input.conversationId,
+            });
         }),
 });
 
 const messageRouter = createTRPCRouter({
     get: protectedProcedure
-        .input(z.object({ conversationId: z.string() }))
-        .query(async ({ ctx, input }) => {
-            const dbMessages = await ctx.db.query.messages.findMany({
-                where: eq(messages.conversationId, input.conversationId),
-                orderBy: (messages, { asc }) => [asc(messages.createdAt)],
-            });
-            return dbMessages.map((message) => toMessage(message));
-        }),
-    upsert: protectedProcedure
-        .input(z.object({ message: messageInsertSchema }))
-        .mutation(async ({ ctx, input }) => {
-            const conversationId = input.message.conversationId;
-            if (conversationId) {
-                const conversation = await ctx.db.query.conversations.findFirst({
-                    where: eq(conversations.id, conversationId),
-                });
-                if (!conversation) {
-                    throw new Error(`Conversation not found`);
-                }
+        .input(z.object({
+            conversationId: z.string(),
+        }))
+        .query(async ({ input }) => {
+            const storage = mastra.getStorage()
+            if (!storage) {
+                throw new Error('Storage not found');
             }
-            const normalizedMessage = {
-                ...input.message,
-                role: input.message.role as ChatMessageRole,
-                parts: input.message.parts as Message['parts'],
-            };
-            return await ctx.db
-                .insert(messages)
-                .values(normalizedMessage)
-                .onConflictDoUpdate({
-                    target: [messages.id],
-                    set: {
-                        ...normalizedMessage,
-                    },
-                });
+            const messagesResult = await storage.getMessages({
+                threadId: input.conversationId,
+            })
+            console.log('messagesResult', messagesResult)
+            return messagesResult.map((message) => toOnlookMessageFromMastra(message));
         }),
+    update: protectedProcedure
+        .input(z.object({
+            messages: z.array(z.object({
+                id: z.string(),
+                content: z.object({
+                    metadata: z.record(z.string(), z.any()),
+                    parts: z.array(z.any()),
+                }),
+            })),
+        }))
+        .mutation(async ({ input }) => {
+            const storage = mastra.getStorage()
+            if (!storage) {
+                throw new Error('Storage not found');
+            }
+            const messages = await storage.updateMessages({
+                messages: input.messages
+            });
+            return messages.map((message) => toOnlookMessageFromMastra(message));
+        }),
+
     delete: protectedProcedure
-        .input(z.object({ messageIds: z.array(z.string()) }))
-        .mutation(async ({ ctx, input }) => {
-            return await ctx.db.delete(messages).where(inArray(messages.id, input.messageIds));
+        .input(z.object({
+            conversationId: z.string(),
+            messageIds: z.array(z.string()),
+        }))
+        .mutation(async ({ input }) => {
+            const storage = mastra.getStorage()
+            if (!storage) {
+                throw new Error('Storage not found');
+            }
+            // TODO: Wait for mastra to support this
+            // await storage.deleteMessages({
+            //     threadId: input.conversationId,
+            //     messageIds: input.messageIds,
+            // });
         }),
 })
 

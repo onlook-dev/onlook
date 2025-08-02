@@ -7,7 +7,7 @@ export const AssistantMessage = ({ message }: { message: AssistantChatMessage })
             <div className="flex flex-col text-wrap gap-2">
                 <MessageContent
                     messageId={message.id}
-                    parts={message.parts}
+                    parts={message.content.parts}
                     applied={message.applied}
                     isStream={false}
                 />

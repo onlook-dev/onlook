@@ -7,8 +7,10 @@
         "url": "https://github.com/onlook-dev/onlook.git"
     },
     "type": "module",
-    "main": "src/index.ts",
+    "module": "src/index.ts",
+    "main": "dist/index.js",
     "scripts": {
+        "build": "bun build src/index.ts --outfile=dist/index.js",
         "clean": "rm -rf node_modules",
         "lint": "eslint --fix",
         "format": "prettier --write .",
