@@ -341,7 +341,7 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
                             <span>Loading files...</span>
                         </div>
                     ) : filteredFiles.length === 0 ? (
-                        <div className="flex justify-center items-start h-full text-sm text-foreground/50 pt-4">
+                        <div className="flex justify-start items-start h-full text-sm text-foreground/50 pt-4 pl-2">
                             {files.length === 0 ? 'No files found' : 'No files match your search'}
                         </div>
                     ) : (

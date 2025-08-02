@@ -90,7 +90,7 @@ export const UploadModal = observer(({
         setSelectedFiles(fileArray);
 
         // Set smart default directory based on first file
-        if (fileArray.length > 0 && fileArray[0]) {
+        if (fileArray.length > 0) {
             const smartDir = getSmartDirectory(fileArray[0].name);
             setTargetDirectory(smartDir);
         }

@@ -443,17 +443,22 @@ export const DevTab = observer(() => {
     }, []);
 
     // Add shortcut
+    const saveFileRef = useRef(saveFile);
+    useEffect(() => {
+        saveFileRef.current = saveFile;
+    }, [saveFile]);
+
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && event.key === 's') {
                 event.preventDefault();
-                void saveFile();
+                void saveFileRef.current();
             }
         };
 
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [saveFile]);
+    }, []);
 
     const scrollToActiveTab = useCallback(() => {
         if (!fileTabsContainerRef.current || !ide.activeFile) return;
