@@ -1,5 +1,6 @@
 import { type GitCommit } from '@onlook/git';
 import { toast } from '@onlook/ui/sonner';
+import { truncate } from '@onlook/ui/utils';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { GitManager } from './git';
@@ -48,6 +49,7 @@ export class VersionsManager {
         commit: GitCommit | null;
         errorReason?: CreateCommitFailureReason;
     }> => {
+        const truncatedMessage = truncate(message, 72) || message;
         try {
             if (this.isSaving) {
                 if (showToast) {
@@ -96,7 +98,7 @@ export class VersionsManager {
             await this.gitManager.ensureGitConfig();
 
             // Create the commit
-            const commitResult = await this.gitManager.commit(message);
+            const commitResult = await this.gitManager.commit(truncatedMessage);
             if (!commitResult.success) {
                 if (showToast) {
                     toast.error('Failed to create backup');
