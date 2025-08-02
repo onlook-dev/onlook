@@ -99,7 +99,8 @@
         "use-resize-observer": "^9.1.0",
         "uuid": "^11.1.0",
         "webfontloader": "^1.6.28",
-        "zod": "^3.24.3"
+        "zod": "^3.24.3",
+        "@mendable/firecrawl-js": "^1.29.1"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",

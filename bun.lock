@@ -39,6 +39,7 @@
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/lang-markdown": "^6.1.7",
         "@codesandbox/sdk": "^1.1.6",
+        "@mendable/firecrawl-js": "^1.29.1",
         "@onlook/constants": "*",
         "@onlook/db": "*",
         "@onlook/email": "*",

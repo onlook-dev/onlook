@@ -49,6 +49,8 @@ export class FontConfigManager {
      */
     async scanFonts(): Promise<Font[]> {
         try {
+            await this.ensureConfigFileExists();
+            
             const file = await this.readFontConfigFile();
             if (!file) {
                 return [];
@@ -162,6 +164,8 @@ export class FontConfigManager {
      */
     async removeFont(font: Font): Promise<CodeDiff | false> {
         try {
+            await this.ensureConfigFileExists();
+            
             const { content } = (await this.readFontConfigFile()) ?? {};
             if (!content) {
                 return false;
@@ -232,10 +236,25 @@ export class FontConfigManager {
 
         const file = await sandbox.readFile(this.fontConfigPath);
         if (!file || file.type === 'binary') {
-            console.error("Font config file is empty or doesn't exist");
+            console.log("Font config file not found, will be created");
             return;
         }
         const content = file.content;
+
+        // Handle empty file case
+        if (!content || content.trim() === '') {
+            // Create a minimal valid TypeScript module
+            const emptyContent = '// Font configuration file\n';
+            const ast = parse(emptyContent, {
+                sourceType: 'module',
+                plugins: ['typescript', 'jsx'],
+            });
+
+            return {
+                ast,
+                content: emptyContent,
+            };
+        }
 
         // Parse the file content using Babel
         const ast = parse(content, {
@@ -263,7 +282,9 @@ export class FontConfigManager {
         const fontConfigExists = await sandbox.fileExists(fontConfigPath);
 
         if (!fontConfigExists) {
-            await sandbox.writeFile(this.fontConfigPath, '');
+            // Create a minimal valid TypeScript module
+            const initialContent = '// Font configuration file\n';
+            await sandbox.writeFile(this.fontConfigPath, initialContent);
         }
     }
 

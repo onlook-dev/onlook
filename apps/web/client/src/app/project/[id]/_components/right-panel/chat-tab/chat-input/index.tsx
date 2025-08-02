@@ -18,22 +18,33 @@ import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
+import { AtMenu } from '../at-menu';
+import type { AtMenuItem, AtMenuState, Mention } from '@/components/store/editor/chat/at-menu/types';
 
 export const ChatInput = observer(({
     inputValue,
     setInputValue,
+    atMenuState,
+    setAtMenuState,
 }: {
     inputValue: string;
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
+    atMenuState: AtMenuState;
+    setAtMenuState: React.Dispatch<React.SetStateAction<AtMenuState>>;
 }) => {
     const { sendMessages, stop, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
+    
+
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const suggestionRef = useRef<SuggestionsRef>(null);
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const [chatMode, setChatMode] = useState<ChatType>(ChatType.EDIT);
+    
+    const [mentions, setMentions] = useState<Mention[]>([]);
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -84,15 +95,123 @@ export const ChatInput = observer(({
     const disabled = isWaiting || editorEngine.chat.context.context.length === 0;
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
+    // Find mentions in text
+    const findMentions = (text: string): Mention[] => {
+      const mentionRegex = /@(\w+(?:\.\w+)*)/g;
+      const foundMentions: Mention[] = [];
+      let match;
+
+      while ((match = mentionRegex.exec(text)) !== null) {
+        if (match[1]) {
+          foundMentions.push({
+            id: `mention-${match.index}`,
+            name: match[1],
+            startIndex: match.index,
+            endIndex: match.index + match[0].length
+          });
+        }
+      }
+
+      return foundMentions;
+    };
+
+    // Update mentions whenever input value changes
+    useEffect(() => {
+      const newMentions = findMentions(inputValue);
+      setMentions(newMentions);
+    }, [inputValue]);
+
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
         if (isComposing) {
             return;
         }
+        
+        const value = e.target.value;
+        const prevValue = inputValue;
+        
+        // Check if user just typed a new "@" character
+        const newAtTyped = value.length > prevValue.length && value.endsWith('@');
+        
+        if (newAtTyped) {
+            console.log('Opening @ menu - newAtTyped detected');
+            // Open @ menu
+            const input = textareaRef.current;
+            if (input) {
+                const rect = input.getBoundingClientRect();
+                const inputPadding = 12; // p-3 = 12px padding
+                
+                // Calculate position for @ menu
+                const atIndex = value.lastIndexOf('@');
+                const textBeforeAt = value.substring(0, atIndex);
+                
+                // Create a temporary span to measure text width
+                const span = document.createElement('span');
+                span.style.visibility = 'hidden';
+                span.style.position = 'absolute';
+                span.style.whiteSpace = 'pre';
+                span.style.font = window.getComputedStyle(input).font;
+                span.textContent = textBeforeAt;
+                
+                document.body.appendChild(span);
+                const textWidth = span.offsetWidth;
+                document.body.removeChild(span);
+                
+                const newState = {
+                    isOpen: true,
+                    position: {
+                        top: rect.top, // Use the textarea's top position as reference
+                        left: rect.left + inputPadding + textWidth
+                    },
+                    selectedIndex: 0,
+                    searchQuery: '',
+                    activeMention: true
+                };
+                
+                console.log('Setting @ menu state:', newState);
+                setAtMenuState(prev => ({
+                    ...prev,
+                    ...newState
+                }));
+            } else {
+                console.error('textareaRef.current is null');
+            }
+        } else if (atMenuState.activeMention && value.includes('@')) {
+            // If we're in active mention mode and still have @, keep menu open
+            const lastAtIndex = value.lastIndexOf('@');
+            const textAfterAt = value.substring(lastAtIndex + 1);
+            setAtMenuState(prev => ({
+                ...prev,
+                searchQuery: textAfterAt
+            }));
+        } else {
+            // Close @ menu when @ is not present
+            setAtMenuState(prev => ({
+                ...prev,
+                isOpen: false,
+                activeMention: false,
+                searchQuery: '',
+                previewText: ''
+            }));
+        }
+        
         e.currentTarget.style.height = 'auto';
         e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
     }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        // Handle @ menu keyboard navigation
+        if (atMenuState.isOpen) {
+            switch (e.key) {
+                case 'ArrowDown':
+                case 'ArrowUp':
+                case 'Enter':
+                case 'Escape':
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return;
+            }
+        }
+
         if (e.key === 'Tab') {
             // Always prevent default tab behavior
             e.preventDefault();
@@ -265,8 +384,6 @@ export const ChatInput = observer(({
         }
     };
 
-    const suggestionRef = useRef<SuggestionsRef>(null);
-
     const bubbleDragEvent = (e: React.DragEvent<HTMLTextAreaElement>, eventType: string) => {
         e.preventDefault();
         e.stopPropagation();
@@ -332,7 +449,12 @@ export const ChatInput = observer(({
                     )}
                     rows={3}
                     value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
+                    onChange={(e) => {
+                        const value = e.target.value;
+                        setInputValue(value);
+                        // Call handleInput to process @ menu logic
+                        handleInput(e);
+                    }}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}

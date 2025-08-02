@@ -68,6 +68,11 @@ export async function initModel({
 }
 
 async function getAnthropicProvider(model: CLAUDE_MODELS): Promise<LanguageModelV1> {
+    if (!process.env.ANTHROPIC_API_KEY) {
+        throw new Error(
+            'ANTHROPIC_API_KEY must be set. Please add your Anthropic API key to your environment variables.',
+        );
+    }
     const anthropic = createAnthropic();
     return anthropic(model, {
         cacheControl: true,
@@ -133,7 +138,9 @@ async function getGoogleProvider(model: GEMINI_MODELS): Promise<LanguageModelV1>
 
 async function getOpenRouterProvider(model: OPENROUTER_MODELS): Promise<LanguageModelV1> {
     if (!process.env.OPENROUTER_API_KEY) {
-        throw new Error('OPENROUTER_API_KEY must be set');
+        throw new Error(
+            'OPENROUTER_API_KEY must be set. Please add your OpenRouter API key to your environment variables.',
+        );
     }
     const openrouter = createOpenRouter({ apiKey: process.env.OPENROUTER_API_KEY });
     return openrouter(model);

@@ -41,6 +41,7 @@ export class FontManager {
                 if (isIndexedFiles) {
                     await this.loadInitialFonts();
                     await this.getDefaultFont();
+                    await this.ensureConfigFilesExist();
                     await this.syncFontsWithConfigs();
                 }
             },

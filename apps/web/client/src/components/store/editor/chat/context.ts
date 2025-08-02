@@ -9,7 +9,7 @@ import {
     type ProjectMessageContext,
 } from '@onlook/models/chat';
 import type { ParsedError } from '@onlook/utility';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable, reaction, runInAction } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 export class ChatContext {
@@ -21,7 +21,11 @@ export class ChatContext {
         makeAutoObservable(this);
         reaction(
             () => this.editorEngine.elements.selected,
-            () => this.getChatContext().then((context) => (this.context = context)),
+            () => this.getChatContext().then((context) => 
+                runInAction(() => {
+                    this.context = context;
+                })
+            ),
         );
     }
 

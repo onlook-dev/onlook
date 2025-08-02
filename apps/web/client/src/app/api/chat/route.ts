@@ -10,8 +10,8 @@ import { type NextRequest } from 'next/server';
 const isProd = env.NODE_ENV === 'production';
 
 const MainModelConfig: InitialModelPayload = isProd ? {
-    provider: LLMProvider.OPENROUTER,
-    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+    provider: LLMProvider.ANTHROPIC,
+    model: CLAUDE_MODELS.SONNET_4,
 } : {
     provider: LLMProvider.ANTHROPIC,
     model: CLAUDE_MODELS.SONNET_4,
@@ -102,7 +102,24 @@ export const getSupabaseUser = async (request: NextRequest) => {
 
 export const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType } = await req.json();
-    const { model, providerOptions, headers } = await initModel(MainModelConfig);
+    
+    let model, providerOptions, headers;
+    try {
+        const modelConfig = await initModel(MainModelConfig);
+        model = modelConfig.model;
+        providerOptions = modelConfig.providerOptions;
+        headers = modelConfig.headers;
+    } catch (error) {
+        console.error('Error initializing model:', error);
+        return new Response(JSON.stringify({
+            error: 'Failed to initialize AI model. Please check your API key configuration.',
+            code: 500,
+            details: error instanceof Error ? error.message : String(error)
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
 
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
