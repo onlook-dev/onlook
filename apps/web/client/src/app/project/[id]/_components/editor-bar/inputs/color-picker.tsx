@@ -6,16 +6,17 @@ import {
     Gradient,
     type GradientState
 } from '@onlook/ui/color-picker';
+import { parseGradientFromCSS } from '@onlook/ui/color-picker/Gradient';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
+import { cn } from '@onlook/ui/utils';
 import { Color, toNormalCase, type Palette } from '@onlook/utility';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGradientUpdate } from '../hooks/use-gradient-update';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { hasGradient } from '../utils/gradient';
-import { parseGradientFromCSS } from '@onlook/ui/color-picker/Gradient';
 
 const ColorGroup = ({
     name,
@@ -43,7 +44,7 @@ const ColorGroup = ({
         if (selectedRef.current) {
             selectedRef.current.scrollIntoView({ block: 'center' });
         }
-    }, [ expanded]);
+    }, [expanded]);
 
     return (
         <div className="w-full group">
@@ -103,6 +104,7 @@ interface ColorPickerProps {
     onChangeEnd: (color: Color | TailwindColor) => void;
     backgroundImage?: string;
     isCreatingNewColor?: boolean;
+    hideGradient?: boolean;
 }
 
 export const ColorPickerContent: React.FC<ColorPickerProps> = ({
@@ -111,6 +113,7 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
     onChangeEnd,
     backgroundImage,
     isCreatingNewColor,
+    hideGradient = false,
 }) => {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [palette, setPalette] = useState<Palette>(color.palette);
@@ -351,7 +354,6 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
             : undefined;
 
         const activeGradientSource = computedBackgroundImage ?? backgroundImage;
-
 
         if (hasGradient(activeGradientSource)) {
             const parsed = parseGradientFromCSS(activeGradientSource!);
@@ -632,35 +634,39 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                             >
                                 Custom
                             </TabsTrigger>
-                            <TabsTrigger
-                                value={TabValue.GRADIENT}
-                                className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
-                            >
-                                Gradient
-                            </TabsTrigger>
+                            {!hideGradient && (
+                                <TabsTrigger
+                                    value={TabValue.GRADIENT}
+                                    className="flex items-center justify-center px-1.5 py-1 text-xs rounded-md bg-transparent hover:bg-background-secondary hover:text-foreground-primary transition-colors"
+                                >
+                                    Gradient
+                                </TabsTrigger>
+                            )}
                         </div>
                         {!isCreatingNewColor && (
                             <HoverOnlyTooltip
-                                content="Remove Background Color"
+                                content="Remove Color"
                                 side="bottom"
                                 className="mt-1"
                                 hideArrow
                                 disabled={isColorRemoved(color)}
                             >
                                 <button
-                                    className={`p-1 rounded transition-colors ${
+                                    className={cn(
+                                        'p-1 rounded transition-colors',
                                         isColorRemoved(color)
                                             ? 'bg-background-secondary'
                                             : 'hover:bg-background-tertiary'
-                                    }`}
+                                    )}
                                     onClick={handleRemoveColor}
                                 >
                                     <Icons.SquareX
-                                        className={`h-4 w-4 ${
+                                        className={cn(
+                                            'h-4 w-4',
                                             isColorRemoved(color)
                                                 ? 'text-foreground-primary'
                                                 : 'text-foreground-tertiary'
-                                        }`}
+                                        )}
                                     />
                                 </button>
                             </HoverOnlyTooltip>
@@ -763,11 +769,10 @@ export const ColorPickerContent: React.FC<ColorPickerProps> = ({
                         <div className="flex flex-row items-center justify-between w-full px-2 py-1">
                             <span className="text-foreground-secondary text-small">Presets</span>
                             <button
-                                className={`px-1 py-1 text-xs transition-colors w-6 h-6 flex items-center justify-center rounded ${
-                                    viewMode === 'grid'
-                                        ? 'text-foreground-secondary hover:text-foreground-primary hover:bg-background-hover'
-                                        : 'text-foreground-primary bg-background-secondary'
-                                }`}
+                                className={`px-1 py-1 text-xs transition-colors w-6 h-6 flex items-center justify-center rounded ${viewMode === 'grid'
+                                    ? 'text-foreground-secondary hover:text-foreground-primary hover:bg-background-hover'
+                                    : 'text-foreground-primary bg-background-secondary'
+                                    }`}
                                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                                 title="Toggle view mode"
                             >
