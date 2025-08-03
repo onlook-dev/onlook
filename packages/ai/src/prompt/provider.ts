@@ -5,7 +5,7 @@ import type {
     HighlightMessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
-import type { ImagePart, UIMessage, UserContent } from 'ai';
+import type { FilePart, FileUIPart, ImagePart, UIMessage, UserContent } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
@@ -111,14 +111,13 @@ export function getHydratedUserMessage(
                   .join('\n');
     prompt += wrapXml('instruction', textContent);
 
-    const imageParts: ImagePart[] = images.map(
-        (i) =>
-            ({
-                type: 'image',
-                image: i.content,
-                mediaType: i.mimeType,
-            }) satisfies ImagePart,
-    );
+    const imageParts: FileUIPart[] = images.map((i) => ({
+        type: 'file',
+        image: i.content,
+        mediaType: i.mimeType,
+        data: i.content,
+        url: i.content,
+    }));
 
     return {
         id,
