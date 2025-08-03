@@ -59,7 +59,7 @@ export const ChatMessages = observer(() => {
     }
 
     return (
-        <ChatMessageList contentKey={uiMessages?.map((message) => message.content).join('|') ?? ''}>
+        <ChatMessageList contentKey={uiMessages?.map((message) => JSON.stringify(message.parts)).join('|') ?? ''}>
             {messages?.map((message) => renderMessage(message))}
             <StreamMessage />
             <ErrorMessage />

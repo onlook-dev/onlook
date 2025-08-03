@@ -25,52 +25,52 @@ import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
 import { z } from 'zod';
 
-export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
+export async function handleToolCall(toolCall: ToolCall<string, unknown>, addToolResult: (result: any) => void, editorEngine: EditorEngine): Promise<void> {
     try {
         const toolName = toolCall.toolName;
         if (toolName === LIST_FILES_TOOL_NAME) {
-            return await handleListFilesTool(
+            addToolResult(await handleListFilesTool(
                 toolCall.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
                 editorEngine,
-            );
+            ));
         } else if (toolName === READ_FILES_TOOL_NAME) {
-            return await handleReadFilesTool(
+            addToolResult(await handleReadFilesTool(
                 toolCall.args as z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
                 editorEngine,
-            );
+            ));
         } else if (toolName === READ_STYLE_GUIDE_TOOL_NAME) {
             const result = await handleReadStyleGuideTool(editorEngine);
-            return result;
+            addToolResult(result);
         } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
             const result = ONLOOK_INSTRUCTIONS;
-            return result;
+            addToolResult(result);
         } else if (toolName === EDIT_FILE_TOOL_NAME) {
-            return await handleEditFileTool(
+            addToolResult(await handleEditFileTool(
                 toolCall.args as z.infer<typeof EDIT_FILE_TOOL_PARAMETERS>,
                 editorEngine,
-            );
+            ));
         } else if (toolName === CREATE_FILE_TOOL_NAME) {
-            return await handleCreateFileTool(
+            addToolResult(await handleCreateFileTool(
                 toolCall.args as z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
                 editorEngine,
-            );
+            ));
         } else if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
-            return await handleTerminalCommandTool(
+            addToolResult(await handleTerminalCommandTool(
                 toolCall.args as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
                 editorEngine,
-            );
+            ));
         } else if (toolName === SCRAPE_URL_TOOL_NAME) {
-            return await handleScrapeUrlTool(
+            addToolResult(await handleScrapeUrlTool(
                 toolCall.args as z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
-            );
+            ));
         } else if (toolName === SANDBOX_TOOL_NAME) {
-            return await handleSandboxTool(editorEngine);
+            addToolResult(await handleSandboxTool(editorEngine));
         } else {
             throw new Error(`Unknown tool call: ${toolCall.toolName}`);
         }
     } catch (error) {
         console.error('Error handling tool call', error);
-        return 'error handling tool call ' + error;
+        throw new Error('error handling tool call ' + error);
     }
 }
 

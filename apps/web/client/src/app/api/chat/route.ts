@@ -4,7 +4,7 @@ import { trackEvent } from '@/utils/analytics/server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, CLAUDE_MODELS, type InitialModelPayload, LLMProvider, OPENROUTER_MODELS, type Usage, UsageType } from '@onlook/models';
-import { generateObject, NoSuchToolError, streamText } from 'ai';
+import { streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 
 const isProd = env.NODE_ENV === 'production';
@@ -154,33 +154,6 @@ export const streamResponse = async (req: NextRequest) => {
         ],
         tools: toolSet,
         maxOutputTokens: 64000,
-        experimental_repairToolCall: async ({ toolCall, tools, inputSchema, error }) => {
-            if (NoSuchToolError.isInstance(error)) {
-                throw new Error(
-                    `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
-                );
-            }
-            const tool = tools[toolCall.toolName as keyof typeof tools];
-
-            console.warn(
-                `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}, attempting to fix`,
-            );
-
-            const { object: repairedArgs } = await generateObject({
-                model,
-                schema: tool?.parameters,
-                prompt: [
-                    `The model tried to call the tool "${toolCall.toolName}"` +
-                    ` with the following arguments:`,
-                    JSON.stringify(toolCall.args),
-                    `The tool accepts the following schema:`,
-                    JSON.stringify(inputSchema(toolCall)),
-                    'Please fix the arguments.',
-                ].join('\n'),
-            });
-
-            return { ...toolCall, args: JSON.stringify(repairedArgs) };
-        },
         onError: async (error) => {
             console.error('Error in chat', error);
             // if there was an error with the API, do not penalize the user

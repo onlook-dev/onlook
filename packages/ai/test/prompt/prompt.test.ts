@@ -99,7 +99,17 @@ describe('Prompt', () => {
         };
 
         const message = getHydratedUserMessage('test', '', [], options);
-        const prompt = message.content;
+        const prompt = message.parts
+            .map((part) =>
+                part.type === 'text'
+                    ? part.text
+                    : part.type === 'image'
+                      ? part.image
+                      : part.type === 'file'
+                        ? part.file
+                        : '',
+            )
+            .join('\n');
 
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);

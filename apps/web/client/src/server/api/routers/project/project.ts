@@ -162,7 +162,7 @@ export const projectRouter = createTRPCRouter({
                     maxOutputTokens: 50,
                 });
 
-                const generatedName = result.text.text.trim();
+                const generatedName = result.text.trim();
                 if (generatedName && generatedName.length > 0 && generatedName.length <= MAX_NAME_LENGTH) {
                     return generatedName;
                 }
