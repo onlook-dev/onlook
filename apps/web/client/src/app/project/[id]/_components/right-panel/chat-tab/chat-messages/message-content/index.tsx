@@ -7,12 +7,10 @@ export const MessageContent = observer(
     ({
         messageId,
         parts,
-        applied,
         isStream,
     }: {
         messageId: string;
         parts: UIMessage['parts'];
-        applied: boolean;
         isStream: boolean;
     }) => {
         if (!parts) {
@@ -27,7 +25,6 @@ export const MessageContent = observer(
                         messageId={messageId}
                         key={part.text}
                         content={part.text}
-                        applied={applied}
                         isStream={isStream}
                     />
                 );
@@ -40,12 +37,12 @@ export const MessageContent = observer(
                         toolInvocation={part.toolInvocation}
                         key={part.toolInvocation.toolCallId}
                         isStream={isStream}
-                        applied={applied}
                     />
                 );
             } else if (part.type === 'reasoning') {
                 return (
-                    <div key={part.reasoningText} className="border-2 border-green-500">reasoning: {JSON.stringify(part, null, 2)}
+                    <div key={part.reasoningText} className="border-2 border-green-500">
+                        reasoning: {JSON.stringify(part, null, 2)}
                     </div>
                 );
             }

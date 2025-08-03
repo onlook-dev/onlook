@@ -3,16 +3,12 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 export const MarkdownRenderer = ({
-    messageId,
     content,
     className = '',
-    applied,
-    isStream,
 }: {
     messageId: string;
     content: string;
     className?: string;
-    applied: boolean;
     isStream: boolean;
 }) => {
     const transformedContent = content.replace(

@@ -52,7 +52,7 @@ export async function getSandboxId(db: DrizzleDb, projectId: string): Promise<st
     return project.sandboxId;
 }
 
-export async function updateDeployment(db: DrizzleDb, deploymentId: string, deployment: z.infer<typeof deploymentUpdateSchema>): Promise<Deployment | null> {
+export async function updateDeployment(db: DrizzleDb, deploymentId: string, deployment: Omit<z.infer<typeof deploymentUpdateSchema>, 'envVars'> & { envVars?: Record<string, string> }): Promise<Deployment | null> {
     try {
         const [result] = await db.update(deployments).set({
             ...deployment,

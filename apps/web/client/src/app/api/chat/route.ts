@@ -152,11 +152,9 @@ export const streamResponse = async (req: NextRequest) => {
             },
             ...messages,
         ],
-        maxSteps,
         tools: toolSet,
-        toolCallStreaming: true,
         maxOutputTokens: 64000,
-        experimental_repairToolCall: async ({ toolCall, tools, parameterSchema, error }) => {
+        experimental_repairToolCall: async ({ toolCall, tools, inputSchema, error }) => {
             if (NoSuchToolError.isInstance(error)) {
                 throw new Error(
                     `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
@@ -176,7 +174,7 @@ export const streamResponse = async (req: NextRequest) => {
                     ` with the following arguments:`,
                     JSON.stringify(toolCall.args),
                     `The tool accepts the following schema:`,
-                    JSON.stringify(parameterSchema(toolCall)),
+                    JSON.stringify(inputSchema(toolCall)),
                     'Please fix the arguments.',
                 ].join('\n'),
             });
@@ -196,7 +194,7 @@ export const streamResponse = async (req: NextRequest) => {
 
     return result.toUIMessageStreamResponse(
         {
-            getErrorMessage: errorHandler,
+            onError: errorHandler,
         }
     );
 }

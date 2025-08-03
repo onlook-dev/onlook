@@ -51,7 +51,7 @@ export class PublishManager {
         buildScript: string;
         buildFlags: string;
         skipBadge: boolean;
-        updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<Deployment | null>;
+        updateDeployment: (deployment: Omit<z.infer<typeof deploymentUpdateSchema>, 'envVars'>) => Promise<Deployment | null>;
     }): Promise<Record<string, FreestyleFile>> {
         await this.runPrepareStep();
         await updateDeployment({

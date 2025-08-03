@@ -16,13 +16,13 @@ import {
 } from '@onlook/models';
 import { assertNever } from '@onlook/utility';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { type LanguageModelV1 } from 'ai';
+import { type LanguageModel } from 'ai';
 
 export async function initModel({
     provider: requestedProvider,
     model: requestedModel,
 }: InitialModelPayload): Promise<ModelConfig> {
-    let model: LanguageModelV1;
+    let model: LanguageModel;
     let providerOptions: Record<string, any> | undefined;
     let headers: Record<string, string> | undefined;
 
@@ -67,11 +67,9 @@ export async function initModel({
     };
 }
 
-async function getAnthropicProvider(model: CLAUDE_MODELS): Promise<LanguageModelV1> {
+async function getAnthropicProvider(model: CLAUDE_MODELS): Promise<LanguageModel> {
     const anthropic = createAnthropic();
-    return anthropic(model, {
-        cacheControl: true,
-    });
+    return anthropic(model);
 }
 
 async function getBedrockProvider(claudeModel: CLAUDE_MODELS) {
@@ -110,7 +108,7 @@ async function getVertexProvider(model: CLAUDE_MODELS) {
     })(vertexModel);
 }
 
-async function getOpenAIProvider(model: OPENAI_MODELS): Promise<LanguageModelV1> {
+async function getOpenAIProvider(model: OPENAI_MODELS): Promise<LanguageModel> {
     if (!process.env.OPENAI_API_KEY) {
         throw new Error('OPENAI_API_KEY must be set');
     }
@@ -121,7 +119,7 @@ async function getOpenAIProvider(model: OPENAI_MODELS): Promise<LanguageModelV1>
     return openai(model);
 }
 
-async function getGoogleProvider(model: GEMINI_MODELS): Promise<LanguageModelV1> {
+async function getGoogleProvider(model: GEMINI_MODELS): Promise<LanguageModel> {
     if (!process.env.GOOGLE_AI_STUDIO_API_KEY) {
         throw new Error('GOOGLE_AI_STUDIO_API_KEY must be set');
     }
@@ -131,7 +129,7 @@ async function getGoogleProvider(model: GEMINI_MODELS): Promise<LanguageModelV1>
     return google(model);
 }
 
-async function getOpenRouterProvider(model: OPENROUTER_MODELS): Promise<LanguageModelV1> {
+async function getOpenRouterProvider(model: OPENROUTER_MODELS): Promise<LanguageModel> {
     if (!process.env.OPENROUTER_API_KEY) {
         throw new Error('OPENROUTER_API_KEY must be set');
     }

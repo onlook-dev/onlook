@@ -123,20 +123,12 @@ const suggestionsRouter = createTRPCRouter({
                 messages: [
                     {
                         role: 'system',
-
-                        parts: [{
-                            type: 'text',
-                            text: SUGGESTION_SYSTEM_PROMPT
-                        }]
+                        content: SUGGESTION_SYSTEM_PROMPT,
                     },
                     ...input.messages as ModelMessage[],
                     {
                         role: 'user',
-
-                        parts: [{
-                            type: 'text',
-                            text: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.'
-                        }]
+                        content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.',
                     },
                 ],
                 maxOutputTokens: 10000,
