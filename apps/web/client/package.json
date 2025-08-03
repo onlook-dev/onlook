@@ -28,13 +28,16 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
-        "@ai-sdk/react": "^1.2.9",
+        "@ai-sdk/react": "^2.0.0",
         "@codemirror/lang-css": "^6.2.0",
         "@codemirror/lang-html": "^6.4.7",
         "@codemirror/lang-javascript": "^6.2.3",
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/lang-markdown": "^6.1.7",
         "@codesandbox/sdk": "^1.1.6",
+        "@mastra/core": "^0.12.1",
+        "@mastra/memory": "^0.12.0",
+        "@mastra/pg": "^0.13.1",
         "@onlook/constants": "*",
         "@onlook/db": "*",
         "@onlook/email": "*",
@@ -57,7 +60,7 @@
         "@uiw/codemirror-extensions-basic-setup": "^4.23.10",
         "@uiw/react-codemirror": "^4.23.10",
         "@xterm/xterm": "^5.5.0",
-        "ai": "^4.3.10",
+        "ai": "^5.0.0",
         "blob-util": "^2.0.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -99,7 +102,7 @@
         "use-resize-observer": "^9.1.0",
         "uuid": "^11.1.0",
         "webfontloader": "^1.6.28",
-        "zod": "^3.24.3"
+        "zod": "^4.0.14"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",
@@ -113,6 +116,7 @@
         "@types/webfontloader": "^1.6.38",
         "eslint": "^9.23.0",
         "eslint-config-next": "^15.2.3",
+        "mastra": "^0.10.13",
         "postcss": "^8.5.3",
         "prettier": "^3.5.3",
         "prettier-plugin-tailwindcss": "^0.6.11",
