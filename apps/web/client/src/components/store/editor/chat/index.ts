@@ -30,7 +30,7 @@ export class ChatManager {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
-    async getEditMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<UIMessage[] | null> {
+    async getEditMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UIMessage[] | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;

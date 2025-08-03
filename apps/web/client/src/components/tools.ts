@@ -1,6 +1,7 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
 import { api } from '@/trpc/client';
 import type {
+    buildToolSet,
     CREATE_FILE_TOOL_PARAMETERS,
     EDIT_FILE_TOOL_PARAMETERS,
     LIST_FILES_TOOL_PARAMETERS,
@@ -22,20 +23,20 @@ import {
 } from '@onlook/ai';
 import type { SandboxFile } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
-import type { ToolCall } from 'ai';
+import type { StaticToolCall } from 'ai';
 import { z } from 'zod';
 
-export async function handleToolCall(toolCall: ToolCall<string, unknown>, addToolResult: (result: any) => void, editorEngine: EditorEngine): Promise<void> {
+export async function handleToolCall(toolCall: StaticToolCall<typeof buildToolSet>, addToolResult: (result: any) => void, editorEngine: EditorEngine): Promise<void> {
     try {
         const toolName = toolCall.toolName;
         if (toolName === LIST_FILES_TOOL_NAME) {
             addToolResult(await handleListFilesTool(
-                toolCall.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
+                toolCall.input as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
                 editorEngine,
             ));
         } else if (toolName === READ_FILES_TOOL_NAME) {
             addToolResult(await handleReadFilesTool(
-                toolCall.args as z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
+                toolCall.input as z.infer<typeof READ_FILES_TOOL_PARAMETERS>,
                 editorEngine,
             ));
         } else if (toolName === READ_STYLE_GUIDE_TOOL_NAME) {
@@ -46,22 +47,22 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, addToo
             addToolResult(result);
         } else if (toolName === EDIT_FILE_TOOL_NAME) {
             addToolResult(await handleEditFileTool(
-                toolCall.args as z.infer<typeof EDIT_FILE_TOOL_PARAMETERS>,
+                toolCall.input as z.infer<typeof EDIT_FILE_TOOL_PARAMETERS>,
                 editorEngine,
             ));
         } else if (toolName === CREATE_FILE_TOOL_NAME) {
             addToolResult(await handleCreateFileTool(
-                toolCall.args as z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
+                toolCall.input as z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>,
                 editorEngine,
             ));
         } else if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
             addToolResult(await handleTerminalCommandTool(
-                toolCall.args as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
+                toolCall.input as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>,
                 editorEngine,
             ));
         } else if (toolName === SCRAPE_URL_TOOL_NAME) {
             addToolResult(await handleScrapeUrlTool(
-                toolCall.args as z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
+                toolCall.input as z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
             ));
         } else if (toolName === SANDBOX_TOOL_NAME) {
             addToolResult(await handleSandboxTool(editorEngine));

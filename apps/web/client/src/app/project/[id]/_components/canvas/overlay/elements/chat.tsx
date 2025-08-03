@@ -31,7 +31,7 @@ export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
         const { data: settings } = api.user.settings.get.useQuery();
-        const { sendMessages, reload, isWaiting } = useChatContext();
+        const { submitMessage, isWaiting } = useChatContext();
         const isPreviewMode = editorEngine.state.editorMode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
@@ -88,9 +88,7 @@ export const OverlayChat = observer(
                 console.error('No edit messages returned');
                 return;
             }
-            sendMessages(streamMessages, ChatType.EDIT);
-            reload();
-
+            submitMessage(streamMessages, ChatType.EDIT);
             setInputState(DEFAULT_INPUT_STATE);
         };
 

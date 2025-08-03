@@ -7,11 +7,13 @@ import {
     READ_STYLE_GUIDE_TOOL_NAME,
     SANDBOX_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
-    TERMINAL_COMMAND_TOOL_NAME
+    TERMINAL_COMMAND_TOOL_NAME,
+    type AskToolSet,
+    type BuildToolSet
 } from '@onlook/ai';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import type { ToolInvocation } from 'ai';
+import type { ToolUIPart } from 'ai';
 
 // Map tool names to specific icon components
 const TOOL_ICONS: Record<string, any> = {
@@ -27,15 +29,15 @@ const TOOL_ICONS: Record<string, any> = {
 };
 
 export function ToolCallSimple({
-    toolInvocation,
+    toolPart,
     className,
     loading,
 }: {
-    toolInvocation: ToolInvocation;
+    toolPart: ToolUIPart<BuildToolSet | AskToolSet>;
     className?: string;
     loading?: boolean;
 }) {
-    const toolName = toolInvocation.toolName;
+    const toolName = toolPart.type.split('-')[1];
     const Icon = TOOL_ICONS[toolName] ?? Icons.QuestionMarkCircled;
 
     const getLabel = () => {
@@ -45,26 +47,26 @@ export function ToolCallSimple({
                 return 'Terminal';
             }
             if (toolName === EDIT_FILE_TOOL_NAME) {
-                if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Editing " + (toolInvocation.args.path.split('/').pop() || '');
+                if (toolPart.input && 'path' in toolPart.input) {
+                    label = "Editing " + (toolPart.input.path.split('/').pop() || '');
                 } else {
                     label = "Editing file";
                 }
             } else if (toolName === CREATE_FILE_TOOL_NAME) {
-                if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Creating file " + (toolInvocation.args.path.split('/').pop() || '');
+                if (toolPart.input && 'path' in toolPart.input) {
+                    label = "Creating file " + (toolPart.input.path.split('/').pop() || '');
                 } else {
                     label = "Creating file";
                 }
             } else if (toolName === LIST_FILES_TOOL_NAME) {
-                if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Reading directory " + (toolInvocation.args.path.split('/').pop() || '');
+                if (toolPart.input && 'path' in toolPart.input) {
+                    label = "Reading directory " + (toolPart.input.path.split('/').pop() || '');
                 } else {
                     label = "Reading directory";
                 }
             } else if (toolName === READ_FILES_TOOL_NAME) {
-                if (toolInvocation.args && 'paths' in toolInvocation.args) {
-                    label = "Reading file" + (toolInvocation.args.paths.length > 1 ? 's' : '') + ' ' + (toolInvocation.args.paths.map((path: string) => path.split('/').pop()).join(', ') || '');
+                if (toolPart.input && 'paths' in toolPart.input) {
+                    label = "Reading file" + (toolPart.input.paths.length > 1 ? 's' : '') + ' ' + (toolPart.input.paths.map((path: string) => path.split('/').pop()).join(', ') || '');
                 } else {
                     label = "Reading files";
                 }
@@ -73,9 +75,9 @@ export function ToolCallSimple({
             } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
                 label = "Reading Onlook instructions";
             } else if (toolName === SCRAPE_URL_TOOL_NAME) {
-                if (toolInvocation.args && 'url' in toolInvocation.args) {
+                if (toolPart.input && 'url' in toolPart.input) {
                     try {
-                        const url = new URL(toolInvocation.args.url as string);
+                        const url = new URL(toolPart.input.url as string);
                         label = "Visiting " + url.hostname;
                     } catch {
                         label = "Visiting URL";

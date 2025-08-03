@@ -1,4 +1,4 @@
-import { type ToolSet } from 'ai';
+import { type InferUITool, type ToolSet } from 'ai';
 import {
     CREATE_FILE_TOOL_NAME,
     createFileTool,
@@ -40,3 +40,6 @@ export const askToolSet: ToolSet = {
     [READ_STYLE_GUIDE_TOOL_NAME]: readStyleGuideTool,
     [SCRAPE_URL_TOOL_NAME]: scrapeUrlTool,
 };
+
+export type BuildToolSet = InferUITool<typeof buildToolSet>;
+export type AskToolSet = InferUITool<typeof askToolSet>;

@@ -1,5 +1,5 @@
-import { CREATE_FILE_TOOL_NAME, EDIT_FILE_TOOL_NAME, TERMINAL_COMMAND_TOOL_NAME } from '@onlook/ai';
-import type { ToolInvocation } from 'ai';
+import { CREATE_FILE_TOOL_NAME, EDIT_FILE_TOOL_NAME, TERMINAL_COMMAND_TOOL_NAME, type AskToolSet, type BuildToolSet } from '@onlook/ai';
+import type { ToolUIPart } from 'ai';
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
 import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block';
 import { ToolCallSimple } from './tool-call-simple';
@@ -8,40 +8,42 @@ export const ToolCallDisplay = ({
     messageId,
     index,
     lastToolInvocationIdx,
-    toolInvocation,
+    toolPart,
     isStream,
-    applied
 }: {
     messageId: string,
     index: number,
     lastToolInvocationIdx: number,
-    toolInvocation: ToolInvocation,
+    toolPart: ToolUIPart<BuildToolSet | AskToolSet>,
     isStream: boolean,
-    applied: boolean
 }) => {
-
-    if (!isStream || toolInvocation.state === 'result') {
-        if (toolInvocation.toolName === TERMINAL_COMMAND_TOOL_NAME) {
+    const toolName = toolPart.type.split('-')[1];
+    if (!isStream || toolPart.state === 'output-available') {
+        if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
+            const input = toolPart.input as { command: string };
+            const output = toolPart.output as string;
+            const errorText = toolPart.errorText;
             return (
                 <BashCodeDisplay
-                    key={toolInvocation.toolCallId}
-                    content={toolInvocation.args.command}
+                    key={toolPart.toolCallId}
+                    content={input.command}
                     isStream={isStream}
-                    defaultStdOut={toolInvocation.state === 'result' ? toolInvocation.result.output : null}
-                    defaultStdErr={toolInvocation.state === 'result' ? toolInvocation.result.error : null}
+                    defaultStdOut={toolPart.state === 'output-available' ? output : null}
+                    defaultStdErr={toolPart.state === 'output-error' ? errorText ?? null : null}
                 />
             );
         }
 
-        if (toolInvocation.toolName === EDIT_FILE_TOOL_NAME || toolInvocation.toolName === CREATE_FILE_TOOL_NAME) {
-            const filePath = toolInvocation.args.path;
-            const codeContent = toolInvocation.args.content;
+        if (toolName === EDIT_FILE_TOOL_NAME || toolName === CREATE_FILE_TOOL_NAME) {
+            const input = toolPart.input as { path: string; content: string };
+            const filePath = input.path;
+            const codeContent = input.content;
             return (
                 <CollapsibleCodeBlock
                     path={filePath}
                     content={codeContent}
                     messageId={messageId}
-                    applied={applied}
+                    applied={false}
                     isStream={isStream}
                     originalContent={codeContent}
                     updatedContent={codeContent}
@@ -52,8 +54,8 @@ export const ToolCallDisplay = ({
 
     return (
         <ToolCallSimple
-            toolInvocation={toolInvocation}
-            key={toolInvocation.toolCallId}
+            toolPart={toolPart}
+            key={toolPart.toolCallId}
             loading={isStream && index === lastToolInvocationIdx}
         />
     );
