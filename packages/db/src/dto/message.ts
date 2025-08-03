@@ -1,62 +1,60 @@
-import { ChatMessageRole, type ChatMessage, type ChatMessageContext, type ChatSnapshot } from "@onlook/models";
-import type { TextPart } from "ai";
+import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatMessageContext, type MessageSnapshot, type SystemChatMessage, type UserChatMessage } from "@onlook/models";
 import type { Message as DbMessage } from "../schema";
 
 export const toMessage = (dbMessage: DbMessage): ChatMessage => {
     if (dbMessage.role === ChatMessageRole.ASSISTANT) {
         return {
             id: dbMessage.id,
-            content: dbMessage.content,
             role: dbMessage.role,
-            createdAt: dbMessage.createdAt,
-            applied: dbMessage.applied,
-            snapshots: dbMessage.snapshots,
+            metadata: {
+                createdAt: dbMessage.createdAt,
+                snapshots: dbMessage.snapshots,
+            },
             parts: dbMessage.parts,
-        }
+        } satisfies AssistantChatMessage;
     } else if (dbMessage.role === ChatMessageRole.USER) {
         return {
             id: dbMessage.id,
-            content: dbMessage.content,
             role: dbMessage.role,
-            createdAt: dbMessage.createdAt,
-            context: dbMessage.context,
-            parts: dbMessage.parts as TextPart[],
-            commitOid: dbMessage.commitOid ?? null,
-        }
+            parts: dbMessage.parts,
+            metadata: {
+                createdAt: dbMessage.createdAt,
+                snapshots: dbMessage.snapshots,
+                context: dbMessage.context,
+            }
+        } satisfies UserChatMessage;
     } else {
         return {
             id: dbMessage.id,
-            content: dbMessage.content,
             role: dbMessage.role as ChatMessageRole.SYSTEM,
-            createdAt: dbMessage.createdAt,
-        }
+            parts: dbMessage.parts,
+            metadata: {
+                createdAt: dbMessage.createdAt,
+            }
+        } satisfies SystemChatMessage;
     }
 }
 
 export const fromMessage = (conversationId: string, message: ChatMessage): DbMessage => {
-    let snapshots: ChatSnapshot = {};
+    let snapshots: MessageSnapshot[] = [];
     let context: ChatMessageContext[] = [];
-    let commitOid: string | null = null;
 
     if (message.role === ChatMessageRole.ASSISTANT) {
-        snapshots = message.snapshots;
+        snapshots = message.metadata?.snapshots ?? [];
     }
 
     if (message.role === ChatMessageRole.USER) {
-        context = message.context;
-        commitOid = message.commitOid;
+        context = message.metadata?.context ?? [];
+        snapshots = message.metadata?.snapshots ?? [];
     }
 
     return {
         id: message.id,
-        content: message.content,
         role: message.role,
-        createdAt: message.createdAt ?? new Date(),
+        createdAt: message.metadata?.createdAt ?? new Date(),
         conversationId,
-        applied: message.role === ChatMessageRole.ASSISTANT ? message.applied ?? false : false,
         snapshots,
         context,
         parts: message.parts,
-        commitOid,
     }
 }

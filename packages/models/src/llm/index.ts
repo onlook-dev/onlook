@@ -1,4 +1,4 @@
-import type { LanguageModelV1 } from 'ai';
+import type { LanguageModel } from 'ai';
 
 export enum LLMProvider {
     ANTHROPIC = 'anthropic',
@@ -63,7 +63,7 @@ export type InitialModelPayload = {
 }[keyof ModelMapping];
 
 export type ModelConfig = {
-    model: LanguageModelV1;
+    model: LanguageModel;
     providerOptions?: Record<string, any>;
     headers?: Record<string, string>;
 };
