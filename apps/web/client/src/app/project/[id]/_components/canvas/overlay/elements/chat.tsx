@@ -83,12 +83,12 @@ export const OverlayChat = observer(
         const handleSubmit = async () => {
             const messageToSend = inputState.value;
             editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
-            const streamMessages = await editorEngine.chat.getEditMessages(messageToSend);
-            if (!streamMessages) {
+            const streamMessage = await editorEngine.chat.getEditMessage(messageToSend);
+            if (!streamMessage) {
                 console.error('No edit messages returned');
                 return;
             }
-            submitMessage(streamMessages, ChatType.EDIT);
+            submitMessage(streamMessage, ChatType.EDIT);
             setInputState(DEFAULT_INPUT_STATE);
         };
 

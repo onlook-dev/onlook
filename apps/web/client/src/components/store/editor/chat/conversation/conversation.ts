@@ -61,7 +61,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
 
-    getMessagesForStream(): UIMessage[] {
+    getMessagesForStream(): UIMessage {
         const lastUserMessageIndex = this.messages.findLastIndex((m) => m.role === ChatMessageRole.USER);
         return this.messages.map((m, index) =>
             m.toStreamMessage({
