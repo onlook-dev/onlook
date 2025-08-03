@@ -5,7 +5,7 @@ import type {
     HighlightMessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
-import type { FilePart, FileUIPart, ImagePart, UIMessage, UserContent } from 'ai';
+import type { FileUIPart, UIMessage } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
@@ -62,7 +62,7 @@ export function getExampleConversation(
 
 export function getHydratedUserMessage(
     id: string,
-    content: UserContent,
+    parts: UIMessage['parts'],
     context: ChatMessageContext[],
     opt: HydrateUserMessageOptions,
 ): UIMessage {
@@ -102,13 +102,10 @@ export function getHydratedUserMessage(
         }
     }
 
-    const textContent =
-        typeof content === 'string'
-            ? content
-            : content
-                  .filter((c) => c.type === 'text')
-                  .map((c) => c.text)
-                  .join('\n');
+    const textContent = parts
+        .filter((p) => p.type === 'text')
+        .map((p) => p.text)
+        .join('\n');
     prompt += wrapXml('instruction', textContent);
 
     const imageParts: FileUIPart[] = images.map((i) => ({

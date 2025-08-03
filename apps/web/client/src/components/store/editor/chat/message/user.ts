@@ -8,6 +8,7 @@ export class UserChatMessageImpl implements UserChatMessage {
     id: string;
     role: ChatMessageRole.USER = ChatMessageRole.USER;
     parts: UIMessage['parts'] = [];
+    context: ChatMessageContext[] = [];
     aiSdkId: string | undefined;
 
     constructor(parts: UIMessage['parts'], context: ChatMessageContext[] = []) {
@@ -18,7 +19,7 @@ export class UserChatMessageImpl implements UserChatMessage {
     }
 
     static fromJSON(data: UserChatMessage): UserChatMessageImpl {
-        const message = new UserChatMessageImpl(data.parts, data.context);
+        const message = new UserChatMessageImpl(data.parts, data.metadata?.context ?? []);
         message.id = data.id;
         return message;
     }
@@ -27,32 +28,28 @@ export class UserChatMessageImpl implements UserChatMessage {
         return {
             id: message.id,
             role: message.role,
-            context: message.context,
             parts: message.parts,
-            content: message.content,
-            commitOid: message.commitOid,
         };
     }
 
     static fromMessage(message: UIMessage, context: ChatMessageContext[]): UserChatMessageImpl {
-        return new UserChatMessageImpl(message.content, context);
+        return new UserChatMessageImpl(message.parts, context);
     }
 
     static fromStringContent(content: string, context: ChatMessageContext[]): UserChatMessageImpl {
-        return new UserChatMessageImpl(content, context);
+        return new UserChatMessageImpl([{ type: 'text', text: content }], context);
     }
 
     toStreamMessage(opt: HydrateUserMessageOptions): UIMessage {
-        return getHydratedUserMessage(this.id, this.content, this.context, opt);
+        return getHydratedUserMessage(this.id, this.parts, this.context, opt);
     }
 
     updateMessage(content: string, context: ChatMessageContext[]) {
-        this.content = content;
         this.parts = [{ type: 'text', text: content }];
         this.context = context;
     }
 
     getStringContent(): string {
-        return this.parts.map((part) => part.text).join('');
+        return this.parts.filter((part) => part.type === 'text').map((part) => part.text).join('');
     }
 }

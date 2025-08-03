@@ -1,7 +1,7 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import type { UserChatMessageImpl } from '@/components/store/editor/chat/message/user';
-import { ChatType } from '@onlook/models';
+import { ChatType, MessageContextType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -84,7 +84,8 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     const handleRestoreCheckpoint = async () => {
         try {
             setIsRestoring(true);
-            if (!message.commitOid) {
+            const commitOid = message.metadata?.snapshot?.oid;
+            if (!commitOid) {
                 throw new Error('No commit oid found');
             }
             const commit = await editorEngine.versions.getCommitByOid(message.commitOid);
