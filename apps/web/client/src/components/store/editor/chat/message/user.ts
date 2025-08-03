@@ -1,31 +1,25 @@
 import { getHydratedUserMessage, type HydrateUserMessageOptions } from '@onlook/ai/src/prompt/provider';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { ChatMessageRole, type UserChatMessage } from '@onlook/models/chat';
-import type { UIMessage, TextPart } from 'ai';
+import type { UIMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
 export class UserChatMessageImpl implements UserChatMessage {
     id: string;
     role: ChatMessageRole.USER = ChatMessageRole.USER;
-    content: string;
-    context: ChatMessageContext[] = [];
-    parts: TextPart[] = [];
+    parts: UIMessage['parts'] = [];
     aiSdkId: string | undefined;
-    commitOid: string | null;
 
-    constructor(content: string, context: ChatMessageContext[] = []) {
+    constructor(parts: UIMessage['parts'], context: ChatMessageContext[] = []) {
         this.id = uuidv4();
         this.aiSdkId = undefined;
-        this.content = content;
-        this.parts = [{ type: 'text', text: content }];
+        this.parts = parts;
         this.context = context;
-        this.commitOid = null;
     }
 
     static fromJSON(data: UserChatMessage): UserChatMessageImpl {
-        const message = new UserChatMessageImpl(data.content, data.context);
+        const message = new UserChatMessageImpl(data.parts, data.context);
         message.id = data.id;
-        message.commitOid = data.commitOid;
         return message;
     }
 

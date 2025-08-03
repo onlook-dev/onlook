@@ -26,7 +26,7 @@ export const deployments = pgTable('deployments', {
     // Custom deployment settings
     buildScript: text('build_script'),
     buildFlags: text('build_flags'),
-    envVars: jsonb('env_vars').$type<Record<string, string>>(),
+    envVars: jsonb('env_vars').$type<Record<string, string>>().default({}),
 
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

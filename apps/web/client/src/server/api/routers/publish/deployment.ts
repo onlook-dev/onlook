@@ -13,7 +13,7 @@ import { createDeployment, publish } from './helpers/index.ts';
 export const deploymentRouter = createTRPCRouter({
     getByType: protectedProcedure.input(z.object({
         projectId: z.string(),
-        type: z.nativeEnum(DeploymentType),
+        type: z.enum(DeploymentType),
     })).query(async ({ ctx, input }) => {
         const { projectId, type } = input;
         const deployment = await ctx.db.query.deployments.findFirst({
@@ -34,7 +34,7 @@ export const deploymentRouter = createTRPCRouter({
     }),
     create: protectedProcedure.input(z.object({
         projectId: z.string(),
-        type: z.nativeEnum(DeploymentType),
+        type: z.enum(DeploymentType),
         buildScript: z.string().optional(),
         buildFlags: z.string().optional(),
         envVars: z.record(z.string(), z.string()).optional(),

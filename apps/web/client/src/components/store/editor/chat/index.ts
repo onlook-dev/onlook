@@ -52,7 +52,7 @@ export class ChatManager {
         return this.generateStreamMessages();
     }
 
-    async getAskMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<UIMessage[] | null> {
+    async getAskMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UIMessage | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;
@@ -66,10 +66,10 @@ export class ChatManager {
             console.error('Failed to add user message');
             return null;
         }
-        return this.generateStreamMessages();
+        return this.generateStreamMessage();
     }
 
-    async getFixErrorMessages(): Promise<UIMessage[] | null> {
+    async getFixErrorMessages(): Promise<UIMessage | null> {
         const errors = this.editorEngine.error.errors;
         if (!this.conversation.current) {
             console.error('No conversation found');
@@ -93,7 +93,7 @@ export class ChatManager {
             console.error('Failed to add user message');
             return null;
         }
-        return this.generateStreamMessages();
+        return this.generateStreamMessage();
     }
 
     async getResubmitMessages(id: string, newMessageContent: string) {
@@ -116,7 +116,7 @@ export class ChatManager {
 
         await this.conversation.current.removeAllMessagesAfter(message);
         await this.conversation.current.updateMessage(message);
-        return this.generateStreamMessages();
+        return this.generateStreamMessage();
     }
 
     private async generateStreamMessage(): Promise<UIMessage | null> {
@@ -124,7 +124,7 @@ export class ChatManager {
             console.error('No conversation found');
             return null;
         }
-        return this.conversation.current.getMessagesForStream();
+        return this.conversation.current.getMessageForStream();
     }
 
     async createCommit(userPrompt: string): Promise<GitCommit | null> {

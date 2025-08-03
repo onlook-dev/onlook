@@ -60,16 +60,16 @@ export class ChatConversationImpl implements ChatConversation {
         return this.messages.find((m) => m.id === id);
     }
 
-
-    getMessagesForStream(): UIMessage {
-        const lastUserMessageIndex = this.messages.findLastIndex((m) => m.role === ChatMessageRole.USER);
-        return this.messages.map((m, index) =>
-            m.toStreamMessage({
-                totalMessages: this.messages.length,
-                currentMessageIndex: index,
-                lastUserMessageIndex,
-            }),
-        );
+    getMessageForStream(): UIMessage {
+        const lastUserMessage = this.messages.findLast((m) => m.role === ChatMessageRole.USER);
+        if (!lastUserMessage) {
+            throw new Error('No user message found');
+        }
+        return lastUserMessage.toStreamMessage({
+            totalMessages: this.messages.length,
+            currentMessageIndex: this.messages.length - 1,
+            lastUserMessageIndex: this.messages.length - 1,
+        });
     }
 
     async addOrUpdateMessage(message: ChatMessageImpl) {

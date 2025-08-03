@@ -26,7 +26,7 @@ export const ChatInput = observer(({
     inputValue: string;
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-    const { sendMessages, stop, isWaiting } = useChatContext();
+    const { submitMessage, stop, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -130,17 +130,17 @@ export const ChatInput = observer(({
         }
         const savedInput = inputValue.trim();
 
-        const streamMessages = chatMode === ChatType.ASK
-            ? await editorEngine.chat.getAskMessages(savedInput)
-            : await editorEngine.chat.getEditMessages(savedInput);
+        const streamMessage = chatMode === ChatType.ASK
+            ? await editorEngine.chat.getAskMessage(savedInput)
+            : await editorEngine.chat.getEditMessage(savedInput);
 
-        if (!streamMessages) {
+        if (!streamMessage) {
             toast.error('Failed to send message. Please try again.');
             setInputValue(savedInput);
             return;
         }
 
-        await sendMessages(streamMessages, chatMode);
+        await submitMessage(streamMessage, chatMode);
         setInputValue('');
     }
 

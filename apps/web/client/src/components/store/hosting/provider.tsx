@@ -156,6 +156,7 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
                 deployment: {
                     status: DeploymentStatus.FAILED,
                     error: error instanceof Error ? error.message : 'Unknown error',
+                    envVars: params.envVars ?? {},
                 },
             });
             return {
