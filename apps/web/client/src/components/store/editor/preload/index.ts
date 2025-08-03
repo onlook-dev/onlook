@@ -58,7 +58,7 @@ export class PreloadScriptManager {
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-                scriptContent = await response.text();
+                scriptContent = await response.text.text();
             } catch (readError) {
                 console.error(
                     '[PreloadScriptManager] Error reading preload script from public directory:',

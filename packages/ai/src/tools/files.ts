@@ -11,7 +11,7 @@ export const LIST_FILES_TOOL_PARAMETERS = z.object({
 });
 export const listFilesTool = tool({
     description: 'List all files in the current directory, including subdirectories',
-    parameters: LIST_FILES_TOOL_PARAMETERS,
+    inputSchema: LIST_FILES_TOOL_PARAMETERS,
 });
 
 export const READ_FILES_TOOL_NAME = 'read_files';
@@ -21,7 +21,7 @@ export const READ_FILES_TOOL_PARAMETERS = z.object({
 
 export const readFilesTool = tool({
     description: 'Read the contents of files',
-    parameters: READ_FILES_TOOL_PARAMETERS,
+    inputSchema: READ_FILES_TOOL_PARAMETERS,
 });
 
 export const EDIT_FILE_TOOL_NAME = 'edit_file';
@@ -42,7 +42,7 @@ Make sure there's enough context for the smaller model to understand where the c
 
 export const editFileTool = tool({
     description: 'Edit the contents of a file',
-    parameters: EDIT_FILE_TOOL_PARAMETERS,
+    inputSchema: EDIT_FILE_TOOL_PARAMETERS,
 });
 
 export const CREATE_FILE_TOOL_NAME = 'create_file';
@@ -52,7 +52,7 @@ export const CREATE_FILE_TOOL_PARAMETERS = z.object({
 });
 export const createFileTool = tool({
     description: 'Create a new file',
-    parameters: CREATE_FILE_TOOL_PARAMETERS,
+    inputSchema: CREATE_FILE_TOOL_PARAMETERS,
 });
 
 export const TERMINAL_COMMAND_TOOL_NAME = 'terminal_command';
@@ -61,7 +61,7 @@ export const TERMINAL_COMMAND_TOOL_PARAMETERS = z.object({
 });
 export const terminalCommandTool = tool({
     description: 'Run a Bash command in the terminal',
-    parameters: TERMINAL_COMMAND_TOOL_PARAMETERS,
+    inputSchema: TERMINAL_COMMAND_TOOL_PARAMETERS,
 });
 
 export const SANDBOX_TOOL_NAME = 'restart_dev_server';
@@ -69,5 +69,5 @@ export const SANDBOX_TOOL_PARAMETERS = z.object({});
 export const sandboxTool = tool({
     description:
         'Restart the development server. This should only be used if absolutely necessary such as if updating dependencies, clearing next cache, or if the server is not responding.',
-    parameters: SANDBOX_TOOL_PARAMETERS,
+    inputSchema: SANDBOX_TOOL_PARAMETERS,
 });

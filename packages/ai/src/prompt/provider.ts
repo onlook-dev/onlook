@@ -5,7 +5,7 @@ import type {
     HighlightMessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
-import type { Attachment, Message, UserContent } from 'ai';
+import type { Attachment, UIMessage, UserContent } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
@@ -65,7 +65,7 @@ export function getHydratedUserMessage(
     content: UserContent,
     context: ChatMessageContext[],
     opt: HydrateUserMessageOptions,
-): Message {
+): UIMessage {
     const files = context.filter((c) => c.type === 'file').map((c) => c);
     const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
     const errors = context.filter((c) => c.type === 'error').map((c) => c);

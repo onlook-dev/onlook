@@ -8,7 +8,7 @@ import {
     type ChatSuggestion,
     type UserChatMessage
 } from '@onlook/models/chat';
-import type { Message } from 'ai';
+import type { UIMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
@@ -61,7 +61,7 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
 
-    getMessagesForStream(): Message[] {
+    getMessagesForStream(): UIMessage[] {
         const lastUserMessageIndex = this.messages.findLastIndex((m) => m.role === ChatMessageRole.USER);
         return this.messages.map((m, index) =>
             m.toStreamMessage({

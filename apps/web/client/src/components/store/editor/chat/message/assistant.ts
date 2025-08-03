@@ -1,6 +1,6 @@
 import { type AssistantChatMessage, ChatMessageRole } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
-import type { Message } from 'ai';
+import type { UIMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
@@ -9,21 +9,21 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     content: string;
     applied: boolean = false;
     snapshots: Record<string, CodeDiff> = {};
-    parts: Message['parts'] = [];
+    parts: UIMessage['parts'] = [];
     aiSdkId: string | undefined;
 
-    private constructor(message: Message) {
+    private constructor(message: UIMessage) {
         this.id = uuidv4();
         this.aiSdkId = message.id;
         this.content = message.content;
         this.parts = message.parts;
     }
 
-    static fromMessage(message: Message): AssistantChatMessageImpl {
+    static fromMessage(message: UIMessage): AssistantChatMessageImpl {
         return new AssistantChatMessageImpl(message);
     }
 
-    toStreamMessage(): Message {
+    toStreamMessage(): UIMessage {
         return {
             ...this,
             content: this.content,

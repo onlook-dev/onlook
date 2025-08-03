@@ -69,15 +69,23 @@ describe('SandboxManager', () => {
         }));
 
         const mockEntries = [
-            { name: 'file1.tsx', type: 'file' },
-            { name: 'file2.tsx', type: 'file' },
+            { type: 'file', file: {
+                name: 'file1.tsx'
+            } },
+            { type: 'file', file: {
+                name: 'file2.tsx'
+            } },
             { name: 'node_modules', type: 'directory' },
             { name: 'src', type: 'directory' },
         ];
 
         const mockSrcEntries = [
-            { name: 'component.tsx', type: 'file' },
-            { name: 'utils.ts', type: 'file' },
+            { type: 'file', file: {
+                name: 'component.tsx'
+            } },
+            { type: 'file', file: {
+                name: 'utils.ts'
+            } },
         ];
 
         // Create a sandbox with a mock FileSyncManager
@@ -146,13 +154,19 @@ describe('SandboxManager', () => {
                 readdir: mock(async (dir: string) => {
                     if (dir === './') {
                         return [
-                            { name: 'file1.tsx', type: 'file' },
-                            { name: 'file2.tsx', type: 'file' },
+                            { type: 'file', file: {
+                                name: 'file1.tsx'
+                            } },
+                            { type: 'file', file: {
+                                name: 'file2.tsx'
+                            } },
                             { name: 'node_modules', type: 'directory' },
                             { name: 'src', type: 'directory' },
                         ];
                     } else if (dir === 'src') {
-                        return [{ name: 'component.tsx', type: 'file' }];
+                        return [{ type: 'file', file: {
+                            name: 'component.tsx'
+                        } }];
                     }
                     return [];
                 }),

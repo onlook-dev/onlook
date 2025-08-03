@@ -31,5 +31,5 @@ export const SCRAPE_URL_TOOL_PARAMETERS = z.object({
 export const scrapeUrlTool = tool({
     description:
         'Scrape a URL and extract its content in various formats (markdown, HTML, JSON). Can extract clean, LLM-ready content from any website, handling dynamic content and anti-bot mechanisms.',
-    parameters: SCRAPE_URL_TOOL_PARAMETERS,
+    inputSchema: SCRAPE_URL_TOOL_PARAMETERS,
 });

@@ -142,15 +142,20 @@ export const streamResponse = async (req: NextRequest) => {
         messages: [
             {
                 role: 'system',
-                content: systemPrompt,
-                providerOptions,
+
+                parts: [{
+                    type: 'text',
+                    text: systemPrompt
+                }],
+
+                providerOptions
             },
             ...messages,
         ],
         maxSteps,
         tools: toolSet,
         toolCallStreaming: true,
-        maxTokens: 64000,
+        maxOutputTokens: 64000,
         experimental_repairToolCall: async ({ toolCall, tools, parameterSchema, error }) => {
             if (NoSuchToolError.isInstance(error)) {
                 throw new Error(
@@ -189,7 +194,7 @@ export const streamResponse = async (req: NextRequest) => {
         },
     });
 
-    return result.toDataStreamResponse(
+    return result.toUIMessageStreamResponse(
         {
             getErrorMessage: errorHandler,
         }

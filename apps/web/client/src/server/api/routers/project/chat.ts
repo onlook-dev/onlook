@@ -12,7 +12,7 @@ import {
 import type { ChatMessageRole, ChatSuggestion } from '@onlook/models';
 import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { ChatSuggestionsSchema } from '@onlook/models/chat';
-import type { CoreMessage } from 'ai';
+import type { ModelMessage } from 'ai';
 import { generateObject } from 'ai';
 import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
@@ -123,15 +123,23 @@ const suggestionsRouter = createTRPCRouter({
                 messages: [
                     {
                         role: 'system',
-                        content: SUGGESTION_SYSTEM_PROMPT,
+
+                        parts: [{
+                            type: 'text',
+                            text: SUGGESTION_SYSTEM_PROMPT
+                        }]
                     },
-                    ...input.messages as CoreMessage[],
+                    ...input.messages as ModelMessage[],
                     {
                         role: 'user',
-                        content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.',
+
+                        parts: [{
+                            type: 'text',
+                            text: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.'
+                        }]
                     },
                 ],
-                maxTokens: 10000,
+                maxOutputTokens: 10000,
             });
             const suggestions = object.suggestions satisfies ChatSuggestion[];
             try {

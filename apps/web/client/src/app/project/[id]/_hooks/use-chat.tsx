@@ -4,11 +4,11 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { ChatType } from '@onlook/models';
-import type { Message } from 'ai';
+import type { UIMessage } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers & { sendMessages: (messages: Message[], type: ChatType) => Promise<string | null | undefined> };
+type ExtendedUseChatHelpers = UseChatHelpers & { sendMessages: (messages: UIMessage[], type: ChatType) => Promise<string | null | undefined> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
@@ -51,7 +51,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         },
     });
 
-    const sendMessages = async (messages: Message[], type: ChatType = ChatType.EDIT) => {
+    const sendMessages = async (messages: UIMessage[], type: ChatType = ChatType.EDIT) => {
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
         chat.setMessages(messages);
