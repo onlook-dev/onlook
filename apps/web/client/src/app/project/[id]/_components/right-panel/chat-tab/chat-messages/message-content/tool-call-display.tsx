@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+
 import { CREATE_FILE_TOOL_NAME, EDIT_FILE_TOOL_NAME, SEARCH_WEB_TOOL_NAME, TERMINAL_COMMAND_TOOL_NAME } from '@onlook/ai';
 import type { ToolInvocation } from 'ai';
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
@@ -41,10 +44,10 @@ export const ToolCallDisplay = ({
                     return (
                         <SearchSourcesDisplay
                             query={String(searchResult.query)}
-                            searchType={String(searchResult.searchType || 'auto')}
-                            results={Array.isArray(searchResult.results) ? searchResult.results : []}
-                            totalResults={Number(searchResult.totalResults) || 0}
-                            searchTime={String(searchResult.searchTime || '0ms')}
+                            results={Array.isArray(searchResult.results) ? (searchResult.results as unknown[]).map((result: unknown) => ({
+                                title: String((result as { title?: string; url?: string }).title ?? (result as { url?: string }).url ?? ''),
+                                url: String((result as { url?: string }).url ?? '')
+                            })) : []}
                         />
                     );
                 }
