@@ -117,7 +117,6 @@
         "@types/webfontloader": "^1.6.38",
         "eslint": "^9.23.0",
         "eslint-config-next": "^15.2.3",
-        "mastra": "^0.10.13",
         "postcss": "^8.5.3",
         "prettier": "^3.5.3",
         "prettier-plugin-tailwindcss": "^0.6.11",
