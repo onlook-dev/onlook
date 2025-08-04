@@ -107,7 +107,6 @@ export class FramesManager {
     }
 
     private notify() {
-        console.log('notify', this._frameIdToData);
         this._frameIdToData = new Map(this._frameIdToData);
     }
 
