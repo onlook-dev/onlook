@@ -54,35 +54,7 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
     try {
         const toolName = toolCall.toolName;
 
-        // Check if it's a read-only tool first
-        if ([
-            TASK_TOOL_NAME,
-            BASH_READ_TOOL_NAME,
-            GLOB_TOOL_NAME,
-            GREP_TOOL_NAME,
-            LS_TOOL_NAME,
-            READ_TOOL_NAME,
-            NOTEBOOK_READ_TOOL_NAME,
-            WEB_FETCH_TOOL_NAME,
-            WEB_SEARCH_TOOL_NAME
-        ].includes(toolName)) {
-            return await handleReadToolCall(toolName, toolCall.args, editorEngine);
-        }
-
-        // Check if it's an edit tool
-        if ([
-            BASH_EDIT_TOOL_NAME,
-            EDIT_TOOL_NAME,
-            MULTI_EDIT_TOOL_NAME,
-            WRITE_TOOL_NAME,
-            NOTEBOOK_EDIT_TOOL_NAME,
-            TODO_WRITE_TOOL_NAME,
-            EXIT_PLAN_MODE_TOOL_NAME
-        ].includes(toolName)) {
-            return await handleEditToolCall(toolName, toolCall.args, editorEngine);
-        }
-
-        // Handle existing Onlook tools
+        // PREFERRED: Handle existing Onlook tools first (enhanced functionality)
         if (toolName === LIST_FILES_TOOL_NAME) {
             return await handleListFilesTool(
                 toolCall.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
@@ -120,7 +92,37 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             );
         } else if (toolName === SANDBOX_TOOL_NAME) {
             return await handleSandboxTool(editorEngine);
-        } else {
+        }
+
+        // FALLBACK: Handle read-only tools (alternatives/additional functionality)
+        else if ([
+            TASK_TOOL_NAME,
+            BASH_READ_TOOL_NAME,
+            GLOB_TOOL_NAME,
+            GREP_TOOL_NAME,
+            LS_TOOL_NAME,
+            READ_TOOL_NAME,
+            NOTEBOOK_READ_TOOL_NAME,
+            WEB_FETCH_TOOL_NAME,
+            WEB_SEARCH_TOOL_NAME
+        ].includes(toolName)) {
+            return await handleReadToolCall(toolName, toolCall.args, editorEngine);
+        }
+
+        // FALLBACK: Handle edit tools (alternatives/additional functionality) 
+        else if ([
+            BASH_EDIT_TOOL_NAME,
+            EDIT_TOOL_NAME,
+            MULTI_EDIT_TOOL_NAME,
+            WRITE_TOOL_NAME,
+            NOTEBOOK_EDIT_TOOL_NAME,
+            TODO_WRITE_TOOL_NAME,
+            EXIT_PLAN_MODE_TOOL_NAME
+        ].includes(toolName)) {
+            return await handleEditToolCall(toolName, toolCall.args, editorEngine);
+        }
+        
+        else {
             throw new Error(`Unknown tool call: ${toolCall.toolName}`);
         }
     } catch (error) {
