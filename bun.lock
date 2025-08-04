@@ -236,6 +236,20 @@
         "@onlook/typescript": "*",
       },
     },
+    "packages/code-provider": {
+      "name": "@onlook/code-provider",
+      "version": "0.0.0",
+      "dependencies": {
+        "@codesandbox/sdk": "^1.1.6",
+        "@onlook/models": "*",
+        "@onlook/parser": "*",
+        "@onlook/utility": "*",
+        "prettier": "^3.5.3",
+      },
+      "devDependencies": {
+        "@onlook/typescript": "*",
+      },
+    },
     "packages/constants": {
       "name": "@onlook/constants",
       "version": "0.0.0",
@@ -278,6 +292,9 @@
     "packages/fonts": {
       "name": "@onlook/fonts",
       "version": "0.0.0",
+      "dependencies": {
+        "@onlook/parser": "*",
+      },
       "devDependencies": {
         "@onlook/typescript": "*",
         "typescript": "^5.5.4",
@@ -298,7 +315,6 @@
       "name": "@onlook/growth",
       "version": "0.0.0",
       "dependencies": {
-        "@babel/types": "^7.27.0",
         "@onlook/parser": "*",
         "@onlook/utility": "*",
       },
@@ -1256,6 +1272,8 @@
     "@onlook/ai": ["@onlook/ai@workspace:packages/ai"],
 
     "@onlook/backend": ["@onlook/backend@workspace:apps/backend"],
+
+    "@onlook/code-provider": ["@onlook/code-provider@workspace:packages/code-provider"],
 
     "@onlook/constants": ["@onlook/constants@workspace:packages/constants"],
 
