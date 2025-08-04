@@ -103,6 +103,7 @@ const messageRouter = createTRPCRouter({
                 threadId: input.conversationId,
                 format: 'v2',
             })
+            console.log('messagesResult', messagesResult);
             return messagesResult.map((message) => toOnlookMessageFromMastra(message));
         }),
     update: protectedProcedure

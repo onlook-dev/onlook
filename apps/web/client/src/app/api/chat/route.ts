@@ -78,7 +78,8 @@ export const streamResponse = async (req: NextRequest) => {
         rateLimitId = incrementRes?.rateLimitId;
     }
 
-    const result = await agent.stream(messages, {
+    const lastMessage = messages.at(-1);
+    const result = await agent.stream([lastMessage], {
         headers: {
             'HTTP-Referer': 'https://onlook.com',
             'X-Title': 'Onlook',

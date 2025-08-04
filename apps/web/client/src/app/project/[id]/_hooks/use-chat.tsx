@@ -3,7 +3,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { toMastraMessageFromOnlook, toOnlookMessageFromVercel } from '@onlook/db';
+import { toOnlookMessageFromVercel, toVercelMessageFromOnlook } from '@onlook/db';
 import { ChatType, type UserChatMessage } from '@onlook/models';
 import type { Message } from 'ai';
 import { usePostHog } from 'posthog-js/react';
@@ -70,7 +70,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
         }
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
-        chat.setMessages([toMastraMessageFromOnlook(message) as any]);
+        chat.setMessages([toVercelMessageFromOnlook(message)]);
         try {
             posthog.capture('user_send_message', {
                 type,
