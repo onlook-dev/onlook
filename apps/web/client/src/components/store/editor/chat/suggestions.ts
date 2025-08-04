@@ -26,7 +26,7 @@ export class SuggestionManager {
 
         // Limit to last 5 messages
         const messages = this.editorEngine.chat.conversation.current.messages.slice(-5);
-        const conversationId = this.editorEngine.chat.conversation.current.id;
+        const conversationId = this.editorEngine.chat.conversation.current.conversation.id;
 
         this.isLoadingSuggestions = true;
 

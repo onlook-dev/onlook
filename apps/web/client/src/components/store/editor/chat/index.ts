@@ -37,10 +37,6 @@ export class ChatManager {
         try {
             const context = contextOverride ?? await this.context.getChatContext();
             const userMessage = await this.conversation.addUserMessage(content, context);
-
-            this.conversation.updateCurrentConversation({
-                title: content,
-            });
             if (!userMessage) {
                 console.error('Failed to add user message');
                 return null;
@@ -61,10 +57,6 @@ export class ChatManager {
         try {
             const context = contextOverride ?? await this.context.getChatContext();
             const userMessage = await this.conversation.addUserMessage(content, context);
-
-            this.conversation.updateCurrentConversation({
-                title: content,
-            });
             if (!userMessage) {
                 console.error('Failed to add user message');
                 return null;

@@ -10,7 +10,6 @@ import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { ChatSuggestionsSchema } from '@onlook/models/chat';
 import type { CoreMessage } from 'ai';
 import { generateObject } from 'ai';
-import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
@@ -26,6 +25,21 @@ const conversationRouter = createTRPCRouter({
                 resourceId: input.projectId,
             })
             return threadsResult.map((thread) => toOnlookConversationFromMastra(thread));
+        }),
+    get: protectedProcedure
+        .input(z.object({ conversationId: z.string() }))
+        .query(async ({ input }) => {
+            const storage = mastra.getStorage()
+            if (!storage) {
+                throw new Error('Storage not found');
+            }
+            const thread = await storage.getThreadById({
+                threadId: input.conversationId,
+            })
+            if (!thread) {
+                throw new Error('Conversation not found');
+            }
+            return toOnlookConversationFromMastra(thread);
         }),
     create: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -76,7 +90,7 @@ const conversationRouter = createTRPCRouter({
 });
 
 const messageRouter = createTRPCRouter({
-    get: protectedProcedure
+    getAll: protectedProcedure
         .input(z.object({
             conversationId: z.string(),
         }))
@@ -87,8 +101,8 @@ const messageRouter = createTRPCRouter({
             }
             const messagesResult = await storage.getMessages({
                 threadId: input.conversationId,
+                format: 'v2',
             })
-            console.log('messagesResult', messagesResult)
             return messagesResult.map((message) => toOnlookMessageFromMastra(message));
         }),
     update: protectedProcedure
@@ -114,7 +128,6 @@ const messageRouter = createTRPCRouter({
 
     delete: protectedProcedure
         .input(z.object({
-            conversationId: z.string(),
             messageIds: z.array(z.string()),
         }))
         .mutation(async ({ input }) => {
@@ -122,11 +135,7 @@ const messageRouter = createTRPCRouter({
             if (!storage) {
                 throw new Error('Storage not found');
             }
-            // TODO: Wait for mastra to support this
-            // await storage.deleteMessages({
-            //     threadId: input.conversationId,
-            //     messageIds: input.messageIds,
-            // });
+            await storage.deleteMessages(input.messageIds);
         }),
 })
 
@@ -160,11 +169,24 @@ const suggestionsRouter = createTRPCRouter({
             });
             const suggestions = object.suggestions satisfies ChatSuggestion[];
             try {
-                await ctx.db
-                    .update(conversations)
-                    .set({
+                const storage = mastra.getStorage()
+                if (!storage) {
+                    throw new Error('Storage not found');
+                }
+                const thread = await storage.getThreadById({
+                    threadId: input.conversationId,
+                })
+                if (!thread) {
+                    throw new Error('Conversation not found');
+                }
+                await storage.updateThread({
+                    id: thread.id,
+                    title: thread.title ?? '',
+                    metadata: {
+                        ...thread.metadata,
                         suggestions,
-                    }).where(eq(conversations.id, input.conversationId));
+                    },
+                });
             } catch (error) {
                 console.error('Error updating conversation suggestions:', error);
             }

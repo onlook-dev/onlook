@@ -27,26 +27,10 @@ export class ConversationManager {
         this.conversations = conversations;
         if (conversations.length > 0 && conversations[0]) {
             const conversation = conversations[0];
-            const messages = await this.getMessagesFromStorage(conversation.id);
-            this.current = {
-                conversation,
-                messages
-            };
+            await this.selectConversation(conversation.id);
         } else {
             this.startNewConversation();
         }
-    }
-
-    async updateCurrentConversation(conversation: Partial<ChatConversation>) {
-        if (!this.current) {
-            console.error('No conversation found');
-            return;
-        }
-        this.current.conversation = {
-            ...this.current.conversation,
-            ...conversation,
-        };
-        await this.updateConversationInStorage(this.current.conversation);
     }
 
     async getConversations(projectId: string): Promise<ChatConversation[]> {
@@ -100,7 +84,7 @@ export class ConversationManager {
     }
 
     async getMessagesFromStorage(id: string): Promise<ChatMessage[]> {
-        return api.chat.message.get.query({ conversationId: id });
+        return api.chat.message.getAll.query({ conversationId: id });
     }
 
     deleteConversation(id: string) {
@@ -156,18 +140,14 @@ export class ConversationManager {
             console.error('No conversation found');
             return;
         }
-        this.current.conversation.updatedAt = new Date();
-
-        // Add or replace the message
         const index = this.current.messages.findIndex((m) => m.id === message.id || (m.vercelId && m.vercelId === message.vercelId));
         if (index === -1) {
-            console.log('adding message', message);
             this.current.messages.push(message);
         } else {
-            console.log('replacing message', message);
             this.current.messages[index] = message;
         }
     }
+
 
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {
         return api.chat.conversation.getAll.query({ projectId: id });
