@@ -1437,6 +1437,32 @@ export const Icons = {
             />
         </svg>
     ),
+    Rotate: ({ className, ...props }: { className?: string; [key: string]: any }) => (
+        <svg
+            width="16"
+            height="16"
+            viewBox="0 0 15 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M12.197 9.65567C12.3003 7.94296 12.0004 6.57856 10.7554 5.33352C8.74176 3.31988 5.477 3.31988 3.46336 5.33352C2.48972 6.30716 1.98685 7.57332 1.95477 8.84912"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M13.8576 8.65058L12.4213 10.0869C12.2382 10.2699 11.9414 10.2699 11.7584 10.0869L10.3221 8.65058"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
 
     ArrowDown: ArrowDownIcon,
     ArrowLeft: ArrowLeftIcon,

@@ -68,7 +68,8 @@ export class FramesManager {
     }
 
     registerView(frame: Frame, view: WebFrameView) {
-        this._frameIdToData.set(frame.id, { frame, view, selected: false });
+        const isSelected = this.isSelected(frame.id);
+        this._frameIdToData.set(frame.id, { frame, view, selected: isSelected });
         const framePathname = new URL(view.src).pathname;
         this._navigation.registerFrame(frame.id, framePathname);
     }
@@ -106,6 +107,7 @@ export class FramesManager {
     }
 
     private notify() {
+        console.log('notify', this._frameIdToData);
         this._frameIdToData = new Map(this._frameIdToData);
     }
 
@@ -248,7 +250,7 @@ export class FramesManager {
         const existingFrame = this.get(frameId);
         if (existingFrame) {
             const newFrame = { ...existingFrame.frame, ...frame };
-            this._frameIdToData.set(frameId, { ...existingFrame, frame: newFrame });
+            this._frameIdToData.set(frameId, { ...existingFrame, frame: newFrame, selected: existingFrame.selected });
         }
         await this.saveToStorage(frameId, frame);
     }
