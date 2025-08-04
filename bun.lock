@@ -278,6 +278,9 @@
     "packages/fonts": {
       "name": "@onlook/fonts",
       "version": "0.0.0",
+      "dependencies": {
+        "@onlook/parser": "*",
+      },
       "devDependencies": {
         "@onlook/typescript": "*",
         "typescript": "^5.5.4",
@@ -298,7 +301,6 @@
       "name": "@onlook/growth",
       "version": "0.0.0",
       "dependencies": {
-        "@babel/types": "^7.27.0",
         "@onlook/parser": "*",
         "@onlook/utility": "*",
       },

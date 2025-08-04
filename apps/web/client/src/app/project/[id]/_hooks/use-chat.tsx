@@ -7,6 +7,7 @@ import { ChatType } from '@onlook/models';
 import type { Message } from 'ai';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
+import { useChimeNotification } from './use-chime-notification';
 
 type ExtendedUseChatHelpers = UseChatHelpers & { sendMessages: (messages: Message[], type: ChatType) => Promise<string | null | undefined> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
@@ -15,6 +16,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     const editorEngine = useEditorEngine();
     const lastMessageRef = useRef<Message | null>(null);
     const posthog = usePostHog();
+    const { playChime } = useChimeNotification();
 
     const chat = useChat({
         id: 'user-chat',
@@ -32,6 +34,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             if (finishReason === 'stop') {
                 editorEngine.chat.context.clearAttachments();
                 editorEngine.chat.error.clear();
+                // Play chime when AI completion finishes successfully
+                playChime();
             } else if (finishReason === 'length') {
                 editorEngine.chat.error.handleChatError(new Error('Output length limit reached'));
             } else if (finishReason === 'content-filter') {
