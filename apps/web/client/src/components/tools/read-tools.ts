@@ -83,22 +83,31 @@ export async function handleReadToolCall(
     try {
         switch (toolName) {
             case TASK_TOOL_NAME:
+            case 'task':
                 return await handleTaskTool(args as z.infer<typeof TASK_TOOL_PARAMETERS>, editorEngine);
             case BASH_READ_TOOL_NAME:
+            case 'bash_read':
                 return await handleBashReadTool(args as z.infer<typeof BASH_READ_TOOL_PARAMETERS>, editorEngine);
             case GLOB_TOOL_NAME:
+            case 'glob':
                 return await handleGlobTool(args as z.infer<typeof GLOB_TOOL_PARAMETERS>, editorEngine);
             case GREP_TOOL_NAME:
+            case 'grep':
                 return await handleGrepTool(args as z.infer<typeof GREP_TOOL_PARAMETERS>, editorEngine);
             case LS_TOOL_NAME:
+            case 'ls_enhanced':
                 return await handleLsTool(args as z.infer<typeof LS_TOOL_PARAMETERS>, editorEngine);
             case READ_TOOL_NAME:
+            case 'read_enhanced':
                 return await handleReadTool(args as z.infer<typeof READ_TOOL_PARAMETERS>, editorEngine);
             case NOTEBOOK_READ_TOOL_NAME:
+            case 'notebook_read':
                 return await handleNotebookReadTool(args as z.infer<typeof NOTEBOOK_READ_TOOL_PARAMETERS>, editorEngine);
             case WEB_FETCH_TOOL_NAME:
+            case 'web_fetch':
                 return await handleWebFetchTool(args as z.infer<typeof WEB_FETCH_TOOL_PARAMETERS>, editorEngine);
             case WEB_SEARCH_TOOL_NAME:
+            case 'web_search':
                 return await handleWebSearchTool(args as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>, editorEngine);
             default:
                 throw new Error(`Unknown read tool: ${toolName}`);

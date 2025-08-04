@@ -70,18 +70,25 @@ export async function handleEditToolCall(
     try {
         switch (toolName) {
             case BASH_EDIT_TOOL_NAME:
+            case 'bash_edit':
                 return await handleBashEditTool(args as z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>, editorEngine);
             case EDIT_TOOL_NAME:
+            case 'edit_enhanced':
                 return await handleEditTool(args as z.infer<typeof EDIT_TOOL_PARAMETERS>, editorEngine);
             case MULTI_EDIT_TOOL_NAME:
+            case 'multi_edit':
                 return await handleMultiEditTool(args as z.infer<typeof MULTI_EDIT_TOOL_PARAMETERS>, editorEngine);
             case WRITE_TOOL_NAME:
+            case 'write_enhanced':
                 return await handleWriteTool(args as z.infer<typeof WRITE_TOOL_PARAMETERS>, editorEngine);
             case NOTEBOOK_EDIT_TOOL_NAME:
+            case 'notebook_edit':
                 return await handleNotebookEditTool(args as z.infer<typeof NOTEBOOK_EDIT_TOOL_PARAMETERS>, editorEngine);
             case TODO_WRITE_TOOL_NAME:
+            case 'todo_write':
                 return await handleTodoWriteTool(args as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>, editorEngine);
             case EXIT_PLAN_MODE_TOOL_NAME:
+            case 'exit_plan_mode':
                 return await handleExitPlanModeTool(args as z.infer<typeof EXIT_PLAN_MODE_TOOL_PARAMETERS>, editorEngine);
             default:
                 throw new Error(`Unknown edit tool: ${toolName}`);

@@ -104,7 +104,17 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             READ_TOOL_NAME,
             NOTEBOOK_READ_TOOL_NAME,
             WEB_FETCH_TOOL_NAME,
-            WEB_SEARCH_TOOL_NAME
+            WEB_SEARCH_TOOL_NAME,
+            // Enhanced tool names from AI package
+            'ls_enhanced',
+            'read_enhanced',
+            'bash_read',
+            'glob',
+            'grep',
+            'task',
+            'notebook_read',
+            'web_fetch',
+            'web_search'
         ].includes(toolName)) {
             return await handleReadToolCall(toolName, toolCall.args, editorEngine);
         }
@@ -117,7 +127,15 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             WRITE_TOOL_NAME,
             NOTEBOOK_EDIT_TOOL_NAME,
             TODO_WRITE_TOOL_NAME,
-            EXIT_PLAN_MODE_TOOL_NAME
+            EXIT_PLAN_MODE_TOOL_NAME,
+            // Enhanced tool names from AI package
+            'bash_edit',
+            'edit_enhanced',
+            'multi_edit',
+            'write_enhanced',
+            'notebook_edit',
+            'todo_write',
+            'exit_plan_mode'
         ].includes(toolName)) {
             return await handleEditToolCall(toolName, toolCall.args, editorEngine);
         }
