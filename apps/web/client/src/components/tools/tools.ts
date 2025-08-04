@@ -24,50 +24,64 @@ import type { SandboxFile } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
 import { z } from 'zod';
-import { 
-    handleEditToolCall,
-    TASK_TOOL_NAME,
-    BASH_TOOL_NAME,
+// Import read-only tools
+import {
+    BASH_READ_TOOL_NAME,
     GLOB_TOOL_NAME,
     GREP_TOOL_NAME,
+    handleReadToolCall,
     LS_TOOL_NAME,
-    READ_TOOL_NAME,
-    EDIT_TOOL_NAME as EDIT_TOOLS_EDIT_TOOL_NAME,
-    MULTI_EDIT_TOOL_NAME,
-    WRITE_TOOL_NAME,
     NOTEBOOK_READ_TOOL_NAME,
-    NOTEBOOK_EDIT_TOOL_NAME,
+    READ_TOOL_NAME,
+    TASK_TOOL_NAME,
     WEB_FETCH_TOOL_NAME,
-    WEB_SEARCH_TOOL_NAME,
+    WEB_SEARCH_TOOL_NAME
+} from './read-tools';
+
+// Import edit tools
+import {
+    BASH_EDIT_TOOL_NAME,
+    EDIT_TOOL_NAME,
+    EXIT_PLAN_MODE_TOOL_NAME,
+    handleEditToolCall,
+    MULTI_EDIT_TOOL_NAME,
+    NOTEBOOK_EDIT_TOOL_NAME,
     TODO_WRITE_TOOL_NAME,
-    EXIT_PLAN_MODE_TOOL_NAME
+    WRITE_TOOL_NAME
 } from './edit-tools';
 
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
     try {
         const toolName = toolCall.toolName;
-        
-        // Check if it's an edit tool first
+
+        // Check if it's a read-only tool first
         if ([
             TASK_TOOL_NAME,
-            BASH_TOOL_NAME,
+            BASH_READ_TOOL_NAME,
             GLOB_TOOL_NAME,
             GREP_TOOL_NAME,
             LS_TOOL_NAME,
             READ_TOOL_NAME,
-            EDIT_TOOLS_EDIT_TOOL_NAME,
+            NOTEBOOK_READ_TOOL_NAME,
+            WEB_FETCH_TOOL_NAME,
+            WEB_SEARCH_TOOL_NAME
+        ].includes(toolName)) {
+            return await handleReadToolCall(toolName, toolCall.args, editorEngine);
+        }
+
+        // Check if it's an edit tool
+        if ([
+            BASH_EDIT_TOOL_NAME,
+            EDIT_TOOL_NAME,
             MULTI_EDIT_TOOL_NAME,
             WRITE_TOOL_NAME,
-            NOTEBOOK_READ_TOOL_NAME,
             NOTEBOOK_EDIT_TOOL_NAME,
-            WEB_FETCH_TOOL_NAME,
-            WEB_SEARCH_TOOL_NAME,
             TODO_WRITE_TOOL_NAME,
             EXIT_PLAN_MODE_TOOL_NAME
         ].includes(toolName)) {
             return await handleEditToolCall(toolName, toolCall.args, editorEngine);
         }
-        
+
         // Handle existing Onlook tools
         if (toolName === LIST_FILES_TOOL_NAME) {
             return await handleListFilesTool(
