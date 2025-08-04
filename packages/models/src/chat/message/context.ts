@@ -22,6 +22,7 @@ export type HighlightMessageContext = BaseMessageContext & {
     path: string;
     start: number;
     end: number;
+    oid?: string;
 };
 
 export type ImageMessageContext = BaseMessageContext & {
