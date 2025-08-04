@@ -66,10 +66,6 @@ export class CLISessionImpl implements CLISession {
             }
             this.terminal = terminal;
             terminal.onOutput((data: string) => {
-                // Debug: log escape sequences to see what Claude Code is sending
-                if (data.includes('\x1b[')) {
-                    console.log('Terminal escape sequence:', data.replace(/\x1b/g, '\\x1b'));
-                }
                 this.xterm.write(data);
             });
 
@@ -79,18 +75,19 @@ export class CLISessionImpl implements CLISession {
 
             // Handle terminal resize
             this.xterm.onResize(({ cols, rows }) => {
-                terminal.resize(cols, rows);
+                // Check if terminal has resize method
+                if ('resize' in terminal && typeof terminal.resize === 'function') {
+                    terminal.resize(cols, rows);
+                }
             });
 
             await terminal.open();
 
             // Set initial terminal size and environment
-            if (this.xterm.cols && this.xterm.rows) {
+            if (this.xterm.cols && this.xterm.rows && 'resize' in terminal && typeof terminal.resize === 'function') {
                 terminal.resize(this.xterm.cols, this.xterm.rows);
             }
 
-            // Set TERM environment variable for better compatibility
-            terminal.write('export TERM=xterm-256color\r');
         } catch (error) {
             console.error('Failed to initialize terminal:', error);
             this.terminal = null;
@@ -138,20 +135,19 @@ export class CLISessionImpl implements CLISession {
                 // Detect Claude Code's redraw pattern: multiple line clears with cursor movement
                 const lineUpPattern = /(\x1b\[2K\x1b\[1A)+\x1b\[2K\x1b\[G/;
                 if (lineUpPattern.test(data)) {
-                    console.log('Claude Code redraw pattern detected - handling specially');
                     // Count how many lines are being cleared
                     const matches = data.match(/\x1b\[1A/g);
                     const lineCount = matches ? matches.length : 0;
-                    
+
                     // Clear the number of lines being redrawn plus some buffer
                     for (let i = 0; i <= lineCount + 2; i++) {
                         terminal.write('\x1b[2K\x1b[1A\x1b[2K');
                     }
                     terminal.write('\x1b[G'); // Go to beginning of line
-                    
+
                     // Extract just the content after the clearing commands
                     const contentMatch = data.match(/\x1b\[G(.+)$/s);
-                    if (contentMatch) {
+                    if (contentMatch && contentMatch[1]) {
                         return originalWrite(contentMatch[1], callback);
                     }
                 }
