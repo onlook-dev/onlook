@@ -70,25 +70,18 @@ export async function handleEditToolCall(
     try {
         switch (toolName) {
             case BASH_EDIT_TOOL_NAME:
-            case 'bash_edit':
                 return await handleBashEditTool(args as z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>, editorEngine);
             case EDIT_TOOL_NAME:
-            case 'edit_enhanced':
                 return await handleEditTool(args as z.infer<typeof EDIT_TOOL_PARAMETERS>, editorEngine);
             case MULTI_EDIT_TOOL_NAME:
-            case 'multi_edit':
                 return await handleMultiEditTool(args as z.infer<typeof MULTI_EDIT_TOOL_PARAMETERS>, editorEngine);
             case WRITE_TOOL_NAME:
-            case 'write_enhanced':
                 return await handleWriteTool(args as z.infer<typeof WRITE_TOOL_PARAMETERS>, editorEngine);
             case NOTEBOOK_EDIT_TOOL_NAME:
-            case 'notebook_edit':
                 return await handleNotebookEditTool(args as z.infer<typeof NOTEBOOK_EDIT_TOOL_PARAMETERS>, editorEngine);
             case TODO_WRITE_TOOL_NAME:
-            case 'todo_write':
                 return await handleTodoWriteTool(args as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>, editorEngine);
             case EXIT_PLAN_MODE_TOOL_NAME:
-            case 'exit_plan_mode':
                 return await handleExitPlanModeTool(args as z.infer<typeof EXIT_PLAN_MODE_TOOL_PARAMETERS>, editorEngine);
             default:
                 throw new Error(`Unknown edit tool: ${toolName}`);
@@ -110,7 +103,7 @@ async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PARAMETERS
         const editCommands = ['mkdir', 'rm', 'rmdir', 'mv', 'cp', 'touch', 'chmod', 'chown', 'ln', 'git'];
         const commandParts = args.command.trim().split(/\s+/);
         const baseCommand = commandParts[0] || '';
-        
+
         const isEditCommand = editCommands.some(cmd => baseCommand.includes(cmd));
         if (!isEditCommand) {
             return {
@@ -119,7 +112,7 @@ async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PARAMETERS
                 error: `Command '${baseCommand}' is not allowed in edit mode. Only ${editCommands.join(', ')} commands are permitted.`
             };
         }
-        
+
         const result = await editorEngine.sandbox.session.runCommand(args.command);
         return {
             output: result.output,
@@ -141,7 +134,7 @@ async function handleEditTool(args: z.infer<typeof EDIT_TOOL_PARAMETERS>, editor
         if (!file || file.type !== 'text') {
             throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
         }
-        
+
         let newContent: string;
         if (args.replace_all) {
             newContent = file.content.replaceAll(args.old_string, args.new_string);
@@ -149,20 +142,20 @@ async function handleEditTool(args: z.infer<typeof EDIT_TOOL_PARAMETERS>, editor
             if (!file.content.includes(args.old_string)) {
                 throw new Error(`String not found in file: ${args.old_string}`);
             }
-            
+
             const occurrences = file.content.split(args.old_string).length - 1;
             if (occurrences > 1) {
                 throw new Error(`Multiple occurrences found. Use replace_all=true or provide more context.`);
             }
-            
+
             newContent = file.content.replace(args.old_string, args.new_string);
         }
-        
+
         const result = await editorEngine.sandbox.writeFile(args.file_path, newContent);
         if (!result) {
             throw new Error(`Failed to write file ${args.file_path}`);
         }
-        
+
         return `File ${args.file_path} edited successfully`;
     } catch (error) {
         throw new Error(`Cannot edit file ${args.file_path}: ${error}`);
@@ -175,9 +168,9 @@ async function handleMultiEditTool(args: z.infer<typeof MULTI_EDIT_TOOL_PARAMETE
         if (!file || file.type !== 'text') {
             throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
         }
-        
+
         let content = file.content;
-        
+
         for (const edit of args.edits) {
             if (edit.replace_all) {
                 content = content.replaceAll(edit.old_string, edit.new_string);
@@ -185,21 +178,21 @@ async function handleMultiEditTool(args: z.infer<typeof MULTI_EDIT_TOOL_PARAMETE
                 if (!content.includes(edit.old_string)) {
                     throw new Error(`String not found in file: ${edit.old_string}`);
                 }
-                
+
                 const occurrences = content.split(edit.old_string).length - 1;
                 if (occurrences > 1) {
                     throw new Error(`Multiple occurrences found for "${edit.old_string}". Use replace_all=true or provide more context.`);
                 }
-                
+
                 content = content.replace(edit.old_string, edit.new_string);
             }
         }
-        
+
         const result = await editorEngine.sandbox.writeFile(args.file_path, content);
         if (!result) {
             throw new Error(`Failed to write file ${args.file_path}`);
         }
-        
+
         return `File ${args.file_path} edited with ${args.edits.length} changes`;
     } catch (error) {
         throw new Error(`Cannot multi-edit file ${args.file_path}: ${error}`);
@@ -218,16 +211,15 @@ async function handleWriteTool(args: z.infer<typeof WRITE_TOOL_PARAMETERS>, edit
     }
 }
 
-
 async function handleNotebookEditTool(args: z.infer<typeof NOTEBOOK_EDIT_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     try {
         const file = await editorEngine.sandbox.readFile(args.notebook_path);
         if (!file || file.type !== 'text') {
             throw new Error(`Cannot read notebook ${args.notebook_path}: file not found or not text`);
         }
-        
+
         const notebook = JSON.parse(file.content);
-        
+
         if (args.edit_mode === 'delete') {
             if (!args.cell_id) {
                 throw new Error('Cell ID required for delete operation');
@@ -240,7 +232,7 @@ async function handleNotebookEditTool(args: z.infer<typeof NOTEBOOK_EDIT_TOOL_PA
                 source: args.new_source.split('\n'),
                 metadata: {}
             };
-            
+
             if (args.cell_id) {
                 const index = notebook.cells.findIndex((c: any) => c.id === args.cell_id);
                 notebook.cells.splice(index + 1, 0, newCell);
@@ -260,32 +252,31 @@ async function handleNotebookEditTool(args: z.infer<typeof NOTEBOOK_EDIT_TOOL_PA
                 }
             }
         }
-        
+
         const result = await editorEngine.sandbox.writeFile(args.notebook_path, JSON.stringify(notebook, null, 2));
         if (!result) {
             throw new Error(`Failed to write notebook ${args.notebook_path}`);
         }
-        
+
         return `Notebook ${args.notebook_path} edited successfully`;
     } catch (error) {
         throw new Error(`Cannot edit notebook ${args.notebook_path}: ${error}`);
     }
 }
 
-
 async function handleTodoWriteTool(args: z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     console.log('Todo list updated:');
     args.todos.forEach(todo => {
         console.log(`[${todo.status.toUpperCase()}] ${todo.content} (${todo.priority})`);
     });
-    
+
     return `Todo list updated with ${args.todos.length} items`;
 }
 
 async function handleExitPlanModeTool(args: z.infer<typeof EXIT_PLAN_MODE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     console.log('Exiting plan mode with plan:');
     console.log(args.plan);
-    
+
     return 'Exited plan mode, ready to implement';
 }
 
