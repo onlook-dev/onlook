@@ -1,4 +1,5 @@
 import type { Task, Terminal, WebSocketSession } from '@codesandbox/sdk';
+import { FitAddon } from '@xterm/addon-fit';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { v4 as uuidv4 } from 'uuid';
 import type { ErrorManager } from '../error';
@@ -16,6 +17,7 @@ export interface CLISession {
     // Task is readonly
     task: Task | null;
     xterm: XTerm;
+    fitAddon: FitAddon;
 }
 
 export interface TaskSession extends CLISession {
@@ -33,6 +35,7 @@ export class CLISessionImpl implements CLISession {
     terminal: Terminal | null;
     task: Task | null;
     xterm: XTerm;
+    fitAddon: FitAddon;
 
     constructor(
         public readonly name: string,
@@ -41,7 +44,9 @@ export class CLISessionImpl implements CLISession {
         private readonly errorManager: ErrorManager,
     ) {
         this.id = uuidv4();
+        this.fitAddon = new FitAddon();
         this.xterm = this.createXTerm();
+        this.xterm.loadAddon(this.fitAddon);
         this.terminal = null;
         this.task = null;
 
@@ -67,6 +72,12 @@ export class CLISessionImpl implements CLISession {
             this.xterm.onData((data: string) => {
                 terminal.write(data);
             });
+
+            // Handle terminal resize
+            this.xterm.onResize(({ cols, rows }) => {
+                terminal.resize(cols, rows);
+            });
+
             await terminal.open();
         } catch (error) {
             console.error('Failed to initialize terminal:', error);
@@ -95,11 +106,14 @@ export class CLISessionImpl implements CLISession {
             cursorBlink: true,
             fontSize: 12,
             fontFamily: 'monospace',
-            convertEol: true,
+            convertEol: false,
             allowTransparency: true,
             disableStdin: false,
             allowProposedApi: true,
             macOptionIsMeta: true,
+            altClickMovesCursor: false,
+            windowsMode: false,
+            scrollback: 1000,
         });
     }
 

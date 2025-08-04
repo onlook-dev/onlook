@@ -4,6 +4,7 @@ import '@xterm/xterm/css/xterm.css';
 
 import { useEditorEngine } from '@/components/store/editor';
 import { cn } from '@onlook/ui/utils';
+import { FitAddon } from '@xterm/addon-fit';
 import { type ITheme } from '@xterm/xterm';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
@@ -53,6 +54,12 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: Te
         // Only open if not already attached
         if (!terminalSession.xterm.element || terminalSession.xterm.element.parentElement !== containerRef.current) {
             terminalSession.xterm.open(containerRef.current);
+            // Ensure proper sizing after opening
+            setTimeout(() => {
+                if (terminalSession?.fitAddon && containerRef.current && !hidden) {
+                    terminalSession.fitAddon.fit();
+                }
+            }, 100);
         }
         return () => {
             // Detach xterm from DOM on unmount (but do not dispose)
@@ -76,9 +83,30 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: Te
         if (!hidden && terminalSession?.xterm) {
             setTimeout(() => {
                 terminalSession.xterm?.focus();
+                // Fit terminal when it becomes visible
+                if (terminalSession.fitAddon) {
+                    terminalSession.fitAddon.fit();
+                }
             }, 100);
         }
     }, [hidden, terminalSession]);
+
+    // Handle container resize
+    useEffect(() => {
+        if (!containerRef.current || !terminalSession?.fitAddon || hidden) return;
+        
+        const resizeObserver = new ResizeObserver(() => {
+            if (!hidden) {
+                terminalSession.fitAddon.fit();
+            }
+        });
+        
+        resizeObserver.observe(containerRef.current);
+        
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, [terminalSession, hidden]);
 
     return (
         <div
