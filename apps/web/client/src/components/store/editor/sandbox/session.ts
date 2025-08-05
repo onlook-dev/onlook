@@ -1,13 +1,10 @@
 import { api } from '@/trpc/client';
-import type { WebSocketSession } from '@codesandbox/sdk';
-import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
-import { CodeProvider, CodesandboxProvider, Provider, createClient } from '@onlook/code-provider';
+import { CodeProvider, Provider, createClient } from '@onlook/code-provider';
 
 export class SessionManager {
-    session: WebSocketSession | null = null;
     provider: Provider | null = null;
     isConnecting = false;
     terminalSessions: Map<string, CLISession> = new Map();
@@ -18,7 +15,7 @@ export class SessionManager {
     }
 
     async start(sandboxId: string, userId?: string) {
-        if (this.isConnecting || this.session) {
+        if (this.isConnecting || this.provider) {
             return;
         }
         this.isConnecting = true;
@@ -32,13 +29,8 @@ export class SessionManager {
                 },
             },
         });
-        if (this.provider instanceof CodesandboxProvider) {
-            this.session = this.provider.client;
-        }
+        await this.createTerminalSessions(this.provider);
         this.isConnecting = false;
-        if (this.session) {
-            await this.createTerminalSessions(this.provider);
-        }
     }
 
     async restartDevServer(): Promise<boolean> {
@@ -98,8 +90,8 @@ export class SessionManager {
 
     async reconnect(sandboxId: string, userId?: string) {
         try {
-            if (!this.session) {
-                console.error('No session found');
+            if (!this.provider) {
+                console.error('No provider found in reconnect');
                 return;
             }
 
@@ -125,9 +117,9 @@ export class SessionManager {
     }
 
     async ping() {
-        if (!this.session) return false;
+        if (!this.provider) return false;
         try {
-            await this.session.commands.run('echo "ping"');
+            await this.provider.runCommand({ args: { command: 'echo "ping"' } });
             return true;
         } catch (error) {
             console.error('Failed to connect to sandbox', error);
@@ -144,11 +136,11 @@ export class SessionManager {
         error: string | null;
     }> {
         try {
-            if (!this.session) {
-                throw new Error('No session found');
+            if (!this.provider) {
+                throw new Error('No provider found in runCommand');
             }
             streamCallback?.(command + '\n');
-            const output = await this.session.commands.run(command);
+            const { output } = await this.provider.runCommand({ args: { command } });
             streamCallback?.(output);
             return {
                 output,
@@ -166,15 +158,18 @@ export class SessionManager {
     }
 
     async clear() {
-        await this.session?.disconnect();
-        this.session = null;
-        this.isConnecting = false;
+        // probably need to be moved in `Provider.destroy()`
         this.terminalSessions.forEach((terminal) => {
             if (terminal.type === 'terminal') {
                 terminal.terminal?.kill();
                 terminal.xterm?.dispose();
             }
         });
+        if (this.provider) {
+            await this.provider.destroy();
+        }
+        this.provider = null;
+        this.isConnecting = false;
         this.terminalSessions.clear();
     }
 }

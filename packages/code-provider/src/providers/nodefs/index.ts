@@ -1,5 +1,6 @@
 import {
     Provider,
+    ProviderBackgroundCommand,
     ProviderFileWatcher,
     ProviderTask,
     ProviderTerminal,
@@ -25,8 +26,10 @@ import {
     type RenameFileOutput,
     type StatFileInput,
     type StatFileOutput,
+    type TerminalBackgroundCommandInput,
+    type TerminalBackgroundCommandOutput,
     type TerminalCommandInput,
-    type TerminalCommandOutputs,
+    type TerminalCommandOutput,
     type WatchEvent,
     type WatchFilesInput,
     type WatchFilesOutput,
@@ -80,12 +83,6 @@ export class NodeFsProvider extends Provider {
         };
     }
 
-    async runTerminalCommand(input: TerminalCommandInput): Promise<TerminalCommandOutputs> {
-        return {
-            output: '',
-        };
-    }
-
     async downloadFiles(input: DownloadFilesInput): Promise<DownloadFilesOutput> {
         return {
             url: '',
@@ -111,6 +108,20 @@ export class NodeFsProvider extends Provider {
     async getTask(input: GetTaskInput): Promise<GetTaskOutput> {
         return {
             task: new NodeFsTask(),
+        };
+    }
+
+    async runCommand(input: TerminalCommandInput): Promise<TerminalCommandOutput> {
+        return {
+            output: '',
+        };
+    }
+
+    async runBackgroundCommand(
+        input: TerminalBackgroundCommandInput,
+    ): Promise<TerminalBackgroundCommandOutput> {
+        return {
+            command: new NodeFsCommand(),
         };
     }
 
@@ -202,6 +213,32 @@ export class NodeFsTask extends ProviderTask {
     }
 
     stop(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    onOutput(callback: (data: string) => void): () => void {
+        return () => {};
+    }
+}
+
+export class NodeFsCommand extends ProviderBackgroundCommand {
+    get name(): string {
+        return 'unimplemented';
+    }
+
+    get command(): string {
+        return 'unimplemented';
+    }
+
+    open(): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    restart(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    kill(): Promise<void> {
         return Promise.resolve();
     }
 

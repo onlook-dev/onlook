@@ -1,5 +1,6 @@
 import {
     CodeSandbox,
+    Command,
     Sandbox,
     Task,
     Terminal,
@@ -10,7 +11,6 @@ import {
 import {
     Provider,
     type TerminalCommandInput,
-    type TerminalCommandOutputs,
     type CreateFileInput,
     type CreateFileOutput,
     type DeleteFilesInput,
@@ -40,6 +40,10 @@ import {
     type GetTaskInput,
     type GetTaskOutput,
     ProviderTask,
+    type TerminalCommandOutput,
+    type TerminalBackgroundCommandInput,
+    type TerminalBackgroundCommandOutput,
+    ProviderBackgroundCommand,
 } from '../../types';
 import { createFile } from './utils/create-file';
 import { editFile } from './utils/edit-file';
@@ -182,16 +186,6 @@ export class CodesandboxProvider extends Provider {
         return readFiles(this.client, input);
     }
 
-    async runTerminalCommand({ args }: TerminalCommandInput): Promise<TerminalCommandOutputs> {
-        if (!this.client) {
-            throw new Error('Client not initialized');
-        }
-        const output = await this.client.commands.run(args.command);
-        return {
-            output,
-        };
-    }
-
     async downloadFiles(input: DownloadFilesInput): Promise<DownloadFilesOutput> {
         if (!this.client) {
             throw new Error('Client not initialized');
@@ -264,6 +258,28 @@ export class CodesandboxProvider extends Provider {
         }
         return {
             task: new CodesandboxTask(task),
+        };
+    }
+
+    async runCommand({ args }: TerminalCommandInput): Promise<TerminalCommandOutput> {
+        if (!this.client) {
+            throw new Error('Client not initialized');
+        }
+        const output = await this.client.commands.run(args.command);
+        return {
+            output,
+        };
+    }
+
+    async runBackgroundCommand(
+        input: TerminalBackgroundCommandInput,
+    ): Promise<TerminalBackgroundCommandOutput> {
+        if (!this.client) {
+            throw new Error('Client not initialized');
+        }
+        const command = await this.client.commands.runBackground(input.args.command);
+        return {
+            command: new CodesandboxBackgroundCommand(command),
         };
     }
 }
@@ -370,6 +386,39 @@ export class CodesandboxTask extends ProviderTask {
 
     onOutput(callback: (data: string) => void): () => void {
         const disposable = this._task.onOutput(callback);
+        return () => {
+            disposable.dispose();
+        };
+    }
+}
+
+export class CodesandboxBackgroundCommand extends ProviderBackgroundCommand {
+    constructor(private readonly _command: Command) {
+        super();
+    }
+
+    get name(): string | undefined {
+        return this._command.name;
+    }
+
+    get command(): string {
+        return this._command.command;
+    }
+
+    open(): Promise<string> {
+        return this._command.open();
+    }
+
+    restart(): Promise<void> {
+        return this._command.restart();
+    }
+
+    kill(): Promise<void> {
+        return this._command.kill();
+    }
+
+    onOutput(callback: (data: string) => void): () => void {
+        const disposable = this._command.onOutput(callback);
         return () => {
             disposable.dispose();
         };

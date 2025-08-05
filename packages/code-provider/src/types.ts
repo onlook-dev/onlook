@@ -89,13 +89,6 @@ export interface DeleteFilesInput {
 }
 export interface DeleteFilesOutput {}
 
-export interface TerminalCommandInput {
-    args: z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>;
-}
-export interface TerminalCommandOutputs {
-    output: string;
-}
-
 export interface DownloadFilesInput {
     args: {
         path: string;
@@ -146,6 +139,22 @@ export interface GetTaskOutput {
     task: ProviderTask;
 }
 
+export interface TerminalCommandInput {
+    args: z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>;
+}
+export interface TerminalCommandOutput {
+    output: string;
+}
+
+export interface TerminalBackgroundCommandInput {
+    args: {
+        command: string;
+    };
+}
+export interface TerminalBackgroundCommandOutput {
+    command: ProviderBackgroundCommand;
+}
+
 export abstract class Provider {
     abstract createFile(input: CreateFileInput): Promise<CreateFileOutput>;
     abstract editFile(input: EditFileInput): Promise<EditFileOutput>;
@@ -154,13 +163,15 @@ export abstract class Provider {
     abstract deleteFiles(input: DeleteFilesInput): Promise<DeleteFilesOutput>;
     abstract listFiles(input: ListFilesInput): Promise<ListFilesOutput>;
     abstract readFiles(input: ReadFilesInput): Promise<ReadFilesOutput>;
-    abstract runTerminalCommand(input: TerminalCommandInput): Promise<TerminalCommandOutputs>;
     abstract downloadFiles(input: DownloadFilesInput): Promise<DownloadFilesOutput>;
     abstract copyFiles(input: CopyFilesInput): Promise<CopyFileOutput>;
     abstract watchFiles(input: WatchFilesInput): Promise<WatchFilesOutput>;
     abstract createTerminal(input: CreateTerminalInput): Promise<CreateTerminalOutput>;
     abstract getTask(input: GetTaskInput): Promise<GetTaskOutput>;
-
+    abstract runCommand(input: TerminalCommandInput): Promise<TerminalCommandOutput>;
+    abstract runBackgroundCommand(
+        input: TerminalBackgroundCommandInput,
+    ): Promise<TerminalBackgroundCommandOutput>;
     /**
      * `Provider` is meant to be a singleton; this method is called when the first instance is created.
      * Use this to establish a connection or run operations that requires I/O.
@@ -215,5 +226,15 @@ export abstract class ProviderTask {
     abstract run(): Promise<void>;
     abstract restart(): Promise<void>;
     abstract stop(): Promise<void>;
+    abstract onOutput(callback: (data: string) => void): () => void;
+}
+
+export abstract class ProviderBackgroundCommand {
+    abstract get name(): string | undefined;
+    abstract get command(): string;
+    abstract open(): Promise<string>;
+    abstract restart(): Promise<void>;
+    abstract kill(): Promise<void>;
+    // must call open() before running
     abstract onOutput(callback: (data: string) => void): () => void;
 }

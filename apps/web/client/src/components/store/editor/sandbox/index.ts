@@ -48,10 +48,10 @@ export class SandboxManager {
         makeAutoObservable(this);
 
         reaction(
-            () => this.session.session,
-            (session) => {
+            () => this.session.provider,
+            (provider) => {
                 this._isIndexed = false;
-                if (session) {
+                if (provider) {
                     this.index();
                 }
             },
@@ -77,8 +77,8 @@ export class SandboxManager {
             return;
         }
 
-        if (!this.session.session) {
-            console.error('No session found for indexing');
+        if (!this.session.provider) {
+            console.error('No provider found for indexing');
             return;
         }
 
@@ -175,7 +175,7 @@ export class SandboxManager {
         }
 
         try {
-            const { files } = await this.session.provider?.readFiles({
+            const { files } = await this.session.provider.readFiles({
                 args: {
                     paths: [filePath],
                 },
@@ -191,13 +191,13 @@ export class SandboxManager {
         filePath: string,
         content: string | Uint8Array,
     ): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for remote write');
+        if (!this.session.provider) {
+            console.error('No provider found for remote write');
             return false;
         }
 
         try {
-            await this.session.provider?.createFile({
+            await this.session.provider.createFile({
                 args: {
                     path: filePath,
                     content,
