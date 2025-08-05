@@ -1,4 +1,13 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
+import {
+    BASH_EDIT_TOOL_NAME as AI_BASH_EDIT_TOOL_NAME,
+    EDIT_ENHANCED_TOOL_NAME,
+    MULTI_EDIT_TOOL_NAME as AI_MULTI_EDIT_TOOL_NAME,
+    WRITE_ENHANCED_TOOL_NAME,
+    NOTEBOOK_EDIT_TOOL_NAME as AI_NOTEBOOK_EDIT_TOOL_NAME,
+    TODO_WRITE_TOOL_NAME as AI_TODO_WRITE_TOOL_NAME,
+    EXIT_PLAN_MODE_TOOL_NAME as AI_EXIT_PLAN_MODE_TOOL_NAME,
+} from '@onlook/ai';
 import { z } from 'zod';
 
 // EDIT TOOLS - For file modification and editing capabilities
@@ -69,19 +78,21 @@ export async function handleEditToolCall(
 ): Promise<any> {
     try {
         switch (toolName) {
-            case BASH_EDIT_TOOL_NAME:
+            case BASH_EDIT_TOOL_NAME: // 'bash_edit' - same in both AI and client
                 return await handleBashEditTool(args as z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>, editorEngine);
-            case EDIT_TOOL_NAME:
+            case EDIT_TOOL_NAME: // 'edit' - client tool name
+            case EDIT_ENHANCED_TOOL_NAME: // 'edit_enhanced' - AI package tool name
                 return await handleEditTool(args as z.infer<typeof EDIT_TOOL_PARAMETERS>, editorEngine);
-            case MULTI_EDIT_TOOL_NAME:
+            case MULTI_EDIT_TOOL_NAME: // 'multi_edit' - same in both AI and client
                 return await handleMultiEditTool(args as z.infer<typeof MULTI_EDIT_TOOL_PARAMETERS>, editorEngine);
-            case WRITE_TOOL_NAME:
+            case WRITE_TOOL_NAME: // 'write' - client tool name
+            case WRITE_ENHANCED_TOOL_NAME: // 'write_enhanced' - AI package tool name
                 return await handleWriteTool(args as z.infer<typeof WRITE_TOOL_PARAMETERS>, editorEngine);
-            case NOTEBOOK_EDIT_TOOL_NAME:
+            case NOTEBOOK_EDIT_TOOL_NAME: // 'notebook_edit' - same in both AI and client
                 return await handleNotebookEditTool(args as z.infer<typeof NOTEBOOK_EDIT_TOOL_PARAMETERS>, editorEngine);
-            case TODO_WRITE_TOOL_NAME:
+            case TODO_WRITE_TOOL_NAME: // 'todo_write' - same in both AI and client
                 return await handleTodoWriteTool(args as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>, editorEngine);
-            case EXIT_PLAN_MODE_TOOL_NAME:
+            case EXIT_PLAN_MODE_TOOL_NAME: // 'exit_plan_mode' - same in both AI and client
                 return await handleExitPlanModeTool(args as z.infer<typeof EXIT_PLAN_MODE_TOOL_PARAMETERS>, editorEngine);
             default:
                 throw new Error(`Unknown edit tool: ${toolName}`);

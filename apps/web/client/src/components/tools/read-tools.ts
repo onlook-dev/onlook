@@ -1,4 +1,8 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
+import {
+    LS_ENHANCED_TOOL_NAME,
+    READ_ENHANCED_TOOL_NAME
+} from '@onlook/ai';
 import { z } from 'zod';
 
 // READ-ONLY TOOLS - For non-editing capabilities (search, read, list, analyze)
@@ -47,11 +51,6 @@ export const READ_TOOL_PARAMETERS = z.object({
     limit: z.number().optional().describe('Number of lines to read')
 });
 
-export const NOTEBOOK_READ_TOOL_PARAMETERS = z.object({
-    notebook_path: z.string().describe('Absolute path to .ipynb file'),
-    cell_id: z.string().optional().describe('Specific cell ID')
-});
-
 export const WEB_FETCH_TOOL_PARAMETERS = z.object({
     url: z.string().url().describe('URL to fetch'),
     prompt: z.string().describe('Analysis prompt')
@@ -83,31 +82,22 @@ export async function handleReadToolCall(
     try {
         switch (toolName) {
             case TASK_TOOL_NAME:
-            case 'task':
                 return await handleTaskTool(args as z.infer<typeof TASK_TOOL_PARAMETERS>, editorEngine);
             case BASH_READ_TOOL_NAME:
-            case 'bash_read':
                 return await handleBashReadTool(args as z.infer<typeof BASH_READ_TOOL_PARAMETERS>, editorEngine);
             case GLOB_TOOL_NAME:
-            case 'glob':
                 return await handleGlobTool(args as z.infer<typeof GLOB_TOOL_PARAMETERS>, editorEngine);
             case GREP_TOOL_NAME:
-            case 'grep':
                 return await handleGrepTool(args as z.infer<typeof GREP_TOOL_PARAMETERS>, editorEngine);
             case LS_TOOL_NAME:
-            case 'ls_enhanced':
+            case LS_ENHANCED_TOOL_NAME:
                 return await handleLsTool(args as z.infer<typeof LS_TOOL_PARAMETERS>, editorEngine);
             case READ_TOOL_NAME:
-            case 'read_enhanced':
+            case READ_ENHANCED_TOOL_NAME:
                 return await handleReadTool(args as z.infer<typeof READ_TOOL_PARAMETERS>, editorEngine);
-            case NOTEBOOK_READ_TOOL_NAME:
-            case 'notebook_read':
-                return await handleNotebookReadTool(args as z.infer<typeof NOTEBOOK_READ_TOOL_PARAMETERS>, editorEngine);
             case WEB_FETCH_TOOL_NAME:
-            case 'web_fetch':
                 return await handleWebFetchTool(args as z.infer<typeof WEB_FETCH_TOOL_PARAMETERS>, editorEngine);
             case WEB_SEARCH_TOOL_NAME:
-            case 'web_search':
                 return await handleWebSearchTool(args as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>, editorEngine);
             default:
                 throw new Error(`Unknown read tool: ${toolName}`);
@@ -136,7 +126,7 @@ async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PARAMETERS
         const readOnlyCommands = ['ls', 'cat', 'head', 'tail', 'grep', 'find', 'wc', 'sort', 'uniq', 'du', 'df', 'ps', 'top', 'which', 'whereis'];
         const commandParts = args.command.trim().split(/\s+/);
         const baseCommand = commandParts[0] || '';
-        
+
         if (!readOnlyCommands.some(cmd => baseCommand.includes(cmd))) {
             return {
                 output: '',
@@ -144,7 +134,7 @@ async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PARAMETERS
                 error: `Command '${baseCommand}' is not allowed in read-only mode. Only ${readOnlyCommands.join(', ')} commands are permitted.`
             };
         }
-        
+
         const result = await editorEngine.sandbox.session.runCommand(args.command);
         return {
             output: result.output,
@@ -165,7 +155,7 @@ async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>, editor
         const searchPath = args.path || '.';
         const command = `find ${searchPath} -name "${args.pattern}" 2>/dev/null | head -100`;
         const result = await editorEngine.sandbox.session.runCommand(command);
-        
+
         if (result.success && result.output.trim()) {
             return result.output.trim().split('\n').filter(line => line.trim());
         }
@@ -180,7 +170,7 @@ async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>, editor
     try {
         const searchPath = args.path || '.';
         let command = `rg "${args.pattern}" ${searchPath}`;
-        
+
         if (args.case_insensitive) command += ' -i';
         if (args.show_line_numbers) command += ' -n';
         if (args.context_after) command += ` -A ${args.context_after}`;
@@ -189,12 +179,12 @@ async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>, editor
         if (args.glob) command += ` -g "${args.glob}"`;
         if (args.type) command += ` -t ${args.type}`;
         if (args.head_limit) command += ` | head -${args.head_limit}`;
-        
+
         if (args.output_mode === 'files_with_matches') command += ' -l';
         else if (args.output_mode === 'count') command += ' -c';
-        
+
         const result = await editorEngine.sandbox.session.runCommand(command);
-        
+
         if (result.success) {
             const lines = result.output.trim().split('\n').filter(line => line.trim());
             return {
@@ -203,7 +193,7 @@ async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>, editor
                 count: lines.length
             };
         }
-        
+
         return {
             matches: [],
             mode: args.output_mode,
@@ -227,7 +217,7 @@ async function handleLsTool(args: z.infer<typeof LS_TOOL_PARAMETERS>, editorEngi
         if (!result) {
             throw new Error(`Cannot list directory ${args.path}`);
         }
-        
+
         return result
             .filter(item => {
                 if (args.ignore) {
@@ -256,20 +246,20 @@ async function handleReadTool(args: z.infer<typeof READ_TOOL_PARAMETERS>, editor
         if (!file || file.type !== 'text') {
             throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
         }
-        
+
         const lines = file.content.split('\n');
-        
+
         if (args.offset || args.limit) {
             const start = args.offset || 0;
             const end = args.limit ? start + args.limit : lines.length;
             const selectedLines = lines.slice(start, end);
-            
+
             return {
                 content: selectedLines.map((line, index) => `${start + index + 1}→${line}`).join('\n'),
                 lines: selectedLines.length
             };
         }
-        
+
         return {
             content: lines.map((line, index) => `${index + 1}→${line}`).join('\n'),
             lines: lines.length
@@ -279,38 +269,15 @@ async function handleReadTool(args: z.infer<typeof READ_TOOL_PARAMETERS>, editor
     }
 }
 
-async function handleNotebookReadTool(args: z.infer<typeof NOTEBOOK_READ_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<any> {
-    try {
-        const file = await editorEngine.sandbox.readFile(args.notebook_path);
-        if (!file || file.type !== 'text') {
-            throw new Error(`Cannot read notebook ${args.notebook_path}: file not found or not text`);
-        }
-        
-        const notebook = JSON.parse(file.content);
-        
-        if (args.cell_id) {
-            const cell = notebook.cells.find((c: any) => c.id === args.cell_id);
-            if (!cell) {
-                throw new Error(`Cell with ID ${args.cell_id} not found`);
-            }
-            return { cell };
-        }
-        
-        return { cells: notebook.cells };
-    } catch (error) {
-        throw new Error(`Cannot read notebook ${args.notebook_path}: ${error}`);
-    }
-}
-
 async function handleWebFetchTool(args: z.infer<typeof WEB_FETCH_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     try {
         const response = await fetch(args.url.replace(/^http:/, 'https:'));
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
         let content = await response.text();
-        
+
         // Basic HTML to markdown conversion
         if (response.headers.get('content-type')?.includes('text/html')) {
             content = content
@@ -320,7 +287,7 @@ async function handleWebFetchTool(args: z.infer<typeof WEB_FETCH_TOOL_PARAMETERS
                 .replace(/\s+/g, ' ')
                 .trim();
         }
-        
+
         // Apply prompt processing with AI if available
         return `Content from ${args.url} analyzed with prompt "${args.prompt}":\n\n${content}`;
     } catch (error) {
@@ -337,7 +304,7 @@ async function handleWebSearchTool(args: z.infer<typeof WEB_SEARCH_TOOL_PARAMETE
     if (args.blocked_domains) {
         console.log(`Blocked domains: ${args.blocked_domains.join(', ')}`);
     }
-    
+
     return `Search results for "${args.query}" would appear here (search API integration needed)`;
 }
 
@@ -372,11 +339,6 @@ export const READ_TOOLS = {
         name: READ_TOOL_NAME,
         description: 'Read file contents',
         parameters: READ_TOOL_PARAMETERS
-    },
-    [NOTEBOOK_READ_TOOL_NAME]: {
-        name: NOTEBOOK_READ_TOOL_NAME,
-        description: 'Read Jupyter notebook cells',
-        parameters: NOTEBOOK_READ_TOOL_PARAMETERS
     },
     [WEB_FETCH_TOOL_NAME]: {
         name: WEB_FETCH_TOOL_NAME,

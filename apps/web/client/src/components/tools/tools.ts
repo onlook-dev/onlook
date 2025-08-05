@@ -19,6 +19,23 @@ import {
     SANDBOX_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_NAME,
+    // Enhanced tool constants from AI package
+    BASH_READ_TOOL_NAME as AI_BASH_READ_TOOL_NAME,
+    GLOB_TOOL_NAME as AI_GLOB_TOOL_NAME,  
+    GREP_TOOL_NAME as AI_GREP_TOOL_NAME,
+    LS_ENHANCED_TOOL_NAME,
+    READ_ENHANCED_TOOL_NAME,
+    NOTEBOOK_READ_TOOL_NAME as AI_NOTEBOOK_READ_TOOL_NAME,
+    WEB_FETCH_TOOL_NAME as AI_WEB_FETCH_TOOL_NAME,
+    WEB_SEARCH_TOOL_NAME as AI_WEB_SEARCH_TOOL_NAME,
+    TASK_TOOL_NAME as AI_TASK_TOOL_NAME,
+    BASH_EDIT_TOOL_NAME as AI_BASH_EDIT_TOOL_NAME,
+    EDIT_ENHANCED_TOOL_NAME,
+    MULTI_EDIT_TOOL_NAME as AI_MULTI_EDIT_TOOL_NAME,
+    WRITE_ENHANCED_TOOL_NAME,
+    NOTEBOOK_EDIT_TOOL_NAME as AI_NOTEBOOK_EDIT_TOOL_NAME,
+    TODO_WRITE_TOOL_NAME as AI_TODO_WRITE_TOOL_NAME,
+    EXIT_PLAN_MODE_TOOL_NAME as AI_EXIT_PLAN_MODE_TOOL_NAME,
 } from '@onlook/ai';
 import type { SandboxFile } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
@@ -106,15 +123,15 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             WEB_FETCH_TOOL_NAME,
             WEB_SEARCH_TOOL_NAME,
             // Enhanced tool names from AI package
-            'ls_enhanced',
-            'read_enhanced',
-            'bash_read',
-            'glob',
-            'grep',
-            'task',
-            'notebook_read',
-            'web_fetch',
-            'web_search'
+            LS_ENHANCED_TOOL_NAME,
+            READ_ENHANCED_TOOL_NAME,
+            AI_BASH_READ_TOOL_NAME,
+            AI_GLOB_TOOL_NAME,
+            AI_GREP_TOOL_NAME,
+            AI_TASK_TOOL_NAME,
+            AI_NOTEBOOK_READ_TOOL_NAME,
+            AI_WEB_FETCH_TOOL_NAME,
+            AI_WEB_SEARCH_TOOL_NAME
         ].includes(toolName)) {
             return await handleReadToolCall(toolName, toolCall.args, editorEngine);
         }
@@ -129,17 +146,17 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             TODO_WRITE_TOOL_NAME,
             EXIT_PLAN_MODE_TOOL_NAME,
             // Enhanced tool names from AI package
-            'bash_edit',
-            'edit_enhanced',
-            'multi_edit',
-            'write_enhanced',
-            'notebook_edit',
-            'todo_write',
-            'exit_plan_mode'
+            AI_BASH_EDIT_TOOL_NAME,
+            EDIT_ENHANCED_TOOL_NAME,
+            AI_MULTI_EDIT_TOOL_NAME,
+            WRITE_ENHANCED_TOOL_NAME,
+            AI_NOTEBOOK_EDIT_TOOL_NAME,
+            AI_TODO_WRITE_TOOL_NAME,
+            AI_EXIT_PLAN_MODE_TOOL_NAME
         ].includes(toolName)) {
             return await handleEditToolCall(toolName, toolCall.args, editorEngine);
         }
-        
+
         else {
             throw new Error(`Unknown tool call: ${toolCall.toolName}`);
         }
