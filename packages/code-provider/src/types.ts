@@ -132,6 +132,20 @@ export interface WatchFilesOutput {
     watcher: ProviderFileWatcher;
 }
 
+export interface CreateTerminalInput {}
+export interface CreateTerminalOutput {
+    terminal: ProviderTerminal;
+}
+
+export interface GetTaskInput {
+    args: {
+        id: string;
+    };
+}
+export interface GetTaskOutput {
+    task: ProviderTask;
+}
+
 export abstract class Provider {
     abstract createFile(input: CreateFileInput): Promise<CreateFileOutput>;
     abstract editFile(input: EditFileInput): Promise<EditFileOutput>;
@@ -144,6 +158,8 @@ export abstract class Provider {
     abstract downloadFiles(input: DownloadFilesInput): Promise<DownloadFilesOutput>;
     abstract copyFiles(input: CopyFilesInput): Promise<CopyFileOutput>;
     abstract watchFiles(input: WatchFilesInput): Promise<WatchFilesOutput>;
+    abstract createTerminal(input: CreateTerminalInput): Promise<CreateTerminalOutput>;
+    abstract getTask(input: GetTaskInput): Promise<GetTaskOutput>;
 
     /**
      * `Provider` is meant to be a singleton; this method is called when the first instance is created.
@@ -161,4 +177,43 @@ export abstract class ProviderFileWatcher {
     abstract start(input: WatchFilesInput): Promise<void>;
     abstract stop(): Promise<void>;
     abstract registerEventCallback(callback: (event: WatchEvent) => Promise<void>): void;
+}
+
+export type ProviderTerminalShellSize = {
+    cols: number;
+    rows: number;
+};
+
+/**
+ * This is a wrapper around the terminal object from the code provider.
+ * Inspired from @codesandbox/sdk/sessions/WebSocketSession/terminals.d.ts
+ */
+export abstract class ProviderTerminal {
+    /**
+     * Gets the ID of the terminal. Can be used to open it again.
+     */
+    abstract get id(): string;
+    /**
+     * Gets the name of the terminal.
+     */
+    abstract get name(): string;
+
+    abstract open(dimensions?: ProviderTerminalShellSize): Promise<string>;
+    abstract write(input: string, dimensions?: ProviderTerminalShellSize): Promise<void>;
+    abstract run(input: string, dimensions?: ProviderTerminalShellSize): Promise<void>;
+    abstract kill(): Promise<void>;
+
+    // returns a function to unsubscribe from the event
+    abstract onOutput(callback: (data: string) => void): () => void;
+}
+
+export abstract class ProviderTask {
+    abstract get id(): string;
+    abstract get name(): string;
+    abstract get command(): string;
+    abstract open(dimensions?: ProviderTerminalShellSize): Promise<string>;
+    abstract run(): Promise<void>;
+    abstract restart(): Promise<void>;
+    abstract stop(): Promise<void>;
+    abstract onOutput(callback: (data: string) => void): () => void;
 }

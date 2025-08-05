@@ -1,6 +1,8 @@
 import {
     CodeSandbox,
     Sandbox,
+    Task,
+    Terminal,
     WebSocketSession,
     type SandboxBrowserSession,
     type Watcher,
@@ -31,6 +33,13 @@ import {
     ProviderFileWatcher,
     type StatFileInput,
     type StatFileOutput,
+    type CreateTerminalInput,
+    type CreateTerminalOutput,
+    ProviderTerminal,
+    type ProviderTerminalShellSize,
+    type GetTaskInput,
+    type GetTaskOutput,
+    ProviderTask,
 } from '../../types';
 import { createFile } from './utils/create-file';
 import { editFile } from './utils/edit-file';
@@ -234,6 +243,29 @@ export class CodesandboxProvider extends Provider {
             watcher,
         };
     }
+
+    async createTerminal(input: CreateTerminalInput): Promise<CreateTerminalOutput> {
+        if (!this.client) {
+            throw new Error('Client not initialized');
+        }
+        const csTerminal = await this.client.terminals.create();
+        return {
+            terminal: new CodesandboxTerminal(csTerminal),
+        };
+    }
+
+    async getTask(input: GetTaskInput): Promise<GetTaskOutput> {
+        if (!this.client) {
+            throw new Error('Client not initialized');
+        }
+        const task = this.client.tasks.get(input.args.id);
+        if (!task) {
+            throw new Error(`Task ${input.args.id} not found`);
+        }
+        return {
+            task: new CodesandboxTask(task),
+        };
+    }
 }
 
 export class CodesandboxFileWatcher extends ProviderFileWatcher {
@@ -263,5 +295,83 @@ export class CodesandboxFileWatcher extends ProviderFileWatcher {
         }
         this.watcher.dispose();
         this.watcher = null;
+    }
+}
+
+export class CodesandboxTerminal extends ProviderTerminal {
+    constructor(private readonly _terminal: Terminal) {
+        super();
+    }
+
+    get id(): string {
+        return this._terminal.id;
+    }
+
+    get name(): string {
+        return this._terminal.name;
+    }
+
+    open(dimensions?: ProviderTerminalShellSize): Promise<string> {
+        return this._terminal.open(dimensions);
+    }
+
+    write(input: string, dimensions?: ProviderTerminalShellSize): Promise<void> {
+        return this._terminal.write(input, dimensions);
+    }
+
+    run(input: string, dimensions?: ProviderTerminalShellSize): Promise<void> {
+        return this._terminal.run(input, dimensions);
+    }
+
+    kill(): Promise<void> {
+        return this._terminal.kill();
+    }
+
+    onOutput(callback: (data: string) => void): () => void {
+        const disposable = this._terminal.onOutput(callback);
+        return () => {
+            disposable.dispose();
+        };
+    }
+}
+
+export class CodesandboxTask extends ProviderTask {
+    constructor(private readonly _task: Task) {
+        super();
+    }
+
+    get id(): string {
+        return this._task.id;
+    }
+
+    get name(): string {
+        return this._task.name;
+    }
+
+    get command(): string {
+        return this._task.command;
+    }
+
+    open(): Promise<string> {
+        return this._task.open();
+    }
+
+    run(): Promise<void> {
+        return this._task.run();
+    }
+
+    restart(): Promise<void> {
+        return this._task.restart();
+    }
+
+    stop(): Promise<void> {
+        return this._task.stop();
+    }
+
+    onOutput(callback: (data: string) => void): () => void {
+        const disposable = this._task.onOutput(callback);
+        return () => {
+            disposable.dispose();
+        };
     }
 }

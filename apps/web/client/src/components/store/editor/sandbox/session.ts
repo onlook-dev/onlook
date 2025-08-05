@@ -37,12 +37,20 @@ export class SessionManager {
         }
         this.isConnecting = false;
         if (this.session) {
-            await this.createTerminalSessions(this.session);
+            await this.createTerminalSessions(this.provider);
         }
     }
 
     async restartDevServer(): Promise<boolean> {
-        const task = await this.session?.tasks.get('dev');
+        if (!this.provider) {
+            console.error('No provider found in restartDevServer');
+            return false;
+        }
+        const { task } = await this.provider.getTask({
+            args: {
+                id: 'dev',
+            },
+        });
         if (task) {
             await task.restart();
             return true;
@@ -54,18 +62,18 @@ export class SessionManager {
         return this.terminalSessions.get(id) as TerminalSession | undefined;
     }
 
-    async createTerminalSessions(session: WebSocketSession) {
+    async createTerminalSessions(provider: Provider) {
         const task = new CLISessionImpl(
             'Server (readonly)',
             CLISessionType.TASK,
-            session,
+            provider,
             this.editorEngine.error,
         );
         this.terminalSessions.set(task.id, task);
         const terminal = new CLISessionImpl(
             'CLI',
             CLISessionType.TERMINAL,
-            session,
+            provider,
             this.editorEngine.error,
         );
 

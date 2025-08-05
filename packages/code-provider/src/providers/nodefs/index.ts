@@ -1,16 +1,22 @@
 import {
     Provider,
     ProviderFileWatcher,
+    ProviderTask,
+    ProviderTerminal,
     type CopyFileOutput,
     type CopyFilesInput,
     type CreateFileInput,
     type CreateFileOutput,
+    type CreateTerminalInput,
+    type CreateTerminalOutput,
     type DeleteFilesInput,
     type DeleteFilesOutput,
     type DownloadFilesInput,
     type DownloadFilesOutput,
     type EditFileInput,
     type EditFileOutput,
+    type GetTaskInput,
+    type GetTaskOutput,
     type ListFilesInput,
     type ListFilesOutput,
     type ReadFilesInput,
@@ -96,6 +102,18 @@ export class NodeFsProvider extends Provider {
         };
     }
 
+    async createTerminal(input: CreateTerminalInput): Promise<CreateTerminalOutput> {
+        return {
+            terminal: new NodeFsTerminal(),
+        };
+    }
+
+    async getTask(input: GetTaskInput): Promise<GetTaskOutput> {
+        return {
+            task: new NodeFsTask(),
+        };
+    }
+
     async reload(): Promise<boolean> {
         // TODO: Implement
         return true;
@@ -125,5 +143,69 @@ export class NodeFsFileWatcher extends ProviderFileWatcher {
 
     registerEventCallback(callback: (event: WatchEvent) => Promise<void>): void {
         // TODO: Implement
+    }
+}
+
+export class NodeFsTerminal extends ProviderTerminal {
+    get id(): string {
+        return 'unimplemented';
+    }
+
+    get name(): string {
+        return 'unimplemented';
+    }
+
+    open(): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    write(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    run(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    kill(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    onOutput(callback: (data: string) => void): () => void {
+        return () => {};
+    }
+}
+
+export class NodeFsTask extends ProviderTask {
+    get id(): string {
+        return 'unimplemented';
+    }
+
+    get name(): string {
+        return 'unimplemented';
+    }
+
+    get command(): string {
+        return 'unimplemented';
+    }
+
+    open(): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    run(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    restart(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    stop(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    onOutput(callback: (data: string) => void): () => void {
+        return () => {};
     }
 }

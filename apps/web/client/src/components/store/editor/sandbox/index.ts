@@ -360,8 +360,8 @@ export class SandboxManager {
     }
 
     async watchFiles() {
-        if (!this.session.session) {
-            console.error('No session found');
+        if (!this.session.provider) {
+            console.error('No provider found for watch files');
             return;
         }
 
@@ -375,7 +375,7 @@ export class SandboxManager {
         const excludePatterns = EXCLUDED_SYNC_DIRECTORIES.map((dir) => `${dir}/**`);
 
         this.fileWatcher = new FileWatcher({
-            session: this.session.session,
+            provider: this.session.provider,
             onFileChange: async (event) => {
                 await this.handleFileChange(event);
             },
