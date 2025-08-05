@@ -1,5 +1,6 @@
+import type { WatchEvent, Watcher, WebSocketSession } from '@codesandbox/sdk';
 import { FileEventBus } from './file-event-bus';
-import type { Provider, ProviderFileWatcher, WatchEvent } from '@onlook/code-provider';
+import type { Provider, ProviderFileWatcher } from '@onlook/code-provider';
 
 interface FileWatcherOptions {
     provider: Provider;
@@ -29,27 +30,22 @@ export class FileWatcher {
 
     async start(): Promise<void> {
         try {
-            if (this.watcher) {
-                this.dispose();
-            }
-            const { watcher } = await this.provider.watchFiles({
+            const res = await this.provider.watchFiles({
                 args: {
                     path: './',
                     recursive: true,
                     excludes: this.excludePatterns,
-                    onFileChange: async (event) => {
-                        this.eventBus.publish({
-                            type: event.type,
-                            paths: event.paths,
-                            timestamp: Date.now(),
-                        });
-
-                        // Notify about file changes
-                        await this.onFileChange(event);
-                    },
+                },
+                onFileChange: async (event) => {
+                    this.eventBus.publish({
+                        type: event.type,
+                        paths: event.paths,
+                        timestamp: Date.now(),
+                    });
+                    await this.onFileChange(event);
                 },
             });
-            this.watcher = watcher;
+            this.watcher = res.watcher;
         } catch (error) {
             console.error('Failed to start file watcher:', error);
             throw error;

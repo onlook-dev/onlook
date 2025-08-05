@@ -1,17 +1,14 @@
 import { api } from '@/trpc/client';
+import type { WebSocketSession } from '@codesandbox/sdk';
+import { connectToSandbox } from '@codesandbox/sdk/browser';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
-import {
-    createClient,
-    type Provider,
-    CodeProvider,
-    CodesandboxProvider,
-} from '@onlook/code-provider';
+import { CodeProvider, CodesandboxProvider, Provider, createClient } from '@onlook/code-provider';
 
 export class SessionManager {
+    session: WebSocketSession | null = null;
     provider: Provider | null = null;
-    // session: WebSocketSession | null = null;
     isConnecting = false;
     terminalSessions: Map<string, CLISession> = new Map();
     activeTerminalSessionId: string = 'cli';
@@ -21,7 +18,7 @@ export class SessionManager {
     }
 
     async start(sandboxId: string, userId?: string) {
-        if (this.isConnecting || this.provider) {
+        if (this.isConnecting || this.session) {
             return;
         }
         this.isConnecting = true;
@@ -35,52 +32,57 @@ export class SessionManager {
                 },
             },
         });
+        if (this.provider instanceof CodesandboxProvider) {
+            this.session = this.provider.client;
+        }
         this.isConnecting = false;
-        await this.createTerminalSessions(this.provider);
+        if (this.session) {
+            await this.createTerminalSessions(this.session);
+        }
     }
 
     async restartDevServer(): Promise<boolean> {
-        if (!this.provider) {
-            throw new Error('Provider not initialized');
+        const task = await this.session?.tasks.get('dev');
+        if (task) {
+            await task.restart();
+            return true;
         }
-        return this.provider.reload();
+        return false;
     }
 
     getTerminalSession(id: string) {
         return this.terminalSessions.get(id) as TerminalSession | undefined;
     }
 
-    private async createTerminalSessions(session: Provider) {
-        if (session instanceof CodesandboxProvider && session.client) {
-            const task = new CLISessionImpl(
-                'Server (readonly)',
-                CLISessionType.TASK,
-                session.client,
-                this.editorEngine.error,
-            );
-            this.terminalSessions.set(task.id, task);
-            const terminal = new CLISessionImpl(
-                'CLI',
-                CLISessionType.TERMINAL,
-                session.client,
-                this.editorEngine.error,
-            );
+    async createTerminalSessions(session: WebSocketSession) {
+        const task = new CLISessionImpl(
+            'Server (readonly)',
+            CLISessionType.TASK,
+            session,
+            this.editorEngine.error,
+        );
+        this.terminalSessions.set(task.id, task);
+        const terminal = new CLISessionImpl(
+            'CLI',
+            CLISessionType.TERMINAL,
+            session,
+            this.editorEngine.error,
+        );
 
-            this.terminalSessions.set(terminal.id, terminal);
-            this.activeTerminalSessionId = task.id;
-        }
+        this.terminalSessions.set(terminal.id, terminal);
+        this.activeTerminalSessionId = task.id;
     }
 
-    // async disposeTerminal(id: string) {
-    //     const terminal = this.terminalSessions.get(id) as TerminalSession | undefined;
-    //     if (terminal) {
-    //         if (terminal.type === 'terminal') {
-    //             await terminal.terminal?.kill();
-    //             terminal.xterm?.dispose();
-    //         }
-    //         this.terminalSessions.delete(id);
-    //     }
-    // }
+    async disposeTerminal(id: string) {
+        const terminal = this.terminalSessions.get(id) as TerminalSession | undefined;
+        if (terminal) {
+            if (terminal.type === 'terminal') {
+                await terminal.terminal?.kill();
+                terminal.xterm?.dispose();
+            }
+            this.terminalSessions.delete(id);
+        }
+    }
 
     async hibernate(sandboxId: string) {
         await api.sandbox.hibernate.mutate({ sandboxId });
@@ -88,8 +90,8 @@ export class SessionManager {
 
     async reconnect(sandboxId: string, userId?: string) {
         try {
-            if (!this.provider) {
-                console.error('Provider was not initialized.');
+            if (!this.session) {
+                console.error('No session found');
                 return;
             }
 
@@ -100,7 +102,7 @@ export class SessionManager {
             }
 
             // Attempt soft reconnect
-            await this.provider.reconnect();
+            await this.provider?.reconnect();
 
             const isConnected2 = await this.ping();
             if (isConnected2) {
@@ -115,8 +117,14 @@ export class SessionManager {
     }
 
     async ping() {
-        if (!this.provider) return false;
-        return this.provider.ping();
+        if (!this.session) return false;
+        try {
+            await this.session.commands.run('echo "ping"');
+            return true;
+        } catch (error) {
+            console.error('Failed to connect to sandbox', error);
+            return false;
+        }
     }
 
     async runCommand(
@@ -128,11 +136,11 @@ export class SessionManager {
         error: string | null;
     }> {
         try {
-            if (!this.provider) {
-                throw new Error('Provider was not initialized.');
+            if (!this.session) {
+                throw new Error('No session found');
             }
             streamCallback?.(command + '\n');
-            const { output } = await this.provider.runTerminalCommand({ args: { command } });
+            const output = await this.session.commands.run(command);
             streamCallback?.(output);
             return {
                 output,
@@ -150,11 +158,8 @@ export class SessionManager {
     }
 
     async clear() {
-        if (!this.provider) {
-            throw new Error('Provider was not initialized.');
-        }
-        await this.provider.destroy();
-        this.provider = null;
+        await this.session?.disconnect();
+        this.session = null;
         this.isConnecting = false;
         this.terminalSessions.forEach((terminal) => {
             if (terminal.type === 'terminal') {

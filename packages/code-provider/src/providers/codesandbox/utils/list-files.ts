@@ -9,8 +9,9 @@ export async function listFiles(
 
     return {
         files: files.map((file) => ({
-            path: file.name,
+            name: file.name,
             type: file.type,
+            isSymlink: file.isSymlink,
         })),
     };
 }

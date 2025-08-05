@@ -6,7 +6,7 @@ import type {
     LIST_FILES_TOOL_PARAMETERS,
     READ_FILES_TOOL_PARAMETERS,
     SCRAPE_URL_TOOL_PARAMETERS,
-    TERMINAL_COMMAND_TOOL_PARAMETERS,
+    TERMINAL_COMMAND_TOOL_PARAMETERS
 } from '@onlook/ai';
 import {
     CREATE_FILE_TOOL_NAME,
@@ -25,10 +25,7 @@ import { convertToBase64 } from '@onlook/utility';
 import type { ToolCall } from 'ai';
 import { z } from 'zod';
 
-export async function handleToolCall(
-    toolCall: ToolCall<string, unknown>,
-    editorEngine: EditorEngine,
-) {
+export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
     try {
         const toolName = toolCall.toolName;
         if (toolName === LIST_FILES_TOOL_NAME) {
@@ -86,7 +83,7 @@ async function handleListFilesTool(
         throw new Error('Error listing files');
     }
     return result.map((file) => ({
-        path: file.path,
+        path: file.name,
         type: file.type,
     }));
 }
@@ -219,9 +216,7 @@ async function handleScrapeUrlTool(
         return result.result;
     } catch (error) {
         console.error('Error scraping URL:', error);
-        throw new Error(
-            `Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        );
+        throw new Error(`Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
 

@@ -118,7 +118,6 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('createFile ===>', input);
         return createFile(this.client, input);
     }
 
@@ -126,7 +125,6 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('editFile ===>', input);
         return editFile(this.client, input);
     }
 
@@ -134,7 +132,6 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('renameFile ===>', input);
         await this.client.fs.rename(input.args.oldPath, input.args.newPath);
         return {};
     }
@@ -143,10 +140,14 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('statFile ===>', input);
         const res = await this.client.fs.stat(input.args.path);
         return {
             type: res.type,
+            isSymlink: res.isSymlink,
+            size: res.size,
+            mtime: res.mtime,
+            ctime: res.ctime,
+            atime: res.atime,
         };
     }
 
@@ -154,7 +155,6 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('deleteFiles ===>', input);
         await this.client.fs.remove(input.args.path, input.args.recursive);
         return {};
     }
@@ -163,7 +163,6 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('listFiles ===>', input);
         return listFiles(this.client, input);
     }
 
@@ -171,7 +170,6 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('readFiles ===>', input);
         return readFiles(this.client, input);
     }
 
@@ -179,7 +177,6 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('runTerminalCommand ===>', args);
         const output = await this.client.commands.run(args.command);
         return {
             output,
@@ -190,7 +187,6 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('downloadFiles ===>', input);
         const res = await this.client.fs.download(input.args.path);
         return {
             url: res.downloadUrl,
@@ -201,7 +197,6 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('copyFiles ===>', input);
         await this.client.fs.copy(
             input.args.sourcePath,
             input.args.targetPath,
@@ -215,7 +210,6 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        console.log('watchFiles ===>', input);
         const watcher = new CodesandboxFileWatcher(this.client);
 
         await watcher.start(input);
@@ -225,11 +219,10 @@ export class CodesandboxProvider extends Provider {
             excludes: input.args.excludes,
         });
 
-        if (input.args.onFileChange) {
+        if (input.onFileChange) {
             watcher.registerEventCallback(async (event) => {
-                console.log('watchFiles onFileChange ===>', event);
-                if (input.args.onFileChange) {
-                    await input.args.onFileChange({
+                if (input.onFileChange) {
+                    await input.onFileChange({
                         type: event.type,
                         paths: event.paths,
                     });

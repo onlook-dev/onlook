@@ -6,9 +6,11 @@ export async function createFile(
     client: WebSocketSession,
     { args }: CreateFileInput,
 ): Promise<CreateFileOutput> {
-    const exists = await fileExists(client, args.path);
-    if (exists) {
-        throw new Error('File already exists');
+    if (!args.overwriteIfExists) {
+        const exists = await fileExists(client, args.path);
+        if (exists) {
+            throw new Error('File already exists');
+        }
     }
     const result = await writeFile(client, args.path, args.content);
     if (!result) {

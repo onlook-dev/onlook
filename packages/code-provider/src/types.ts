@@ -1,5 +1,4 @@
 import type {
-    CREATE_FILE_TOOL_PARAMETERS,
     EDIT_FILE_TOOL_PARAMETERS,
     LIST_FILES_TOOL_PARAMETERS,
     READ_FILES_TOOL_PARAMETERS,
@@ -8,12 +7,18 @@ import type {
 import type { SandboxFile } from '@onlook/models';
 import type { z } from 'zod';
 
+/**
+ * Please note that `args` should only contain primitive types so it can be serialized to JSON.
+ * This is important so each method below can be called by a LLM.
+ */
+
 export interface CreateFileInput {
     // args: z.infer<typeof CREATE_FILE_TOOL_PARAMETERS>;
     // args above does not support Uint8Array
     args: {
         path: string;
         content: string | Uint8Array;
+        overwriteIfExists?: boolean;
     };
 }
 export interface CreateFileOutput {}
@@ -39,6 +44,13 @@ export interface StatFileInput {
 
 export interface StatFileOutput {
     type: 'file' | 'directory';
+    // the following fields are not actively used and are set to optional
+    // if the code leverages these fields then you may update them to required
+    isSymlink?: boolean;
+    size?: number;
+    mtime?: number;
+    ctime?: number;
+    atime?: number;
 }
 
 export interface RenameFileInput {
@@ -53,8 +65,9 @@ export interface ListFilesInput {
     args: z.infer<typeof LIST_FILES_TOOL_PARAMETERS>;
 }
 export interface ListFilesOutputFile {
-    path: string;
+    name: string;
     type: 'file' | 'directory';
+    isSymlink: boolean;
 }
 export interface ListFilesOutput {
     files: ListFilesOutputFile[];
@@ -112,8 +125,8 @@ export interface WatchFilesInput {
         path: string;
         recursive?: boolean;
         excludes?: string[];
-        onFileChange?: (event: WatchEvent) => Promise<void>;
     };
+    onFileChange?: (event: WatchEvent) => Promise<void>;
 }
 export interface WatchFilesOutput {
     watcher: ProviderFileWatcher;

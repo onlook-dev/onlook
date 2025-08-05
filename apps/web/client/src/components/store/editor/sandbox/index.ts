@@ -25,7 +25,7 @@ import { FileWatcher } from './file-watcher';
 import { normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
-import type { ListFilesOutputFile, Provider, ReadFilesOutputFile } from '@onlook/code-provider';
+import type { Provider } from '@onlook/code-provider';
 
 const isDev = env.NODE_ENV === 'development';
 export class SandboxManager {
@@ -48,10 +48,10 @@ export class SandboxManager {
         makeAutoObservable(this);
 
         reaction(
-            () => this.session.provider,
-            (provider) => {
+            () => this.session.session,
+            (session) => {
                 this._isIndexed = false;
-                if (provider) {
+                if (session) {
                     this.index();
                 }
             },
@@ -77,8 +77,8 @@ export class SandboxManager {
             return;
         }
 
-        if (!this.session.provider) {
-            console.error('No provider found for indexing');
+        if (!this.session.session) {
+            console.error('No session found for indexing');
             return;
         }
 
@@ -140,19 +140,19 @@ export class SandboxManager {
         while (dirsToProcess.length > 0) {
             const currentDir = dirsToProcess.shift()!;
             try {
-                const { files } = await this.session.provider.listFiles({
+                const { files } = await this.session.provider?.listFiles({
                     args: {
                         path: currentDir,
                     },
                 });
 
                 for (const entry of files) {
-                    const fullPath = `${currentDir}/${entry.path}`;
+                    const fullPath = `${currentDir}/${entry.name}`;
                     const normalizedPath = normalizePath(fullPath);
 
                     if (entry.type === 'directory') {
                         // Skip excluded directories
-                        if (!excludeDirs.includes(entry.path)) {
+                        if (!excludeDirs.includes(entry.name)) {
                             dirsToProcess.push(normalizedPath);
                         }
                         this.fileSync.updateDirectoryCache(normalizedPath);
@@ -175,12 +175,12 @@ export class SandboxManager {
         }
 
         try {
-            const { files } = await this.session.provider.readFiles({
+            const { files } = await this.session.provider?.readFiles({
                 args: {
                     paths: [filePath],
                 },
             });
-            return files[0] ?? null;
+            return files?.[0] ?? null;
         } catch (error) {
             console.error(`Error reading remote file ${filePath}:`, error);
             return null;
@@ -191,16 +191,17 @@ export class SandboxManager {
         filePath: string,
         content: string | Uint8Array,
     ): Promise<boolean> {
-        if (!this.session.provider) {
-            console.error('No provider found for remote write');
+        if (!this.session.session) {
+            console.error('No session found for remote write');
             return false;
         }
 
         try {
-            await this.session.provider.createFile({
+            await this.session.provider?.createFile({
                 args: {
                     path: filePath,
                     content,
+                    overwriteIfExists: true,
                 },
             });
             return true;
@@ -278,10 +279,10 @@ export class SandboxManager {
         return this.fileSync.listAllFiles();
     }
 
-    async readDir(dir: string): Promise<ListFilesOutputFile[]> {
+    async readDir(dir: string): Promise<ReaddirEntry[]> {
         if (!this.session.provider) {
-            console.error('No provider found for readdir');
-            return [];
+            console.error('No provider found for read dir');
+            return Promise.resolve([]);
         }
         const { files } = await this.session.provider.listFiles({
             args: {
@@ -297,7 +298,7 @@ export class SandboxManager {
         ignoreExtensions: string[] = [],
     ): Promise<string[]> {
         if (!this.session.provider) {
-            console.error('No provider found for listFilesRecursively');
+            console.error('No store found');
             return [];
         }
 
@@ -309,10 +310,10 @@ export class SandboxManager {
         });
 
         for (const entry of files) {
-            const fullPath = `${dir}/${entry.path}`;
+            const fullPath = `${dir}/${entry.name}`;
             const normalizedPath = normalizePath(fullPath);
             if (entry.type === 'directory') {
-                if (ignoreDirs.includes(entry.path)) {
+                if (ignoreDirs.includes(entry.name)) {
                     continue;
                 }
                 const subFiles = await this.listFilesRecursively(
@@ -322,7 +323,7 @@ export class SandboxManager {
                 );
                 results.push(...subFiles);
             } else {
-                const extension = path.extname(entry.path);
+                const extension = path.extname(entry.name);
                 if (ignoreExtensions.length > 0 && !ignoreExtensions.includes(extension)) {
                     continue;
                 }
@@ -337,23 +338,19 @@ export class SandboxManager {
         projectName?: string,
     ): Promise<{ downloadUrl: string; fileName: string } | null> {
         if (!this.session.provider) {
-            console.error('No provider found for downloadFiles');
+            console.error('No sandbox provider found for download');
             return null;
         }
         try {
-            const { url: downloadUrl } = await this.session.provider.downloadFiles({
+            const { url } = await this.session.provider.downloadFiles({
                 args: {
                     path: './',
                 },
             });
-            if (!downloadUrl) {
-                console.error(
-                    'No download URL found. The provider does not support downloading files via URL.',
-                );
-                return null;
-            }
             return {
-                downloadUrl,
+                // in case there is no URL provided then the code must be updated
+                // to handle this case
+                downloadUrl: url ?? '',
                 fileName: `${projectName ?? 'onlook-project'}-${Date.now()}.zip`,
             };
         } catch (error) {
@@ -363,8 +360,8 @@ export class SandboxManager {
     }
 
     async watchFiles() {
-        if (!this.session.provider) {
-            console.error('No provider found for watchFiles');
+        if (!this.session.session) {
+            console.error('No session found');
             return;
         }
 
@@ -378,7 +375,7 @@ export class SandboxManager {
         const excludePatterns = EXCLUDED_SYNC_DIRECTORIES.map((dir) => `${dir}/**`);
 
         this.fileWatcher = new FileWatcher({
-            provider: this.session.provider,
+            session: this.session.session,
             onFileChange: async (event) => {
                 await this.handleFileChange(event);
             },
@@ -425,7 +422,7 @@ export class SandboxManager {
         } else if (eventType === 'change' || eventType === 'add') {
             const provider = this.session.provider;
             if (!provider) {
-                console.error('No provider found');
+                console.error('No session found');
                 return;
             }
 
@@ -625,7 +622,7 @@ export class SandboxManager {
                     path: dirPath,
                 },
             });
-            return files.some((file) => file.path === fileName);
+            return files.some((entry: ReaddirEntry) => entry.name === fileName);
         } catch (error) {
             console.error(`Error checking file existence ${normalizedPath}:`, error);
             return false;
@@ -742,7 +739,7 @@ export class SandboxManager {
     async getRootLayoutPath(): Promise<string | null> {
         const routerConfig = this.routerConfig;
         if (!routerConfig) {
-            console.log('Could not detect Next.js router type in getRootLayoutPath');
+            console.log('Could not detect Next.js router type');
             return null;
         }
 
