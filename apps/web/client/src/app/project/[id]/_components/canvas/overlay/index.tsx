@@ -10,6 +10,7 @@ import { ClickRect } from './elements/rect/click';
 import { HoverRect } from './elements/rect/hover';
 import { InsertRect } from './elements/rect/insert';
 import { TextEditor } from './elements/text';
+import { OverlayChat } from './elements/chat';
 
 export const Overlay = observer(() => {
     const editorEngine = useEditorEngine();
@@ -69,13 +70,12 @@ export const Overlay = observer(() => {
                     toRect={overlayState.measurement.toRect}
                 />
             )}
-            {/* TODO: Reenable overlay chat */}
-            {/* {overlayState.clickRects.length > 0 && (
+            {overlayState.clickRects.length > 0 && (
                 <OverlayChat
                     elementId={editorEngine.elements.selected[0]?.domId ?? ''}
                     selectedEl={overlayState.clickRects[0] ?? null}
                 />
-            )} */}
+            )}
         </div>
     );
 });

@@ -93,10 +93,13 @@ export const OverlayChat = observer(
 
             setInputState(DEFAULT_INPUT_STATE);
         };
+        const EDITOR_HEADER_HEIGHT = 86;
+        const MARGIN = 8;
+        const CHAT_BUTTON_HEIGHT = 42;
 
         const containerStyle: React.CSSProperties = {
             position: 'fixed',
-            top: Math.max(74 + 8, selectedEl.top - 8),
+            top: Math.max(EDITOR_HEADER_HEIGHT + MARGIN, selectedEl.top - (CHAT_BUTTON_HEIGHT + MARGIN)),
             left: selectedEl.left + selectedEl.width / 2,
             transform: 'translate(-50%, 0)',
             transformOrigin: 'center center',

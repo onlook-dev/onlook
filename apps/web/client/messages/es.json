@@ -236,6 +236,8 @@
                         },
                         "settings": {
                             "showSuggestions": "Mostrar sugerencias",
+                            "showMiniChat": "Mostrar mini chat",
+                            "autoApplyCode": "Aplicar resultados automáticamente",
                             "expandCodeBlocks": "Mostrar código durante la renderización"
                         },
                         "miniChat": {
