@@ -1,5 +1,4 @@
 import type { SandboxManager } from '@/components/store/editor/sandbox';
-import type { WebSocketSession } from '@codesandbox/sdk';
 import type { Provider } from '@onlook/code-provider';
 
 // System reserved names (Windows compatibility)

@@ -1,6 +1,5 @@
-import type { WatchEvent, Watcher, WebSocketSession } from '@codesandbox/sdk';
 import { FileEventBus } from './file-event-bus';
-import type { Provider, ProviderFileWatcher } from '@onlook/code-provider';
+import type { Provider, ProviderFileWatcher, WatchEvent } from '@onlook/code-provider';
 
 interface FileWatcherOptions {
     provider: Provider;

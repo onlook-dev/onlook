@@ -1,4 +1,3 @@
-import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
 import {
     EXCLUDED_SYNC_DIRECTORIES,
     NEXT_JS_FILE_EXTENSIONS,
@@ -25,7 +24,7 @@ import { FileWatcher } from './file-watcher';
 import { normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
-import type { Provider } from '@onlook/code-provider';
+import type { ListFilesOutputFile, Provider, WatchEvent } from '@onlook/code-provider';
 
 const isDev = env.NODE_ENV === 'development';
 export class SandboxManager {
@@ -279,7 +278,7 @@ export class SandboxManager {
         return this.fileSync.listAllFiles();
     }
 
-    async readDir(dir: string): Promise<ReaddirEntry[]> {
+    async readDir(dir: string): Promise<ListFilesOutputFile[]> {
         if (!this.session.provider) {
             console.error('No provider found for read dir');
             return Promise.resolve([]);
@@ -622,7 +621,7 @@ export class SandboxManager {
                     path: dirPath,
                 },
             });
-            return files.some((entry: ReaddirEntry) => entry.name === fileName);
+            return files.some((entry) => entry.name === fileName);
         } catch (error) {
             console.error(`Error checking file existence ${normalizedPath}:`, error);
             return false;
