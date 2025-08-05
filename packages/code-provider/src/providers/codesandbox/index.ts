@@ -44,6 +44,8 @@ import {
     type TerminalBackgroundCommandInput,
     type TerminalBackgroundCommandOutput,
     ProviderBackgroundCommand,
+    type GitStatusInput,
+    type GitStatusOutput,
 } from '../../types';
 import { createFile } from './utils/create-file';
 import { editFile } from './utils/edit-file';
@@ -280,6 +282,16 @@ export class CodesandboxProvider extends Provider {
         const command = await this.client.commands.runBackground(input.args.command);
         return {
             command: new CodesandboxBackgroundCommand(command),
+        };
+    }
+
+    async gitStatus(input: GitStatusInput): Promise<GitStatusOutput> {
+        if (!this.client) {
+            throw new Error('Client not initialized');
+        }
+        const status = await this.client.git.status();
+        return {
+            changedFiles: status.changedFiles,
         };
     }
 }

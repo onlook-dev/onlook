@@ -50,7 +50,12 @@ export const useImageMove = () => {
             const fileName = image.fileName;
             const currentPath = image.originPath;
             // Construct new path based on target folder
-            const newPath = generateNewFolderPath(currentPath, fileName, 'move', targetFolder.fullPath);
+            const newPath = generateNewFolderPath(
+                currentPath,
+                fileName,
+                'move',
+                targetFolder.fullPath,
+            );
             const fullPath = ensureImageFolderPrefix(newPath);
 
             // Don't move if it's already in the same location
@@ -61,11 +66,6 @@ export const useImageMove = () => {
                     error: 'Image is already in the selected folder',
                 }));
                 return;
-            }
-
-            const session = editorEngine.sandbox.session?.session;
-            if (!session) {
-                throw new Error('No sandbox session available');
             }
 
             const copied = await editorEngine.sandbox.copy(currentPath, fullPath, true);
@@ -125,4 +125,4 @@ export const useImageMove = () => {
         handleMoveModalToggle,
         clearError,
     };
-}; 
+};

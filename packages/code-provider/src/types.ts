@@ -155,6 +155,12 @@ export interface TerminalBackgroundCommandOutput {
     command: ProviderBackgroundCommand;
 }
 
+export interface GitStatusInput {}
+
+export interface GitStatusOutput {
+    changedFiles: string[];
+}
+
 export abstract class Provider {
     abstract createFile(input: CreateFileInput): Promise<CreateFileOutput>;
     abstract editFile(input: EditFileInput): Promise<EditFileOutput>;
@@ -172,6 +178,8 @@ export abstract class Provider {
     abstract runBackgroundCommand(
         input: TerminalBackgroundCommandInput,
     ): Promise<TerminalBackgroundCommandOutput>;
+    abstract gitStatus(input: GitStatusInput): Promise<GitStatusOutput>;
+
     /**
      * `Provider` is meant to be a singleton; this method is called when the first instance is created.
      * Use this to establish a connection or run operations that requires I/O.

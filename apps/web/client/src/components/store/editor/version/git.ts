@@ -121,8 +121,7 @@ export class GitManager {
      */
     async getStatus(): Promise<GitStatus | null> {
         try {
-            // todo
-            const status = await this.editorEngine?.sandbox.session.session?.git.status();
+            const status = await this.editorEngine?.sandbox.session.provider?.gitStatus({});
             if (!status) {
                 console.error('Failed to get git status');
                 return null;

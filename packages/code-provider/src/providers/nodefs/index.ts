@@ -18,6 +18,8 @@ import {
     type EditFileOutput,
     type GetTaskInput,
     type GetTaskOutput,
+    type GitStatusInput,
+    type GitStatusOutput,
     type ListFilesInput,
     type ListFilesOutput,
     type ReadFilesInput,
@@ -122,6 +124,12 @@ export class NodeFsProvider extends Provider {
     ): Promise<TerminalBackgroundCommandOutput> {
         return {
             command: new NodeFsCommand(),
+        };
+    }
+
+    async gitStatus(input: GitStatusInput): Promise<GitStatusOutput> {
+        return {
+            changedFiles: [],
         };
     }
 
