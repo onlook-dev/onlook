@@ -72,7 +72,7 @@ export const BottomBar = observer(() => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ 
                         opacity: editorEngine.state.editorMode !== EditorMode.PREVIEW  ? 1 : 0, 
-                        y: editorEngine.state.editorMode !== EditorMode.PREVIEW  ? 20 : 0, 
+                        y: editorEngine.state.editorMode !== EditorMode.PREVIEW  ? 0 : 20, 
                     }}
                     className="absolute left-1/2 -translate-x-1/2 bottom-4 flex flex-col border-[0.5px] border-border p-1 px-1 bg-background rounded-lg backdrop-blur drop-shadow-xl overflow-hidden"
                     transition={{
