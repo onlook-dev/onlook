@@ -286,11 +286,11 @@ export const scanAppDirectory = async (
             if (children.length > 0) {
                 const currentDirName = getBaseName(dir);
                 const containerPath = parentPath ? `/${parentPath}` : `/${currentDirName}`;
-                
+                const cleanPath = containerPath.replace(/\/+/g, '/');
                 return {
                     id: nanoid(),
                     name: currentDirName,
-                    path: containerPath.replace(/\/+/g, '/'),
+                    path: cleanPath,
                     children,
                     isActive: false,
                     isRoot: false,
