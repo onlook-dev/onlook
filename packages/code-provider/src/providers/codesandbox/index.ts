@@ -46,6 +46,8 @@ import {
     ProviderBackgroundCommand,
     type GitStatusInput,
     type GitStatusOutput,
+    type SetupInput,
+    type SetupOutput,
 } from '../../types';
 import { createFile } from './utils/create-file';
 import { editFile } from './utils/edit-file';
@@ -56,6 +58,7 @@ import { connectToSandbox } from '@codesandbox/sdk/browser';
 export interface CodesandboxProviderOptions {
     sandboxId: string;
     userId?: string;
+    keepActiveWhileConnected?: boolean;
     // returns a session object used by codesandbox SDK
     // only populate this property in the browser
     getSession?: (sandboxId: string, userId?: string) => Promise<SandboxBrowserSession | null>;
@@ -88,7 +91,7 @@ export class CodesandboxProvider extends Provider {
                 getSession: async (id) =>
                     (await this.options.getSession?.(id, this.options.userId)) || null,
             });
-            this._client.keepActiveWhileConnected(true);
+            this._client.keepActiveWhileConnected(this.options.keepActiveWhileConnected ?? true);
         } else {
             // backend path, use environment variables
             const sdk = new CodeSandbox();
@@ -293,6 +296,15 @@ export class CodesandboxProvider extends Provider {
         return {
             changedFiles: status.changedFiles,
         };
+    }
+
+    async setup(input: SetupInput): Promise<SetupOutput> {
+        if (!this.client) {
+            throw new Error('Client not initialized');
+        }
+        await this.client.setup.run();
+        await this.client.setup.waitUntilComplete();
+        return {};
     }
 }
 

@@ -15,7 +15,7 @@ export interface CreateClientOptions {
  * Providers are designed to be singletons; be mindful of this when creating multiple clients
  * or when instantiating in the backend (stateless vs stateful).
  */
-export async function createClient(
+export async function createCodeProviderClient(
     codeProvider: CodeProvider,
     { providerOptions }: CreateClientOptions,
 ) {

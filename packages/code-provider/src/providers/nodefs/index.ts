@@ -26,6 +26,8 @@ import {
     type ReadFilesOutput,
     type RenameFileInput,
     type RenameFileOutput,
+    type SetupInput,
+    type SetupOutput,
     type StatFileInput,
     type StatFileOutput,
     type TerminalBackgroundCommandInput,
@@ -131,6 +133,10 @@ export class NodeFsProvider extends Provider {
         return {
             changedFiles: [],
         };
+    }
+
+    async setup(input: SetupInput): Promise<SetupOutput> {
+        return {};
     }
 
     async reload(): Promise<boolean> {

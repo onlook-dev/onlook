@@ -3,8 +3,7 @@
 import { ProcessedFileType, type NextJsProjectValidation, type ProcessedFile } from '@/app/projects/types';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
-import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/sdk';
-import { connectToSandbox } from '@codesandbox/sdk/browser';
+import { CodeProvider, createCodeProviderClient, Provider } from '@onlook/code-provider';
 import { NEXT_JS_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
 import { generate, getAstFromContent, injectPreloadScript } from '@onlook/parser';
@@ -132,25 +131,25 @@ export const ProjectCreationProvider = ({
                 },
             });
 
-            const browserSession: SandboxBrowserSession = await startSandbox({
-                sandboxId: forkedSandbox.sandboxId,
-                userId: user.id,
-            });
-
-            const session = await connectToSandbox({
-                session: browserSession,
-                getSession: async (id) => {
-                    return await startSandbox({
-                        sandboxId: id,
+            const provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
+                providerOptions: {
+                    codesandbox: {
+                        sandboxId: forkedSandbox.sandboxId,
                         userId: user.id,
-                    });
+                        keepActiveWhileConnected: false,
+                        getSession: async (sandboxId, userId) => {
+                            return startSandbox({
+                                sandboxId,
+                                userId,
+                            });
+                        },
+                    },
                 },
             });
 
-            await uploadToSandbox(projectData.files, session);
-            await session.setup.run();
-            await session.setup.waitUntilComplete();
-            await session.disconnect();
+            await uploadToSandbox(projectData.files, provider);
+            await provider.setup({});
+            await provider.destroy();
 
             const project = await createProject({
                 project: {
@@ -301,13 +300,17 @@ export const useProjectCreation = (): ProjectCreationContextValue => {
     return context;
 };
 
-export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocketSession) => {
+export const uploadToSandbox = async (files: ProcessedFile[], provider: Provider) => {
     for (const file of files) {
         try {
             if (file.type === ProcessedFileType.BINARY) {
                 const uint8Array = new Uint8Array(file.content);
-                await session.fs.writeFile(file.path, uint8Array, {
-                    overwrite: true,
+                await provider.createFile({
+                    args: {
+                        path: file.path,
+                        content: uint8Array,
+                        overwriteIfExists: true,
+                    },
                 });
             } else {
                 let content = file.content;
@@ -328,8 +331,12 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
                         );
                     }
                 }
-                await session.fs.writeTextFile(file.path, content, {
-                    overwrite: true,
+                await provider.createFile({
+                    args: {
+                        path: file.path,
+                        content,
+                        overwriteIfExists: true,
+                    },
                 });
             }
         } catch (fileError) {

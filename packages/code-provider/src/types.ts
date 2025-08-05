@@ -161,6 +161,9 @@ export interface GitStatusOutput {
     changedFiles: string[];
 }
 
+export interface SetupInput {}
+export interface SetupOutput {}
+
 export abstract class Provider {
     abstract createFile(input: CreateFileInput): Promise<CreateFileOutput>;
     abstract editFile(input: EditFileInput): Promise<EditFileOutput>;
@@ -185,6 +188,8 @@ export abstract class Provider {
      * Use this to establish a connection or run operations that requires I/O.
      */
     abstract initialize(): void | Promise<void>;
+
+    abstract setup(input: SetupInput): Promise<SetupOutput>;
 
     abstract reload(): Promise<boolean>;
     abstract reconnect(): Promise<void>;

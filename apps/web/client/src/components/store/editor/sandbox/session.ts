@@ -2,7 +2,7 @@ import { api } from '@/trpc/client';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
-import { CodeProvider, Provider, createClient } from '@onlook/code-provider';
+import { CodeProvider, Provider, createCodeProviderClient } from '@onlook/code-provider';
 
 export class SessionManager {
     provider: Provider | null = null;
@@ -19,10 +19,11 @@ export class SessionManager {
             return;
         }
         this.isConnecting = true;
-        this.provider = await createClient(CodeProvider.CodeSandbox, {
+        this.provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
             providerOptions: {
                 codesandbox: {
                     sandboxId,
+                    userId,
                     getSession: async (sandboxId, userId) => {
                         return api.sandbox.start.mutate({ sandboxId, userId });
                     },
