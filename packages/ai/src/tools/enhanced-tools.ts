@@ -12,9 +12,30 @@ export const taskTool = tool({
     parameters: TASK_TOOL_PARAMETERS,
 });
 
+export const ALLOWED_BASH_READ_COMMANDS = z.enum([
+    'ls',
+    'cat',
+    'head',
+    'tail',
+    'grep',
+    'find',
+    'wc',
+    'sort',
+    'uniq',
+    'du',
+    'df',
+    'ps',
+    'top',
+    'which',
+    'whereis',
+]);
 export const BASH_READ_TOOL_NAME = 'bash_read';
 export const BASH_READ_TOOL_PARAMETERS = z.object({
     command: z.string().describe('Read-only command to execute (no file modifications)'),
+    allowed_commands: z
+        .array(ALLOWED_BASH_READ_COMMANDS)
+        .optional()
+        .describe('Override allowed commands for this execution'),
     description: z.string().optional().describe('What the command does (5-10 words)'),
     timeout: z.number().max(600000).optional().describe('Optional timeout in milliseconds'),
 });
@@ -98,11 +119,25 @@ export const webSearchTool = tool({
     parameters: WEB_SEARCH_TOOL_PARAMETERS,
 });
 
-// EDIT TOOLS - Enhanced tools for file modification and editing capabilities
-
+export const ALLOWED_BASH_EDIT_COMMANDS = z.enum([
+    'mkdir',
+    'rm',
+    'rmdir',
+    'mv',
+    'cp',
+    'touch',
+    'chmod',
+    'chown',
+    'ln',
+    'git',
+]);
 export const BASH_EDIT_TOOL_NAME = 'bash_edit';
 export const BASH_EDIT_TOOL_PARAMETERS = z.object({
     command: z.string().describe('Command that modifies files (mkdir, rm, mv, etc.)'),
+    allowed_commands: z
+        .array(ALLOWED_BASH_EDIT_COMMANDS)
+        .optional()
+        .describe('Override allowed commands for this execution'),
     description: z.string().optional().describe('What the command does (5-10 words)'),
     timeout: z.number().max(600000).optional().describe('Optional timeout in milliseconds'),
 });

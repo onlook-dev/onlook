@@ -1,5 +1,13 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
-import { BASH_EDIT_TOOL_PARAMETERS, EDIT_TOOL_PARAMETERS, EXIT_PLAN_MODE_TOOL_PARAMETERS, MULTI_EDIT_TOOL_PARAMETERS, TODO_WRITE_TOOL_PARAMETERS, WRITE_TOOL_PARAMETERS } from '@onlook/ai';
+import {
+    ALLOWED_BASH_EDIT_COMMANDS,
+    BASH_EDIT_TOOL_PARAMETERS,
+    EDIT_TOOL_PARAMETERS,
+    EXIT_PLAN_MODE_TOOL_PARAMETERS,
+    MULTI_EDIT_TOOL_PARAMETERS,
+    TODO_WRITE_TOOL_PARAMETERS,
+    WRITE_TOOL_PARAMETERS
+} from '@onlook/ai';
 import { z } from 'zod';
 
 export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<{
@@ -8,8 +16,8 @@ export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PAR
     error: string | null;
 }> {
     try {
-        // Allow editing commands (mkdir, rm, mv, cp, touch, etc.)
-        const editCommands = ['mkdir', 'rm', 'rmdir', 'mv', 'cp', 'touch', 'chmod', 'chown', 'ln', 'git'];
+        // Use allowed commands from parameter or default to all enum values
+        const editCommands = args.allowed_commands || ALLOWED_BASH_EDIT_COMMANDS.options;
         const commandParts = args.command.trim().split(/\s+/);
         const baseCommand = commandParts[0] || '';
 

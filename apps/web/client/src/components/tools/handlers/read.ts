@@ -1,5 +1,15 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
-import { BASH_READ_TOOL_PARAMETERS, GLOB_TOOL_PARAMETERS, GREP_TOOL_PARAMETERS, LS_TOOL_PARAMETERS, READ_TOOL_PARAMETERS, TASK_TOOL_PARAMETERS, WEB_FETCH_TOOL_PARAMETERS, WEB_SEARCH_TOOL_PARAMETERS } from '@onlook/ai';
+import {
+    ALLOWED_BASH_READ_COMMANDS,
+    BASH_READ_TOOL_PARAMETERS,
+    GLOB_TOOL_PARAMETERS,
+    GREP_TOOL_PARAMETERS,
+    LS_TOOL_PARAMETERS,
+    READ_TOOL_PARAMETERS,
+    TASK_TOOL_PARAMETERS,
+    WEB_FETCH_TOOL_PARAMETERS,
+    WEB_SEARCH_TOOL_PARAMETERS
+} from '@onlook/ai';
 import { z } from 'zod';
 
 export async function handleTaskTool(args: z.infer<typeof TASK_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
@@ -14,8 +24,8 @@ export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PAR
     error: string | null;
 }> {
     try {
-        // Only allow read-only commands (ls, cat, grep, find, etc.)
-        const readOnlyCommands = ['ls', 'cat', 'head', 'tail', 'grep', 'find', 'wc', 'sort', 'uniq', 'du', 'df', 'ps', 'top', 'which', 'whereis'];
+        // Use allowed commands from parameter or default to all enum values
+        const readOnlyCommands = args.allowed_commands || ALLOWED_BASH_READ_COMMANDS.options;
         const commandParts = args.command.trim().split(/\s+/);
         const baseCommand = commandParts[0] || '';
 
