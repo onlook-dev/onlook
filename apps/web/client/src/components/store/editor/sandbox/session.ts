@@ -41,6 +41,14 @@ export class SessionManager {
         return false;
     }
 
+    async readDevServerLogs(): Promise<string> {
+        const task = await this.session?.tasks.get('dev');
+        if (task) {
+            return await task.open();
+        }
+        return 'Dev server not found';
+    }
+
     getTerminalSession(id: string) {
         return this.terminalSessions.get(id) as TerminalSession | undefined;
     }

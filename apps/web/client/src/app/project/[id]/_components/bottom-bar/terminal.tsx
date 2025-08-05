@@ -4,7 +4,6 @@ import '@xterm/xterm/css/xterm.css';
 
 import { useEditorEngine } from '@/components/store/editor';
 import { cn } from '@onlook/ui/utils';
-import { FitAddon } from '@xterm/addon-fit';
 import { type ITheme } from '@xterm/xterm';
 import { observer } from 'mobx-react-lite';
 import { useTheme } from 'next-themes';
@@ -94,15 +93,15 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: Te
     // Handle container resize
     useEffect(() => {
         if (!containerRef.current || !terminalSession?.fitAddon || hidden) return;
-        
+
         const resizeObserver = new ResizeObserver(() => {
             if (!hidden) {
                 terminalSession.fitAddon.fit();
             }
         });
-        
+
         resizeObserver.observe(containerRef.current);
-        
+
         return () => {
             resizeObserver.disconnect();
         };
