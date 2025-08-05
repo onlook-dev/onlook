@@ -1,51 +1,14 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
+import { api } from '@/trpc/client';
 import {
-    ALLOWED_BASH_EDIT_COMMANDS,
-    BASH_EDIT_TOOL_PARAMETERS,
-    EDIT_TOOL_PARAMETERS,
-    EXIT_PLAN_MODE_TOOL_PARAMETERS,
-    MULTI_EDIT_TOOL_PARAMETERS,
-    TODO_WRITE_TOOL_PARAMETERS,
-    WRITE_TOOL_PARAMETERS
+    FUZZY_EDIT_FILE_TOOL_PARAMETERS,
+    SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
+    SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
+    WRITE_FILE_TOOL_PARAMETERS
 } from '@onlook/ai';
 import { z } from 'zod';
 
-export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<{
-    output: string;
-    success: boolean;
-    error: string | null;
-}> {
-    try {
-        // Use allowed commands from parameter or default to all enum values
-        const editCommands = args.allowed_commands || ALLOWED_BASH_EDIT_COMMANDS.options;
-        const commandParts = args.command.trim().split(/\s+/);
-        const baseCommand = commandParts[0] || '';
-
-        const isEditCommand = editCommands.some(cmd => baseCommand.includes(cmd));
-        if (!isEditCommand) {
-            return {
-                output: '',
-                success: false,
-                error: `Command '${baseCommand}' is not allowed in edit mode. Only ${editCommands.join(', ')} commands are permitted.`
-            };
-        }
-
-        const result = await editorEngine.sandbox.session.runCommand(args.command);
-        return {
-            output: result.output,
-            success: result.success,
-            error: result.error
-        };
-    } catch (error: any) {
-        return {
-            output: '',
-            success: false,
-            error: error.message || error.toString()
-        };
-    }
-}
-
-export async function handleEditTool(args: z.infer<typeof EDIT_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
+export async function handleSearchReplaceEditFileTool(args: z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     try {
         const file = await editorEngine.sandbox.readFile(args.file_path);
         if (!file || file.type !== 'text') {
@@ -79,7 +42,7 @@ export async function handleEditTool(args: z.infer<typeof EDIT_TOOL_PARAMETERS>,
     }
 }
 
-export async function handleMultiEditTool(args: z.infer<typeof MULTI_EDIT_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
+export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     try {
         const file = await editorEngine.sandbox.readFile(args.file_path);
         if (!file || file.type !== 'text') {
@@ -116,7 +79,7 @@ export async function handleMultiEditTool(args: z.infer<typeof MULTI_EDIT_TOOL_P
     }
 }
 
-export async function handleWriteTool(args: z.infer<typeof WRITE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
+export async function handleWriteFileTool(args: z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     try {
         const result = await editorEngine.sandbox.writeFile(args.file_path, args.content);
         if (!result) {
@@ -128,18 +91,42 @@ export async function handleWriteTool(args: z.infer<typeof WRITE_TOOL_PARAMETERS
     }
 }
 
-export async function handleTodoWriteTool(args: z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
-    console.log('Todo list updated:');
-    args.todos.forEach(todo => {
-        console.log(`[${todo.status.toUpperCase()}] ${todo.content} (${todo.priority})`);
+export async function handleFuzzyEditFileTool(
+    args: z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+): Promise<string> {
+    const exists = await editorEngine.sandbox.fileExists(args.file_path);
+    if (!exists) {
+        throw new Error('File does not exist');
+    }
+    const originalFile = await editorEngine.sandbox.readFile(args.file_path);
+
+    if (!originalFile) {
+        throw new Error('Error reading file');
+    }
+
+    if (originalFile.type === 'binary') {
+        throw new Error('Binary files are not supported for editing');
+    }
+
+    const metadata = {
+        projectId: editorEngine.projectId,
+        conversationId: editorEngine.chat.conversation.current?.id,
+    };
+
+    const updatedContent = await api.code.applyDiff.mutate({
+        originalCode: originalFile.content,
+        updateSnippet: args.content,
+        instruction: args.instruction,
+        metadata,
     });
+    if (!updatedContent.result) {
+        throw new Error('Error applying code change: ' + updatedContent.error);
+    }
 
-    return `Todo list updated with ${args.todos.length} items`;
-}
-
-export async function handleExitPlanModeTool(args: z.infer<typeof EXIT_PLAN_MODE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
-    console.log('Exiting plan mode with plan:');
-    console.log(args.plan);
-
-    return 'Exited plan mode, ready to implement';
+    const result = await editorEngine.sandbox.writeFile(args.file_path, updatedContent.result);
+    if (!result) {
+        throw new Error('Error editing file');
+    }
+    return 'File edited!';
 }

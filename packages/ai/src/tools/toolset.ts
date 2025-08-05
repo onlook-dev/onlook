@@ -10,27 +10,15 @@ import {
     grepTool,
 } from './cli';
 import {
-    MULTI_EDIT_TOOL_NAME,
-    multiEditTool,
-    WEB_FETCH_TOOL_NAME,
-    WEB_SEARCH_TOOL_NAME,
-    webFetchTool,
-    webSearchTool,
-} from './enhanced-tools';
-import {
-    CREATE_FILE_TOOL_NAME,
-    createFileTool,
-    EDIT_FILE_TOOL_NAME,
-    editFileTool,
-    LIST_FILES_TOOL_NAME,
-    listFilesTool,
-    READ_FILES_TOOL_NAME,
-    readFilesTool,
-    SANDBOX_TOOL_NAME,
-    sandboxTool,
-    TERMINAL_COMMAND_TOOL_NAME,
-    terminalCommandTool,
-} from './files';
+    FUZZY_EDIT_FILE_TOOL_NAME,
+    fuzzyEditFileTool,
+    SEARCH_REPLACE_EDIT_FILE_TOOL_NAME,
+    SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME,
+    searchReplaceEditFileTool,
+    searchReplaceMultiEditFileTool,
+    WRITE_FILE_TOOL_NAME,
+    writeFileTool,
+} from './edit';
 import {
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
     onlookInstructionsTool,
@@ -43,38 +31,27 @@ import {
     TODO_WRITE_TOOL_NAME,
     todoWriteTool,
 } from './plan';
-
+import { LIST_FILES_TOOL_NAME, listFilesTool, READ_FILE_TOOL_NAME, readFileTool } from './read';
 import { SCRAPE_URL_TOOL_NAME, scrapeUrlTool } from './web';
 
-export const BUILD_TOOL_SET: ToolSet = {
-    // Core Onlook editing tools (preferred)
+export const ASK_TOOL_SET: ToolSet = {
     [LIST_FILES_TOOL_NAME]: listFilesTool,
-    [READ_FILES_TOOL_NAME]: readFilesTool,
+    [READ_FILE_TOOL_NAME]: readFileTool,
     [ONLOOK_INSTRUCTIONS_TOOL_NAME]: onlookInstructionsTool,
     [READ_STYLE_GUIDE_TOOL_NAME]: readStyleGuideTool,
-    [EDIT_FILE_TOOL_NAME]: editFileTool,
-    [CREATE_FILE_TOOL_NAME]: createFileTool,
-    [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
     [SCRAPE_URL_TOOL_NAME]: scrapeUrlTool,
-    [SANDBOX_TOOL_NAME]: sandboxTool,
-    // Enhanced editing tools (additional capabilities)
-    [BASH_EDIT_TOOL_NAME]: bashEditTool,
-    [MULTI_EDIT_TOOL_NAME]: multiEditTool,
+    [BASH_READ_TOOL_NAME]: bashReadTool,
+    [GLOB_TOOL_NAME]: globTool,
+    [GREP_TOOL_NAME]: grepTool,
     [TODO_WRITE_TOOL_NAME]: todoWriteTool,
     [EXIT_PLAN_MODE_TOOL_NAME]: exitPlanModeTool,
 };
 
-export const ASK_TOOL_SET: ToolSet = {
-    // Core Onlook read-only tools (preferred)
-    [LIST_FILES_TOOL_NAME]: listFilesTool,
-    [READ_FILES_TOOL_NAME]: readFilesTool,
-    [ONLOOK_INSTRUCTIONS_TOOL_NAME]: onlookInstructionsTool,
-    [READ_STYLE_GUIDE_TOOL_NAME]: readStyleGuideTool,
-    [SCRAPE_URL_TOOL_NAME]: scrapeUrlTool,
-    // Enhanced read-only tools (additional capabilities)
-    [BASH_READ_TOOL_NAME]: bashReadTool,
-    [GLOB_TOOL_NAME]: globTool,
-    [GREP_TOOL_NAME]: grepTool,
-    [WEB_FETCH_TOOL_NAME]: webFetchTool,
-    [WEB_SEARCH_TOOL_NAME]: webSearchTool,
+export const BUILD_TOOL_SET: ToolSet = {
+    ...ASK_TOOL_SET,
+    [SEARCH_REPLACE_EDIT_FILE_TOOL_NAME]: searchReplaceEditFileTool,
+    [SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME]: searchReplaceMultiEditFileTool,
+    [FUZZY_EDIT_FILE_TOOL_NAME]: fuzzyEditFileTool,
+    [WRITE_FILE_TOOL_NAME]: writeFileTool,
+    [BASH_EDIT_TOOL_NAME]: bashEditTool,
 };

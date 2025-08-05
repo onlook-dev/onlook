@@ -1,6 +1,15 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 
+export const TERMINAL_COMMAND_TOOL_NAME = 'terminal_command';
+export const TERMINAL_COMMAND_TOOL_PARAMETERS = z.object({
+    command: z.string().describe('The command to run'),
+});
+export const terminalCommandTool = tool({
+    description: 'Run any generic Linux Bash command in the terminal',
+    parameters: TERMINAL_COMMAND_TOOL_PARAMETERS,
+});
+
 export const ALLOWED_BASH_READ_COMMANDS = z.enum([
     'ls',
     'cat',
@@ -91,14 +100,4 @@ export const GREP_TOOL_PARAMETERS = z.object({
 export const grepTool = tool({
     description: 'Powerful search tool built on ripgrep with full regex syntax support',
     parameters: GREP_TOOL_PARAMETERS,
-});
-
-export const LS_TOOL_NAME = 'ls';
-export const LS_TOOL_PARAMETERS = z.object({
-    path: z.string().describe('Absolute path to list'),
-    ignore: z.array(z.string()).optional().describe('Array of glob patterns to ignore'),
-});
-export const lsEnhancedTool = tool({
-    description: 'List files and directories with advanced filtering options',
-    parameters: LS_TOOL_PARAMETERS,
 });
