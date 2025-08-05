@@ -17,7 +17,7 @@ export function RotateGroup({ frameData }: { frameData: FrameData }) {
                     frameData.frame.dimension.height = width;
                 }}
             >
-                <Icons.CounterClockwiseClock className="h-4 w-4" />
+                <Icons.Rotate className="h-4 w-4" />
             </Button>
         </HoverOnlyTooltip>
     );
