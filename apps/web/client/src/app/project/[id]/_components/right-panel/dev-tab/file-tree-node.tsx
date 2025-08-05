@@ -1,4 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { RecentActivityTracker } from '@/components/store/editor/chat/at-menu/recent-activity';
+import { getFileIconString } from '@/components/store/editor/chat/at-menu/file-icon-utils';
 import type { FileNode } from '@onlook/models';
 import {
     ContextMenu,
@@ -40,6 +42,11 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
             if (content === null) {
                 throw new Error(`File content for ${node.data.path} not found`);
             }
+            
+            // Track file activity for recents
+            const icon = getFileIconString(node.data.name);
+            RecentActivityTracker.addFileActivity(node.data.path, node.data.name, icon);
+            
             // This will be handled in the parent component
             node.select();
         } catch (error) {

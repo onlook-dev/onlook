@@ -51,7 +51,7 @@ export class FuzzySearch {
    * Get search results grouped by category
    */
   static getGroupedResults(query: string, items: AtMenuItem[]) {
-    const categories = ['recents', 'folders', 'code', 'leftPanel'] as const;
+    const categories = ['recents', 'files', 'code', 'leftPanel'] as const;
     
     const results: Record<string, AtMenuItem[]> = {};
     

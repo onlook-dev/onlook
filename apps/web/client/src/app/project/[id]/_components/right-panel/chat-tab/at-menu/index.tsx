@@ -18,14 +18,17 @@ interface AtMenuProps {
 
 export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngine }: AtMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
+  const selectedItemRef = useRef<HTMLButtonElement>(null);
   const [dataProviders] = useState(() => new AtMenuDataProviders(editorEngine));
   const [allItems, setAllItems] = useState<AtMenuItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<Record<string, AtMenuItem[]>>({
     recents: [],
-    folders: [],
+    files: [],
     code: [],
     leftPanel: []
   });
+  const [lastInteractionMethod, setLastInteractionMethod] = useState<'keyboard' | 'mouse'>('keyboard');
+  const [keyboardActive, setKeyboardActive] = useState(false);
 
   // Get all items from data providers
   useEffect(() => {
@@ -42,14 +45,38 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
     } else {
       const results = {
         recents: dataProviders.getRecents(),
-        folders: dataProviders.getFoldersAndFiles(),
+        files: dataProviders.getFiles(),
         code: dataProviders.getCodeFiles(),
         leftPanel: dataProviders.getLeftPanelItems()
       };
       console.log('AtMenu: Filtered items:', results);
+      console.log('AtMenu: Files count:', results.files.length);
+      console.log('AtMenu: Code count:', results.code.length);
       setFilteredItems(results);
     }
   }, [state.searchQuery, allItems, dataProviders]);
+
+  // Scroll selected item into view when selection changes
+  useEffect(() => {
+    if (state.isOpen && selectedItemRef.current) {
+      selectedItemRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    }
+  }, [state.selectedIndex, state.isOpen]);
+
+  // Reset keyboard active state after a delay of no keyboard interaction
+  useEffect(() => {
+    if (keyboardActive && state.isOpen) {
+      const timeout = setTimeout(() => {
+        setKeyboardActive(false);
+      }, 2000); // Reset after 2 seconds of no keyboard interaction
+
+      return () => clearTimeout(timeout);
+    }
+  }, [keyboardActive, state.isOpen, state.selectedIndex]);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -58,7 +85,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
 
       const allItems = [
         ...(filteredItems.recents || []),
-        ...(filteredItems.folders || []),
+        ...(filteredItems.files || []),
         ...(filteredItems.code || []),
         ...(filteredItems.leftPanel || [])
       ];
@@ -66,13 +93,41 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
+          setLastInteractionMethod('keyboard');
+          setKeyboardActive(true);
           const nextIndex = state.selectedIndex < allItems.length - 1 ? state.selectedIndex + 1 : 0;
           onStateChange({ selectedIndex: nextIndex });
+          
+          // If wrapping to top, scroll to beginning
+          if (nextIndex === 0 && state.selectedIndex === allItems.length - 1) {
+            setTimeout(() => {
+              if (menuRef.current) {
+                menuRef.current.scrollTo({
+                  top: 0,
+                  behavior: 'smooth'
+                });
+              }
+            }, 50); // Small delay to ensure state update completes
+          }
           break;
         case 'ArrowUp':
           e.preventDefault();
+          setLastInteractionMethod('keyboard');
+          setKeyboardActive(true);
           const prevIndex = state.selectedIndex > 0 ? state.selectedIndex - 1 : allItems.length - 1;
           onStateChange({ selectedIndex: prevIndex });
+          
+          // If wrapping to bottom, scroll to end
+          if (prevIndex === allItems.length - 1 && state.selectedIndex === 0) {
+            setTimeout(() => {
+              if (menuRef.current) {
+                menuRef.current.scrollTo({
+                  top: menuRef.current.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }
+            }, 50); // Small delay to ensure state update completes
+          }
           break;
         case 'Enter':
           e.preventDefault();
@@ -116,6 +171,14 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
     };
   }, [state.isOpen, onClose]);
 
+  // Add debugging for render
+  useEffect(() => {
+    if (state.isOpen) {
+      console.log('AtMenu render: Files section items:', filteredItems.files || []);
+      console.log('AtMenu render: Code section items:', filteredItems.code || []);
+    }
+  }, [state.isOpen, filteredItems.files, filteredItems.code]);
+
   console.log('AtMenu render:', { 
     isOpen: state.isOpen, 
     position: state.position,
@@ -127,37 +190,54 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
 
   const allItemsFlat = [
     ...(filteredItems.recents || []),
-    ...(filteredItems.folders || []),
+    ...(filteredItems.files || []),
     ...(filteredItems.code || []),
     ...(filteredItems.leftPanel || [])
   ];
 
-  const renderCategory = (title: string, items: AtMenuItem[], category: string) => {
+  const renderCategory = (title: string, items: AtMenuItem[], category: string, isFirst: boolean = false) => {
+    // For recents: only show if there are actual recent items
+    if (category === 'recents' && items.length === 0) return null;
+    
+    // For other categories: only show if there are items
     if (items.length === 0) return null;
 
     return (
       <div key={category} className="px-2">
-        <h3 className="text-gray-400 text-sm font-medium mb-1 mt-3">
+        <h3 className={cn(
+          "text-gray-400 text-sm font-medium mb-1",
+          isFirst ? "mt-0" : "mt-2"
+        )}>
           {title}
         </h3>
         <div className="space-y-1 w-full">
-          {items.map((item, index) => {
-            const globalIndex = getGlobalIndex(category, index);
-            const isSelected = globalIndex === state.selectedIndex;
+          {items.length === 0 ? (
+            <div className="text-gray-500 text-xs py-1 px-2">
+              No items found
+            </div>
+          ) : (
+            items.map((item, index) => {
+              const globalIndex = getGlobalIndex(category, index);
+              const isSelected = globalIndex === state.selectedIndex;
 
-            return (
-              <MenuItem
-                key={item.id}
-                item={item}
-                isSelected={isSelected}
-                onClick={() => onSelectItem(item)}
-                onMouseEnter={() => {
-                  onStateChange({ selectedIndex: globalIndex });
-                }}
-                showChevron={item.hasChildren}
-              />
-            );
-          })}
+              return (
+                <MenuItem
+                  key={item.id}
+                  ref={isSelected ? selectedItemRef : undefined}
+                  item={item}
+                  isSelected={isSelected}
+                  onClick={() => onSelectItem(item)}
+                  onMouseEnter={() => {
+                    if (!keyboardActive) {
+                      setLastInteractionMethod('mouse');
+                      onStateChange({ selectedIndex: globalIndex });
+                    }
+                  }}
+                  showChevron={item.hasChildren}
+                />
+              );
+            })
+          )}
         </div>
         {category !== 'leftPanel' && (
           <div className="border-b border-gray-700 mt-2" />
@@ -167,7 +247,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
   };
 
   const getGlobalIndex = (category: string, localIndex: number): number => {
-    const categories = ['recents', 'folders', 'code', 'leftPanel'];
+    const categories = ['recents', 'files', 'code', 'leftPanel'];
     const categoryIndex = categories.indexOf(category);
     let globalIndex = localIndex;
     
@@ -183,7 +263,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
 
   // Calculate menu position with better viewport handling
   const calculateMenuPosition = () => {
-    const menuWidth = 300;
+    const menuWidth = 320;
     const menuHeight = Math.min(400, allItemsFlat.length * 40 + 100); // Estimate height
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -225,19 +305,33 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.95 }}
       transition={{ duration: 0.15, ease: "easeOut" }}
-      className="fixed border rounded-lg shadow-2xl z-[9999] w-[300px] max-w-[calc(100vw-2rem)] sm:min-w-[300px] overflow-y-auto border-gray-600 bg-gray-800 max-h-[400px]"
+      className="fixed border rounded-lg shadow-2xl z-[9999] w-[320px] max-w-[calc(100vw-2rem)] sm:min-w-[320px] overflow-y-auto border-gray-600 bg-gray-800 max-h-[400px]"
       style={{
         top: menuPosition.top,
         left: menuPosition.left,
         zIndex: 99999,
         position: 'fixed'
       }}
+      onMouseEnter={() => {
+        setKeyboardActive(false);
+        setLastInteractionMethod('mouse');
+      }}
+      onMouseLeave={() => {
+        setLastInteractionMethod('keyboard');
+      }}
     >
-      <div className="rounded-lg bg-gray-800">
-        {renderCategory('Recents', filteredItems.recents || [], 'recents')}
-        {renderCategory('Folders & Files', filteredItems.folders || [], 'folders')}
+      <div className="rounded-lg bg-gray-800 py-2">
+        {/* ===== AT MENU SECTION: RECENTS ===== */}
+        {renderCategory('Recents', filteredItems.recents || [], 'recents', true)}
+        
+        {/* ===== AT MENU SECTION: FILES ===== */}
+        {renderCategory('Files', filteredItems.files || [], 'files')}
+        
+        {/* ===== AT MENU SECTION: CODE ===== */}
         {renderCategory('Code', filteredItems.code || [], 'code')}
-        {renderCategory('Left Panel', filteredItems.leftPanel || [], 'leftPanel')}
+        
+        {/* ===== AT MENU SECTION: LEFT PANEL ===== */}
+        {renderCategory('Design Panel', filteredItems.leftPanel || [], 'leftPanel')}
         
         {allItemsFlat.length === 0 && (
           <div className="p-4 text-center text-gray-400">

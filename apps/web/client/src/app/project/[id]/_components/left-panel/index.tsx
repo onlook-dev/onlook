@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { RecentActivityTracker } from '@/components/store/editor/chat/at-menu/recent-activity';
 import { transKeys } from '@/i18n/keys';
 import { EditorMode, LeftPanelTabValue } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
@@ -95,6 +96,35 @@ export const LeftPanel = observer(() => {
         } else {
             editorEngine.state.leftPanelTab = tab;
             editorEngine.state.leftPanelLocked = true;
+            
+            // Track tab activity for recents
+            const tabInfo = tabs.find(t => t.value === tab);
+            if (tabInfo && !tabInfo.disabled) {
+                const tabName = t(tabInfo.label as any);
+                const tabPath = `/${tab.toLowerCase()}`;
+                const icon = getTabIcon(tab);
+                RecentActivityTracker.addTabActivity(tabName, tabPath, icon);
+            }
+        }
+    };
+
+    // Helper function to get icon for tab activity tracking
+    const getTabIcon = (tab: LeftPanelTabValue): string => {
+        switch (tab) {
+            case LeftPanelTabValue.LAYERS:
+                return 'layers';
+            case LeftPanelTabValue.BRAND:
+                return 'brand';
+            case LeftPanelTabValue.PAGES:
+                return 'file';
+            case LeftPanelTabValue.IMAGES:
+                return 'image';
+            case LeftPanelTabValue.APPS:
+                return 'viewGrid';
+            case LeftPanelTabValue.COMPONENTS:
+                return 'component';
+            default:
+                return 'file';
         }
     };
 

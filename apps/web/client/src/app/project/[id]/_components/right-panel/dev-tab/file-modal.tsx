@@ -1,4 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { RecentActivityTracker } from '@/components/store/editor/chat/at-menu/recent-activity';
+import { getFileIconString } from '@/components/store/editor/chat/at-menu/file-icon-utils';
 import { Button } from '@onlook/ui/button';
 import {
     Dialog,
@@ -94,6 +96,10 @@ export function FileModal({
             const content = getFileTemplate(name);
             await createFileInSandbox(session, fullPath, content, editorEngine.sandbox);
             toast(`File "${name}" created successfully!`);
+
+            // Track file activity for recents
+            const icon = getFileIconString(name);
+            RecentActivityTracker.addFileActivity(fullPath, name, icon);
 
             setName('');
             onOpenChange(false);

@@ -1,6 +1,8 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { CodeRange, EditorFile } from '@/components/store/editor/dev';
 import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
+import { RecentActivityTracker } from '@/components/store/editor/chat/at-menu/recent-activity';
+import { getFileIconString } from '@/components/store/editor/chat/at-menu/file-icon-utils';
 import { EditorView } from '@codemirror/view';
 import { Button } from '@onlook/ui/button';
 import {
@@ -278,7 +280,16 @@ export const DevTab = observer(() => {
         }
 
         try {
-            return await ide.openFile(filePath);
+            const file = await ide.openFile(filePath);
+            
+            // Track file activity for recents
+            if (file) {
+                const fileName = file.filename;
+                const icon = getFileIconString(fileName);
+                RecentActivityTracker.addFileActivity(filePath, fileName, icon);
+            }
+            
+            return file;
         } catch (error) {
             console.error('Error loading file:', error);
             return null;
@@ -341,8 +352,10 @@ export const DevTab = observer(() => {
 
     const handleFileTreeSelect = async (nodes: any[]) => {
         if (nodes.length > 0 && !nodes[0].data.isDirectory) {
-            await loadFile(nodes[0].data.path);
+            const file = await loadFile(nodes[0].data.path);
             ide.setHighlightRange(null);
+            
+            // Activity tracking is already handled in loadFile function
         }
     };
 

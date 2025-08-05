@@ -6,7 +6,7 @@ export interface AtMenuItem {
   hasChildren?: boolean;
   children?: AtMenuItem[];
   icon?: string;
-  category: 'recents' | 'folders' | 'code' | 'leftPanel';
+  category: 'recents' | 'files' | 'code' | 'leftPanel';
 }
 
 export interface AtMenuState {

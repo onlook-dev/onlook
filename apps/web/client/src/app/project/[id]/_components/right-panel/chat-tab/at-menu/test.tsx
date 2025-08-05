@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AtMenu } from './index';
+import { RecentActivityTracker } from '@/components/store/editor/chat/at-menu/recent-activity';
 import type { AtMenuItem, AtMenuState } from '@/components/store/editor/chat/at-menu/types';
 
 // Mock editor engine for testing
@@ -104,9 +105,37 @@ export const AtMenuTest = () => {
     }));
   };
 
+  const addTestActivity = () => {
+    // Add some test activity
+    RecentActivityTracker.addFileActivity('/src/app/page.tsx', 'page.tsx', 'code');
+    RecentActivityTracker.addFileActivity('/src/app/layout.tsx', 'layout.tsx', 'code');
+    RecentActivityTracker.addTabActivity('Layers', '/layers', 'layers');
+    RecentActivityTracker.addTabActivity('Brand', '/brand', 'brand');
+  };
+
+  const clearActivity = () => {
+    RecentActivityTracker.clear();
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-lg font-bold mb-4">@ Menu Test</h2>
+      
+      <div className="mb-4 space-x-2">
+        <button 
+          onClick={addTestActivity}
+          className="px-3 py-1 bg-blue-500 text-white rounded text-sm"
+        >
+          Add Test Activity
+        </button>
+        <button 
+          onClick={clearActivity}
+          className="px-3 py-1 bg-red-500 text-white rounded text-sm"
+        >
+          Clear Activity
+        </button>
+      </div>
+      
       <textarea
         value={inputValue}
         onChange={handleInputChange}

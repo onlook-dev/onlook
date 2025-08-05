@@ -1,4 +1,6 @@
 import type { AtMenuItem } from './types';
+import { RecentActivityTracker } from './recent-activity';
+import { getFileIconString } from './file-icon-utils';
 
 export class AtMenuDataProviders {
   private editorEngine: any;
@@ -7,108 +9,96 @@ export class AtMenuDataProviders {
     this.editorEngine = editorEngine;
   }
 
-  // Get recent items from chat context and recently accessed files
+  // Get recent items from tracked activity
   getRecents(): AtMenuItem[] {
-    const recents: AtMenuItem[] = [];
+    // Get recent items from the activity tracker (max 3 items)
+    const recentItems = RecentActivityTracker.getRecentItems(3);
     
-    // Get recently accessed files from IDE
-    const recentFiles = this.editorEngine?.ide?.openedFiles?.slice(0, 3) || [];
-    recentFiles.forEach((file: any, index: number) => {
-      recents.push({
-        id: `recent-${index}`,
-        type: 'file',
-        name: file.filename,
-        path: file.path,
-        category: 'recents',
-        icon: this.getFileIcon(file.filename)
-      });
-    });
+    // Only return items if there are actual recent activities
+    // No fallback items - if no recent activity, return empty array
+    return recentItems;
+  }
 
-    // If no recent files, add some fallback items
-    if (recents.length === 0) {
-      recents.push(
-        { id: 'recent-fallback-1', type: 'file', name: 'index.html', path: '/', category: 'recents', icon: 'code' },
-        { id: 'recent-fallback-2', type: 'file', name: 'styles.css', path: '/', category: 'recents', icon: 'code' }
+  // Get plain files from the IDE (non-code files)
+  getFiles(): AtMenuItem[] {
+    const items: AtMenuItem[] = [];
+    
+    // Try to get files from the IDE
+    const files = this.editorEngine?.ide?.files || [];
+    
+    console.log('AtMenu getFiles: editorEngine:', !!this.editorEngine, 'ide:', !!this.editorEngine?.ide, 'files:', files);
+    
+    if (files.length > 0) {
+      // Process each file path and create file items
+      files.forEach((filePath: string) => {
+        // Skip directories (they end with /)
+        if (filePath.endsWith('/')) {
+          return;
+        }
+        
+        const fileName = filePath.split('/').pop() || '';
+        if (fileName && !this.isCodeFile(fileName)) {
+          items.push({
+            id: `file-${filePath}`,
+            type: 'file',
+            name: fileName,
+            path: filePath,
+            category: 'files',
+            icon: getFileIconString(fileName)
+          });
+        }
+      });
+    }
+
+    // If no files found, add some fallback items to ensure section is visible
+    if (items.length === 0) {
+      items.push(
+        { id: 'file-fallback-1', type: 'file', name: 'logo.png', path: '/assets/logo.png', category: 'files', icon: 'image' },
+        { id: 'file-fallback-2', type: 'file', name: 'document.pdf', path: '/docs/document.pdf', category: 'files', icon: 'file' },
+        { id: 'file-fallback-3', type: 'file', name: 'data.zip', path: '/data.zip', category: 'files', icon: 'file' }
       );
     }
 
-    return recents;
+    console.log('AtMenu getFiles: returning items:', items);
+    return items;
   }
 
-  // Get folders and files from the IDE
-  getFoldersAndFiles(): AtMenuItem[] {
-    const items: AtMenuItem[] = [];
-    
-    const processFiles = (files: any[], parentPath = ''): AtMenuItem[] => {
-      return files.map((file: any) => {
-        const fullPath = parentPath ? `${parentPath}/${file.name}` : file.name;
-        
-        if (file.type === 'directory') {
-          return {
-            id: `folder-${fullPath}`,
-            type: 'folder',
-            name: file.name,
-            path: fullPath,
-            hasChildren: file.children && file.children.length > 0,
-            children: file.children ? processFiles(file.children, fullPath) : undefined,
-            category: 'folders'
-          };
-        } else {
-          return {
-            id: `file-${fullPath}`,
-            type: 'file',
-            name: file.name,
-            path: fullPath,
-            category: 'folders',
-            icon: this.getFileIcon(file.name)
-          };
-        }
-      });
-    };
-
-    // Try to get files from different possible sources
-    let files = [];
-    if (this.editorEngine?.ide?.files) {
-      files = this.editorEngine.ide.files;
-    } else if (this.editorEngine?.project?.files?.getAllFiles) {
-      files = this.editorEngine.project.files.getAllFiles();
-    }
-    
-    if (files.length > 0) {
-      return processFiles(files);
-    }
-
-    // Fallback items if no files found
-    return [
-      { id: 'folder-fallback-1', type: 'folder', name: 'src', path: '/src', category: 'folders', hasChildren: true },
-      { id: 'file-fallback-1', type: 'file', name: 'index.html', path: '/index.html', category: 'folders', icon: 'code' },
-      { id: 'file-fallback-2', type: 'file', name: 'styles.css', path: '/styles.css', category: 'folders', icon: 'code' }
-    ];
-  }
-
-  // Get code configuration files
+  // Get code files from the IDE
   getCodeFiles(): AtMenuItem[] {
-    const codeFiles = [
-      'package.json',
-      'tsconfig.json',
-      'next.config.ts',
-      'tailwind.config.ts',
-      'eslint.config.js',
-      'prettier.config.js',
-      'bun.lock',
-      'Dockerfile',
-      '.gitignore',
-      'README.md'
-    ];
+    const codeFiles: AtMenuItem[] = [];
+    
+    // Get files from IDE
+    const files = this.editorEngine?.ide?.files || [];
+    
+    console.log('AtMenu getCodeFiles: editorEngine:', !!this.editorEngine, 'ide:', !!this.editorEngine?.ide, 'files:', files);
+    
+    // Filter files that are code files
+    files.forEach((filePath: string) => {
+      const fileName = filePath.split('/').pop() || '';
+      if (fileName && this.isCodeFile(fileName)) {
+        codeFiles.push({
+          id: `code-${filePath}`,
+          type: 'file',
+          name: fileName,
+          path: filePath,
+          category: 'code',
+          icon: getFileIconString(fileName)
+        });
+      }
+    });
 
-    return codeFiles.map((filename, index) => ({
-      id: `code-${index}`,
-      type: 'file',
-      name: filename,
-      path: `/${filename}`,
-      category: 'code',
-      icon: 'code'
-    }));
+    // If no code files found, add some fallback items to ensure section is visible
+    if (codeFiles.length === 0) {
+      codeFiles.push(
+        { id: 'code-fallback-1', type: 'file', name: 'index.html', path: '/index.html', category: 'code', icon: 'code' },
+        { id: 'code-fallback-2', type: 'file', name: 'styles.css', path: '/styles.css', category: 'code', icon: 'code' },
+        { id: 'code-fallback-3', type: 'file', name: 'script.js', path: '/script.js', category: 'code', icon: 'code' },
+        { id: 'code-fallback-4', type: 'file', name: 'package.json', path: '/package.json', category: 'code', icon: 'code' }
+      );
+    }
+
+    console.log('AtMenu getCodeFiles: returning items:', codeFiles);
+    return codeFiles;
   }
 
   // Get left panel options
@@ -167,54 +157,44 @@ export class AtMenuDataProviders {
     return leftPanelItems;
   }
 
-  // Helper function to get appropriate icon for file types
-  private getFileIcon(filename: string): string {
+  // Helper function to determine if a file is a code file
+  private isCodeFile(filename: string): boolean {
     if (!filename || typeof filename !== 'string') {
-      return 'file';
+      return false;
     }
     
     const extension = filename.split('.').pop()?.toLowerCase();
     
-    switch (extension) {
-      case 'tsx':
-      case 'ts':
-      case 'jsx':
-      case 'js':
-        return 'code';
-      case 'json':
-        return 'code';
-      case 'css':
-      case 'scss':
-      case 'sass':
-        return 'code';
-      case 'md':
-        return 'file';
-      case 'png':
-      case 'jpg':
-      case 'jpeg':
-      case 'gif':
-      case 'svg':
-        return 'image';
-      default:
-        return 'file';
-    }
+    // Define code file extensions
+    const codeExtensions = [
+      'js', 'jsx', 'ts', 'tsx', 'py', 'json', 'html', 'htm', 'css', 'scss', 'sass',
+      'md', 'mjs', 'cjs', 'jsx', 'tsx', 'vue', 'svelte', 'php', 'rb', 'go', 'rs',
+      'java', 'cpp', 'c', 'h', 'hpp', 'cs', 'swift', 'kt', 'scala', 'r', 'sql',
+      'sh', 'bash', 'zsh', 'fish', 'ps1', 'bat', 'cmd', 'yml', 'yaml', 'toml',
+      'ini', 'cfg', 'conf', 'xml', 'svg', 'jsx', 'tsx', 'vue', 'svelte'
+    ];
+    
+    return codeExtensions.includes(extension || '');
   }
 
   // Get all items for the @ menu
   getAllItems(): AtMenuItem[] {
+    console.log('AtMenuDataProviders: getAllItems called');
     const recents = this.getRecents();
-    const folders = this.getFoldersAndFiles();
+    const files = this.getFiles();
     const code = this.getCodeFiles();
     const leftPanel = this.getLeftPanelItems();
     
     const allItems = [
       ...recents,
-      ...folders,
+      ...files,
       ...code,
       ...leftPanel
     ];
     
-    // Always ensure we have at least some items
+    console.log('AtMenuDataProviders: allItems before fallback:', allItems.length);
+    
+    // Always ensure we have at least some items - even if files are not loaded yet
     if (allItems.length === 0) {
       allItems.push(
         { id: 'fallback-1', type: 'file', name: 'package.json', path: '/', category: 'code', icon: 'code' },
@@ -223,6 +203,20 @@ export class AtMenuDataProviders {
       );
     }
     
+    // If we have no files but have left panel items, that's fine
+    // If we have no files and no left panel items, add some fallbacks
+    if (files.length === 0 && code.length === 0 && leftPanel.length > 0) {
+      // We have left panel items but no files, that's okay
+    } else if (files.length === 0 && code.length === 0 && leftPanel.length === 0) {
+      // No files and no left panel items, add fallbacks
+      allItems.push(
+        { id: 'fallback-4', type: 'file', name: 'index.html', path: '/index.html', category: 'code', icon: 'code' },
+        { id: 'fallback-5', type: 'file', name: 'styles.css', path: '/styles.css', category: 'code', icon: 'code' },
+        { id: 'fallback-6', type: 'file', name: 'script.js', path: '/script.js', category: 'code', icon: 'code' }
+      );
+    }
+    
+    console.log('AtMenuDataProviders: returning items:', allItems);
     return allItems;
   }
 } 
