@@ -12,8 +12,6 @@ import {
     grepTool,
     MULTI_EDIT_TOOL_NAME,
     multiEditTool,
-    NOTEBOOK_EDIT_TOOL_NAME,
-    notebookEditTool,
     TASK_TOOL_NAME,
     taskTool,
     TODO_WRITE_TOOL_NAME,
@@ -45,7 +43,7 @@ import {
 } from './guides';
 import { SCRAPE_URL_TOOL_NAME, scrapeUrlTool } from './web';
 
-export const buildToolSet: ToolSet = {
+export const BUILD_TOOL_SET: ToolSet = {
     // Core Onlook editing tools (preferred)
     [LIST_FILES_TOOL_NAME]: listFilesTool,
     [READ_FILES_TOOL_NAME]: readFilesTool,
@@ -59,12 +57,11 @@ export const buildToolSet: ToolSet = {
     // Enhanced editing tools (additional capabilities)
     [BASH_EDIT_TOOL_NAME]: bashEditTool,
     [MULTI_EDIT_TOOL_NAME]: multiEditTool,
-    [NOTEBOOK_EDIT_TOOL_NAME]: notebookEditTool,
     [TODO_WRITE_TOOL_NAME]: todoWriteTool,
     [EXIT_PLAN_MODE_TOOL_NAME]: exitPlanModeTool,
 };
 
-export const askToolSet: ToolSet = {
+export const ASK_TOOL_SET: ToolSet = {
     // Core Onlook read-only tools (preferred)
     [LIST_FILES_TOOL_NAME]: listFilesTool,
     [READ_FILES_TOOL_NAME]: readFilesTool,

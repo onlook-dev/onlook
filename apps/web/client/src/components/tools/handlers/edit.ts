@@ -1,5 +1,5 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
-import { BASH_EDIT_TOOL_PARAMETERS, EDIT_TOOL_PARAMETERS, EXIT_PLAN_MODE_TOOL_PARAMETERS, MULTI_EDIT_TOOL_PARAMETERS, NOTEBOOK_EDIT_TOOL_PARAMETERS, TODO_WRITE_TOOL_PARAMETERS, WRITE_TOOL_PARAMETERS } from '@onlook/ai';
+import { BASH_EDIT_TOOL_PARAMETERS, EDIT_TOOL_PARAMETERS, EXIT_PLAN_MODE_TOOL_PARAMETERS, MULTI_EDIT_TOOL_PARAMETERS, TODO_WRITE_TOOL_PARAMETERS, WRITE_TOOL_PARAMETERS } from '@onlook/ai';
 import { z } from 'zod';
 
 export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<{
@@ -117,59 +117,6 @@ export async function handleWriteTool(args: z.infer<typeof WRITE_TOOL_PARAMETERS
         return `File ${args.file_path} written successfully`;
     } catch (error) {
         throw new Error(`Cannot write file ${args.file_path}: ${error}`);
-    }
-}
-
-export async function handleNotebookEditTool(args: z.infer<typeof NOTEBOOK_EDIT_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
-    try {
-        const file = await editorEngine.sandbox.readFile(args.notebook_path);
-        if (!file || file.type !== 'text') {
-            throw new Error(`Cannot read notebook ${args.notebook_path}: file not found or not text`);
-        }
-
-        const notebook = JSON.parse(file.content);
-
-        if (args.edit_mode === 'delete') {
-            if (!args.cell_id) {
-                throw new Error('Cell ID required for delete operation');
-            }
-            notebook.cells = notebook.cells.filter((c: any) => c.id !== args.cell_id);
-        } else if (args.edit_mode === 'insert') {
-            const newCell = {
-                id: args.cell_id || `cell-${Date.now()}`,
-                cell_type: args.cell_type || 'code',
-                source: args.new_source.split('\n'),
-                metadata: {}
-            };
-
-            if (args.cell_id) {
-                const index = notebook.cells.findIndex((c: any) => c.id === args.cell_id);
-                notebook.cells.splice(index + 1, 0, newCell);
-            } else {
-                notebook.cells.push(newCell);
-            }
-        } else {
-            // replace mode
-            if (args.cell_id) {
-                const cell = notebook.cells.find((c: any) => c.id === args.cell_id);
-                if (!cell) {
-                    throw new Error(`Cell with ID ${args.cell_id} not found`);
-                }
-                cell.source = args.new_source.split('\n');
-                if (args.cell_type) {
-                    cell.cell_type = args.cell_type;
-                }
-            }
-        }
-
-        const result = await editorEngine.sandbox.writeFile(args.notebook_path, JSON.stringify(notebook, null, 2));
-        if (!result) {
-            throw new Error(`Failed to write notebook ${args.notebook_path}`);
-        }
-
-        return `Notebook ${args.notebook_path} edited successfully`;
-    } catch (error) {
-        throw new Error(`Cannot edit notebook ${args.notebook_path}: ${error}`);
     }
 }
 

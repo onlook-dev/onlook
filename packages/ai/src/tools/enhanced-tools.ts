@@ -155,23 +155,6 @@ export const writeEnhancedTool = tool({
     parameters: WRITE_TOOL_PARAMETERS,
 });
 
-export const NOTEBOOK_EDIT_TOOL_NAME = 'notebook_edit';
-export const NOTEBOOK_EDIT_TOOL_PARAMETERS = z.object({
-    notebook_path: z.string().describe('Absolute path to .ipynb file'),
-    new_source: z.string().describe('Cell content'),
-    cell_id: z.string().optional().describe('Cell ID to edit'),
-    cell_type: z.enum(['code', 'markdown']).optional().describe('Cell type'),
-    edit_mode: z
-        .enum(['replace', 'insert', 'delete'])
-        .optional()
-        .default('replace')
-        .describe('Edit mode'),
-});
-export const notebookEditTool = tool({
-    description: 'Edit Jupyter notebook cells with insert/delete/replace operations',
-    parameters: NOTEBOOK_EDIT_TOOL_PARAMETERS,
-});
-
 export const TODO_WRITE_TOOL_NAME = 'todo_write';
 export const TODO_WRITE_TOOL_PARAMETERS = z.object({
     todos: z
