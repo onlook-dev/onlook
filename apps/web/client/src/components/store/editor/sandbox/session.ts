@@ -33,12 +33,22 @@ export class SessionManager {
     }
 
     async restartDevServer(): Promise<boolean> {
+        console.log('restartDevServer');
         const task = await this.session?.tasks.get('dev');
         if (task) {
             await task.restart();
             return true;
         }
+        console.log('restartDevServer failed');
         return false;
+    }
+
+    async readDevServerLogs(): Promise<string> {
+        const task = await this.session?.tasks.get('dev');
+        if (task) {
+            return await task.open();
+        }
+        return 'Dev server not found';
     }
 
     getTerminalSession(id: string) {

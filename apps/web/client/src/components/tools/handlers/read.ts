@@ -6,17 +6,10 @@ import {
     GREP_TOOL_PARAMETERS,
     LS_TOOL_PARAMETERS,
     READ_TOOL_PARAMETERS,
-    TASK_TOOL_PARAMETERS,
     WEB_FETCH_TOOL_PARAMETERS,
     WEB_SEARCH_TOOL_PARAMETERS
 } from '@onlook/ai';
 import { z } from 'zod';
-
-export async function handleTaskTool(args: z.infer<typeof TASK_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
-    console.log(`Launching ${args.subagent_type} agent for: ${args.description}`);
-    console.log(`Task: ${args.prompt}`);
-    return `Launched ${args.subagent_type} agent to analyze: ${args.description}`;
-}
 
 export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<{
     output: string;

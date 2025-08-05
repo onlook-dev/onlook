@@ -5,6 +5,7 @@ import {
     EDIT_FILE_TOOL_PARAMETERS,
     LIST_FILES_TOOL_PARAMETERS,
     READ_FILES_TOOL_PARAMETERS,
+    SANDBOX_TOOL_PARAMETERS,
     SCRAPE_URL_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_PARAMETERS
 } from '@onlook/ai';
@@ -158,11 +159,23 @@ export async function handleScrapeUrlTool(
     }
 }
 
-export async function handleSandboxTool(editorEngine: EditorEngine): Promise<string> {
-    const result = await editorEngine.sandbox.session.restartDevServer();
-    if (result) {
-        return 'Dev server restarted';
-    } else {
-        return 'Failed to restart dev server';
+export async function handleSandboxTool(args: z.infer<typeof SANDBOX_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
+    try {
+        if (args.command === 'restart_dev_server') {
+            const success = await editorEngine.sandbox.session.restartDevServer();
+            if (success) {
+                return 'Dev server restarted';
+            } else {
+                return 'Failed to restart dev server';
+            }
+        } else if (args.command === 'read_dev_server_logs') {
+            const logs = await editorEngine.sandbox.session.readDevServerLogs();
+            return logs;
+        } else {
+            throw new Error('Invalid command');
+        }
+    } catch (error) {
+        console.error('Error handling sandbox tool:', error);
+        throw new Error('Error handling sandbox tool');
     }
 }

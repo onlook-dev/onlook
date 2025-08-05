@@ -4,18 +4,14 @@ import {
     BASH_READ_TOOL_NAME,
     bashEditTool,
     bashReadTool,
-    EXIT_PLAN_MODE_TOOL_NAME,
-    exitPlanModeTool,
     GLOB_TOOL_NAME,
     globTool,
     GREP_TOOL_NAME,
     grepTool,
+} from './cli';
+import {
     MULTI_EDIT_TOOL_NAME,
     multiEditTool,
-    TASK_TOOL_NAME,
-    taskTool,
-    TODO_WRITE_TOOL_NAME,
-    todoWriteTool,
     WEB_FETCH_TOOL_NAME,
     WEB_SEARCH_TOOL_NAME,
     webFetchTool,
@@ -41,6 +37,13 @@ import {
     READ_STYLE_GUIDE_TOOL_NAME,
     readStyleGuideTool,
 } from './guides';
+import {
+    EXIT_PLAN_MODE_TOOL_NAME,
+    exitPlanModeTool,
+    TODO_WRITE_TOOL_NAME,
+    todoWriteTool,
+} from './plan';
+
 import { SCRAPE_URL_TOOL_NAME, scrapeUrlTool } from './web';
 
 export const BUILD_TOOL_SET: ToolSet = {
@@ -69,7 +72,6 @@ export const ASK_TOOL_SET: ToolSet = {
     [READ_STYLE_GUIDE_TOOL_NAME]: readStyleGuideTool,
     [SCRAPE_URL_TOOL_NAME]: scrapeUrlTool,
     // Enhanced read-only tools (additional capabilities)
-    [TASK_TOOL_NAME]: taskTool,
     [BASH_READ_TOOL_NAME]: bashReadTool,
     [GLOB_TOOL_NAME]: globTool,
     [GREP_TOOL_NAME]: grepTool,

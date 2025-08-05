@@ -33,8 +33,6 @@ import {
     SANDBOX_TOOL_PARAMETERS,
     SCRAPE_URL_TOOL_NAME,
     SCRAPE_URL_TOOL_PARAMETERS,
-    TASK_TOOL_NAME,
-    TASK_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_PARAMETERS,
     TODO_WRITE_TOOL_NAME,
@@ -50,23 +48,23 @@ import type { ToolCall } from 'ai';
 import { z } from 'zod';
 import {
     handleBashEditTool,
+    handleBashReadTool,
+    handleCreateFileTool, handleEditFileTool,
     handleEditTool,
     handleExitPlanModeTool,
-    handleMultiEditTool,
-    handleTodoWriteTool,
-    handleWriteTool
-} from './handlers/edit';
-import { handleCreateFileTool, handleEditFileTool, handleListFilesTool, handleReadFilesTool, handleReadStyleGuideTool, handleSandboxTool, handleScrapeUrlTool, handleTerminalCommandTool } from './handlers/legacy';
-import {
-    handleBashReadTool,
     handleGlobTool,
     handleGrepTool,
+    handleListFilesTool,
     handleLsTool,
+    handleMultiEditTool,
+    handleReadFilesTool, handleReadStyleGuideTool,
     handleReadTool,
-    handleTaskTool,
+    handleSandboxTool, handleScrapeUrlTool, handleTerminalCommandTool,
+    handleTodoWriteTool,
     handleWebFetchTool,
     handleWebSearchTool,
-} from './handlers/read';
+    handleWriteTool
+} from './handlers';
 import { EMPTY_TOOL_PARAMETERS } from './helpers';
 
 interface ClientToolMap extends Record<string, {
@@ -128,14 +126,8 @@ const TOOL_HANDLERS: ClientToolMap = {
     [SANDBOX_TOOL_NAME]: {
         name: SANDBOX_TOOL_NAME,
         parameters: SANDBOX_TOOL_PARAMETERS,
-        handler: async (editorEngine: EditorEngine) =>
-            handleSandboxTool(editorEngine),
-    },
-    [TASK_TOOL_NAME]: {
-        name: TASK_TOOL_NAME,
-        parameters: TASK_TOOL_PARAMETERS,
-        handler: async (args: z.infer<typeof TASK_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
-            handleTaskTool(args, editorEngine),
+        handler: async (args: z.infer<typeof SANDBOX_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleSandboxTool(args, editorEngine),
     },
     [BASH_READ_TOOL_NAME]: {
         name: BASH_READ_TOOL_NAME,

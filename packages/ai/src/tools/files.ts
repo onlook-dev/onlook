@@ -64,8 +64,11 @@ export const terminalCommandTool = tool({
     parameters: TERMINAL_COMMAND_TOOL_PARAMETERS,
 });
 
-export const SANDBOX_TOOL_NAME = 'restart_dev_server';
-export const SANDBOX_TOOL_PARAMETERS = z.object({});
+export const ALLOWED_SANDBOX_COMMANDS = z.enum(['restart_dev_server', 'read_dev_server_logs']);
+export const SANDBOX_TOOL_NAME = 'sandbox';
+export const SANDBOX_TOOL_PARAMETERS = z.object({
+    command: ALLOWED_SANDBOX_COMMANDS.describe('The command to run'),
+});
 export const sandboxTool = tool({
     description:
         'Restart the development server. This should only be used if absolutely necessary such as if updating dependencies, clearing next cache, or if the server is not responding.',

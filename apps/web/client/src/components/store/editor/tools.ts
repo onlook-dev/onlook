@@ -157,12 +157,3 @@ async function handleScrapeUrlTool(
         throw new Error(`Failed to scrape URL ${args.url}: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
 }
-
-async function handleSandboxTool(editorEngine: EditorEngine): Promise<string> {
-    const result = await editorEngine.sandbox.session.restartDevServer();
-    if (result) {
-        return 'Dev server restarted';
-    } else {
-        return 'Failed to restart dev server';
-    }
-}
