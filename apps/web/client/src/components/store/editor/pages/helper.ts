@@ -195,7 +195,7 @@ const extractMetadata = async (content: string): Promise<PageMetadata | undefine
     }
 };
 
-const scanAppDirectory = async (
+export const scanAppDirectory = async (
     sandboxManager: SandboxManager,
     dir: string,
     parentPath = '',
@@ -210,19 +210,7 @@ const scanAppDirectory = async (
         return nodes;
     }
 
-    const pageFile = entries.find(
-        (entry: ReaddirEntry) =>
-            entry.type === 'file' &&
-            entry.name.startsWith('page.') &&
-            ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
-    );
-
-    const layoutFile = entries.find(
-        (entry: ReaddirEntry) =>
-            entry.type === 'file' &&
-            entry.name.startsWith('layout.') &&
-            ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
-    );
+    const { pageFile, layoutFile } = getPageAndLayoutFiles(entries);
 
     const childDirectories = entries.filter(
         (entry: ReaddirEntry) =>
@@ -251,27 +239,14 @@ const scanAppDirectory = async (
             Promise.all(childPromises),
         ]);
 
-        const [pageFileResult, layoutFileResult] = fileResults;
         const children = childResults.flat();
 
-        let pageMetadata: PageMetadata | undefined;
-        let layoutMetadata: PageMetadata | undefined;
+        const { pageMetadata, layoutMetadata } = await getPageAndLayoutMetadata(fileResults);
 
-        if (pageFileResult && pageFileResult.type === 'text') {
-            try {
-                pageMetadata = await extractMetadata(pageFileResult.content);
-            } catch (error) {
-                console.error(`Error reading page file ${dir}/${pageFile.name}:`, error);
-            }
-        }
-
-        if (layoutFileResult && layoutFileResult.type === 'text') {
-            try {
-                layoutMetadata = await extractMetadata(layoutFileResult.content);
-            } catch (error) {
-                console.error(`Error reading layout file ${dir}/${layoutFile?.name}:`, error);
-            }
-        }
+        const metadata = {
+            ...layoutMetadata,
+            ...pageMetadata,
+        };
 
         // Create page node
         const currentDir = getBaseName(dir);
@@ -288,10 +263,6 @@ const scanAppDirectory = async (
         cleanPath = '/' + cleanPath.replace(/^\/|\/$/g, '');
         const isRoot = ROOT_PATH_IDENTIFIERS.includes(cleanPath);
 
-        const metadata = {
-            ...layoutMetadata,
-            ...pageMetadata,
-        };
 
         nodes.push({
             id: nanoid(),
@@ -307,19 +278,19 @@ const scanAppDirectory = async (
             metadata: metadata ?? {},
         });
     } else {
-
         const childPromises = childDirectories.map(async (entry) => {
             const fullPath = `${dir}/${entry.name}`;
             const relativePath = joinPath(parentPath, entry.name);
             const children = await scanAppDirectory(sandboxManager, fullPath, relativePath);
 
             if (children.length > 0) {
-                const dirPath = relativePath.replace(/\\/g, '/');
-                const cleanPath = '/' + dirPath.replace(/^\/|\/$/g, '');
+                const currentDirName = getBaseName(dir);
+                const containerPath = parentPath ? `/${parentPath}` : `/${currentDirName}`;
+                
                 return {
                     id: nanoid(),
-                    name: entry.name,
-                    path: cleanPath,
+                    name: currentDirName,
+                    path: containerPath.replace(/\/+/g, '/'),
                     children,
                     isActive: false,
                     isRoot: false,
@@ -330,7 +301,8 @@ const scanAppDirectory = async (
         });
 
         const childResults = await Promise.all(childPromises);
-        nodes.push(...childResults.filter((node) => node !== null));
+        const validNodes = childResults.filter((node) => node !== null);
+        nodes.push(...validNodes);
     }
 
     return nodes;
@@ -1059,3 +1031,51 @@ export const parseRepoUrl = (repoUrl: string): { owner: string; repo: string } =
         repo: match[2],
     };
 };
+
+const getPageAndLayoutFiles = (entries: ReaddirEntry[]) => {
+    const pageFile = entries.find(
+        (entry: ReaddirEntry) =>
+            entry.type === 'file' &&
+            entry.name.startsWith('page.') &&
+            ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
+    );
+
+    const layoutFile = entries.find(
+        (entry: ReaddirEntry) =>
+            entry.type === 'file' &&
+            entry.name.startsWith('layout.') &&
+            ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
+    );
+
+    return { pageFile, layoutFile };
+}
+
+const getPageAndLayoutMetadata = async (fileResults: (SandboxFile | null)[]): Promise<{ pageMetadata: PageMetadata | undefined; layoutMetadata: PageMetadata | undefined }> => {
+
+    if (!fileResults || fileResults.length === 0) {
+        return { pageMetadata: undefined, layoutMetadata: undefined };
+    }
+
+    const [pageFileResult, layoutFileResult] = fileResults;
+
+    let pageMetadata: PageMetadata | undefined;
+    let layoutMetadata: PageMetadata | undefined;
+
+    if (pageFileResult && pageFileResult.type === 'text') {
+        try {
+            pageMetadata = await extractMetadata(pageFileResult.content);
+        } catch (error) {
+            console.error(`Error reading page file ${pageFileResult.path}:`, error);
+        }
+    }
+
+    if (layoutFileResult && layoutFileResult.type === 'text') {
+        try {
+            layoutMetadata = await extractMetadata(layoutFileResult.content);
+        } catch (error) {
+            console.error(`Error reading layout file ${layoutFileResult.path}:`, error);
+        }
+    }
+
+    return { pageMetadata, layoutMetadata };
+}
