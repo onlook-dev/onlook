@@ -1,8 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 
-// READ-ONLY TOOLS - Enhanced tools for non-editing capabilities
-
 export const TASK_TOOL_NAME = 'task';
 export const TASK_TOOL_PARAMETERS = z.object({
     description: z.string().min(3).max(50).describe('Short task description (3-5 words)'),
@@ -58,35 +56,25 @@ export const grepTool = tool({
     parameters: GREP_TOOL_PARAMETERS,
 });
 
-export const LS_ENHANCED_TOOL_NAME = 'ls_enhanced';
-export const LS_ENHANCED_TOOL_PARAMETERS = z.object({
+export const LS_TOOL_NAME = 'ls';
+export const LS_TOOL_PARAMETERS = z.object({
     path: z.string().describe('Absolute path to list'),
     ignore: z.array(z.string()).optional().describe('Array of glob patterns to ignore'),
 });
 export const lsEnhancedTool = tool({
     description: 'List files and directories with advanced filtering options',
-    parameters: LS_ENHANCED_TOOL_PARAMETERS,
+    parameters: LS_TOOL_PARAMETERS,
 });
 
-export const READ_ENHANCED_TOOL_NAME = 'read_enhanced';
-export const READ_ENHANCED_TOOL_PARAMETERS = z.object({
+export const READ_TOOL_NAME = 'read';
+export const READ_TOOL_PARAMETERS = z.object({
     file_path: z.string().describe('Absolute path to file'),
     offset: z.number().optional().describe('Starting line number'),
     limit: z.number().optional().describe('Number of lines to read'),
 });
 export const readEnhancedTool = tool({
     description: 'Read file contents with line numbers and range support',
-    parameters: READ_ENHANCED_TOOL_PARAMETERS,
-});
-
-export const NOTEBOOK_READ_TOOL_NAME = 'notebook_read';
-export const NOTEBOOK_READ_TOOL_PARAMETERS = z.object({
-    notebook_path: z.string().describe('Absolute path to .ipynb file'),
-    cell_id: z.string().optional().describe('Specific cell ID'),
-});
-export const notebookReadTool = tool({
-    description: 'Read Jupyter notebook cells and outputs',
-    parameters: NOTEBOOK_READ_TOOL_PARAMETERS,
+    parameters: READ_TOOL_PARAMETERS,
 });
 
 export const WEB_FETCH_TOOL_NAME = 'web_fetch';
@@ -123,8 +111,8 @@ export const bashEditTool = tool({
     parameters: BASH_EDIT_TOOL_PARAMETERS,
 });
 
-export const EDIT_ENHANCED_TOOL_NAME = 'edit_enhanced';
-export const EDIT_ENHANCED_TOOL_PARAMETERS = z.object({
+export const EDIT_TOOL_NAME = 'edit';
+export const EDIT_TOOL_PARAMETERS = z.object({
     file_path: z.string().describe('Absolute path to file'),
     old_string: z.string().describe('Text to replace'),
     new_string: z.string().describe('Replacement text'),
@@ -132,7 +120,7 @@ export const EDIT_ENHANCED_TOOL_PARAMETERS = z.object({
 });
 export const editEnhancedTool = tool({
     description: 'Make exact string replacements in files with precise matching',
-    parameters: EDIT_ENHANCED_TOOL_PARAMETERS,
+    parameters: EDIT_TOOL_PARAMETERS,
 });
 
 export const MULTI_EDIT_TOOL_NAME = 'multi_edit';
@@ -157,14 +145,14 @@ export const multiEditTool = tool({
     parameters: MULTI_EDIT_TOOL_PARAMETERS,
 });
 
-export const WRITE_ENHANCED_TOOL_NAME = 'write_enhanced';
-export const WRITE_ENHANCED_TOOL_PARAMETERS = z.object({
+export const WRITE_TOOL_NAME = 'write';
+export const WRITE_TOOL_PARAMETERS = z.object({
     file_path: z.string().describe('Absolute path to file'),
     content: z.string().describe('File content'),
 });
 export const writeEnhancedTool = tool({
     description: 'Write or overwrite file contents completely',
-    parameters: WRITE_ENHANCED_TOOL_PARAMETERS,
+    parameters: WRITE_TOOL_PARAMETERS,
 });
 
 export const NOTEBOOK_EDIT_TOOL_NAME = 'notebook_edit';
