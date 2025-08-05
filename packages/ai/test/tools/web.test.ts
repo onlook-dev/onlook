@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
+import { ASK_TOOL_SET, BUILD_TOOL_SET } from '../../src/tools/toolset';
 import {
     SCRAPE_URL_TOOL_NAME,
     SCRAPE_URL_TOOL_PARAMETERS,
     scrapeUrlTool,
 } from '../../src/tools/web';
-import { askToolSet, buildToolSet } from '../../src/tools/tools';
 
 describe('Firecrawl Web Scraping Tool', () => {
     it('should have the correct tool name and parameters', () => {
@@ -14,10 +14,10 @@ describe('Firecrawl Web Scraping Tool', () => {
     });
 
     it('should be included in both buildToolSet and askToolSet', () => {
-        expect(buildToolSet[SCRAPE_URL_TOOL_NAME]).toBeDefined();
-        expect(askToolSet[SCRAPE_URL_TOOL_NAME]).toBeDefined();
-        expect(buildToolSet[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
-        expect(askToolSet[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
+        expect(BUILD_TOOL_SET[SCRAPE_URL_TOOL_NAME]).toBeDefined();
+        expect(ASK_TOOL_SET[SCRAPE_URL_TOOL_NAME]).toBeDefined();
+        expect(BUILD_TOOL_SET[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
+        expect(ASK_TOOL_SET[SCRAPE_URL_TOOL_NAME]).toBe(scrapeUrlTool);
     });
 
     it('should have the correct parameter schema', () => {

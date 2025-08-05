@@ -115,7 +115,13 @@ import {
     ViewHorizontalIcon,
     ViewVerticalIcon,
 } from '@radix-ui/react-icons';
-import { CreditCardIcon, MailXIcon, SquareXIcon } from 'lucide-react';
+import {
+    CreditCardIcon,
+    ListCheckIcon,
+    MailXIcon,
+    SquareCheckIcon,
+    SquareXIcon,
+} from 'lucide-react';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
 import H2Icon from './header-level-icons/h2Icon';
@@ -1547,6 +1553,7 @@ export const Icons = {
     Link: Link2Icon,
     LinkNone: LinkNone1Icon,
     ListBullet: ListBulletIcon,
+    ListCheck: ListCheckIcon,
     LockOpen: LockOpen1Icon,
     LockClosed: LockClosedIcon,
 
@@ -1583,6 +1590,7 @@ export const Icons = {
     SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
     Square: SquareIcon,
     SquareX: SquareXIcon,
+    SquareCheck: SquareCheckIcon,
     SketchLogo: SketchLogoIcon,
 
     MailX: MailXIcon,

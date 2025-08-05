@@ -2,7 +2,7 @@ import { env } from '@/env';
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { trackEvent } from '@/utils/analytics/server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
-import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
+import { ASK_TOOL_SET, BUILD_TOOL_SET, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, CLAUDE_MODELS, type InitialModelPayload, LLMProvider, OPENROUTER_MODELS, type Usage, UsageType } from '@onlook/models';
 import { generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
@@ -135,7 +135,7 @@ export const streamResponse = async (req: NextRequest) => {
             systemPrompt = getSystemPrompt();
             break;
     }
-    const toolSet = chatType === ChatType.ASK ? askToolSet : buildToolSet;
+    const toolSet = chatType === ChatType.ASK ? ASK_TOOL_SET : BUILD_TOOL_SET;
     const result = streamText({
         model,
         headers,
