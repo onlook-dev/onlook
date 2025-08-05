@@ -86,8 +86,10 @@ export class FramesManager {
         return this._frameIdToData.get(id)?.selected ?? false;
     }
 
-    select(frames: Frame[]) {
-        this.deselectAll();
+    select(frames: Frame[], exclusive = true) {
+        if (exclusive) {
+            this.deselectAll();
+        }
         for (const frame of frames) {
             this.updateFrameSelection(frame.id, true);
         }

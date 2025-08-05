@@ -72,8 +72,8 @@ export const TopBar = observer(
             await editorEngine.frames.goForward(frame.id);
         };
 
-        const handleClick = () => {
-            editorEngine.frames.select([frame]);
+        const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+            editorEngine.frames.select([frame], !e.shiftKey);
         };
 
         return (
