@@ -120,7 +120,7 @@ export const TreeNode = memo(
                         case MouseAction.MOUSE_DOWN:
                             if (isWindow) {
                                 editorEngine.clearUI();
-                                editorEngine.frames.select([frameData.frame], !e.shiftKey);
+                                editorEngine.frames.select([frameData.frame], e.shiftKey);
                                 return;
                             }
                             if (e.shiftKey) {

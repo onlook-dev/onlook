@@ -86,12 +86,12 @@ export class FramesManager {
         return this._frameIdToData.get(id)?.selected ?? false;
     }
 
-    select(frames: Frame[], exclusive = true) {
-        if (exclusive) {
+    select(frames: Frame[], multiselect = false) {
+        if (!multiselect) {
             this.deselectAll();
         }
         for (const frame of frames) {
-            this.updateFrameSelection(frame.id, true);
+            this.updateFrameSelection(frame.id, !this.isSelected(frame.id));
         }
         this.notify();
     }
@@ -251,7 +251,11 @@ export class FramesManager {
         const existingFrame = this.get(frameId);
         if (existingFrame) {
             const newFrame = { ...existingFrame.frame, ...frame };
-            this._frameIdToData.set(frameId, { ...existingFrame, frame: newFrame, selected: existingFrame.selected });
+            this._frameIdToData.set(frameId, {
+                ...existingFrame,
+                frame: newFrame,
+                selected: existingFrame.selected,
+            });
         }
         await this.saveToStorage(frameId, frame);
     }

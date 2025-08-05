@@ -61,7 +61,7 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame,
                         break;
                     case MouseAction.MOUSE_DOWN:
                         if (el.tagName.toLocaleLowerCase() === 'body') {
-                            editorEngine.frames.select([frame], !e.shiftKey);
+                            editorEngine.frames.select([frame], e.shiftKey);
                             return;
                         }
                         // Ignore right-clicks

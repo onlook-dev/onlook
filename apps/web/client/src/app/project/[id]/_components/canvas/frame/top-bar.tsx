@@ -73,7 +73,7 @@ export const TopBar = observer(
         };
 
         const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
-            editorEngine.frames.select([frame], !e.shiftKey);
+            editorEngine.frames.select([frame], e.shiftKey);
         };
 
         return (
