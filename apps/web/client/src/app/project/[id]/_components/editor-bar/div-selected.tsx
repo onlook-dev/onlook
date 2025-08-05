@@ -19,9 +19,9 @@ import { FontFamilySelector } from './text-inputs/font/font-family-selector';
 import { FontSizeSelector } from './text-inputs/font/font-size';
 import { FontWeightSelector } from './text-inputs/font/font-weight';
 import { TextColor } from './text-inputs/text-color';
-import { AdvancedTypography } from './text-inputs/advanced-typography';
 import { TextAlignSelector } from './text-inputs/text-align';
 import { InputImage } from './inputs/input-image';
+import { AdvancedTypography } from './text-inputs/advanced-typography';
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [

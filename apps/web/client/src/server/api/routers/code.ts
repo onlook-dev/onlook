@@ -9,11 +9,20 @@ export const codeRouter = createTRPCRouter({
         .input(z.object({
             originalCode: z.string(),
             updateSnippet: z.string(),
-            instruction: z.string()
+            instruction: z.string(),
+            metadata: z.object({
+                projectId: z.string().optional(),
+                conversationId: z.string().optional(),
+            }).optional(),
         }))
-        .mutation(async ({ input }): Promise<{ result: string | null, error: string | null }> => {
+        .mutation(async ({ input, ctx }): Promise<{ result: string | null, error: string | null }> => {
             try {
-                const result = await applyCodeChange(input.originalCode, input.updateSnippet, input.instruction);
+                const user = ctx.user;
+                const metadata = {
+                    ...input.metadata,
+                    userId: user.id,
+                };
+                const result = await applyCodeChange(input.originalCode, input.updateSnippet, input.instruction, metadata);
                 if (!result) {
                     throw new Error('Failed to apply code change. Please try again.');
                 }

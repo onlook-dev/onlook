@@ -58,15 +58,6 @@ export class PagesManager {
             return false;
         }
 
-        if (node.children && node.children?.length > 0) {
-            return false;
-        }
-
-        // Skip folder nodes
-        if (node.children && node.children?.length > 0) {
-            return false;
-        }
-
         const normalizedNodePath = node.path.replace(/\\/g, '/');
         const normalizedActivePath = activePath.replace(/\\/g, '/');
 
@@ -134,6 +125,7 @@ export class PagesManager {
             if (this.editorEngine?.sandbox?.session?.session) {
                 try {
                     const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox);
+
                     this.setPages(realPages);
                     this._isScanning = false;
                     return;
@@ -246,7 +238,7 @@ export class PagesManager {
         }
     }
 
-    async navigateTo(path: string) {
+    async navigateTo(path: string, addToHistory = true) {
         const frameData = this.getActiveFrame();
 
         if (!frameData?.view) {
@@ -271,25 +263,8 @@ export class PagesManager {
             this.groupedRoutes = '';
         }
 
-        try {
-            const currentUrl = frameData.view.src;
-            const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
-
-            if (!baseUrl) {
-                console.warn('No base URL found');
-                return;
-            }
-
-            await frameData.view.loadURL(`${baseUrl}${path}`);
-            this.setActivePath(frameData.frame.id, originalPath);
-            await frameData.view.processDom();
-
-            this.editorEngine.posthog.capture('page_navigate', {
-                path,
-            });
-        } catch (error) {
-            console.error('Navigation failed:', error);
-        }
+        await this.editorEngine.frames.navigateToPath(frameData.frame.id, path, addToHistory);
+        this.setActivePath(frameData.frame.id, originalPath);
     }
 
     public setCurrentPath(path: string) {
