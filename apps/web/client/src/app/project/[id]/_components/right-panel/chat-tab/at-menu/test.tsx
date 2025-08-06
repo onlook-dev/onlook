@@ -12,20 +12,38 @@ const mockEditorEngine = {
       { filename: 'globals.css', path: '/src/app' }
     ],
     files: [
-      {
-        name: 'src',
-        type: 'directory',
-        children: [
-          {
-            name: 'app',
-            type: 'directory',
-            children: [
-              { name: 'page.tsx', type: 'file' },
-              { name: 'layout.tsx', type: 'file' }
-            ]
-          }
-        ]
-      }
+      'package.json',
+      'README.md',
+      'src/index.ts',
+      'src/components/Button.tsx',
+      'src/components/Header.tsx',
+      'src/app/page.tsx',
+      'src/app/layout.tsx',
+      'src/app/globals.css',
+      'public/logo.png',
+      'styles.css'
+    ]
+  },
+  sandbox: {
+    directories: [
+      'src',
+      'src/components',
+      'src/app',
+      'public',
+      'public/assets',
+      'docs'
+    ],
+    files: [
+      'package.json',
+      'README.md',
+      'src/index.ts',
+      'src/components/Button.tsx',
+      'src/components/Header.tsx',
+      'src/app/page.tsx',
+      'src/app/layout.tsx',
+      'src/app/globals.css',
+      'public/logo.png',
+      'styles.css'
     ]
   }
 };
@@ -58,10 +76,22 @@ export const AtMenuTest = () => {
     } else if (atMenuState.activeMention && value.includes('@')) {
       const lastAtIndex = value.lastIndexOf('@');
       const textAfterAt = value.substring(lastAtIndex + 1);
-      setAtMenuState(prev => ({
-        ...prev,
-        searchQuery: textAfterAt
-      }));
+      
+      // Check if this is a folder navigation (ends with /)
+      const folderMatch = /^([^\/]+)\/$/.exec(textAfterAt);
+      if (folderMatch?.[1]) {
+        // This is a folder navigation, update search query to show child items
+        setAtMenuState(prev => ({
+          ...prev,
+          searchQuery: textAfterAt
+        }));
+      } else {
+        // Regular search
+        setAtMenuState(prev => ({
+          ...prev,
+          searchQuery: textAfterAt
+        }));
+      }
     } else {
       setAtMenuState(prev => ({
         ...prev,
@@ -74,10 +104,21 @@ export const AtMenuTest = () => {
   };
 
   const handleSelectItem = (item: AtMenuItem) => {
-    const lastAtIndex = inputValue.lastIndexOf('@');
-    const textBeforeAt = inputValue.substring(0, lastAtIndex);
-    const newValue = textBeforeAt + `@${item.name} `;
-    setInputValue(newValue);
+    // Check if we're in folder navigation mode
+    const folderMatch = /@([^\/]+)\/$/.exec(inputValue);
+    if (folderMatch?.[1]) {
+      // We're in folder navigation, replace the entire folder mention with the selected file
+      const folderName = folderMatch[1];
+      const folderMention = `@${folderName}/`;
+      const newValue = inputValue.replace(folderMention, `@${item.name} `);
+      setInputValue(newValue);
+    } else {
+      // Regular mention selection
+      const lastAtIndex = inputValue.lastIndexOf('@');
+      const textBeforeAt = inputValue.substring(0, lastAtIndex);
+      const newValue = textBeforeAt + `@${item.name} `;
+      setInputValue(newValue);
+    }
     
     setAtMenuState(prev => ({
       ...prev,
@@ -117,6 +158,19 @@ export const AtMenuTest = () => {
     RecentActivityTracker.clear();
   };
 
+  const testFolderNavigation = () => {
+    // Simulate typing "@src/"
+    setInputValue('@src/');
+    setAtMenuState(prev => ({
+      ...prev,
+      isOpen: true,
+      position: { top: 100, left: 100 },
+      selectedIndex: 0,
+      searchQuery: 'src/',
+      activeMention: true
+    }));
+  };
+
   return (
     <div className="p-4">
       <h2 className="text-lg font-bold mb-4">@ Menu Test</h2>
@@ -134,12 +188,18 @@ export const AtMenuTest = () => {
         >
           Clear Activity
         </button>
+        <button 
+          onClick={testFolderNavigation}
+          className="px-3 py-1 bg-green-500 text-white rounded text-sm"
+        >
+          Test Folder Navigation
+        </button>
       </div>
       
       <textarea
         value={inputValue}
         onChange={handleInputChange}
-        placeholder="Type @ to open menu..."
+        placeholder="Type @ to open menu... Try typing '@src/' for folder navigation"
         className="w-full h-32 p-2 border rounded"
       />
       
@@ -156,6 +216,17 @@ export const AtMenuTest = () => {
         <pre className="text-sm bg-gray-100 p-2 rounded">
           {JSON.stringify(atMenuState, null, 2)}
         </pre>
+      </div>
+      
+      <div className="mt-4">
+        <h3 className="font-semibold">Instructions:</h3>
+        <ul className="text-sm space-y-1">
+          <li>• Type &quot;@&quot; to open the menu</li>
+          <li>• Type &quot;@src/&quot; to see folder navigation</li>
+          <li>• Type &quot;@app/&quot; to see child files in the app folder</li>
+          <li>• Use arrow keys to navigate</li>
+          <li>• Press Enter to select an item</li>
+        </ul>
       </div>
     </div>
   );

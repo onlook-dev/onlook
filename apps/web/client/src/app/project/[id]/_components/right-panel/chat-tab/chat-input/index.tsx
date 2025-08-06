@@ -7,7 +7,6 @@ import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
-import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { compressImageInBrowser } from '@onlook/utility';
@@ -20,6 +19,17 @@ import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
 import { AtMenu } from '../at-menu';
 import type { AtMenuItem, AtMenuState, Mention } from '@/components/store/editor/chat/at-menu/types';
+
+// Styled mention chip component
+const MentionChip = ({ name }: { name: string }) => (
+  <span
+    className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono bg-[#363B42] text-white mr-1"
+    contentEditable={false}
+    data-mention={name}
+  >
+    @{name}
+  </span>
+);
 
 export const ChatInput = observer(({
     inputValue,
@@ -37,7 +47,7 @@ export const ChatInput = observer(({
     
 
     const t = useTranslations();
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const contentEditableRef = useRef<HTMLDivElement>(null);
     const suggestionRef = useRef<SuggestionsRef>(null);
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
@@ -48,12 +58,12 @@ export const ChatInput = observer(({
 
     const focusInput = () => {
         requestAnimationFrame(() => {
-            textareaRef.current?.focus();
+            contentEditableRef.current?.focus();
         });
     };
 
     useEffect(() => {
-        if (textareaRef.current && !isWaiting) {
+        if (contentEditableRef.current && !isWaiting) {
             focusInput();
         }
     }, [editorEngine.chat.conversation.current?.messages]);
@@ -66,7 +76,7 @@ export const ChatInput = observer(({
 
     useEffect(() => {
         const focusHandler = () => {
-            if (textareaRef.current && !isWaiting) {
+            if (contentEditableRef.current && !isWaiting) {
                 focusInput();
             }
         };
@@ -92,12 +102,12 @@ export const ChatInput = observer(({
         return () => window.removeEventListener('keydown', handleGlobalKeyDown, true);
     }, []);
 
-    const disabled = isWaiting || editorEngine.chat.context.context.length === 0;
+    const disabled = isWaiting;
     const inputEmpty = !inputValue || inputValue.trim().length === 0;
 
-    // Find mentions in text
+    // Find mentions in text - improved regex to handle mentions at end of text
     const findMentions = (text: string): Mention[] => {
-      const mentionRegex = /@(\w+(?:\.\w+)*)/g;
+      const mentionRegex = /@([a-zA-Z0-9._-]+)(?=\s|$)/g;
       const foundMentions: Mention[] = [];
       let match;
 
@@ -118,71 +128,240 @@ export const ChatInput = observer(({
     // Update mentions whenever input value changes
     useEffect(() => {
       const newMentions = findMentions(inputValue);
+      console.log('Found mentions:', newMentions);
       setMentions(newMentions);
     }, [inputValue]);
 
-    function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    // Sync mentions with context pills - only remove when mentions are explicitly deleted
+    useEffect(() => {
+      const currentMentionNames = mentions.map(m => m.name);
+      const contextMentions = editorEngine.chat.context.context.filter(
+        ctx => ctx.type === MessageContextType.MENTION
+      );
+      
+      // Only remove context pills if the input has changed and mentions are missing
+      // This prevents removal when the input is being processed or updated
+      if (inputValue.length > 0) {
+        contextMentions.forEach(contextMention => {
+          if (!currentMentionNames.includes(contextMention.displayName)) {
+            // Check if the mention was actually deleted (not just not detected)
+            const mentionPattern = new RegExp(`@${contextMention.displayName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=\\s|$)`, 'g');
+            if (!mentionPattern.test(inputValue)) {
+              console.log('Removing context pill for:', contextMention.displayName);
+              // Remove the context pill since the mention was deleted from input
+              editorEngine.chat.context.removeMentionContext(contextMention.displayName);
+            }
+          }
+        });
+      }
+    }, [mentions, editorEngine.chat.context.context, inputValue]);
+
+    // Function to get plain text from contenteditable
+    const getPlainText = (element: HTMLElement): string => {
+        let text = '';
+        const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+            null
+        );
+        
+        let node;
+        while (node = walker.nextNode()) {
+            text += node.textContent;
+        }
+        
+        return text;
+    };
+
+    // Function to render content with styled mentions
+    const renderContentWithMentions = (text: string) => {
+        if (!text) return '';
+        
+        const parts = text.split(/(@[a-zA-Z0-9._-]+)(?=\s|$)/g);
+        return parts.map((part, index) => {
+            if (part.match(/^@[a-zA-Z0-9._-]+$/)) {
+                const name = part.substring(1);
+                // Include the trailing space in the styled mention
+                const nextPart = parts[index + 1] || '';
+                const hasTrailingSpace = nextPart.startsWith(' ');
+                const trailingSpace = hasTrailingSpace ? ' ' : '';
+                return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-mono bg-[#363B42] text-white mr-1" data-mention="${name}" contenteditable="false">@${name}${trailingSpace}</span>`;
+            }
+            return part;
+        }).join('');
+    };
+
+    // Function to update contenteditable with styled mentions
+    const updateContentEditable = (text: string) => {
+        if (contentEditableRef.current) {
+            const html = renderContentWithMentions(text);
+            contentEditableRef.current.innerHTML = html;
+            
+            // Set cursor to end
+            const range = document.createRange();
+            const selection = window.getSelection();
+            range.selectNodeContents(contentEditableRef.current);
+            range.collapse(false);
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+        }
+    };
+
+    // Update contenteditable when inputValue changes
+    useEffect(() => {
+        if (contentEditableRef.current) {
+            const currentText = getPlainText(contentEditableRef.current);
+            if (currentText !== inputValue) {
+                console.log('Updating contenteditable with:', inputValue);
+                updateContentEditable(inputValue);
+            }
+        }
+    }, [inputValue]);
+
+    // Handle @ menu item selection
+    const handleAtMenuSelect = (item: AtMenuItem) => {
+        console.log('Selected item:', item);
+        
+        // Check if we're in folder navigation mode
+        const folderMatch = inputValue.match(/@([^\/]+)\/$/);
+        if (folderMatch && folderMatch[1]) {
+            // We're in folder navigation, replace the entire folder mention with the selected file
+            const folderName = folderMatch[1];
+            const folderMention = `@${folderName}/`;
+            const newValue = inputValue.replace(folderMention, `@${item.name} `);
+            setInputValue(newValue);
+        } else {
+            // Regular mention selection
+            // Replace the last @ and any text after it with the selected item
+            const lastAtIndex = inputValue.lastIndexOf('@');
+            const textBeforeAt = inputValue.substring(0, lastAtIndex);
+            // Always add a space after the mention to ensure proper detection
+            const newValue = textBeforeAt + `@${item.name} `;
+            setInputValue(newValue);
+        }
+        
+        // Add context pill for the selected item
+        console.log('Adding mention context for:', item.name);
+        const mentionContext = editorEngine.chat.context.addMentionContext({
+            name: item.name,
+            path: item.path,
+            icon: item.icon || 'file',
+            category: item.category
+        });
+        console.log('Added mention context:', mentionContext);
+        console.log('Context pills after adding:', editorEngine.chat.context.context.length);
+        
+        // Close @ menu
+        setAtMenuState(prev => ({
+            ...prev,
+            isOpen: false,
+            activeMention: false,
+            searchQuery: '',
+            previewText: ''
+        }));
+        
+        // Focus back to input and set cursor position after the space
+        setTimeout(() => {
+            if (contentEditableRef.current) {
+                contentEditableRef.current.focus();
+                
+                // Find the last styled mention element and position cursor after it
+                const mentionElements = contentEditableRef.current.querySelectorAll('[data-mention]');
+                if (mentionElements.length > 0) {
+                    const lastMentionElement = mentionElements[mentionElements.length - 1];
+                    if (lastMentionElement) {
+                        const range = document.createRange();
+                        const selection = window.getSelection();
+                        // Position cursor after the last mention element (which includes the space)
+                        range.setStartAfter(lastMentionElement);
+                        range.collapse(true);
+                        selection?.removeAllRanges();
+                        selection?.addRange(range);
+                    }
+                } else {
+                    // Fallback: position at end
+                    const range = document.createRange();
+                    const selection = window.getSelection();
+                    range.selectNodeContents(contentEditableRef.current);
+                    range.collapse(false);
+                    selection?.removeAllRanges();
+                    selection?.addRange(range);
+                }
+            }
+        }, 10); // Small delay to ensure contenteditable has updated
+    };
+
+    function handleInput(e: React.FormEvent<HTMLDivElement>) {
         if (isComposing) {
             return;
         }
         
-        const value = e.target.value;
-        const prevValue = inputValue;
+        const element = e.currentTarget;
+        const plainText = getPlainText(element);
+        setInputValue(plainText);
         
         // Check if user just typed a new "@" character
-        const newAtTyped = value.length > prevValue.length && value.endsWith('@');
+        const prevValue = inputValue;
+        const newAtTyped = plainText.length > prevValue.length && plainText.endsWith('@');
         
         if (newAtTyped) {
             console.log('Opening @ menu - newAtTyped detected');
             // Open @ menu
-            const input = textareaRef.current;
-            if (input) {
-                const rect = input.getBoundingClientRect();
-                const inputPadding = 12; // p-3 = 12px padding
-                
-                // Calculate position for @ menu
-                const atIndex = value.lastIndexOf('@');
-                const textBeforeAt = value.substring(0, atIndex);
-                
-                // Create a temporary span to measure text width
-                const span = document.createElement('span');
-                span.style.visibility = 'hidden';
-                span.style.position = 'absolute';
-                span.style.whiteSpace = 'pre';
-                span.style.font = window.getComputedStyle(input).font;
-                span.textContent = textBeforeAt;
-                
-                document.body.appendChild(span);
-                const textWidth = span.offsetWidth;
-                document.body.removeChild(span);
-                
-                const newState = {
-                    isOpen: true,
-                    position: {
-                        top: rect.top, // Use the textarea's top position as reference
-                        left: rect.left + inputPadding + textWidth
-                    },
-                    selectedIndex: 0,
-                    searchQuery: '',
-                    activeMention: true
-                };
-                
-                console.log('Setting @ menu state:', newState);
-                setAtMenuState(prev => ({
-                    ...prev,
-                    ...newState
-                }));
-            } else {
-                console.error('textareaRef.current is null');
-            }
-        } else if (atMenuState.activeMention && value.includes('@')) {
-            // If we're in active mention mode and still have @, keep menu open
-            const lastAtIndex = value.lastIndexOf('@');
-            const textAfterAt = value.substring(lastAtIndex + 1);
+            const rect = element.getBoundingClientRect();
+            const inputPadding = 12; // p-3 = 12px padding
+            
+            // Calculate position for @ menu
+            const atIndex = plainText.lastIndexOf('@');
+            const textBeforeAt = plainText.substring(0, atIndex);
+            
+            // Create a temporary span to measure text width
+            const span = document.createElement('span');
+            span.style.visibility = 'hidden';
+            span.style.position = 'absolute';
+            span.style.whiteSpace = 'pre';
+            span.style.font = window.getComputedStyle(element).font;
+            span.textContent = textBeforeAt;
+            
+            document.body.appendChild(span);
+            const textWidth = span.offsetWidth;
+            document.body.removeChild(span);
+            
+            const newState = {
+                isOpen: true,
+                position: {
+                    top: rect.top, // Use the element's top position as reference
+                    left: rect.left + inputPadding + textWidth
+                },
+                selectedIndex: 0,
+                searchQuery: '',
+                activeMention: true
+            };
+            
+            console.log('Setting @ menu state:', newState);
             setAtMenuState(prev => ({
                 ...prev,
-                searchQuery: textAfterAt
+                ...newState
             }));
+        } else if (atMenuState.activeMention && plainText.includes('@')) {
+            // If we're in active mention mode and still have @, keep menu open
+            const lastAtIndex = plainText.lastIndexOf('@');
+            const textAfterAt = plainText.substring(lastAtIndex + 1);
+            
+            // Check if this is a folder navigation (ends with /)
+            const folderMatch = textAfterAt.match(/^([^\/]+)\/$/);
+            if (folderMatch && folderMatch[1]) {
+                // This is a folder navigation, update search query to show child items
+                setAtMenuState(prev => ({
+                    ...prev,
+                    searchQuery: textAfterAt
+                }));
+            } else {
+                // Regular search
+                setAtMenuState(prev => ({
+                    ...prev,
+                    searchQuery: textAfterAt
+                }));
+            }
         } else {
             // Close @ menu when @ is not present
             setAtMenuState(prev => ({
@@ -193,12 +372,9 @@ export const ChatInput = observer(({
                 previewText: ''
             }));
         }
-        
-        e.currentTarget.style.height = 'auto';
-        e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
     }
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
         // Handle @ menu keyboard navigation
         if (atMenuState.isOpen) {
             switch (e.key) {
@@ -220,15 +396,15 @@ export const ChatInput = observer(({
             // Only let natural tab order continue if handleTabNavigation returns false
             const handled = suggestionRef.current?.handleTabNavigation(e.shiftKey);
             if (!handled) {
-                // Focus the textarea
-                textareaRef.current?.focus();
+                // Focus the contenteditable
+                contentEditableRef.current?.focus();
             }
         } else if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
             e.stopPropagation();
 
             if (suggestionRef.current?.handleEnterSelection()) {
-                setTimeout(() => textareaRef.current?.focus(), 0);
+                setTimeout(() => contentEditableRef.current?.focus(), 0);
                 return;
             }
 
@@ -270,7 +446,7 @@ export const ChatInput = observer(({
         return t(transKeys.editor.panels.edit.tabs.chat.input.placeholder);
     };
 
-    const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
         const items = e.clipboardData.items;
 
         for (const item of items) {
@@ -384,7 +560,7 @@ export const ChatInput = observer(({
         }
     };
 
-    const bubbleDragEvent = (e: React.DragEvent<HTMLTextAreaElement>, eventType: string) => {
+    const bubbleDragEvent = (e: React.DragEvent<HTMLDivElement>, eventType: string) => {
         e.preventDefault();
         e.stopPropagation();
         e.currentTarget.parentElement?.dispatchEvent(
@@ -423,38 +599,32 @@ export const ChatInput = observer(({
                 inputValue={inputValue}
                 setInput={(suggestion) => {
                     setInputValue(suggestion);
-                    textareaRef.current?.focus();
+                    contentEditableRef.current?.focus();
                     setTimeout(() => {
-                        if (textareaRef.current) {
-                            textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+                        if (contentEditableRef.current) {
+                            contentEditableRef.current.scrollTop = contentEditableRef.current.scrollHeight;
                         }
                     }, 100);
                 }}
                 onSuggestionFocus={(isFocused) => {
                     if (!isFocused) {
-                        textareaRef.current?.focus();
+                        contentEditableRef.current?.focus();
                     }
                 }}
             />
             <div className="flex flex-col w-full p-4">
                 <InputContextPills />
-                <Textarea
-                    ref={textareaRef}
-                    disabled={disabled}
-                    placeholder={getPlaceholderText()}
+                <div
+                    ref={contentEditableRef}
+                    contentEditable={!disabled}
                     className={cn(
-                        'bg-transparent dark:bg-transparent mt-2 overflow-auto max-h-32 text-small p-0 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none',
+                        'bg-transparent dark:bg-transparent mt-2 overflow-auto max-h-32 text-small p-0 border-0 focus-visible:ring-0 shadow-none rounded-none caret-[#FA003C] resize-none min-h-[72px] outline-none',
                         'selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50 cursor-text',
                         isDragging ? 'pointer-events-none' : 'pointer-events-auto',
+                        !inputValue && 'before:content-[attr(data-placeholder)] before:text-foreground-primary/50 before:pointer-events-none',
+                        disabled && 'pointer-events-none opacity-50'
                     )}
-                    rows={3}
-                    value={inputValue}
-                    onChange={(e) => {
-                        const value = e.target.value;
-                        setInputValue(value);
-                        // Call handleInput to process @ menu logic
-                        handleInput(e);
-                    }}
+                    data-placeholder={getPlaceholderText()}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
@@ -520,6 +690,26 @@ export const ChatInput = observer(({
                     )}
                 </div>
             </div>
+            <AtMenu
+                state={atMenuState}
+                onSelectItem={handleAtMenuSelect}
+                onClose={() => {
+                    setAtMenuState(prev => ({
+                        ...prev,
+                        isOpen: false,
+                        activeMention: false,
+                        searchQuery: '',
+                        previewText: ''
+                    }));
+                }}
+                onStateChange={(newState) => {
+                    setAtMenuState(prev => ({
+                        ...prev,
+                        ...newState
+                    }));
+                }}
+                editorEngine={editorEngine}
+            />
         </div>
     );
 });

@@ -7,6 +7,7 @@ import {
     type HighlightMessageContext,
     type ImageMessageContext,
     type ProjectMessageContext,
+    type MentionMessageContext,
 } from '@onlook/models/chat';
 import type { ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction, runInAction } from 'mobx';
@@ -228,5 +229,36 @@ export class ChatContext {
 
     clear() {
         this.context = [];
+    }
+
+    addMentionContext(item: { name: string; path: string; icon: string; category: string }): MentionMessageContext {
+        const mentionContext: MentionMessageContext = {
+            type: MessageContextType.MENTION,
+            content: '',
+            displayName: item.name,
+            path: item.path,
+            icon: item.icon,
+            category: item.category,
+        };
+        
+        // Add to context if not already present
+        const existingIndex = this.context.findIndex(
+            (ctx) => ctx.type === MessageContextType.MENTION && 
+                     ctx.displayName === item.name && 
+                     ctx.path === item.path
+        );
+        
+        if (existingIndex === -1) {
+            this.context.push(mentionContext);
+        }
+        
+        return mentionContext;
+    }
+
+    removeMentionContext(mentionName: string): void {
+        // Remove mention contexts that match the given name
+        this.context = this.context.filter(
+            (ctx) => !(ctx.type === MessageContextType.MENTION && ctx.displayName === mentionName)
+        );
     }
 }

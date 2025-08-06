@@ -29,6 +29,9 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
   });
   const [lastInteractionMethod, setLastInteractionMethod] = useState<'keyboard' | 'mouse'>('keyboard');
   const [keyboardActive, setKeyboardActive] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [mouseInMenu, setMouseInMenu] = useState(false);
+  const [currentFolderContext, setCurrentFolderContext] = useState<AtMenuItem | null>(null);
 
   // Get all items from data providers
   useEffect(() => {
@@ -40,12 +43,123 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
   // Filter items based on search query
   useEffect(() => {
     if (state.searchQuery) {
+      // Check if this is a folder navigation (contains /)
+      const folderMatch = /^([^\/]+)\/$/.exec(state.searchQuery);
+      if (folderMatch?.[1]) {
+        const folderName = folderMatch[1];
+        console.log('AtMenu: Detected folder navigation for:', folderName);
+        
+        // Check if this is brand navigation
+        if (folderName.toLowerCase() === 'brand') {
+          console.log('AtMenu: Detected brand navigation');
+          // Get brand child items
+          const brandChildItems = dataProviders.getBrandChildItems();
+          
+          const results = {
+            recents: [],
+            files: [],
+            code: [],
+            leftPanel: brandChildItems // Show brand child items in leftPanel section
+          };
+          
+          console.log('AtMenu: Brand child items:', brandChildItems);
+          setFilteredItems(results);
+          setCurrentFolderContext({
+            id: 'brand',
+            type: 'tab',
+            name: 'Brand',
+            path: '/brand',
+            category: 'leftPanel',
+            icon: 'brand'
+          });
+          return;
+        }
+        
+        // Check if this is images navigation
+        if (folderName.toLowerCase() === 'images') {
+          console.log('AtMenu: Detected images navigation');
+          // Get images child items
+          const imagesChildItems = dataProviders.getImagesChildItems();
+          
+          const results = {
+            recents: [],
+            files: imagesChildItems, // Show image items in files section
+            code: [],
+            leftPanel: []
+          };
+          
+          console.log('AtMenu: Images child items:', imagesChildItems);
+          setFilteredItems(results);
+          setCurrentFolderContext({
+            id: 'images',
+            type: 'tab',
+            name: 'Images',
+            path: '/images',
+            category: 'leftPanel',
+            icon: 'image'
+          });
+          return;
+        }
+        
+        // Check if this is pages navigation
+        if (folderName.toLowerCase() === 'pages') {
+          console.log('AtMenu: Detected pages navigation');
+          // Get pages child items
+          const pagesChildItems = dataProviders.getPagesChildItems();
+          
+          const results = {
+            recents: [],
+            files: [],
+            code: [],
+            leftPanel: pagesChildItems // Show page items in leftPanel section
+          };
+          
+          console.log('AtMenu: Pages child items:', pagesChildItems);
+          setFilteredItems(results);
+          setCurrentFolderContext({
+            id: 'pages',
+            type: 'tab',
+            name: 'Pages',
+            path: '/pages',
+            category: 'leftPanel',
+            icon: 'file'
+          });
+          return;
+        }
+        
+        // Find the folder in our data
+        const allFolders = dataProviders.getFolders();
+        const targetFolder = allFolders.find(folder => 
+          folder.name.toLowerCase() === folderName.toLowerCase()
+        );
+        
+        if (targetFolder) {
+          console.log('AtMenu: Found folder:', targetFolder);
+          // Get child items for this folder
+          const childItems = dataProviders.getChildItems(targetFolder.path);
+          
+          const results = {
+            recents: [],
+            files: childItems, // Show child items in files section
+            code: [],
+            leftPanel: []
+          };
+          
+          console.log('AtMenu: Child items for folder:', childItems);
+          setFilteredItems(results);
+          setCurrentFolderContext(targetFolder);
+          return;
+        }
+      }
+      
+      // Regular fuzzy search
       const results = FuzzySearch.getGroupedResults(state.searchQuery, allItems);
       setFilteredItems(results);
+      setCurrentFolderContext(null);
     } else {
       const results = {
         recents: dataProviders.getRecents(),
-        files: dataProviders.getFiles(),
+        files: dataProviders.getFoldersAndFiles(),
         code: dataProviders.getCodeFiles(),
         leftPanel: dataProviders.getLeftPanelItems()
       };
@@ -53,6 +167,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
       console.log('AtMenu: Files count:', results.files.length);
       console.log('AtMenu: Code count:', results.code.length);
       setFilteredItems(results);
+      setCurrentFolderContext(null);
     }
   }, [state.searchQuery, allItems, dataProviders]);
 
@@ -78,23 +193,32 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
     }
   }, [keyboardActive, state.isOpen, state.selectedIndex]);
 
+  // Reset user interaction state when menu opens
+  useEffect(() => {
+    if (state.isOpen) {
+      setHasUserInteracted(false);
+      setMouseInMenu(false);
+    }
+  }, [state.isOpen]);
+
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!state.isOpen) return;
 
-      const allItems = [
-        ...(filteredItems.recents || []),
-        ...(filteredItems.files || []),
-        ...(filteredItems.code || []),
-        ...(filteredItems.leftPanel || [])
-      ];
+              const allItems = [
+          ...(filteredItems.recents ?? []),
+          ...(filteredItems.files ?? []),
+          ...(filteredItems.code ?? []),
+          ...(filteredItems.leftPanel ?? [])
+        ];
 
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
           setLastInteractionMethod('keyboard');
           setKeyboardActive(true);
+          setHasUserInteracted(true);
           const nextIndex = state.selectedIndex < allItems.length - 1 ? state.selectedIndex + 1 : 0;
           onStateChange({ selectedIndex: nextIndex });
           
@@ -114,6 +238,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
           e.preventDefault();
           setLastInteractionMethod('keyboard');
           setKeyboardActive(true);
+          setHasUserInteracted(true);
           const prevIndex = state.selectedIndex > 0 ? state.selectedIndex - 1 : allItems.length - 1;
           onStateChange({ selectedIndex: prevIndex });
           
@@ -174,8 +299,8 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
   // Add debugging for render
   useEffect(() => {
     if (state.isOpen) {
-      console.log('AtMenu render: Files section items:', filteredItems.files || []);
-      console.log('AtMenu render: Code section items:', filteredItems.code || []);
+      console.log('AtMenu render: Files section items:', filteredItems.files ?? []);
+      console.log('AtMenu render: Code section items:', filteredItems.code ?? []);
     }
   }, [state.isOpen, filteredItems.files, filteredItems.code]);
 
@@ -189,27 +314,33 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
   if (!state.isOpen) return null;
 
   const allItemsFlat = [
-    ...(filteredItems.recents || []),
-    ...(filteredItems.files || []),
-    ...(filteredItems.code || []),
-    ...(filteredItems.leftPanel || [])
+    ...(filteredItems.recents ?? []),
+    ...(filteredItems.files ?? []),
+    ...(filteredItems.code ?? []),
+    ...(filteredItems.leftPanel ?? [])
   ];
 
-  const renderCategory = (title: string, items: AtMenuItem[], category: string, isFirst: boolean = false) => {
+  const renderCategory = (title: string, items: AtMenuItem[], category: string, isFirst = false) => {
     // For recents: only show if there are actual recent items
     if (category === 'recents' && items.length === 0) return null;
     
     // For other categories: only show if there are items
     if (items.length === 0) return null;
 
+    // Don't show section headers when in any child view (folder navigation)
+    const isChildView = currentFolderContext !== null;
+    const shouldShowHeader = !isChildView;
+
     return (
       <div key={category} className="px-2">
-        <h3 className={cn(
-          "text-gray-400 text-sm font-medium mb-1",
-          isFirst ? "mt-0" : "mt-2"
-        )}>
-          {title}
-        </h3>
+        {shouldShowHeader && (
+          <h3 className={cn(
+            "text-gray-400 text-sm font-medium mb-1",
+            isFirst ? "mt-0" : "mt-2"
+          )}>
+            {title}
+          </h3>
+        )}
         <div className="space-y-1 w-full">
           {items.length === 0 ? (
             <div className="text-gray-500 text-xs py-1 px-2">
@@ -226,14 +357,18 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
                   ref={isSelected ? selectedItemRef : undefined}
                   item={item}
                   isSelected={isSelected}
+                  isInitialSelection={isSelected && !hasUserInteracted}
+                  keyboardActive={keyboardActive}
                   onClick={() => onSelectItem(item)}
                   onMouseEnter={() => {
                     if (!keyboardActive) {
                       setLastInteractionMethod('mouse');
+                      setHasUserInteracted(true);
                       onStateChange({ selectedIndex: globalIndex });
                     }
                   }}
                   showChevron={item.hasChildren}
+                  isChildItem={currentFolderContext !== null}
                 />
               );
             })
@@ -254,7 +389,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
     for (let i = 0; i < categoryIndex; i++) {
       const category = categories[i];
       if (category) {
-        globalIndex += (filteredItems[category] || []).length;
+        globalIndex += (filteredItems[category] ?? []).length;
       }
     }
     
@@ -315,23 +450,36 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
       onMouseEnter={() => {
         setKeyboardActive(false);
         setLastInteractionMethod('mouse');
+        setMouseInMenu(true);
       }}
       onMouseLeave={() => {
         setLastInteractionMethod('keyboard');
+        setKeyboardActive(false);
+        setHasUserInteracted(false);
+        setMouseInMenu(false);
       }}
     >
       <div className="rounded-lg bg-gray-800 py-2">
-        {/* ===== AT MENU SECTION: RECENTS ===== */}
-        {renderCategory('Recents', filteredItems.recents || [], 'recents', true)}
+        {/* ===== FOLDER CONTEXT BREADCRUMB ===== */}
+        {currentFolderContext && (
+          <div className="px-2 py-1 border-b border-gray-700">
+            <div className="flex items-center text-xs text-gray-400">
+              <span className="font-mono">@{currentFolderContext.name}/</span>
+            </div>
+          </div>
+        )}
         
-        {/* ===== AT MENU SECTION: FILES ===== */}
-        {renderCategory('Files', filteredItems.files || [], 'files')}
+        {/* ===== AT MENU SECTION: RECENTS ===== */}
+        {renderCategory('Recents', filteredItems.recents ?? [], 'recents', true)}
+        
+        {/* ===== AT MENU SECTION: FOLDERS AND FILES ===== */}
+        {renderCategory('Folders and Files', filteredItems.files ?? [], 'files')}
         
         {/* ===== AT MENU SECTION: CODE ===== */}
-        {renderCategory('Code', filteredItems.code || [], 'code')}
+        {renderCategory('Code', filteredItems.code ?? [], 'code')}
         
         {/* ===== AT MENU SECTION: LEFT PANEL ===== */}
-        {renderCategory('Design Panel', filteredItems.leftPanel || [], 'leftPanel')}
+        {renderCategory('Design Panel', filteredItems.leftPanel ?? [], 'leftPanel')}
         
         {allItemsFlat.length === 0 && (
           <div className="p-4 text-center text-gray-400">
@@ -344,7 +492,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
         {state.searchQuery && allItemsFlat.length === 0 && (
           <div className="p-4 text-center text-gray-400">
             <div className="text-sm">
-              No files or folders match "{state.searchQuery}"
+              No files or folders match &quot;{state.searchQuery}&quot;
             </div>
           </div>
         )}

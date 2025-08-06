@@ -37,6 +37,15 @@ export const InputContextPills = observer(() => {
                                 />
                             );
                         }
+                        if (context.type === MessageContextType.MENTION) {
+                            return (
+                                <DraftContextPill
+                                    key={`mention-${context.path}-${context.displayName}`}
+                                    context={context}
+                                    onRemove={() => handleRemoveContext(context)}
+                                />
+                            );
+                        }
                         return (
                             <DraftContextPill
                                 key={`${context.type}-${context.content}`}

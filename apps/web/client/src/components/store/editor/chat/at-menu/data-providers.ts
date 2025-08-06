@@ -19,6 +19,42 @@ export class AtMenuDataProviders {
     return recentItems;
   }
 
+  // Get folders from the IDE
+  getFolders(): AtMenuItem[] {
+    const folders: AtMenuItem[] = [];
+    
+    // Try to get directories from the sandbox
+    const directories = this.editorEngine?.sandbox?.directories || [];
+    
+    console.log('AtMenu getFolders: editorEngine:', !!this.editorEngine, 'sandbox:', !!this.editorEngine?.sandbox, 'directories:', directories);
+    
+    if (directories.length > 0) {
+      // Process each directory path and create folder items
+      directories.forEach((dirPath: string) => {
+        // Skip root directory
+        if (dirPath === '/' || dirPath === './') {
+          return;
+        }
+        
+        const folderName = dirPath.split('/').pop() || '';
+        if (folderName) {
+          folders.push({
+            id: `folder-${dirPath}`,
+            type: 'folder',
+            name: folderName,
+            path: dirPath,
+            category: 'files',
+            icon: 'directory',
+            hasChildren: true
+          });
+        }
+      });
+    }
+
+    console.log('AtMenu getFolders: returning items:', folders);
+    return folders;
+  }
+
   // Get plain files from the IDE (non-code files)
   getFiles(): AtMenuItem[] {
     const items: AtMenuItem[] = [];
@@ -63,6 +99,21 @@ export class AtMenuDataProviders {
     return items;
   }
 
+  // Get folders and files combined and sorted alphabetically
+  getFoldersAndFiles(): AtMenuItem[] {
+    const folders = this.getFolders();
+    const files = this.getFiles();
+    
+    // Combine folders and files
+    const combined = [...folders, ...files];
+    
+    // Sort alphabetically by name
+    combined.sort((a, b) => a.name.localeCompare(b.name));
+    
+    console.log('AtMenu getFoldersAndFiles: returning items:', combined);
+    return combined;
+  }
+
   // Get code files from the IDE
   getCodeFiles(): AtMenuItem[] {
     const codeFiles: AtMenuItem[] = [];
@@ -105,14 +156,6 @@ export class AtMenuDataProviders {
   getLeftPanelItems(): AtMenuItem[] {
     const leftPanelItems: AtMenuItem[] = [
       {
-        id: 'layers',
-        type: 'tab',
-        name: 'Layers',
-        path: '/layers',
-        category: 'leftPanel',
-        icon: 'layers'
-      },
-      {
         id: 'brand',
         type: 'tab',
         name: 'Brand',
@@ -135,22 +178,6 @@ export class AtMenuDataProviders {
         path: '/images',
         category: 'leftPanel',
         icon: 'image'
-      },
-      {
-        id: 'apps',
-        type: 'tab',
-        name: 'Apps',
-        path: '/apps',
-        category: 'leftPanel',
-        icon: 'viewGrid'
-      },
-      {
-        id: 'elements',
-        type: 'tab',
-        name: 'Elements',
-        path: '/elements',
-        category: 'leftPanel',
-        icon: 'component'
       }
     ];
 
@@ -175,6 +202,256 @@ export class AtMenuDataProviders {
     ];
     
     return codeExtensions.includes(extension || '');
+  }
+
+  // Get child files for a specific folder
+  getChildFiles(folderPath: string): AtMenuItem[] {
+    const childFiles: AtMenuItem[] = [];
+    
+    // Get files from IDE
+    const files = this.editorEngine?.ide?.files || [];
+    
+    console.log('AtMenu getChildFiles: folderPath:', folderPath, 'files:', files);
+    
+    if (files.length > 0) {
+      // Filter files that are direct children of the specified folder
+      files.forEach((filePath: string) => {
+        // Skip directories (they end with /)
+        if (filePath.endsWith('/')) {
+          return;
+        }
+        
+        // Check if this file is a direct child of the folder
+        const normalizedFolderPath = folderPath.endsWith('/') ? folderPath : folderPath + '/';
+        if (filePath.startsWith(normalizedFolderPath)) {
+          // Get the relative path from the folder
+          const relativePath = filePath.substring(normalizedFolderPath.length);
+          
+          // Only include direct children (not nested files)
+          if (!relativePath.includes('/')) {
+            const fileName = relativePath;
+            if (fileName) {
+              childFiles.push({
+                id: `child-${filePath}`,
+                type: 'file',
+                name: fileName,
+                path: filePath,
+                category: 'files',
+                icon: getFileIconString(fileName)
+              });
+            }
+          }
+        }
+      });
+    }
+
+    // Sort alphabetically
+    childFiles.sort((a, b) => a.name.localeCompare(b.name));
+    
+    console.log('AtMenu getChildFiles: returning items:', childFiles);
+    return childFiles;
+  }
+
+  // Get child folders for a specific folder
+  getChildFolders(folderPath: string): AtMenuItem[] {
+    const childFolders: AtMenuItem[] = [];
+    
+    // Get directories from sandbox
+    const directories = this.editorEngine?.sandbox?.directories || [];
+    
+    console.log('AtMenu getChildFolders: folderPath:', folderPath, 'directories:', directories);
+    
+    if (directories.length > 0) {
+      // Filter directories that are direct children of the specified folder
+      directories.forEach((dirPath: string) => {
+        // Skip root directory
+        if (dirPath === '/' || dirPath === './') {
+          return;
+        }
+        
+        // Check if this directory is a direct child of the folder
+        const normalizedFolderPath = folderPath.endsWith('/') ? folderPath : folderPath + '/';
+        if (dirPath.startsWith(normalizedFolderPath)) {
+          // Get the relative path from the folder
+          const relativePath = dirPath.substring(normalizedFolderPath.length);
+          
+          // Only include direct children (not nested directories)
+          if (!relativePath.includes('/')) {
+            const folderName = relativePath;
+            if (folderName) {
+              childFolders.push({
+                id: `child-folder-${dirPath}`,
+                type: 'folder',
+                name: folderName,
+                path: dirPath,
+                category: 'files',
+                icon: 'directory',
+                hasChildren: true
+              });
+            }
+          }
+        }
+      });
+    }
+
+    // Sort alphabetically
+    childFolders.sort((a, b) => a.name.localeCompare(b.name));
+    
+    console.log('AtMenu getChildFolders: returning items:', childFolders);
+    return childFolders;
+  }
+
+  // Get all child items (files and folders) for a specific folder
+  getChildItems(folderPath: string): AtMenuItem[] {
+    const childFolders = this.getChildFolders(folderPath);
+    const childFiles = this.getChildFiles(folderPath);
+    
+    // Combine and sort alphabetically
+    const combined = [...childFolders, ...childFiles];
+    combined.sort((a, b) => a.name.localeCompare(b.name));
+    
+    console.log('AtMenu getChildItems: returning items:', combined);
+    return combined;
+  }
+
+  // Get brand child items (Colors and Typography)
+  getBrandChildItems(): AtMenuItem[] {
+    const brandChildItems: AtMenuItem[] = [
+      {
+        id: 'brand-colors',
+        type: 'tab',
+        name: 'Colors',
+        path: '/brand/colors',
+        category: 'leftPanel',
+        icon: 'palette'
+      },
+      {
+        id: 'brand-typography',
+        type: 'tab',
+        name: 'Typography',
+        path: '/brand/typography',
+        category: 'leftPanel',
+        icon: 'type'
+      }
+    ];
+
+    console.log('AtMenu getBrandChildItems: returning items:', brandChildItems);
+    return brandChildItems;
+  }
+
+  // Get pages child items from the pages manager
+  getPagesChildItems(): AtMenuItem[] {
+    const pageItems: AtMenuItem[] = [];
+    
+    // Get pages from the editor engine's pages manager
+    const pages = this.editorEngine?.pages?.tree || [];
+    
+    console.log('AtMenu getPagesChildItems: pages:', pages);
+    
+    if (pages.length > 0) {
+      // Convert PageNode objects to AtMenuItem objects
+      pages.forEach((pageNode: any) => {
+        // Skip folder nodes (nodes with children)
+        if (pageNode.children && pageNode.children.length > 0) {
+          return;
+        }
+        
+        // Create AtMenuItem from PageNode
+        pageItems.push({
+          id: `page-${pageNode.path}`,
+          type: 'file',
+          name: pageNode.name || pageNode.path,
+          path: pageNode.path,
+          category: 'leftPanel',
+          icon: 'file'
+        });
+      });
+    }
+
+    // Sort alphabetically
+    pageItems.sort((a, b) => a.name.localeCompare(b.name));
+    
+    console.log('AtMenu getPagesChildItems: returning items:', pageItems);
+    return pageItems;
+  }
+
+  // Get images child items from the images section
+  getImagesChildItems(): AtMenuItem[] {
+    const imageItems: AtMenuItem[] = [];
+    
+    // Get image files from the sandbox
+    const files = this.editorEngine?.sandbox?.files || [];
+    
+    console.log('AtMenu getImagesChildItems: files:', files);
+    
+    if (files.length > 0) {
+      // Filter for image files and create items with thumbnails
+      files.forEach((filePath: string) => {
+        // Skip directories (they end with /)
+        if (filePath.endsWith('/')) {
+          return;
+        }
+        
+        // Check if this is an image file
+        const fileName = filePath.split('/').pop() || '';
+        if (fileName && this.isImageFile(fileName)) {
+          // Generate proper image URL for thumbnail
+          const imageUrl = this.generateImageUrl(filePath);
+          
+          imageItems.push({
+            id: `image-${filePath}`,
+            type: 'file',
+            name: fileName,
+            path: filePath,
+            category: 'files',
+            icon: 'image',
+            thumbnail: imageUrl
+          });
+        }
+      });
+    }
+
+    // Sort alphabetically
+    imageItems.sort((a, b) => a.name.localeCompare(b.name));
+    
+    console.log('AtMenu getImagesChildItems: returning items:', imageItems);
+    return imageItems;
+  }
+
+  // Generate proper image URL for thumbnail display
+  private generateImageUrl(filePath: string): string {
+    // Get the sandbox URL from the editor engine
+    const sandboxUrl = this.editorEngine?.sandbox?.session?.session?.url;
+    
+    if (!sandboxUrl) {
+      console.warn('No sandbox URL available for image thumbnail');
+      return '';
+    }
+    
+    // Convert file path to URL path (remove leading ./ if present)
+    const cleanPath = filePath.replace(/^\.\//, '');
+    
+    // Construct the full URL
+    const imageUrl = `${sandboxUrl}/${cleanPath}`;
+    
+    console.log('Generated image URL:', imageUrl);
+    return imageUrl;
+  }
+
+  // Helper function to determine if a file is an image file
+  private isImageFile(filename: string): boolean {
+    if (!filename || typeof filename !== 'string') {
+      return false;
+    }
+    
+    const extension = filename.split('.').pop()?.toLowerCase();
+    
+    // Define image file extensions
+    const imageExtensions = [
+      'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico', 'tiff', 'tif'
+    ];
+    
+    return imageExtensions.includes(extension || '');
   }
 
   // Get all items for the @ menu

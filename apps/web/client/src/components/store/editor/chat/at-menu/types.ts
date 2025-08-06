@@ -7,6 +7,7 @@ export interface AtMenuItem {
   children?: AtMenuItem[];
   icon?: string;
   category: 'recents' | 'files' | 'code' | 'leftPanel';
+  thumbnail?: string; // Path to image for thumbnail display
 }
 
 export interface AtMenuState {
