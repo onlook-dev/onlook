@@ -32,6 +32,7 @@ import {
     todoWriteTool,
 } from './plan';
 import { LIST_FILES_TOOL_NAME, listFilesTool, READ_FILE_TOOL_NAME, readFileTool } from './read';
+import { SANDBOX_TOOL_NAME, sandboxTool } from './sandbox';
 import { SCRAPE_URL_TOOL_NAME, scrapeUrlTool } from './web';
 
 export const ASK_TOOL_SET: ToolSet = {
@@ -54,4 +55,5 @@ export const BUILD_TOOL_SET: ToolSet = {
     [FUZZY_EDIT_FILE_TOOL_NAME]: fuzzyEditFileTool,
     [WRITE_FILE_TOOL_NAME]: writeFileTool,
     [BASH_EDIT_TOOL_NAME]: bashEditTool,
+    [SANDBOX_TOOL_NAME]: sandboxTool,
 };
