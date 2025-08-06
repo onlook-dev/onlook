@@ -152,7 +152,7 @@ export class AtMenuDataProviders {
     return codeFiles;
   }
 
-  // Get left panel options
+    // Get left panel options
   getLeftPanelItems(): AtMenuItem[] {
     const leftPanelItems: AtMenuItem[] = [
       {
@@ -161,7 +161,8 @@ export class AtMenuDataProviders {
         name: 'Brand',
         path: '/brand',
         category: 'leftPanel',
-        icon: 'brand'
+        icon: 'brand',
+        hasChildren: true
       },
       {
         id: 'pages',
@@ -169,7 +170,8 @@ export class AtMenuDataProviders {
         name: 'Pages',
         path: '/pages',
         category: 'leftPanel',
-        icon: 'file'
+        icon: 'file',
+        hasChildren: true
       },
       {
         id: 'images',
@@ -177,10 +179,11 @@ export class AtMenuDataProviders {
         name: 'Images',
         path: '/images',
         category: 'leftPanel',
-        icon: 'image'
+        icon: 'image',
+        hasChildren: true
       }
     ];
-
+    
     return leftPanelItems;
   }
 

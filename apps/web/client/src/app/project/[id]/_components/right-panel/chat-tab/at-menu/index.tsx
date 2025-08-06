@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useLayoutEffect } from 'react';
 import { motion } from 'motion/react';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
@@ -16,9 +16,41 @@ interface AtMenuProps {
   editorEngine: any;
 }
 
+// Function to get cursor coordinates in a contenteditable element
+const getCaretCoordinates = (element: HTMLElement): { top: number; left: number } => {
+  const selection = window.getSelection();
+  if (!selection || selection.rangeCount === 0) {
+    // Fallback to element position
+    const rect = element.getBoundingClientRect();
+    return { top: rect.top, left: rect.left };
+  }
+
+  const range = selection.getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  
+  // If the range has no width/height (collapsed cursor), insert a temporary span at the caret to measure
+  if (rect.width === 0 && rect.height === 0) {
+    const clonedRange = range.cloneRange();
+    const tempSpan = document.createElement('span');
+    tempSpan.appendChild(document.createTextNode('\u200b')); // Zero-width space
+
+    clonedRange.insertNode(tempSpan);
+
+    const spanRect = tempSpan.getBoundingClientRect();
+    const coordinates = { top: spanRect.top, left: spanRect.left };
+
+    tempSpan.parentNode?.removeChild(tempSpan);
+
+    return coordinates;
+  }
+  
+  return { top: rect.top, left: rect.left };
+};
+
 export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngine }: AtMenuProps) => {
   const menuRef = useRef<HTMLDivElement>(null);
   const selectedItemRef = useRef<HTMLButtonElement>(null);
+  const submenuSelectedItemRef = useRef<HTMLButtonElement>(null);
   const [dataProviders] = useState(() => new AtMenuDataProviders(editorEngine));
   const [allItems, setAllItems] = useState<AtMenuItem[]>([]);
   const [filteredItems, setFilteredItems] = useState<Record<string, AtMenuItem[]>>({
@@ -29,6 +61,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
   });
   const [lastInteractionMethod, setLastInteractionMethod] = useState<'keyboard' | 'mouse'>('keyboard');
   const [keyboardActive, setKeyboardActive] = useState(false);
+  const [menuHeightMeasured, setMenuHeightMeasured] = useState(0);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const [mouseInMenu, setMouseInMenu] = useState(false);
   const [currentFolderContext, setCurrentFolderContext] = useState<AtMenuItem | null>(null);
@@ -39,6 +72,59 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
     console.log('AtMenu: Loaded items:', items.length);
     setAllItems(items);
   }, [dataProviders]);
+
+  // Handle submenu opening when an item with children is clicked
+  const handleItemClick = (item: AtMenuItem) => {
+    if (item.hasChildren && !state.isSubmenuOpen) {
+      let childItems: AtMenuItem[] = [];
+
+      // Handle special left panel parents (Brand, Images, Pages)
+      if (item.category === 'leftPanel') {
+        switch (item.id) {
+          case 'brand':
+            childItems = dataProviders.getBrandChildItems();
+            break;
+          case 'images':
+            childItems = dataProviders.getImagesChildItems();
+            break;
+          case 'pages':
+            childItems = dataProviders.getPagesChildItems();
+            break;
+          default:
+            childItems = [];
+        }
+      }
+
+      // Fallback to generic folder children when none of the above matched
+      if (childItems.length === 0) {
+        childItems = dataProviders.getChildItems(item.path);
+      }
+
+      // Open submenu regardless of whether it contains children
+      console.log('AtMenu: Opening submenu for:', item.name, 'with', childItems.length, 'children');
+      onStateChange({
+        isSubmenuOpen: true,
+        submenuParent: item,
+        submenuItems: childItems,
+        submenuSelectedIndex: 0
+      });
+      return;
+    }
+
+    // Regular item selection
+    onSelectItem(item);
+  };
+
+  // Handle back button click to return to main menu
+  const handleBackClick = () => {
+    console.log('AtMenu: Closing submenu, returning to main menu');
+    onStateChange({
+      isSubmenuOpen: false,
+      submenuParent: null,
+      submenuItems: [],
+      submenuSelectedIndex: 0
+    });
+  };
 
   // Filter items based on search query
   useEffect(() => {
@@ -182,6 +268,17 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
     }
   }, [state.selectedIndex, state.isOpen]);
 
+  // Scroll submenu selected item into view
+  useEffect(() => {
+    if (state.isSubmenuOpen && submenuSelectedItemRef.current) {
+      submenuSelectedItemRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    }
+  }, [state.submenuSelectedIndex, state.isSubmenuOpen]);
+
   // Reset keyboard active state after a delay of no keyboard interaction
   useEffect(() => {
     if (keyboardActive && state.isOpen) {
@@ -206,12 +303,55 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!state.isOpen) return;
 
-              const allItems = [
-          ...(filteredItems.recents ?? []),
-          ...(filteredItems.files ?? []),
-          ...(filteredItems.code ?? []),
-          ...(filteredItems.leftPanel ?? [])
-        ];
+      if (state.isSubmenuOpen) {
+        // Handle submenu keyboard navigation
+        const submenuItems = state.submenuItems;
+        
+        switch (e.key) {
+          case 'ArrowDown':
+            e.preventDefault();
+            setLastInteractionMethod('keyboard');
+            setKeyboardActive(true);
+            setHasUserInteracted(true);
+            const nextSubmenuIndex = state.submenuSelectedIndex < submenuItems.length - 1 ? state.submenuSelectedIndex + 1 : 0;
+            onStateChange({ submenuSelectedIndex: nextSubmenuIndex });
+            break;
+          case 'ArrowUp':
+            e.preventDefault();
+            setLastInteractionMethod('keyboard');
+            setKeyboardActive(true);
+            setHasUserInteracted(true);
+            const prevSubmenuIndex = state.submenuSelectedIndex > 0 ? state.submenuSelectedIndex - 1 : submenuItems.length - 1;
+            onStateChange({ submenuSelectedIndex: prevSubmenuIndex });
+            break;
+          case 'Enter':
+            e.preventDefault();
+            if (state.submenuSelectedIndex >= 0 && state.submenuSelectedIndex < submenuItems.length) {
+              const selectedItem = submenuItems[state.submenuSelectedIndex];
+              if (selectedItem) {
+                onSelectItem(selectedItem);
+              }
+            }
+            break;
+          case 'ArrowLeft':
+            e.preventDefault();
+            handleBackClick();
+            break;
+          case 'Escape':
+            e.preventDefault();
+            handleBackClick();
+            break;
+        }
+        return;
+      }
+
+      // Main menu keyboard navigation
+      const allItems = [
+        ...(filteredItems.recents ?? []),
+        ...(filteredItems.files ?? []),
+        ...(filteredItems.code ?? []),
+        ...(filteredItems.leftPanel ?? [])
+      ];
 
       switch (e.key) {
         case 'ArrowDown':
@@ -263,6 +403,15 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
             }
           }
           break;
+        case 'ArrowRight':
+          e.preventDefault();
+          if (state.selectedIndex >= 0 && state.selectedIndex < allItems.length) {
+            const selectedItem = allItems[state.selectedIndex];
+            if (selectedItem && selectedItem.hasChildren) {
+              handleItemClick(selectedItem);
+            }
+          }
+          break;
         case 'Escape':
           e.preventDefault();
           onClose();
@@ -277,11 +426,11 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [state.isOpen, state.selectedIndex, filteredItems, onSelectItem, onClose]);
+  }, [state.isOpen, state.selectedIndex, state.isSubmenuOpen, state.submenuSelectedIndex, state.submenuItems, filteredItems, onSelectItem, onClose]);
 
   // Handle click outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: Event) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         onClose();
       }
@@ -289,10 +438,14 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
 
     if (state.isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('click', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
     };
   }, [state.isOpen, onClose]);
 
@@ -308,9 +461,21 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
     isOpen: state.isOpen, 
     position: state.position,
     allItemsCount: allItems.length,
-    filteredItemsCount: Object.values(filteredItems).flat().length
+    filteredItemsCount: Object.values(filteredItems).flat().length,
+    isSubmenuOpen: state.isSubmenuOpen,
+    submenuParent: state.submenuParent?.name
   });
   
+  // Measure menu height after render to adjust positioning dynamically
+  useLayoutEffect(() => {
+    if (menuRef.current) {
+      const newHeight = menuRef.current.getBoundingClientRect().height;
+      if (Math.abs(newHeight - menuHeightMeasured) > 1) {
+        setMenuHeightMeasured(newHeight);
+      }
+    }
+  }, [state.isSubmenuOpen, state.submenuItems, state.selectedIndex, menuHeightMeasured]);
+
   if (!state.isOpen) return null;
 
   const allItemsFlat = [
@@ -359,7 +524,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
                   isSelected={isSelected}
                   isInitialSelection={isSelected && !hasUserInteracted}
                   keyboardActive={keyboardActive}
-                  onClick={() => onSelectItem(item)}
+                  onClick={() => handleItemClick(item)}
                   onMouseEnter={() => {
                     if (!keyboardActive) {
                       setLastInteractionMethod('mouse');
@@ -377,6 +542,50 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
         {category !== 'leftPanel' && (
           <div className="border-b border-gray-700 mt-2" />
         )}
+      </div>
+    );
+  };
+
+  const renderSubmenu = () => {
+    if (!state.isSubmenuOpen || !state.submenuParent) return null;
+
+    return (
+      <div className="px-2">
+        <div className={cn(
+          "space-y-1 w-full",
+          state.submenuItems.length === 0 ? "mt-0" : "mt-2"
+        )}>
+          {state.submenuItems.length === 0 ? (
+            <div className="w-full py-2 text-center text-gray-400 text-sm">
+              No files here.
+            </div>
+          ) : (
+            state.submenuItems.map((item, index) => {
+              const isSelected = index === state.submenuSelectedIndex;
+
+              return (
+                <MenuItem
+                  key={item.id}
+                  ref={isSelected ? submenuSelectedItemRef : undefined}
+                  item={item}
+                  isSelected={isSelected}
+                  isInitialSelection={isSelected && !hasUserInteracted}
+                  keyboardActive={keyboardActive}
+                  onClick={() => onSelectItem(item)}
+                  onMouseEnter={() => {
+                    if (!keyboardActive) {
+                      setLastInteractionMethod('mouse');
+                      setHasUserInteracted(true);
+                      onStateChange({ submenuSelectedIndex: index });
+                    }
+                  }}
+                  showChevron={false}
+                  isChildItem={true}
+                />
+              );
+            })
+          )}
+        </div>
       </div>
     );
   };
@@ -399,18 +608,59 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
   // Calculate menu position with better viewport handling
   const calculateMenuPosition = () => {
     const menuWidth = 320;
-    const menuHeight = Math.min(400, allItemsFlat.length * 40 + 100); // Estimate height
+    // Use measured height if available (especially important for variable-height submenus)
+    const mainMenuHeightEstimate = Math.min(400, allItemsFlat.length * 40 + 100);
+    // For submenus use measured height if it exists, else fallback estimate
+    const submenuHeightEstimate = Math.min(400, state.submenuItems.length * 40 + 60);
+
+    const menuHeight = state.isSubmenuOpen
+      ? (menuHeightMeasured > 0 ? menuHeightMeasured : submenuHeightEstimate)
+      : mainMenuHeightEstimate;
+
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     
-    // state.position.top is the textarea's top position
-    // We want the menu's BOTTOM to be above the textarea
-    let top = state.position.top - menuHeight - 10; // 10px gap between menu bottom and textarea top
-    let left = state.position.left;
+    let top, left;
     
-    // If the menu would go off the top of the screen, position it below the textarea
-    if (top < 10) {
-      top = state.position.top + 25; // 25px below textarea top
+    if (state.isSubmenuOpen) {
+      // For submenu, get the actual cursor position from the contenteditable element
+      const contentEditableElement = document.querySelector('[contenteditable="true"]') as HTMLElement;
+      if (contentEditableElement) {
+        const cursorCoords = getCaretCoordinates(contentEditableElement);
+        
+        // Position submenu just above the cursor
+        // We want the BOTTOM of submenu to be 5px above cursor
+        top = cursorCoords.top - menuHeight - 5;
+        // Align submenu horizontally with caret (like main menu)
+        left = cursorCoords.left;
+        // Clamp within viewport
+        if (left + menuWidth > viewportWidth - 10) {
+          left = viewportWidth - menuWidth - 10;
+        }
+        if (left < 10) {
+          left = 10;
+        }
+         
+         // If the submenu would go off the top of the screen, position it below the cursor
+         if (top < 10) {
+           top = cursorCoords.top + 20; // 20px below cursor
+         }
+       } else {
+         // Fallback to main-menu-relative positioning
+         left = state.position.left;
+         top = state.position.top - menuHeight - 5;
+      }
+    } else {
+      // Main menu positioning - keep existing logic
+      // state.position.top is the textarea's top position
+      // We want the menu's BOTTOM to be above the textarea
+      top = state.position.top - menuHeight - 10; // 10px gap between menu bottom and textarea top
+      left = state.position.left;
+      
+      // If the menu would go off the top of the screen, position it below the textarea
+      if (top < 10) {
+        top = state.position.top + 25; // 25px below textarea top
+      }
     }
     
     // If the menu would go off the bottom of the screen, adjust to fit
@@ -460,8 +710,24 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
       }}
     >
       <div className="rounded-lg bg-gray-800 py-2">
-        {/* ===== FOLDER CONTEXT BREADCRUMB ===== */}
-        {currentFolderContext && (
+        {/* ===== SUBMENU HEADER WITH BACK BUTTON ===== */}
+        {state.isSubmenuOpen && state.submenuParent && (
+          <div className="px-2 py-1 border-b border-gray-700">
+            <div className="flex items-center text-xs text-gray-400">
+              <button
+                onClick={handleBackClick}
+                className="flex items-center hover:text-white transition-colors mr-2"
+                title="Go back to main menu"
+              >
+                <Icons.ArrowLeft className="w-3 h-3" />
+              </button>
+              <span className="font-mono">{state.submenuParent.name}/</span>
+            </div>
+          </div>
+        )}
+        
+        {/* ===== FOLDER CONTEXT BREADCRUMB (for search-based navigation) ===== */}
+        {!state.isSubmenuOpen && currentFolderContext && (
           <div className="px-2 py-1 border-b border-gray-700">
             <div className="flex items-center text-xs text-gray-400">
               <span className="font-mono">@{currentFolderContext.name}/</span>
@@ -469,19 +735,26 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
           </div>
         )}
         
-        {/* ===== AT MENU SECTION: RECENTS ===== */}
-        {renderCategory('Recents', filteredItems.recents ?? [], 'recents', true)}
+        {/* ===== SUBMENU CONTENT ===== */}
+        {state.isSubmenuOpen ? (
+          renderSubmenu()
+        ) : (
+          <>
+            {/* ===== AT MENU SECTION: RECENTS ===== */}
+            {renderCategory('Recents', filteredItems.recents ?? [], 'recents', true)}
+            
+            {/* ===== AT MENU SECTION: FOLDERS AND FILES ===== */}
+            {renderCategory('Folders & Files', filteredItems.files ?? [], 'files')}
+            
+            {/* ===== AT MENU SECTION: CODE ===== */}
+            {renderCategory('Code', filteredItems.code ?? [], 'code')}
+            
+            {/* ===== AT MENU SECTION: LEFT PANEL ===== */}
+            {renderCategory('Design Panel', filteredItems.leftPanel ?? [], 'leftPanel')}
+          </>
+        )}
         
-        {/* ===== AT MENU SECTION: FOLDERS AND FILES ===== */}
-        {renderCategory('Folders and Files', filteredItems.files ?? [], 'files')}
-        
-        {/* ===== AT MENU SECTION: CODE ===== */}
-        {renderCategory('Code', filteredItems.code ?? [], 'code')}
-        
-        {/* ===== AT MENU SECTION: LEFT PANEL ===== */}
-        {renderCategory('Design Panel', filteredItems.leftPanel ?? [], 'leftPanel')}
-        
-        {allItemsFlat.length === 0 && (
+        {!state.isSubmenuOpen && allItemsFlat.length === 0 && (
           <div className="p-4 text-center text-gray-400">
             <div className="text-sm">
               Loading items...
@@ -489,13 +762,15 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
           </div>
         )}
         
-        {state.searchQuery && allItemsFlat.length === 0 && (
+        {!state.isSubmenuOpen && state.searchQuery && allItemsFlat.length === 0 && (
           <div className="p-4 text-center text-gray-400">
             <div className="text-sm">
               No files or folders match &quot;{state.searchQuery}&quot;
             </div>
           </div>
         )}
+        
+
       </div>
     </motion.div>
   );

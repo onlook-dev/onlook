@@ -132,28 +132,29 @@ export const ChatInput = observer(({
       setMentions(newMentions);
     }, [inputValue]);
 
-    // Sync mentions with context pills - only remove when mentions are explicitly deleted
+    // Sync mentions with context pills - ensure pill removal happens whenever a mention is deleted
     useEffect(() => {
-      const currentMentionNames = mentions.map(m => m.name);
+      const currentMentionNames = mentions.map((m) => m.name);
       const contextMentions = editorEngine.chat.context.context.filter(
-        ctx => ctx.type === MessageContextType.MENTION
+        (ctx) => ctx.type === MessageContextType.MENTION,
       );
-      
-      // Only remove context pills if the input has changed and mentions are missing
-      // This prevents removal when the input is being processed or updated
-      if (inputValue.length > 0) {
-        contextMentions.forEach(contextMention => {
-          if (!currentMentionNames.includes(contextMention.displayName)) {
-            // Check if the mention was actually deleted (not just not detected)
-            const mentionPattern = new RegExp(`@${contextMention.displayName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?=\\s|$)`, 'g');
-            if (!mentionPattern.test(inputValue)) {
-              console.log('Removing context pill for:', contextMention.displayName);
-              // Remove the context pill since the mention was deleted from input
-              editorEngine.chat.context.removeMentionContext(contextMention.displayName);
-            }
+
+      // Remove context pills that no longer appear in the input
+      contextMentions.forEach((contextMention) => {
+        if (!currentMentionNames.includes(contextMention.displayName)) {
+          // Double-check that the raw input really no longer contains the mention
+          const escapedName = contextMention.displayName.replace(
+            /[.*+?^${}()|[\]\\]/g,
+            '\\$&',
+          );
+          const mentionPattern = new RegExp(`@${escapedName}(?=\\s|$)`, 'g');
+          if (!mentionPattern.test(inputValue)) {
+            editorEngine.chat.context.removeMentionContext(
+              contextMention.displayName,
+            );
           }
-        });
-      }
+        }
+      });
     }, [mentions, editorEngine.chat.context.context, inputValue]);
 
     // Function to get plain text from contenteditable
@@ -218,27 +219,48 @@ export const ChatInput = observer(({
         }
     }, [inputValue]);
 
-    // Handle @ menu item selection
-    const handleAtMenuSelect = (item: AtMenuItem) => {
-        console.log('Selected item:', item);
-        
-        // Check if we're in folder navigation mode
-        const folderMatch = inputValue.match(/@([^\/]+)\/$/);
-        if (folderMatch && folderMatch[1]) {
-            // We're in folder navigation, replace the entire folder mention with the selected file
-            const folderName = folderMatch[1];
-            const folderMention = `@${folderName}/`;
-            const newValue = inputValue.replace(folderMention, `@${item.name} `);
+            // Handle @ menu item selection
+        const handleAtMenuSelect = (item: AtMenuItem) => {
+            console.log('Selected item:', item);
+
+            // Helper to get the caret (cursor) position as a plain-text offset inside the
+            // content-editable element. If we cannot calculate it we fall back to the end
+            // of the current input string.
+            const getCaretOffset = (el: HTMLElement | null): number => {
+                if (!el) return inputValue.length;
+                const sel = window.getSelection();
+                if (!sel || sel.rangeCount === 0) return inputValue.length;
+                const range = sel.getRangeAt(0);
+                const preRange = range.cloneRange();
+                preRange.selectNodeContents(el);
+                preRange.setEnd(range.endContainer, range.endOffset);
+                return preRange.toString().length;
+            };
+
+            const caretOffset = getCaretOffset(contentEditableRef.current);
+            const beforeCaret = inputValue.slice(0, caretOffset);
+            const afterCaret = inputValue.slice(caretOffset);
+
+            // First try to detect folder-navigation placeholders (e.g. "@brand/") just before the caret
+            const folderNavRegex = /@([^\/]+)\/$/;
+            let newBeforeCaret: string;
+
+            const folderMatch = beforeCaret.match(folderNavRegex);
+            if (folderMatch && folderMatch[1]) {
+                // Replace the folder placeholder (including the trailing slash) with the chosen item
+                const prefix = beforeCaret.slice(0, beforeCaret.lastIndexOf(folderMatch[0]));
+                const needsLeadingSpace = prefix.length > 0 && !/\s$/.test(prefix);
+                newBeforeCaret = prefix + (needsLeadingSpace ? ' ' : '') + `@${item.name} `;
+            } else {
+                // Generic mention replacement – replace the placeholder immediately preceding the caret.
+                const placeholderRegex = /@[^\s]*$/;
+                const prefix = beforeCaret.replace(placeholderRegex, '').trimEnd();
+                const needsLeadingSpace = prefix.length > 0 && !/\s$/.test(prefix);
+                newBeforeCaret = prefix + (needsLeadingSpace ? ' ' : '') + `@${item.name} `;
+            }
+
+            const newValue = newBeforeCaret + afterCaret;
             setInputValue(newValue);
-        } else {
-            // Regular mention selection
-            // Replace the last @ and any text after it with the selected item
-            const lastAtIndex = inputValue.lastIndexOf('@');
-            const textBeforeAt = inputValue.substring(0, lastAtIndex);
-            // Always add a space after the mention to ensure proper detection
-            const newValue = textBeforeAt + `@${item.name} `;
-            setInputValue(newValue);
-        }
         
         // Add context pill for the selected item
         console.log('Adding mention context for:', item.name);
@@ -251,13 +273,17 @@ export const ChatInput = observer(({
         console.log('Added mention context:', mentionContext);
         console.log('Context pills after adding:', editorEngine.chat.context.context.length);
         
-        // Close @ menu
+        // Close @ menu and reset submenu state
         setAtMenuState(prev => ({
             ...prev,
             isOpen: false,
             activeMention: false,
             searchQuery: '',
-            previewText: ''
+            previewText: '',
+            isSubmenuOpen: false,
+            submenuParent: null,
+            submenuItems: [],
+            submenuSelectedIndex: 0
         }));
         
         // Focus back to input and set cursor position after the space
@@ -334,7 +360,11 @@ export const ChatInput = observer(({
                 },
                 selectedIndex: 0,
                 searchQuery: '',
-                activeMention: true
+                activeMention: true,
+                isSubmenuOpen: false,
+                submenuParent: null,
+                submenuItems: [],
+                submenuSelectedIndex: 0
             };
             
             console.log('Setting @ menu state:', newState);
@@ -353,13 +383,21 @@ export const ChatInput = observer(({
                 // This is a folder navigation, update search query to show child items
                 setAtMenuState(prev => ({
                     ...prev,
-                    searchQuery: textAfterAt
+                    searchQuery: textAfterAt,
+                    isSubmenuOpen: false,
+                    submenuParent: null,
+                    submenuItems: [],
+                    submenuSelectedIndex: 0
                 }));
             } else {
                 // Regular search
                 setAtMenuState(prev => ({
                     ...prev,
-                    searchQuery: textAfterAt
+                    searchQuery: textAfterAt,
+                    isSubmenuOpen: false,
+                    submenuParent: null,
+                    submenuItems: [],
+                    submenuSelectedIndex: 0
                 }));
             }
         } else {
@@ -369,7 +407,11 @@ export const ChatInput = observer(({
                 isOpen: false,
                 activeMention: false,
                 searchQuery: '',
-                previewText: ''
+                previewText: '',
+                isSubmenuOpen: false,
+                submenuParent: null,
+                submenuItems: [],
+                submenuSelectedIndex: 0
             }));
         }
     }
@@ -411,6 +453,61 @@ export const ChatInput = observer(({
             if (!inputEmpty) {
                 sendMessage();
             }
+        }
+        };
+
+    // Handle click inside contenteditable to reopen @ menu when cursor is right after "@"
+    const handleContentEditableClick = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (disabled) {
+            return;
+        }
+        const element = e.currentTarget;
+        // Obtain plain text of contenteditable
+        const plainText = getPlainText(element);
+        // Helper to compute caret offset relative to plain text
+        const getCaretOffset = (el: HTMLElement | null): number => {
+            if (!el) return plainText.length;
+            const sel = window.getSelection();
+            if (!sel || sel.rangeCount === 0) return plainText.length;
+            const range = sel.getRangeAt(0);
+            const preRange = range.cloneRange();
+            preRange.selectNodeContents(el);
+            preRange.setEnd(range.endContainer, range.endOffset);
+            return preRange.toString().length;
+        };
+        const caretOffset = getCaretOffset(element);
+
+        if (caretOffset > 0 && plainText[caretOffset - 1] === '@') {
+            const rect = element.getBoundingClientRect();
+            const inputPadding = 12; // padding-left (p-3) as used when opening via typing
+            const textBeforeCaret = plainText.substring(0, caretOffset);
+
+            // Measure pixel width of textBeforeCaret to position menu correctly
+            const span = document.createElement('span');
+            span.style.visibility = 'hidden';
+            span.style.position = 'absolute';
+            span.style.whiteSpace = 'pre';
+            span.style.font = window.getComputedStyle(element).font;
+            span.textContent = textBeforeCaret;
+            document.body.appendChild(span);
+            const textWidth = span.offsetWidth;
+            document.body.removeChild(span);
+
+            setAtMenuState(prev => ({
+                ...prev,
+                isOpen: true,
+                position: {
+                    top: rect.top,
+                    left: rect.left + inputPadding + textWidth,
+                },
+                selectedIndex: 0,
+                searchQuery: '',
+                activeMention: true,
+                isSubmenuOpen: false,
+                submenuParent: null,
+                submenuItems: [],
+                submenuSelectedIndex: 0,
+            }));
         }
     };
 
@@ -627,6 +724,7 @@ export const ChatInput = observer(({
                     data-placeholder={getPlaceholderText()}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
+                    onClick={handleContentEditableClick}
                     onPaste={handlePaste}
                     onCompositionStart={() => setIsComposing(true)}
                     onCompositionEnd={(e) => {
@@ -699,7 +797,11 @@ export const ChatInput = observer(({
                         isOpen: false,
                         activeMention: false,
                         searchQuery: '',
-                        previewText: ''
+                        previewText: '',
+                        isSubmenuOpen: false,
+                        submenuParent: null,
+                        submenuItems: [],
+                        submenuSelectedIndex: 0
                     }));
                 }}
                 onStateChange={(newState) => {

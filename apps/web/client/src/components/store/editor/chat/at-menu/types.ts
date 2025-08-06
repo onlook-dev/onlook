@@ -17,6 +17,11 @@ export interface AtMenuState {
   searchQuery: string;
   activeMention: boolean;
   previewText: string;
+  // New nested menu state
+  isSubmenuOpen: boolean;
+  submenuParent: AtMenuItem | null;
+  submenuItems: AtMenuItem[];
+  submenuSelectedIndex: number;
 }
 
 export interface AtMenuContext {

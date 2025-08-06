@@ -21,7 +21,11 @@ export const ChatTab = ({
       selectedIndex: 0,
       searchQuery: '',
       activeMention: false,
-      previewText: ''
+      previewText: '',
+      isSubmenuOpen: false,
+      submenuParent: null,
+      submenuItems: [],
+      submenuSelectedIndex: 0
     });
 
     return (

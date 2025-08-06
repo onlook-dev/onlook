@@ -12,7 +12,11 @@ export default function TestAtMenu() {
     selectedIndex: 0,
     searchQuery: '',
     activeMention: false,
-    previewText: ''
+    previewText: '',
+    isSubmenuOpen: false,
+    submenuParent: null,
+    submenuItems: [],
+    submenuSelectedIndex: 0
   });
 
   // Mock editor engine for testing with context functionality

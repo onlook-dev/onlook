@@ -47,8 +47,8 @@ export const MenuItem = forwardRef<HTMLButtonElement, MenuItemProps>(
     return (
       <button
         ref={ref}
-        onClick={onClick}
         onMouseEnter={onMouseEnter}
+        onMouseDown={(e) => e.stopPropagation()} onClick={(e) => { e.stopPropagation(); onClick(); }}
         className={cn(
           'w-full flex flex-row items-center h-6 cursor-pointer pr-1 text-left group rounded transition-colors',
           isInitialSelection && isSelected

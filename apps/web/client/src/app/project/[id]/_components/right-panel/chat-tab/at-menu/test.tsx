@@ -56,7 +56,11 @@ export const AtMenuTest = () => {
     selectedIndex: 0,
     searchQuery: '',
     activeMention: false,
-    previewText: ''
+    previewText: '',
+    isSubmenuOpen: false,
+    submenuParent: null,
+    submenuItems: [],
+    submenuSelectedIndex: 0
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -110,13 +114,17 @@ export const AtMenuTest = () => {
       // We're in folder navigation, replace the entire folder mention with the selected file
       const folderName = folderMatch[1];
       const folderMention = `@${folderName}/`;
-      const newValue = inputValue.replace(folderMention, `@${item.name} `);
+      const folderStart = inputValue.lastIndexOf(folderMention);
+      const prefix = inputValue.substring(0, folderStart);
+      const needsLeadingSpace = prefix.length > 0 && !/\s$/.test(prefix);
+      const newValue = prefix + (needsLeadingSpace ? ' ' : '') + `@${item.name} `;
       setInputValue(newValue);
     } else {
-      // Regular mention selection
-      const lastAtIndex = inputValue.lastIndexOf('@');
-      const textBeforeAt = inputValue.substring(0, lastAtIndex);
-      const newValue = textBeforeAt + `@${item.name} `;
+      // Regular mention selection – replace ONLY the currently typed placeholder
+      const baseWithoutPlaceholder = inputValue.replace(/@[^\s]*$/, '').trimEnd();
+      const needsLeadingSpace = baseWithoutPlaceholder.length > 0 && !/\s$/.test(baseWithoutPlaceholder);
+      const newValue =
+        baseWithoutPlaceholder + (needsLeadingSpace ? ' ' : '') + `@${item.name} `;
       setInputValue(newValue);
     }
     
