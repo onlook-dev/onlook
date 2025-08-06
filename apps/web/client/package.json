@@ -56,6 +56,7 @@
         "@trpc/server": "^11.0.0",
         "@uiw/codemirror-extensions-basic-setup": "^4.23.10",
         "@uiw/react-codemirror": "^4.23.10",
+        "@xterm/addon-fit": "^0.10.0",
         "@xterm/xterm": "^5.5.0",
         "ai": "^4.3.10",
         "blob-util": "^2.0.2",

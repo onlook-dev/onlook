@@ -52,8 +52,8 @@ export class ChatContext {
                     return c;
                 }
                 return { ...c, content: fileContent.content } satisfies FileMessageContext;
-            } else if (c.type === MessageContextType.HIGHLIGHT) {
-                const codeBlock = await this.editorEngine.sandbox.getCodeBlock(c.path);
+            } else if (c.type === MessageContextType.HIGHLIGHT && c.oid) {
+                const codeBlock = await this.editorEngine.sandbox.getCodeBlock(c.oid);
                 if (codeBlock === null) {
                     console.error('No code block found for node', c.path);
                     return c;
@@ -119,6 +119,7 @@ export class ChatContext {
                 content: codeBlock,
                 start: templateNode.startTag.start.line,
                 end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
+                oid,
             });
             fileNames.add(templateNode.path);
         }

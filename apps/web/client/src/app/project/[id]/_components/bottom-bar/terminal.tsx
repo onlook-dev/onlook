@@ -53,6 +53,12 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: Te
         // Only open if not already attached
         if (!terminalSession.xterm.element || terminalSession.xterm.element.parentElement !== containerRef.current) {
             terminalSession.xterm.open(containerRef.current);
+            // Ensure proper sizing after opening
+            setTimeout(() => {
+                if (terminalSession?.fitAddon && containerRef.current && !hidden) {
+                    terminalSession.fitAddon.fit();
+                }
+            }, 100);
         }
         return () => {
             // Detach xterm from DOM on unmount (but do not dispose)
@@ -76,9 +82,30 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: Te
         if (!hidden && terminalSession?.xterm) {
             setTimeout(() => {
                 terminalSession.xterm?.focus();
+                // Fit terminal when it becomes visible
+                if (terminalSession.fitAddon) {
+                    terminalSession.fitAddon.fit();
+                }
             }, 100);
         }
     }, [hidden, terminalSession]);
+
+    // Handle container resize
+    useEffect(() => {
+        if (!containerRef.current || !terminalSession?.fitAddon || hidden) return;
+
+        const resizeObserver = new ResizeObserver(() => {
+            if (!hidden) {
+                terminalSession.fitAddon.fit();
+            }
+        });
+
+        resizeObserver.observe(containerRef.current);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, [terminalSession, hidden]);
 
     return (
         <div

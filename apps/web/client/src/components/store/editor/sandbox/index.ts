@@ -189,6 +189,7 @@ export class SandboxManager {
     private async writeRemoteFile(
         filePath: string,
         content: string | Uint8Array,
+        overwrite: boolean = true,
     ): Promise<boolean> {
         if (!this.session.provider) {
             console.error('No provider found for remote write');
@@ -200,7 +201,7 @@ export class SandboxManager {
                 args: {
                     path: filePath,
                     content,
-                    overwriteIfExists: true,
+                    overwriteIfExists: overwrite,
                 },
             });
             return true;
