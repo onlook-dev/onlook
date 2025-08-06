@@ -1,8 +1,8 @@
 import { api } from '@/trpc/client';
+import { CodeProvider, Provider, createCodeProviderClient } from '@onlook/code-provider';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
-import { CodeProvider, Provider, createCodeProviderClient } from '@onlook/code-provider';
 
 export class SessionManager {
     provider: Provider | null = null;
@@ -53,9 +53,9 @@ export class SessionManager {
     }
 
     async readDevServerLogs(): Promise<string> {
-        const task = await this.session?.tasks.get('dev');
-        if (task) {
-            return await task.open();
+        const result = await this.provider?.getTask({ args: { id: 'dev' } });
+        if (result) {
+            return await result.task.open();
         }
         return 'Dev server not found';
     }

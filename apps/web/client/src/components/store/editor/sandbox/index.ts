@@ -1,3 +1,4 @@
+import type { ListFilesOutputFile, Provider, WatchEvent } from '@onlook/code-provider';
 import {
     EXCLUDED_SYNC_DIRECTORIES,
     NEXT_JS_FILE_EXTENSIONS,
@@ -24,7 +25,6 @@ import { FileWatcher } from './file-watcher';
 import { normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
-import type { ListFilesOutputFile, Provider, WatchEvent } from '@onlook/code-provider';
 
 const isDev = env.NODE_ENV === 'development';
 export class SandboxManager {
@@ -422,7 +422,7 @@ export class SandboxManager {
         } else if (eventType === 'change' || eventType === 'add') {
             const provider = this.session.provider;
             if (!provider) {
-                console.error('No session found');
+                console.error('No provider found');
                 return;
             }
 
