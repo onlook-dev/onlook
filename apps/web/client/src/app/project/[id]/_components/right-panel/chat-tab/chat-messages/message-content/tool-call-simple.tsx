@@ -7,6 +7,7 @@ import {
     FUZZY_EDIT_FILE_TOOL_NAME,
     FUZZY_EDIT_FILE_TOOL_PARAMETERS,
     GREP_TOOL_NAME,
+    GREP_TOOL_PARAMETERS,
     LIST_FILES_TOOL_NAME,
     LIST_FILES_TOOL_PARAMETERS,
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
@@ -24,6 +25,7 @@ import {
     TODO_WRITE_TOOL_NAME,
     TODO_WRITE_TOOL_PARAMETERS,
     WEB_SEARCH_TOOL_NAME,
+    WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
     WRITE_FILE_TOOL_PARAMETERS
 } from '@onlook/ai';
@@ -121,7 +123,8 @@ export function ToolCallSimple({
                     }
                 case WEB_SEARCH_TOOL_NAME:
                     if (toolInvocation.args && 'query' in toolInvocation.args) {
-                        const query = toolInvocation.args.query as string;
+                        const params10 = toolInvocation.args as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
+                        const query = params10.query;
                         return "Searching \"" + (query.length > 30 ? query.substring(0, 30) + "..." : query) + "\"";
                     } else {
                         return 'Searching web';
@@ -134,7 +137,9 @@ export function ToolCallSimple({
                     }
                 case GREP_TOOL_NAME:
                     if (toolInvocation.args && 'pattern' in toolInvocation.args) {
-                        return 'Searching for ' + toolInvocation.args.pattern;
+                        const params11 = toolInvocation.args as z.infer<typeof GREP_TOOL_PARAMETERS>;
+                        const pattern = params11.pattern;
+                        return 'Searching for ' + pattern;
                     } else {
                         return 'Searching';
                     }
