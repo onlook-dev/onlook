@@ -136,6 +136,7 @@ export const ProjectCreationProvider = ({
                     codesandbox: {
                         sandboxId: forkedSandbox.sandboxId,
                         userId: user.id,
+                        initClient: true,
                         keepActiveWhileConnected: false,
                         getSession: async (sandboxId, userId) => {
                             return startSandbox({

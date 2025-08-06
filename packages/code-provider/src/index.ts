@@ -20,7 +20,7 @@ export async function createCodeProviderClient(
     { providerOptions }: CreateClientOptions,
 ) {
     const provider = newProviderInstance(codeProvider, providerOptions);
-    await provider.initialize();
+    await provider.initialize({});
     return provider;
 }
 

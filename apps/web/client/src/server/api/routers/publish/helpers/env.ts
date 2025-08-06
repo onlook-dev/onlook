@@ -1,4 +1,4 @@
-import { WebSocketSession } from '@codesandbox/sdk';
+import type { Provider } from '@onlook/code-provider';
 
 /**
  * Parse .env file content into key-value pairs
@@ -38,7 +38,7 @@ export function parseEnvContent(content: string): Record<string, string> {
 /**
  * Extract environment variables from .env files in the sandbox using WebSocket session
  */
-export async function extractEnvVarsFromSandbox(session: WebSocketSession): Promise<Record<string, string>> {
+export async function extractEnvVarsFromSandbox(provider: Provider): Promise<Record<string, string>> {
     try {
         const envVars: Record<string, string> = {};
 
@@ -47,7 +47,12 @@ export async function extractEnvVarsFromSandbox(session: WebSocketSession): Prom
 
         for (const fileName of ENV_FILE_PATTERNS) {
             try {
-                const content = await session.fs.readTextFile(fileName);
+                const { files } = await provider.readFiles({
+                    args: {
+                        paths: [fileName],
+                    },
+                });
+                const content = files?.[0]?.toString();
                 if (content) {
                     const parsed = parseEnvContent(content);
                     Object.assign(envVars, parsed);

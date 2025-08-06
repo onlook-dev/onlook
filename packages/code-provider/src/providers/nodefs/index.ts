@@ -8,6 +8,10 @@ import {
     type CopyFilesInput,
     type CreateFileInput,
     type CreateFileOutput,
+    type CreateProjectInput,
+    type CreateProjectOutput,
+    type CreateSessionInput,
+    type CreateSessionOutput,
     type CreateTerminalInput,
     type CreateTerminalOutput,
     type DeleteFilesInput,
@@ -20,8 +24,13 @@ import {
     type GetTaskOutput,
     type GitStatusInput,
     type GitStatusOutput,
+    type InitializeInput,
+    type InitializeOutput,
     type ListFilesInput,
     type ListFilesOutput,
+    type PauseProjectInput,
+    type PauseProjectOutput,
+    type StopProjectOutput,
     type ReadFilesInput,
     type ReadFilesOutput,
     type RenameFileInput,
@@ -30,6 +39,7 @@ import {
     type SetupOutput,
     type StatFileInput,
     type StatFileOutput,
+    type StopProjectInput,
     type TerminalBackgroundCommandInput,
     type TerminalBackgroundCommandOutput,
     type TerminalCommandInput,
@@ -37,6 +47,8 @@ import {
     type WatchEvent,
     type WatchFilesInput,
     type WatchFilesOutput,
+    type ListProjectsInput,
+    type ListProjectsOutput,
 } from '../../types';
 
 export interface NodeFsProviderOptions {}
@@ -49,8 +61,8 @@ export class NodeFsProvider extends Provider {
         this.options = options;
     }
 
-    async initialize(): Promise<void> {
-        // TODO: Implement
+    async initialize(input: InitializeInput): Promise<InitializeOutput> {
+        return {};
     }
 
     async createFile(input: CreateFileInput): Promise<CreateFileOutput> {
@@ -139,6 +151,10 @@ export class NodeFsProvider extends Provider {
         return {};
     }
 
+    async createSession(input: CreateSessionInput): Promise<CreateSessionOutput> {
+        return {};
+    }
+
     async reload(): Promise<boolean> {
         // TODO: Implement
         return true;
@@ -150,6 +166,24 @@ export class NodeFsProvider extends Provider {
 
     async ping(): Promise<boolean> {
         return true;
+    }
+
+    async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
+        return {
+            id: input.id,
+        };
+    }
+
+    async pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput> {
+        return {};
+    }
+
+    async stopProject(input: StopProjectInput): Promise<StopProjectOutput> {
+        return {};
+    }
+
+    async listProjects(input: ListProjectsInput): Promise<ListProjectsOutput> {
+        return {};
     }
 
     async destroy(): Promise<void> {

@@ -1,42 +1,86 @@
-import { type WebSocketSession } from '@codesandbox/sdk';
-import { CUSTOM_OUTPUT_DIR, DefaultSettings, EXCLUDED_PUBLISH_DIRECTORIES, LOCAL_PRELOAD_SCRIPT_SRC, SUPPORTED_LOCK_FILES } from '@onlook/constants';
+import type { Provider } from '@onlook/code-provider';
+import {
+    CUSTOM_OUTPUT_DIR,
+    DefaultSettings,
+    EXCLUDED_PUBLISH_DIRECTORIES,
+    LOCAL_PRELOAD_SCRIPT_SRC,
+    SUPPORTED_LOCK_FILES,
+} from '@onlook/constants';
 import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
-import { convertToBase64, isBinaryFile, isEmptyString, isNullOrUndefined, LogTimer, updateGitignore, type FileOperations } from '@onlook/utility';
 import {
-    type FreestyleFile,
-} from 'freestyle-sandboxes';
+    convertToBase64,
+    isBinaryFile,
+    isEmptyString,
+    isNullOrUndefined,
+    LogTimer,
+    updateGitignore,
+    type FileOperations,
+} from '@onlook/utility';
+import { type FreestyleFile } from 'freestyle-sandboxes';
 import type { z } from 'zod';
 
 export class PublishManager {
-    constructor(
-        private readonly session: WebSocketSession,
-    ) { }
+    constructor(private readonly provider: Provider) {}
 
     private get fileOps(): FileOperations {
         return {
-            readFile: async (path: string) => this.session.fs.readTextFile(path),
+            readFile: async (path: string) => {
+                const { files } = await this.provider.readFiles({
+                    args: {
+                        paths: [path],
+                    },
+                });
+                return files[0]?.toString() ?? '';
+            },
             writeFile: async (path: string, content: string) => {
-                await this.session.fs.writeTextFile(path, content);
+                await this.provider.createFile({
+                    args: {
+                        path,
+                        content,
+                        overwriteIfExists: true,
+                    },
+                });
                 return true;
             },
             fileExists: async (path: string) => {
                 try {
-                    const stat = await this.session.fs.stat(path);
+                    const stat = await this.provider.statFile({
+                        args: {
+                            path,
+                        },
+                    });
                     return stat.type === 'file';
                 } catch (error) {
                     console.error(`[fileExists] Error checking if file exists at ${path}:`, error);
                     return false;
                 }
             },
-            copy: async (source: string, destination: string, recursive?: boolean, overwrite?: boolean) => {
-                await this.session.fs.copy(source, destination, recursive, overwrite);
+            copy: async (
+                source: string,
+                destination: string,
+                recursive?: boolean,
+                overwrite?: boolean,
+            ) => {
+                await this.provider.copyFiles({
+                    args: {
+                        sourcePath: source,
+                        targetPath: destination,
+                        recursive,
+                        overwrite,
+                    },
+                });
                 return true;
             },
             delete: async (path: string, recursive?: boolean) => {
-                await this.session.fs.remove(path, recursive);
+                await this.provider.deleteFiles({
+                    args: {
+                        path,
+                        recursive,
+                    },
+                });
                 return true;
             },
         };
@@ -51,7 +95,9 @@ export class PublishManager {
         buildScript: string;
         buildFlags: string;
         skipBadge: boolean;
-        updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<Deployment | null>;
+        updateDeployment: (
+            deployment: z.infer<typeof deploymentUpdateSchema>,
+        ) => Promise<Deployment | null>;
     }): Promise<Record<string, FreestyleFile>> {
         await this.runPrepareStep();
         await updateDeployment({
@@ -82,7 +128,8 @@ export class PublishManager {
             message: 'Postprocessing project...',
             progress: 50,
         });
-        const { success: postprocessSuccess, error: postprocessError } = await this.postprocessNextBuild();
+        const { success: postprocessSuccess, error: postprocessError } =
+            await this.postprocessNextBuild();
 
         if (!postprocessSuccess) {
             throw new Error(
@@ -132,7 +179,11 @@ export class PublishManager {
                 ? buildScript
                 : `${buildScript} -- ${buildFlagsString}`;
 
-            const output = await this.session.commands.run(BUILD_SCRIPT_NO_LINT);
+            const { output } = await this.provider.runCommand({
+                args: {
+                    command: BUILD_SCRIPT_NO_LINT,
+                },
+            });
             console.log('Build output: ', output);
         } catch (error) {
             console.error('Failed to run build step', error);
@@ -197,7 +248,7 @@ export class PublishManager {
             const allFilePaths = await this.getAllFilePathsFlat(currentDir);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
-            const filteredPaths = allFilePaths.filter(filePath => !this.shouldSkipFile(filePath));
+            const filteredPaths = allFilePaths.filter((filePath) => !this.shouldSkipFile(filePath));
 
             const { binaryFiles, textFiles } = this.categorizeFiles(filteredPaths);
 
@@ -215,7 +266,9 @@ export class PublishManager {
             }
 
             if (binaryFiles.length > 0) {
-                timer.log(`Processing ${binaryFiles.length} binary files in batches of ${BATCH_SIZE}`);
+                timer.log(
+                    `Processing ${binaryFiles.length} binary files in batches of ${BATCH_SIZE}`,
+                );
                 for (let i = 0; i < binaryFiles.length; i += BATCH_SIZE) {
                     const batch = binaryFiles.slice(i, i + BATCH_SIZE);
                     const batchFiles = await this.processBinaryFilesBatch(batch, currentDir);
@@ -239,9 +292,13 @@ export class PublishManager {
         while (dirsToProcess.length > 0) {
             const currentDir = dirsToProcess.shift()!;
             try {
-                const entries = await this.session.fs.readdir(currentDir);
+                const { files } = await this.provider.listFiles({
+                    args: {
+                        path: currentDir,
+                    },
+                });
 
-                for (const entry of entries) {
+                for (const entry of files) {
                     const fullPath = `${currentDir}/${entry.name}`;
 
                     if (entry.type === 'directory') {
@@ -264,16 +321,18 @@ export class PublishManager {
      * Check if a file should be skipped
      */
     private shouldSkipFile(filePath: string): boolean {
-        return filePath.includes('node_modules') ||
+        return (
+            filePath.includes('node_modules') ||
             filePath.includes('.git/') ||
             filePath.includes('/.next/') ||
             filePath.includes('/dist/') ||
             filePath.includes('/build/') ||
             filePath.includes('/coverage/') ||
-            filePath.endsWith(LOCAL_PRELOAD_SCRIPT_SRC);
+            filePath.endsWith(LOCAL_PRELOAD_SCRIPT_SRC)
+        );
     }
 
-    private categorizeFiles(filePaths: string[]): { binaryFiles: string[], textFiles: string[] } {
+    private categorizeFiles(filePaths: string[]): { binaryFiles: string[]; textFiles: string[] } {
         const binaryFiles: string[] = [];
         const textFiles: string[] = [];
 
@@ -289,13 +348,20 @@ export class PublishManager {
         return { binaryFiles, textFiles };
     }
 
-
-    private async processTextFilesBatch(filePaths: string[], baseDir: string): Promise<Record<string, FreestyleFile>> {
+    private async processTextFilesBatch(
+        filePaths: string[],
+        baseDir: string,
+    ): Promise<Record<string, FreestyleFile>> {
         const promises = filePaths.map(async (fullPath) => {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
             try {
-                const textContent = await this.session.fs.readTextFile(fullPath);
+                const { files } = await this.provider.readFiles({
+                    args: {
+                        paths: [fullPath],
+                    },
+                });
+                const textContent = files[0]?.toString() ?? '';
 
                 if (textContent !== null) {
                     return {
@@ -303,10 +369,12 @@ export class PublishManager {
                         file: {
                             content: textContent,
                             encoding: 'utf-8' as const,
-                        }
+                        },
                     };
                 } else {
-                    console.warn(`[processTextFilesBatch] Failed to read text content for ${relativePath}`);
+                    console.warn(
+                        `[processTextFilesBatch] Failed to read text content for ${relativePath}`,
+                    );
                     return null;
                 }
             } catch (error) {
@@ -327,25 +395,42 @@ export class PublishManager {
         return files;
     }
 
-    private async processBinaryFilesBatch(filePaths: string[], baseDir: string): Promise<Record<string, FreestyleFile>> {
+    private async processBinaryFilesBatch(
+        filePaths: string[],
+        baseDir: string,
+    ): Promise<Record<string, FreestyleFile>> {
         const promises = filePaths.map(async (fullPath) => {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
             try {
-                const binaryContent = await this.session.fs.readFile(fullPath);
+                const { files } = await this.provider.readFiles({
+                    args: {
+                        paths: [fullPath],
+                    },
+                });
+                const binaryContent = files[0];
 
                 if (binaryContent) {
-                    const base64String = convertToBase64(binaryContent);
+                    if (binaryContent instanceof Uint8Array) {
+                        const base64String = convertToBase64(binaryContent);
 
-                    return {
-                        path: relativePath,
-                        file: {
-                            content: base64String,
-                            encoding: 'base64' as const,
-                        }
-                    };
+                        return {
+                            path: relativePath,
+                            file: {
+                                content: base64String,
+                                encoding: 'base64' as const,
+                            },
+                        };
+                    } else {
+                        console.warn(
+                            `[processBinaryFilesBatch] File is not a Uint8Array: ${relativePath}`,
+                        );
+                        return null;
+                    }
                 } else {
-                    console.warn(`[processBinaryFilesBatch] Failed to read binary content for ${relativePath}`);
+                    console.warn(
+                        `[processBinaryFilesBatch] Failed to read binary content for ${relativePath}`,
+                    );
                     return null;
                 }
             } catch (error) {

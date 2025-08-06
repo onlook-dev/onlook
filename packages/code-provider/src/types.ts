@@ -161,8 +161,38 @@ export interface GitStatusOutput {
     changedFiles: string[];
 }
 
+export interface InitializeInput {}
+export interface InitializeOutput {}
+
 export interface SetupInput {}
 export interface SetupOutput {}
+
+export interface CreateProjectInput {
+    source: string;
+    id: string;
+    title?: string;
+    description?: string;
+    tags?: string[];
+}
+export interface CreateProjectOutput {
+    id: string;
+}
+
+export interface PauseProjectInput {}
+export interface PauseProjectOutput {}
+
+export interface StopProjectInput {}
+export interface StopProjectOutput {}
+
+export interface ListProjectsInput {}
+export interface ListProjectsOutput {}
+
+export interface CreateSessionInput {
+    args: {
+        id: string;
+    };
+}
+export interface CreateSessionOutput {}
 
 export abstract class Provider {
     abstract createFile(input: CreateFileInput): Promise<CreateFileOutput>;
@@ -184,16 +214,30 @@ export abstract class Provider {
     abstract gitStatus(input: GitStatusInput): Promise<GitStatusOutput>;
 
     /**
+     * Called in the backend as it may handle secrets.
+     * Returns data for the frontend.
+     * The data may be extended for each provider and must be serializable in JSON.
+     */
+    abstract createSession(input: CreateSessionInput): Promise<CreateSessionOutput>;
+
+    /**
      * `Provider` is meant to be a singleton; this method is called when the first instance is created.
      * Use this to establish a connection or run operations that requires I/O.
      */
-    abstract initialize(): void | Promise<void>;
+    abstract initialize(input: InitializeInput): Promise<InitializeOutput>;
 
     abstract setup(input: SetupInput): Promise<SetupOutput>;
 
     abstract reload(): Promise<boolean>;
     abstract reconnect(): Promise<void>;
     abstract ping(): Promise<boolean>;
+
+    abstract createProject(input: CreateProjectInput): Promise<CreateProjectOutput>;
+    abstract pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput>;
+    abstract stopProject(input: StopProjectInput): Promise<StopProjectOutput>;
+    abstract listProjects(input: ListProjectsInput): Promise<ListProjectsOutput>;
+
+    // this is called when the provider instance is no longer needed
     abstract destroy(): Promise<void>;
 }
 

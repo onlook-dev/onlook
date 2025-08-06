@@ -48,6 +48,18 @@ import {
     type GitStatusOutput,
     type SetupInput,
     type SetupOutput,
+    type CreateSessionInput,
+    type CreateSessionOutput,
+    type InitializeInput,
+    type InitializeOutput,
+    type PauseProjectInput,
+    type PauseProjectOutput,
+    type StopProjectInput,
+    type StopProjectOutput,
+    type CreateProjectInput,
+    type CreateProjectOutput,
+    type ListProjectsInput,
+    type ListProjectsOutput,
 } from '../../types';
 import { createFile } from './utils/create-file';
 import { editFile } from './utils/edit-file';
@@ -56,13 +68,19 @@ import { readFiles } from './utils/read-files';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
 
 export interface CodesandboxProviderOptions {
-    sandboxId: string;
+    sandboxId?: string;
     userId?: string;
     keepActiveWhileConnected?: boolean;
+    initClient?: boolean;
     // returns a session object used by codesandbox SDK
     // only populate this property in the browser
     getSession?: (sandboxId: string, userId?: string) => Promise<SandboxBrowserSession | null>;
 }
+
+export interface CodesandboxCreateSessionInput extends CreateSessionInput {}
+export interface CodesandboxCreateSessionOutput
+    extends CreateSessionOutput,
+        SandboxBrowserSession {}
 
 export class CodesandboxProvider extends Provider {
     private readonly options: CodesandboxProviderOptions;
@@ -80,24 +98,34 @@ export class CodesandboxProvider extends Provider {
         return this._client;
     }
 
-    async initialize(): Promise<void> {
+    async initialize(input: InitializeInput): Promise<InitializeOutput> {
+        if (!this.options.sandboxId) {
+            return {};
+        }
         if (this.options.getSession) {
             const session = await this.options.getSession(
                 this.options.sandboxId,
                 this.options.userId,
             );
-            this._client = await connectToSandbox({
-                session,
-                getSession: async (id) =>
-                    (await this.options.getSession?.(id, this.options.userId)) || null,
-            });
-            this._client.keepActiveWhileConnected(this.options.keepActiveWhileConnected ?? true);
+            if (this.options.initClient) {
+                this._client = await connectToSandbox({
+                    session,
+                    getSession: async (id) =>
+                        (await this.options.getSession?.(id, this.options.userId)) || null,
+                });
+                this._client.keepActiveWhileConnected(
+                    this.options.keepActiveWhileConnected ?? true,
+                );
+            }
         } else {
             // backend path, use environment variables
             const sdk = new CodeSandbox();
             this.sandbox = await sdk.sandboxes.resume(this.options.sandboxId);
-            this._client = await this.sandbox.connect();
+            if (this.options.initClient) {
+                this._client = await this.sandbox.connect();
+            }
         }
+        return {};
     }
 
     async reload(): Promise<boolean> {
@@ -130,6 +158,52 @@ export class CodesandboxProvider extends Provider {
         await this.client?.disconnect();
         this._client = null;
         this.sandbox = null;
+    }
+
+    async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
+        if (this.sandbox) {
+            const sdk = new CodeSandbox();
+            await sdk.sandboxes.create({
+                id: this.options.sandboxId,
+                source: 'template',
+            });
+        }
+        return {
+            id: input.id,
+        };
+    }
+
+    async pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput> {
+        if (this.sandbox && this.options.sandboxId) {
+            const sdk = new CodeSandbox();
+            await sdk.sandboxes.hibernate(this.options.sandboxId);
+        }
+        return {};
+    }
+
+    async stopProject(input: StopProjectInput): Promise<StopProjectOutput> {
+        if (this.sandbox && this.options.sandboxId) {
+            const sdk = new CodeSandbox();
+            await sdk.sandboxes.shutdown(this.options.sandboxId);
+        }
+        return {};
+    }
+
+    async listProjects(input: ListProjectsInput): Promise<ListProjectsOutput> {
+        if (this.sandbox) {
+            const sdk = new CodeSandbox();
+            const projects = await sdk.sandboxes.list();
+            return {
+                projects: projects.sandboxes.map((project) => ({
+                    id: project.id,
+                    name: project.title,
+                    description: project.description,
+                    createdAt: project.createdAt,
+                    updatedAt: project.updatedAt,
+                })),
+            };
+        }
+        return { projects: [] };
     }
 
     async createFile(input: CreateFileInput): Promise<CreateFileOutput> {
@@ -305,6 +379,17 @@ export class CodesandboxProvider extends Provider {
         await this.client.setup.run();
         await this.client.setup.waitUntilComplete();
         return {};
+    }
+
+    async createSession(
+        input: CodesandboxCreateSessionInput,
+    ): Promise<CodesandboxCreateSessionOutput> {
+        if (!this.sandbox) {
+            throw new Error('Client not initialized');
+        }
+        return this.sandbox.createBrowserSession({
+            id: input.args.id,
+        });
     }
 }
 
