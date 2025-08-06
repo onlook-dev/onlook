@@ -7,8 +7,8 @@ import { markdown } from '@codemirror/lang-markdown';
 import { bracketMatching, HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { lintGutter } from '@codemirror/lint';
 import { highlightSelectionMatches } from '@codemirror/search';
-import { StateField, StateEffect } from '@codemirror/state';
-import { Decoration, DecorationSet, drawSelection, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers } from '@codemirror/view';
+import { StateEffect, StateField } from '@codemirror/state';
+import { Decoration, type DecorationSet, drawSelection, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
 
 // Custom colors for CodeMirror
@@ -176,7 +176,7 @@ export const customDarkHighlightStyle = HighlightStyle.define([
     { tag: tags.invalid, color: '#ef4444', textDecoration: 'underline' }
 ]);
 
-const searchHighlightEffect = StateEffect.define<{term: string}>();
+const searchHighlightEffect = StateEffect.define<{ term: string }>();
 const clearHighlightEffect = StateEffect.define();
 
 const searchHighlightField = StateField.define<DecorationSet>({
@@ -185,20 +185,20 @@ const searchHighlightField = StateField.define<DecorationSet>({
     },
     update(decorations, tr) {
         decorations = decorations.map(tr.changes);
-        
+
         for (let effect of tr.effects) {
             if (effect.is(searchHighlightEffect)) {
-                const {term} = effect.value;
+                const { term } = effect.value;
                 if (!term || term.length < 2) {
                     decorations = Decoration.none;
                     continue;
                 }
-                
+
                 const content = tr.state.doc.toString();
                 const termLower = term.toLowerCase();
                 const contentLower = content.toLowerCase();
                 const newDecorations = [];
-                
+
                 let index = 0;
                 while ((index = contentLower.indexOf(termLower, index)) !== -1) {
                     const from = index;
@@ -210,20 +210,20 @@ const searchHighlightField = StateField.define<DecorationSet>({
                     );
                     index = to;
                 }
-                
+
                 decorations = Decoration.set(newDecorations);
             } else if (effect.is(clearHighlightEffect)) {
                 decorations = Decoration.none;
             }
         }
-        
+
         return decorations;
     },
     provide: f => EditorView.decorations.from(f)
 });
 
 export function createSearchHighlight(term: string) {
-    return searchHighlightEffect.of({term});
+    return searchHighlightEffect.of({ term });
 }
 
 export function clearSearchHighlight() {
@@ -232,11 +232,11 @@ export function clearSearchHighlight() {
 
 export function scrollToFirstMatch(view: EditorView, term: string): boolean {
     if (!term || term.length < 2) return false;
-    
+
     const content = view.state.doc.toString();
     const termLower = term.toLowerCase();
     const contentLower = content.toLowerCase();
-    
+
     const firstMatch = contentLower.indexOf(termLower);
     if (firstMatch !== -1) {
         const pos = firstMatch;
@@ -247,7 +247,7 @@ export function scrollToFirstMatch(view: EditorView, term: string): boolean {
         });
         return true;
     }
-    
+
     return false;
 }
 
