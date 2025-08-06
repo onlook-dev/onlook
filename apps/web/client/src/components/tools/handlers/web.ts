@@ -3,6 +3,7 @@ import {
     SCRAPE_URL_TOOL_PARAMETERS,
     WEB_SEARCH_TOOL_PARAMETERS
 } from '@onlook/ai';
+import type { WebSearchResult } from '@onlook/models';
 import { z } from 'zod';
 
 export async function handleScrapeUrlTool(
@@ -31,24 +32,19 @@ export async function handleScrapeUrlTool(
 
 export async function handleWebSearchTool(
     args: z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>,
-): Promise<string> {
+): Promise<WebSearchResult> {
     try {
-        const result = await api.code.webSearch.mutate({
+        const res = await api.code.webSearch.mutate({
             query: args.query,
             allowed_domains: args.allowed_domains,
             blocked_domains: args.blocked_domains,
         });
-
-        if (!result.result) {
-            throw new Error(`Failed to search web: ${result.error}`);
-        }
-
-        return JSON.stringify({
-            query: args.query,
-            results: result.result
-        });
+        return res
     } catch (error) {
         console.error('Error searching web:', error);
-        throw new Error(`Failed to search web for "${args.query}": ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return {
+            result: [],
+            error: error instanceof Error ? error.message : 'Unknown error',
+        };
     }
 }

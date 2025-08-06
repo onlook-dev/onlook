@@ -25,23 +25,21 @@ export const SearchSourcesDisplay = observer(({
         <div className="overflow-hidden">
             <Collapsible open={isOpen} onOpenChange={setIsOpen}>
                 <CollapsibleTrigger asChild>
-                    <div className="flex items-center justify-between p-3 cursor-pointer">
-                        <div className="flex items-center gap-2 text-sm text-foreground-secondary">
-                            <Icons.ChevronDown
-                                className={cn(
-                                    "h-4 w-4 text-foreground-tertiary transition-transform duration-200",
-                                    isOpen && "rotate-180"
-                                )}
-                            />
+                    <div className="flex items-center p-1 cursor-pointer gap-2 text-sm text-foreground-secondary">
+                        <Icons.ChevronDown
+                            className={cn(
+                                "min-w-4 h-4 w-4 text-foreground-tertiary transition-transform duration-200",
+                                isOpen && "rotate-180"
+                            )}
+                        />
+                        <div className="flex flex-col">
                             <span>Searched web</span>
-                            <span className="text-foreground-tertiary">
+                            <span className="text-foreground-tertiary text-xs">
                                 {query}
                             </span>
                         </div>
-
                     </div>
                 </CollapsibleTrigger>
-
                 <AnimatePresence>
                     {isOpen && (
                         <CollapsibleContent asChild>
@@ -56,7 +54,7 @@ export const SearchSourcesDisplay = observer(({
                                 className="overflow-hidden"
                             >
                                 <div>
-                                    <div className="px-3 py-1">
+                                    <div className="px-2 py-1">
                                         {results.map((result, index) => (
                                             <div key={index} className="group/source">
                                                 <a

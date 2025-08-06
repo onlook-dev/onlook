@@ -1,7 +1,8 @@
 import { env } from '@/env';
 import FirecrawlApp from '@mendable/firecrawl-js';
-import Exa from 'exa-js';
 import { applyCodeChange } from '@onlook/ai';
+import type { WebSearchResult } from '@onlook/models';
+import Exa from 'exa-js';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
@@ -94,7 +95,7 @@ export const codeRouter = createTRPCRouter({
             allowed_domains: z.array(z.string()).optional().describe('Include only these domains'),
             blocked_domains: z.array(z.string()).optional().describe('Exclude these domains'),
         }))
-        .mutation(async ({ input }): Promise<{ result: any, error: string | null }> => {
+        .mutation(async ({ input }): Promise<WebSearchResult> => {
             try {
                 if (!env.EXA_API_KEY) {
                     throw new Error('EXA_API_KEY is not configured');
@@ -127,7 +128,6 @@ export const codeRouter = createTRPCRouter({
                     };
                 }
 
-                
                 const formattedResults = result.results.map((item) => ({
                     title: item.title ?? '',
                     url: item.url ?? '',
@@ -144,7 +144,7 @@ export const codeRouter = createTRPCRouter({
                 console.error('Error searching web:', error);
                 return {
                     error: error instanceof Error ? error.message : 'Unknown error',
-                    result: null,
+                    result: [],
                 };
             }
         }),
