@@ -1,32 +1,57 @@
 import {
-    CREATE_FILE_TOOL_NAME,
-    EDIT_FILE_TOOL_NAME,
+    BASH_EDIT_TOOL_NAME,
+    BASH_EDIT_TOOL_PARAMETERS,
+    BASH_READ_TOOL_NAME,
+    BASH_READ_TOOL_PARAMETERS,
+    EXIT_PLAN_MODE_TOOL_NAME,
+    FUZZY_EDIT_FILE_TOOL_NAME,
+    FUZZY_EDIT_FILE_TOOL_PARAMETERS,
+    GREP_TOOL_NAME,
     LIST_FILES_TOOL_NAME,
+    LIST_FILES_TOOL_PARAMETERS,
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
-    READ_FILES_TOOL_NAME,
+    READ_FILE_TOOL_NAME,
+    READ_FILE_TOOL_PARAMETERS,
     READ_STYLE_GUIDE_TOOL_NAME,
     SANDBOX_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
-    SEARCH_WEB_TOOL_NAME,
-    TERMINAL_COMMAND_TOOL_NAME
+    SCRAPE_URL_TOOL_PARAMETERS,
+    SEARCH_REPLACE_EDIT_FILE_TOOL_NAME,
+    SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
+    SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME,
+    SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
+    TERMINAL_COMMAND_TOOL_NAME,
+    TODO_WRITE_TOOL_NAME,
+    TODO_WRITE_TOOL_PARAMETERS,
+    WEB_SEARCH_TOOL_NAME,
+    WRITE_FILE_TOOL_NAME,
+    WRITE_FILE_TOOL_PARAMETERS
 } from '@onlook/ai';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import type { ToolInvocation } from 'ai';
+import { z } from 'zod';
 
 // Map tool names to specific icon components
 const TOOL_ICONS: Record<string, any> = {
     [LIST_FILES_TOOL_NAME]: Icons.ListBullet,
-    [READ_FILES_TOOL_NAME]: Icons.EyeOpen,
+    [READ_FILE_TOOL_NAME]: Icons.EyeOpen,
     [READ_STYLE_GUIDE_TOOL_NAME]: Icons.Brand,
     [ONLOOK_INSTRUCTIONS_TOOL_NAME]: Icons.OnlookLogo,
-    [EDIT_FILE_TOOL_NAME]: Icons.Pencil,
-    [CREATE_FILE_TOOL_NAME]: Icons.FilePlus,
+    [SEARCH_REPLACE_EDIT_FILE_TOOL_NAME]: Icons.Pencil,
+    [SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME]: Icons.Pencil,
+    [FUZZY_EDIT_FILE_TOOL_NAME]: Icons.Pencil,
+    [WRITE_FILE_TOOL_NAME]: Icons.FilePlus,
     [TERMINAL_COMMAND_TOOL_NAME]: Icons.Terminal,
+    [BASH_EDIT_TOOL_NAME]: Icons.Terminal,
+    [GREP_TOOL_NAME]: Icons.MagnifyingGlass,
     [SCRAPE_URL_TOOL_NAME]: Icons.Globe,
-    [SEARCH_WEB_TOOL_NAME]: Icons.MagnifyingGlass,
+    [WEB_SEARCH_TOOL_NAME]: Icons.MagnifyingGlass,
     [SANDBOX_TOOL_NAME]: Icons.Cube,
-};
+    [TODO_WRITE_TOOL_NAME]: Icons.ListBullet,
+    [EXIT_PLAN_MODE_TOOL_NAME]: Icons.ListBullet,
+    [BASH_READ_TOOL_NAME]: Icons.EyeOpen,
+} as const;
 
 export function ToolCallSimple({
     toolInvocation,
@@ -42,66 +67,112 @@ export function ToolCallSimple({
 
     const getLabel = () => {
         try {
-            let label = '';
-            if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
-                return 'Terminal';
-            }
-            if (toolName === EDIT_FILE_TOOL_NAME) {
-                if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Editing " + (toolInvocation.args.path.split('/').pop() || '');
-                } else {
-                    label = "Editing file";
-                }
-            } else if (toolName === CREATE_FILE_TOOL_NAME) {
-                if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Creating file " + (toolInvocation.args.path.split('/').pop() || '');
-                } else {
-                    label = "Creating file";
-                }
-            } else if (toolName === LIST_FILES_TOOL_NAME) {
-                if (toolInvocation.args && 'path' in toolInvocation.args) {
-                    label = "Reading directory " + (toolInvocation.args.path.split('/').pop() || '');
-                } else {
-                    label = "Reading directory";
-                }
-            } else if (toolName === READ_FILES_TOOL_NAME) {
-                if (toolInvocation.args && 'paths' in toolInvocation.args) {
-                    label = "Reading file" + (toolInvocation.args.paths.length > 1 ? 's' : '') + ' ' + (toolInvocation.args.paths.map((path: string) => path.split('/').pop()).join(', ') || '');
-                } else {
-                    label = "Reading files";
-                }
-            } else if (toolName === READ_STYLE_GUIDE_TOOL_NAME) {
-                label = "Reading style guide";
-            } else if (toolName === ONLOOK_INSTRUCTIONS_TOOL_NAME) {
-                label = "Reading Onlook instructions";
-            } else if (toolName === SCRAPE_URL_TOOL_NAME) {
-                if (toolInvocation.args && 'url' in toolInvocation.args) {
-                    try {
-                        const url = new URL(toolInvocation.args.url as string);
-                        label = "Visiting " + url.hostname;
-                    } catch {
-                        label = "Visiting URL";
+            switch (toolName as keyof typeof TOOL_ICONS) {
+                case TERMINAL_COMMAND_TOOL_NAME:
+                    return 'Terminal';
+                case SEARCH_REPLACE_EDIT_FILE_TOOL_NAME:
+                    const params = toolInvocation.args as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>;
+                    if (params.file_path) {
+                        return 'Editing ' + (params.file_path.split('/').pop() || '');
+                    } else {
+                        return 'Editing file';
                     }
-                } else {
-                    label = "Visiting URL";
-                }
-            } else if (toolName === SEARCH_WEB_TOOL_NAME) {
-                if (toolInvocation.args && 'query' in toolInvocation.args) {
-                    const query = toolInvocation.args.query as string;
-                    label = "Searching \"" + (query.length > 30 ? query.substring(0, 30) + "..." : query) + "\"";
-                } else {
-                    label = "Searching web";
-                }
-            } else {
-                label = toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                case SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME:
+                    const params1 = toolInvocation.args as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>;
+                    if (params1.edits) {
+                        return 'Editing ' + (params1.edits.map((edit: { old_string: string; new_string: string; replace_all: boolean; }) => edit.old_string).join(', ') || '');
+                    } else {
+                        return 'Editing files';
+                    }
+                case FUZZY_EDIT_FILE_TOOL_NAME:
+                    const params2 = toolInvocation.args as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>;
+                    if (params2.file_path) {
+                        return 'Editing ' + (params2.file_path.split('/').pop() || '');
+                    } else {
+                        return 'Editing file';
+                    }
+                case WRITE_FILE_TOOL_NAME:
+                    const params3 = toolInvocation.args as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>;
+                    if (params3.file_path) {
+                        return 'Creating file ' + (params3.file_path.split('/').pop() || '');
+                    } else {
+                        return 'Creating file';
+                    }
+                case LIST_FILES_TOOL_NAME:
+                    const params4 = toolInvocation.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>;
+                    if (params4.path) {
+                        return 'Reading directory ' + (params4.path.split('/').pop() || '');
+                    } else {
+                        return 'Reading directory';
+                    }
+                case READ_FILE_TOOL_NAME:
+                    const params5 = toolInvocation.args as z.infer<typeof READ_FILE_TOOL_PARAMETERS>;
+                    if (params5.file_path) {
+                        return 'Reading file ' + (params5.file_path.split('/').pop() || '');
+                    } else {
+                        return 'Reading files';
+                    }
+                case SCRAPE_URL_TOOL_NAME:
+                    const params6 = toolInvocation.args as z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>;
+                    if (params6.url) {
+                        return 'Visiting ' + (new URL(params6.url).hostname || 'URL');
+                    } else {
+                        return 'Visiting URL';
+                    }
+                case WEB_SEARCH_TOOL_NAME:
+                    if (toolInvocation.args && 'query' in toolInvocation.args) {
+                        const query = toolInvocation.args.query as string;
+                        return "Searching \"" + (query.length > 30 ? query.substring(0, 30) + "..." : query) + "\"";
+                    } else {
+                        return 'Searching web';
+                    }
+                case SANDBOX_TOOL_NAME:
+                    if (toolInvocation.args && 'command' in toolInvocation.args) {
+                        return 'Sandbox: ' + toolInvocation.args.command;
+                    } else {
+                        return 'Sandbox';
+                    }
+                case GREP_TOOL_NAME:
+                    if (toolInvocation.args && 'pattern' in toolInvocation.args) {
+                        return 'Searching for ' + toolInvocation.args.pattern;
+                    } else {
+                        return 'Searching';
+                    }
+                case BASH_EDIT_TOOL_NAME:
+                    const params7 = toolInvocation.args as z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>;
+                    if (params7.command) {
+                        return 'Running command ' + (params7.command.split('/').pop() || '');
+                    } else {
+                        return 'Running command';
+                    }
+                case BASH_READ_TOOL_NAME:
+                    const params8 = toolInvocation.args as z.infer<typeof BASH_READ_TOOL_PARAMETERS>;
+                    if (params8.command) {
+                        return 'Reading file ' + (params8.command.split('/').pop() || '');
+                    } else {
+                        return 'Reading file';
+                    }
+                case TODO_WRITE_TOOL_NAME:
+                    const params9 = toolInvocation.args as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>;
+                    if (params9.todos) {
+                        return 'Writing todos ' + (params9.todos.map((todo: { content: string; status: string; priority: string; }) => todo.content).join(', ') || '');
+                    } else {
+                        return 'Writing todos';
+                    }
+                case EXIT_PLAN_MODE_TOOL_NAME:
+                    return 'Exiting plan mode';
+                case READ_STYLE_GUIDE_TOOL_NAME:
+                    return 'Reading style guide';
+                case ONLOOK_INSTRUCTIONS_TOOL_NAME:
+                    return 'Reading Onlook instructions';
+                default:
+                    return toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             }
-            return label;
         } catch (error) {
             console.error('Error getting label', error);
             return toolName.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         }
     }
-
     return (
         <div className={cn('flex items-center gap-2 ml-2 text-foreground-tertiary/80', className)}>
             <Icon className="w-4 h-4" />

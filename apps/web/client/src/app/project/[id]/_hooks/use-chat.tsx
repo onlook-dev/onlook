@@ -1,7 +1,7 @@
 'use client'
 
 import { useEditorEngine } from '@/components/store/editor';
-import { handleToolCall } from '@/components/tools';
+import { handleToolCall } from '@/components/tools/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { ChatType } from '@onlook/models';
 import type { Message } from 'ai';

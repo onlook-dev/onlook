@@ -1,24 +1,23 @@
 import { describe, it, expect } from 'bun:test';
 import {
-    SEARCH_WEB_TOOL_NAME,
-    SEARCH_WEB_TOOL_PARAMETERS,
-    searchWebTool,
+    WEB_SEARCH_TOOL_NAME,
+    WEB_SEARCH_TOOL_PARAMETERS,
+    webSearchTool,
 } from '../../src/tools/web';
-import { askToolSet, buildToolSet } from '../../src/tools/tools';
-import { SEARCH_WEB_CATEGORIES } from '../../src/tools/web';
+import { ASK_TOOL_SET, BUILD_TOOL_SET } from '../../src/tools/toolset';
 
 describe('Web Search Tool', () => {
     it('should have the correct tool name and parameters', () => {
-        expect(SEARCH_WEB_TOOL_NAME).toBe('search_web');
-        expect(SEARCH_WEB_TOOL_PARAMETERS).toBeDefined();
-        expect(searchWebTool).toBeDefined();
+        expect(WEB_SEARCH_TOOL_NAME).toBe('web_search');
+        expect(WEB_SEARCH_TOOL_PARAMETERS).toBeDefined();
+        expect(webSearchTool).toBeDefined();
     });
 
     it('should be included in both buildToolSet and askToolSet', () => {
-        expect(buildToolSet[SEARCH_WEB_TOOL_NAME]).toBeDefined();
-        expect(askToolSet[SEARCH_WEB_TOOL_NAME]).toBeDefined();
-        expect(buildToolSet[SEARCH_WEB_TOOL_NAME]).toBe(searchWebTool);
-        expect(askToolSet[SEARCH_WEB_TOOL_NAME]).toBe(searchWebTool);
+        expect(BUILD_TOOL_SET[WEB_SEARCH_TOOL_NAME]).toBeDefined();
+        expect(ASK_TOOL_SET[WEB_SEARCH_TOOL_NAME]).toBeDefined();
+        expect(BUILD_TOOL_SET[WEB_SEARCH_TOOL_NAME]).toBe(webSearchTool);
+        expect(ASK_TOOL_SET[WEB_SEARCH_TOOL_NAME]).toBe(webSearchTool);
     });
 
     describe('parameter validation', () => {
@@ -27,101 +26,46 @@ describe('Web Search Tool', () => {
                 query: 'test search query',
             };
 
-            const parsed = SEARCH_WEB_TOOL_PARAMETERS.parse(minimalValid);
+            const parsed = WEB_SEARCH_TOOL_PARAMETERS.parse(minimalValid);
             expect(parsed.query).toBe('test search query');
-            expect(parsed.numResults).toBe(10);
-            expect(parsed.type).toBe('auto');
-            expect(parsed.includeText).toBe(true);
         });
 
         it('should validate all optional parameters', () => {
             const fullValid = {
                 query: 'comprehensive search',
-                numResults: 5,
-                type: 'neural' as const,
-                includeText: false,
-                category: 'news' as (typeof SEARCH_WEB_CATEGORIES)[number],
-                includeDomains: ['example.com'],
-                excludeDomains: ['spam.com'],
+                allowed_domains: ['example.com'],
+                blocked_domains: ['spam.com'],
             };
 
-            const parsed = SEARCH_WEB_TOOL_PARAMETERS.parse(fullValid);
+            const parsed = WEB_SEARCH_TOOL_PARAMETERS.parse(fullValid);
             expect(parsed.query).toBe('comprehensive search');
-            expect(parsed.numResults).toBe(5);
-            expect(parsed.type).toBe('neural');
-            expect(parsed.includeText).toBe(false);
-            expect(parsed.category).toBe('news');
-            expect(parsed.includeDomains).toEqual(['example.com']);
-            expect(parsed.excludeDomains).toEqual(['spam.com']);
-        });
-
-        it('should enforce numResults constraints', () => {
-            const tooLow = {
-                query: 'test',
-                numResults: 0,
-            };
-
-            const tooHigh = {
-                query: 'test',
-                numResults: 25,
-            };
-
-            expect(() => SEARCH_WEB_TOOL_PARAMETERS.parse(tooLow)).toThrow();
-            expect(() => SEARCH_WEB_TOOL_PARAMETERS.parse(tooHigh)).toThrow();
-        });
-
-        it('should validate search types', () => {
-            const validTypes = ['neural', 'keyword', 'auto'];
-
-            validTypes.forEach((type) => {
-                const input = {
-                    query: 'test',
-                    type: type as 'neural' | 'keyword' | 'auto',
-                };
-
-                const parsed = SEARCH_WEB_TOOL_PARAMETERS.parse(input);
-                expect(parsed.type).toBe(type as any);
-            });
-
-            const invalidType = {
-                query: 'test',
-                type: 'invalid',
-            };
-
-            expect(() => SEARCH_WEB_TOOL_PARAMETERS.parse(invalidType)).toThrow();
-        });
-
-        it('should validate category options', () => {
-            const validCategories = [...SEARCH_WEB_CATEGORIES];
-
-            validCategories.forEach((category) => {
-                const input = {
-                    query: 'test',
-                    category: category as (typeof SEARCH_WEB_CATEGORIES)[number],
-                };
-
-                const parsed = SEARCH_WEB_TOOL_PARAMETERS.parse(input);
-                expect(parsed.category).toBe(category as any);
-            });
+            expect(parsed.allowed_domains).toEqual(['example.com']);
+            expect(parsed.blocked_domains).toEqual(['spam.com']);
         });
 
         it('should require query parameter', () => {
             const missing = {};
 
-            expect(() => SEARCH_WEB_TOOL_PARAMETERS.parse(missing)).toThrow();
+            expect(() => WEB_SEARCH_TOOL_PARAMETERS.parse(missing)).toThrow();
+        });
+
+        it('should require query to be at least 2 characters', () => {
+            const tooShort = {
+                query: 'a',
+            };
+
+            expect(() => WEB_SEARCH_TOOL_PARAMETERS.parse(tooShort)).toThrow();
         });
     });
 
     describe('tool definition', () => {
         it('should have appropriate description', () => {
-            expect(searchWebTool.description).toContain('Search the web');
-            expect(searchWebTool.description).toContain('Exa');
-            expect(searchWebTool.description).toContain('AI-powered');
-            expect(searchWebTool.description).toContain('current information');
+            expect(webSearchTool.description).toContain('Search the web');
+            expect(webSearchTool.description).toContain('up-to-date information');
         });
 
         it('should use the correct parameters schema', () => {
-            expect(searchWebTool.parameters).toBe(SEARCH_WEB_TOOL_PARAMETERS);
+            expect(webSearchTool.parameters).toBe(WEB_SEARCH_TOOL_PARAMETERS);
         });
     });
 
@@ -129,13 +73,13 @@ describe('Web Search Tool', () => {
         it('should handle empty arrays for domain filters', () => {
             const input = {
                 query: 'test',
-                includeDomains: [],
-                excludeDomains: [],
+                allowed_domains: [],
+                blocked_domains: [],
             };
 
-            const parsed = SEARCH_WEB_TOOL_PARAMETERS.parse(input);
-            expect(parsed.includeDomains).toEqual([]);
-            expect(parsed.excludeDomains).toEqual([]);
+            const parsed = WEB_SEARCH_TOOL_PARAMETERS.parse(input);
+            expect(parsed.allowed_domains).toEqual([]);
+            expect(parsed.blocked_domains).toEqual([]);
         });
 
         it('should handle long query strings', () => {
@@ -144,7 +88,7 @@ describe('Web Search Tool', () => {
                 query: longQuery,
             };
 
-            const parsed = SEARCH_WEB_TOOL_PARAMETERS.parse(input);
+            const parsed = WEB_SEARCH_TOOL_PARAMETERS.parse(input);
             expect(parsed.query).toBe(longQuery);
         });
 
@@ -154,7 +98,7 @@ describe('Web Search Tool', () => {
                 query: specialQuery,
             };
 
-            const parsed = SEARCH_WEB_TOOL_PARAMETERS.parse(input);
+            const parsed = WEB_SEARCH_TOOL_PARAMETERS.parse(input);
             expect(parsed.query).toBe(specialQuery);
         });
     });

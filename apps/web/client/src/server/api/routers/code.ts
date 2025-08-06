@@ -1,7 +1,7 @@
 import { env } from '@/env';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import Exa from 'exa-js';
-import { applyCodeChange, SEARCH_WEB_CATEGORIES } from '@onlook/ai';
+import { applyCodeChange } from '@onlook/ai';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
@@ -88,17 +88,13 @@ export const codeRouter = createTRPCRouter({
                 };
             }
         }),
-    searchWeb: protectedProcedure
+    webSearch: protectedProcedure
         .input(z.object({
-            query: z.string().describe('The search query to find relevant web content.'),
-            numResults: z.number().min(1).max(20).default(10).describe('Number of search results to return.'),
-            type: z.enum(['neural', 'keyword', 'auto']).default('auto').describe('Search type.'),
-            includeText: z.boolean().default(true).describe('Whether to include text content.'),
-            category: z.enum(SEARCH_WEB_CATEGORIES).optional(),
-            includeDomains: z.array(z.string()).optional(),
-            excludeDomains: z.array(z.string()).optional(),
+            query: z.string().min(2).describe('Search query'),
+            allowed_domains: z.array(z.string()).optional().describe('Include only these domains'),
+            blocked_domains: z.array(z.string()).optional().describe('Exclude these domains'),
         }))
-        .mutation(async ({ input }): Promise<{ result: string | null, error: string | null }> => {
+        .mutation(async ({ input }): Promise<{ result: any, error: string | null }> => {
             try {
                 if (!env.EXA_API_KEY) {
                     throw new Error('EXA_API_KEY is not configured');
@@ -107,72 +103,41 @@ export const codeRouter = createTRPCRouter({
                 const exa = new Exa(env.EXA_API_KEY);
 
                 const searchOptions: Record<string, unknown> = {
-                    type: input.type,
-                    numResults: input.numResults,
+                    type: 'auto',
+                    numResults: 10,
                     contents: {
-                        text: input.includeText,
+                        text: true,
                     },
                 };
 
-                if (input.category) {
-                    searchOptions.category = input.category;
+                if (input.allowed_domains && input.allowed_domains.length > 0) {
+                    searchOptions.includeDomains = input.allowed_domains;
                 }
 
-                if (input.includeDomains && input.includeDomains.length > 0) {
-                    searchOptions.includeDomains = input.includeDomains;
-                }
-
-                if (input.excludeDomains && input.excludeDomains.length > 0) {
-                    searchOptions.excludeDomains = input.excludeDomains;
+                if (input.blocked_domains && input.blocked_domains.length > 0) {
+                    searchOptions.excludeDomains = input.blocked_domains;
                 }
 
                 const result = await exa.searchAndContents(input.query, searchOptions);
 
                 if (!result.results || result.results.length === 0) {
                     return {
-                        result: JSON.stringify({
-                            query: input.query,
-                            results: [],
-                            message: 'No results found for the given query.'
-                        }, null, 2),
+                        result: [],
                         error: null,
                     };
                 }
 
-                interface ExaSearchResult {
-                    autopromptString?: string;
-                    searchTime?: number;
-                    results: Array<{
-                        title: string | null;
-                        url: string;
-                        text: string | null;
-                        publishedDate: string | null;
-                        author: string | null;
-                        favicon: string | null;
-                    }>;
-                }
-
-                const typedResult = result as ExaSearchResult;
                 
-                const formattedResults = {
-                    query: input.query,
-                    searchType: typedResult.autopromptString ? 'neural' : input.type,
-                    results: result.results.map((item, index: number) => ({
-                        index: index + 1,
-                        title: item.title ?? '',
-                        url: item.url ?? '',
-                        text: item.text ?? '',
-                        publishedDate: item.publishedDate ?? null,
-                        author: item.author ?? null,
-                        favicon: item.favicon ?? null,
-                        summary: item.text ? `${item.text.substring(0, 200)}...` : null,
-                    })),
-                    totalResults: result.results.length,
-                    searchTime: `${typedResult.searchTime ?? 0}ms`,
-                };
+                const formattedResults = result.results.map((item) => ({
+                    title: item.title ?? '',
+                    url: item.url ?? '',
+                    text: item.text ?? '',
+                    publishedDate: item.publishedDate ?? null,
+                    author: item.author ?? null,
+                }));
 
                 return {
-                    result: JSON.stringify(formattedResults, null, 2),
+                    result: formattedResults,
                     error: null,
                 };
             } catch (error) {

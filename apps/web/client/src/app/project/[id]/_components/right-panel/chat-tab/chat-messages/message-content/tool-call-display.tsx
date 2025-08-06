@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
-import { CREATE_FILE_TOOL_NAME, EDIT_FILE_TOOL_NAME, SEARCH_WEB_TOOL_NAME, TERMINAL_COMMAND_TOOL_NAME } from '@onlook/ai';
+import { FUZZY_EDIT_FILE_TOOL_NAME, FUZZY_EDIT_FILE_TOOL_PARAMETERS, SEARCH_REPLACE_EDIT_FILE_TOOL_NAME, SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS, SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME, SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS, TERMINAL_COMMAND_TOOL_NAME, TODO_WRITE_TOOL_NAME, TODO_WRITE_TOOL_PARAMETERS, WEB_SEARCH_TOOL_NAME, WRITE_FILE_TOOL_NAME, WRITE_FILE_TOOL_PARAMETERS } from '@onlook/ai';
+import { Icons } from '@onlook/ui/icons/index';
+import { cn } from '@onlook/ui/utils';
 import type { ToolInvocation } from 'ai';
+import { z } from 'zod';
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
 import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block';
 import { SearchSourcesDisplay } from '../../code-display/search-sources-display';
@@ -37,7 +40,7 @@ export const ToolCallDisplay = ({
             );
         }
 
-        if (toolInvocation.toolName === SEARCH_WEB_TOOL_NAME && toolInvocation.state === 'result') {
+        if (toolInvocation.toolName === WEB_SEARCH_TOOL_NAME && toolInvocation.state === 'result') {
             try {
                 const searchResult = JSON.parse(toolInvocation.result as string);
                 if (searchResult?.query && searchResult?.results) {
@@ -56,9 +59,10 @@ export const ToolCallDisplay = ({
             }
         }
 
-        if (toolInvocation.toolName === EDIT_FILE_TOOL_NAME || toolInvocation.toolName === CREATE_FILE_TOOL_NAME) {
-            const filePath = toolInvocation.args.path;
-            const codeContent = toolInvocation.args.content;
+        if (toolInvocation.toolName === WRITE_FILE_TOOL_NAME) {
+            const args = toolInvocation.args as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>
+            const filePath = args.file_path;
+            const codeContent = args.content;
             return (
                 <CollapsibleCodeBlock
                     path={filePath}
@@ -69,6 +73,76 @@ export const ToolCallDisplay = ({
                     originalContent={codeContent}
                     updatedContent={codeContent}
                 />
+            );
+        }
+
+        if (toolInvocation.toolName === FUZZY_EDIT_FILE_TOOL_NAME) {
+            const args = toolInvocation.args as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>;
+            const filePath = args.file_path;
+            const codeContent = args.content;
+            return (
+                <CollapsibleCodeBlock
+                    path={filePath}
+                    content={codeContent}
+                    messageId={messageId}
+                    applied={applied}
+                    isStream={isStream}
+                    originalContent={codeContent}
+                    updatedContent={codeContent}
+                />
+            );
+        }
+
+        if (toolInvocation.toolName === SEARCH_REPLACE_EDIT_FILE_TOOL_NAME) {
+            const args = toolInvocation.args as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>;
+            const filePath = args.file_path;
+            const codeContent = args.new_string;
+            return (
+                <CollapsibleCodeBlock
+                    path={filePath}
+                    content={codeContent}
+                    messageId={messageId}
+                    applied={applied}
+                    isStream={isStream}
+                    originalContent={codeContent}
+                    updatedContent={codeContent}
+                />
+            );
+        }
+
+        if (toolInvocation.toolName === SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME) {
+            const args = toolInvocation.args as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>;
+            const filePath = args.file_path;
+            const codeContent = args.edits.map((edit) => edit.new_string).join('\n...\n');
+            return (
+                <CollapsibleCodeBlock
+                    path={filePath}
+                    content={codeContent}
+                    messageId={messageId}
+                    applied={applied}
+                    isStream={isStream}
+                    originalContent={codeContent}
+                    updatedContent={codeContent}
+                />
+            );
+        }
+
+        if (toolInvocation.toolName === TODO_WRITE_TOOL_NAME) {
+            const args = toolInvocation.args as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>;
+            const todos = args.todos;
+            return (
+                <div>
+                    {todos.map((todo) => (
+                        <div className="flex items-center gap-2 text-sm" key={todo.content}>
+                            {todo.status === 'completed' ? <Icons.SquareCheck className="w-4 h-4" /> : <Icons.Square className="w-4 h-4" />}
+                            <p className={cn(
+                                todo.status === 'completed' ? 'line-through text-green-500' : '',
+                                todo.status === 'in_progress' ? 'text-yellow-500' : '',
+                                todo.status === 'pending' ? 'text-gray-500' : '',
+                            )}>{todo.content}</p>
+                        </div>
+                    ))}
+                </div>
             );
         }
     }

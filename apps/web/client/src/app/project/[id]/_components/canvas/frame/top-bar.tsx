@@ -72,8 +72,8 @@ export const TopBar = observer(
             await editorEngine.frames.goForward(frame.id);
         };
 
-        const handleClick = () => {
-            editorEngine.frames.select([frame]);
+        const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+            editorEngine.frames.select([frame], e.shiftKey);
         };
 
         return (
@@ -104,7 +104,7 @@ export const TopBar = observer(
                             variant="ghost"
                             size="icon"
                             className={cn(
-                                'cursor-pointer',
+                                'cursor-pointer rounded-lg',
                                 !editorEngine.frames.navigation.canGoBack(frame.id) && 'hidden',
                             )}
                             onClick={handleGoBack}
@@ -118,7 +118,7 @@ export const TopBar = observer(
                             variant="ghost"
                             size="icon"
                             className={cn(
-                                'cursor-pointer',
+                                'cursor-pointer rounded-lg',
                                 !editorEngine.frames.navigation.canGoForward(frame.id) && 'hidden',
                             )}
                             onClick={handleGoForward}
@@ -131,7 +131,7 @@ export const TopBar = observer(
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="cursor-pointer"
+                            className="cursor-pointer rounded-lg"
                             onClick={handleReload}
                         >
                             <Icons.Reload />
@@ -151,7 +151,7 @@ export const TopBar = observer(
                             pointerEvents: shouldShowExternalLink ? 'auto' : 'none',
                         }}
                     >
-                        <Button variant="ghost" size="icon">
+                        <Button variant="ghost" size="icon" className="rounded-lg">
                             <Icons.ExternalLink />
                         </Button>
                     </Link>
