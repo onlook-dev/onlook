@@ -29,6 +29,8 @@ import {
     TERMINAL_COMMAND_TOOL_PARAMETERS,
     TODO_WRITE_TOOL_NAME,
     TODO_WRITE_TOOL_PARAMETERS,
+    WEB_SEARCH_TOOL_NAME,
+    WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
     WRITE_FILE_TOOL_PARAMETERS
 } from '@onlook/ai';
@@ -44,7 +46,7 @@ import {
     handleListFilesTool,
     handleReadFileTool,
     handleReadStyleGuideTool,
-    handleSandboxTool, handleScrapeUrlTool, handleSearchReplaceEditFileTool, handleTerminalCommandTool,
+    handleSandboxTool, handleScrapeUrlTool, handleSearchReplaceEditFileTool, handleTerminalCommandTool, handleWebSearchTool,
     handleTodoWriteTool,
     handleWriteFileTool
 } from './handlers';
@@ -152,6 +154,12 @@ const TOOL_HANDLERS: ClientToolMap = {
         parameters: EXIT_PLAN_MODE_TOOL_PARAMETERS,
         handler: async (args: z.infer<typeof EXIT_PLAN_MODE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleExitPlanModeTool(args, editorEngine),
+    },
+    [WEB_SEARCH_TOOL_NAME]: {
+        name: WEB_SEARCH_TOOL_NAME,
+        parameters: WEB_SEARCH_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleWebSearchTool(args),
     },
 };
 

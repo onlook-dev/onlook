@@ -1,6 +1,8 @@
 import { env } from '@/env';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { applyCodeChange } from '@onlook/ai';
+import type { WebSearchResult } from '@onlook/models';
+import Exa from 'exa-js';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
@@ -84,6 +86,65 @@ export const codeRouter = createTRPCRouter({
                 return {
                     error: error instanceof Error ? error.message : 'Unknown error',
                     result: null,
+                };
+            }
+        }),
+    webSearch: protectedProcedure
+        .input(z.object({
+            query: z.string().min(2).describe('Search query'),
+            allowed_domains: z.array(z.string()).optional().describe('Include only these domains'),
+            blocked_domains: z.array(z.string()).optional().describe('Exclude these domains'),
+        }))
+        .mutation(async ({ input }): Promise<WebSearchResult> => {
+            try {
+                if (!env.EXA_API_KEY) {
+                    throw new Error('EXA_API_KEY is not configured');
+                }
+
+                const exa = new Exa(env.EXA_API_KEY);
+
+                const searchOptions: Record<string, unknown> = {
+                    type: 'auto',
+                    numResults: 10,
+                    contents: {
+                        text: true,
+                    },
+                };
+
+                if (input.allowed_domains && input.allowed_domains.length > 0) {
+                    searchOptions.includeDomains = input.allowed_domains;
+                }
+
+                if (input.blocked_domains && input.blocked_domains.length > 0) {
+                    searchOptions.excludeDomains = input.blocked_domains;
+                }
+
+                const result = await exa.searchAndContents(input.query, searchOptions);
+
+                if (!result.results || result.results.length === 0) {
+                    return {
+                        result: [],
+                        error: null,
+                    };
+                }
+
+                const formattedResults = result.results.map((item) => ({
+                    title: item.title ?? '',
+                    url: item.url ?? '',
+                    text: item.text ?? '',
+                    publishedDate: item.publishedDate ?? null,
+                    author: item.author ?? null,
+                }));
+
+                return {
+                    result: formattedResults,
+                    error: null,
+                };
+            } catch (error) {
+                console.error('Error searching web:', error);
+                return {
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                    result: [],
                 };
             }
         }),
