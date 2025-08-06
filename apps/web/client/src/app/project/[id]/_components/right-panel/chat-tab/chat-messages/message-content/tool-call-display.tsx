@@ -129,7 +129,9 @@ export const ToolCallDisplay = ({
                 <div>
                     {todos.map((todo) => (
                         <div className="flex items-center gap-2 text-sm" key={todo.content}>
-                            {todo.status === 'completed' ? <Icons.SquareCheck className="w-4 h-4" /> : <Icons.Square className="w-4 h-4" />}
+                            <div className="flex items-center justify-center w-4 h-4 min-w-4">
+                                {todo.status === 'completed' ? <Icons.SquareCheck className="w-4 h-4" /> : <Icons.Square className="w-4 h-4" />}
+                            </div>
                             <p className={cn(
                                 todo.status === 'completed' ? 'line-through text-green-500' : '',
                                 todo.status === 'in_progress' ? 'text-yellow-500' : '',
