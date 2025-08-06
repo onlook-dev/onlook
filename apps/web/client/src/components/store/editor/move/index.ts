@@ -23,6 +23,12 @@ export class MoveManager {
             return;
         }
 
+        const positionType = el.styles?.computed?.position;
+        if (positionType === 'absolute') {
+            console.warn('Absolute mode dragging is disabled');
+            return;
+        }
+
         this.dragOrigin = position;
         this.dragTarget = el;
         this.isDragInProgress = true;
@@ -33,7 +39,7 @@ export class MoveManager {
                 return;
             }
 
-            const index = (await frameView.view.startDrag(el.domId)) as number;
+            const index = await frameView.view.startDrag(el.domId);
             if (index === null || index === -1) {
                 this.clear();
                 this.isDragInProgress = false;
@@ -189,19 +195,19 @@ export class MoveManager {
 
         try {
             // Get current index and parent
-            const currentIndex = (await frameData.view.getElementIndex(element.domId)) as number;
+            const currentIndex = await frameData.view.getElementIndex(element.domId);
 
             if (currentIndex === -1) {
                 return;
             }
 
-            const parent = (await frameData.view.getParentElement(element.domId)) as DomElement;
+            const parent = await frameData.view.getParentElement(element.domId);
             if (!parent) {
                 return;
             }
 
             // Get filtered children count for accurate index calculation
-            const childrenCount = (await frameData.view.getChildrenCount(parent.domId)) as number;
+            const childrenCount = await frameData.view.getChildrenCount(parent.domId);
 
             // Calculate new index based on direction and bounds
             const newIndex =
