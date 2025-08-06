@@ -1,11 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
-import { FUZZY_EDIT_FILE_TOOL_NAME, FUZZY_EDIT_FILE_TOOL_PARAMETERS, SEARCH_REPLACE_EDIT_FILE_TOOL_NAME, SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS, SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME, SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS, TERMINAL_COMMAND_TOOL_NAME, TODO_WRITE_TOOL_NAME, TODO_WRITE_TOOL_PARAMETERS, WEB_SEARCH_TOOL_NAME, WRITE_FILE_TOOL_NAME, WRITE_FILE_TOOL_PARAMETERS } from '@onlook/ai';
+import { FUZZY_EDIT_FILE_TOOL_NAME, type FUZZY_EDIT_FILE_TOOL_PARAMETERS, SEARCH_REPLACE_EDIT_FILE_TOOL_NAME, type SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS, SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME, type SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS, TERMINAL_COMMAND_TOOL_NAME, TODO_WRITE_TOOL_NAME, type TODO_WRITE_TOOL_PARAMETERS, WEB_SEARCH_TOOL_NAME, WRITE_FILE_TOOL_NAME, type WRITE_FILE_TOOL_PARAMETERS } from '@onlook/ai';
 import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
 import type { ToolInvocation } from 'ai';
-import { z } from 'zod';
+import { type z } from 'zod';
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
 import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block';
 import { SearchSourcesDisplay } from '../../code-display/search-sources-display';
@@ -41,7 +39,6 @@ export const ToolCallDisplay = ({
         }
 
         if (toolInvocation.toolName === WEB_SEARCH_TOOL_NAME && toolInvocation.state === 'result') {
-            try {
                 const searchResult = JSON.parse(toolInvocation.result as string);
                 if (searchResult?.query && searchResult?.results) {
                     return (
@@ -53,10 +50,7 @@ export const ToolCallDisplay = ({
                             })) : []}
                         />
                     );
-                }
-            } catch (error) {
-                console.error('Failed to parse search result:', error);
-            }
+                }   
         }
 
         if (toolInvocation.toolName === WRITE_FILE_TOOL_NAME) {
