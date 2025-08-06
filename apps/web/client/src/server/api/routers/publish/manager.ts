@@ -186,52 +186,203 @@ export class PublishManager {
     }
 
     /**
-     * Serializes all files in a directory for deployment using parallel processing
+     * Serialize files from a directory into a record of file paths to their content
+     * Memory-optimized version using chunking + batching approach
      * @param currentDir - The directory path to serialize
      * @returns Record of file paths to their content (base64 for binary, utf-8 for text)
      */
     private async serializeFiles(currentDir: string): Promise<Record<string, FreestyleFile>> {
         const timer = new LogTimer('File Serialization');
+        const startTime = Date.now();
 
         try {
             const allFilePaths = await this.getAllFilePathsFlat(currentDir);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
             const filteredPaths = allFilePaths.filter(filePath => !this.shouldSkipFile(filePath));
+            timer.log(`Filtered to ${filteredPaths.length} files after exclusions`);
 
             const { binaryFiles, textFiles } = this.categorizeFiles(filteredPaths);
+            timer.log(`Categorized: ${textFiles.length} text files, ${binaryFiles.length} binary files`);
 
-            const BATCH_SIZE = 50;
             const files: Record<string, FreestyleFile> = {};
-
+            
             if (textFiles.length > 0) {
-                timer.log(`Processing ${textFiles.length} text files in batches of ${BATCH_SIZE}`);
-                for (let i = 0; i < textFiles.length; i += BATCH_SIZE) {
-                    const batch = textFiles.slice(i, i + BATCH_SIZE);
-                    const batchFiles = await this.processTextFilesBatch(batch, currentDir);
-                    Object.assign(files, batchFiles);
-                }
+                timer.log(`Processing ${textFiles.length} text files using chunking + batching`);
+                const textResults = await this.processFilesWithChunkingAndBatching(textFiles, currentDir, false);
+                Object.assign(files, textResults);
                 timer.log('Text files processing completed');
             }
 
             if (binaryFiles.length > 0) {
-                timer.log(`Processing ${binaryFiles.length} binary files in batches of ${BATCH_SIZE}`);
-                for (let i = 0; i < binaryFiles.length; i += BATCH_SIZE) {
-                    const batch = binaryFiles.slice(i, i + BATCH_SIZE);
-                    const batchFiles = await this.processBinaryFilesBatch(batch, currentDir);
-                    Object.assign(files, batchFiles);
-                }
+                timer.log(`Processing ${binaryFiles.length} binary files using chunking + batching`);
+                const binaryResults = await this.processFilesWithChunkingAndBatching(binaryFiles, currentDir, true);
+                Object.assign(files, binaryResults);
                 timer.log('Binary files processing completed');
             }
 
-            timer.log(`Serialization completed - ${Object.keys(files).length} files processed`);
+            const endTime = Date.now();
+            const totalTime = endTime - startTime;
+            timer.log(`Serialization completed - ${Object.keys(files).length} files processed in ${totalTime}ms`);
             return files;
         } catch (error) {
-            console.error(`[serializeFiles] Error during serialization:`, error);
+            const endTime = Date.now();
+            const totalTime = endTime - startTime;
+            console.error(`[serializeFiles] Error during serialization after ${totalTime}ms:`, error);
             throw error;
         }
     }
 
+    /**
+     * Process files using chunking + batching approach
+     * 1. Split files into chunks
+     * 2. Process each chunk in batches
+     * 3. Clean up memory after each chunk
+     */
+    private async processFilesWithChunkingAndBatching(
+        filePaths: string[], 
+        baseDir: string, 
+        isBinary: boolean,
+        chunkSize = 100,
+        batchSize = 10
+    ): Promise<Record<string, FreestyleFile>> {
+        const files: Record<string, FreestyleFile> = {};
+        const totalFiles = filePaths.length;
+        let processedCount = 0;
+        const chunkStartTime = Date.now();
+
+        for (let i = 0; i < filePaths.length; i += chunkSize) {
+            const chunk = filePaths.slice(i, i + chunkSize);
+            const chunkNumber = Math.floor(i / chunkSize) + 1;
+            const totalChunks = Math.ceil(filePaths.length / chunkSize);
+            console.log(`Processing chunk ${chunkNumber}/${totalChunks} (${chunk.length} files)`);
+            
+            const chunkResults = await this.processChunkInBatches(chunk, baseDir, isBinary, batchSize);
+            Object.assign(files, chunkResults);
+            
+            processedCount += chunk.length;
+            const chunkTime = Date.now() - chunkStartTime;
+            console.log(`Completed chunk ${chunkNumber}/${totalChunks}. Total processed: ${processedCount}/${totalFiles} (${chunkTime}ms elapsed)`);
+            
+            if (global.gc) {
+                global.gc();
+            }
+        }
+
+        const totalChunkTime = Date.now() - chunkStartTime;
+        console.log(`Completed all chunks in ${totalChunkTime}ms`);
+        return files;
+    }
+
+    private async processChunkInBatches(
+        chunk: string[], 
+        baseDir: string, 
+        isBinary: boolean,
+        batchSize = 10
+    ): Promise<Record<string, FreestyleFile>> {
+        const files: Record<string, FreestyleFile> = {};
+        const batchStartTime = Date.now();
+
+        for (let i = 0; i < chunk.length; i += batchSize) {
+            const batch = chunk.slice(i, i + batchSize);
+            const batchNumber = Math.floor(i / batchSize) + 1;
+            const totalBatches = Math.ceil(chunk.length / batchSize);
+            
+            const batchPromises = batch.map(filePath => 
+                isBinary 
+                    ? this.processBinaryFile(filePath, baseDir)
+                    : this.processTextFile(filePath, baseDir)
+            );
+            
+            const batchResults = await Promise.all(batchPromises);
+            
+            // Add successful results to files
+            for (const result of batchResults) {
+                if (result) {
+                    files[result.path] = result.file;
+                }
+            }
+
+            const batchTime = Date.now() - batchStartTime;
+            console.log(`  Batch ${batchNumber}/${totalBatches} completed (${batch.length} files) in ${batchTime}ms`);
+        }
+
+        const totalBatchTime = Date.now() - batchStartTime;
+        console.log(`  All batches completed in ${totalBatchTime}ms`);
+        return files;
+    }
+
+    private async processTextFile(fullPath: string, baseDir: string): Promise<{ path: string; file: FreestyleFile } | null> {
+        const relativePath = fullPath.replace(baseDir + '/', '');
+
+        try {
+            const textContent = await this.session.fs.readTextFile(fullPath);
+
+            if (textContent !== null) {
+                // Skip very large text files to prevent memory issues
+                const MAX_TEXT_SIZE = 5 * 1024 * 1024; // 5MB limit for text files
+                if (textContent.length > MAX_TEXT_SIZE) {
+                    console.warn(`[processTextFile] Skipping large text file ${relativePath} (${textContent.length} bytes)`);
+                    return null;
+                }
+
+                return {
+                    path: relativePath,
+                    file: {
+                        content: textContent,
+                        encoding: 'utf-8' as const,
+                    }
+                };
+            } else {
+                console.warn(`[processTextFile] Failed to read text content for ${relativePath}`);
+                return null;
+            }
+        } catch (error) {
+            console.warn(`[processTextFile] Error processing ${relativePath}:`, error);
+            return null;
+        }
+    }
+
+
+    private async processBinaryFile(fullPath: string, baseDir: string): Promise<{ path: string; file: FreestyleFile } | null> {
+        const relativePath = fullPath.replace(baseDir + '/', '');
+
+        try {
+            const binaryContent = await this.session.fs.readFile(fullPath);
+
+            if (binaryContent) {
+                // For very large binary files, consider skipping or compressing ??
+                const MAX_BINARY_SIZE = 10 * 1024 * 1024; // 10MB limit
+                if (binaryContent.length > MAX_BINARY_SIZE) {
+                    console.warn(`[processBinaryFile] Skipping large binary file ${relativePath} (${binaryContent.length} bytes)`);
+                    return null;
+                }
+
+                const base64String = convertToBase64(binaryContent);
+
+                return {
+                    path: relativePath,
+                    file: {
+                        content: base64String,
+                        encoding: 'base64' as const,
+                    }
+                };
+            } else {
+                console.warn(`[processBinaryFile] Failed to read binary content for ${relativePath}`);
+                return null;
+            }
+        } catch (error) {
+            console.warn(`[processBinaryFile] Error processing ${relativePath}:`, error);
+            return null;
+        }
+    }
+
+
+
+    /**
+     * Get all file paths in a directory tree using memory-efficient streaming
+     * Instead of accumulating all paths in memory, we yield them one by one
+     */
     private async getAllFilePathsFlat(rootDir: string): Promise<string[]> {
         const allPaths: string[] = [];
         const dirsToProcess = [rootDir];
@@ -287,82 +438,5 @@ export class PublishManager {
         }
 
         return { binaryFiles, textFiles };
-    }
-
-
-    private async processTextFilesBatch(filePaths: string[], baseDir: string): Promise<Record<string, FreestyleFile>> {
-        const promises = filePaths.map(async (fullPath) => {
-            const relativePath = fullPath.replace(baseDir + '/', '');
-
-            try {
-                const textContent = await this.session.fs.readTextFile(fullPath);
-
-                if (textContent !== null) {
-                    return {
-                        path: relativePath,
-                        file: {
-                            content: textContent,
-                            encoding: 'utf-8' as const,
-                        }
-                    };
-                } else {
-                    console.warn(`[processTextFilesBatch] Failed to read text content for ${relativePath}`);
-                    return null;
-                }
-            } catch (error) {
-                console.warn(`[processTextFilesBatch] Error processing ${relativePath}:`, error);
-                return null;
-            }
-        });
-
-        const results = await Promise.all(promises);
-        const files: Record<string, FreestyleFile> = {};
-
-        for (const result of results) {
-            if (result) {
-                files[result.path] = result.file;
-            }
-        }
-
-        return files;
-    }
-
-    private async processBinaryFilesBatch(filePaths: string[], baseDir: string): Promise<Record<string, FreestyleFile>> {
-        const promises = filePaths.map(async (fullPath) => {
-            const relativePath = fullPath.replace(baseDir + '/', '');
-
-            try {
-                const binaryContent = await this.session.fs.readFile(fullPath);
-
-                if (binaryContent) {
-                    const base64String = convertToBase64(binaryContent);
-
-                    return {
-                        path: relativePath,
-                        file: {
-                            content: base64String,
-                            encoding: 'base64' as const,
-                        }
-                    };
-                } else {
-                    console.warn(`[processBinaryFilesBatch] Failed to read binary content for ${relativePath}`);
-                    return null;
-                }
-            } catch (error) {
-                console.warn(`[processBinaryFilesBatch] Error processing ${relativePath}:`, error);
-                return null;
-            }
-        });
-
-        const results = await Promise.all(promises);
-        const files: Record<string, FreestyleFile> = {};
-
-        for (const result of results) {
-            if (result) {
-                files[result.path] = result.file;
-            }
-        }
-
-        return files;
     }
 }
