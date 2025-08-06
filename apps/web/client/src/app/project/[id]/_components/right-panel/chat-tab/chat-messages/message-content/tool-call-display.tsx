@@ -1,4 +1,3 @@
-
 import { FUZZY_EDIT_FILE_TOOL_NAME, type FUZZY_EDIT_FILE_TOOL_PARAMETERS, SEARCH_REPLACE_EDIT_FILE_TOOL_NAME, type SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS, SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME, type SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS, TERMINAL_COMMAND_TOOL_NAME, TODO_WRITE_TOOL_NAME, type TODO_WRITE_TOOL_PARAMETERS, WEB_SEARCH_TOOL_NAME, WRITE_FILE_TOOL_NAME, type WRITE_FILE_TOOL_PARAMETERS } from '@onlook/ai';
 import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
@@ -39,18 +38,18 @@ export const ToolCallDisplay = ({
         }
 
         if (toolInvocation.toolName === WEB_SEARCH_TOOL_NAME && toolInvocation.state === 'result') {
-                const searchResult = JSON.parse(toolInvocation.result as string);
-                if (searchResult?.query && searchResult?.results) {
-                    return (
-                        <SearchSourcesDisplay
-                            query={String(searchResult.query)}
-                            results={Array.isArray(searchResult.results) ? (searchResult.results as unknown[]).map((result: unknown) => ({
-                                title: String((result as { title?: string; url?: string }).title ?? (result as { url?: string }).url ?? ''),
-                                url: String((result as { url?: string }).url ?? '')
-                            })) : []}
-                        />
-                    );
-                }   
+            const searchResult = JSON.parse(toolInvocation.result as string);
+            if (searchResult?.query && searchResult?.results) {
+                return (
+                    <SearchSourcesDisplay
+                        query={String(searchResult.query)}
+                        results={Array.isArray(searchResult.results) ? (searchResult.results as unknown[]).map((result: unknown) => ({
+                            title: String((result as { title?: string; url?: string }).title ?? (result as { url?: string }).url ?? ''),
+                            url: String((result as { url?: string }).url ?? '')
+                        })) : []}
+                    />
+                );
+            }
         }
 
         if (toolInvocation.toolName === WRITE_FILE_TOOL_NAME) {

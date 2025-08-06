@@ -7,7 +7,8 @@ import { markdown } from '@codemirror/lang-markdown';
 import { bracketMatching, HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { lintGutter } from '@codemirror/lint';
 import { highlightSelectionMatches } from '@codemirror/search';
-import { drawSelection, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers } from '@codemirror/view';
+import { StateEffect, StateField } from '@codemirror/state';
+import { Decoration, type DecorationSet, drawSelection, EditorView, highlightActiveLine, highlightActiveLineGutter, highlightSpecialChars, keymap, lineNumbers } from '@codemirror/view';
 import { tags } from '@lezer/highlight';
 
 // Custom colors for CodeMirror
@@ -115,6 +116,10 @@ export const customDarkTheme = EditorView.theme({
     '.cm-scroller::-webkit-scrollbar-thumb:hover': {
         backgroundColor: '#4b5563'
     },
+    '.cm-search-highlight': {
+        backgroundColor: 'rgba(26, 198, 156, 0.3)',
+        borderRadius: '2px'
+    },
 }, { dark: true });
 
 // Custom syntax highlighting with the specified colors
@@ -171,7 +176,81 @@ export const customDarkHighlightStyle = HighlightStyle.define([
     { tag: tags.invalid, color: '#ef4444', textDecoration: 'underline' }
 ]);
 
-// Basic setup for CodeMirror
+const searchHighlightEffect = StateEffect.define<{ term: string }>();
+const clearHighlightEffect = StateEffect.define();
+
+const searchHighlightField = StateField.define<DecorationSet>({
+    create() {
+        return Decoration.none;
+    },
+    update(decorations, tr) {
+        decorations = decorations.map(tr.changes);
+
+        for (let effect of tr.effects) {
+            if (effect.is(searchHighlightEffect)) {
+                const { term } = effect.value;
+                if (!term || term.length < 2) {
+                    decorations = Decoration.none;
+                    continue;
+                }
+
+                const content = tr.state.doc.toString();
+                const termLower = term.toLowerCase();
+                const contentLower = content.toLowerCase();
+                const newDecorations = [];
+
+                let index = 0;
+                while ((index = contentLower.indexOf(termLower, index)) !== -1) {
+                    const from = index;
+                    const to = index + term.length;
+                    newDecorations.push(
+                        Decoration.mark({
+                            class: 'cm-search-highlight'
+                        }).range(from, to)
+                    );
+                    index = to;
+                }
+
+                decorations = Decoration.set(newDecorations);
+            } else if (effect.is(clearHighlightEffect)) {
+                decorations = Decoration.none;
+            }
+        }
+
+        return decorations;
+    },
+    provide: f => EditorView.decorations.from(f)
+});
+
+export function createSearchHighlight(term: string) {
+    return searchHighlightEffect.of({ term });
+}
+
+export function clearSearchHighlight() {
+    return clearHighlightEffect.of(null);
+}
+
+export function scrollToFirstMatch(view: EditorView, term: string): boolean {
+    if (!term || term.length < 2) return false;
+
+    const content = view.state.doc.toString();
+    const termLower = term.toLowerCase();
+    const contentLower = content.toLowerCase();
+
+    const firstMatch = contentLower.indexOf(termLower);
+    if (firstMatch !== -1) {
+        const pos = firstMatch;
+        view.dispatch({
+            effects: EditorView.scrollIntoView(pos, {
+                y: 'center'
+            })
+        });
+        return true;
+    }
+
+    return false;
+}
+
 export const getBasicSetup = (saveFile: () => void) => {
     const baseExtensions = [
         highlightActiveLine(),
@@ -183,6 +262,7 @@ export const getBasicSetup = (saveFile: () => void) => {
         highlightSelectionMatches(),
         lintGutter(),
         lineNumbers(),
+        searchHighlightField,
         keymap.of([
             {
                 key: 'Mod-s',
