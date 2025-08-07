@@ -287,11 +287,6 @@ export class CodesandboxProvider extends Provider {
 
         await watcher.start(input);
 
-        await this.client.fs.watch(input.args.path, {
-            recursive: input.args.recursive,
-            excludes: input.args.excludes,
-        });
-
         if (input.onFileChange) {
             watcher.registerEventCallback(async (event) => {
                 if (input.onFileChange) {

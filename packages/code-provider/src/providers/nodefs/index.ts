@@ -193,7 +193,7 @@ export class NodeFsProvider extends Provider {
 }
 
 export class NodeFsFileWatcher extends ProviderFileWatcher {
-    start(): Promise<void> {
+    start(input: WatchFilesInput): Promise<void> {
         return Promise.resolve();
     }
 

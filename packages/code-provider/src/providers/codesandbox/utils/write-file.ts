@@ -12,7 +12,7 @@ export async function writeFile(
             throw new Error('File already exists');
         }
     }
-    const result = await writeFileUtils(client, args.path, args.content, args.overwrite);
+    const result = await writeFileUtils(client, args.path, args.content);
     if (!result) {
         throw new Error('Error creating file');
     }
