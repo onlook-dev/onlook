@@ -1,0 +1,22 @@
+[req]
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+x509_extensions    = v3_req
+req_extensions     = v3_req
+prompt             = no
+
+[req_distinguished_name]
+C  = US
+ST = California
+L  = San Francisco
+O  = Onlook
+OU = Eng
+CN = onlook.internal
+emailAddress = eng@onlook.com
+
+[v3_req]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = onlook.internal
+DNS.2 = *.onlook.internal

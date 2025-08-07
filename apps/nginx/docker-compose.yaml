@@ -1,0 +1,13 @@
+name: onlook-web
+services:
+    nginx:
+        container_name: nginx
+        restart: always
+        image: nginx:1.27.4-alpine
+        ports:
+            - '443:443'
+        volumes:
+            - ./conf.d/server.conf:/etc/nginx/conf.d/server.conf:ro
+            - ./ssl/onlook-internal.crt:/etc/nginx/ssl/onlook-internal.crt:ro
+            - ./ssl/onlook-internal.key:/etc/nginx/ssl/onlook-internal.key:ro
+        command: [nginx, '-g', 'daemon off;']
