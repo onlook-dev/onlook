@@ -6,7 +6,7 @@ import { getDomElement, restoreElementStyle } from '../helpers';
 import { getDisplayDirection } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 
-export function startDrag(domId: string): number | null {
+export function prepareDrag(domId: string): number | null {
     const el = getHtmlElement(domId);
     if (!el) {
         console.warn(`Start drag element not found: ${domId}`);

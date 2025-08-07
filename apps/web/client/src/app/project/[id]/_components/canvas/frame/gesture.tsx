@@ -7,11 +7,12 @@ import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { RightClickMenu } from './right-click';
 
 export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame, isResizing: boolean }) => {
     const editorEngine = useEditorEngine();
+    const dragPreparationTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     const getFrameData: () => FrameData | undefined = useCallback(() => {
         return editorEngine.frames.get(frame.id);
@@ -75,7 +76,14 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame,
                             editorEngine.elements.shiftClick(el);
                         } else {
                             editorEngine.elements.click([el]);
-                            await editorEngine.move.start(el, pos, frameData);
+
+                            editorEngine.move.setPreparingDrag(true);
+                            dragPreparationTimerRef.current = setTimeout(async () => {
+                                if (editorEngine.move.isPreparing) {
+                                    await editorEngine.move.prepareDrag(el, pos, frameData);
+                                    editorEngine.move.setPreparingDrag(false);
+                                }
+                            }, 150);
                         }
                         break;
                     case MouseAction.DOUBLE_CLICK:
@@ -93,21 +101,20 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame,
     const throttledMouseMove = useMemo(
         () =>
             throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
-                // await handleMouseEvent(e, MouseAction.MOVE);
 
-                if (editorEngine.move.isDragging) {
-                    await editorEngine.move.drag(e, getRelativeMousePosition);
-                } else if (
-                    editorEngine.state.editorMode === EditorMode.DESIGN ||
-                    ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
-                        editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
-                        editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
-                        !editorEngine.insert.isDrawing)
-                ) {
-                    await handleMouseEvent(e, MouseAction.MOVE);
-                } else if (editorEngine.insert.isDrawing) {
-                    editorEngine.insert.draw(e);
-                }
+            if (editorEngine.move.shouldDrag) {
+                await editorEngine.move.drag(e, getRelativeMousePosition);
+            } else if (
+                editorEngine.state.editorMode === EditorMode.DESIGN ||
+                ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
+                    editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
+                    editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
+                    !editorEngine.insert.isDrawing)
+            ) {
+                await handleMouseEvent(e, MouseAction.MOVE);
+            } else if (editorEngine.insert.isDrawing) {
+                editorEngine.insert.draw(e);
+            }
             }, 16),
         [editorEngine, getRelativeMousePosition, handleMouseEvent],
     );
@@ -149,11 +156,15 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame,
         if (!frameData) {
             return;
         }
-
-        await editorEngine.insert.end(e, frameData.view);
-        if (editorEngine.move.isDragging) {
-            await editorEngine.move.end(e);
+        
+        if (dragPreparationTimerRef.current) {
+            clearTimeout(dragPreparationTimerRef.current);
+            dragPreparationTimerRef.current = null;
         }
+        editorEngine.move.setPreparingDrag(false);
+        
+        await editorEngine.move.end(e);
+        await editorEngine.insert.end(e, frameData.view);
     }
 
     const handleDragOver = async (e: React.DragEvent<HTMLDivElement>) => {

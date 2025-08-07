@@ -205,7 +205,7 @@ export const WebFrameComponent = observer(
                 getRemoveAction: promisifyMethod(penpalChild?.getRemoveAction),
                 getTheme: promisifyMethod(penpalChild?.getTheme),
                 setTheme: promisifyMethod(penpalChild?.setTheme),
-                startDrag: promisifyMethod(penpalChild?.startDrag),
+                prepareDrag: promisifyMethod(penpalChild?.prepareDrag),
                 drag: promisifyMethod(penpalChild?.drag),
                 dragAbsolute: promisifyMethod(penpalChild?.dragAbsolute),
                 endDragAbsolute: promisifyMethod(penpalChild?.endDragAbsolute),
