@@ -22,12 +22,10 @@ export class CopyManager {
 
     async copy() {
         const selected = this.editorEngine.elements.selected;
-        console.log('copy', selected);
         if (selected.length === 0) {
             return;
         }
         const selectedEl = this.editorEngine.elements.selected[0];
-        console.log('selectedEl', selectedEl);
         if (!selectedEl) {
             console.error('Failed to copy element');
             return;
@@ -155,7 +153,6 @@ export class CopyManager {
     }
 
     async duplicate() {
-        console.log('duplicate');
         const savedCopied = this.copied;
         await this.copy();
         await this.paste();
