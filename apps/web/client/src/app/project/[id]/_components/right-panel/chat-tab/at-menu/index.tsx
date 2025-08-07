@@ -17,12 +17,12 @@ interface AtMenuProps {
 }
 
 // Function to get cursor coordinates in a contenteditable element
-const getCaretCoordinates = (element: HTMLElement): { top: number; left: number } => {
+const getCaretCoordinates = (element: HTMLElement): { top: number; left: number; bottom: number } => {
   const selection = window.getSelection();
   if (!selection || selection.rangeCount === 0) {
     // Fallback to element position
     const rect = element.getBoundingClientRect();
-    return { top: rect.top, left: rect.left };
+    return { top: rect.top, left: rect.left, bottom: rect.bottom };
   }
 
   const range = selection.getRangeAt(0);
@@ -37,14 +37,14 @@ const getCaretCoordinates = (element: HTMLElement): { top: number; left: number 
     clonedRange.insertNode(tempSpan);
 
     const spanRect = tempSpan.getBoundingClientRect();
-    const coordinates = { top: spanRect.top, left: spanRect.left };
+    const coordinates = { top: spanRect.top, left: spanRect.left, bottom: spanRect.bottom };
 
     tempSpan.parentNode?.removeChild(tempSpan);
 
     return coordinates;
   }
   
-  return { top: rect.top, left: rect.left };
+  return { top: rect.top, left: rect.left, bottom: rect.bottom };
 };
 
 export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngine }: AtMenuProps) => {
@@ -118,11 +118,29 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
   // Handle back button click to return to main menu
   const handleBackClick = () => {
     console.log('AtMenu: Closing submenu, returning to main menu');
+
+    // Calculate which index the submenu parent occupies in the *current* main list so we can
+    // restore focus/highlight to it when the user returns.
+    const flatMainItems = [
+      ...(filteredItems.recents ?? []),
+      ...(filteredItems.files ?? []),
+      ...(filteredItems.code ?? []),
+      ...(filteredItems.leftPanel ?? [])
+    ];
+
+    // Find the index of the submenu parent in the flattened list – if it cannot be found we
+    // simply fall back to 0 so that the first item is highlighted.
+    const parentIndex = state.submenuParent
+      ? flatMainItems.findIndex((i) => i.id === state.submenuParent?.id)
+      : 0;
+
     onStateChange({
       isSubmenuOpen: false,
       submenuParent: null,
       submenuItems: [],
-      submenuSelectedIndex: 0
+      submenuSelectedIndex: 0,
+      // Restore the selection so keyboard navigation starts from a sensible place
+      selectedIndex: parentIndex >= 0 ? parentIndex : 0
     });
   };
 
@@ -613,9 +631,9 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
     // For submenus use measured height if it exists, else fallback estimate
     const submenuHeightEstimate = Math.min(400, state.submenuItems.length * 40 + 60);
 
-    const menuHeight = state.isSubmenuOpen
-      ? (menuHeightMeasured > 0 ? menuHeightMeasured : submenuHeightEstimate)
-      : mainMenuHeightEstimate;
+    const menuHeight = menuHeightMeasured > 0
+      ? menuHeightMeasured
+      : (state.isSubmenuOpen ? submenuHeightEstimate : mainMenuHeightEstimate);
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
@@ -627,10 +645,10 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
       const contentEditableElement = document.querySelector('[contenteditable="true"]') as HTMLElement;
       if (contentEditableElement) {
         const cursorCoords = getCaretCoordinates(contentEditableElement);
+        const caretY = cursorCoords.top;
         
-        // Position submenu just above the cursor
-        // We want the BOTTOM of submenu to be 5px above cursor
-        top = cursorCoords.top - menuHeight - 5;
+        // Position submenu just above the caret – 5 px gap
+        top = caretY - 5;
         // Align submenu horizontally with caret (like main menu)
         left = cursorCoords.left;
         // Clamp within viewport
@@ -651,21 +669,40 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
          top = state.position.top - menuHeight - 5;
       }
     } else {
-      // Main menu positioning - keep existing logic
-      // state.position.top is the textarea's top position
-      // We want the menu's BOTTOM to be above the textarea
-      top = state.position.top - menuHeight - 10; // 10px gap between menu bottom and textarea top
-      left = state.position.left;
-      
-      // If the menu would go off the top of the screen, position it below the textarea
+      // ===== Main menu positioning =====
+      // We align the bottom of the menu 5 px above the caret so vertical
+      // position remains consistent even as the menu height changes with
+      // different fuzzy-search result counts.
+      const contentEditableElement = document.querySelector('[contenteditable="true"]') as HTMLElement;
+      if (contentEditableElement) {
+        const cursorCoords = getCaretCoordinates(contentEditableElement);
+        const caretY = cursorCoords.top;
+        top = caretY - 5; // bottom 5px above caret's top
+        left = cursorCoords.left;
+      } else {
+        // Fallback to stored textbox coordinates if caret not found
+        top = state.position.top - menuHeight - 5;
+        left = state.position.left;
+      }
+
+      // Clamp horizontally within viewport
+      if (left + menuWidth > viewportWidth - 10) {
+        left = viewportWidth - menuWidth - 10;
+      }
+      if (left < 10) {
+        left = 10;
+      }
+
+      // If anchor very close to top, place menu below caret
       if (top < 10) {
-        top = state.position.top + 25; // 25px below textarea top
+        const fallbackY = contentEditableElement ? getCaretCoordinates(contentEditableElement).top : state.position.top;
+        top = fallbackY + 20; // 20px below caret/input
       }
     }
     
-    // If the menu would go off the bottom of the screen, adjust to fit
-    if (top + menuHeight > viewportHeight - 10) {
-      top = Math.max(10, viewportHeight - menuHeight - 10);
+    // Ensure the anchor point isn't too low in the viewport
+    if (top > viewportHeight - 10) {
+      top = viewportHeight - 10;
     }
     
     // Ensure menu doesn't go off the left of the screen
@@ -686,14 +723,15 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
   const menuContent = (
     <motion.div
       ref={menuRef}
-      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.15, ease: "easeOut" }}
       className="fixed border rounded-lg shadow-2xl z-[9999] w-[320px] max-w-[calc(100vw-2rem)] sm:min-w-[320px] overflow-y-auto border-gray-600 bg-gray-800 max-h-[400px]"
       style={{
         top: menuPosition.top,
         left: menuPosition.left,
+        y: '-100%',
         zIndex: 99999,
         position: 'fixed'
       }}
@@ -715,7 +753,11 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
           <div className="px-2 py-1 border-b border-gray-700">
             <div className="flex items-center text-xs text-gray-400">
               <button
-                onClick={handleBackClick}
+                onMouseDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleBackClick();
+                }}
                 className="flex items-center hover:text-white transition-colors mr-2"
                 title="Go back to main menu"
               >

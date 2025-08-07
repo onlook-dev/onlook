@@ -20,58 +20,75 @@ export class FuzzySearch {
    *    approach keeps bundle size low while providing good quality results.
    */
   static search(query: string, items: AtMenuItem[]): AtMenuItem[] {
-    const trimmedQuery = query.trim();
-    if (!trimmedQuery) return items;
+    const trimmed = query.trim();
+    if (!trimmed) return items;
 
-    // Break the query into individual tokens to allow queries such as
-    // "menu item tsx" to match "menu-item.tsx".
-    const tokens = trimmedQuery.toLowerCase().split(/\s+/).filter(Boolean);
+    // Allow multiple whitespace-separated tokens so that e.g. "menu item tsx"
+    // still matches "menu-item.tsx".
+    const tokens = trimmed.toLowerCase().split(/\s+/).filter(Boolean);
 
-    // Build a list of matches together with a simple relevance score so that we
-    // can order the results.  Lower score == better match.
     const matches: { item: AtMenuItem; score: number }[] = [];
 
     items.forEach((item) => {
-      const targetName = item.name.toLowerCase();
-      const targetPath = item.path.toLowerCase();
+      const name = item.name.toLowerCase();
+      const path = item.path.toLowerCase();
 
       let totalScore = 0;
-      for (const token of tokens) {
-        // Try to find an exact substring match first – this is faster than our
-        // character-by-character fallback and generally yields better results.
-        let bestScore = Infinity;
-        const nameIndex = targetName.indexOf(token);
-        if (nameIndex !== -1) {
-          bestScore = nameIndex; // earlier == better
-        }
-        const pathIndex = targetPath.indexOf(token);
-        if (pathIndex !== -1) {
-          bestScore = Math.min(bestScore, pathIndex + 50); // small bias towards name matches
-        }
 
-        // If no substring match, fall back to the original fuzzy character check.
-        if (bestScore === Infinity && (this.fuzzyMatch(token, targetName) || this.fuzzyMatch(token, targetPath))) {
-          // Penalise fuzzy matches compared to direct substring matches.
-          bestScore = 1000;
-        }
+      for (const token of tokens) {
+        // Calculate the score against the name and the path.
+        const nameScore = this.computeTokenScore(token, name);
+        const pathScore = this.computeTokenScore(token, path) + 10; // small bias towards name matches
+
+        const bestScore = Math.min(nameScore, pathScore);
 
         if (bestScore === Infinity) {
-          // This token failed to match either the name or the path – the whole
-          // item is therefore not a match.
+          // If any token fails to match, skip this item entirely.
           return;
         }
 
         totalScore += bestScore;
       }
 
-      // All tokens matched – push the result.
       matches.push({ item, score: totalScore });
     });
 
-    // Sort by score (ascending) so that the best matches appear first.
+    // Lower scores are better – sort ascending.
     matches.sort((a, b) => a.score - b.score);
 
     return matches.map((m) => m.item);
+  }
+
+  /**
+   * Determine how well a single token matches the target string.
+   * Returns a numeric score where lower is better, or `Infinity` if the token
+   * cannot be matched at all.
+   */
+  private static computeTokenScore(token: string, target: string): number {
+    // Fast path – exact substring.
+    const idx = target.indexOf(token);
+    if (idx !== -1) {
+      return idx;
+    }
+
+    // Fallback – subsequence (character-by-character) match with a simple gap
+    // penalty so that contiguous matches rank higher.
+    let lastPos = -1;
+    let score = 0;
+
+    for (let i = 0; i < token.length; i++) {
+      const ch = token[i];
+      const pos = target.indexOf(ch, lastPos + 1);
+      if (pos === -1) {
+        return Infinity;
+      }
+      score += pos - lastPos - 1; // gap penalty
+      lastPos = pos;
+    }
+
+    // Add a constant so that fuzzy subsequence matches always score worse than
+    // direct substring matches.
+    return 1000 + score;
   }
 
   /**
