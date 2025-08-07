@@ -275,7 +275,8 @@
             "downloadCode": "コードをダウンロード",
             "downloadingCode": "ダウンロードを準備中...",
             "downloadSuccess": "ダウンロードが正常に開始されました",
-            "downloadError": "ダウンロードの準備に失敗しました"
+            "downloadError": "ダウンロードの準備に失敗しました",
+            "recentProjects": "最近のプロジェクト"
         },
         "dialogs": {
             "delete": {

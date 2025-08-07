@@ -54,7 +54,8 @@
             "downloadCode": "下载代码",
             "downloadingCode": "准备下载...",
             "downloadSuccess": "下载成功",
-            "downloadError": "下载失败"
+            "downloadError": "下载失败",
+            "recentProjects": "最近项目"
         },
         "dialogs": {
             "delete": {

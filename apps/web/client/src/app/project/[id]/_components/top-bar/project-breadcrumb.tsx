@@ -12,6 +12,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
+    DropdownMenuSub,
     DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
@@ -23,6 +24,7 @@ import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
+import { RecentProjectsMenu } from './recent-projects';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -182,6 +184,10 @@ export const ProjectBreadcrumb = observer(() => {
                             {t(transKeys.projects.actions.goToAllProjects)}
                         </div>
                     </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <RecentProjectsMenu 
+                        currentProjectId={project?.id || ''} 
+                    />
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push(Routes.HOME)} className="cursor-pointer">
                         <div className="flex row center items-center group">

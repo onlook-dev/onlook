@@ -54,7 +54,8 @@
             "downloadCode": "Descargar Código",
             "downloadingCode": "Preparando descarga...",
             "downloadSuccess": "Descarga iniciada correctamente",
-            "downloadError": "Error al preparar la descarga"
+            "downloadError": "Error al preparar la descarga",
+            "recentProjects": "Proyectos Recientes"
         },
         "dialogs": {
             "delete": {
