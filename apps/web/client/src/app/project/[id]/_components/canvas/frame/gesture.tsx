@@ -75,7 +75,7 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame,
                             editorEngine.elements.shiftClick(el);
                         } else {
                             editorEngine.elements.click([el]);
-                            await editorEngine.move.start(el, pos, frameData);
+                            await editorEngine.move.prepareDrag(el, pos, frameData);
                         }
                         break;
                     case MouseAction.DOUBLE_CLICK:
@@ -93,9 +93,7 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame,
     const throttledMouseMove = useMemo(
         () =>
             throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
-                // await handleMouseEvent(e, MouseAction.MOVE);
-
-                if (editorEngine.move.isDragging) {
+                if (editorEngine.move.shouldDrag) {
                     await editorEngine.move.drag(e, getRelativeMousePosition);
                 } else if (
                     editorEngine.state.editorMode === EditorMode.DESIGN ||
@@ -151,9 +149,7 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame,
         }
 
         await editorEngine.insert.end(e, frameData.view);
-        if (editorEngine.move.isDragging) {
-            await editorEngine.move.end(e);
-        }
+        await editorEngine.move.end(e);
     }
 
     const handleDragOver = async (e: React.DragEvent<HTMLDivElement>) => {
