@@ -10,7 +10,7 @@ export function FeaturesIntroSection() {
                 <h2 className="text-foreground-primary text-6xl leading-[1.1] font-light mb-8">
                     All the Features you need to Build and Scale
                 </h2>
-                <p className="text-foreground-secondary text-lg text-balance">
+                <p className="text-foreground-secondary text-lg max-w-xl mx-auto text-balance">
                     Get the best of visual design with developer-grade features. Build complex React applications visually while maintaining full control over your code, components, and architecture.
                 </p>
             </div>

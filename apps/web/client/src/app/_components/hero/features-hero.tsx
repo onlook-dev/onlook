@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@onlook/ui/button';
 import { useRouter } from 'next/navigation';
+import { UnicornBackground } from './unicorn-background';
 
 export function FeaturesHero() {
     const router = useRouter();
@@ -22,6 +23,7 @@ export function FeaturesHero() {
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
+            <UnicornBackground />
             <div className="flex flex-col gap-6 items-center relative z-20 pt-4 pb-2 max-w-3xl">
                 <motion.h3
                     className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4"
@@ -42,7 +44,7 @@ export function FeaturesHero() {
                     The React Editor You've Been Waiting For
                 </motion.h1>
                 <motion.p
-                    className="text-lg text-foreground-secondary max-w-2xl text-center"
+                    className="text-lg text-foreground-secondary mx-auto max-w-xl text-center"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}

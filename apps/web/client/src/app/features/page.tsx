@@ -10,7 +10,7 @@ import { SocialProofSection } from '../_components/landing-page/social-proof-sec
 import { BenefitsSection } from '../_components/landing-page/benefits-section';
 import { FeaturesIntroSection } from '../_components/landing-page/features-intro-section';
 import { FeaturesGridSection } from '../_components/landing-page/features-grid-section';
-import { CTASection } from '../_components/landing-page/cta-section';
+import { EnhancedCTASection } from '../_components/landing-page/enhanced-cta-section';
 import { FeaturesFAQSection } from '../_components/landing-page/features-faq-section';
 import { WebsiteLayout } from '../_components/website-layout';
 
@@ -27,10 +27,10 @@ export default function FeaturesPage() {
                 <FeaturesIntroSection />
                 <FeaturesGridSection />
                 
-                <CTASection 
+                <EnhancedCTASection 
                     ctaText="Start Building with Onlook Today"
                     buttonText="Get Started for Free"
-                    showSubtext={false}
+                    description="Join thousands of developers and designers creating efficient, scalable React applications with Onlook's visual builder—combining the power of code with intuitive visual tools."
                 />
                 
                 <div className="w-full max-w-6xl mx-auto py-16 px-8 text-center">
