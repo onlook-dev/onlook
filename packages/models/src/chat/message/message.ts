@@ -1,5 +1,5 @@
-import type { Message } from '@ai-sdk/react';
-import type { TextPart } from 'ai';
+import type { Message as ReactMessage } from '@ai-sdk/react';
+import type { UIMessage } from 'ai';
 import type { CodeDiff } from '../../code/index.ts';
 import { type ChatMessageContext } from './context.ts';
 
@@ -9,25 +9,25 @@ export enum ChatMessageRole {
     SYSTEM = 'system',
 }
 
-export interface UserChatMessage extends Message {
+export interface UserChatMessage extends ReactMessage {
     role: ChatMessageRole.USER;
     context: ChatMessageContext[];
-    parts: TextPart[];
+    parts: UIMessage['parts'];
     content: string;
     commitOid: string | null;
 }
 
-export interface AssistantChatMessage extends Message {
+export interface AssistantChatMessage extends ReactMessage {
     role: ChatMessageRole.ASSISTANT;
     applied: boolean;
     snapshots: ChatSnapshot;
-    parts: Message['parts'];
+    parts: UIMessage['parts'];
     content: string;
 }
 
 export type ChatSnapshot = Record<string, CodeDiff>;
 
-export interface SystemChatMessage extends Message {
+export interface SystemChatMessage extends ReactMessage {
     role: ChatMessageRole.SYSTEM;
 }
 

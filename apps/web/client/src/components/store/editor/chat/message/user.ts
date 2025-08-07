@@ -1,7 +1,7 @@
 import { getHydratedUserMessage, type HydrateUserMessageOptions } from '@onlook/ai/src/prompt/provider';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { ChatMessageRole, type UserChatMessage } from '@onlook/models/chat';
-import type { Message, TextPart } from 'ai';
+import type { UIMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
 export class UserChatMessageImpl implements UserChatMessage {
@@ -9,7 +9,7 @@ export class UserChatMessageImpl implements UserChatMessage {
     role: ChatMessageRole.USER = ChatMessageRole.USER;
     content: string;
     context: ChatMessageContext[] = [];
-    parts: TextPart[] = [];
+    parts: UIMessage['parts'] = [];
     aiSdkId: string | undefined;
     commitOid: string | null;
 
@@ -17,7 +17,7 @@ export class UserChatMessageImpl implements UserChatMessage {
         this.id = uuidv4();
         this.aiSdkId = undefined;
         this.content = content;
-        this.parts = [{ type: 'text', text: content }];
+        this.parts = [{ type: 'text', text: content } as any];
         this.context = context;
         this.commitOid = null;
     }
@@ -34,13 +34,13 @@ export class UserChatMessageImpl implements UserChatMessage {
             id: message.id,
             role: message.role,
             context: message.context,
-            parts: message.parts,
+            parts: message.parts as any,
             content: message.content,
             commitOid: message.commitOid,
         };
     }
 
-    static fromMessage(message: Message, context: ChatMessageContext[]): UserChatMessageImpl {
+    static fromMessage(message: UIMessage, context: ChatMessageContext[]): UserChatMessageImpl {
         return new UserChatMessageImpl(message.content, context);
     }
 
@@ -48,17 +48,18 @@ export class UserChatMessageImpl implements UserChatMessage {
         return new UserChatMessageImpl(content, context);
     }
 
-    toStreamMessage(opt: HydrateUserMessageOptions): Message {
-        return getHydratedUserMessage(this.id, this.content, this.context, opt);
+    toStreamMessage(opt: HydrateUserMessageOptions): UIMessage {
+        return getHydratedUserMessage(this.id, this.content, this.context, opt) as unknown as UIMessage;
     }
 
     updateMessage(content: string, context: ChatMessageContext[]) {
         this.content = content;
-        this.parts = [{ type: 'text', text: content }];
+        this.parts = [{ type: 'text', text: content } as any];
         this.context = context;
     }
 
     getStringContent(): string {
-        return this.parts.map((part) => part.text).join('');
+        // parts might include non-text types in v5; ensure we only extract text
+        return (this.parts || []).map((part: any) => (part.type === 'text' ? part.text : '')).join('');
     }
 }
