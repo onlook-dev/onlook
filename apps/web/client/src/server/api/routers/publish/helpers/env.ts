@@ -47,12 +47,12 @@ export async function extractEnvVarsFromSandbox(provider: Provider): Promise<Rec
 
         for (const fileName of ENV_FILE_PATTERNS) {
             try {
-                const { files } = await provider.readFiles({
+                const { file } = await provider.readFile({
                     args: {
-                        paths: [fileName],
+                        path: fileName,
                     },
                 });
-                const content = files?.[0]?.toString();
+                const content = file?.toString();
                 if (content) {
                     const parsed = parseEnvContent(content);
                     Object.assign(envVars, parsed);

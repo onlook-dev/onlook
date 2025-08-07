@@ -306,11 +306,11 @@ export const uploadToSandbox = async (files: ProcessedFile[], provider: Provider
         try {
             if (file.type === ProcessedFileType.BINARY) {
                 const uint8Array = new Uint8Array(file.content);
-                await provider.createFile({
+                await provider.writeFile({
                     args: {
                         path: file.path,
                         content: uint8Array,
-                        overwriteIfExists: true,
+                        overwrite: true,
                     },
                 });
             } else {
@@ -332,11 +332,11 @@ export const uploadToSandbox = async (files: ProcessedFile[], provider: Provider
                         );
                     }
                 }
-                await provider.createFile({
+                await provider.writeFile({
                     args: {
                         path: file.path,
                         content,
-                        overwriteIfExists: true,
+                        overwrite: true,
                     },
                 });
             }

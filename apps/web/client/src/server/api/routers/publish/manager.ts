@@ -23,24 +23,24 @@ import { type FreestyleFile } from 'freestyle-sandboxes';
 import type { z } from 'zod';
 
 export class PublishManager {
-    constructor(private readonly provider: Provider) {}
+    constructor(private readonly provider: Provider) { }
 
     private get fileOps(): FileOperations {
         return {
             readFile: async (path: string) => {
-                const { files } = await this.provider.readFiles({
+                const { file } = await this.provider.readFile({
                     args: {
-                        paths: [path],
+                        path,
                     },
                 });
-                return files[0]?.toString() ?? '';
+                return file?.toString() ?? '';
             },
             writeFile: async (path: string, content: string) => {
-                await this.provider.createFile({
+                await this.provider.writeFile({
                     args: {
                         path,
                         content,
-                        overwriteIfExists: true,
+                        overwrite: true,
                     },
                 });
                 return true;
@@ -356,12 +356,12 @@ export class PublishManager {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
             try {
-                const { files } = await this.provider.readFiles({
+                const { file } = await this.provider.readFile({
                     args: {
-                        paths: [fullPath],
+                        path: fullPath,
                     },
                 });
-                const textContent = files[0]?.toString() ?? '';
+                const textContent = file?.toString() ?? '';
 
                 if (textContent !== null) {
                     return {
@@ -403,12 +403,12 @@ export class PublishManager {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
             try {
-                const { files } = await this.provider.readFiles({
+                const { file } = await this.provider.readFile({
                     args: {
-                        paths: [fullPath],
+                        path: fullPath,
                     },
                 });
-                const binaryContent = files[0];
+                const binaryContent = file;
 
                 if (binaryContent) {
                     if (binaryContent instanceof Uint8Array) {

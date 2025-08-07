@@ -174,12 +174,12 @@ export class SandboxManager {
         }
 
         try {
-            const { files } = await this.session.provider.readFiles({
+            const { file } = await this.session.provider.readFile({
                 args: {
-                    paths: [filePath],
+                    path: filePath,
                 },
             });
-            return files?.[0] ?? null;
+            return file;
         } catch (error) {
             console.error(`Error reading remote file ${filePath}:`, error);
             return null;
@@ -197,11 +197,11 @@ export class SandboxManager {
         }
 
         try {
-            await this.session.provider.createFile({
+            await this.session.provider.writeFile({
                 args: {
                     path: filePath,
                     content,
-                    overwriteIfExists: overwrite,
+                    overwrite,
                 },
             });
             return true;

@@ -48,6 +48,7 @@ export async function writeFile(
     client: WebSocketSession,
     path: string,
     content: string | Uint8Array,
+    overwrite: boolean = false,
 ) {
     const normalizedPath = normalizePath(path);
     let writeContent = content;

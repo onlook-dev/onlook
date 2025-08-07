@@ -6,8 +6,6 @@ import {
     ProviderTerminal,
     type CopyFileOutput,
     type CopyFilesInput,
-    type CreateFileInput,
-    type CreateFileOutput,
     type CreateProjectInput,
     type CreateProjectOutput,
     type CreateSessionInput,
@@ -18,8 +16,6 @@ import {
     type DeleteFilesOutput,
     type DownloadFilesInput,
     type DownloadFilesOutput,
-    type EditFileInput,
-    type EditFileOutput,
     type GetTaskInput,
     type GetTaskOutput,
     type GitStatusInput,
@@ -28,11 +24,12 @@ import {
     type InitializeOutput,
     type ListFilesInput,
     type ListFilesOutput,
+    type ListProjectsInput,
+    type ListProjectsOutput,
     type PauseProjectInput,
     type PauseProjectOutput,
-    type StopProjectOutput,
-    type ReadFilesInput,
-    type ReadFilesOutput,
+    type ReadFileInput,
+    type ReadFileOutput,
     type RenameFileInput,
     type RenameFileOutput,
     type SetupInput,
@@ -40,6 +37,7 @@ import {
     type StatFileInput,
     type StatFileOutput,
     type StopProjectInput,
+    type StopProjectOutput,
     type TerminalBackgroundCommandInput,
     type TerminalBackgroundCommandOutput,
     type TerminalCommandInput,
@@ -47,8 +45,8 @@ import {
     type WatchEvent,
     type WatchFilesInput,
     type WatchFilesOutput,
-    type ListProjectsInput,
-    type ListProjectsOutput,
+    type WriteFileInput,
+    type WriteFileOutput,
 } from '../../types';
 
 export interface NodeFsProviderOptions {}
@@ -65,11 +63,7 @@ export class NodeFsProvider extends Provider {
         return {};
     }
 
-    async createFile(input: CreateFileInput): Promise<CreateFileOutput> {
-        return {};
-    }
-
-    async editFile(input: EditFileInput): Promise<EditFileOutput> {
+    async writeFile(input: WriteFileInput): Promise<WriteFileOutput> {
         return {};
     }
 
@@ -93,9 +87,16 @@ export class NodeFsProvider extends Provider {
         };
     }
 
-    async readFiles(input: ReadFilesInput): Promise<ReadFilesOutput> {
+    async readFile(input: ReadFileInput): Promise<ReadFileOutput> {
         return {
-            files: [],
+            file: {
+                path: input.args.path,
+                content: '',
+                type: 'text',
+                toString: () => {
+                    return '';
+                },
+            },
         };
     }
 

@@ -8,64 +8,61 @@ import {
     type SandboxBrowserSession,
     type Watcher,
 } from '@codesandbox/sdk';
+import { connectToSandbox } from '@codesandbox/sdk/browser';
 import {
     Provider,
-    type TerminalCommandInput,
-    type CreateFileInput,
-    type CreateFileOutput,
-    type DeleteFilesInput,
-    type DeleteFilesOutput,
-    type EditFileInput,
-    type EditFileOutput,
-    type ListFilesInput,
-    type ListFilesOutput,
-    type ReadFilesInput,
-    type ReadFilesOutput,
-    type DownloadFilesInput,
-    type DownloadFilesOutput,
-    type CopyFilesInput,
-    type CopyFileOutput,
-    type RenameFileInput,
-    type RenameFileOutput,
-    type WatchFilesInput,
-    type WatchFilesOutput,
-    type WatchEvent,
-    ProviderFileWatcher,
-    type StatFileInput,
-    type StatFileOutput,
-    type CreateTerminalInput,
-    type CreateTerminalOutput,
-    ProviderTerminal,
-    type ProviderTerminalShellSize,
-    type GetTaskInput,
-    type GetTaskOutput,
-    ProviderTask,
-    type TerminalCommandOutput,
-    type TerminalBackgroundCommandInput,
-    type TerminalBackgroundCommandOutput,
     ProviderBackgroundCommand,
-    type GitStatusInput,
-    type GitStatusOutput,
-    type SetupInput,
-    type SetupOutput,
-    type CreateSessionInput,
-    type CreateSessionOutput,
-    type InitializeInput,
-    type InitializeOutput,
-    type PauseProjectInput,
-    type PauseProjectOutput,
-    type StopProjectInput,
-    type StopProjectOutput,
+    ProviderFileWatcher,
+    ProviderTask,
+    ProviderTerminal,
+    type CopyFileOutput,
+    type CopyFilesInput,
     type CreateProjectInput,
     type CreateProjectOutput,
+    type CreateSessionInput,
+    type CreateSessionOutput,
+    type CreateTerminalInput,
+    type CreateTerminalOutput,
+    type DeleteFilesInput,
+    type DeleteFilesOutput,
+    type DownloadFilesInput,
+    type DownloadFilesOutput,
+    type GetTaskInput,
+    type GetTaskOutput,
+    type GitStatusInput,
+    type GitStatusOutput,
+    type InitializeInput,
+    type InitializeOutput,
+    type ListFilesInput,
+    type ListFilesOutput,
     type ListProjectsInput,
     type ListProjectsOutput,
+    type PauseProjectInput,
+    type PauseProjectOutput,
+    type ProviderTerminalShellSize,
+    type ReadFileInput,
+    type ReadFileOutput,
+    type RenameFileInput,
+    type RenameFileOutput,
+    type SetupInput,
+    type SetupOutput,
+    type StatFileInput,
+    type StatFileOutput,
+    type StopProjectInput,
+    type StopProjectOutput,
+    type TerminalBackgroundCommandInput,
+    type TerminalBackgroundCommandOutput,
+    type TerminalCommandInput,
+    type TerminalCommandOutput,
+    type WatchEvent,
+    type WatchFilesInput,
+    type WatchFilesOutput,
+    type WriteFileInput,
+    type WriteFileOutput,
 } from '../../types';
-import { createFile } from './utils/create-file';
-import { editFile } from './utils/edit-file';
+import { writeFile } from './utils/create-file';
 import { listFiles } from './utils/list-files';
-import { readFiles } from './utils/read-files';
-import { connectToSandbox } from '@codesandbox/sdk/browser';
+import { readFile } from './utils/read-file';
 
 export interface CodesandboxProviderOptions {
     sandboxId?: string;
@@ -206,18 +203,11 @@ export class CodesandboxProvider extends Provider {
         return { projects: [] };
     }
 
-    async createFile(input: CreateFileInput): Promise<CreateFileOutput> {
+    async writeFile(input: WriteFileInput): Promise<WriteFileOutput> {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        return createFile(this.client, input);
-    }
-
-    async editFile(input: EditFileInput): Promise<EditFileOutput> {
-        if (!this.client) {
-            throw new Error('Client not initialized');
-        }
-        return editFile(this.client, input);
+        return writeFile(this.client, input);
     }
 
     async renameFile(input: RenameFileInput): Promise<RenameFileOutput> {
@@ -258,11 +248,11 @@ export class CodesandboxProvider extends Provider {
         return listFiles(this.client, input);
     }
 
-    async readFiles(input: ReadFilesInput): Promise<ReadFilesOutput> {
+    async readFile(input: ReadFileInput): Promise<ReadFileOutput> {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        return readFiles(this.client, input);
+        return readFile(this.client, input);
     }
 
     async downloadFiles(input: DownloadFilesInput): Promise<DownloadFilesOutput> {
