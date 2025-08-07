@@ -1,4 +1,4 @@
-import { toUser, userProjects } from '@onlook/db';
+import { toUser, userProjects, users } from '@onlook/db';
 import { and, eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -11,32 +11,18 @@ export const memberRouter = createTRPCRouter({
             }),
         )
         .query(async ({ ctx, input }) => {
-            const members = await ctx.db.query.userProjects.findMany({
-                where: eq(userProjects.projectId, input.projectId),
-                with: {
-                    user: true,
-                },
-            });
-            // TODO: Fix this later
+            const members = await ctx.db
+                .select({
+                    role: userProjects.role,
+                    user: users,
+                })
+                .from(userProjects)
+                .innerJoin(users, eq(userProjects.userId, users.id))
+                .where(eq(userProjects.projectId, input.projectId));
+
             return members.map((member) => ({
                 role: member.role,
-                user: toUser({
-                    id: member.user.id,
-                    email: member.user.email,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-
-                    // @ts-expect-error - TODO: Fix this later
-                    firstName: member.user.firstName ?? '',
-                    // @ts-expect-error - TODO: Fix this later
-                    lastName: member.user.lastName ?? '',
-                    // @ts-expect-error - TODO: Fix this later
-                    displayName: member.user.displayName ?? '',
-                    // @ts-expect-error - TODO: Fix this later
-                    avatarUrl: member.user.avatarUrl ?? '',
-                    // @ts-expect-error - TODO: Fix this later
-                    stripeCustomerId: member.user.stripeCustomerId ?? null,
-                }),
+                user: toUser(member.user),
             }));
         }),
     remove: protectedProcedure
