@@ -22,10 +22,17 @@ import {
 import { type FreestyleFile } from 'freestyle-sandboxes';
 import type { z } from 'zod';
 
+type ChunkProcessor = (chunk: Record<string, FreestyleFile>, chunkInfo: {
+    index: number;
+    total: number;
+    filesProcessed: number;
+    totalFiles: number;
+}) => Promise<void>;
+
 export class PublishManager {
     constructor(private readonly provider: Provider) { }
 
-    private get fileOps(): FileOperations {
+    private get fileOperations(): FileOperations {
         return {
             readFile: async (path: string) => {
                 const { file } = await this.provider.readFile({
@@ -54,7 +61,7 @@ export class PublishManager {
                     });
                     return stat.type === 'file';
                 } catch (error) {
-                    console.error(`[fileExists] Error checking if file exists at ${path}:`, error);
+                    console.error(`Error checking file existence at ${path}:`, error);
                     return false;
                 }
             },
@@ -99,7 +106,7 @@ export class PublishManager {
             deployment: z.infer<typeof deploymentUpdateSchema>,
         ) => Promise<Deployment | null>;
     }): Promise<Record<string, FreestyleFile>> {
-        await this.runPrepareStep();
+        await this.prepareProject();
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing deployment...',
@@ -128,13 +135,11 @@ export class PublishManager {
             message: 'Postprocessing project...',
             progress: 50,
         });
-        const { success: postprocessSuccess, error: postprocessError } =
-            await this.postprocessNextBuild();
+        
+        const { success: postprocessSuccess, error: postprocessError } = await this.postprocessBuild();
 
         if (!postprocessSuccess) {
-            throw new Error(
-                `Failed to postprocess project for deployment, error: ${postprocessError}`,
-            );
+            throw new Error(`Failed to postprocess project for deployment: ${postprocessError}`);
         }
 
         await updateDeployment({
@@ -143,26 +148,32 @@ export class PublishManager {
             progress: 60,
         });
 
-        // Serialize the files for deployment
         const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
-        return await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
+        return await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH, {
+            onProgress: async (processed, total) => {
+                const progress = Math.floor(60 + (processed / total) * 35);
+                await updateDeployment({
+                    status: DeploymentStatus.IN_PROGRESS,
+                    message: `Processing files... ${processed}/${total}`,
+                    progress,
+                });
+            }
+        });
     }
 
     private async addBadge(folderPath: string) {
-        await injectBuiltWithScript(folderPath, this.fileOps);
-        await addBuiltWithScript(folderPath, this.fileOps);
+        await injectBuiltWithScript(folderPath, this.fileOperations);
+        await addBuiltWithScript(folderPath, this.fileOperations);
     }
 
-    private async runPrepareStep() {
-        // Preprocess the project
-        const preprocessSuccess = await addNextBuildConfig(this.fileOps);
+    private async prepareProject() {
+        const preprocessSuccess = await addNextBuildConfig(this.fileOperations);
 
         if (!preprocessSuccess) {
-            throw new Error(`Failed to prepare project for deployment`);
+            throw new Error('Failed to prepare project for deployment');
         }
 
-        // Update .gitignore to ignore the custom output directory
-        const gitignoreSuccess = await updateGitignore(CUSTOM_OUTPUT_DIR, this.fileOps);
+        const gitignoreSuccess = await updateGitignore(CUSTOM_OUTPUT_DIR, this.fileOperations);
         if (!gitignoreSuccess) {
             console.warn('Failed to update .gitignore');
         }
@@ -170,12 +181,11 @@ export class PublishManager {
 
     private async runBuildStep(buildScript: string, buildFlags: string): Promise<void> {
         try {
-            // Use default build flags if no build flags are provided
-            const buildFlagsString: string = isNullOrUndefined(buildFlags)
+            const buildFlagsString = isNullOrUndefined(buildFlags)
                 ? DefaultSettings.EDITOR_SETTINGS.buildFlags
                 : buildFlags;
 
-            const BUILD_SCRIPT_NO_LINT = isEmptyString(buildFlagsString)
+            const buildCommand = isEmptyString(buildFlagsString)
                 ? buildScript
                 : `${buildScript} -- ${buildFlagsString}`;
 
@@ -191,13 +201,14 @@ export class PublishManager {
         }
     }
 
-    private async postprocessNextBuild(): Promise<{
+    private async postprocessBuild(): Promise<{
         success: boolean;
         error?: string;
     }> {
-        const entrypointExists = await this.fileOps.fileExists(
+        const entrypointExists = await this.fileOperations.fileExists(
             `${CUSTOM_OUTPUT_DIR}/standalone/server.js`,
         );
+        
         if (!entrypointExists) {
             return {
                 success: false,
@@ -205,8 +216,8 @@ export class PublishManager {
             };
         }
 
-        await this.fileOps.copy(`public`, `${CUSTOM_OUTPUT_DIR}/standalone/public`, true, true);
-        await this.fileOps.copy(
+        await this.fileOperations.copy(`public`, `${CUSTOM_OUTPUT_DIR}/standalone/public`, true, true);
+        await this.fileOperations.copy(
             `${CUSTOM_OUTPUT_DIR}/static`,
             `${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
             true,
@@ -214,76 +225,229 @@ export class PublishManager {
         );
 
         for (const lockFile of SUPPORTED_LOCK_FILES) {
-            const lockFileExists = await this.fileOps.fileExists(`./${lockFile}`);
+            const lockFileExists = await this.fileOperations.fileExists(`./${lockFile}`);
             if (lockFileExists) {
-                await this.fileOps.copy(
+                await this.fileOperations.copy(
                     `./${lockFile}`,
                     `${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
                     true,
                     true,
                 );
                 return { success: true };
-            } else {
-                console.error(`lockFile not found: ${lockFile}`);
             }
         }
 
         return {
             success: false,
-            error:
-                'Failed to find lock file. Supported lock files: ' +
-                SUPPORTED_LOCK_FILES.join(', '),
+            error: 'Failed to find lock file. Supported lock files: ' + SUPPORTED_LOCK_FILES.join(', '),
         };
     }
 
-    /**
-     * Serializes all files in a directory for deployment using parallel processing
-     * @param currentDir - The directory path to serialize
-     * @returns Record of file paths to their content (base64 for binary, utf-8 for text)
-     */
-    private async serializeFiles(currentDir: string): Promise<Record<string, FreestyleFile>> {
+    private async serializeFiles(
+        currentDir: string, 
+        options: {
+            chunkSize?: number;
+            batchSize?: number;
+            onProgress?: (processed: number, total: number) => Promise<void>;
+            onChunkComplete?: ChunkProcessor;
+        } = {}
+    ): Promise<Record<string, FreestyleFile>> {
+        const {
+            chunkSize = 100,
+            batchSize = 10,
+            onProgress,
+            onChunkComplete = this.handleChunkComplete.bind(this)
+        } = options;
+
         const timer = new LogTimer('File Serialization');
 
         try {
-            const allFilePaths = await this.getAllFilePathsFlat(currentDir);
+            const allFilePaths = await this.collectAllFilePaths(currentDir);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
             const filteredPaths = allFilePaths.filter(filePath => !this.shouldSkipFile(filePath));
+            timer.log(`Filtered to ${filteredPaths.length} files after exclusions`);
 
             const { binaryFiles, textFiles } = this.categorizeFiles(filteredPaths);
+            timer.log(`Categorized: ${textFiles.length} text files, ${binaryFiles.length} binary files`);
 
-            const BATCH_SIZE = 10;
-            const files: Record<string, FreestyleFile> = {};
+            let totalProcessed = 0;
+            const totalFiles = filteredPaths.length;
 
             if (textFiles.length > 0) {
-                timer.log(`Processing ${textFiles.length} text files in batches of ${BATCH_SIZE}`);
-                for (let i = 0; i < textFiles.length; i += BATCH_SIZE) {
-                    const batch = textFiles.slice(i, i + BATCH_SIZE);
-                    const batchFiles = await this.processTextFilesBatch(batch, currentDir);
-                    Object.assign(files, batchFiles);
-                }
+                timer.log(`Processing ${textFiles.length} text files`);
+                await this.processFilesInChunks(
+                    textFiles,
+                    currentDir,
+                    chunkSize,
+                    batchSize,
+                    'text',
+                    async (chunk, chunkInfo) => {
+                        await onChunkComplete(chunk, chunkInfo);
+                        totalProcessed += Object.keys(chunk).length;
+                        if (onProgress) {
+                            await onProgress(totalProcessed, totalFiles);
+                        }
+                    }
+                );
                 timer.log('Text files processing completed');
             }
 
             if (binaryFiles.length > 0) {
-                timer.log(`Processing ${binaryFiles.length} binary files in batches of ${BATCH_SIZE}`);
-                for (let i = 0; i < binaryFiles.length; i += BATCH_SIZE) {
-                    const batch = binaryFiles.slice(i, i + BATCH_SIZE);
-                    const batchFiles = await this.processBinaryFilesBatch(batch, currentDir);
-                    Object.assign(files, batchFiles);
-                }
+                timer.log(`Processing ${binaryFiles.length} binary files`);
+                await this.processFilesInChunks(
+                    binaryFiles,
+                    currentDir,
+                    chunkSize,
+                    batchSize,
+                    'binary',
+                    async (chunk, chunkInfo) => {
+                        await onChunkComplete(chunk, chunkInfo);
+                        totalProcessed += Object.keys(chunk).length;
+                        if (onProgress) {
+                            await onProgress(totalProcessed, totalFiles);
+                        }
+                    }
+                );
                 timer.log('Binary files processing completed');
             }
 
-            timer.log(`Serialization completed - ${Object.keys(files).length} files processed`);
-            return files;
+            timer.log(`Serialization completed - ${filteredPaths.length} files processed in ${timer.getElapsed()}ms`);
+            
+            return this.getFinalSummary();
+
         } catch (error) {
-            console.error(`[serializeFiles] Error during serialization:`, error);
+            console.error('Error during serialization:', error);
             throw error;
         }
     }
 
-    private async getAllFilePathsFlat(rootDir: string): Promise<string[]> {
+    private async processFilesInChunks(
+        filePaths: string[],
+        currentDir: string,
+        chunkSize: number,
+        batchSize: number,
+        fileType: 'text' | 'binary',
+        onChunkComplete: ChunkProcessor
+    ): Promise<void> {
+        const chunks = this.createChunks(filePaths, chunkSize);
+        const timer = new LogTimer('Chunking');
+
+        console.log(`Starting processing of ${filePaths.length} files in chunks of ${chunkSize}`);
+
+        for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+            const chunk = chunks[chunkIndex];
+            if (!chunk) {
+                continue;
+            }
+
+            console.log(`Processing chunk ${chunkIndex + 1}/${chunks.length} (${chunk.length} files)`);
+
+            const chunkData = await this.processChunkWithBatching(
+                chunk,
+                currentDir,
+                batchSize,
+                fileType
+            );
+
+            await onChunkComplete(chunkData, {
+                index: chunkIndex,
+                total: chunks.length,
+                filesProcessed: (chunkIndex * chunkSize) + chunk.length,
+                totalFiles: filePaths.length
+            });
+
+            console.log(`Completed chunk ${chunkIndex + 1}/${chunks.length}. Total processed: ${(chunkIndex + 1) * chunkSize}/${filePaths.length} (${timer.getElapsed()}ms elapsed)`);
+
+            this.clearChunkData(chunkData, chunk);
+            await this.yieldForGarbageCollection();
+        }
+
+        console.log(`Completed all chunks in ${timer.getElapsed()}ms`);
+    }
+
+    private async processChunkWithBatching(
+        filePaths: string[],
+        currentDir: string,
+        batchSize: number,
+        fileType: 'text' | 'binary'
+    ): Promise<Record<string, FreestyleFile>> {
+        console.log(`Processing ${filePaths.length} files in batches of ${batchSize}`);
+
+        const chunkData: Record<string, FreestyleFile> = {};
+
+        for (let i = 0; i < filePaths.length; i += batchSize) {
+            const batch = filePaths.slice(i, i + batchSize);
+            const batchIndex = Math.floor(i / batchSize) + 1;
+            const totalBatches = Math.ceil(filePaths.length / batchSize);
+
+            const startTime = Date.now();
+
+            let batchResults: Record<string, FreestyleFile>;
+            if (fileType === 'text') {
+                batchResults = await this.processTextFilesBatch(batch, currentDir);
+            } else {
+                batchResults = await this.processBinaryFilesBatch(batch, currentDir);
+            }
+
+            const endTime = Date.now();
+            console.log(`Batch ${batchIndex}/${totalBatches} completed (${batch.length} files) in ${endTime - startTime}ms`);
+
+            Object.assign(chunkData, batchResults);
+            Object.keys(batchResults).forEach(key => delete batchResults[key]);
+        }
+
+        return chunkData;
+    }
+
+    private async handleChunkComplete(
+        chunk: Record<string, FreestyleFile>,
+        chunkInfo: { index: number; total: number; filesProcessed: number; totalFiles: number }
+    ): Promise<void> {
+        console.log(`Processing chunk ${chunkInfo.index + 1}/${chunkInfo.total} with ${Object.keys(chunk).length} files`);
+        
+        const chunkSize = JSON.stringify(chunk).length;
+        console.log(`Chunk ${chunkInfo.index + 1} size: ${(chunkSize / 1024 / 1024).toFixed(2)}MB`);
+    }
+
+    private clearChunkData(chunkData: Record<string, FreestyleFile>, filePaths: string[]): void {
+        Object.keys(chunkData).forEach(key => {
+            delete chunkData[key];
+        });
+        filePaths.length = 0;
+
+        if (global.gc && process.env.NODE_ENV === 'development') {
+            global.gc();
+        }
+    }
+
+    private async yieldForGarbageCollection(): Promise<void> {
+        await new Promise(resolve => setImmediate(resolve));
+        await new Promise(resolve => setTimeout(resolve, 0));
+    }
+
+    private getFinalSummary(): Record<string, FreestyleFile> {
+        return {
+            '__summary__': {
+                content: JSON.stringify({
+                    message: 'Files processed in chunks and sent to server',
+                    timestamp: new Date().toISOString(),
+                    processedAt: Date.now()
+                }),
+                encoding: 'utf-8' as const
+            }
+        };
+    }
+
+    private createChunks<T>(array: T[], chunkSize: number): T[][] {
+        const chunks: T[][] = [];
+        for (let i = 0; i < array.length; i += chunkSize) {
+            chunks.push(array.slice(i, i + chunkSize));
+        }
+        return chunks;
+    }
+
+    private async collectAllFilePaths(rootDir: string): Promise<string[]> {
         const allPaths: string[] = [];
         const dirsToProcess = [rootDir];
 
@@ -300,7 +464,6 @@ export class PublishManager {
                     const fullPath = `${currentDir}/${entry.name}`;
 
                     if (entry.type === 'directory') {
-                        // Skip node_modules and other heavy directories early
                         if (!EXCLUDED_PUBLISH_DIRECTORIES.includes(entry.name)) {
                             dirsToProcess.push(fullPath);
                         }
@@ -309,15 +472,13 @@ export class PublishManager {
                     }
                 }
             } catch (error) {
-                console.warn(`[getAllFilePathsFlat] Error reading directory ${currentDir}:`, error);
+                console.warn(`Error reading directory ${currentDir}:`, error);
             }
         }
 
         return allPaths;
     }
-    /**
-     * Check if a file should be skipped
-     */
+
     private shouldSkipFile(filePath: string): boolean {
         return (
             filePath.includes('node_modules') ||
@@ -346,7 +507,6 @@ export class PublishManager {
         return { binaryFiles, textFiles };
     }
 
-
     private async processTextFilesBatch(filePaths: string[], baseDir: string): Promise<Record<string, FreestyleFile>> {
         const promises = filePaths.map(async (fullPath) => {
             const relativePath = fullPath.replace(baseDir + '/', '');
@@ -365,7 +525,7 @@ export class PublishManager {
                     },
                 };
             } catch (error) {
-                console.warn(`[processTextFilesBatch] Error processing ${relativePath}:`, error);
+                console.warn(`Error processing ${relativePath}:`, error);
                 return null;
             }
         });
@@ -409,7 +569,7 @@ export class PublishManager {
                     return null;
                 }
             } catch (error) {
-                console.warn(`[processBinaryFilesBatch] Error processing ${relativePath}:`, error);
+                console.warn(`Error processing ${relativePath}:`, error);
                 return null;
             }
         });
