@@ -68,14 +68,14 @@ export const RecentProjectsMenu = observer(({ currentProjectId }: {
                     <DropdownMenuItem disabled>
                         <div className="flex row center items-center text-muted-foreground">
                             <Icons.Cube className="mr-2" />
-                            No recent projects
+                            {t(transKeys.projects.select.empty)}
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push(Routes.PROJECTS)} className="cursor-pointer">
                         <div className="flex row center items-center">
                             <Icons.Tokens className="mr-2" />
-                            View all projects
+                            {t(transKeys.projects.actions.goToAllProjects)}
                         </div>
                     </DropdownMenuItem>
                 </DropdownMenuSubContent>
