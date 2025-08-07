@@ -60,7 +60,7 @@ import {
     type WriteFileInput,
     type WriteFileOutput,
 } from '../../types';
-import { writeFile } from './utils/create-file';
+import { writeFile } from './utils/write-file';
 import { listFiles } from './utils/list-files';
 import { readFile } from './utils/read-file';
 
