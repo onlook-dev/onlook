@@ -8,6 +8,8 @@ import {
     globTool,
     GREP_TOOL_NAME,
     grepTool,
+    TERMINAL_COMMAND_TOOL_NAME,
+    terminalCommandTool,
 } from './cli';
 import {
     FUZZY_EDIT_FILE_TOOL_NAME,
@@ -57,4 +59,5 @@ export const BUILD_TOOL_SET: ToolSet = {
     [WRITE_FILE_TOOL_NAME]: writeFileTool,
     [BASH_EDIT_TOOL_NAME]: bashEditTool,
     [SANDBOX_TOOL_NAME]: sandboxTool,
+    [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
 };
