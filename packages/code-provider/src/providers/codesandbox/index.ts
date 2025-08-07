@@ -158,15 +158,16 @@ export class CodesandboxProvider extends Provider {
     }
 
     async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
-        if (this.sandbox) {
-            const sdk = new CodeSandbox();
-            await sdk.sandboxes.create({
-                id: this.options.sandboxId,
-                source: 'template',
-            });
-        }
-        return {
+        const sdk = new CodeSandbox();
+        const newSandbox = await sdk.sandboxes.create({
             id: input.id,
+            source: 'template',
+            title: input.title,
+            description: input.description,
+            tags: input.tags,
+        });
+        return {
+            id: newSandbox.id,
         };
     }
 

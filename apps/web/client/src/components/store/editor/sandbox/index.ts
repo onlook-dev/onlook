@@ -27,6 +27,7 @@ import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
 const isDev = env.NODE_ENV === 'development';
+
 export class SandboxManager {
     readonly session: SessionManager;
     readonly fileEventBus: FileEventBus = new FileEventBus();
