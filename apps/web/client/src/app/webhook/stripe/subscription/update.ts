@@ -1,5 +1,5 @@
 import { trackEvent } from '@/utils/analytics/server';
-import { prices, rateLimits, subscriptions } from '@onlook/db';
+import { prices, rateLimits, subscriptions, users } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import {
     getSubscriptionSchedule,
@@ -7,7 +7,7 @@ import {
     ScheduledSubscriptionAction,
     SubscriptionStatus,
 } from '@onlook/stripe';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, not } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { v4 as uuid } from 'uuid';
 import { extractIdsFromEvent } from './helpers';
@@ -97,6 +97,21 @@ export const handleSubscriptionUpdated = async (
                     stripeSubscriptionItemId,
                 })
                 .where(eq(subscriptions.id, subscription.id));
+
+            const hasOtherActiveSubscription = await tx.query.subscriptions.findFirst({
+                where: and(
+                    eq(subscriptions.userId, subscription.userId),
+                    eq(subscriptions.status, SubscriptionStatus.ACTIVE),
+                    not(eq(subscriptions.id, subscription.id))
+                ),
+            });
+
+            if (!hasOtherActiveSubscription) {
+                await tx.update(users).set({
+                    subscriptionActive: false,
+                    updatedAt: new Date(),
+                }).where(eq(users.id, subscription.userId));
+            }
         });
         console.log('Subscription cancellation scheduled at ', stripeSubscription.cancel_at);
     } else {
@@ -299,5 +314,10 @@ const handleSubscriptionRenewed = async (
                 stripeCurrentPeriodEnd: currentPeriodEnd,
             })
             .where(eq(subscriptions.id, subscription.id));
+
+        await tx.update(users).set({
+            subscriptionActive: true,
+            updatedAt: new Date(),
+        }).where(eq(users.id, subscription.userId));
     });
 };
