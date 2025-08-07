@@ -2,7 +2,7 @@ import { trackEvent } from '@/utils/analytics/server';
 import { subscriptions, users } from '@onlook/db';
 import { db } from '@onlook/db/src/client';
 import { SubscriptionStatus } from '@onlook/stripe';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, not } from 'drizzle-orm';
 import Stripe from 'stripe';
 import { extractIdsFromEvent } from './helpers';
 
@@ -31,7 +31,8 @@ export const handleSubscriptionDeleted = async (
         const hasActiveSubscription = await tx.query.subscriptions.findFirst({
             where: and(
                 eq(subscriptions.userId, subscription.userId),
-                eq(subscriptions.status, SubscriptionStatus.ACTIVE)
+                eq(subscriptions.status, SubscriptionStatus.ACTIVE),
+                not(eq(subscriptions.stripeSubscriptionId, stripeSubscriptionId))
             ),
         });
 
