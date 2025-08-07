@@ -8,6 +8,7 @@ export interface AtMenuItem {
   icon?: string;
   category: 'recents' | 'files' | 'code' | 'leftPanel';
   thumbnail?: string; // Path to image for thumbnail display
+  swatches?: { color: string; name?: string }[]; // Optional color swatches with names
 }
 
 export interface AtMenuState {
@@ -22,6 +23,8 @@ export interface AtMenuState {
   submenuParent: AtMenuItem | null;
   submenuItems: AtMenuItem[];
   submenuSelectedIndex: number;
+  // Optional stack of submenu parents for multi-level navigation
+  submenuHistory?: AtMenuItem[];
 }
 
 export interface AtMenuContext {

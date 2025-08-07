@@ -55,6 +55,7 @@ export const ChatInput = observer(({
     const [chatMode, setChatMode] = useState<ChatType>(ChatType.EDIT);
     
     const [mentions, setMentions] = useState<Mention[]>([]);
+    const prevTypedTextRef = useRef<string>('');
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -174,6 +175,67 @@ export const ChatInput = observer(({
         return text;
     };
 
+    // Function to get plain text excluding mention chips (elements with data-mention)
+    const getPlainTextExcludingMentions = (element: HTMLElement): string => {
+        let text = '';
+        const walker = document.createTreeWalker(
+            element,
+            NodeFilter.SHOW_TEXT,
+            null
+        );
+
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+            const parentElement = (node as Text).parentElement;
+            if (parentElement && parentElement.closest('[data-mention]')) {
+                // Skip text inside mention chips
+                continue;
+            }
+            text += node?.textContent ?? '';
+        }
+        return text;
+    };
+
+    // Function to get typed text (excluding mention chips) AND caret offset within that text
+    const getTypedTextAndCaret = (element: HTMLElement): { typedText: string; caretOffset: number } => {
+        const selection = window.getSelection();
+        const hasSelection = !!selection && selection.rangeCount > 0;
+        const endContainer = hasSelection ? selection!.getRangeAt(0).endContainer : null;
+        const endOffset = hasSelection ? selection!.getRangeAt(0).endOffset : 0;
+
+        let typedText = '';
+        let caretOffset = 0;
+
+        const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null);
+        let node: Node | null;
+        while ((node = walker.nextNode())) {
+            const parentElement = (node as Text).parentElement;
+            const isInMention = !!(parentElement && parentElement.closest('[data-mention]'));
+            const nodeText = node.textContent ?? '';
+
+            if (!isInMention) {
+                // Append to typed text
+                typedText += nodeText;
+            }
+
+            if (hasSelection && node === endContainer) {
+                // We are at the caret node; add only the portion up to endOffset if not in mention
+                if (!isInMention) {
+                    caretOffset = typedText.length - nodeText.length + Math.min(endOffset, nodeText.length);
+                } else {
+                    // Caret inside a mention chip; treat as if it is at the current accumulated length
+                    caretOffset = typedText.length;
+                }
+            }
+        }
+
+        if (!hasSelection) {
+            caretOffset = typedText.length;
+        }
+
+        return { typedText, caretOffset };
+    };
+
     // Function to render content with styled mentions
     const renderContentWithMentions = (text: string) => {
         if (!text) return '';
@@ -215,13 +277,27 @@ export const ChatInput = observer(({
             if (currentText !== inputValue) {
                 console.log('Updating contenteditable with:', inputValue);
                 updateContentEditable(inputValue);
+                // After programmatic updates (e.g., after selecting a mention),
+                // sync the prevTypedTextRef to the current typed text (excluding mention chips)
+                const { typedText } = getTypedTextAndCaret(contentEditableRef.current);
+                prevTypedTextRef.current = typedText;
             }
         }
     }, [inputValue]);
 
-            // Handle @ menu item selection
-        const handleAtMenuSelect = (item: AtMenuItem) => {
+                // Handle @ menu item selection
+        const handleAtMenuSelect = (
+            item: AtMenuItem,
+            options?: { insertMode?: 'replaceToken' | 'append' }
+        ) => {
             console.log('Selected item:', item);
+            const insertMode = options?.insertMode ?? 'replaceToken';
+
+            // Normalize mention name: lowercase and replace spaces with hyphens
+            const normalizeMentionName = (name: string): string => {
+                return name.trim().toLowerCase().replace(/\s+/g, '-');
+            };
+            const normalizedName = normalizeMentionName(item.name);
 
             // Helper to get the caret (cursor) position as a plain-text offset inside the
             // content-editable element. If we cannot calculate it we fall back to the end
@@ -238,25 +314,49 @@ export const ChatInput = observer(({
             };
 
             const caretOffset = getCaretOffset(contentEditableRef.current);
-            const beforeCaret = inputValue.slice(0, caretOffset);
-            const afterCaret = inputValue.slice(caretOffset);
+            // Always derive the base text from the live contentEditable to avoid losing
+            // any existing @-mentions that may not yet be reflected in state.
+            const liveText = contentEditableRef.current
+                ? getPlainText(contentEditableRef.current)
+                : inputValue;
+            const beforeCaret = liveText.slice(0, caretOffset);
+            const afterCaret = liveText.slice(caretOffset);
 
-            // First try to detect folder-navigation placeholders (e.g. "@brand/") just before the caret
-            const folderNavRegex = /@([^\/]+)\/$/;
-            let newBeforeCaret: string;
-
-            const folderMatch = beforeCaret.match(folderNavRegex);
-            if (folderMatch && folderMatch[1]) {
-                // Replace the folder placeholder (including the trailing slash) with the chosen item
-                const prefix = beforeCaret.slice(0, beforeCaret.lastIndexOf(folderMatch[0]));
-                const needsLeadingSpace = prefix.length > 0 && !/\s$/.test(prefix);
-                newBeforeCaret = prefix + (needsLeadingSpace ? ' ' : '') + `@${item.name} `;
-            } else {
-                // Generic mention replacement – replace the placeholder immediately preceding the caret.
+            const buildReplacement = (): string => {
+                // Replace folder placeholder like "@brand/" if present
+                const folderNavRegex = /@([^\/]+)\/$/;
+                const folderMatch = beforeCaret.match(folderNavRegex);
+                if (folderMatch && folderMatch[1]) {
+                    const startIndex = beforeCaret.lastIndexOf(folderMatch[0]);
+                    const prefix = startIndex >= 0 ? beforeCaret.slice(0, startIndex) : beforeCaret;
+                    const needsLeadingSpace = prefix.length > 0 && !/\s$/.test(prefix);
+                    return prefix + (needsLeadingSpace ? ' ' : '') + `@${normalizedName} `;
+                }
+                // Replace immediate token like "@bran"
                 const placeholderRegex = /@[^\s]*$/;
-                const prefix = beforeCaret.replace(placeholderRegex, '').trimEnd();
+                const placeholderMatch = beforeCaret.match(placeholderRegex);
+                const prefix = placeholderMatch
+                    ? beforeCaret.slice(0, beforeCaret.length - placeholderMatch[0].length)
+                    : beforeCaret;
                 const needsLeadingSpace = prefix.length > 0 && !/\s$/.test(prefix);
-                newBeforeCaret = prefix + (needsLeadingSpace ? ' ' : '') + `@${item.name} `;
+                return prefix + (needsLeadingSpace ? ' ' : '') + `@${normalizedName} `;
+            };
+
+            let newBeforeCaret: string;
+            if (insertMode === 'append') {
+                // In append mode, if the user is in the middle of typing an @token (e.g. "@bran")
+                // or a folder placeholder (e.g. "@brand/"), we still replace that token instead of
+                // leaving it behind. Otherwise, we truly append.
+                const hasFolderPlaceholder = /@([^\/]+)\/$/.test(beforeCaret);
+                const hasTokenPlaceholder = /@[^\s]*$/.test(beforeCaret);
+                if (hasFolderPlaceholder || hasTokenPlaceholder) {
+                    newBeforeCaret = buildReplacement();
+                } else {
+                    const needsLeadingSpace = beforeCaret.length > 0 && !/\s$/.test(beforeCaret);
+                    newBeforeCaret = beforeCaret + (needsLeadingSpace ? ' ' : '') + `@${normalizedName} `;
+                }
+            } else {
+                newBeforeCaret = buildReplacement();
             }
 
             const newValue = newBeforeCaret + afterCaret;
@@ -265,7 +365,7 @@ export const ChatInput = observer(({
         // Add context pill for the selected item
         console.log('Adding mention context for:', item.name);
         const mentionContext = editorEngine.chat.context.addMentionContext({
-            name: item.name,
+            name: normalizedName,
             path: item.path,
             icon: item.icon || 'file',
             category: item.category
@@ -324,11 +424,11 @@ export const ChatInput = observer(({
         
         const element = e.currentTarget;
         const plainText = getPlainText(element);
+        const { typedText } = getTypedTextAndCaret(element);
         setInputValue(plainText);
         
         // Check if user just typed a new "@" character
-        const prevValue = inputValue;
-        const newAtTyped = plainText.length > prevValue.length && plainText.endsWith('@');
+        const newAtTyped = typedText.length > prevTypedTextRef.current.length && typedText.endsWith('@');
         
         if (newAtTyped) {
             console.log('Opening @ menu - newAtTyped detected');
@@ -372,10 +472,10 @@ export const ChatInput = observer(({
                 ...prev,
                 ...newState
             }));
-        } else if (atMenuState.activeMention && plainText.includes('@')) {
+        } else if (atMenuState.activeMention && typedText.includes('@')) {
             // If we're in active mention mode and still have @, keep menu open
-            const lastAtIndex = plainText.lastIndexOf('@');
-            const textAfterAt = plainText.substring(lastAtIndex + 1);
+            const lastAtIndex = typedText.lastIndexOf('@');
+            const textAfterAt = typedText.substring(lastAtIndex + 1);
             
             // Check if this is a folder navigation (ends with /)
             const folderMatch = textAfterAt.match(/^([^\/]+)\/$/);
@@ -414,9 +514,37 @@ export const ChatInput = observer(({
                 submenuSelectedIndex: 0
             }));
         }
+
+        // Update previous typed text reference
+        prevTypedTextRef.current = typedText;
     }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        // If user deletes the triggering "@" (Backspace/Delete), close the @ menu immediately
+        if (e.key === 'Backspace' || e.key === 'Delete') {
+            const element = contentEditableRef.current;
+            if (element) {
+                const { typedText, caretOffset } = getTypedTextAndCaret(element);
+                const atCount = (typedText.match(/@/g) || []).length;
+                const deletingAt = e.key === 'Backspace'
+                    ? caretOffset > 0 && typedText[caretOffset - 1] === '@'
+                    : caretOffset < typedText.length && typedText[caretOffset] === '@';
+
+                if (deletingAt && atCount <= 1) {
+                    setAtMenuState(prev => ({
+                        ...prev,
+                        isOpen: false,
+                        activeMention: false,
+                        searchQuery: '',
+                        previewText: '',
+                        isSubmenuOpen: false,
+                        submenuParent: null,
+                        submenuItems: [],
+                        submenuSelectedIndex: 0,
+                    }));
+                }
+            }
+        }
         // Handle @ menu keyboard navigation
         if (atMenuState.isOpen) {
             switch (e.key) {

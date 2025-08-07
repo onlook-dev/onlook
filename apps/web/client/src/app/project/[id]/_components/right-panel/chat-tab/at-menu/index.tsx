@@ -10,7 +10,7 @@ import { createPortal } from 'react-dom';
 
 interface AtMenuProps {
   state: AtMenuState;
-  onSelectItem: (item: AtMenuItem) => void;
+  onSelectItem: (item: AtMenuItem, options?: { insertMode?: 'replaceToken' | 'append' }) => void;
   onClose: () => void;
   onStateChange: (state: Partial<AtMenuState>) => void;
   editorEngine: any;
@@ -74,45 +74,79 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
   }, [dataProviders]);
 
   // Handle submenu opening when an item with children is clicked
-  const handleItemClick = (item: AtMenuItem) => {
-    if (item.hasChildren && !state.isSubmenuOpen) {
-      let childItems: AtMenuItem[] = [];
+  const getChildrenForItem = (item: AtMenuItem): AtMenuItem[] => {
+    let childItems: AtMenuItem[] = [];
 
-      // Handle special left panel parents (Brand, Images, Pages)
-      if (item.category === 'leftPanel') {
-        switch (item.id) {
-          case 'brand':
-            childItems = dataProviders.getBrandChildItems();
-            break;
-          case 'images':
-            childItems = dataProviders.getImagesChildItems();
-            break;
-          case 'pages':
-            childItems = dataProviders.getPagesChildItems();
-            break;
-          default:
-            childItems = [];
-        }
+    // Handle special left panel parents (Brand, Images, Pages)
+    if (item.category === 'leftPanel') {
+      switch (item.id) {
+        case 'brand':
+          childItems = dataProviders.getBrandChildItems();
+          break;
+        case 'brand-colors':
+          childItems = dataProviders.getBrandColorsChildItems();
+          break;
+        case 'brand-typography':
+          childItems = dataProviders.getBrandTypographyChildItems();
+          break;
+        case 'images':
+          childItems = dataProviders.getImagesChildItems();
+          break;
+        case 'pages':
+          childItems = dataProviders.getPagesChildItems();
+          break;
+        default:
+          childItems = [];
       }
-
-      // Fallback to generic folder children when none of the above matched
-      if (childItems.length === 0) {
-        childItems = dataProviders.getChildItems(item.path);
-      }
-
-      // Open submenu regardless of whether it contains children
-      console.log('AtMenu: Opening submenu for:', item.name, 'with', childItems.length, 'children');
-      onStateChange({
-        isSubmenuOpen: true,
-        submenuParent: item,
-        submenuItems: childItems,
-        submenuSelectedIndex: 0
-      });
-      return;
     }
 
-    // Regular item selection
-    onSelectItem(item);
+    // Fallback to generic folder children when none matched above
+    if (childItems.length === 0) {
+      childItems = dataProviders.getChildItems(item.path);
+    }
+
+    return childItems;
+  };
+
+  const openSubmenuFor = (item: AtMenuItem) => {
+    let childItems = getChildrenForItem(item);
+
+    // Ensure swatches appear for Brand → Colors even if upstream data misses them
+    if (item.id === 'brand-colors') {
+      childItems = childItems.map((c) => {
+        if (!c.swatches) {
+          if (/primary/i.test(c.name)) {
+            return { ...c, swatches: [
+              { color: '#FF8A00', name: 'tangerine-primary-cta' },
+              { color: '#7CD3FF', name: 'sky-primary-info' },
+              { color: '#FFD233', name: 'sun-primary-warn' },
+              { color: '#C875FF', name: 'orchid-primary-accent' }
+            ] };
+          }
+          if (/secondary/i.test(c.name)) {
+            return { ...c, swatches: [
+              { color: '#1EC8FF', name: 'aqua-secondary' },
+              { color: '#10B60E', name: 'leaf-secondary' },
+              { color: '#E2A7FF', name: 'lavender-secondary' },
+              { color: '#8A0011', name: 'crimson-secondary' }
+            ] };
+          }
+        }
+        return c;
+      });
+    }
+    console.log('AtMenu: Opening submenu for:', item.name, 'with', childItems.length, 'children');
+    onStateChange({
+      isSubmenuOpen: true,
+      submenuParent: item,
+      submenuItems: childItems,
+      submenuSelectedIndex: 0
+    });
+  };
+
+  const handleItemClick = (item: AtMenuItem) => {
+    // Enter/click on the row should select/insert the mention, not open folders.
+    onSelectItem(item, { insertMode: 'replaceToken' });
   };
 
   // Handle back button click to return to main menu
@@ -347,7 +381,35 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
             if (state.submenuSelectedIndex >= 0 && state.submenuSelectedIndex < submenuItems.length) {
               const selectedItem = submenuItems[state.submenuSelectedIndex];
               if (selectedItem) {
-                onSelectItem(selectedItem);
+                // For Brand → Colors, normalize to hyphenated token (e.g. "primary-colors") on Enter
+                if (state.submenuParent?.id === 'brand-colors') {
+                  const base = selectedItem.id.includes('primary')
+                    ? 'primary'
+                    : selectedItem.id.includes('secondary')
+                    ? 'secondary'
+                    : selectedItem.name.toLowerCase().replace(/\s*colors?$/i, '');
+                  const hyphenated = `${base}-colors`;
+                  const synthetic: AtMenuItem = {
+                    ...selectedItem,
+                    name: hyphenated,
+                    // Keep the original path (e.g. /brand/colors/primary)
+                    // so downstream context lookups still work as expected
+                    path: selectedItem.path,
+                  };
+                  onSelectItem(synthetic, { insertMode: 'replaceToken' });
+                } else {
+                  // Default behaviour: insert the selected item as-is
+                  onSelectItem(selectedItem, { insertMode: 'replaceToken' });
+                }
+              }
+            }
+            break;
+          case 'ArrowRight':
+            e.preventDefault();
+            if (state.submenuSelectedIndex >= 0 && state.submenuSelectedIndex < submenuItems.length) {
+              const selectedItem = submenuItems[state.submenuSelectedIndex];
+              if (selectedItem && selectedItem.hasChildren) {
+                openSubmenuFor(selectedItem);
               }
             }
             break;
@@ -417,7 +479,8 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
           if (state.selectedIndex >= 0 && state.selectedIndex < allItems.length) {
             const selectedItem = allItems[state.selectedIndex];
             if (selectedItem) {
-              onSelectItem(selectedItem);
+              // Always insert/select on Enter (never open folders here)
+              onSelectItem(selectedItem, { insertMode: 'replaceToken' });
             }
           }
           break;
@@ -426,7 +489,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
           if (state.selectedIndex >= 0 && state.selectedIndex < allItems.length) {
             const selectedItem = allItems[state.selectedIndex];
             if (selectedItem && selectedItem.hasChildren) {
-              handleItemClick(selectedItem);
+              openSubmenuFor(selectedItem);
             }
           }
           break;
@@ -552,6 +615,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
                   }}
                   showChevron={item.hasChildren}
                   isChildItem={currentFolderContext !== null}
+                  onChevronClick={() => openSubmenuFor(item)}
                 />
               );
             })
@@ -589,7 +653,27 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
                   isSelected={isSelected}
                   isInitialSelection={isSelected && !hasUserInteracted}
                   keyboardActive={keyboardActive}
-                  onClick={() => onSelectItem(item)}
+                  onClick={() => {
+                    // Row click selects; chevron/right-arrow opens children
+                    // For Brand → Colors, normalize names so we insert @primary / @secondary only
+                    if (state.submenuParent?.id === 'brand-colors') {
+                      const base = item.id.includes('primary')
+                        ? 'primary'
+                        : item.id.includes('secondary')
+                        ? 'secondary'
+                        : item.name.toLowerCase().replace(/\s*colors?$/i, '');
+                      const hyphenated = `${base}-colors`;
+                      const synthetic: AtMenuItem = {
+                        ...item,
+                        name: hyphenated,
+                        // retain original path for context lookups
+                        path: item.path,
+                      };
+                      onSelectItem(synthetic, { insertMode: 'replaceToken' });
+                    } else {
+                      onSelectItem(item, { insertMode: 'replaceToken' });
+                    }
+                  }}
                   onMouseEnter={() => {
                     if (!keyboardActive) {
                       setLastInteractionMethod('mouse');
@@ -597,8 +681,19 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
                       onStateChange({ submenuSelectedIndex: index });
                     }
                   }}
-                  showChevron={false}
+                  showChevron={item.hasChildren}
                   isChildItem={true}
+                  onChevronClick={() => openSubmenuFor(item)}
+                  onSwatchSelect={(swatchName) => {
+                    // Swatch selection should insert the swatch's own name as the mention
+                    // e.g. "@tangerine-primary-cta"
+                    const synthetic: AtMenuItem = {
+                      ...item,
+                      name: swatchName,
+                      path: `${item.path}/${swatchName}`,
+                    };
+                    onSelectItem(synthetic, { insertMode: 'append' });
+                  }}
                 />
               );
             })
@@ -763,7 +858,7 @@ export const AtMenu = ({ state, onSelectItem, onClose, onStateChange, editorEngi
               >
                 <Icons.ArrowLeft className="w-3 h-3" />
               </button>
-              <span className="font-mono">{state.submenuParent.name}/</span>
+              <span className="font-mono">{state.submenuParent.path.replace(/^\//, '')}/</span>
             </div>
           </div>
         )}

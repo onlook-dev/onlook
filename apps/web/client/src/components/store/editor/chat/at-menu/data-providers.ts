@@ -99,7 +99,7 @@ export class AtMenuDataProviders {
     return items;
   }
 
-  // Get folders and files combined and sorted alphabetically
+  // Get folders & files combined and sorted alphabetically
   getFoldersAndFiles(): AtMenuItem[] {
     const folders = this.getFolders();
     const files = this.getFiles();
@@ -326,7 +326,8 @@ export class AtMenuDataProviders {
         name: 'Colors',
         path: '/brand/colors',
         category: 'leftPanel',
-        icon: 'palette'
+        icon: 'palette',
+        hasChildren: true
       },
       {
         id: 'brand-typography',
@@ -334,12 +335,65 @@ export class AtMenuDataProviders {
         name: 'Typography',
         path: '/brand/typography',
         category: 'leftPanel',
-        icon: 'type'
+        icon: 'type',
+        hasChildren: true
       }
     ];
 
     console.log('AtMenu getBrandChildItems: returning items:', brandChildItems);
     return brandChildItems;
+  }
+
+  // Child items for Brand -> Colors
+  getBrandColorsChildItems(): AtMenuItem[] {
+    const items: AtMenuItem[] = [
+      {
+        id: 'brand-colors-primary',
+        type: 'file',
+        name: 'Primary Colors',
+        path: '/brand/colors/primary',
+        category: 'leftPanel',
+        icon: 'palette',
+        swatches: [
+          { color: '#FF8A00', name: 'tangerine-primary-cta' },
+          { color: '#7CD3FF', name: 'sky-primary-info' },
+          { color: '#FFD233', name: 'sun-primary-warn' },
+          { color: '#C875FF', name: 'orchid-primary-accent' }
+        ]
+      },
+      {
+        id: 'brand-colors-secondary',
+        type: 'file',
+        name: 'Secondary Colors',
+        path: '/brand/colors/secondary',
+        category: 'leftPanel',
+        icon: 'palette',
+        swatches: [
+          { color: '#1EC8FF', name: 'aqua-secondary' },
+          { color: '#10B60E', name: 'leaf-secondary' },
+          { color: '#E2A7FF', name: 'lavender-secondary' },
+          { color: '#8A0011', name: 'crimson-secondary' }
+        ]
+      }
+    ];
+    console.log('AtMenu getBrandColorsChildItems: returning items:', items);
+    return items;
+  }
+
+  // Child items for Brand -> Typography
+  getBrandTypographyChildItems(): AtMenuItem[] {
+    const items: AtMenuItem[] = [
+      {
+        id: 'brand-typography-helvetica',
+        type: 'file',
+        name: 'Helvetica',
+        path: '/brand/typography/helvetica',
+        category: 'leftPanel',
+        icon: 'type'
+      }
+    ];
+    console.log('AtMenu getBrandTypographyChildItems: returning items:', items);
+    return items;
   }
 
   // Get pages child items from the pages manager

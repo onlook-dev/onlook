@@ -77,7 +77,7 @@ export class FuzzySearch {
     let score = 0;
 
     for (let i = 0; i < token.length; i++) {
-      const ch = token[i];
+      const ch = token.charAt(i);
       const pos = target.indexOf(ch, lastPos + 1);
       if (pos === -1) {
         return Infinity;
