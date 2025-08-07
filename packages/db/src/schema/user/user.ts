@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { boolean, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { usageRecords } from '../subscription';
 import { subscriptions } from '../subscription/subscription';
@@ -20,6 +20,7 @@ export const users = pgTable('users', {
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
     stripeCustomerId: text('stripe_customer_id'),
+    subscriptionActive: boolean('subscription_active').default(false).notNull(),
 }).enableRLS();
 
 export const usersRelations = relations(users, ({ many, one }) => ({

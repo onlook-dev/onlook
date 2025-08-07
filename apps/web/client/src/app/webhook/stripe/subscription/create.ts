@@ -73,6 +73,12 @@ export const handleSubscriptionCreated = async (
             throw new Error('No subscription was upserted.');
         }
 
+        // Update user subscription status
+        await tx.update(users).set({
+            subscriptionActive: true,
+            updatedAt: new Date(),
+        }).where(eq(users.id, user.id));
+
         const [rateLimit] = await tx
             .insert(rateLimits)
             .values({
