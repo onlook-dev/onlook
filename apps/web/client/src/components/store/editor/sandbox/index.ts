@@ -178,6 +178,7 @@ export class SandboxManager {
     private async writeRemoteFile(
         filePath: string,
         content: string | Uint8Array,
+        overwrite: boolean = true,
     ): Promise<boolean> {
         if (!this.session.session) {
             console.error('No session found for remote write');
@@ -186,9 +187,13 @@ export class SandboxManager {
 
         try {
             if (content instanceof Uint8Array) {
-                await this.session.session.fs.writeFile(filePath, content);
+                await this.session.session.fs.writeFile(filePath, content, {
+                    overwrite,
+                });
             } else {
-                await this.session.session.fs.writeTextFile(filePath, content);
+                await this.session.session.fs.writeTextFile(filePath, content, {
+                    overwrite,
+                });
             }
             return true;
         } catch (error) {
