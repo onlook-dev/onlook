@@ -61,5 +61,4 @@ SET subscription_active = EXISTS(
 ALTER TABLE "rate_limits" ADD CONSTRAINT "rate_limits_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "rate_limits" ADD CONSTRAINT "rate_limits_subscription_id_subscriptions_id_fk" FOREIGN KEY ("subscription_id") REFERENCES "public"."subscriptions"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "rate_limits_user_time_idx" ON "rate_limits" USING btree ("user_id","started_at","ended_at");--> statement-breakpoint
-CREATE INDEX "usage_records_user_time_idx" ON "usage_records" USING btree ("user_id","timestamp");--> statement-breakpoint
-DROP SCHEMA "auth";
+CREATE INDEX "usage_records_user_time_idx" ON "usage_records" USING btree ("user_id","timestamp");
