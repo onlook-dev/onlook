@@ -33,7 +33,7 @@ export class PublishManager {
                         path,
                     },
                 });
-                return file?.toString() ?? '';
+                return file.toString();
             },
             writeFile: async (path: string, content: string) => {
                 const res = await this.provider.writeFile({
@@ -361,22 +361,13 @@ export class PublishManager {
                         path: fullPath,
                     },
                 });
-                const textContent = file?.toString() ?? '';
-
-                if (textContent !== null) {
-                    return {
-                        path: relativePath,
-                        file: {
-                            content: textContent,
-                            encoding: 'utf-8' as const,
-                        },
-                    };
-                } else {
-                    console.warn(
-                        `[processTextFilesBatch] Failed to read text content for ${relativePath}`,
-                    );
-                    return null;
-                }
+                return {
+                    path: relativePath,
+                    file: {
+                        content: file.toString(),
+                        encoding: 'utf-8' as const,
+                    },
+                };
             } catch (error) {
                 console.warn(`[processTextFilesBatch] Error processing ${relativePath}:`, error);
                 return null;
