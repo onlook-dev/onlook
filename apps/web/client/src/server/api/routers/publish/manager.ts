@@ -408,25 +408,16 @@ export class PublishManager {
                         path: fullPath,
                     },
                 });
-                const binaryContent = file;
 
-                if (binaryContent) {
-                    if (binaryContent instanceof Uint8Array) {
-                        const base64String = convertToBase64(binaryContent);
-
-                        return {
-                            path: relativePath,
-                            file: {
-                                content: base64String,
-                                encoding: 'base64' as const,
-                            },
-                        };
-                    } else {
-                        console.warn(
-                            `[processBinaryFilesBatch] File is not a Uint8Array: ${relativePath}`,
-                        );
-                        return null;
-                    }
+                if (file && file.type === 'binary' && file.content instanceof Uint8Array) {
+                    const base64String = convertToBase64(file.content);
+                    return {
+                        path: relativePath,
+                        file: {
+                            content: base64String,
+                            encoding: 'base64' as const,
+                        },
+                    };
                 } else {
                     console.warn(
                         `[processBinaryFilesBatch] Failed to read binary content for ${relativePath}`,
