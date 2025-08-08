@@ -16,7 +16,7 @@ export interface GitCommandResult {
 }
 
 export class GitManager {
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     /**
      * Check if git repository is initialized
@@ -121,7 +121,7 @@ export class GitManager {
      */
     async getStatus(): Promise<GitStatus | null> {
         try {
-            const status = await this.editorEngine?.sandbox.session.session?.git.status();
+            const status = await this.editorEngine?.sandbox.session.provider?.gitStatus({});
             if (!status) {
                 console.error('Failed to get git status');
                 return null;
@@ -174,7 +174,7 @@ export class GitManager {
 
                 if (attempt < maxRetries) {
                     // Wait before retry with exponential backoff
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                    await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
                     continue;
                 }
 
@@ -185,7 +185,7 @@ export class GitManager {
 
                 if (attempt < maxRetries) {
                     // Wait before retry with exponential backoff
-                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 100));
+                    await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempt) * 100));
                     continue;
                 }
 
@@ -239,7 +239,9 @@ export class GitManager {
      * Run a git command through the sandbox session
      */
     private runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
-        return this.editorEngine.sandbox.session.runCommand(command + (ignoreError ? ' 2>/dev/null || true' : ''));
+        return this.editorEngine.sandbox.session.runCommand(
+            command + (ignoreError ? ' 2>/dev/null || true' : ''),
+        );
     }
 
     /**
@@ -255,7 +257,7 @@ export class GitManager {
         const commits: GitCommit[] = [];
 
         // Split by COMMIT_START and COMMIT_END markers
-        const commitBlocks = cleanOutput.split('COMMIT_START').filter(block => block.trim());
+        const commitBlocks = cleanOutput.split('COMMIT_START').filter((block) => block.trim());
 
         for (const block of commitBlocks) {
             // Remove COMMIT_END if present

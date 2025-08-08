@@ -1,12 +1,11 @@
 import { api } from '@/trpc/client';
-import type { WebSocketSession } from '@codesandbox/sdk';
-import { connectToSandbox } from '@codesandbox/sdk/browser';
+import { CodeProvider, Provider, createCodeProviderClient } from '@onlook/code-provider';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
 
 export class SessionManager {
-    session: WebSocketSession | null = null;
+    provider: Provider | null = null;
     isConnecting = false;
     terminalSessions: Map<string, CLISession> = new Map();
     activeTerminalSessionId: string = 'cli';
@@ -16,24 +15,36 @@ export class SessionManager {
     }
 
     async start(sandboxId: string, userId?: string) {
-        if (this.isConnecting || this.session) {
+        if (this.isConnecting || this.provider) {
             return;
         }
         this.isConnecting = true;
-        const session = await api.sandbox.start.mutate({ sandboxId, userId });
-        this.session = await connectToSandbox({
-            session,
-            getSession: async (id) => {
-                return await api.sandbox.start.mutate({ sandboxId: id, userId });
+        this.provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
+            providerOptions: {
+                codesandbox: {
+                    sandboxId,
+                    userId,
+                    initClient: true,
+                    getSession: async (sandboxId, userId) => {
+                        return api.sandbox.start.mutate({ sandboxId, userId });
+                    },
+                },
             },
         });
-        this.session.keepActiveWhileConnected(true);
+        await this.createTerminalSessions(this.provider);
         this.isConnecting = false;
-        await this.createTerminalSessions(this.session);
     }
 
     async restartDevServer(): Promise<boolean> {
-        const task = await this.session?.tasks.get('dev');
+        if (!this.provider) {
+            console.error('No provider found in restartDevServer');
+            return false;
+        }
+        const { task } = await this.provider.getTask({
+            args: {
+                id: 'dev',
+            },
+        });
         if (task) {
             await task.restart();
             return true;
@@ -42,9 +53,9 @@ export class SessionManager {
     }
 
     async readDevServerLogs(): Promise<string> {
-        const task = await this.session?.tasks.get('dev');
-        if (task) {
-            return await task.open();
+        const result = await this.provider?.getTask({ args: { id: 'dev' } });
+        if (result) {
+            return await result.task.open();
         }
         return 'Dev server not found';
     }
@@ -53,10 +64,20 @@ export class SessionManager {
         return this.terminalSessions.get(id) as TerminalSession | undefined;
     }
 
-    async createTerminalSessions(session: WebSocketSession) {
-        const task = new CLISessionImpl('Server (readonly)', CLISessionType.TASK, session, this.editorEngine.error);
+    async createTerminalSessions(provider: Provider) {
+        const task = new CLISessionImpl(
+            'Server (readonly)',
+            CLISessionType.TASK,
+            provider,
+            this.editorEngine.error,
+        );
         this.terminalSessions.set(task.id, task);
-        const terminal = new CLISessionImpl('CLI', CLISessionType.TERMINAL, session, this.editorEngine.error);
+        const terminal = new CLISessionImpl(
+            'CLI',
+            CLISessionType.TERMINAL,
+            provider,
+            this.editorEngine.error,
+        );
 
         this.terminalSessions.set(terminal.id, terminal);
         this.activeTerminalSessionId = task.id;
@@ -79,8 +100,8 @@ export class SessionManager {
 
     async reconnect(sandboxId: string, userId?: string) {
         try {
-            if (!this.session) {
-                console.error('No session found');
+            if (!this.provider) {
+                console.error('No provider found in reconnect');
                 return;
             }
 
@@ -91,7 +112,7 @@ export class SessionManager {
             }
 
             // Attempt soft reconnect
-            await this.session.reconnect()
+            await this.provider?.reconnect();
 
             const isConnected2 = await this.ping();
             if (isConnected2) {
@@ -106,9 +127,9 @@ export class SessionManager {
     }
 
     async ping() {
-        if (!this.session) return false;
+        if (!this.provider) return false;
         try {
-            await this.session.commands.run('echo "ping"');
+            await this.provider.runCommand({ args: { command: 'echo "ping"' } });
             return true;
         } catch (error) {
             console.error('Failed to connect to sandbox', error);
@@ -116,43 +137,49 @@ export class SessionManager {
         }
     }
 
-    async runCommand(command: string, streamCallback?: (output: string) => void): Promise<{
+    async runCommand(
+        command: string,
+        streamCallback?: (output: string) => void,
+    ): Promise<{
         output: string;
         success: boolean;
         error: string | null;
     }> {
         try {
-            if (!this.session) {
-                throw new Error('No session found');
+            if (!this.provider) {
+                throw new Error('No provider found in runCommand');
             }
             streamCallback?.(command + '\n');
-            const output = await this.session.commands.run(command);
+            const { output } = await this.provider.runCommand({ args: { command } });
             streamCallback?.(output);
             return {
                 output,
                 success: true,
-                error: null
+                error: null,
             };
         } catch (error) {
             console.error('Error running command:', error);
             return {
                 output: '',
                 success: false,
-                error: error instanceof Error ? error.message : 'Unknown error occurred'
+                error: error instanceof Error ? error.message : 'Unknown error occurred',
             };
         }
     }
 
     async clear() {
-        await this.session?.disconnect();
-        this.session = null;
-        this.isConnecting = false;
-        this.terminalSessions.forEach(terminal => {
+        // probably need to be moved in `Provider.destroy()`
+        this.terminalSessions.forEach((terminal) => {
             if (terminal.type === 'terminal') {
                 terminal.terminal?.kill();
                 terminal.xterm?.dispose();
             }
         });
+        if (this.provider) {
+            await this.provider.destroy();
+        }
+        this.provider = null;
+        this.isConnecting = false;
         this.terminalSessions.clear();
     }
 }

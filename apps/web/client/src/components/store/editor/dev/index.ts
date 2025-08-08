@@ -42,7 +42,7 @@ export class IDEManager {
 
     private isSandboxReady() {
         return !!(
-            this.editorEngine.sandbox.session.session &&
+            this.editorEngine.sandbox.session.provider &&
             !this.editorEngine.sandbox.session.isConnecting
         );
     }

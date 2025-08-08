@@ -38,7 +38,7 @@
         "@codemirror/lang-javascript": "^6.2.3",
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/lang-markdown": "^6.1.7",
-        "@codesandbox/sdk": "^1.1.6",
+        "@onlook/code-provider": "*",
         "@onlook/constants": "*",
         "@onlook/db": "*",
         "@onlook/email": "*",
@@ -233,6 +233,20 @@
         "fg": "^0.0.3",
         "marked": "^15.0.7",
         "openai": "^4.103.0",
+      },
+      "devDependencies": {
+        "@onlook/typescript": "*",
+      },
+    },
+    "packages/code-provider": {
+      "name": "@onlook/code-provider",
+      "version": "0.0.0",
+      "dependencies": {
+        "@codesandbox/sdk": "^1.1.6",
+        "@onlook/models": "*",
+        "@onlook/parser": "*",
+        "@onlook/utility": "*",
+        "prettier": "^3.5.3",
       },
       "devDependencies": {
         "@onlook/typescript": "*",
@@ -1260,6 +1274,8 @@
     "@onlook/ai": ["@onlook/ai@workspace:packages/ai"],
 
     "@onlook/backend": ["@onlook/backend@workspace:apps/backend"],
+
+    "@onlook/code-provider": ["@onlook/code-provider@workspace:packages/code-provider"],
 
     "@onlook/constants": ["@onlook/constants@workspace:packages/constants"],
 

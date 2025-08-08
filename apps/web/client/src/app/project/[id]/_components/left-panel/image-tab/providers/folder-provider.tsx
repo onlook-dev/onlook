@@ -252,10 +252,6 @@ export const FolderProvider = observer(({ children }: FolderProviderProps) => {
                 return;
             }
 
-            const session = editorEngine.sandbox.session?.session;
-            if (!session) {
-                throw new Error('No sandbox session available');
-            }
             await editorEngine.sandbox.rename(oldPath, newPath);
 
             setMoveState({
@@ -337,11 +333,6 @@ export const FolderProvider = observer(({ children }: FolderProviderProps) => {
 
         try {
             const newFolderPath = validation.newPath!;
-
-            const session = editorEngine.sandbox.session?.session;
-            if (!session) {
-                throw new Error('No sandbox session available');
-            }
 
             // Create the folder with a .gitkeep file to make it visible in the sandbox
             const gitkeepPath = `${newFolderPath}/.gitkeep`.replace(/\\/g, '/');

@@ -1,10 +1,10 @@
-import type { ReaddirEntry } from '@codesandbox/sdk';
 import type { PageMetadata, PageNode, SandboxFile } from '@onlook/models';
 import { RouterType } from '@onlook/models';
 import { generate, getAstFromContent, types as t, traverse, type t as T } from '@onlook/parser';
 import { nanoid } from 'nanoid';
 import type { SandboxManager } from '../sandbox';
 import { formatContent } from '../sandbox/helpers';
+import type { ListFilesOutputFile } from '@onlook/code-provider';
 
 const DEFAULT_LAYOUT_CONTENT = `export default function Layout({
     children,
@@ -213,8 +213,7 @@ export const scanAppDirectory = async (
     const { pageFile, layoutFile } = getPageAndLayoutFiles(entries);
 
     const childDirectories = entries.filter(
-        (entry: ReaddirEntry) =>
-            entry.type === 'directory' && !IGNORED_DIRECTORIES.includes(entry.name),
+        (entry) => entry.type === 'directory' && !IGNORED_DIRECTORIES.includes(entry.name),
     );
 
     if (pageFile) {
@@ -263,14 +262,13 @@ export const scanAppDirectory = async (
         cleanPath = '/' + cleanPath.replace(/^\/|\/$/g, '');
         const isRoot = ROOT_PATH_IDENTIFIERS.includes(cleanPath);
 
-
         nodes.push({
             id: nanoid(),
             name: isDynamicRoute
                 ? currentDir
                 : parentPath
-                    ? getBaseName(parentPath)
-                    : ROOT_PAGE_NAME,
+                  ? getBaseName(parentPath)
+                  : ROOT_PAGE_NAME,
             path: cleanPath,
             children,
             isActive: false,
@@ -314,7 +312,7 @@ const scanPagesDirectory = async (
     parentPath = '',
 ): Promise<PageNode[]> => {
     const nodes: PageNode[] = [];
-    let entries: ReaddirEntry[];
+    let entries: ListFilesOutputFile[];
 
     try {
         entries = await sandboxManager.readDir(dir);
@@ -443,7 +441,7 @@ export const detectRouterTypeInSandbox = async (
             if (entries && entries.length > 0) {
                 // Check for layout file (required for App Router)
                 const hasLayout = entries.some(
-                    (entry: ReaddirEntry) =>
+                    (entry) =>
                         entry.type === 'file' &&
                         entry.name.startsWith('layout.') &&
                         ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
@@ -465,7 +463,7 @@ export const detectRouterTypeInSandbox = async (
             if (entries && entries.length > 0) {
                 // Check for index file (common in Pages Router)
                 const hasIndex = entries.some(
-                    (entry: ReaddirEntry) =>
+                    (entry) =>
                         entry.type === 'file' &&
                         entry.name.startsWith('index.') &&
                         ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
@@ -703,7 +701,11 @@ export const duplicatePageInSandbox = async (
 
         // Handle non-root pages
         const normalizedSourcePath = sourcePath.replace(/\/+/g, '/').replace(/^\/|\/$/g, '');
-        const normalizedTargetPath = await getUniqueDir(sandboxManager, routerConfig.basePath, targetPath);
+        const normalizedTargetPath = await getUniqueDir(
+            sandboxManager,
+            routerConfig.basePath,
+            targetPath,
+        );
 
         const sourceFull = joinPath(routerConfig.basePath, normalizedSourcePath);
         const targetFull = joinPath(routerConfig.basePath, normalizedTargetPath);
@@ -791,7 +793,7 @@ async function updateMetadataInFile(
     if (!file || file.type !== 'text') {
         throw new Error('File not found or is not a text file');
     }
-    const content = file.content
+    const content = file.content;
 
     // Parse the file content using Babel
     const ast = getAstFromContent(content);
@@ -998,10 +1000,7 @@ export const addSetupTask = async (sandboxManager: SandboxManager) => {
         },
     };
     const content = JSON.stringify(tasks, null, 2);
-    await sandboxManager.writeFile(
-        './.codesandbox/tasks.json',
-        content,
-    );
+    await sandboxManager.writeFile('./.codesandbox/tasks.json', content);
 };
 
 export const updatePackageJson = async (sandboxManager: SandboxManager) => {
@@ -1014,10 +1013,7 @@ export const updatePackageJson = async (sandboxManager: SandboxManager) => {
     pkgJson.scripts = pkgJson.scripts || {};
     pkgJson.scripts.dev = 'next dev';
 
-    await sandboxManager.writeFile(
-        './package.json',
-        JSON.stringify(pkgJson, null, 2),
-    );
+    await sandboxManager.writeFile('./package.json', JSON.stringify(pkgJson, null, 2));
 };
 
 export const parseRepoUrl = (repoUrl: string): { owner: string; repo: string } => {
@@ -1032,26 +1028,30 @@ export const parseRepoUrl = (repoUrl: string): { owner: string; repo: string } =
     };
 };
 
-const getPageAndLayoutFiles = (entries: ReaddirEntry[]) => {
+const getPageAndLayoutFiles = (entries: ListFilesOutputFile[]) => {
     const pageFile = entries.find(
-        (entry: ReaddirEntry) =>
+        (entry) =>
             entry.type === 'file' &&
             entry.name.startsWith('page.') &&
             ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
     );
 
     const layoutFile = entries.find(
-        (entry: ReaddirEntry) =>
+        (entry) =>
             entry.type === 'file' &&
             entry.name.startsWith('layout.') &&
             ALLOWED_EXTENSIONS.includes(getFileExtension(entry.name)),
     );
 
     return { pageFile, layoutFile };
-}
+};
 
-const getPageAndLayoutMetadata = async (fileResults: (SandboxFile | null)[]): Promise<{ pageMetadata: PageMetadata | undefined; layoutMetadata: PageMetadata | undefined }> => {
-
+const getPageAndLayoutMetadata = async (
+    fileResults: (SandboxFile | null)[],
+): Promise<{
+    pageMetadata: PageMetadata | undefined;
+    layoutMetadata: PageMetadata | undefined;
+}> => {
     if (!fileResults || fileResults.length === 0) {
         return { pageMetadata: undefined, layoutMetadata: undefined };
     }
@@ -1078,4 +1078,4 @@ const getPageAndLayoutMetadata = async (fileResults: (SandboxFile | null)[]): Pr
     }
 
     return { pageMetadata, layoutMetadata };
-}
+};
