@@ -11,7 +11,7 @@ import {
     renamePageInSandbox,
     scanPagesFromSandbox,
     updatePageMetadataInSandbox,
-    validateNextJsRoute
+    validateNextJsRoute,
 } from './helper';
 
 export class PagesManager {
@@ -21,9 +21,7 @@ export class PagesManager {
     private groupedRoutes = '';
     private _isScanning = false;
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -122,7 +120,7 @@ export class PagesManager {
                 return;
             }
             this._isScanning = true;
-            if (this.editorEngine?.sandbox?.session?.session) {
+            if (this.editorEngine?.sandbox?.session?.provider) {
                 try {
                     const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox);
 
@@ -135,7 +133,7 @@ export class PagesManager {
                     this._isScanning = false;
                 }
             } else {
-                console.log('Sandbox session not available');
+                console.log('Sandbox provider not available');
                 this.setPages([]);
             }
         } catch (error) {
@@ -195,7 +193,7 @@ export class PagesManager {
             await duplicatePageInSandbox(
                 this.editorEngine.sandbox,
                 normalizeRoute(sourcePath),
-                normalizeRoute(targetPath)
+                normalizeRoute(targetPath),
             );
             await this.scanPages();
             this.editorEngine.posthog.capture('page_duplicate');
