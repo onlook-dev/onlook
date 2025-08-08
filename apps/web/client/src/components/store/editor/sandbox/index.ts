@@ -1,4 +1,9 @@
-import type { ListFilesOutputFile, Provider, WatchEvent } from '@onlook/code-provider';
+import type {
+    ListFilesOutputFile,
+    Provider,
+    ProviderFileWatcher,
+    WatchEvent,
+} from '@onlook/code-provider';
 import {
     EXCLUDED_SYNC_DIRECTORIES,
     NEXT_JS_FILE_EXTENSIONS,
@@ -21,7 +26,6 @@ import type { EditorEngine } from '../engine';
 import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
-import { FileWatcher } from './file-watcher';
 import { normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
@@ -35,7 +39,7 @@ export class SandboxManager {
     // Add router configuration
     private _routerConfig: { type: RouterType; basePath: string } | null = null;
 
-    private fileWatcher: FileWatcher | null = null;
+    private fileWatcher: ProviderFileWatcher | null = null;
     private fileSync: FileSyncManager;
     private templateNodeMap: TemplateNodeMapper;
     private _isIndexed = false;
@@ -368,23 +372,31 @@ export class SandboxManager {
 
         // Dispose of existing watcher if it exists
         if (this.fileWatcher) {
-            this.fileWatcher.dispose();
+            // Stop previous watcher before starting a new one
+            await this.fileWatcher.stop();
             this.fileWatcher = null;
         }
 
         // Convert ignored directories to glob patterns with ** wildcard
         const excludePatterns = EXCLUDED_SYNC_DIRECTORIES.map((dir) => `${dir}/**`);
 
-        this.fileWatcher = new FileWatcher({
-            provider: this.session.provider,
+        const res = await this.session.provider.watchFiles({
+            args: {
+                path: './',
+                recursive: true,
+                excludes: excludePatterns,
+            },
             onFileChange: async (event) => {
+                this.fileEventBus.publish({
+                    type: event.type,
+                    paths: event.paths,
+                    timestamp: Date.now(),
+                });
                 await this.handleFileChange(event);
             },
-            excludePatterns,
-            fileEventBus: this.fileEventBus,
         });
 
-        await this.fileWatcher.start();
+        this.fileWatcher = res.watcher;
     }
 
     async handleFileChange(event: WatchEvent) {
@@ -764,7 +776,7 @@ export class SandboxManager {
     }
 
     clear() {
-        this.fileWatcher?.dispose();
+        void this.fileWatcher?.stop();
         this.fileWatcher = null;
         this.fileSync.clear();
         this.templateNodeMap.clear();
