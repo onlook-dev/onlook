@@ -5,17 +5,21 @@ import type React from 'react';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 
+enum DragState {
+    PREPARING = 'preparing',
+    IN_PROGRESS = 'in_progress',
+}
+
 interface MoveManagerState {
     dragOrigin: ElementPosition;
     dragTarget: DomElement;
     originalIndex: number;
-    isDragInProgress: boolean;
+    dragState: DragState;
 }
 
 export class MoveManager {
     state: MoveManagerState | null = null;
     MIN_DRAG_DISTANCE = 10;
-    private isPreparingDrag = false;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -26,27 +30,75 @@ export class MoveManager {
     }
 
     get isPreparing() {
-        return this.isPreparingDrag;
+        return this.state?.dragState === DragState.PREPARING;
     }
 
-    setPreparingDrag(preparing: boolean) {
-        this.isPreparingDrag = preparing;
+    get isDragInProgress() {
+        return this.state?.dragState === DragState.IN_PROGRESS;
     }
 
-    async prepareDrag(el: DomElement, position: ElementPosition, frameView: FrameData) {
+    setDragState(dragState: DragState) {
+        if (this.state) {
+            this.state.dragState = dragState;
+        }
+    }
+
+    private dragPreparationTimer: ReturnType<typeof setTimeout> | null = null;
+
+    startDragPreparation(el: DomElement, pos: ElementPosition, frameData: FrameData) {
+        if (this.dragPreparationTimer) {
+            clearTimeout(this.dragPreparationTimer);
+        }
+
+        this.state = {
+            dragOrigin: pos,
+            dragTarget: el,
+            originalIndex: -1,
+            dragState: DragState.PREPARING,
+        };
+
+        this.dragPreparationTimer = setTimeout(() => {
+            void (async () => {
+                if (this.isPreparing) {
+                    await this.prepareDrag(el, frameData);
+                }
+                this.dragPreparationTimer = null;
+            })();
+        }, 150);
+    }
+
+    cancelDragPreparation() {
+        if (this.dragPreparationTimer) {
+            clearTimeout(this.dragPreparationTimer);
+            this.dragPreparationTimer = null;
+        }
+        if (this.state?.dragState === DragState.PREPARING) {
+            this.clear();
+        }
+    }
+
+    async prepareDrag(el: DomElement, frameView: FrameData) {
+        if (!this.state || this.state.dragState !== DragState.PREPARING) {
+            console.warn('Cannot prepare drag without preparation state');
+            return;
+        }
+
         if (!this.editorEngine.elements.selected.some((selected) => selected.domId === el.domId)) {
             console.warn('Element not selected, cannot start drag');
+            this.clear();
             return;
         }
 
         const positionType = el.styles?.computed?.position;
         if (positionType === 'absolute') {
             console.warn('Absolute mode dragging is disabled');
+            this.clear();
             return;
         }
 
         if (!frameView.view) {
             console.error('No frame view found');
+            this.clear();
             return;
         }
 
@@ -54,15 +106,11 @@ export class MoveManager {
 
         if (originalIndex === null || originalIndex === -1) {
             console.error('Element not found in frame');
+            this.clear();
             return;
         }
 
-        this.state = {
-            dragOrigin: position,
-            dragTarget: el,
-            originalIndex,
-            isDragInProgress: false,
-        };
+        this.state.originalIndex = originalIndex;
     }
 
     async drag(
@@ -82,19 +130,19 @@ export class MoveManager {
         const { x, y } = getRelativeMousePositionToWebview(e);
         const dx = x - this.state.dragOrigin.x;
         const dy = y - this.state.dragOrigin.y;
-        const distance = Math.max(Math.abs(dx), Math.abs(dy));
 
-        if (distance < this.MIN_DRAG_DISTANCE) {
-            return;
+        if (!this.isDragInProgress) {
+            const distance = Math.max(Math.abs(dx), Math.abs(dy));
+            if (distance < this.MIN_DRAG_DISTANCE) {
+                return;
+            }
+            this.setDragState(DragState.IN_PROGRESS);
+            this.editorEngine.overlay.clear();
         }
-
-        this.editorEngine.overlay.clear();
-        this.setPreparingDrag(false);
 
         try {
             const positionType = this.state.dragTarget.styles?.computed?.position;
-            this.state.isDragInProgress = true;
-            
+
             if (positionType === 'absolute') {
                 await frameData.view.dragAbsolute(
                     this.state.dragTarget.domId,
@@ -110,7 +158,7 @@ export class MoveManager {
         }
     }
 
-    async end(e: React.MouseEvent<HTMLDivElement>) {
+    async end(_e: React.MouseEvent<HTMLDivElement>) {
         if (!this.state) {
             console.log('No drag state to end');
             return;
@@ -119,7 +167,7 @@ export class MoveManager {
         const savedState = this.state;
         this.clear();
 
-        if (!savedState?.isDragInProgress) {
+        if (savedState?.dragState !== DragState.IN_PROGRESS) {
             console.log('Drag was not in progress, ending early');
             await this.endAllDrag();
             return;
@@ -134,7 +182,6 @@ export class MoveManager {
 
         try {
             const targetDomId = savedState.dragTarget.domId;
-            savedState.isDragInProgress = false;
 
             // Handle absolute positioning
             const position = savedState.dragTarget.styles?.computed?.position;
@@ -284,7 +331,10 @@ export class MoveManager {
     }
 
     clear() {
+        if (this.dragPreparationTimer) {
+            clearTimeout(this.dragPreparationTimer);
+            this.dragPreparationTimer = null;
+        }
         this.state = null;
-        this.isPreparingDrag = false;
     }
 }
