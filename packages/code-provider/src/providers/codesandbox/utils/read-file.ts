@@ -1,4 +1,5 @@
 import { WebSocketSession } from '@codesandbox/sdk';
+import { convertToBase64 } from '@onlook/utility';
 import type { ReadFileInput, ReadFileOutput } from '../../../types';
 import { readRemoteFile } from './utils';
 
@@ -22,14 +23,13 @@ export async function readFile(
             },
         };
     } else {
-        // const base64Content = file.content ? convertToBase64(file.content) : '';
         return {
             file: {
                 path: file.path,
                 content: file.content,
                 type: file.type,
                 toString: () => {
-                    return file.content ? new TextDecoder().decode(file.content) : '';
+                    return file.content ? convertToBase64(file.content) : '';
                 },
             },
         };
