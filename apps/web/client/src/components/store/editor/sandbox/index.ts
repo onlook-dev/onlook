@@ -202,14 +202,14 @@ export class SandboxManager {
         }
 
         try {
-            await this.session.provider.writeFile({
+            const res = await this.session.provider.writeFile({
                 args: {
                     path: filePath,
                     content,
                     overwrite,
                 },
             });
-            return true;
+            return res.success;
         } catch (error) {
             console.error(`Error writing remote file ${filePath}:`, error);
             return false;

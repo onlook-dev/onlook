@@ -24,27 +24,6 @@ export function getFileFromContent(filePath: string, content: string | Uint8Arra
     return newFile;
 }
 
-export async function writeFile(
-    client: WebSocketSession,
-    path: string,
-    content: string | Uint8Array,
-) {
-    const normalizedPath = normalizePath(path);
-    try {
-        if (typeof content === 'string') {
-            await client.fs.writeTextFile(normalizedPath, content);
-        } else if (content instanceof Uint8Array) {
-            await client.fs.writeFile(normalizedPath, content);
-        } else {
-            throw new Error(`Invalid content type ${typeof content}`);
-        }
-        return true;
-    } catch (error) {
-        console.error(`Error writing remote file ${normalizedPath}:`, error);
-        return false;
-    }
-}
-
 export async function readRemoteFile(
     client: WebSocketSession,
     filePath: string,

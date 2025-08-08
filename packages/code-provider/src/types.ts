@@ -12,7 +12,9 @@ export interface WriteFileInput {
         overwrite?: boolean;
     };
 }
-export interface WriteFileOutput {}
+export interface WriteFileOutput {
+    success: boolean;
+}
 
 export interface StatFileInput {
     args: {

@@ -52,11 +52,8 @@ export async function extractEnvVarsFromSandbox(provider: Provider): Promise<Rec
                         path: fileName,
                     },
                 });
-                const content = file?.toString();
-                if (content) {
-                    const parsed = parseEnvContent(content);
-                    Object.assign(envVars, parsed);
-                }
+                const parsed = parseEnvContent(file.toString());
+                Object.assign(envVars, parsed);
             } catch (error) {
                 console.warn(`Could not read ${fileName}:`, error);
             }

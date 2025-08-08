@@ -36,14 +36,14 @@ export class PublishManager {
                 return file?.toString() ?? '';
             },
             writeFile: async (path: string, content: string) => {
-                await this.provider.writeFile({
+                const res = await this.provider.writeFile({
                     args: {
                         path,
                         content,
                         overwrite: true,
                     },
                 });
-                return true;
+                return res.success;
             },
             fileExists: async (path: string) => {
                 try {
