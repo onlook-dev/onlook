@@ -68,6 +68,25 @@ export function FeaturesHero() {
                         START BUILDING
                     </Button>
                 </motion.div>
+                <motion.div
+                    className="mt-8 flex items-center justify-center gap-6 text-sm text-foreground-secondary"
+                    initial={{ opacity: 0, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                    transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                >
+                    <div className="flex items-center gap-2">
+                        <span>21.3k+ GitHub stars</span>
+                    </div>
+                    <div className="w-1 h-1 bg-foreground-secondary rounded-full"></div>
+                    <div className="flex items-center gap-2">
+                        <span>YC W25</span>
+                    </div>
+                    <div className="w-1 h-1 bg-foreground-secondary rounded-full"></div>
+                    <div className="flex items-center gap-2">
+                        <span>Open Source</span>
+                    </div>
+                </motion.div>
             </div>
         </div>
     );

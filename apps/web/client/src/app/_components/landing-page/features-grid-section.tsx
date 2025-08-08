@@ -6,7 +6,7 @@ export function FeaturesGridSection() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-20">
                 <div>
                     <h3 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-2">Component Library</h3>
-                    <h2 className="text-foreground-primary text-xl font-medium mb-4">Components that scale</h2>
+                    <h2 className="text-foreground-primary text-xl font-medium mb-4">Unified components for design and code</h2>
                     <p className="text-foreground-secondary text-regular text-balance">
                         Create reusable components that work across your project. Build once, use everywhere. Components maintain their style and behavior while giving you control of content.
                     </p>
@@ -14,7 +14,7 @@ export function FeaturesGridSection() {
                 
                 <div>
                     <h3 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-2">Theming &amp; Branding</h3>
-                    <h2 className="text-foreground-primary text-xl font-medium mb-4">Your brand, your rules</h2>
+                    <h2 className="text-foreground-primary text-xl font-medium mb-4">Centralized Design &amp; Style Management</h2>
                     <p className="text-foreground-secondary text-regular text-balance">
                         Manage color palettes, typography scales, and design tokens through a centralized system. Define your design language once, apply it consistently across your project.
                     </p>
@@ -46,7 +46,7 @@ export function FeaturesGridSection() {
                 
                 <div>
                     <h3 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-2">Open Source</h3>
-                    <h2 className="text-foreground-primary text-xl font-medium mb-4">Transparent by Design</h2>
+                    <h2 className="text-foreground-primary text-xl font-medium mb-4">Built with the Community</h2>
                     <p className="text-foreground-secondary text-regular text-balance">
                         Browse our GitHub repo to understand how Onlook works, contribute improvements, or customize it for your team's needs.
                     </p>

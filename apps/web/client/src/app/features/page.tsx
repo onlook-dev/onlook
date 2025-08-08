@@ -6,7 +6,6 @@ import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
 import { AuthModal } from '../_components/auth-modal';
 import { FeaturesHero } from '../_components/hero/features-hero';
-import { SocialProofSection } from '../_components/landing-page/social-proof-section';
 import { BenefitsSection } from '../_components/landing-page/benefits-section';
 import { FeaturesIntroSection } from '../_components/landing-page/features-intro-section';
 import { FeaturesGridSection } from '../_components/landing-page/features-grid-section';
@@ -22,7 +21,6 @@ export default function FeaturesPage() {
                     <FeaturesHero />
                 </div>
 
-                <SocialProofSection />
                 <BenefitsSection />
                 <FeaturesIntroSection />
                 <FeaturesGridSection />
@@ -32,14 +30,6 @@ export default function FeaturesPage() {
                     buttonText="Get Started for Free"
                 />
                 
-                <div className="w-full max-w-6xl mx-auto py-16 px-8 text-center">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-foreground-secondary text-sm">
-                        <div>✓ Free to start - no credit card required</div>
-                        <div>✓ Open source &amp; transparent</div>
-                        <div>✓ 21.2k+ GitHub stars</div>
-                        <div>✓ YC W25 backed</div>
-                    </div>
-                </div>
 
                 <FeaturesFAQSection />
                 <AuthModal />
