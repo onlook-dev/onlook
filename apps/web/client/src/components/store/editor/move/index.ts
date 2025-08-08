@@ -205,7 +205,7 @@ export class MoveManager {
                     parent: DomElement;
                 } | null;
 
-                if (res && savedState.originalIndex !== undefined) {
+                if (res && savedState.originalIndex !== null) {
                     const { child, parent, newIndex } = res;
                     if (newIndex !== savedState.originalIndex) {
                         const moveAction = this.createMoveAction(
