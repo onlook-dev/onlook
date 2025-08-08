@@ -138,10 +138,10 @@ export class MoveManager {
                 return;
             }
             this.setDragState(DragState.IN_PROGRESS);
-            this.editorEngine.overlay.clear();
         }
 
         try {
+            this.editorEngine.overlay.clear();
             const positionType = this.state.dragTarget.styles?.computed?.position;
 
             if (positionType === 'absolute') {
