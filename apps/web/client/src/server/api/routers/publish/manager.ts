@@ -260,6 +260,7 @@ export class PublishManager {
         } = options;
 
         const timer = new LogTimer('File Serialization');
+        const allFiles: Record<string, FreestyleFile> = {};
 
         try {
             const allFilePaths = await this.collectAllFilePaths(currentDir);
@@ -274,6 +275,11 @@ export class PublishManager {
             let totalProcessed = 0;
             const totalFiles = filteredPaths.length;
 
+            const handleAndMergeChunk: ChunkProcessor = async (chunk, chunkInfo) => {
+                Object.assign(allFiles, chunk);
+                await onChunkComplete(chunk, chunkInfo);
+            };
+
             if (textFiles.length > 0) {
                 timer.log(`Processing ${textFiles.length} text files`);
                 await this.processFilesInChunks(
@@ -283,7 +289,7 @@ export class PublishManager {
                     batchSize,
                     'text',
                     async (chunk, chunkInfo) => {
-                        await onChunkComplete(chunk, chunkInfo);
+                        await handleAndMergeChunk(chunk, chunkInfo);
                         totalProcessed += Object.keys(chunk).length;
                         if (onProgress) {
                             await onProgress(totalProcessed, totalFiles);
@@ -302,7 +308,7 @@ export class PublishManager {
                     batchSize,
                     'binary',
                     async (chunk, chunkInfo) => {
-                        await onChunkComplete(chunk, chunkInfo);
+                        await handleAndMergeChunk(chunk, chunkInfo);
                         totalProcessed += Object.keys(chunk).length;
                         if (onProgress) {
                             await onProgress(totalProcessed, totalFiles);
@@ -313,8 +319,8 @@ export class PublishManager {
             }
 
             timer.log(`Serialization completed - ${filteredPaths.length} files processed in ${timer.getElapsed()}ms`);
-            
-            return this.getFinalSummary();
+
+            return allFiles;
 
         } catch (error) {
             console.error('Error during serialization:', error);
@@ -343,7 +349,7 @@ export class PublishManager {
 
             console.log(`Processing chunk ${chunkIndex + 1}/${chunks.length} (${chunk.length} files)`);
 
-            const chunkData = await this.processChunkWithBatching(
+            let chunkData: Record<string, FreestyleFile> | null = await this.processChunkWithBatching(
                 chunk,
                 currentDir,
                 batchSize,
@@ -359,7 +365,7 @@ export class PublishManager {
 
             console.log(`Completed chunk ${chunkIndex + 1}/${chunks.length}. Total processed: ${(chunkIndex + 1) * chunkSize}/${filePaths.length} (${timer.getElapsed()}ms elapsed)`);
 
-            this.clearChunkData(chunkData, chunk);
+            chunkData = null;
             await this.yieldForGarbageCollection();
         }
 
@@ -394,7 +400,6 @@ export class PublishManager {
             console.log(`Batch ${batchIndex}/${totalBatches} completed (${batch.length} files) in ${endTime - startTime}ms`);
 
             Object.assign(chunkData, batchResults);
-            Object.keys(batchResults).forEach(key => delete batchResults[key]);
         }
 
         return chunkData;
@@ -405,40 +410,31 @@ export class PublishManager {
         chunkInfo: { index: number; total: number; filesProcessed: number; totalFiles: number }
     ): Promise<void> {
         console.log(`Processing chunk ${chunkInfo.index + 1}/${chunkInfo.total} with ${Object.keys(chunk).length} files`);
-        
-        const chunkSize = JSON.stringify(chunk).length;
-        console.log(`Chunk ${chunkInfo.index + 1} size: ${(chunkSize / 1024 / 1024).toFixed(2)}MB`);
+        const chunkSizeBytes = this.computeChunkSizeBytes(chunk);
+        console.log(`Chunk ${chunkInfo.index + 1} size: ${(chunkSizeBytes / 1024 / 1024).toFixed(2)}MB`);
     }
 
-    private clearChunkData(chunkData: Record<string, FreestyleFile>, filePaths: string[]): void {
-        Object.keys(chunkData).forEach(key => {
-            delete chunkData[key];
-        });
-        filePaths.length = 0;
-
-        if (global.gc && process.env.NODE_ENV === 'development') {
-            global.gc();
-        }
-    }
 
     private async yieldForGarbageCollection(): Promise<void> {
         await new Promise(resolve => setImmediate(resolve));
         await new Promise(resolve => setTimeout(resolve, 0));
     }
 
-    private getFinalSummary(): Record<string, FreestyleFile> {
-        return {
-            '__summary__': {
-                content: JSON.stringify({
-                    message: 'Files processed in chunks and sent to server',
-                    timestamp: new Date().toISOString(),
-                    processedAt: Date.now()
-                }),
-                encoding: 'utf-8' as const
+    private computeChunkSizeBytes(chunk: Record<string, FreestyleFile>): number {
+        let total = 0;
+        const textEncoder = new TextEncoder();
+        for (const file of Object.values(chunk)) {
+            const content = file.content;
+            if (file.encoding === 'base64') {
+                const len = content.length;
+                const padding = content.endsWith('==') ? 2 : content.endsWith('=') ? 1 : 0;
+                total += Math.max(0, Math.floor((len * 3) / 4) - padding);
+            } else {
+                total += textEncoder.encode(content).length;
             }
-        };
+        }
+        return total;
     }
-
     private createChunks<T>(array: T[], chunkSize: number): T[][] {
         const chunks: T[][] = [];
         for (let i = 0; i < array.length; i += chunkSize) {
