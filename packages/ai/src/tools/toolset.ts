@@ -8,6 +8,8 @@ import {
     globTool,
     GREP_TOOL_NAME,
     grepTool,
+    TERMINAL_COMMAND_TOOL_NAME,
+    terminalCommandTool,
 } from './cli';
 import {
     FUZZY_EDIT_FILE_TOOL_NAME,
@@ -33,7 +35,7 @@ import {
 } from './plan';
 import { LIST_FILES_TOOL_NAME, listFilesTool, READ_FILE_TOOL_NAME, readFileTool } from './read';
 import { SANDBOX_TOOL_NAME, sandboxTool } from './sandbox';
-import { SCRAPE_URL_TOOL_NAME, scrapeUrlTool } from './web';
+import { SCRAPE_URL_TOOL_NAME, scrapeUrlTool, WEB_SEARCH_TOOL_NAME, webSearchTool } from './web';
 
 export const ASK_TOOL_SET: ToolSet = {
     [LIST_FILES_TOOL_NAME]: listFilesTool,
@@ -41,6 +43,7 @@ export const ASK_TOOL_SET: ToolSet = {
     [ONLOOK_INSTRUCTIONS_TOOL_NAME]: onlookInstructionsTool,
     [READ_STYLE_GUIDE_TOOL_NAME]: readStyleGuideTool,
     [SCRAPE_URL_TOOL_NAME]: scrapeUrlTool,
+    [WEB_SEARCH_TOOL_NAME]: webSearchTool,
     [BASH_READ_TOOL_NAME]: bashReadTool,
     [GLOB_TOOL_NAME]: globTool,
     [GREP_TOOL_NAME]: grepTool,
@@ -56,4 +59,5 @@ export const BUILD_TOOL_SET: ToolSet = {
     [WRITE_FILE_TOOL_NAME]: writeFileTool,
     [BASH_EDIT_TOOL_NAME]: bashEditTool,
     [SANDBOX_TOOL_NAME]: sandboxTool,
+    [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
 };

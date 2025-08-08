@@ -39,6 +39,7 @@
         "@mendable/firecrawl-js": "^1.29.1",
         "@openrouter/ai-sdk-provider": "^0.7.3",
         "ai": "^4.3.10",
+        "exa-js": "^1.8.26",
         "fg": "^0.0.3",
         "marked": "^15.0.7",
         "openai": "^4.103.0"

@@ -44,6 +44,7 @@ export enum OPENROUTER_MODELS {
     CLAUDE_4_SONNET = 'anthropic/claude-sonnet-4',
     OPEN_AI_O4_MINI = 'openai/o4-mini',
     OPEN_AI_GPT_4_1_NANO = 'openai/gpt-4.1-nano',
+    OPEN_AI_GPT_5 = 'openai/gpt-5',
 }
 
 interface ModelMapping {
