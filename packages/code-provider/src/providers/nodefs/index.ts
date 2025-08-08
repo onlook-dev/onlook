@@ -64,7 +64,9 @@ export class NodeFsProvider extends Provider {
     }
 
     async writeFile(input: WriteFileInput): Promise<WriteFileOutput> {
-        return {};
+        return {
+            success: true,
+        };
     }
 
     async renameFile(input: RenameFileInput): Promise<RenameFileOutput> {
