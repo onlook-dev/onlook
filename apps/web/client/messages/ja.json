@@ -135,6 +135,8 @@
                         },
                         "settings": {
                             "showSuggestions": "提案を表示",
+                            "showMiniChat": "ミニチャットを表示",
+                            "autoApplyCode": "結果を自動適用",
                             "expandCodeBlocks": "レンダリング時にコードを表示"
                         },
                         "miniChat": {

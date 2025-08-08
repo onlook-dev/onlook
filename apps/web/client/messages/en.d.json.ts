@@ -239,6 +239,8 @@ declare const messages: {
                         },
                         "settings": {
                             "showSuggestions": "Show suggestions",
+                            "showMiniChat": "Show mini chat",
+                            "autoApplyCode": "Auto-apply results",
                             "expandCodeBlocks": "Show code while rendering"
                         },
                         "miniChat": {
