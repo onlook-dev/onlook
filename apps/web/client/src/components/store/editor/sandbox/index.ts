@@ -303,7 +303,7 @@ export class SandboxManager {
         ignoreExtensions: string[] = [],
     ): Promise<string[]> {
         if (!this.session.provider) {
-            console.error('No store found');
+            console.error('No provider found for list files recursively');
             return [];
         }
 
@@ -435,7 +435,7 @@ export class SandboxManager {
         } else if (eventType === 'change' || eventType === 'add') {
             const provider = this.session.provider;
             if (!provider) {
-                console.error('No provider found');
+                console.error('No provider found for handle file change');
                 return;
             }
 
