@@ -103,7 +103,7 @@ export class MoveManager {
             return;
         }
 
-        const originalIndex = await frameData.view.prepareDrag(el.domId);
+        const originalIndex = await frameData.view.startDrag(el.domId);
 
         if (originalIndex === null || originalIndex === -1) {
             console.error('Element not found in frame');

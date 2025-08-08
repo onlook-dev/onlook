@@ -19,7 +19,7 @@ import { insertImage, removeImage } from './elements/dom/image';
 import { getInsertLocation, insertElement, removeElement } from './elements/dom/insert';
 import { getRemoveAction } from './elements/dom/remove';
 import { getElementIndex, moveElement } from './elements/move';
-import { drag, dragAbsolute, endAllDrag, endDrag, endDragAbsolute, prepareDrag } from './elements/move/drag';
+import { drag, dragAbsolute, endAllDrag, endDrag, endDragAbsolute, startDrag } from './elements/move/drag';
 import { getComputedStyleByDomId } from './elements/style';
 import { editText, isChildTextEditable, startEditingText, stopEditingText } from './elements/text';
 import { handleBodyReady } from './ready';
@@ -70,7 +70,7 @@ const rawMethods = {
     setTheme,
 
     // Drag
-    prepareDrag,
+    startDrag,
     drag,
     dragAbsolute,
     endDrag,
