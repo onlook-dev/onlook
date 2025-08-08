@@ -27,7 +27,7 @@ export class MoveManager {
     }
 
     get shouldDrag() {
-        return !!this.state?.originalIndex;
+        return this.state?.originalIndex !== null;
     }
 
     get isPreparing() {
