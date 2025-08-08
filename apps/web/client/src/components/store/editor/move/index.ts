@@ -13,20 +13,21 @@ enum DragState {
 interface MoveManagerState {
     dragOrigin: ElementPosition;
     dragTarget: DomElement;
-    originalIndex: number;
+    originalIndex: number | null;
     dragState: DragState;
 }
 
 export class MoveManager {
     state: MoveManagerState | null = null;
     MIN_DRAG_DISTANCE = 10;
+    MIN_DRAG_PREPARATION_TIME = 150;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
     get shouldDrag() {
-        return !!this.state;
+        return !!this.state?.originalIndex;
     }
 
     get isPreparing() {
@@ -53,7 +54,7 @@ export class MoveManager {
         this.state = {
             dragOrigin: pos,
             dragTarget: el,
-            originalIndex: -1,
+            originalIndex: null,
             dragState: DragState.PREPARING,
         };
 
@@ -64,7 +65,7 @@ export class MoveManager {
                 }
                 this.dragPreparationTimer = null;
             })();
-        }, 150);
+        }, this.MIN_DRAG_PREPARATION_TIME);
     }
 
     cancelDragPreparation() {
@@ -77,7 +78,7 @@ export class MoveManager {
         }
     }
 
-    async prepareDrag(el: DomElement, frameView: FrameData) {
+    async prepareDrag(el: DomElement, frameData: FrameData) {
         if (!this.state || this.state.dragState !== DragState.PREPARING) {
             console.warn('Cannot prepare drag without preparation state');
             return;
@@ -96,13 +97,13 @@ export class MoveManager {
             return;
         }
 
-        if (!frameView.view) {
+        if (!frameData.view) {
             console.error('No frame view found');
             this.clear();
             return;
         }
 
-        const originalIndex = await frameView.view.prepareDrag(el.domId);
+        const originalIndex = await frameData.view.prepareDrag(el.domId);
 
         if (originalIndex === null || originalIndex === -1) {
             console.error('Element not found in frame');
