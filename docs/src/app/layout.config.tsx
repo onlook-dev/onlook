@@ -10,7 +10,6 @@ import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
  */
 export const baseOptions: BaseLayoutProps = {
     nav: {
-        enabled: false,
         title: (
             <div className="flex items-center gap-2">
                 <Icons.OnlookLogo className="w-4 h-4" />
