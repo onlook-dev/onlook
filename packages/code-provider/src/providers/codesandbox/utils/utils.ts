@@ -1,11 +1,6 @@
 import type { WebSocketSession } from '@codesandbox/sdk';
-import { NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
 import { type SandboxFile } from '@onlook/models';
-import { getBaseName, getDirName, isImageFile, normalizePath } from '@onlook/utility';
-import path from 'path';
-import parserEstree from 'prettier/plugins/estree';
-import parserTypescript from 'prettier/plugins/typescript';
-import prettier from 'prettier/standalone';
+import { isImageFile } from '@onlook/utility';
 
 export function getFileFromContent(filePath: string, content: string | Uint8Array) {
     const type = content instanceof Uint8Array ? 'binary' : 'text';
@@ -41,39 +36,5 @@ export async function readRemoteFile(
     } catch (error) {
         console.error(`Error reading remote file ${filePath}:`, error);
         return null;
-    }
-}
-
-export async function fileExists(client: WebSocketSession, path: string): Promise<boolean> {
-    const normalizedPath = normalizePath(path);
-
-    try {
-        const dirPath = getDirName(normalizedPath);
-        const fileName = getBaseName(normalizedPath);
-        const dirEntries = await client.fs.readdir(dirPath);
-        return dirEntries.some((entry) => entry.name === fileName);
-    } catch (error) {
-        console.error(`Error checking file existence ${normalizedPath}:`, error);
-        return false;
-    }
-}
-
-export async function formatContent(filePath: string, content: string): Promise<string> {
-    try {
-        const extension = path.extname(filePath);
-        if (!NEXT_JS_FILE_EXTENSIONS.includes(extension)) {
-            console.log('Skipping formatting for non-TS/TSX file:', filePath);
-            return content;
-        }
-
-        const formattedContent = await prettier.format(content, {
-            filepath: filePath,
-            plugins: [parserEstree, parserTypescript],
-            parser: 'typescript',
-        });
-        return formattedContent;
-    } catch (error: any) {
-        console.error('Error formatting file:', error);
-        return content;
     }
 }
