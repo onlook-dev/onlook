@@ -1,4 +1,4 @@
-import { WebSocketSession } from '@codesandbox/sdk';
+import type { WebSocketSession } from '@codesandbox/sdk';
 
 /**
  * Parse .env file content into key-value pairs

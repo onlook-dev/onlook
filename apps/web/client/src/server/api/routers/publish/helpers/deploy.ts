@@ -14,14 +14,12 @@ import {
 import { HostingProviderFactory } from '../../domain/hosting-factory.ts';
 
 export const deployFreestyle = async (
-    {
-        files,
-        urls,
-        envVars,
-    }: {
-        files: Record<string, FreestyleFile>,
-        urls: string[],
-        envVars?: Record<string, string>,
+    args: (
+        { files: Record<string, FreestyleFile>; sourceUrl?: undefined } |
+        { files?: undefined; sourceUrl: string }
+    ) & {
+        urls: string[];
+        envVars?: Record<string, string>;
     }
 ): Promise<{
     success: boolean;
@@ -29,20 +27,26 @@ export const deployFreestyle = async (
 }> => {
     const entrypoint = 'server.js';
     const adapter = HostingProviderFactory.create(HostingProvider.FREESTYLE);
-    const deploymentFiles: Record<string, { content: string; encoding?: 'utf-8' | 'base64' }> = {};
-    for (const [path, file] of Object.entries(files)) {
-        deploymentFiles[path] = {
-            content: file.content,
-            encoding: (file.encoding === 'base64' ? 'base64' : 'utf-8')
-        };
-    }
 
     const result = await adapter.deploy({
-        files: deploymentFiles,
+        ...(('sourceUrl' in args && typeof args.sourceUrl === 'string')
+            ? { sourceUrl: args.sourceUrl }
+            : {
+                files: Object.fromEntries(
+                    Object.entries(args.files ?? {}).map(([path, file]) => [
+                        path,
+                        {
+                            content: file.content,
+                            encoding: (file.encoding === 'base64' ? 'base64' : 'utf-8'),
+                        } as const,
+                    ]),
+                ),
+            }
+        ),
         config: {
-            domains: urls,
+            domains: args.urls,
             entrypoint,
-            envVars,
+            envVars: args.envVars,
         },
     });
 
