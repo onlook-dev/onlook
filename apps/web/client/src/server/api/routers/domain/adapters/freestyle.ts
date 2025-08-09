@@ -25,7 +25,7 @@ export class FreestyleAdapter implements HostingProviderAdapter {
 
             if (freestyleResponse.error) {
                 throw new Error(
-                    freestyleResponse.error.message ||
+                    freestyleResponse.error.message ??
                     freestyleResponse.message ??
                     'Unknown error',
                 );
@@ -56,8 +56,8 @@ export class FreestyleAdapter implements HostingProviderAdapter {
 
         if (freestyleResponse.error) {
             throw new Error(
-                freestyleResponse.error.message ||
-                freestyleResponse.message ||
+                freestyleResponse.error.message ??
+                freestyleResponse.message ??
                 'Unknown error',
             );
         }
