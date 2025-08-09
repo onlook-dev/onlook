@@ -47,7 +47,7 @@ function ToolCallDisplay({ toolName }: { toolName: string }) {
   );
 }
 
-export function AiChatMockup() {
+export function AiChatInteractive() {
   const [displayedText, setDisplayedText] = useState('');
   const [currentIndex, setCurrentIndex] = useState(0);
 

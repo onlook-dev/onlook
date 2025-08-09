@@ -1,8 +1,8 @@
 import React from 'react';
 import { Icons } from '@onlook/ui/icons';
 import { ButtonLink } from '../button-link';
-import { AiChatMockup } from './mockups/ai-chat-mockup';
-import { DirectEditingMockup } from './mockups/direct-editing-mockup';
+import { AiChatInteractive } from '../shared/mockups/ai-chat-interactive';
+import { DirectEditingInteractive } from '../shared/mockups/direct-editing-interactive';
 
 export function BenefitsSection() {
     return (
@@ -21,7 +21,7 @@ export function BenefitsSection() {
                             </ButtonLink>
                         </div>
                     </div>
-                    <AiChatMockup />
+                    <AiChatInteractive />
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -38,7 +38,7 @@ export function BenefitsSection() {
                             </ButtonLink>
                         </div>
                     </div>
-                    <DirectEditingMockup />
+                    <DirectEditingInteractive />
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">

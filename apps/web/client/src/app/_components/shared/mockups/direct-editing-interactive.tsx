@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Illustrations } from '../illustrations';
+import { Icons } from '@onlook/ui/icons';
+import { Illustrations } from '../../landing-page/illustrations';
 
 function DraggableElement({
     elementId,
@@ -222,7 +223,7 @@ function DraggableElement({
     );
 }
 
-export function DirectEditingMockup() {
+export function DirectEditingInteractive() {
     const [selectedElement, setSelectedElement] = useState<string | null>('face1');
     const [draggedElement, setDraggedElement] = useState<string | null>(null);
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -263,8 +264,9 @@ export function DirectEditingMockup() {
 
     const handleClickOutside = (e: MouseEvent) => {
         const target = e.target as HTMLElement;
-        if (!target.closest('.draggable-text')) {
-            setSelectedElement(null);
+        const canvasContainer = target.closest('.canvas-container');
+        
+        if (!canvasContainer && !target.closest('.draggable-text')) {
         }
     };
 
