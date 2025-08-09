@@ -44,19 +44,7 @@ export const toMastraMessageFromOnlook = (message: ChatMessage): MastraMessageV2
     return {
         ...message,
         role: message.role as MastraMessageV2['role'],
-        content: getMastraMessageContentFromOnlook(message),
     } satisfies MastraMessageV2;
-}
-
-export const getMastraMessageContentFromOnlook = (message: ChatMessage): MastraMessageV2['content'] => {
-    return {
-        format: 2,
-        parts: message.content.parts,
-        metadata: {
-            applied: false,
-            snapshots: getMessageSnapshotsFromOnlook(message),
-        }
-    }
 }
 
 export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage => {
@@ -99,18 +87,6 @@ export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage =
         default:
             throw new Error(`Unsupported message role: ${message.role}`);
     }
-}
-
-export const toVercelMessageFromOnlook = (message: ChatMessage): VercelMessage => {
-    return {
-        ...message,
-        content: message.content.parts.map((part) => {
-            if (part.type === 'text') {
-                return part.text;
-            }
-            return '';
-        }).join(''),
-    } satisfies VercelMessage;
 }
 
 export const getMastraMessageContext = (message: MastraMessageV2): ChatMessageContext[] => {

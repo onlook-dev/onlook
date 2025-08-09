@@ -79,7 +79,12 @@ export const streamResponse = async (req: NextRequest) => {
         rateLimitId = incrementRes?.rateLimitId;
     }
 
-    const lastMessage = toMastraMessageFromOnlook(messages.at(-1) as ChatMessage);
+    const lastMessage = {
+        ...toMastraMessageFromOnlook(messages.at(-1) as ChatMessage),
+        threadId: conversationId,
+        resourceId: projectId,
+    } as any;
+    console.log('lastMessage', JSON.stringify(lastMessage, null, 2));
     const result = await agent.stream(lastMessage, {
         headers: {
             'HTTP-Referer': 'https://onlook.com',

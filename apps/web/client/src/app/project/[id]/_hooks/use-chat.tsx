@@ -64,6 +64,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         }
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
+        console.log('sendMessage', JSON.stringify(message, null, 2));
         chat.setMessages([message as any]);
         try {
             posthog.capture('user_send_message', {
