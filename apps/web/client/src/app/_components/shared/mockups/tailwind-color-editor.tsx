@@ -40,6 +40,10 @@ export function TailwindColorEditorMockup() {
           const split2 = new Color({ ...color, h: (color.h + 0.58) % 1, a: 1 }).toHex();
           const primaryLight = new Color({ ...color, v: Math.min(1, color.v * 1.12), a: 1 }).toHex();
           const primaryDark = new Color({ ...color, v: Math.max(0, color.v * 0.82), a: 1 }).toHex();
+          // alpha-adjusted variants for the soft background field
+          const primaryBg = `${primary}B3`; // ~70%
+          const compBg = `${complementary}40`; // ~25%
+          const triadicBg = `${triadic}33`; // ~20%
           return (
             <>
               <style>
@@ -59,7 +63,7 @@ export function TailwindColorEditorMockup() {
               <div
                 className="absolute -inset-40 blur-3xl opacity-90"
                 style={{
-                  background: `radial-gradient(40% 40% at 20% 30%, ${primary}80 0%, transparent 60%), radial-gradient(35% 35% at 75% 25%, ${complementary}80 0%, transparent 60%), radial-gradient(45% 45% at 50% 80%, ${triadic}80 0%, transparent 60%)`,
+                  background: `radial-gradient(40% 40% at 20% 30%, ${primaryBg} 0%, transparent 60%), radial-gradient(35% 35% at 75% 25%, ${compBg} 0%, transparent 60%), radial-gradient(45% 45% at 50% 80%, ${triadicBg} 0%, transparent 60%)`,
                   animation: 'gradientShift 60s linear infinite',
                 }}
               />
@@ -67,9 +71,9 @@ export function TailwindColorEditorMockup() {
               <div className="absolute inset-0" style={{ filter: 'blur(16px) saturate(110%)' }}>
                 {/* Morphing wave ribbons (curved masks) */}
                 <div
-                  className="absolute inset-0 opacity-75"
+                  className="absolute inset-0 opacity-70"
                   style={{
-                    background: `linear-gradient(90deg, ${primaryDark}, ${primary}, ${complementary})`,
+                    background: `linear-gradient(90deg, ${primaryDark} 0%, ${primary} 68%, ${complementary} 100%)`,
                     filter: 'saturate(120%) blur(18px)',
                     WebkitMaskImage: 'radial-gradient(120% 100% at 50% 0%, transparent 30%, black 52% 66%, transparent 74%)',
                     maskImage: 'radial-gradient(120% 100% at 50% 0%, transparent 30%, black 52% 66%, transparent 74%)',
@@ -88,9 +92,9 @@ export function TailwindColorEditorMockup() {
                   }}
                 />
                 <div
-                  className="absolute inset-0 opacity-70"
+                  className="absolute inset-0 opacity-60"
                   style={{
-                    background: `linear-gradient(90deg, ${triadic}, ${primaryLight}, ${split1})`,
+                    background: `linear-gradient(90deg, ${triadic} 0%, ${primaryLight} 72%, ${split1} 100%)`,
                     filter: 'saturate(130%) blur(18px)',
                     WebkitMaskImage: 'radial-gradient(140% 110% at 50% 100%, transparent 34%, black 56% 68%, transparent 80%)',
                     maskImage: 'radial-gradient(140% 110% at 50% 100%, transparent 34%, black 56% 68%, transparent 80%)',
@@ -110,9 +114,9 @@ export function TailwindColorEditorMockup() {
                 />
                 {/* third wave */}
                 <div
-                  className="absolute inset-0 opacity-60"
+                  className="absolute inset-0 opacity-45"
                   style={{
-                    background: `linear-gradient(90deg, ${split2}, ${complementary}, ${primaryLight})`,
+                    background: `linear-gradient(90deg, ${split2} 0%, ${complementary} 84%, ${primaryLight} 100%)`,
                     filter: 'saturate(140%) blur(18px)',
                     WebkitMaskImage: 'radial-gradient(120% 120% at 0% 50%, transparent 30%, black 52% 66%, transparent 78%)',
                     maskImage: 'radial-gradient(120% 120% at 0% 50%, transparent 30%, black 52% 66%, transparent 78%)',
@@ -145,11 +149,11 @@ export function TailwindColorEditorMockup() {
               />
               {/* extra small energetic blobs */}
               <div
-                className="absolute w-[24%] h-[24%] right-[12%] bottom-[12%] rounded-[50%] mix-blend-screen opacity-70"
+                className="absolute w-[24%] h-[24%] right-[12%] bottom-[12%] rounded-[50%] mix-blend-screen opacity-55"
                 style={{ background: split1, filter: 'blur(28px)', animation: 'blobFloat4 14s ease-in-out -1s infinite' }}
               />
               <div
-                className="absolute w-[18%] h-[18%] left-[6%] top-[30%] rounded-[50%] mix-blend-screen opacity-75"
+                className="absolute w-[18%] h-[18%] left-[6%] top-[30%] rounded-[50%] mix-blend-screen opacity-60"
                 style={{ background: split2, filter: 'blur(24px)', animation: 'blobFloat5 12s ease-in-out -3s infinite' }}
               />
               {/* Soft vignette & grain for style */}

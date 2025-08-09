@@ -43,31 +43,41 @@ export function BenefitsSection() {
                         <p className="text-foreground-secondary text-regular mb-6 text-balance max-w-xl">
                             Adjust layouts, change colors, modify text, and more. Onlook generates clean Tailwind classes that match your design decisions.
                         </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-foreground-secondary text-regular">
+                        <div className="grid grid-cols-2 gap-8 mb-8 text-foreground-secondary text-regular">
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-center gap-2">
-                                    <Icons.Layout className="w-5 h-5" />
-                                    <span>Auto Layout</span>
+                                    <Icons.CheckCircled className="w-5 h-5" />
+                                    <span>Auto Layout & Flexbox</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Icons.BorderEdit className="w-5 h-5" />
+                                    <Icons.CheckCircled className="w-5 h-5" />
                                     <span>Borders</span>
                                 </div>
-                                <div className="flex items-center gap-2 ml-0.25">
-                                    <Icons.MarginFull className="w-5.5 h-5.5" />
+                                <div className="flex items-center gap-2">
+                                    <Icons.CheckCircled className="w-5 h-5" />
                                     <span>Margins</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Icons.CheckCircled className="w-5 h-5" />
+                                    <span>Image backgrounds</span>
                                 </div>
                             </div>
                             <div className="flex flex-col gap-4">
                                 <div className="flex items-center gap-2">
+                                    <Icons.CheckCircled className="w-5 h-5" />
                                     <span>Typography</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <Icons.PaddingFull className="w-5 h-5" />
+                                    <Icons.CheckCircled className="w-5 h-5" />
                                     <span>Padding</span>
                                 </div>
                                 <div className="flex items-center gap-2">
+                                    <Icons.CheckCircled className="w-5 h-5" />
                                     <span>Gradients</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Icons.CheckCircled className="w-5 h-5" />
+                                    <span>Corner Radii</span>
                                 </div>
                             </div>
                         </div>
