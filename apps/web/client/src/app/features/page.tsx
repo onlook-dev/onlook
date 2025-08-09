@@ -26,7 +26,7 @@ export default function FeaturesPage() {
                 <FeaturesGridSection />
                 
                 <CTASection 
-                    ctaText="Start Building with Onlook Today"
+                    ctaText={`Start building\nwith Onlook today`}
                     buttonText="Get Started for Free"
                 />
                 

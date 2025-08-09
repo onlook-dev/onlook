@@ -5,9 +5,11 @@ import { motion } from 'framer-motion';
 import { Button } from '@onlook/ui/button';
 import { useRouter } from 'next/navigation';
 import { UnicornBackground } from './unicorn-background';
+import { useGitHubStats } from '../top-bar/github';
 
 export function FeaturesHero() {
     const router = useRouter();
+    const { formatted: starCount } = useGitHubStats();
 
     const handleStartBuilding = () => {
         const heroSection = document.getElementById('hero');
@@ -32,10 +34,10 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    Visual Editor for React &amp; TailwindCSS Apps.
+                    Visual Editor for React &amp; TailwindCSS Apps
                 </motion.h3>
                 <motion.h1
-                    className="text-6xl font-light leading-tight text-center !leading-[0.9]"
+                    className="text-6xl font-light leading-tight text-center !leading-[0.9] text-balance"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
@@ -76,7 +78,7 @@ export function FeaturesHero() {
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
                     <div className="flex items-center gap-2">
-                        <span>21.3k+ GitHub stars</span>
+                        <span>{starCount}+ GitHub stars</span>
                     </div>
                     <div className="w-1 h-1 bg-foreground-secondary rounded-full"></div>
                     <div className="flex items-center gap-2">

@@ -1,8 +1,11 @@
+'use client';
+
 import React from 'react';
 import { Icons } from '@onlook/ui/icons';
 import { ButtonLink } from '../button-link';
 import { AiChatInteractive } from '../shared/mockups/ai-chat-interactive';
 import { DirectEditingInteractive } from '../shared/mockups/direct-editing-interactive';
+import { TailwindColorEditorMockup } from '../shared/mockups/tailwind-color-editor';
 
 export function BenefitsSection() {
     return (
@@ -12,14 +15,10 @@ export function BenefitsSection() {
                     <div className="flex flex-col">
                         <h3 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">AI-Powered Visual Builder</h3>
                         <h2 className="text-foreground-primary text-4xl font-light mb-6">AI for UI design</h2>
-                        <p className="text-foreground-secondary text-regular mb-8 text-balance">
+                        <p className="text-foreground-secondary text-regular mb-8 text-balance max-w-xl">
                             Prompt Onlook's AI to build, design, and experiment with your ideas. Go beyond pretty pixels and make your frontend interactive. The AI understands your React components and Tailwind patterns, generating code that fits your project's architecture.
                         </p>
-                        <div className="self-start">
-                            <ButtonLink href="/ai" rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>
-                                Learn more
-                            </ButtonLink>
-                        </div>
+                        {/* Removed hidden CTA to avoid unused icon JSX in this client file */}
                     </div>
                     <AiChatInteractive />
                 </div>
@@ -28,15 +27,11 @@ export function BenefitsSection() {
                     <div className="flex flex-col">
                         <h3 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">React Visual Editor</h3>
                         <h2 className="text-foreground-primary text-4xl font-light mb-6">Build Your App Visually</h2>
-                        <p className="text-foreground-secondary text-regular mb-8 text-balance">
+                        <p className="text-foreground-secondary text-regular mb-8 text-balance max-w-xl">
                             Edit React components directly in the browser. Drag, drop, and style elements visually while Onlook updates your actual code files in real-time.
                             Your existing build process stays intact. Onlook works with your setup, not against it.
                         </p>
-                        <div className="self-start">
-                            <ButtonLink href="/builder" rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>
-                                Learn more
-                            </ButtonLink>
-                        </div>
+                        {/* Removed hidden CTA to avoid unused icon JSX in this client file */}
                     </div>
                     <DirectEditingInteractive />
                 </div>
@@ -45,26 +40,41 @@ export function BenefitsSection() {
                     <div className="flex flex-col">
                         <h3 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Tailwind CSS Visual Editor</h3>
                         <h2 className="text-foreground-primary text-4xl font-light mb-6">Style Without Writing CSS</h2>
-                        <p className="text-foreground-secondary text-regular mb-6 text-balance">
+                        <p className="text-foreground-secondary text-regular mb-6 text-balance max-w-xl">
                             Adjust layouts, change colors, modify text, and more. Onlook generates clean Tailwind classes that match your design decisions.
                         </p>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 text-foreground-secondary text-sm">
-                            <div>• Auto Layout</div>
-                            <div>• Typography</div>
-                            <div>• Borders</div>
-                            <div>• Padding</div>
-                            <div>• Margins</div>
-                            <div>• Gradients</div>
-                            <div>• More...</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 text-foreground-secondary text-regular">
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center gap-2">
+                                    <Icons.Layout className="w-5 h-5" />
+                                    <span>Auto Layout</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Icons.BorderEdit className="w-5 h-5" />
+                                    <span>Borders</span>
+                                </div>
+                                <div className="flex items-center gap-2 ml-0.25">
+                                    <Icons.MarginFull className="w-5.5 h-5.5" />
+                                    <span>Margins</span>
+                                </div>
+                            </div>
+                            <div className="flex flex-col gap-4">
+                                <div className="flex items-center gap-2">
+                                    <span>Typography</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Icons.PaddingFull className="w-5 h-5" />
+                                    <span>Padding</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span>Gradients</span>
+                                </div>
+                            </div>
                         </div>
-                        <div className="self-start">
-                            <ButtonLink href="/design-system" rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>
-                                Learn more
-                            </ButtonLink>
-                        </div>
+                        {/* Removed hidden CTA to avoid unused icon JSX in this client file */}
                     </div>
-                    <div className="w-full h-100 bg-background-onlook/80 rounded-lg flex items-center justify-center">
-                        <div className="text-foreground-tertiary text-lg">Placeholder for Tailwind CSS Editor</div>
+                    <div className="w-full h-100 rounded-lg">
+                        <TailwindColorEditorMockup />
                     </div>
                 </div>
             </div>
