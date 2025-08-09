@@ -3,7 +3,8 @@ import { CHAT_TYPE_KEY, ONLOOK_AGENT_KEY, type OnlookAgentRuntimeContext } from 
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { trackEvent } from '@/utils/analytics/server';
 import { RuntimeContext } from '@mastra/core/runtime-context';
-import { ChatType, UsageType } from '@onlook/models';
+import { toMastraMessageFromOnlook } from '@onlook/db';
+import { ChatType, UsageType, type ChatMessage } from '@onlook/models';
 import { type NextRequest } from 'next/server';
 import { checkMessageLimit, getSupabaseUser, repairToolCall } from './helpers';
 
@@ -78,8 +79,8 @@ export const streamResponse = async (req: NextRequest) => {
         rateLimitId = incrementRes?.rateLimitId;
     }
 
-    const lastMessage = messages.at(-1);
-    const result = await agent.stream([lastMessage], {
+    const lastMessage = toMastraMessageFromOnlook(messages.at(-1) as ChatMessage);
+    const result = await agent.stream(lastMessage, {
         headers: {
             'HTTP-Referer': 'https://onlook.com',
             'X-Title': 'Onlook',

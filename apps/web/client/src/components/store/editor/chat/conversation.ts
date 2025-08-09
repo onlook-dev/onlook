@@ -29,7 +29,7 @@ export class ConversationManager {
             const conversation = conversations[0];
             await this.selectConversation(conversation.id);
         } else {
-            this.startNewConversation();
+            await this.startNewConversation();
         }
     }
 
@@ -128,7 +128,7 @@ export class ConversationManager {
             console.error('No message found with id', id);
             return;
         }
-        (message as UserChatMessage).snapshots.push({
+        (message as UserChatMessage).content.metadata.snapshots.push({
             type: MessageSnapshotType.GIT,
             oid: commit.oid,
             createdAt: new Date(),
@@ -140,7 +140,7 @@ export class ConversationManager {
             console.error('No conversation found');
             return;
         }
-        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.vercelId && m.vercelId === message.vercelId));
+        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.content.metadata.vercelId && m.content.metadata.vercelId === message.content.metadata.vercelId));
         if (index === -1) {
             this.current.messages.push(message);
         } else {

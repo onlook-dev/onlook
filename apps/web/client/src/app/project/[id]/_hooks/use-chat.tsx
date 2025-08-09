@@ -3,33 +3,27 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { toOnlookMessageFromVercel, toVercelMessageFromOnlook } from '@onlook/db';
+import { toOnlookMessageFromVercel } from '@onlook/db';
 import { ChatType, type UserChatMessage } from '@onlook/models';
 import type { Message } from 'ai';
+import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useRef } from 'react';
 
 type ExtendedUseChatHelpers = UseChatHelpers & { sendMessage: (message: UserChatMessage, type: ChatType) => Promise<string | null | undefined> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
-export function ChatProvider({ children }: { children: React.ReactNode }) {
+export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
     const lastMessageRef = useRef<Message | null>(null);
     const posthog = usePostHog();
-    const [conversationId, setConversationId] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (editorEngine.chat.conversation.current?.conversation.id) {
-            setConversationId(editorEngine.chat.conversation.current?.conversation.id);
-        }
-    }, [editorEngine.chat.conversation.current?.conversation.id]);
 
     const chat = useChat({
         id: 'user-chat',
         api: '/api/chat',
         maxSteps: 20,
         body: {
-            conversationId,
+            conversationId: editorEngine.chat.conversation.current?.conversation.id,
             projectId: editorEngine.projectId,
         },
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
@@ -65,12 +59,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     });
 
     const sendMessage = async (message: UserChatMessage, type: ChatType = ChatType.EDIT) => {
-        if (!conversationId) {
+        if (!editorEngine.chat.conversation.current?.conversation.id) {
             throw new Error('No conversation id');
         }
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
-        chat.setMessages([toVercelMessageFromOnlook(message)]);
+        chat.setMessages([message as any]);
         try {
             posthog.capture('user_send_message', {
                 type,
@@ -86,7 +80,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     };
 
     return <ChatContext.Provider value={{ ...chat, sendMessage }}>{children}</ChatContext.Provider>;
-}
+});
 
 export function useChatContext() {
     const context = useContext(ChatContext);

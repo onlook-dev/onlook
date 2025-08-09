@@ -1,31 +1,42 @@
 import type { MastraMessageV2 } from "@mastra/core/memory";
 import type { MessageSnapshot } from "@onlook/models";
-import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatMessageContext, type SystemChatMessage, type UserChatMessage } from "@onlook/models";
+import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatMessageContext, type UserChatMessage } from "@onlook/models";
+import { assertNever } from '@onlook/utility';
 import type { Message as VercelMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
 export const toOnlookMessageFromMastra = (mastraMessage: MastraMessageV2): ChatMessage => {
     switch (mastraMessage.role) {
-        case ChatMessageRole.ASSISTANT:
+        case 'assistant':
             return {
                 ...mastraMessage,
                 role: mastraMessage.role as ChatMessageRole.ASSISTANT,
-                applied: false,
-                snapshots: getMessageSnapshotsFromMastra(mastraMessage),
+                content: {
+                    format: 2,
+                    parts: mastraMessage.content.parts,
+                    metadata: {
+                        vercelId: mastraMessage.id,
+                        context: getMastraMessageContext(mastraMessage),
+                        snapshots: getMessageSnapshotsFromMastra(mastraMessage),
+                    }
+                }
             } satisfies AssistantChatMessage;
-        case ChatMessageRole.USER:
-            // TODO: Format user message
+        case 'user':
             return {
                 ...mastraMessage,
                 role: mastraMessage.role as ChatMessageRole.USER,
-                context: getMastraMessageContext(mastraMessage),
-                snapshots: getMessageSnapshotsFromMastra(mastraMessage),
+                content: {
+                    format: 2,
+                    parts: mastraMessage.content.parts,
+                    metadata: {
+                        vercelId: mastraMessage.id,
+                        context: getMastraMessageContext(mastraMessage),
+                        snapshots: getMessageSnapshotsFromMastra(mastraMessage),
+                    }
+                }
             } satisfies UserChatMessage;
         default:
-            return {
-                ...mastraMessage,
-                role: mastraMessage.role as ChatMessageRole.SYSTEM,
-            } satisfies SystemChatMessage;
+            assertNever(mastraMessage.role);
     }
 }
 
@@ -60,34 +71,33 @@ export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage =
         case ChatMessageRole.ASSISTANT:
             return {
                 ...baseMessage,
+                role: message.role as ChatMessageRole.ASSISTANT,
                 content: {
                     parts: message.parts ?? [],
                     format: 2,
+                    metadata: {
+                        vercelId: message.id,
+                        context: [],
+                        snapshots: [],
+                    }
                 },
-                role: message.role as ChatMessageRole.ASSISTANT,
-                applied: false,
-                snapshots: [],
             } satisfies AssistantChatMessage;
         case ChatMessageRole.USER:
             return {
                 ...baseMessage,
                 role: message.role as ChatMessageRole.USER,
-                context: [],
-                snapshots: [],
                 content: {
                     parts: message.parts ?? [],
                     format: 2,
+                    metadata: {
+                        vercelId: message.id,
+                        context: [],
+                        snapshots: [],
+                    }
                 },
             } satisfies UserChatMessage;
         default:
-            return {
-                ...baseMessage,
-                role: message.role as ChatMessageRole.SYSTEM,
-                content: {
-                    parts: [],
-                    format: 2,
-                },
-            } satisfies SystemChatMessage;
+            throw new Error(`Unsupported message role: ${message.role}`);
     }
 }
 

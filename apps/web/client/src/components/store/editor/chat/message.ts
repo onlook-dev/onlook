@@ -8,10 +8,12 @@ export const getUserChatMessageFromString = (content: string, context: ChatMessa
         role: ChatMessageRole.USER,
         content: {
             parts: [{ type: 'text', text: content }],
-            format: 2
+            format: 2,
+            metadata: {
+                context,
+                snapshots: [],
+            }
         },
-        context,
-        snapshots: [],
         createdAt: new Date(),
     }
 }

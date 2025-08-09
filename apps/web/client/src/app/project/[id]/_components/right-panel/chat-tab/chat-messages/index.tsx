@@ -28,9 +28,6 @@ export const ChatMessages = observer(() => {
             case ChatMessageRole.USER:
                 messageNode = <UserMessage message={message} />;
                 break;
-            case ChatMessageRole.SYSTEM:
-                messageNode = <div>System message</div>;
-                break;
             default:
                 assertNever(message);
         }

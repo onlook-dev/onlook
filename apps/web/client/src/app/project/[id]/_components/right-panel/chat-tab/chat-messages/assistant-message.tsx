@@ -8,7 +8,7 @@ export const AssistantMessage = ({ message }: { message: AssistantChatMessage })
                 <MessageContent
                     messageId={message.id}
                     parts={message.content.parts}
-                    applied={message.applied}
+                    applied={false}
                     isStream={false}
                 />
             </div>
