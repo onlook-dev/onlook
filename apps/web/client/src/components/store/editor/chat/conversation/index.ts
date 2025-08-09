@@ -2,7 +2,7 @@
 import { api } from '@/trpc/client';
 import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, type ChatConversation, type ChatMessageContext } from '@onlook/models';
-import type { Message } from 'ai';
+import type { UIMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
 import type { EditorEngine } from '../../engine';
@@ -137,7 +137,7 @@ export class ConversationManager {
         this.current?.updateMessage(message);
     }
 
-    async addAssistantMessage(message: Message): Promise<AssistantChatMessageImpl | undefined> {
+    async addAssistantMessage(message: UIMessage): Promise<AssistantChatMessageImpl | undefined> {
         if (!this.current) {
             console.error('No conversation found');
             return;

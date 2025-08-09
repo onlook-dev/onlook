@@ -4,7 +4,7 @@ import { trackEvent } from '@/utils/analytics/server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { ASK_TOOL_SET, BUILD_TOOL_SET, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, type InitialModelPayload, LLMProvider, OPENROUTER_MODELS, type Usage, UsageType } from '@onlook/models';
-import { generateObject, NoSuchToolError, streamText } from 'ai';
+import { convertToModelMessages, generateObject, NoSuchToolError, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 
 const isProd = env.NODE_ENV === 'production';
@@ -101,7 +101,7 @@ export const getSupabaseUser = async (request: NextRequest) => {
 }
 
 export const streamResponse = async (req: NextRequest) => {
-    const { messages, maxSteps, chatType } = await req.json();
+    const { messages: uiMessages, maxSteps, chatType } = await req.json();
     const { model, providerOptions, headers } = await initModel(MainModelConfig);
 
     // Updating the usage record and rate limit is done here to avoid
@@ -136,16 +136,16 @@ export const streamResponse = async (req: NextRequest) => {
             break;
     }
     const toolSet = chatType === ChatType.ASK ? ASK_TOOL_SET : BUILD_TOOL_SET;
+
+    const modelMessages = convertToModelMessages(uiMessages ?? []);
+
     const result = streamText({
         model,
         headers,
+        providerOptions,
         messages: [
-            {
-                role: 'system',
-                content: systemPrompt,
-                providerOptions,
-            },
-            ...messages,
+            { role: 'system', content: systemPrompt },
+            ...modelMessages,
         ],
         maxSteps,
         tools: toolSet,
@@ -165,7 +165,7 @@ export const streamResponse = async (req: NextRequest) => {
 
             const { object: repairedArgs } = await generateObject({
                 model,
-                schema: tool?.parameters,
+                schema: (tool as any)?.inputSchema,
                 prompt: [
                     `The model tried to call the tool "${toolCall.toolName}"` +
                     ` with the following arguments:`,
@@ -189,11 +189,10 @@ export const streamResponse = async (req: NextRequest) => {
         },
     });
 
-    return result.toDataStreamResponse(
-        {
-            getErrorMessage: errorHandler,
-        }
-    );
+    return result.toUIMessageStreamResponse({
+        originalMessages: uiMessages,
+        getErrorMessage: errorHandler,
+    });
 }
 
 export function errorHandler(error: unknown) {

@@ -1,6 +1,6 @@
 import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, type ChatMessageContext } from '@onlook/models/chat';
-import type { Message } from 'ai';
+import type { UIMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
@@ -30,7 +30,7 @@ export class ChatManager {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
-    async getEditMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
+    async getEditMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<UIMessage[] | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;
@@ -52,7 +52,7 @@ export class ChatManager {
         return this.generateStreamMessages();
     }
 
-    async getAskMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
+    async getAskMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<UIMessage[] | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;
@@ -69,7 +69,7 @@ export class ChatManager {
         return this.generateStreamMessages();
     }
 
-    async getFixErrorMessages(): Promise<Message[] | null> {
+    async getFixErrorMessages(): Promise<UIMessage[] | null> {
         const errors = this.editorEngine.error.errors;
         if (!this.conversation.current) {
             console.error('No conversation found');
@@ -119,12 +119,12 @@ export class ChatManager {
         return this.generateStreamMessages();
     }
 
-    private async generateStreamMessages(): Promise<Message[] | null> {
+    private async generateStreamMessages(): Promise<UIMessage[] | null> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return null;
         }
-        return this.conversation.current.getMessagesForStream();
+        return this.conversation.current.getMessagesForStream() as unknown as UIMessage[];
     }
 
     async createCommit(userPrompt: string): Promise<GitCommit | null> {

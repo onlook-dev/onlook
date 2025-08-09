@@ -10,7 +10,7 @@ export const SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS = z.object({
 });
 export const searchReplaceEditFileTool = tool({
     description: 'Make exact string replacements in files with precise matching',
-    parameters: SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
+    inputSchema: SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
 });
 
 export const SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME = 'search_replace_multi_edit_file';
@@ -32,7 +32,7 @@ export const SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS = z.object({
 });
 export const searchReplaceMultiEditFileTool = tool({
     description: 'Make multiple edits to a single file in one atomic operation',
-    parameters: SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
+    inputSchema: SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
 });
 
 export const WRITE_FILE_TOOL_NAME = 'write_file';
@@ -42,7 +42,7 @@ export const WRITE_FILE_TOOL_PARAMETERS = z.object({
 });
 export const writeFileTool = tool({
     description: 'Write or overwrite file contents completely',
-    parameters: WRITE_FILE_TOOL_PARAMETERS,
+    inputSchema: WRITE_FILE_TOOL_PARAMETERS,
 });
 
 export const FUZZY_EDIT_FILE_TOOL_NAME = 'fuzzy_edit_file';
@@ -63,5 +63,5 @@ Make sure there's enough context for the other model to understand where the cha
 export const fuzzyEditFileTool = tool({
     description:
         'Edit the contents of a file with fuzzy matching instead of search and replace. This should be used as a fallback when the search and replace tool fails. It calls another agent to do the actual editing.',
-    parameters: FUZZY_EDIT_FILE_TOOL_PARAMETERS,
+    inputSchema: FUZZY_EDIT_FILE_TOOL_PARAMETERS,
 });
