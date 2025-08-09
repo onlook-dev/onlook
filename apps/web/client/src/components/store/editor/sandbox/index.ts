@@ -1,8 +1,24 @@
-import type { ReaddirEntry, WatchEvent, WebSocketSession } from '@codesandbox/sdk';
-import { EXCLUDED_SYNC_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS, PRELOAD_SCRIPT_SRC } from '@onlook/constants';
+import type {
+    ListFilesOutputFile,
+    Provider,
+    ProviderFileWatcher,
+    WatchEvent,
+} from '@onlook/code-provider';
+import {
+    EXCLUDED_SYNC_DIRECTORIES,
+    NEXT_JS_FILE_EXTENSIONS,
+    PRELOAD_SCRIPT_SRC,
+} from '@onlook/constants';
 import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
-import { getBaseName, getDirName, isImageFile, isRootLayoutFile, isSubdirectory, LogTimer } from '@onlook/utility';
+import {
+    getBaseName,
+    getDirName,
+    isImageFile,
+    isRootLayoutFile,
+    isSubdirectory,
+    LogTimer,
+} from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import { env } from 'process';
@@ -10,12 +26,12 @@ import type { EditorEngine } from '../engine';
 import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
-import { FileWatcher } from './file-watcher';
 import { normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
 const isDev = env.NODE_ENV === 'development';
+
 export class SandboxManager {
     readonly session: SessionManager;
     readonly fileEventBus: FileEventBus = new FileEventBus();
@@ -23,7 +39,7 @@ export class SandboxManager {
     // Add router configuration
     private _routerConfig: { type: RouterType; basePath: string } | null = null;
 
-    private fileWatcher: FileWatcher | null = null;
+    private fileWatcher: ProviderFileWatcher | null = null;
     private fileSync: FileSyncManager;
     private templateNodeMap: TemplateNodeMapper;
     private _isIndexed = false;
@@ -36,10 +52,10 @@ export class SandboxManager {
         makeAutoObservable(this);
 
         reaction(
-            () => this.session.session,
-            (session) => {
+            () => this.session.provider,
+            (provider) => {
                 this._isIndexed = false;
-                if (session) {
+                if (provider) {
                     this.index();
                 }
             },
@@ -65,8 +81,8 @@ export class SandboxManager {
             return;
         }
 
-        if (!this.session.session) {
-            console.error('No session found for indexing');
+        if (!this.session.provider) {
+            console.error('No provider found for indexing');
             return;
         }
 
@@ -106,7 +122,6 @@ export class SandboxManager {
             await this.watchFiles();
             this._isIndexed = true;
             timer.log('Indexing completed successfully');
-
         } catch (error) {
             console.error('Error during indexing:', error);
             throw error;
@@ -119,8 +134,8 @@ export class SandboxManager {
      * Optimized flat file discovery - similar to hosting manager approach
      */
     private async getAllFilePathsFlat(rootDir: string, excludeDirs: string[]): Promise<string[]> {
-        if (!this.session.session) {
-            throw new Error('No session available for file discovery');
+        if (!this.session.provider) {
+            throw new Error('No provider available for file discovery');
         }
 
         const allPaths: string[] = [];
@@ -129,9 +144,13 @@ export class SandboxManager {
         while (dirsToProcess.length > 0) {
             const currentDir = dirsToProcess.shift()!;
             try {
-                const entries = await this.session.session.fs.readdir(currentDir);
+                const { files } = await this.session.provider?.listFiles({
+                    args: {
+                        path: currentDir,
+                    },
+                });
 
-                for (const entry of entries) {
+                for (const entry of files) {
                     const fullPath = `${currentDir}/${entry.name}`;
                     const normalizedPath = normalizePath(fullPath);
 
@@ -154,21 +173,18 @@ export class SandboxManager {
     }
 
     private async readRemoteFile(filePath: string): Promise<SandboxFile | null> {
-        if (!this.session.session) {
-            console.error('No session found for remote read');
-            throw new Error('No session found for remote read');
+        if (!this.session.provider) {
+            console.error('No provider found for remote read');
+            throw new Error('No provider found for remote read');
         }
 
         try {
-            if (isImageFile(filePath)) {
-                console.log('reading image file', filePath);
-
-                const content = await this.session.session.fs.readFile(filePath);
-                return this.fileSync.getFileFromContent(filePath, content);
-            } else {
-                const content = await this.session.session.fs.readTextFile(filePath);
-                return this.fileSync.getFileFromContent(filePath, content);
-            }
+            const { file } = await this.session.provider.readFile({
+                args: {
+                    path: filePath,
+                },
+            });
+            return file;
         } catch (error) {
             console.error(`Error reading remote file ${filePath}:`, error);
             return null;
@@ -180,22 +196,20 @@ export class SandboxManager {
         content: string | Uint8Array,
         overwrite: boolean = true,
     ): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for remote write');
+        if (!this.session.provider) {
+            console.error('No provider found for remote write');
             return false;
         }
 
         try {
-            if (content instanceof Uint8Array) {
-                await this.session.session.fs.writeFile(filePath, content, {
+            const res = await this.session.provider.writeFile({
+                args: {
+                    path: filePath,
+                    content,
                     overwrite,
-                });
-            } else {
-                await this.session.session.fs.writeTextFile(filePath, content, {
-                    overwrite,
-                });
-            }
-            return true;
+                },
+            });
+            return res.success;
         } catch (error) {
             console.error(`Error writing remote file ${filePath}:`, error);
             return false;
@@ -270,8 +284,17 @@ export class SandboxManager {
         return this.fileSync.listAllFiles();
     }
 
-    readDir(dir: string): Promise<ReaddirEntry[]> {
-        return this.session.session?.fs.readdir(dir) ?? Promise.resolve([]);
+    async readDir(dir: string): Promise<ListFilesOutputFile[]> {
+        if (!this.session.provider) {
+            console.error('No provider found for read dir');
+            return Promise.resolve([]);
+        }
+        const { files } = await this.session.provider.listFiles({
+            args: {
+                path: dir,
+            },
+        });
+        return files;
     }
 
     async listFilesRecursively(
@@ -279,15 +302,19 @@ export class SandboxManager {
         ignoreDirs: string[] = [],
         ignoreExtensions: string[] = [],
     ): Promise<string[]> {
-        if (!this.session.session) {
-            console.error('No session found');
+        if (!this.session.provider) {
+            console.error('No provider found for list files recursively');
             return [];
         }
 
         const results: string[] = [];
-        const entries = await this.session.session.fs.readdir(dir);
+        const { files } = await this.session.provider.listFiles({
+            args: {
+                path: dir,
+            },
+        });
 
-        for (const entry of entries) {
+        for (const entry of files) {
             const fullPath = `${dir}/${entry.name}`;
             const normalizedPath = normalizePath(fullPath);
             if (entry.type === 'directory') {
@@ -315,14 +342,20 @@ export class SandboxManager {
     async downloadFiles(
         projectName?: string,
     ): Promise<{ downloadUrl: string; fileName: string } | null> {
-        if (!this.session.session) {
-            console.error('No sandbox session found');
+        if (!this.session.provider) {
+            console.error('No sandbox provider found for download');
             return null;
         }
         try {
-            const { downloadUrl } = await this.session.session.fs.download('./');
+            const { url } = await this.session.provider.downloadFiles({
+                args: {
+                    path: './',
+                },
+            });
             return {
-                downloadUrl,
+                // in case there is no URL provided then the code must be updated
+                // to handle this case
+                downloadUrl: url ?? '',
                 fileName: `${projectName ?? 'onlook-project'}-${Date.now()}.zip`,
             };
         } catch (error) {
@@ -332,30 +365,38 @@ export class SandboxManager {
     }
 
     async watchFiles() {
-        if (!this.session.session) {
-            console.error('No session found');
+        if (!this.session.provider) {
+            console.error('No provider found for watch files');
             return;
         }
 
         // Dispose of existing watcher if it exists
         if (this.fileWatcher) {
-            this.fileWatcher.dispose();
+            // Stop previous watcher before starting a new one
+            await this.fileWatcher.stop();
             this.fileWatcher = null;
         }
 
         // Convert ignored directories to glob patterns with ** wildcard
         const excludePatterns = EXCLUDED_SYNC_DIRECTORIES.map((dir) => `${dir}/**`);
 
-        this.fileWatcher = new FileWatcher({
-            session: this.session.session,
+        const res = await this.session.provider.watchFiles({
+            args: {
+                path: './',
+                recursive: true,
+                excludes: excludePatterns,
+            },
             onFileChange: async (event) => {
+                this.fileEventBus.publish({
+                    type: event.type,
+                    paths: event.paths,
+                    timestamp: Date.now(),
+                });
                 await this.handleFileChange(event);
             },
-            excludePatterns,
-            fileEventBus: this.fileEventBus,
         });
 
-        await this.fileWatcher.start();
+        this.fileWatcher = res.watcher;
     }
 
     async handleFileChange(event: WatchEvent) {
@@ -392,21 +433,25 @@ export class SandboxManager {
                 await this.editorEngine.preloadScript.ensurePreloadScriptFile();
             }
         } else if (eventType === 'change' || eventType === 'add') {
-            const session = this.session.session;
-            if (!session) {
-                console.error('No session found');
+            const provider = this.session.provider;
+            if (!provider) {
+                console.error('No provider found for handle file change');
                 return;
             }
 
             if (event.paths.length === 2) {
-                await this.handleFileRenameEvent(event, session);
+                await this.handleFileRenameEvent(event, provider);
             }
 
             for (const path of event.paths) {
                 if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
                     continue;
                 }
-                const stat = await session.fs.stat(path);
+                const stat = await provider.statFile({
+                    args: {
+                        path,
+                    },
+                });
 
                 if (stat?.type === 'directory') {
                     const normalizedPath = normalizePath(path);
@@ -425,7 +470,7 @@ export class SandboxManager {
         }
     }
 
-    async handleFileRenameEvent(event: WatchEvent, session: WebSocketSession) {
+    async handleFileRenameEvent(event: WatchEvent, provider: Provider) {
         // This mean rename a file or a folder, move a file or a folder
         const [oldPath, newPath] = event.paths;
 
@@ -437,7 +482,11 @@ export class SandboxManager {
         const oldNormalizedPath = normalizePath(oldPath);
         const newNormalizedPath = normalizePath(newPath);
 
-        const stat = await session.fs.stat(newPath);
+        const stat = await provider.statFile({
+            args: {
+                path: newPath,
+            },
+        });
 
         if (stat.type === 'directory') {
             await this.fileSync.renameDir(oldNormalizedPath, newNormalizedPath);
@@ -507,7 +556,10 @@ export class SandboxManager {
                 try {
                     await this.editorEngine.preloadScript.ensurePreloadScriptFile();
                 } catch (error) {
-                    console.warn(`[SandboxManager] Failed to ensure preload script file for layout ${file.path}:`, error);
+                    console.warn(
+                        `[SandboxManager] Failed to ensure preload script file for layout ${file.path}:`,
+                        error,
+                    );
                     // Continue processing even if preload script file check fails
                 }
             }
@@ -570,16 +622,20 @@ export class SandboxManager {
     async fileExists(path: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
 
-        if (!this.session.session) {
-            console.error('No session found for file existence check');
+        if (!this.session.provider) {
+            console.error('No provider found for file existence check');
             return false;
         }
 
         try {
             const dirPath = getDirName(normalizedPath);
             const fileName = getBaseName(normalizedPath);
-            const dirEntries = await this.session.session.fs.readdir(dirPath);
-            return dirEntries.some((entry: ReaddirEntry) => entry.name === fileName);
+            const { files } = await this.session.provider.listFiles({
+                args: {
+                    path: dirPath,
+                },
+            });
+            return files.some((entry) => entry.name === fileName);
         } catch (error) {
             console.error(`Error checking file existence ${normalizedPath}:`, error);
             return false;
@@ -592,8 +648,8 @@ export class SandboxManager {
         recursive?: boolean,
         overwrite?: boolean,
     ): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for copy');
+        if (!this.session.provider) {
+            console.error('No provider found for copy');
             return false;
         }
 
@@ -608,12 +664,14 @@ export class SandboxManager {
                 return false;
             }
 
-            await this.session.session.fs.copy(
-                normalizedSourcePath,
-                normalizedTargetPath,
-                recursive,
-                overwrite,
-            );
+            await this.session.provider.copyFiles({
+                args: {
+                    sourcePath: normalizedSourcePath,
+                    targetPath: normalizedTargetPath,
+                    recursive,
+                    overwrite,
+                },
+            });
 
             return true;
         } catch (error) {
@@ -623,8 +681,8 @@ export class SandboxManager {
     }
 
     async delete(path: string, recursive?: boolean): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for delete file');
+        if (!this.session.provider) {
+            console.error('No provider found for delete file');
             return false;
         }
 
@@ -639,7 +697,12 @@ export class SandboxManager {
             }
 
             // Delete the file using the filesystem API
-            await this.session.session.fs.remove(normalizedPath, recursive);
+            await this.session.provider.deleteFiles({
+                args: {
+                    path: normalizedPath,
+                    recursive,
+                },
+            });
 
             // Clean up the file sync cache
             await this.fileSync.delete(normalizedPath);
@@ -660,8 +723,8 @@ export class SandboxManager {
     }
 
     async rename(oldPath: string, newPath: string): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for rename');
+        if (!this.session.provider) {
+            console.error('No provider found for rename');
             return false;
         }
 
@@ -669,7 +732,12 @@ export class SandboxManager {
             const normalizedOldPath = normalizePath(oldPath);
             const normalizedNewPath = normalizePath(newPath);
 
-            await this.session.session.fs.rename(normalizedOldPath, normalizedNewPath);
+            await this.session.provider.renameFile({
+                args: {
+                    oldPath: normalizedOldPath,
+                    newPath: normalizedNewPath,
+                },
+            });
 
             return true;
         } catch (error) {
@@ -708,7 +776,7 @@ export class SandboxManager {
     }
 
     clear() {
-        this.fileWatcher?.dispose();
+        void this.fileWatcher?.stop();
         this.fileWatcher = null;
         this.fileSync.clear();
         this.templateNodeMap.clear();

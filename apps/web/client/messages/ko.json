@@ -237,6 +237,8 @@
                         },
                         "settings": {
                             "showSuggestions": "제안 표시",
+                            "showMiniChat": "미니 채팅 표시",
+                            "autoApplyCode": "결과 자동 적용",
                             "expandCodeBlocks": "렌더링 시 코드 표시"
                         },
                         "miniChat": {

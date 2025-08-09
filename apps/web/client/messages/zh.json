@@ -237,6 +237,8 @@
                         },
                         "settings": {
                             "showSuggestions": "显示建议",
+                            "showMiniChat": "显示迷你聊天",
+                            "autoApplyCode": "自动应用结果",
                             "expandCodeBlocks": "渲染时显示代码"
                         },
                         "miniChat": {

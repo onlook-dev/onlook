@@ -5,6 +5,9 @@
 html,
 body {
   overscroll-behavior: none;
+  font-weight: 350;
+  background: linear-gradient(135deg, #141414 0%, #000000 50%, #000000 100%);
+  min-height: 100vh;
 }
 
 /* Improve header link button visibility and clickability */
@@ -22,4 +25,19 @@ h5:hover [data-hash-link],
 h6:hover [data-hash-link] {
   opacity: 1;
   cursor: pointer;
+}
+
+/* Hide subnav in production */
+#nd-subnav {
+    display: none;
+}
+
+/* Make prose headers not bold */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+    font-weight: 500;
 }

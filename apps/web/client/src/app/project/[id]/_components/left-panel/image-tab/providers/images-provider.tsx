@@ -28,8 +28,6 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
     const uploadOperations = useImageUpload();
     const moveOperations = useImageMove();
 
-
-
     const isOperating =
         deleteOperations.deleteState.isLoading ||
         renameOperations.renameState.isLoading ||
@@ -45,7 +43,6 @@ export const ImagesProvider = observer(({ children }: ImagesProviderProps) => {
         );
     }, [deleteOperations.deleteState.error, renameOperations.renameState.error, uploadOperations.uploadState.error, moveOperations.moveState.error]);
 
-    
     const value: ImagesContextValue = {
         isOperating,
         deleteOperations,

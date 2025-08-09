@@ -1,125 +1,197 @@
 import type { DomElement, ElementPosition } from '@onlook/models';
 import type { MoveElementAction } from '@onlook/models/actions';
+import { makeAutoObservable } from 'mobx';
 import type React from 'react';
 import type { EditorEngine } from '../engine';
 import type { FrameData } from '../frames';
 
+enum DragState {
+    PREPARING = 'preparing',
+    IN_PROGRESS = 'in_progress',
+}
+
+interface MoveManagerState {
+    dragOrigin: ElementPosition;
+    dragTarget: DomElement;
+    originalIndex: number | null;
+    dragState: DragState;
+}
+
 export class MoveManager {
-    dragOrigin: ElementPosition | undefined;
-    dragTarget: DomElement | undefined;
-    originalIndex: number | undefined;
-    MIN_DRAG_DISTANCE = 5;
-    isDragInProgress = false;
+    state: MoveManagerState | null = null;
+    MIN_DRAG_DISTANCE = 10;
+    MIN_DRAG_PREPARATION_TIME = 150;
 
-    constructor(private editorEngine: EditorEngine) { }
-
-    get isDragging() {
-        return !!this.dragOrigin;
+    constructor(private editorEngine: EditorEngine) {
+        makeAutoObservable(this);
     }
 
-    async start(el: DomElement, position: ElementPosition, frameView: FrameData) {
+    get shouldDrag() {
+        return this.state !== null && this.state.originalIndex !== null;
+    }
+
+    get isPreparing() {
+        return this.state?.dragState === DragState.PREPARING;
+    }
+
+    get isDragInProgress() {
+        return this.state?.dragState === DragState.IN_PROGRESS;
+    }
+
+    setDragState(dragState: DragState) {
+        if (this.state) {
+            this.state.dragState = dragState;
+        }
+    }
+
+    private dragPreparationTimer: ReturnType<typeof setTimeout> | null = null;
+
+    startDragPreparation(el: DomElement, pos: ElementPosition, frameData: FrameData) {
+        if (this.dragPreparationTimer) {
+            clearTimeout(this.dragPreparationTimer);
+        }
+
+        this.state = {
+            dragOrigin: pos,
+            dragTarget: el,
+            originalIndex: null,
+            dragState: DragState.PREPARING,
+        };
+
+        this.dragPreparationTimer = setTimeout(() => {
+            void (async () => {
+                if (this.isPreparing) {
+                    await this.prepareDrag(el, frameData);
+                }
+                this.dragPreparationTimer = null;
+            })();
+        }, this.MIN_DRAG_PREPARATION_TIME);
+    }
+
+    cancelDragPreparation() {
+        if (this.dragPreparationTimer) {
+            clearTimeout(this.dragPreparationTimer);
+            this.dragPreparationTimer = null;
+        }
+        if (this.state?.dragState === DragState.PREPARING) {
+            this.clear();
+        }
+    }
+
+    async prepareDrag(el: DomElement, frameData: FrameData) {
+        if (!this.state || this.state.dragState !== DragState.PREPARING) {
+            console.warn('Cannot prepare drag without preparation state');
+            return;
+        }
+
         if (!this.editorEngine.elements.selected.some((selected) => selected.domId === el.domId)) {
             console.warn('Element not selected, cannot start drag');
+            this.clear();
             return;
         }
 
         const positionType = el.styles?.computed?.position;
         if (positionType === 'absolute') {
             console.warn('Absolute mode dragging is disabled');
+            this.clear();
             return;
         }
 
-        this.dragOrigin = position;
-        this.dragTarget = el;
-        this.isDragInProgress = true;
-
-        try {
-            if (!frameView.view) {
-                console.error('No frame view found');
-                return;
-            }
-
-            const index = await frameView.view.startDrag(el.domId);
-            if (index === null || index === -1) {
-                this.clear();
-                this.isDragInProgress = false;
-                console.warn('Start drag failed, original index is null or -1');
-                return;
-            }
-            this.originalIndex = index;
-        } catch (error) {
-            console.error('Error starting drag:', error);
+        if (!frameData.view) {
+            console.error('No frame view found');
             this.clear();
-            this.isDragInProgress = false;
+            return;
         }
+
+        const originalIndex = await frameData.view.startDrag(el.domId);
+
+        if (originalIndex === null || originalIndex === -1) {
+            console.error('Element not found in frame');
+            this.clear();
+            return;
+        }
+
+        this.state.originalIndex = originalIndex;
     }
 
     async drag(
         e: React.MouseEvent<HTMLDivElement>,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
     ) {
-        if (!this.dragOrigin || !this.dragTarget || !this.isDragInProgress) {
-            console.error('Cannot drag without drag origin or target');
+        if (!this.state) {
             return;
         }
 
-        const frameData = this.editorEngine.frames.get(this.dragTarget.frameId);
+        const frameData = this.editorEngine.frames.get(this.state.dragTarget.frameId);
         if (!frameData?.view) {
             console.error('No frameView found for drag');
             return;
         }
 
         const { x, y } = getRelativeMousePositionToWebview(e);
-        const dx = x - this.dragOrigin.x;
-        const dy = y - this.dragOrigin.y;
+        const dx = x - this.state.dragOrigin.x;
+        const dy = y - this.state.dragOrigin.y;
 
-        if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
-            this.editorEngine.overlay.clear();
-            try {
-                const positionType = this.dragTarget.styles?.computed?.position;
-                if (positionType === 'absolute') {
-                    await frameData.view.dragAbsolute(this.dragTarget.domId, x, y, this.dragOrigin);
-                } else {
-                    await frameData.view.drag(this.dragTarget.domId, dx, dy, x, y);
-                }
-            } catch (error) {
-                console.error('Error during drag:', error);
+        if (!this.isDragInProgress) {
+            const distance = Math.max(Math.abs(dx), Math.abs(dy));
+            if (distance < this.MIN_DRAG_DISTANCE) {
+                return;
             }
+            this.setDragState(DragState.IN_PROGRESS);
+        }
+
+        try {
+            this.editorEngine.overlay.clear();
+            const positionType = this.state.dragTarget.styles?.computed?.position;
+
+            if (positionType === 'absolute') {
+                await frameData.view.dragAbsolute(
+                    this.state.dragTarget.domId,
+                    x,
+                    y,
+                    this.state.dragOrigin,
+                );
+            } else {
+                await frameData.view.drag(this.state.dragTarget.domId, dx, dy, x, y);
+            }
+        } catch (error) {
+            console.error('Error during drag:', error);
         }
     }
 
-    async end(e: React.MouseEvent<HTMLDivElement>) {
-        if (!this.dragTarget) {
-            this.clear();
+    async end(_e: React.MouseEvent<HTMLDivElement>) {
+        if (!this.state) {
+            console.log('No drag state to end');
+            return;
+        }
+
+        const savedState = this.state;
+        this.clear();
+
+        if (savedState?.dragState !== DragState.IN_PROGRESS) {
+            console.log('Drag was not in progress, ending early');
             await this.endAllDrag();
             return;
         }
 
-        const frameData = this.editorEngine.frames.get(this.dragTarget.frameId);
+        const frameData = this.editorEngine.frames.get(savedState.dragTarget.frameId);
         if (!frameData?.view) {
             console.error('No frameView found for drag end');
             await this.endAllDrag();
             return;
         }
 
-        if (!this.isDragInProgress) {
-            this.clear();
-            await this.endAllDrag();
-            return;
-        }
-
         try {
-            const targetDomId = this.dragTarget.domId;
-            this.isDragInProgress = false;
+            const targetDomId = savedState.dragTarget.domId;
 
             // Handle absolute positioning
-            const position = this.dragTarget.styles?.computed?.position;
+            const position = savedState.dragTarget.styles?.computed?.position;
             if (position === ('absolute' as const)) {
                 const res = await frameData.view.endDragAbsolute(targetDomId);
 
                 if (res) {
                     const { left, top } = res;
-                    await this.editorEngine.style.updateMultiple({
+                    this.editorEngine.style.updateMultiple({
                         left: left,
                         top: top,
                         transform: 'none',
@@ -133,15 +205,15 @@ export class MoveManager {
                     parent: DomElement;
                 } | null;
 
-                if (res && this.originalIndex !== undefined) {
+                if (res && savedState.originalIndex !== null) {
                     const { child, parent, newIndex } = res;
-                    if (newIndex !== this.originalIndex) {
+                    if (newIndex !== savedState.originalIndex) {
                         const moveAction = this.createMoveAction(
                             frameData.frame.id,
                             child,
                             parent,
                             newIndex,
-                            this.originalIndex,
+                            savedState.originalIndex,
                         );
                         await this.editorEngine.action.run(moveAction);
                     }
@@ -149,7 +221,6 @@ export class MoveManager {
             }
         } catch (error) {
             console.error('Error ending drag:', error);
-            await this.endAllDrag();
         } finally {
             this.clear();
         }
@@ -261,9 +332,10 @@ export class MoveManager {
     }
 
     clear() {
-        this.originalIndex = undefined;
-        this.dragOrigin = undefined;
-        this.dragTarget = undefined;
-        this.isDragInProgress = false;
+        if (this.dragPreparationTimer) {
+            clearTimeout(this.dragPreparationTimer);
+            this.dragPreparationTimer = null;
+        }
+        this.state = null;
     }
 }
