@@ -1,6 +1,8 @@
 import React from 'react';
 import { Icons } from '@onlook/ui/icons';
 import { ButtonLink } from '../button-link';
+import { AiChatMockup } from './mockups/ai-chat-mockup';
+import { DirectEditingMockup } from './mockups/direct-editing-mockup';
 
 export function BenefitsSection() {
     return (
@@ -19,9 +21,7 @@ export function BenefitsSection() {
                             </ButtonLink>
                         </div>
                     </div>
-                    <div className="flex items-center justify-center bg-background-secondary rounded-lg aspect-video">
-                        <div className="text-foreground-tertiary text-lg">Image Placeholder</div>
-                    </div>
+                    <AiChatMockup />
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -38,9 +38,7 @@ export function BenefitsSection() {
                             </ButtonLink>
                         </div>
                     </div>
-                    <div className="flex items-center justify-center bg-background-secondary rounded-lg aspect-video">
-                        <div className="text-foreground-tertiary text-lg">Image Placeholder</div>
-                    </div>
+                    <DirectEditingMockup />
                 </div>
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -65,8 +63,8 @@ export function BenefitsSection() {
                             </ButtonLink>
                         </div>
                     </div>
-                    <div className="flex items-center justify-center bg-background-secondary rounded-lg aspect-video">
-                        <div className="text-foreground-tertiary text-lg">Image Placeholder</div>
+                    <div className="w-full h-100 bg-background-onlook/80 rounded-lg flex items-center justify-center">
+                        <div className="text-foreground-tertiary text-lg">Placeholder for Tailwind CSS Editor</div>
                     </div>
                 </div>
             </div>
