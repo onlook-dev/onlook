@@ -12,7 +12,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
-    DropdownMenuSub,
     DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
@@ -185,9 +184,7 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <RecentProjectsMenu 
-                        currentProjectId={project?.id || ''} 
-                    />
+                    <RecentProjectsMenu />
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push(Routes.HOME)} className="cursor-pointer">
                         <div className="flex row center items-center group">
@@ -212,7 +209,7 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                         className='cursor-pointer'
                         onClick={() => stateManager.isSettingsModalOpen = true}>
                         <div className="flex row center items-center group">

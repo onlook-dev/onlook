@@ -1,8 +1,9 @@
 'use client';
 
+import { useEditorEngine } from '@/components/store/editor';
+import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
-import { transKeys } from '@/i18n/keys';
 import {
     DropdownMenuItem,
     DropdownMenuSeparator,
@@ -12,25 +13,25 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export const RecentProjectsMenu = observer(({ currentProjectId }: {
-    currentProjectId: string;
-} ) => {
+export const RecentProjectsMenu = observer(() => {
+    const editorEngine = useEditorEngine();
+    const currentProjectId = editorEngine.projectId;
     const router = useRouter();
     const t = useTranslations();
-    const [isLoading, setIsLoading] = useState<string | null>(null);
-    
+    const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
+
     const { data: projects, isLoading: isLoadingProjects } = api.project.list.useQuery();
-    
+
     const recentProjects = projects
         ?.filter(project => project.id !== currentProjectId)
         .slice(0, 3) || [];
 
-    const handleProjectClick = async (projectId: string, projectName: string) => {
-        setIsLoading(projectId);
+    const handleProjectClick = async (projectId: string) => {
+        setLoadingProjectId(projectId);
         router.push(`${Routes.PROJECT}/${projectId}`);
     };
 
@@ -95,12 +96,12 @@ export const RecentProjectsMenu = observer(({ currentProjectId }: {
                 {recentProjects.map((project) => (
                     <DropdownMenuItem
                         key={project.id}
-                        onClick={() => handleProjectClick(project.id, project.name)}
-                        disabled={isLoading === project.id}
+                        onClick={() => handleProjectClick(project.id)}
+                        disabled={loadingProjectId === project.id}
                         className="cursor-pointer"
                     >
                         <div className="flex row center items-center group">
-                            {isLoading === project.id ? (
+                            {loadingProjectId === project.id ? (
                                 <Icons.LoadingSpinner className="mr-2 w-4 h-4 animate-spin" />
                             ) : (
                                 <Icons.Cube className="mr-2" />
