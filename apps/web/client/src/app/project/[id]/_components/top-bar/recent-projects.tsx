@@ -24,11 +24,14 @@ export const RecentProjectsMenu = observer(() => {
     const t = useTranslations();
     const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
 
-    const { data: projects, isLoading: isLoadingProjects } = api.project.list.useQuery();
+    const { data: projects, isLoading: isLoadingProjects } = api.project.list.useQuery({
+        limit: 3,
+        excludeProjectId: currentProjectId,
+    });
 
     const recentProjects = projects
         ?.filter(project => project.id !== currentProjectId)
-        .slice(0, 3) || [];
+        || [];
 
     const handleProjectClick = async (projectId: string) => {
         setLoadingProjectId(projectId);
