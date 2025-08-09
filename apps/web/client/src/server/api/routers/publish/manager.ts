@@ -20,14 +20,20 @@ import {
     type FileOperations,
 } from '@onlook/utility';
 import { type FreestyleFile } from 'freestyle-sandboxes';
+import { addDeploymentLog } from './helpers/logs';
+import { uploadBufferAndGetSignedUrl } from '@/server/utils/supabase/admin-storage';
+import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { z } from 'zod';
 
-type ChunkProcessor = (chunk: Record<string, FreestyleFile>, chunkInfo: {
-    index: number;
-    total: number;
-    filesProcessed: number;
-    totalFiles: number;
-}) => Promise<void>;
+type ChunkProcessor = (
+    chunk: Record<string, FreestyleFile>,
+    chunkInfo: {
+        index: number;
+        total: number;
+        filesProcessed: number;
+        totalFiles: number;
+    },
+) => Promise<void>;
 
 export class PublishManager {
     constructor(private readonly provider: Provider) { }
@@ -135,8 +141,9 @@ export class PublishManager {
             message: 'Postprocessing project...',
             progress: 50,
         });
-        
-        const { success: postprocessSuccess, error: postprocessError } = await this.postprocessBuild();
+
+        const { success: postprocessSuccess, error: postprocessError } =
+            await this.postprocessBuild();
 
         if (!postprocessSuccess) {
             throw new Error(`Failed to postprocess project for deployment: ${postprocessError}`);
@@ -157,7 +164,7 @@ export class PublishManager {
                     message: `Processing files... ${processed}/${total}`,
                     progress,
                 });
-            }
+            },
         });
     }
 
@@ -208,7 +215,7 @@ export class PublishManager {
         const entrypointExists = await this.fileOperations.fileExists(
             `${CUSTOM_OUTPUT_DIR}/standalone/server.js`,
         );
-        
+
         if (!entrypointExists) {
             return {
                 success: false,
@@ -216,7 +223,12 @@ export class PublishManager {
             };
         }
 
-        await this.fileOperations.copy(`public`, `${CUSTOM_OUTPUT_DIR}/standalone/public`, true, true);
+        await this.fileOperations.copy(
+            `public`,
+            `${CUSTOM_OUTPUT_DIR}/standalone/public`,
+            true,
+            true,
+        );
         await this.fileOperations.copy(
             `${CUSTOM_OUTPUT_DIR}/static`,
             `${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
@@ -239,25 +251,21 @@ export class PublishManager {
 
         return {
             success: false,
-            error: 'Failed to find lock file. Supported lock files: ' + SUPPORTED_LOCK_FILES.join(', '),
+            error:
+                'Failed to find lock file. Supported lock files: ' +
+                SUPPORTED_LOCK_FILES.join(', '),
         };
     }
 
     private async serializeFiles(
-        currentDir: string, 
+        currentDir: string,
         options: {
             chunkSize?: number;
             batchSize?: number;
             onProgress?: (processed: number, total: number) => Promise<void>;
-            onChunkComplete?: ChunkProcessor;
-        } = {}
+        } = {},
     ): Promise<Record<string, FreestyleFile>> {
-        const {
-            chunkSize = 100,
-            batchSize = 10,
-            onProgress,
-            onChunkComplete = this.handleChunkComplete.bind(this)
-        } = options;
+        const { chunkSize = 100, batchSize = 10, onProgress } = options;
 
         const timer = new LogTimer('File Serialization');
         const allFiles: Record<string, FreestyleFile> = {};
@@ -266,18 +274,19 @@ export class PublishManager {
             const allFilePaths = await this.collectAllFilePaths(currentDir);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
-            const filteredPaths = allFilePaths.filter(filePath => !this.shouldSkipFile(filePath));
+            const filteredPaths = allFilePaths.filter((filePath) => !this.shouldSkipFile(filePath));
             timer.log(`Filtered to ${filteredPaths.length} files after exclusions`);
 
             const { binaryFiles, textFiles } = this.categorizeFiles(filteredPaths);
-            timer.log(`Categorized: ${textFiles.length} text files, ${binaryFiles.length} binary files`);
+            timer.log(
+                `Categorized: ${textFiles.length} text files, ${binaryFiles.length} binary files`,
+            );
 
             let totalProcessed = 0;
             const totalFiles = filteredPaths.length;
 
-            const handleAndMergeChunk: ChunkProcessor = async (chunk, chunkInfo) => {
+            const handleAndMergeChunk: ChunkProcessor = async (chunk) => {
                 Object.assign(allFiles, chunk);
-                await onChunkComplete(chunk, chunkInfo);
             };
 
             if (textFiles.length > 0) {
@@ -294,7 +303,7 @@ export class PublishManager {
                         if (onProgress) {
                             await onProgress(totalProcessed, totalFiles);
                         }
-                    }
+                    },
                 );
                 timer.log('Text files processing completed');
             }
@@ -313,15 +322,16 @@ export class PublishManager {
                         if (onProgress) {
                             await onProgress(totalProcessed, totalFiles);
                         }
-                    }
+                    },
                 );
                 timer.log('Binary files processing completed');
             }
 
-            timer.log(`Serialization completed - ${filteredPaths.length} files processed in ${timer.getElapsed()}ms`);
+            timer.log(
+                `Serialization completed - ${filteredPaths.length} files processed in ${timer.getElapsed()}ms`,
+            );
 
             return allFiles;
-
         } catch (error) {
             console.error('Error during serialization:', error);
             throw error;
@@ -334,7 +344,7 @@ export class PublishManager {
         chunkSize: number,
         batchSize: number,
         fileType: 'text' | 'binary',
-        onChunkComplete: ChunkProcessor
+        onChunkComplete: ChunkProcessor,
     ): Promise<void> {
         const chunks = this.createChunks(filePaths, chunkSize);
         const timer = new LogTimer('Chunking');
@@ -347,23 +357,23 @@ export class PublishManager {
                 continue;
             }
 
-            console.log(`Processing chunk ${chunkIndex + 1}/${chunks.length} (${chunk.length} files)`);
-
-            let chunkData: Record<string, FreestyleFile> | null = await this.processChunkWithBatching(
-                chunk,
-                currentDir,
-                batchSize,
-                fileType
+            console.log(
+                `Processing chunk ${chunkIndex + 1}/${chunks.length} (${chunk.length} files)`,
             );
+
+            let chunkData: Record<string, FreestyleFile> | null =
+                await this.processChunkWithBatching(chunk, currentDir, batchSize, fileType);
 
             await onChunkComplete(chunkData, {
                 index: chunkIndex,
                 total: chunks.length,
-                filesProcessed: (chunkIndex * chunkSize) + chunk.length,
-                totalFiles: filePaths.length
+                filesProcessed: chunkIndex * chunkSize + chunk.length,
+                totalFiles: filePaths.length,
             });
 
-            console.log(`Completed chunk ${chunkIndex + 1}/${chunks.length}. Total processed: ${(chunkIndex + 1) * chunkSize}/${filePaths.length} (${timer.getElapsed()}ms elapsed)`);
+            console.log(
+                `Completed chunk ${chunkIndex + 1}/${chunks.length}. Total processed: ${(chunkIndex + 1) * chunkSize}/${filePaths.length} (${timer.getElapsed()}ms elapsed)`,
+            );
 
             chunkData = null;
             await this.yieldForGarbageCollection();
@@ -376,7 +386,7 @@ export class PublishManager {
         filePaths: string[],
         currentDir: string,
         batchSize: number,
-        fileType: 'text' | 'binary'
+        fileType: 'text' | 'binary',
     ): Promise<Record<string, FreestyleFile>> {
         console.log(`Processing ${filePaths.length} files in batches of ${batchSize}`);
 
@@ -397,7 +407,9 @@ export class PublishManager {
             }
 
             const endTime = Date.now();
-            console.log(`Batch ${batchIndex}/${totalBatches} completed (${batch.length} files) in ${endTime - startTime}ms`);
+            console.log(
+                `Batch ${batchIndex}/${totalBatches} completed (${batch.length} files) in ${endTime - startTime}ms`,
+            );
 
             Object.assign(chunkData, batchResults);
         }
@@ -405,36 +417,11 @@ export class PublishManager {
         return chunkData;
     }
 
-    private async handleChunkComplete(
-        chunk: Record<string, FreestyleFile>,
-        chunkInfo: { index: number; total: number; filesProcessed: number; totalFiles: number }
-    ): Promise<void> {
-        console.log(`Processing chunk ${chunkInfo.index + 1}/${chunkInfo.total} with ${Object.keys(chunk).length} files`);
-        const chunkSizeBytes = this.computeChunkSizeBytes(chunk);
-        console.log(`Chunk ${chunkInfo.index + 1} size: ${(chunkSizeBytes / 1024 / 1024).toFixed(2)}MB`);
-    }
-
-
     private async yieldForGarbageCollection(): Promise<void> {
-        await new Promise(resolve => setImmediate(resolve));
-        await new Promise(resolve => setTimeout(resolve, 0));
+        await new Promise((resolve) => setImmediate(resolve));
+        await new Promise((resolve) => setTimeout(resolve, 0));
     }
 
-    private computeChunkSizeBytes(chunk: Record<string, FreestyleFile>): number {
-        let total = 0;
-        const textEncoder = new TextEncoder();
-        for (const file of Object.values(chunk)) {
-            const content = file.content;
-            if (file.encoding === 'base64') {
-                const len = content.length;
-                const padding = content.endsWith('==') ? 2 : content.endsWith('=') ? 1 : 0;
-                total += Math.max(0, Math.floor((len * 3) / 4) - padding);
-            } else {
-                total += textEncoder.encode(content).length;
-            }
-        }
-        return total;
-    }
     private createChunks<T>(array: T[], chunkSize: number): T[][] {
         const chunks: T[][] = [];
         for (let i = 0; i < array.length; i += chunkSize) {
@@ -503,7 +490,10 @@ export class PublishManager {
         return { binaryFiles, textFiles };
     }
 
-    private async processTextFilesBatch(filePaths: string[], baseDir: string): Promise<Record<string, FreestyleFile>> {
+    private async processTextFilesBatch(
+        filePaths: string[],
+        baseDir: string,
+    ): Promise<Record<string, FreestyleFile>> {
         const promises = filePaths.map(async (fullPath) => {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
@@ -538,7 +528,10 @@ export class PublishManager {
         return files;
     }
 
-    private async processBinaryFilesBatch(filePaths: string[], baseDir: string): Promise<Record<string, FreestyleFile>> {
+    private async processBinaryFilesBatch(
+        filePaths: string[],
+        baseDir: string,
+    ): Promise<Record<string, FreestyleFile>> {
         const promises = filePaths.map(async (fullPath) => {
             const relativePath = fullPath.replace(baseDir + '/', '');
 
@@ -580,5 +573,114 @@ export class PublishManager {
         }
 
         return files;
+    }
+
+    // New flow: build → postprocess → archive → upload → return signed URL
+    async buildAndUploadArtifact({
+        buildScript,
+        buildFlags,
+        skipBadge,
+        deploymentId,
+        updateDeployment,
+    }: {
+        buildScript: string;
+        buildFlags: string;
+        skipBadge: boolean;
+        deploymentId: string;
+        updateDeployment: (
+            deployment: z.infer<typeof deploymentUpdateSchema>,
+        ) => Promise<Deployment | null>;
+    }): Promise<string> {
+        await this.prepareProject();
+        addDeploymentLog(deploymentId, 'Project prepared for deployment', 'debug');
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Preparing deployment...',
+            progress: 30,
+        });
+
+        if (!skipBadge) {
+            await updateDeployment({
+                status: DeploymentStatus.IN_PROGRESS,
+                message: 'Adding "Built with Onlook" badge...',
+                progress: 35,
+            });
+            await this.addBadge('./');
+            addDeploymentLog(deploymentId, 'Badge injected', 'debug');
+        }
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Building project...',
+            progress: 40,
+        });
+        addDeploymentLog(deploymentId, `Running build: ${buildScript} ${buildFlags ?? ''}`.trim(), 'info');
+        await this.runBuildStep(buildScript, buildFlags);
+        addDeploymentLog(deploymentId, 'Build step completed', 'success');
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Postprocessing project...',
+            progress: 50,
+        });
+
+        const { success: postprocessSuccess, error: postprocessError } =
+            await this.postprocessBuild();
+        if (!postprocessSuccess) {
+            addDeploymentLog(deploymentId, `Postprocess failed: ${postprocessError ?? ''}`, 'error');
+            throw new Error(`Failed to postprocess project for deployment: ${postprocessError}`);
+        }
+        addDeploymentLog(deploymentId, 'Postprocess completed', 'success');
+
+        const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Creating build artifact...',
+            progress: 60,
+        });
+
+        // Create tar.gz inside sandbox
+        const artifactLocalPath = `${CUSTOM_OUTPUT_DIR}/standalone.tar.gz`;
+        const tarCommand = `tar -czf ${artifactLocalPath} -C ${NEXT_BUILD_OUTPUT_PATH} .`;
+        addDeploymentLog(deploymentId, 'Creating tar.gz artifact', 'debug');
+        await this.session.commands.run(tarCommand);
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Uploading build artifact...',
+            progress: 70,
+        });
+
+        // Read artifact bytes and upload to storage
+        const artifactBytes = await this.session.fs.readFile(artifactLocalPath);
+        if (!artifactBytes) {
+            addDeploymentLog(deploymentId, 'Failed to read build artifact', 'error');
+            throw new Error('Failed to read build artifact');
+        }
+        const bytes: Uint8Array = artifactBytes as unknown as Uint8Array;
+
+        const objectPath = `deployments/${deploymentId}/build.tar.gz`;
+        addDeploymentLog(deploymentId, 'Uploading artifact to storage', 'info');
+        const { signedUrl }: { signedUrl: string } = await uploadBufferAndGetSignedUrl(
+            STORAGE_BUCKETS.FILE_TRANSFER,
+            objectPath,
+            bytes,
+            {
+                contentType: 'application/gzip',
+                cacheControl: 'public, max-age=31536000, immutable',
+                upsert: true,
+                expiresInSeconds: 60 * 60, // 1 hour is enough for Freestyle to fetch
+            },
+        );
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Artifact ready. Deploying...',
+            progress: 80,
+        });
+        addDeploymentLog(deploymentId, 'Artifact uploaded; proceeding to deployment', 'success');
+
+        return String(signedUrl);
     }
 }

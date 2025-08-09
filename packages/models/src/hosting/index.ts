@@ -59,10 +59,13 @@ export interface DeploymentConfig {
     domains: string[];
     entrypoint?: string;
     envVars?: Record<string, string>;
+    projectId?: string;
+    branch?: string;
 }
 
 export interface DeploymentRequest {
-    files: Record<string, DeploymentFile>;
+    files?: Record<string, DeploymentFile>;
+    sourceUrl?: string;
     config: DeploymentConfig;
 }
 
