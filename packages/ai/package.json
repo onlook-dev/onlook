@@ -1,7 +1,7 @@
 {
     "name": "@onlook/ai",
     "description": "A AI library for Onlook",
-    "main": "./src/index.ts",
+    "main": "./dist/index.js",
     "type": "module",
     "module": "src/index.ts",
     "types": "src/index.ts",
@@ -12,6 +12,7 @@
         "url": "https://github.com/onlook-dev/onlook.git"
     },
     "scripts": {
+        "build": "bun build src/index.ts --outfile=dist/index.js",
         "clean": "rm -rf node_modules",
         "lint": "eslint --fix .",
         "format": "prettier --write .",
