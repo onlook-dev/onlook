@@ -86,13 +86,8 @@ export function FileModal({
         try {
             setIsLoading(true);
 
-            const session = editorEngine?.sandbox?.session?.session;
-            if (!session) {
-                throw new Error('No sandbox session available');
-            }
-
             const content = getFileTemplate(name);
-            await createFileInSandbox(session, fullPath, content, editorEngine.sandbox);
+            await createFileInSandbox(editorEngine?.sandbox?.session?.provider, fullPath, content, editorEngine.sandbox);
             toast(`File "${name}" created successfully!`);
 
             setName('');

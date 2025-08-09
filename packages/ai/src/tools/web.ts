@@ -33,3 +33,14 @@ export const scrapeUrlTool = tool({
         'Scrape a URL and extract its content in various formats (markdown, HTML, JSON). Can extract clean, LLM-ready content from any website, handling dynamic content and anti-bot mechanisms.',
     parameters: SCRAPE_URL_TOOL_PARAMETERS,
 });
+
+export const WEB_SEARCH_TOOL_NAME = 'web_search';
+export const WEB_SEARCH_TOOL_PARAMETERS = z.object({
+    query: z.string().min(2).describe('Search query'),
+    allowed_domains: z.array(z.string()).optional().describe('Include only these domains'),
+    blocked_domains: z.array(z.string()).optional().describe('Exclude these domains'),
+});
+export const webSearchTool = tool({
+    description: 'Search the web for up-to-date information',
+    parameters: WEB_SEARCH_TOOL_PARAMETERS,
+});

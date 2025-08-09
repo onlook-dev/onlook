@@ -98,7 +98,7 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
                 exit={{ opacity: 0, y: 20 }}
                 className={cn(
                     'flex flex-col border-[0.5px] border-border p-1 px-1.5 bg-background rounded-xl backdrop-blur drop-shadow-xl z-50 overflow-hidden',
-                    editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
+                    editorEngine.state.editorMode === EditorMode.PREVIEW && !windowSelected && 'hidden',
                 )}
                 transition={{
                     type: 'spring',

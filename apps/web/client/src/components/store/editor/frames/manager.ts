@@ -68,7 +68,8 @@ export class FramesManager {
     }
 
     registerView(frame: Frame, view: WebFrameView) {
-        this._frameIdToData.set(frame.id, { frame, view, selected: false });
+        const isSelected = this.isSelected(frame.id);
+        this._frameIdToData.set(frame.id, { frame, view, selected: isSelected });
         const framePathname = new URL(view.src).pathname;
         this._navigation.registerFrame(frame.id, framePathname);
     }
@@ -85,10 +86,12 @@ export class FramesManager {
         return this._frameIdToData.get(id)?.selected ?? false;
     }
 
-    select(frames: Frame[]) {
-        this.deselectAll();
+    select(frames: Frame[], multiselect = false) {
+        if (!multiselect) {
+            this.deselectAll();
+        }
         for (const frame of frames) {
-            this.updateFrameSelection(frame.id, true);
+            this.updateFrameSelection(frame.id, !this.isSelected(frame.id));
         }
         this.notify();
     }
@@ -248,7 +251,11 @@ export class FramesManager {
         const existingFrame = this.get(frameId);
         if (existingFrame) {
             const newFrame = { ...existingFrame.frame, ...frame };
-            this._frameIdToData.set(frameId, { ...existingFrame, frame: newFrame });
+            this._frameIdToData.set(frameId, {
+                ...existingFrame,
+                frame: newFrame,
+                selected: existingFrame.selected,
+            });
         }
         await this.saveToStorage(frameId, frame);
     }

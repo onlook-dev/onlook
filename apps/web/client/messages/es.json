@@ -54,7 +54,8 @@
             "downloadCode": "Descargar Código",
             "downloadingCode": "Preparando descarga...",
             "downloadSuccess": "Descarga iniciada correctamente",
-            "downloadError": "Error al preparar la descarga"
+            "downloadError": "Error al preparar la descarga",
+            "recentProjects": "Proyectos Recientes"
         },
         "dialogs": {
             "delete": {
@@ -236,6 +237,8 @@
                         },
                         "settings": {
                             "showSuggestions": "Mostrar sugerencias",
+                            "showMiniChat": "Mostrar mini chat",
+                            "autoApplyCode": "Aplicar resultados automáticamente",
                             "expandCodeBlocks": "Mostrar código durante la renderización"
                         },
                         "miniChat": {

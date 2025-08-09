@@ -135,6 +135,8 @@
                         },
                         "settings": {
                             "showSuggestions": "提案を表示",
+                            "showMiniChat": "ミニチャットを表示",
+                            "autoApplyCode": "結果を自動適用",
                             "expandCodeBlocks": "レンダリング時にコードを表示"
                         },
                         "miniChat": {
@@ -275,7 +277,8 @@
             "downloadCode": "コードをダウンロード",
             "downloadingCode": "ダウンロードを準備中...",
             "downloadSuccess": "ダウンロードが正常に開始されました",
-            "downloadError": "ダウンロードの準備に失敗しました"
+            "downloadError": "ダウンロードの準備に失敗しました",
+            "recentProjects": "最近のプロジェクト"
         },
         "dialogs": {
             "delete": {

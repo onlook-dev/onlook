@@ -18,16 +18,16 @@ export function startDrag(domId: string): number | null {
         return null;
     }
     const htmlChildren = Array.from(parent.children).filter(isValidHtmlElement);
-    const originalIndex = htmlChildren.indexOf(el);    
+    const originalIndex = htmlChildren.indexOf(el);
     const styles = window.getComputedStyle(el);
 
     prepareElementForDragging(el);
-    
+
     if (styles.position !== 'absolute') {
         createStub(el);
     }
     const pos = getAbsolutePosition(el);
-    const rect = el.getBoundingClientRect();    
+    const rect = el.getBoundingClientRect();
 
     const offset = styles.position === 'absolute' ? {
         x: pos.left,
@@ -56,7 +56,7 @@ export function dragAbsolute(domId: string, x: number, y: number, origin: Elemen
         const pos = JSON.parse(
             el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
         );
-        
+
         const parentRect = parent.getBoundingClientRect();
         const newLeft = x - parentRect.left - (origin.x - pos.offset.x);
         const newTop = y - parentRect.top - (origin.y - pos.offset.y);

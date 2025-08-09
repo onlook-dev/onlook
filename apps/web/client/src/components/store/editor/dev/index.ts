@@ -28,6 +28,7 @@ export class IDEManager {
     activeFile: EditorFile | null = null;
     files: string[] = [];
     highlightRange: CodeRange | null = null;
+    searchTerm: string = '';
     isLoading = false;
     isFilesLoading = false;
 
@@ -41,7 +42,7 @@ export class IDEManager {
 
     private isSandboxReady() {
         return !!(
-            this.editorEngine.sandbox.session.session &&
+            this.editorEngine.sandbox.session.provider &&
             !this.editorEngine.sandbox.session.isConnecting
         );
     }
@@ -61,7 +62,7 @@ export class IDEManager {
         }
     }
 
-    async openFile(filePath: string): Promise<EditorFile | null> {
+    async openFile(filePath: string, searchTerm?: string): Promise<EditorFile | null> {
         if (!this.isSandboxReady()) {
             console.error('Sandbox not connected');
             return null;
@@ -94,6 +95,9 @@ export class IDEManager {
             const existing = this.openedFiles.find((f) => f.path === filePath);
             if (existing) {
                 this.activeFile = existing;
+                if (searchTerm) {
+                    this.searchTerm = searchTerm;
+                }
                 return existing;
             }
             const file: EditorFile = {
@@ -108,6 +112,9 @@ export class IDEManager {
             };
             this.openedFiles.push(file);
             this.activeFile = file;
+            if (searchTerm) {
+                this.searchTerm = searchTerm;
+            }
             return file;
         } catch (error) {
             console.error('Error loading file:', error);
@@ -306,11 +313,26 @@ export class IDEManager {
         }
     }
 
+    setSearchTerm(term: string) {
+        this.searchTerm = term;
+        if (this.activeFile) {
+            this.activeFile = { ...this.activeFile };
+        }
+    }
+
+    clearSearch() {
+        this.searchTerm = '';
+        if (this.activeFile) {
+            this.activeFile = { ...this.activeFile };
+        }
+    }
+
     clear() {
         this.openedFiles = [];
         this.activeFile = null;
         this.files = [];
         this.highlightRange = null;
+        this.searchTerm = '';
         this.isLoading = false;
         this.isFilesLoading = false;
     }

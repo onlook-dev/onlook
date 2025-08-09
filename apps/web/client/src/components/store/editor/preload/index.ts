@@ -15,9 +15,9 @@ export class PreloadScriptManager {
      */
     async ensurePreloadScriptFile(): Promise<boolean> {
         try {
-            if (!this.editorEngine.sandbox.session.session) {
+            if (!this.editorEngine.sandbox.session.provider) {
                 console.warn(
-                    '[PreloadScriptManager] No sandbox session available for preload script file check',
+                    '[PreloadScriptManager] No sandbox provider available for preload script file check',
                 );
                 return false;
             }
@@ -47,8 +47,8 @@ export class PreloadScriptManager {
      */
     private async copyPreloadScriptToPublic(existingFile: SandboxFile | null): Promise<boolean> {
         try {
-            if (!this.editorEngine.sandbox.session.session) {
-                console.error('[PreloadScriptManager] No sandbox session available for preload script file check');
+            if (!this.editorEngine.sandbox.session.provider) {
+                console.error('[PreloadScriptManager] No sandbox provider available for preload script file check');
                 return false;
             }
 
