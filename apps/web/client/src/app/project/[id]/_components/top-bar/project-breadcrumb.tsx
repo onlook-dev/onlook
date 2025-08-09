@@ -23,6 +23,7 @@ import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
+import { RecentProjectsMenu } from './recent-projects';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -183,6 +184,8 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <RecentProjectsMenu />
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push(Routes.HOME)} className="cursor-pointer">
                         <div className="flex row center items-center group">
                             <Icons.Plus className="mr-2" />
@@ -206,7 +209,7 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                         className='cursor-pointer'
                         onClick={() => stateManager.isSettingsModalOpen = true}>
                         <div className="flex row center items-center group">

@@ -57,7 +57,8 @@ declare const messages: {
             "downloadCode": "Download Code",
             "downloadingCode": "Preparing download...",
             "downloadSuccess": "Download started successfully",
-            "downloadError": "Failed to prepare download"
+            "downloadError": "Failed to prepare download",
+            "recentProjects": "Recent Projects"
         },
         "dialogs": {
             "delete": {

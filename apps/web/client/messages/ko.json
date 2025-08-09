@@ -54,7 +54,8 @@
             "downloadCode": "코드 다운로드",
             "downloadingCode": "다운로드 준비 중...",
             "downloadSuccess": "다운로드가 성공적으로 시작되었습니다.",
-            "downloadError": "다운로드 준비에 실패했습니다."
+            "downloadError": "다운로드 준비에 실패했습니다.",
+            "recentProjects": "최근 프로젝트"
         },
         "dialogs": {
             "delete": {
