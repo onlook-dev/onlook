@@ -40,7 +40,7 @@ export class FreestyleAdapter implements HostingProviderAdapter {
 
         const res = await sdk.deployWeb(
             {
-                files: request.files,
+                files: request.files ?? {},
                 kind: 'files',
             },
             request.config,
