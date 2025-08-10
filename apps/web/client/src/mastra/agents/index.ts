@@ -9,10 +9,10 @@ const isProd = env.NODE_ENV === 'production';
 
 const MainModelConfig: InitialModelPayload = isProd ? {
     provider: LLMProvider.OPENROUTER,
-    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+    model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
 } : {
     provider: LLMProvider.OPENROUTER,
-    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+    model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
 };
 
 export const ONLOOK_AGENT_KEY = "onlookAgent";

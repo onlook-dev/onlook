@@ -43,7 +43,6 @@ export const getSupabaseUser = async (request: NextRequest) => {
 }
 
 export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: ToolCall<string, any>, tools: ToolSet, error: Error }) => {
-    console.log('repairToolCall', { toolCall, tools, error });
     if (NoSuchToolError.isInstance(error)) {
         throw new Error(
             `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
