@@ -102,7 +102,7 @@ export const getSupabaseUser = async (request: NextRequest) => {
 
 export const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType } = await req.json();
-    const { model, providerOptions, headers } = await initModel(MainModelConfig);
+    const { model, providerOptions, headers, maxTokens } = await initModel(MainModelConfig);
 
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
@@ -150,7 +150,6 @@ export const streamResponse = async (req: NextRequest) => {
         maxSteps,
         tools: toolSet,
         toolCallStreaming: true,
-        maxTokens: 64000,
         experimental_repairToolCall: async ({ toolCall, tools, parameterSchema, error }) => {
             if (NoSuchToolError.isInstance(error)) {
                 throw new Error(

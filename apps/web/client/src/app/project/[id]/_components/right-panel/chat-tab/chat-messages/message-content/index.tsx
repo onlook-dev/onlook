@@ -43,12 +43,8 @@ export const MessageContent = observer(
                         applied={applied}
                     />
                 );
-            } else if (part.type === 'reasoning') {
-                return (
-                    <div key={part.reasoning} className="border-2 border-green-500">
-                        reasoning: {JSON.stringify(part, null, 2)}
-                    </div>
-                );
+            } else {
+                return null;
             }
         });
     },
