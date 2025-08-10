@@ -147,7 +147,6 @@ export const streamResponse = async (req: NextRequest) => {
             },
             ...messages,
         ],
-        maxTokens,
         maxSteps,
         tools: toolSet,
         toolCallStreaming: true,
