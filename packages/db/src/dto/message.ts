@@ -48,11 +48,21 @@ export const toMastraMessageFromOnlook = (message: ChatMessage): MastraMessageV2
 }
 
 export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage => {
+    const metadata = {
+        vercelId: message.id,
+        context: [],
+        snapshots: [],
+    }
+    const content = {
+        parts: message.parts ?? [],
+        format: 2 as const,
+        metadata,
+    }
     const baseMessage = {
         ...message,
         id: uuidv4(),
-        vercelId: message.id,
         createdAt: message.createdAt ?? new Date(),
+        content,
     }
 
     switch (message.role) {
@@ -60,29 +70,11 @@ export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage =
             return {
                 ...baseMessage,
                 role: message.role as ChatMessageRole.ASSISTANT,
-                content: {
-                    parts: message.parts ?? [],
-                    format: 2,
-                    metadata: {
-                        vercelId: message.id,
-                        context: [],
-                        snapshots: [],
-                    }
-                },
             } satisfies AssistantChatMessage;
         case ChatMessageRole.USER:
             return {
                 ...baseMessage,
                 role: message.role as ChatMessageRole.USER,
-                content: {
-                    parts: message.parts ?? [],
-                    format: 2,
-                    metadata: {
-                        vercelId: message.id,
-                        context: [],
-                        snapshots: [],
-                    }
-                },
             } satisfies UserChatMessage;
         default:
             throw new Error(`Unsupported message role: ${message.role}`);
