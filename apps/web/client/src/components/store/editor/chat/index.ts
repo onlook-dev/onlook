@@ -95,25 +95,26 @@ export class ChatManager {
     }
 
     async getResubmitMessage(id: string, newMessageContent: string): Promise<UserChatMessage | null> {
-        // TODO: implement
-        return null;
+        // Remove the old message and all messages after it
+        const oldMessageIndex = this.conversation.current?.messages.findIndex((m) => m.id === id);
+        if (oldMessageIndex === undefined || oldMessageIndex === -1 || !this.conversation.current?.messages[oldMessageIndex]) {
+            console.error('No message found with id', id);
+            return null;
+        }
 
-        // const message = this.conversation.current?.messages.find((m) => m.id === id);
-        // if (!message) {
-        //     console.error('No message found with id', id);
-        //     return;
-        // }
-        // if (message.role !== ChatMessageRole.USER) {
-        //     console.error('Can only edit user messages');
-        //     return;
-        // }
+        const oldMessage = this.conversation.current?.messages[oldMessageIndex];
+        const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt >= oldMessage.createdAt);
 
-        // const newContext = await this.context.getRefreshedContext(message.context);
-        // message.updateMessage(newMessageContent, newContext);
-
-        // await this.conversation.current.removeAllMessagesAfter(message);
-        // await this.conversation.current.updateMessage(message);
-        // return this.generateStreamMessages();
+        // Create a new message with the new content
+        const newContext = await this.context.getRefreshedContext(oldMessage.content.metadata.context);
+        oldMessage.content.metadata.context = newContext;
+        const newMessage = await this.conversation.addUserMessage(newMessageContent, newContext);
+        if (!newMessage) {
+            console.error('Failed to add user message');
+            return null;
+        }
+        await this.conversation.removeMessages(messagesToRemove);
+        return newMessage;
     }
 
     async createCommit(userPrompt: string): Promise<GitCommit | null> {

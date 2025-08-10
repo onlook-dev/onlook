@@ -148,6 +148,15 @@ export class ConversationManager {
         }
     }
 
+    async removeMessages(messages: ChatMessage[]) {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        this.current.messages = this.current.messages.filter((m) => !messages.includes(m));
+        console.log('removing messages', messages.map((m) => m.id));
+        await this.deleteMessagesInStorage(messages.map((m) => m.id));
+    }
 
     async getConversationsFromStorage(id: string): Promise<ChatConversation[] | null> {
         return api.chat.conversation.getAll.query({ projectId: id });
@@ -159,6 +168,10 @@ export class ConversationManager {
 
     async deleteConversationInStorage(id: string) {
         await api.chat.conversation.delete.mutate({ conversationId: id });
+    }
+
+    async deleteMessagesInStorage(messageIds: string[]) {
+        await api.chat.message.delete.mutate({ messageIds });
     }
 
     clear() {
