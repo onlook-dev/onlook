@@ -3,24 +3,23 @@ import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
 import { cn } from '@onlook/ui/utils';
 import { NodeIcon } from '../../project/[id]/_components/left-panel/layers-tab/tree/node-icon';
-import { DesignMockup, DesignMockupMobile } from './design-mockup';
+import { DesignMockup, DesignMockupMobile } from './design-mockup/design-mockup';
 
 // Notes Component for Villainstagram
 function NotesComponent() {
   const notes = [
-    "Implement villain verification badges",
-    "Add dark mode aesthetic filters",
-    "Create villain story highlights",
-    "Build villain-to-villain messaging",
-    "Add villain lair location sharing",
-    "Implement villain reputation system",
-    "Create villain collaboration features",
+    "Implement evil pin creation (mwahaha)",
+    "Add 'light mode' (begrudgingly)",
+    "Build villain-to-villain messaging (evil DMs)",
+    "Create villain collaboration boards",
+    "Add villain lair location sharing (evil meetups)",
+    "Create devious recommendation page",
   ];
 
   return (
     <div className="bg-black/80 backdrop-blur-sm border border-foreground-secondary/20 rounded-lg p-3 w-96 min-w-64 h-fit mt-10">
       <div className="flex items-center gap-2 mb-1">
-        <h3 className="text-foreground-secondary text-xs font-mono">Villainstagram - Product Notes</h3>
+        <h3 className="text-foreground-secondary text-xs font-mono">Villainterest - Product Notes</h3>
       </div>
       <div className="space-y-2">
         {notes.map((note, index) => (
@@ -175,7 +174,6 @@ export function OnlookInterfaceMockup() {
 
       return (
       <div className="relative w-full max-w-6xl mx-auto aspect-[16/10] rounded-xl overflow-hidden shadow-2xl border border-neutral-800 bg-background-onlook select-none">
-              {/* Centered Red Block */}
         <div 
           className="absolute inset-0 flex items-start mt-42 justify-center pointer-events-none z-0 right-36 select-none gap-12"
           style={{
@@ -218,7 +216,7 @@ export function OnlookInterfaceMockup() {
         {/* Left: Logo + Project Name + Chevron */}
         <div className="flex items-center gap-1 min-w-0">
           <Icons.OnlookLogo className="w-5 h-5 shrink-0" />
-          <span className="text-xs text-foreground-secondary ml-1 truncate max-w-[100px]">New project</span>
+          <span className="text-xs text-foreground-secondary ml-1 truncate max-w-[100px]">Villainterest</span>
           <Icons.ChevronDown className="w-4 h-4 text-neutral-400 ml-0.5" />
         </div>
         {/* Center: Design/Preview toggle */}
@@ -288,7 +286,7 @@ export function OnlookInterfaceMockup() {
         </div>
         {/* Floating bottom toolbar (absolute, does not affect layout) */}
         <div className="absolute left-1/2 -translate-x-1/2 bottom-3 z-10 pointer-events-none">
-          <div className="flex flex-col border-[0.5px] border-border p-1 px-1 bg-black/85 backdrop-blur-2xl rounded-lg backdrop-blur drop-shadow-xl overflow-hidden pointer-events-auto">
+          <div className="flex flex-col border-[0.5px] border-border p-1 px-1 bg-black/60 backdrop-blur-2xl rounded-lg backdrop-blur drop-shadow-xl overflow-hidden pointer-events-auto">
             <div className="flex flex-row gap-0.5">
               {/* Selected icon */}
               <div className="h-8 w-8 flex items-center justify-center rounded-md border border-transparent bg-background-tertiary/50 text-foreground-primary">
@@ -313,7 +311,7 @@ export function OnlookInterfaceMockup() {
         {/* Layers Side Panel (mini mockup) */}
         {layersPanelOpen && (
           <div className="w-52 h-full px-1 pt-1">
-            <div className="w-full h-[98%] rounded-xl overflow-hidden flex flex-col items-center justify-start bg-black/85 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20">
+            <div className="w-full h-[98%] rounded-xl overflow-hidden flex flex-col items-center justify-start bg-black/60 backdrop-blur-2xl border-[0.5px] border-foreground-primary/20">
             <div className="w-full p-2 overflow-hidden">
               <div className="flex flex-col gap-0.5 w-full">
                 {mockLayers.map((layer) => {
@@ -366,7 +364,7 @@ export function OnlookInterfaceMockup() {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
         />
-        <div className="w-64 bg-black/85 backdrop-blur-2xl border-l border-t rounded-tl-xl border-foreground-border flex flex-col justify-end p-0 relative">
+        <div className="w-64 bg-black/70 backdrop-blur-2xl border-l border-t rounded-tl-xl border-foreground-border flex flex-col justify-end p-0 relative">
           <div className="absolute inset-0 flex flex-col"> 
           <div className="flex items-center justify-between h-9 px-0.5 border-b border-foreground-border z-20">
             {/* Tabs */}
