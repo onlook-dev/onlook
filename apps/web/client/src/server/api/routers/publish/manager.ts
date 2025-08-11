@@ -3,6 +3,7 @@ import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
+import { escapeShellString } from '@/utils/git';
 import {
   isEmptyString,
   isNullOrUndefined,
@@ -17,10 +18,10 @@ type SandboxFileLike = {
   toString(): string;
 };
 
-type DeploymentProvider = {
+export type DeploymentProvider = {
   readFile(input: { args: { path: string } }): Promise<{ file: SandboxFileLike }>;
   writeFile(input: { args: { path: string; content: string | Uint8Array; overwrite?: boolean } }): Promise<{ success: boolean }>;
-  statFile(input: { args: { path: string } }): Promise<{ type: 'file' | 'directory' }>
+  statFile(input: { args: { path: string } }): Promise<{ type: 'file' | 'directory' }>;
   copyFiles(input: { args: { sourcePath: string; targetPath: string; recursive?: boolean; overwrite?: boolean } }): Promise<unknown>;
   deleteFiles(input: { args: { path: string; recursive?: boolean } }): Promise<unknown>;
   runCommand(input: { args: { command: string } }): Promise<{ output: string }>;
@@ -142,13 +143,11 @@ export class PublishManager {
     buildScript,
     buildFlags,
     skipBadge,
-    deploymentId,
     updateDeployment,
   }: {
     buildScript: string;
     buildFlags: string;
     skipBadge: boolean;
-    deploymentId: string;
     updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<Deployment | null>;
   }): Promise<string> {
     await this.prepareProject();
@@ -196,8 +195,11 @@ export class PublishManager {
     });
 
     const artifactLocalPath = `${CUSTOM_OUTPUT_DIR}/standalone.tar.gz`;
-    const tarCommand = `tar -czf ${artifactLocalPath} -C ${NEXT_BUILD_OUTPUT_PATH} .`;
-    await this.provider.runCommand({ args: { command: tarCommand } });
+
+    const tarArgs = ['-czf', artifactLocalPath, '-C', NEXT_BUILD_OUTPUT_PATH, '.'];
+    const safeTarCommand = ['tar', ...tarArgs.map(escapeShellString)].join(' ');
+    
+    await this.provider.runCommand({ args: { command: safeTarCommand } });
 
     await updateDeployment({
       status: DeploymentStatus.IN_PROGRESS,

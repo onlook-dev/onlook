@@ -52,12 +52,11 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
             }
 
 
-            const publishManager = new PublishManager(provider);
+            const publishManager = new PublishManager(provider as unknown as DeploymentProviderWithDestroy);
             const artifactUrl = await publishManager.buildAndUploadArtifact({
                 skipBadge: type === DeploymentType.CUSTOM,
                 buildScript: buildScript ?? DefaultSettings.COMMANDS.build,
                 buildFlags: buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
-                deploymentId,
                 updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
             });
 
