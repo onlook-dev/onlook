@@ -1,9 +1,4 @@
-import {
-  CUSTOM_OUTPUT_DIR,
-  DefaultSettings,
-  SUPPORTED_LOCK_FILES,
-  STORAGE_BUCKETS,
-} from '@onlook/constants';
+import { CUSTOM_OUTPUT_DIR, DefaultSettings, SUPPORTED_LOCK_FILES } from '@onlook/constants';
 import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
@@ -15,7 +10,6 @@ import {
   type FileOperations,
 } from '@onlook/utility';
 import { addDeploymentLog } from './helpers/logs';
-import { uploadBufferAndGetSignedUrl } from '@/server/utils/supabase/admin-storage';
 import type { z } from 'zod';
 
 type SandboxFileLike = {
@@ -31,6 +25,7 @@ type DeploymentProvider = {
   copyFiles(input: { args: { sourcePath: string; targetPath: string; recursive?: boolean; overwrite?: boolean } }): Promise<unknown>;
   deleteFiles(input: { args: { path: string; recursive?: boolean } }): Promise<unknown>;
   runCommand(input: { args: { command: string } }): Promise<{ output: string }>;
+  downloadFiles(input: { args: { path: string } }): Promise<{ url?: string }>;
 };
 
 export class PublishManager {
@@ -259,48 +254,20 @@ export class PublishManager {
 
     await updateDeployment({
       status: DeploymentStatus.IN_PROGRESS,
-      message: 'Uploading build artifact...',
+      message: 'Preparing artifact URL...',
       progress: 70,
     });
 
-    this.logMemoryUsage('Before reading artifact bytes', deploymentId);
-    const { file: artifactFile } = await this.provider.readFile({
+    // Get a provider-hosted download URL for the artifact to avoid loading bytes into memory
+    const { url: downloadUrl } = await this.provider.downloadFiles({
       args: { path: artifactLocalPath },
     });
-    if (!(artifactFile && artifactFile.type === 'binary' && artifactFile.content)) {
-      addDeploymentLog(deploymentId, 'Failed to read build artifact', 'error');
-      throw new Error('Failed to read build artifact');
+    if (!downloadUrl) {
+      addDeploymentLog(deploymentId, 'Failed to get artifact download URL', 'error');
+      throw new Error('Failed to get artifact download URL');
     }
-    const bytes: Uint8Array = artifactFile.content as Uint8Array;
-    this.logMemoryUsage('After reading artifact bytes', deploymentId);
-
-    const objectPath = `deployments/${deploymentId}/build.tar.gz`;
-    addDeploymentLog(deploymentId, 'Uploading artifact to storage', 'info');
-    const { signedUrl } = await uploadBufferAndGetSignedUrl(
-      STORAGE_BUCKETS.FILE_TRANSFER,
-      objectPath,
-      bytes,
-      {
-        contentType: 'application/gzip',
-        cacheControl: 'public, max-age=31536000, immutable',
-        upsert: true,
-        expiresInSeconds: 60 * 60,
-      },
-    );
-    this.logMemoryUsage('After upload to storage', deploymentId);
-
-    try {
-      await this.provider.deleteFiles({ args: { path: artifactLocalPath, recursive: false } });
-      addDeploymentLog(deploymentId, 'Local artifact deleted from sandbox', 'debug');
-      this.logMemoryUsage('After deleting local artifact', deploymentId);
-    } catch (cleanupError) {
-      console.warn('Failed to delete local artifact:', cleanupError);
-      addDeploymentLog(
-        deploymentId,
-        `Warning: failed to delete local artifact (${String(cleanupError)})`,
-        'debug',
-      );
-    }
+    addDeploymentLog(deploymentId, 'Artifact download URL ready', 'success');
+    this.logMemoryUsage('After preparing artifact URL', deploymentId);
 
     await updateDeployment({
       status: DeploymentStatus.IN_PROGRESS,
@@ -309,10 +276,12 @@ export class PublishManager {
     });
     addDeploymentLog(
       deploymentId,
-      'Artifact uploaded; proceeding to deployment',
+      'Artifact URL prepared; proceeding to deployment',
       'success',
     );
 
-    return String(signedUrl);
+    // NOTE: Do not delete the artifact yet to prevent race during provider fetch.
+    // The sandbox may be ephemeral; hosting should fetch immediately.
+    return String(downloadUrl);
   }
 }
