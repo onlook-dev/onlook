@@ -10,30 +10,12 @@ import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
-import {
-    convertToBase64,
-    isBinaryFile,
-    isEmptyString,
-    isNullOrUndefined,
-    LogTimer,
-    updateGitignore,
-    type FileOperations,
-} from '@onlook/utility';
-import { type FreestyleFile } from 'freestyle-sandboxes';
+import { isEmptyString, isNullOrUndefined, updateGitignore, type FileOperations } from '@onlook/utility';
 import { addDeploymentLog } from './helpers/logs';
 import { uploadBufferAndGetSignedUrl } from '@/server/utils/supabase/admin-storage';
-import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { z } from 'zod';
 
-type ChunkProcessor = (
-    chunk: Record<string, FreestyleFile>,
-    chunkInfo: {
-        index: number;
-        total: number;
-        filesProcessed: number;
-        totalFiles: number;
-    },
-) => Promise<void>;
+//
 
 export class PublishManager {
     constructor(private readonly provider: Provider) { }
@@ -99,74 +81,7 @@ export class PublishManager {
         };
     }
 
-    async publish({
-        buildScript,
-        buildFlags,
-        skipBadge,
-        updateDeployment,
-    }: {
-        buildScript: string;
-        buildFlags: string;
-        skipBadge: boolean;
-        updateDeployment: (
-            deployment: z.infer<typeof deploymentUpdateSchema>,
-        ) => Promise<Deployment | null>;
-    }): Promise<Record<string, FreestyleFile>> {
-        await this.prepareProject();
-        await updateDeployment({
-            status: DeploymentStatus.IN_PROGRESS,
-            message: 'Preparing deployment...',
-            progress: 30,
-        });
 
-        if (!skipBadge) {
-            await updateDeployment({
-                status: DeploymentStatus.IN_PROGRESS,
-                message: 'Adding "Built with Onlook" badge...',
-                progress: 35,
-            });
-            await this.addBadge('./');
-        }
-
-        await updateDeployment({
-            status: DeploymentStatus.IN_PROGRESS,
-            message: 'Building project...',
-            progress: 40,
-        });
-
-        await this.runBuildStep(buildScript, buildFlags);
-
-        await updateDeployment({
-            status: DeploymentStatus.IN_PROGRESS,
-            message: 'Postprocessing project...',
-            progress: 50,
-        });
-
-        const { success: postprocessSuccess, error: postprocessError } =
-            await this.postprocessBuild();
-
-        if (!postprocessSuccess) {
-            throw new Error(`Failed to postprocess project for deployment: ${postprocessError}`);
-        }
-
-        await updateDeployment({
-            status: DeploymentStatus.IN_PROGRESS,
-            message: 'Preparing files for publish...',
-            progress: 60,
-        });
-
-        const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
-        return await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH, {
-            onProgress: async (processed, total) => {
-                const progress = Math.floor(60 + (processed / total) * 35);
-                await updateDeployment({
-                    status: DeploymentStatus.IN_PROGRESS,
-                    message: `Processing files... ${processed}/${total}`,
-                    progress,
-                });
-            },
-        });
-    }
 
     private async addBadge(folderPath: string) {
         await injectBuiltWithScript(folderPath, this.fileOperations);
@@ -257,112 +172,50 @@ export class PublishManager {
         };
     }
 
-    private async serializeFiles(
-        currentDir: string,
-        options: {
-            chunkSize?: number;
-            batchSize?: number;
-            onProgress?: (processed: number, total: number) => Promise<void>;
-        } = {},
-    ): Promise<Record<string, FreestyleFile>> {
-        const { chunkSize = 100, batchSize = 10, onProgress } = options;
+    // serializeFiles removed in favor of artifact-based deployment
 
-        const timer = new LogTimer('File Serialization');
-        const allFiles: Record<string, FreestyleFile> = {};
+    // processFilesInChunks removed
 
-        try {
-            const allFilePaths = await this.collectAllFilePaths(currentDir);
-            timer.log(`File discovery completed - ${allFilePaths.length} files found`);
+    
 
-            const filteredPaths = allFilePaths.filter((filePath) => !this.shouldSkipFile(filePath));
-            timer.log(`Filtered to ${filteredPaths.length} files after exclusions`);
+    
 
-            const { binaryFiles, textFiles } = this.categorizeFiles(filteredPaths);
-            timer.log(
-                `Categorized: ${textFiles.length} text files, ${binaryFiles.length} binary files`,
-            );
+    private getProcessMemoryUsageSnapshot(): {
+        rssMB: number;
+        heapTotalMB: number;
+        heapUsedMB: number;
+        externalMB: number;
+        arrayBuffersMB: number;
+    } {
+        const mem = typeof process !== 'undefined' && process.memoryUsage ? process.memoryUsage() : ({} as NodeJS.MemoryUsage);
+        const toMB = (bytes: number | undefined) => (typeof bytes === 'number' ? +(bytes / (1024 * 1024)).toFixed(2) : 0);
+        return {
+            rssMB: toMB(mem.rss),
+            heapTotalMB: toMB(mem.heapTotal),
+            heapUsedMB: toMB(mem.heapUsed),
+            externalMB: toMB(mem.external),
+            arrayBuffersMB: toMB((mem as unknown as { arrayBuffers?: number }).arrayBuffers),
+        };
+    }
 
-            let totalProcessed = 0;
-            const totalFiles = filteredPaths.length;
-
-            const handleAndMergeChunk: ChunkProcessor = async (chunk) => {
-                Object.assign(allFiles, chunk);
-            };
-
-            if (textFiles.length > 0) {
-                timer.log(`Processing ${textFiles.length} text files`);
-                await this.processFilesInChunks(
-                    textFiles,
-                    currentDir,
-                    chunkSize,
-                    batchSize,
-                    'text',
-                    async (chunk, chunkInfo) => {
-                        await handleAndMergeChunk(chunk, chunkInfo);
-                        totalProcessed += Object.keys(chunk).length;
-                        if (onProgress) {
-                            await onProgress(totalProcessed, totalFiles);
-                        }
-                    },
-                );
-                timer.log('Text files processing completed');
-            }
-
-            if (binaryFiles.length > 0) {
-                timer.log(`Processing ${binaryFiles.length} binary files`);
-                await this.processFilesInChunks(
-                    binaryFiles,
-                    currentDir,
-                    chunkSize,
-                    batchSize,
-                    'binary',
-                    async (chunk, chunkInfo) => {
-                        await handleAndMergeChunk(chunk, chunkInfo);
-                        totalProcessed += Object.keys(chunk).length;
-                        if (onProgress) {
-                            await onProgress(totalProcessed, totalFiles);
-                        }
-                    },
-                );
-                timer.log('Binary files processing completed');
-            }
-
-            timer.log(
-                `Serialization completed - ${filteredPaths.length} files processed in ${timer.getElapsed()}ms`,
-            );
-
-            return allFiles;
-        } catch (error) {
-            console.error('Error during serialization:', error);
-            throw error;
+    private logMemoryUsage(label: string, deploymentId?: string): void {
+        const mem = this.getProcessMemoryUsageSnapshot();
+        const message = `${label} – Memory (MB): rss=${mem.rssMB}, heapUsed=${mem.heapUsedMB}, heapTotal=${mem.heapTotalMB}, external=${mem.externalMB}, arrayBuffers=${mem.arrayBuffersMB}`;
+        console.log(message);
+        if (deploymentId) {
+            addDeploymentLog(deploymentId, message, 'debug');
         }
     }
 
-    private async processFilesInChunks(
-        filePaths: string[],
-        currentDir: string,
-        chunkSize: number,
-        batchSize: number,
-        fileType: 'text' | 'binary',
-        onChunkComplete: ChunkProcessor,
-    ): Promise<void> {
-        const chunks = this.createChunks(filePaths, chunkSize);
-        const timer = new LogTimer('Chunking');
+    
 
-        console.log(`Starting processing of ${filePaths.length} files in chunks of ${chunkSize}`);
+    
 
-        for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
-            const chunk = chunks[chunkIndex];
-            if (!chunk) {
-                continue;
-            }
+    
 
-            console.log(
-                `Processing chunk ${chunkIndex + 1}/${chunks.length} (${chunk.length} files)`,
-            );
+    
 
-            let chunkData: Record<string, FreestyleFile> | null =
-                await this.processChunkWithBatching(chunk, currentDir, batchSize, fileType);
+    
 
             await onChunkComplete(chunkData, {
                 index: chunkIndex,
@@ -593,6 +446,7 @@ export class PublishManager {
     }): Promise<string> {
         await this.prepareProject();
         addDeploymentLog(deploymentId, 'Project prepared for deployment', 'debug');
+        this.logMemoryUsage('After prepareProject', deploymentId);
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing deployment...',
@@ -607,6 +461,7 @@ export class PublishManager {
             });
             await this.addBadge('./');
             addDeploymentLog(deploymentId, 'Badge injected', 'debug');
+            this.logMemoryUsage('After badge injection', deploymentId);
         }
 
         await updateDeployment({
@@ -615,8 +470,10 @@ export class PublishManager {
             progress: 40,
         });
         addDeploymentLog(deploymentId, `Running build: ${buildScript} ${buildFlags ?? ''}`.trim(), 'info');
+        this.logMemoryUsage('Before build', deploymentId);
         await this.runBuildStep(buildScript, buildFlags);
         addDeploymentLog(deploymentId, 'Build step completed', 'success');
+        this.logMemoryUsage('After build', deploymentId);
 
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
@@ -631,6 +488,7 @@ export class PublishManager {
             throw new Error(`Failed to postprocess project for deployment: ${postprocessError}`);
         }
         addDeploymentLog(deploymentId, 'Postprocess completed', 'success');
+        this.logMemoryUsage('After postprocess', deploymentId);
 
         const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
 
@@ -645,6 +503,7 @@ export class PublishManager {
         const tarCommand = `tar -czf ${artifactLocalPath} -C ${NEXT_BUILD_OUTPUT_PATH} .`;
         addDeploymentLog(deploymentId, 'Creating tar.gz artifact', 'debug');
         await this.session.commands.run(tarCommand);
+        this.logMemoryUsage('After tar artifact creation', deploymentId);
 
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
@@ -653,12 +512,14 @@ export class PublishManager {
         });
 
         // Read artifact bytes and upload to storage
+        this.logMemoryUsage('Before reading artifact bytes', deploymentId);
         const artifactBytes = await this.session.fs.readFile(artifactLocalPath);
         if (!artifactBytes) {
             addDeploymentLog(deploymentId, 'Failed to read build artifact', 'error');
             throw new Error('Failed to read build artifact');
         }
         const bytes: Uint8Array = artifactBytes as unknown as Uint8Array;
+        this.logMemoryUsage('After reading artifact bytes', deploymentId);
 
         const objectPath = `deployments/${deploymentId}/build.tar.gz`;
         addDeploymentLog(deploymentId, 'Uploading artifact to storage', 'info');
@@ -673,6 +534,21 @@ export class PublishManager {
                 expiresInSeconds: 60 * 60, // 1 hour is enough for Freestyle to fetch
             },
         );
+        this.logMemoryUsage('After upload to storage', deploymentId);
+
+        // Remove local artifact from sandbox to free disk space
+        try {
+            await this.session.fs.remove(artifactLocalPath, false);
+            addDeploymentLog(deploymentId, 'Local artifact deleted from sandbox', 'debug');
+            this.logMemoryUsage('After deleting local artifact', deploymentId);
+        } catch (cleanupError) {
+            console.warn('Failed to delete local artifact:', cleanupError);
+            addDeploymentLog(
+                deploymentId,
+                `Warning: failed to delete local artifact (${String(cleanupError)})`,
+                'debug',
+            );
+        }
 
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
