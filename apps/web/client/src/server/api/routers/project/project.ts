@@ -214,4 +214,80 @@ export const projectRouter = createTRPCRouter({
     })).mutation(async ({ ctx, input }) => {
         await ctx.db.update(projects).set(input.project).where(eq(projects.id, input.id));
     }),
+
+    getComponents: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            // This endpoint will scan project files and return detected React components
+            // For now, return mock data structure that matches expected format
+            // TODO: Implement actual file system scanning when sandbox integration is available
+            
+            const project = await ctx.db.query.projects.findFirst({
+                where: eq(projects.id, input.projectId),
+            });
+            
+            if (!project) {
+                return [];
+            }
+
+            // Mock component data structure for now
+            // This will be replaced with actual file system scanning
+            return [
+                {
+                    id: `${input.projectId}-home`,
+                    name: 'HomePage',
+                    path: '/home',
+                    filePath: 'src/pages/home.tsx',
+                    type: 'page' as const,
+                    lastModified: new Date().toISOString(),
+                    size: 1024,
+                    isComponent: true,
+                    exports: ['HomePage', 'default'],
+                },
+                {
+                    id: `${input.projectId}-dashboard`, 
+                    name: 'Dashboard',
+                    path: '/dashboard',
+                    filePath: 'src/pages/dashboard.tsx',
+                    type: 'page' as const,
+                    lastModified: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+                    size: 2048,
+                    isComponent: true,
+                    exports: ['Dashboard', 'default'],
+                },
+                {
+                    id: `${input.projectId}-about`,
+                    name: 'About',
+                    path: '/about', 
+                    filePath: 'src/pages/about.tsx',
+                    type: 'page' as const,
+                    lastModified: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
+                    size: 1536,
+                    isComponent: true,
+                    exports: ['About', 'default'],
+                },
+                {
+                    id: `${input.projectId}-contact`,
+                    name: 'Contact',
+                    path: '/contact',
+                    filePath: 'src/pages/contact.tsx', 
+                    type: 'page' as const,
+                    lastModified: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
+                    size: 1280,
+                    isComponent: true,
+                    exports: ['Contact', 'default'],
+                },
+                {
+                    id: `${input.projectId}-profile`,
+                    name: 'Profile',
+                    path: '/profile',
+                    filePath: 'src/pages/profile.tsx',
+                    type: 'page' as const, 
+                    lastModified: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
+                    size: 1792,
+                    isComponent: true,
+                    exports: ['Profile', 'default'],
+                }
+            ];
+        }),
 });

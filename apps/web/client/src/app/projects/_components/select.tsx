@@ -4,6 +4,7 @@ import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons';
 import Link from 'next/link';
 import { useMemo, useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Project } from '@onlook/models';
 import { motion, AnimatePresence } from 'motion/react';
 import { EditAppButton } from './edit-app';
@@ -43,10 +44,11 @@ function SquareProjectCard({
   HighlightText?: React.ComponentType<{ text: string; searchQuery: string }>;
 }) {
   const [img, setImg] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleClick = () => {
-    // Navigate to project or open project
-    // Project opening is handled by EditAppButton component
+    const slug = encodeURIComponent(project.name);
+    router.push(`/projects/${slug}`);
   };
 
   useEffect(() => {
@@ -71,6 +73,14 @@ function SquareProjectCard({
     <div
       className="cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20 group"
       onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
     >
       <div className="w-full aspect-[4/2.8] rounded-lg overflow-hidden relative shadow-sm transition-all duration-300">
         {/* Background image */}
@@ -84,9 +94,14 @@ function SquareProjectCard({
         {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        {/* Edit button center overlay */}
+        {/* Edit button center overlay (kept for parity; click-through also supported) */}
         <div className="absolute inset-0 bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <EditAppButton project={project} />
+          <EditAppButton 
+            project={project} 
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent event bubbling to card click
+            }}
+          />
         </div>
 
         {/* Text overlay at bottom - clean, no gradient */}
@@ -113,6 +128,95 @@ function SquareProjectCard({
   );
 }
 
+// File card for masonry grid - displays individual files
+function FileCard({
+  file,
+  aspectRatio = "aspect-[4/2.6]",
+  searchQuery = "",
+  HighlightText
+}: {
+  file: {
+    id: string;
+    name: string;
+    projectName: string;
+    projectId: string;
+    lastModified: string;
+    type: 'component' | 'page';
+    preview?: any;
+  };
+  aspectRatio?: string;
+  searchQuery?: string;
+  HighlightText?: React.ComponentType<{ text: string; searchQuery: string }>;
+}) {
+  const [img, setImg] = useState<string | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    let isMounted = true;
+    if (file.preview?.type === 'url' && file.preview.url) {
+      if (isMounted) setImg(file.preview.url);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [file.preview]);
+
+  const handleClick = () => {
+    // Navigate to project editor for this specific file
+    router.push(`/project/${file.projectId}`);
+  };
+
+  const lastUpdated = useMemo(() => timeAgo(file.lastModified), [file.lastModified]);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ scale: 1.02, y: -4 }}
+      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+      className="w-full break-inside-avoid cursor-pointer"
+      onClick={handleClick}
+    >
+      <div className={`relative ${aspectRatio} rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group`}>
+        {/* Background image */}
+        {img ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={img} alt={file.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+        ) : (
+          <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20" />
+        )}
+        
+        {/* Hover overlay */}
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        
+        {/* File type indicator */}
+        <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-white text-xs">
+          {file.type}
+        </div>
+
+        {/* Text overlay at bottom */}
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="text-white font-medium text-sm mb-1 truncate drop-shadow-lg">
+            {HighlightText ? (
+              <HighlightText text={file.name} searchQuery={searchQuery} />
+            ) : (
+              file.name
+            )}
+          </div>
+          <div className="text-white/80 text-xs mb-1 drop-shadow-lg">Last edited {lastUpdated}</div>
+          <div className="text-white/70 text-xs truncate drop-shadow-lg">
+            {HighlightText ? (
+              <HighlightText text={file.projectName} searchQuery={searchQuery} />
+            ) : (
+              file.projectName
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // Project card for masonry grid
 function ProjectCard({ 
   project, 
@@ -128,6 +232,12 @@ function ProjectCard({
   HighlightText?: React.ComponentType<{ text: string; searchQuery: string }>;
 }) {
   const [img, setImg] = useState<string | null>(null);
+  const router = useRouter();
+
+  const handleCardClick = () => {
+    const slug = encodeURIComponent(project.name);
+    router.push(`/projects/${slug}`);
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -156,6 +266,7 @@ function ProjectCard({
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ type: 'spring', stiffness: 300, damping: 24 }}
       className="w-full break-inside-avoid cursor-pointer"
+      onClick={handleCardClick}
     >
       <div className={`relative ${aspectRatio} rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group`}>
         {/* Background image */}
@@ -176,7 +287,12 @@ function ProjectCard({
         
         {/* Edit button center overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 hover:opacity-100 transition-opacity">
-          <EditAppButton project={project} />
+          <EditAppButton 
+            project={project} 
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent event bubbling to card click
+            }}
+          />
         </div>
 
         {/* Text overlay at bottom - clean, no gradient */}
@@ -247,6 +363,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
   const [orderBy, setOrderBy] = useState("Newest first");
   const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] = useState(false);
   const settingsDropdownRef = useRef<HTMLDivElement>(null);
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
   // Debounce search query for better performance
   useEffect(() => {
@@ -257,7 +374,66 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Favorites rail state from localStorage
+  useEffect(() => {
+    const readFavs = () => {
+      try {
+        const raw = localStorage.getItem('onlook_fav_projects') || '[]';
+        const ids: string[] = JSON.parse(raw);
+        if (Array.isArray(ids)) setFavoriteIds(ids);
+      } catch {}
+    };
+    readFavs();
+    const onChange = () => readFavs();
+    window.addEventListener('storage', onChange);
+    window.addEventListener('onlook_fav_projects_changed', onChange as EventListener);
+    return () => {
+      window.removeEventListener('storage', onChange);
+      window.removeEventListener('onlook_fav_projects_changed', onChange as EventListener);
+    };
+  }, []);
+
   const projects: Project[] = fetchedProjects ?? [];
+  const favoriteProjects = useMemo(() => projects.filter(p => favoriteIds.includes(p.id)), [projects, favoriteIds]);
+
+  // Get recent files from all projects for Files section
+  const recentFiles = useMemo(() => {
+    if (!projects.length) return [];
+    
+    // Create mock file data based on project frames/pages
+    const files = projects.flatMap(project => [
+      {
+        id: `${project.id}-main`,
+        name: 'HomePage.jsx',
+        projectName: project.name,
+        projectId: project.id,
+        lastModified: project.metadata.updatedAt,
+        type: 'component' as const,
+        preview: project.metadata?.previewImg
+      },
+      {
+        id: `${project.id}-dashboard`,
+        name: 'Dashboard.jsx', 
+        projectName: project.name,
+        projectId: project.id,
+        lastModified: new Date(new Date(project.metadata.updatedAt).getTime() - 1000 * 60 * 30).toISOString(), // 30 min ago
+        type: 'page' as const,
+        preview: project.metadata?.previewImg
+      },
+      {
+        id: `${project.id}-login`,
+        name: 'LoginPage.jsx',
+        projectName: project.name, 
+        projectId: project.id,
+        lastModified: new Date(new Date(project.metadata.updatedAt).getTime() - 1000 * 60 * 60).toISOString(), // 1 hour ago
+        type: 'page' as const,
+        preview: project.metadata?.previewImg
+      }
+    ]);
+
+    // Sort by last modified and return most recent
+    return files.sort((a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime());
+  }, [projects]);
 
   const filteredAndSortedProjects = useMemo(() => {
     // Filter projects based on debounced search query
@@ -293,6 +469,30 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     
     return sorted;
   }, [projects, debouncedSearchQuery, sortBy, orderBy]);
+
+  // Filter and sort files for Files section
+  const filteredAndSortedFiles = useMemo(() => {
+    let filtered = recentFiles;
+    if (debouncedSearchQuery) {
+      const q = debouncedSearchQuery.toLowerCase();
+      filtered = recentFiles.filter((f) =>
+        [f.name, f.projectName].some((s) => s.toLowerCase().includes(q))
+      );
+    }
+
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case "Alphabetical":
+          return a.name.localeCompare(b.name);
+        case "Date created":
+        case "Last viewed":
+        default:
+          return new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime();
+      }
+    });
+
+    return orderBy === "Oldest first" ? sorted.reverse() : sorted;
+  }, [recentFiles, debouncedSearchQuery, sortBy, orderBy]);
 
   const sortOptions = [
     { value: "Alphabetical", label: "Alphabetical" },
@@ -354,6 +554,21 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
   return (
     <div className="w-full h-full flex flex-col px-6 py-8">
       <div className="max-w-6xl w-full mx-auto">
+        {/* Favorites Section */}
+        {favoriteProjects.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-2xl text-foreground font-normal mb-[12px]">Favorites</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none]">
+              <AnimatePresence mode="popLayout">
+                {favoriteProjects.map((project) => (
+                  <motion.div key={`fav-${project.id}`} className="flex-shrink-0 w-72" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+                    <SquareProjectCard project={project} searchQuery={debouncedSearchQuery} HighlightText={HighlightText} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        )}
         {/* Projects Section */}
         <div className="mb-12">
           <h2 className="text-2xl text-foreground font-normal mb-[12px]">
@@ -477,13 +692,12 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             </div>
                     </div>
           <MasonryLayout
-            items={filteredAndSortedProjects}
+            items={filteredAndSortedFiles}
             spacing={spacing}
-            renderItem={(project: Project, aspectRatio?: string) => (
-              <ProjectCard 
-                key={project.id} 
-                project={project} 
-                refetch={refetch} 
+            renderItem={(file: any, aspectRatio?: string) => (
+              <FileCard 
+                key={file.id} 
+                file={file} 
                 aspectRatio={aspectRatio}
                 searchQuery={debouncedSearchQuery}
                 HighlightText={HighlightText}

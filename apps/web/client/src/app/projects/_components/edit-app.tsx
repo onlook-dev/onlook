@@ -17,7 +17,7 @@ interface EditAppButtonProps extends ComponentProps<typeof ButtonMotion> {
     project: Project;
 }
 
-export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps) => {
+export const EditAppButton = observer(({ project, onClick, ...props }: EditAppButtonProps) => {
     const t = useTranslations();
     const posthog = usePostHog();
     const [isLoading, setIsLoading] = useState(false);
@@ -28,12 +28,21 @@ export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps
         redirect(`${Routes.PROJECT}/${project.id}`);
     };
 
+    const handleClick = (e: React.MouseEvent) => {
+        // Call custom onClick first (e.g., stopPropagation)
+        if (onClick) {
+            onClick(e);
+        }
+        // Then execute the project selection
+        selectProject(project);
+    };
+
     return (
         <ButtonMotion
             size="default"
             variant={'outline'}
             className="gap-2 bg-background-active border-[0.5px] border-border-active w-auto hover:bg-background-onlook cursor-pointer"
-            onClick={() => selectProject(project)}
+            onClick={handleClick}
             disabled={isLoading}
             {...props}
         >
