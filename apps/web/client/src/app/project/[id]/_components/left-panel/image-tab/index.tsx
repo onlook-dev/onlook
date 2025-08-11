@@ -40,7 +40,7 @@ const ImagesTabContent = observer(() => {
                 )}
                 {uploadOperations.uploadState.isUploading && (
                     <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">
-                        <Icons.Reload className="w-4 h-4 animate-spin" />
+                        <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
                         Uploading image...
                     </div>
                 )}
@@ -51,7 +51,7 @@ const ImagesTabContent = observer(() => {
                 )}
                 {isOperating && (
                     <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">
-                        <Icons.Reload className="w-4 h-4 animate-spin" />
+                        <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
                         Updating images...
                     </div>
                 )}

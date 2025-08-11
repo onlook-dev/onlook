@@ -65,7 +65,7 @@ export default function MoveImageModal({
                     >
                         {isLoading ? (
                             <>
-                                <Icons.Reload className="w-4 h-4 animate-spin mr-2" />
+                                <Icons.LoadingSpinner className="w-4 h-4 animate-spin mr-2" />
                                 Moving...
                             </>
                         ) : (
