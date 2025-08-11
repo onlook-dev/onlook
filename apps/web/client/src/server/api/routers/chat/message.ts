@@ -1,7 +1,12 @@
-import { mastra } from '@/mastra';
 import {
-    toOnlookMessageFromMastra
+    conversations,
+    messageInsertSchema,
+    messages,
+    toMessage,
+    type Message
 } from '@onlook/db';
+import type { ChatMessageRole } from '@onlook/models';
+import { eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
@@ -10,47 +15,46 @@ export const messageRouter = createTRPCRouter({
         .input(z.object({
             conversationId: z.string(),
         }))
-        .query(async ({ input }) => {
-            const storage = mastra.getStorage()
-            if (!storage) {
-                throw new Error('Storage not found');
-            }
-            const messagesResult = await storage.getMessages({
-                threadId: input.conversationId,
-                format: 'v2',
-            })
-            return messagesResult.map((message) => toOnlookMessageFromMastra(message));
-        }),
-    update: protectedProcedure
-        .input(z.object({
-            messages: z.array(z.object({
-                id: z.string(),
-                content: z.object({
-                    metadata: z.record(z.string(), z.any()),
-                    parts: z.array(z.any()),
-                }),
-            })),
-        }))
-        .mutation(async ({ input }) => {
-            const storage = mastra.getStorage()
-            if (!storage) {
-                throw new Error('Storage not found');
-            }
-            const messages = await storage.updateMessages({
-                messages: input.messages
+        .query(async ({ ctx, input }) => {
+            const result = await ctx.db.query.messages.findMany({
+                where: eq(messages.conversationId, input.conversationId),
             });
-            return messages.map((message) => toOnlookMessageFromMastra(message));
+            return result.map((message) => toMessage(message));
         }),
-
+    upsert: protectedProcedure
+        .input(z.object({
+            message: messageInsertSchema
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const conversationId = input.message.conversationId;
+            if (conversationId) {
+                const conversation = await ctx.db.query.conversations.findFirst({
+                    where: eq(conversations.id, conversationId),
+                });
+                if (!conversation) {
+                    throw new Error(`Conversation not found`);
+                }
+            }
+            const normalizedMessage = {
+                ...input.message,
+                role: input.message.role as ChatMessageRole,
+                parts: input.message.parts as Message['parts'],
+            };
+            return await ctx.db
+                .insert(messages)
+                .values(normalizedMessage)
+                .onConflictDoUpdate({
+                    target: [messages.id],
+                    set: {
+                        ...normalizedMessage,
+                    },
+                });
+        }),
     delete: protectedProcedure
         .input(z.object({
             messageIds: z.array(z.string()),
         }))
-        .mutation(async ({ input }) => {
-            const storage = mastra.getStorage()
-            if (!storage) {
-                throw new Error('Storage not found');
-            }
-            await storage.deleteMessages(input.messageIds);
+        .mutation(async ({ ctx, input }) => {
+            await ctx.db.delete(messages).where(inArray(messages.id, input.messageIds));
         }),
 })

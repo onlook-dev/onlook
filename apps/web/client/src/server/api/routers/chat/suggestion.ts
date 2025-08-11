@@ -1,11 +1,12 @@
-import { mastra } from '@/mastra';
 import { initModel } from '@onlook/ai';
 import { SUGGESTION_SYSTEM_PROMPT } from '@onlook/ai/src/prompt/suggest';
+import { conversations } from '@onlook/db';
 import type { ChatSuggestion } from '@onlook/models';
 import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { ChatSuggestionsSchema } from '@onlook/models/chat';
 import type { CoreMessage } from 'ai';
 import { generateObject } from 'ai';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
@@ -39,24 +40,9 @@ export const suggestionsRouter = createTRPCRouter({
             });
             const suggestions = object.suggestions satisfies ChatSuggestion[];
             try {
-                const storage = mastra.getStorage()
-                if (!storage) {
-                    throw new Error('Storage not found');
-                }
-                const thread = await storage.getThreadById({
-                    threadId: input.conversationId,
-                })
-                if (!thread) {
-                    throw new Error('Conversation not found');
-                }
-                await storage.updateThread({
-                    id: thread.id,
-                    title: thread.title ?? '',
-                    metadata: {
-                        ...thread.metadata,
-                        suggestions,
-                    },
-                });
+                await ctx.db.update(conversations).set({
+                    suggestions,
+                }).where(eq(conversations.id, input.conversationId));
             } catch (error) {
                 console.error('Error updating conversation suggestions:', error);
             }

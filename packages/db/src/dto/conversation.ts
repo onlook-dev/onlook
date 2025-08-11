@@ -1,23 +1,21 @@
-import type { StorageThreadType } from "@mastra/core/memory";
-import { type ChatConversation, type ChatSuggestion } from "@onlook/models";
+import type { Conversation as DbConversation } from "@onlook/db";
+import { type ChatConversation } from "@onlook/models";
 
-export const toOnlookConversationFromMastra = (mastraThread: StorageThreadType): ChatConversation => {
+export const toConversation = (conversation: DbConversation): ChatConversation => {
     return {
-        ...mastraThread,
-        projectId: mastraThread.resourceId,
+        ...conversation,
+        resourceId: conversation.projectId,
         metadata: {
-            suggestions: getOnlookSuggestionsFromMastra(mastraThread),
+            suggestions: conversation.suggestions || [],
         }
     }
 }
 
-export const fromOnlookConversationToMastra = (conversation: ChatConversation): StorageThreadType => {
+export const fromConversationToDb = (conversation: ChatConversation): DbConversation => {
     return {
         ...conversation,
-        resourceId: conversation.projectId,
+        projectId: conversation.resourceId,
+        displayName: conversation.title || null,
+        suggestions: conversation.metadata?.suggestions || [],
     }
-}
-
-const getOnlookSuggestionsFromMastra = (mastraThread: StorageThreadType): ChatSuggestion[] => {
-    return mastraThread.metadata?.suggestions as ChatSuggestion[] || [];
 }

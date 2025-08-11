@@ -1,52 +1,62 @@
 import type { UIMessageWithMetadata } from "@mastra/core/agent";
 import type { MastraMessageV2 } from "@mastra/core/memory";
 import { getHydratedUserMessage } from "@onlook/ai";
+import type { Message as DbMessage } from "@onlook/db";
 import type { MessageSnapshot } from "@onlook/models";
 import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatMessageContext, type UserChatMessage } from "@onlook/models";
 import { assertNever } from '@onlook/utility';
 import type { Message as VercelMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
-export const toOnlookMessageFromMastra = (mastraMessage: MastraMessageV2): ChatMessage => {
-    switch (mastraMessage.role) {
-        case 'assistant':
+export const toMessage = (message: DbMessage): ChatMessage => {
+    const content = {
+        format: 2 as const,
+        parts: message.parts ?? [],
+        metadata: {
+            vercelId: message.id,
+            context: message.context ?? [],
+            snapshots: message.snapshots ?? [],
+        }
+    }
+
+    const baseMessage = {
+        ...message,
+        content,
+        threadId: message.conversationId,
+    }
+    switch (message.role) {
+        case ChatMessageRole.ASSISTANT:
             return {
-                ...mastraMessage,
-                role: mastraMessage.role as ChatMessageRole.ASSISTANT,
-                content: {
-                    format: 2,
-                    parts: mastraMessage.content.parts,
-                    metadata: {
-                        vercelId: mastraMessage.id,
-                        context: getMastraMessageContext(mastraMessage),
-                        snapshots: getMessageSnapshotsFromMastra(mastraMessage),
-                    }
-                }
+                ...baseMessage,
+                role: message.role as ChatMessageRole.ASSISTANT,
+                content,
             } satisfies AssistantChatMessage;
-        case 'user':
+        case ChatMessageRole.USER:
             return {
-                ...mastraMessage,
-                role: mastraMessage.role as ChatMessageRole.USER,
-                content: {
-                    format: 2,
-                    parts: mastraMessage.content.parts,
-                    metadata: {
-                        vercelId: mastraMessage.id,
-                        context: getMastraMessageContext(mastraMessage),
-                        snapshots: getMessageSnapshotsFromMastra(mastraMessage),
-                    }
-                }
+                ...baseMessage,
+                role: message.role as ChatMessageRole.USER,
             } satisfies UserChatMessage;
         default:
-            assertNever(mastraMessage.role);
+            assertNever(message.role);
     }
 }
 
-export const toMastraMessageFromOnlook = (message: ChatMessage): MastraMessageV2 => {
+export const fromMessage = (message: ChatMessage): DbMessage => {
     return {
-        ...message,
-        role: message.role as MastraMessageV2['role'],
-    } satisfies MastraMessageV2;
+        id: message.id,
+        createdAt: message.createdAt,
+        conversationId: message.threadId,
+        context: message.content.metadata?.context ?? [],
+        parts: message.content.parts,
+        content: message.content.parts.map((part) => {
+            if (part.type === 'text') {
+                return part.text;
+            }
+            return '';
+        }).join(''),
+        role: message.role as DbMessage['role'],
+        snapshots: message.content.metadata?.snapshots ?? [],
+    } satisfies DbMessage;
 }
 
 export const toVercelMessageFromOnlook = (message: ChatMessage): UIMessageWithMetadata => {
@@ -69,7 +79,7 @@ export const toVercelMessageFromOnlook = (message: ChatMessage): UIMessageWithMe
     } satisfies UIMessageWithMetadata;
 }
 
-export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage => {
+export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId: string): ChatMessage => {
     const metadata = {
         vercelId: message.id,
         context: [],
@@ -84,6 +94,7 @@ export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage =
         ...message,
         id: uuidv4(),
         createdAt: message.createdAt ?? new Date(),
+        threadId: conversationId,
         content,
     }
 

@@ -1,7 +1,9 @@
-import { mastra } from '@/mastra';
 import {
-    toOnlookConversationFromMastra
+    conversations,
+    conversationUpdateSchema,
+    toConversation
 } from '@onlook/db';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
@@ -9,74 +11,61 @@ export const conversationRouter = createTRPCRouter({
     getAll: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
-            const storage = mastra.getStorage()
-            if (!storage) {
-                throw new Error('Storage not found');
-            }
-            const threadsResult = await storage.getThreadsByResourceId({
-                resourceId: input.projectId,
-            })
-            return threadsResult.map((thread) => toOnlookConversationFromMastra(thread));
+            const dbConversations = await ctx.db.query.conversations.findMany({
+                where: eq(conversations.projectId, input.projectId),
+                orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
+            });
+            return dbConversations.map((conversation) => toConversation(conversation));
         }),
     get: protectedProcedure
         .input(z.object({ conversationId: z.string() }))
-        .query(async ({ input }) => {
-            const storage = mastra.getStorage()
-            if (!storage) {
-                throw new Error('Storage not found');
-            }
-            const thread = await storage.getThreadById({
-                threadId: input.conversationId,
-            })
-            if (!thread) {
+        .query(async ({ ctx, input }) => {
+            const conversation = await ctx.db.query.conversations.findFirst({
+                where: eq(conversations.id, input.conversationId),
+            });
+            if (!conversation) {
                 throw new Error('Conversation not found');
             }
-            return toOnlookConversationFromMastra(thread);
+            return toConversation(conversation);
         }),
-    create: protectedProcedure
-        .input(z.object({ projectId: z.string() }))
-        .mutation(async ({ input }) => {
-            const { onlookAgent } = mastra.getAgents()
-            const memory = await onlookAgent.getMemory()
-            if (!memory) {
-                throw new Error('Memory not found');
-            }
-            const thread = await memory.createThread({
-                resourceId: input.projectId,
+    upsert: protectedProcedure
+        .input(z.object({ projectId: z.string(), title: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            const [conversation] = await ctx.db.insert(conversations).values({
+                projectId: input.projectId,
+                displayName: input.title,
+            }).returning().onConflictDoUpdate({
+                target: [conversations.projectId, conversations.displayName],
+                set: {
+                    updatedAt: new Date(),
+                },
             });
-
-            return toOnlookConversationFromMastra(thread);
+            if (!conversation) {
+                throw new Error('Conversation not created');
+            }
+            return toConversation(conversation);
         }),
     update: protectedProcedure
         .input(z.object({
             conversationId: z.string(),
-            title: z.string(),
-            metadata: z.record(z.string(), z.any()),
+            conversation: conversationUpdateSchema,
         }))
-        .mutation(async ({ input }) => {
-            const storage = mastra.getStorage()
-            if (!storage) {
-                throw new Error('Storage not found');
+        .mutation(async ({ ctx, input }) => {
+            const [conversation] = await ctx.db.update({
+                ...conversations,
+                updatedAt: new Date(),
+            }).set(input.conversation)
+                .where(eq(conversations.id, input.conversationId)).returning();
+            if (!conversation) {
+                throw new Error('Conversation not updated');
             }
-            const thread = await storage.updateThread({
-                id: input.conversationId,
-                title: input.title,
-                metadata: input.metadata,
-            });
-
-            return toOnlookConversationFromMastra(thread);
+            return toConversation(conversation);
         }),
     delete: protectedProcedure
         .input(z.object({
             conversationId: z.string()
         }))
-        .mutation(async ({ input }) => {
-            const storage = mastra.getStorage()
-            if (!storage) {
-                throw new Error('Storage not found');
-            }
-            await storage.deleteThread({
-                threadId: input.conversationId,
-            });
+        .mutation(async ({ ctx, input }) => {
+            await ctx.db.delete(conversations).where(eq(conversations.id, input.conversationId));
         }),
 });

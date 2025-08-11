@@ -3,7 +3,6 @@ import { Agent } from '@mastra/core/agent';
 import type { RuntimeContext } from '@mastra/core/runtime-context';
 import { ASK_TOOL_SET, BUILD_TOOL_SET, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type InitialModelPayload } from '@onlook/models';
-import { memory } from '../memory';
 
 const isProd = env.NODE_ENV === 'production';
 
@@ -61,5 +60,4 @@ export const onlookAgent = new Agent({
                 return BUILD_TOOL_SET;
         }
     },
-    memory,
 })

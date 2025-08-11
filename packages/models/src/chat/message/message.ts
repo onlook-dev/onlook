@@ -17,6 +17,7 @@ export interface ChatMessageContent extends MastraMessageContentV2 {
 }
 interface BaseChatMessage extends MastraMessageV2 {
     role: ChatMessageRole;
+    threadId: string;
     content: ChatMessageContent;
 }
 

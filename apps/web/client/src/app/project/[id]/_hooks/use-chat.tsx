@@ -18,19 +18,20 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
     const lastMessageRef = useRef<Message | null>(null);
     const posthog = usePostHog();
 
+    const conversationId = editorEngine.chat.conversation.current?.conversation.id;
     const chat = useChat({
         id: 'user-chat',
         api: '/api/chat',
         maxSteps: 20,
         body: {
-            conversationId: editorEngine.chat.conversation.current?.conversation.id,
+            conversationId,
             projectId: editorEngine.projectId,
         },
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, { finishReason }) => {
             lastMessageRef.current = message;
             if (finishReason !== 'tool-calls') {
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message));
+                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message, conversationId ?? ''));
                 editorEngine.chat.suggestions.generateSuggestions();
                 lastMessageRef.current = null;
             }
@@ -51,7 +52,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             editorEngine.chat.error.handleChatError(error);
 
             if (lastMessageRef.current) {
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current));
+                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, conversationId ?? ''));
                 lastMessageRef.current = null;
             }
         },
@@ -59,7 +60,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
     });
 
     const sendMessage = async (message: UserChatMessage, type: ChatType = ChatType.EDIT) => {
-        if (!editorEngine.chat.conversation.current?.conversation.id) {
+        if (!conversationId) {
             throw new Error('No conversation id');
         }
         lastMessageRef.current = null;

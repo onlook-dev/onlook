@@ -53,7 +53,10 @@ export class ConversationManager {
             if (this.current?.messages.length === 0 && !this.current?.conversation.title) {
                 throw new Error('Current conversation is already empty.');
             }
-            const newConversation = await api.chat.conversation.create.mutate({ projectId: this.editorEngine.projectId });
+            const newConversation = await api.chat.conversation.upsert.mutate({
+                projectId: this.editorEngine.projectId,
+                title: 'New Conversation',
+            });
             this.current = {
                 conversation: newConversation,
                 messages: [],
@@ -117,7 +120,7 @@ export class ConversationManager {
             console.error('No conversation found');
             throw new Error('No conversation found');
         }
-        const message = getUserChatMessageFromString(content, context);
+        const message = getUserChatMessageFromString(content, context, this.current.conversation.id);
         await this.addOrReplaceMessage(message);
         return message;
     }
@@ -162,8 +165,11 @@ export class ConversationManager {
         return api.chat.conversation.getAll.query({ projectId: id });
     }
 
-    async updateConversationInStorage(conversation: ChatConversation) {
-        await api.chat.conversation.update.mutate({ conversationId: conversation.id, title: conversation.title ?? '', metadata: conversation.metadata ?? {} });
+    async updateConversationInStorage(conversation: Partial<ChatConversation> & { id: string }) {
+        await api.chat.conversation.update.mutate({
+            conversationId: conversation.id,
+            conversation,
+        });
     }
 
     async deleteConversationInStorage(id: string) {

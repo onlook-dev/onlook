@@ -1,8 +1,8 @@
-import { ChatMessageRole, type ChatMessageContext, type ChatSnapshot } from "@onlook/models";
+import { ChatMessageRole, type ChatMessageContext, type MessageSnapshot } from "@onlook/models";
 import type { Message as AiMessage } from "ai";
 import { relations } from "drizzle-orm";
-import { boolean, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
+import { jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { conversations } from "./conversation";
 
 export const CONVERSATION_MESSAGe_RELATION_NAME = 'conversation_messages';
@@ -16,14 +16,13 @@ export const messages = pgTable("messages", {
     content: text("content").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     role: messageRole("role").notNull(),
-    applied: boolean("applied").default(false).notNull(),
-    snapshots: jsonb("snapshots").$type<ChatSnapshot>().default({}).notNull(),
+    snapshots: jsonb("snapshots").$type<MessageSnapshot[]>().default([]).notNull(),
     context: jsonb("context").$type<ChatMessageContext[]>().default([]).notNull(),
     parts: jsonb("parts").$type<AiMessage['parts']>().default([]).notNull(),
-    commitOid: text("commit_oid"),
 }).enableRLS();
 
 export const messageInsertSchema = createInsertSchema(messages);
+export const messageUpdateSchema = createUpdateSchema(messages);
 
 export const messageRelations = relations(messages, ({ one }) => ({
     conversation: one(conversations, {
