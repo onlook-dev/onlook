@@ -59,8 +59,6 @@ export interface DeploymentConfig {
     domains: string[];
     entrypoint?: string;
     envVars?: Record<string, string>;
-    projectId?: string;
-    branch?: string;
 }
 
 export interface DeploymentRequest {
