@@ -61,7 +61,7 @@ function AiMessage({ text }: { text: string }) {
 function ToolCallDisplay({ toolName }: { toolName: string }) {
   return (
     <div className="px-2">
-      <div className="border rounded-lg bg-background-onlook/20 relative">
+      <div className="border rounded-lg bg-black/40 backdrop-blur-lg relative">
         <div className="flex items-center justify-between text-foreground-secondary transition-colors pl-3 py-2">
           <div className="flex items-center gap-2">
             <Icons.LoadingSpinner className="h-4 w-4 text-foreground-secondary animate-spin" />
@@ -138,7 +138,7 @@ export function OnlookInterfaceMockup() {
 
   // Canvas panning state
   const [isPanning, setIsPanning] = useState(false);
-  const [panOffset, setPanOffset] = useState({ x: 150, y: 0 }); // Center on first mockup (accounting for layers panel)
+  const [panOffset, setPanOffset] = useState({ x: 60, y: -30 }); // Center on first mockup (accounting for layers panel)
   const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 });
 
   // Handle mouse down on canvas
@@ -175,7 +175,7 @@ export function OnlookInterfaceMockup() {
       return (
       <div className="relative w-full max-w-6xl mx-auto aspect-[16/10] rounded-xl overflow-hidden shadow-2xl border border-neutral-800 bg-background-onlook select-none">
         <div 
-          className="absolute inset-0 flex items-start mt-42 justify-center pointer-events-none z-0 right-36 select-none gap-12"
+          className="absolute inset-0 flex items-start mt-30 justify-center pointer-events-none z-0 right-36 select-none gap-12"
           style={{
             transform: `translate(${panOffset.x}px, ${panOffset.y}px)`,
             transition: isPanning ? 'none' : 'transform 0.1s ease-out'
@@ -404,7 +404,7 @@ export function OnlookInterfaceMockup() {
                   return null;
                 })}
               </div>
-              <div className="border-t border-foreground-primary/10 px-2.5 py-2 flex flex-col items-start gap-1 bg-black/85">
+              <div className="border-t border-foreground-primary/10 px-2.5 py-2 flex flex-col items-start gap-1">
                 <textarea
                   value={displayedText}
                   readOnly

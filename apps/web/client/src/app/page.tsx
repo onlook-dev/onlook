@@ -11,7 +11,7 @@ import { FAQSection } from './_components/landing-page/faq-section';
 import { TestimonialsSection } from './_components/landing-page/testimonials-section';
 import { WhatCanOnlookDoSection } from './_components/landing-page/what-can-onlook-do-section';
 import { WebsiteLayout } from './_components/website-layout';
-import { OnlookInterfaceMockup } from './_components/landing-page/onlook-interface-mockup';
+import { ResponsiveMockupSection } from './_components/landing-page/responsive-mockup-section';
 import { FeaturesSection } from './_components/landing-page/features-section';
 
 export default function Main() {
@@ -21,10 +21,8 @@ export default function Main() {
                 <div className="w-screen h-screen flex items-center justify-center" id="hero">
                     <Hero />
                 </div>
-                <div className="w-screen h-screen flex items-center justify-center" id="features">
-                    <OnlookInterfaceMockup />
-                </div>
-                <div className="w-screen h-fit flex items-center justify-center" id="features-text">
+                <ResponsiveMockupSection />
+                <div className="hidden md:flex w-screen h-fit items-center justify-center" id="features-text">
                     <FeaturesSection />
                 </div>
                 {/* <CodeOneToOneSection /> */}

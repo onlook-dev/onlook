@@ -5,7 +5,7 @@ export function FeaturesSection() {
                 {/* Left side - Headline */}
                 <div className="flex-1">
                     <h1 className="text-4xl lg:text-5xl font-light text-foreground-primary leading-tight">
-                        AI & <span className="font-['Vujahday_Script'] not-italic text-6xl">Design</span> – <br /> Side-by-Side
+                        <span className="bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_14px_rgba(255,255,255,1)]">AI</span> <span className="text-foreground-tertiary">•</span> <span className="font-mono">Code</span> <span className="text-foreground-tertiary">•</span> <span className="font-['Vujahday_Script'] not-italic text-6xl">Design</span><br /> Side-by-side-by-side
                     </h1>
                 </div>
                 
