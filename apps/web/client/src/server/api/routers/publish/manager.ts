@@ -138,37 +138,6 @@ export class PublishManager {
     };
   }
 
-  private getProcessMemoryUsageSnapshot(): {
-    rssMB: number;
-    heapTotalMB: number;
-    heapUsedMB: number;
-    externalMB: number;
-    arrayBuffersMB: number;
-  } {
-    const mem =
-      typeof process !== 'undefined' && process.memoryUsage
-        ? process.memoryUsage()
-        : ({} as NodeJS.MemoryUsage);
-    const toMB = (bytes: number | undefined) =>
-      typeof bytes === 'number' ? +(bytes / (1024 * 1024)).toFixed(2) : 0;
-    return {
-      rssMB: toMB(mem.rss),
-      heapTotalMB: toMB(mem.heapTotal),
-      heapUsedMB: toMB(mem.heapUsed),
-      externalMB: toMB(mem.external),
-      arrayBuffersMB: toMB((mem as unknown as { arrayBuffers?: number }).arrayBuffers),
-    };
-  }
-
-  private logMemoryUsage(label: string, deploymentId?: string): void {
-    const mem = this.getProcessMemoryUsageSnapshot();
-    const message = `${label} – Memory (MB): rss=${mem.rssMB}, heapUsed=${mem.heapUsedMB}, heapTotal=${mem.heapTotalMB}, external=${mem.externalMB}, arrayBuffers=${mem.arrayBuffersMB}`;
-    console.log(message);
-    if (deploymentId) {
-      addDeploymentLog(deploymentId, message, 'debug');
-    }
-  }
-
   // New flow: build → postprocess → archive → upload → return signed URL
   async buildAndUploadArtifact({
     buildScript,
@@ -184,8 +153,6 @@ export class PublishManager {
     updateDeployment: (deployment: z.infer<typeof deploymentUpdateSchema>) => Promise<Deployment | null>;
   }): Promise<string> {
     await this.prepareProject();
-    addDeploymentLog(deploymentId, 'Project prepared for deployment', 'debug');
-    this.logMemoryUsage('After prepareProject', deploymentId);
     await updateDeployment({
       status: DeploymentStatus.IN_PROGRESS,
       message: 'Preparing deployment...',
@@ -199,8 +166,6 @@ export class PublishManager {
         progress: 35,
       });
       await this.addBadge('./');
-      addDeploymentLog(deploymentId, 'Badge injected', 'debug');
-      this.logMemoryUsage('After badge injection', deploymentId);
     }
 
     await updateDeployment({
@@ -208,15 +173,7 @@ export class PublishManager {
       message: 'Building project...',
       progress: 40,
     });
-    addDeploymentLog(
-      deploymentId,
-      `Running build: ${buildScript} ${buildFlags ?? ''}`.trim(),
-      'info',
-    );
-    this.logMemoryUsage('Before build', deploymentId);
     await this.runBuildStep(buildScript, buildFlags);
-    addDeploymentLog(deploymentId, 'Build step completed', 'success');
-    this.logMemoryUsage('After build', deploymentId);
 
     await updateDeployment({
       status: DeploymentStatus.IN_PROGRESS,
@@ -226,17 +183,11 @@ export class PublishManager {
 
     const { success: postprocessSuccess, error: postprocessError } = await this.postprocessBuild();
     if (!postprocessSuccess) {
-      addDeploymentLog(
-        deploymentId,
-        `Postprocess failed: ${postprocessError ?? ''}`,
-        'error',
-      );
       throw new Error(
         `Failed to postprocess project for deployment: ${postprocessError}`,
       );
     }
     addDeploymentLog(deploymentId, 'Postprocess completed', 'success');
-    this.logMemoryUsage('After postprocess', deploymentId);
 
     const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
 
@@ -248,9 +199,7 @@ export class PublishManager {
 
     const artifactLocalPath = `${CUSTOM_OUTPUT_DIR}/standalone.tar.gz`;
     const tarCommand = `tar -czf ${artifactLocalPath} -C ${NEXT_BUILD_OUTPUT_PATH} .`;
-    addDeploymentLog(deploymentId, 'Creating tar.gz artifact', 'debug');
     await this.provider.runCommand({ args: { command: tarCommand } });
-    this.logMemoryUsage('After tar artifact creation', deploymentId);
 
     await updateDeployment({
       status: DeploymentStatus.IN_PROGRESS,
@@ -263,22 +212,14 @@ export class PublishManager {
       args: { path: artifactLocalPath },
     });
     if (!downloadUrl) {
-      addDeploymentLog(deploymentId, 'Failed to get artifact download URL', 'error');
       throw new Error('Failed to get artifact download URL');
     }
-    addDeploymentLog(deploymentId, 'Artifact download URL ready', 'success');
-    this.logMemoryUsage('After preparing artifact URL', deploymentId);
 
     await updateDeployment({
       status: DeploymentStatus.IN_PROGRESS,
       message: 'Artifact ready. Deploying...',
       progress: 80,
     });
-    addDeploymentLog(
-      deploymentId,
-      'Artifact URL prepared; proceeding to deployment',
-      'success',
-    );
 
     // NOTE: Do not delete the artifact yet to prevent race during provider fetch.
     // The sandbox may be ephemeral; hosting should fetch immediately.
