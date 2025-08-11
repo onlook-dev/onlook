@@ -3,7 +3,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { toOnlookMessageFromVercel } from '@onlook/db';
+import { toOnlookMessageFromVercel, toVercelMessageFromOnlook } from '@onlook/db';
 import { ChatType, type UserChatMessage } from '@onlook/models';
 import type { Message } from 'ai';
 import { observer } from 'mobx-react-lite';
@@ -64,7 +64,8 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         }
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
-        chat.setMessages([message as any]);
+        const streamMessage: Message = toVercelMessageFromOnlook(message);
+        chat.setMessages([streamMessage]);
         try {
             posthog.capture('user_send_message', {
                 type,

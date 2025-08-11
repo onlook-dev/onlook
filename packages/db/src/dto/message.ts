@@ -1,4 +1,6 @@
+import type { UIMessageWithMetadata } from "@mastra/core/agent";
 import type { MastraMessageV2 } from "@mastra/core/memory";
+import { getHydratedUserMessage } from "@onlook/ai";
 import type { MessageSnapshot } from "@onlook/models";
 import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatMessageContext, type UserChatMessage } from "@onlook/models";
 import { assertNever } from '@onlook/utility';
@@ -45,6 +47,26 @@ export const toMastraMessageFromOnlook = (message: ChatMessage): MastraMessageV2
         ...message,
         role: message.role as MastraMessageV2['role'],
     } satisfies MastraMessageV2;
+}
+
+export const toVercelMessageFromOnlook = (message: ChatMessage): UIMessageWithMetadata => {
+    const messageContent = message.content.parts.map((part) => {
+        if (part.type === 'text') {
+            return part.text;
+        }
+        return '';
+    }).join('');
+    const hydratedMessage = getHydratedUserMessage(message.id, messageContent, message.content.metadata?.context ?? [], {
+        totalMessages: 0,
+        currentMessageIndex: 0,
+        lastUserMessageIndex: 0,
+    });
+    return {
+        ...message,
+        content: hydratedMessage.content,
+        metadata: message.content.metadata,
+        parts: message.content.parts as UIMessageWithMetadata['parts'],
+    } satisfies UIMessageWithMetadata;
 }
 
 export const toOnlookMessageFromVercel = (message: VercelMessage): ChatMessage => {
