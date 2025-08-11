@@ -15,6 +15,7 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
+    DropdownMenuPortal,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -58,11 +59,22 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button size="default" variant="ghost" className="w-10 h-10 p-0 flex items-center justify-center hover:bg-background-onlook cursor-pointer">
+                    <Button 
+                        size="default" 
+                        variant="ghost" 
+                        className="w-10 h-10 p-0 flex items-center justify-center hover:bg-background-onlook cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <Icons.DotsVertical />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent 
+                    className="z-50" 
+                    align="end" 
+                    alignOffset={-4} 
+                    sideOffset={8}
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <DropdownMenuItem
                         onSelect={() => setShowRenameDialog(true)}
                         className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
