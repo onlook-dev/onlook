@@ -9,7 +9,6 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 import { updateDeployment } from './helpers';
 import { createDeployment, publish } from './helpers/index.ts';
-import { getDeploymentLogs } from './helpers/logs';
 
 export const deploymentRouter = createTRPCRouter({
     getByType: protectedProcedure.input(z.object({
@@ -121,11 +120,6 @@ export const deploymentRouter = createTRPCRouter({
             });
             throw error;
         }
-    }),
-    getLogs: protectedProcedure.input(z.object({
-        deploymentId: z.string(),
-    })).query(async ({ input }) => {
-        return getDeploymentLogs(input.deploymentId);
     }),
     cancel: protectedProcedure.input(z.object({
         deploymentId: z.string(),

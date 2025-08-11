@@ -9,7 +9,6 @@ import {
   updateGitignore,
   type FileOperations,
 } from '@onlook/utility';
-import { addDeploymentLog } from './helpers/logs';
 import type { z } from 'zod';
 
 type SandboxFileLike = {
@@ -187,7 +186,6 @@ export class PublishManager {
         `Failed to postprocess project for deployment: ${postprocessError}`,
       );
     }
-    addDeploymentLog(deploymentId, 'Postprocess completed', 'success');
 
     const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
 
