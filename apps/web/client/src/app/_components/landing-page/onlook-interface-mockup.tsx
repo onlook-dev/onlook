@@ -3,7 +3,7 @@ import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
 import { cn } from '@onlook/ui/utils';
 import { NodeIcon } from '../../project/[id]/_components/left-panel/layers-tab/tree/node-icon';
-import { DesignMockup } from './design-mockup';
+import { DesignMockup, DesignMockupMobile } from './design-mockup';
 
 // Notes Component for Villainstagram
 function NotesComponent() {
@@ -85,32 +85,56 @@ export function OnlookInterfaceMockup() {
   
   // Mock data for layers panel
   const mockLayers = [
-    { id: '1', name: 'Villainstagram Container', tagName: 'DIV', selected: false, level: 0, isInstance: false },
-    { id: '1.1', name: 'Left Sidebar', tagName: 'NAV', selected: false, level: 1, isInstance: false },
+    { id: '1', name: 'Design Mockup Container', tagName: 'DIV', selected: false, level: 0, isInstance: false },
+    { id: '1.1', name: 'Top Navigation Bar', tagName: 'COMPONENT', selected: false, level: 1, isInstance: false },
     { id: '1.1.1', name: 'Logo', tagName: 'DIV', selected: false, level: 2, isInstance: false },
-    { id: '1.1.2', name: 'Navigation Items', tagName: 'DIV', selected: false, level: 2, isInstance: false },
-    { id: '1.1.2.1', name: 'Home', tagName: 'A', selected: false, level: 3, isInstance: false },
-    { id: '1.1.2.2', name: 'Search', tagName: 'A', selected: false, level: 3, isInstance: false },
-    { id: '1.1.2.3', name: 'Reels', tagName: 'A', selected: false, level: 3, isInstance: false },
-    { id: '1.1.2.4', name: 'Messages', tagName: 'A', selected: false, level: 3, isInstance: false },
-    { id: '1.1.2.5', name: 'Profile', tagName: 'A', selected: false, level: 3, isInstance: false },
-    { id: '1.2', name: 'Main Feed', tagName: 'MAIN', selected: true, level: 1, isInstance: false },
-    { id: '1.2.1', name: 'Stories Section', tagName: 'SECTION', selected: false, level: 2, isInstance: false },
-    { id: '1.2.1.1', name: 'Story Items', tagName: 'DIV', selected: false, level: 3, isInstance: false },
-    { id: '1.2.2', name: 'Posts Container', tagName: 'DIV', selected: false, level: 2, isInstance: false },
-    { id: '1.2.2.1', name: 'Post 1', tagName: 'ARTICLE', selected: false, level: 3, isInstance: false },
-    { id: '1.2.2.1.1', name: 'Post Header', tagName: 'HEADER', selected: false, level: 4, isInstance: false },
-    { id: '1.2.2.1.2', name: 'Post Image', tagName: 'IMG', selected: false, level: 4, isInstance: false },
-    { id: '1.2.2.1.3', name: 'Post Actions', tagName: 'DIV', selected: false, level: 4, isInstance: false },
-    { id: '1.2.2.1.4', name: 'Post Caption', tagName: 'P', selected: false, level: 4, isInstance: false },
-    { id: '1.2.2.2', name: 'Post 2', tagName: 'ARTICLE', selected: false, level: 3, isInstance: false },
-    { id: '1.2.2.2.1', name: 'Post Header', tagName: 'HEADER', selected: false, level: 4, isInstance: false },
-    { id: '1.2.2.2.2', name: 'Post Image', tagName: 'IMG', selected: false, level: 4, isInstance: false },
-    { id: '1.2.2.2.3', name: 'Post Actions', tagName: 'DIV', selected: false, level: 4, isInstance: false },
-    { id: '1.2.2.2.4', name: 'Post Caption', tagName: 'P', selected: false, level: 4, isInstance: false },
+    { id: '1.1.2', name: 'Search Bar', tagName: 'DIV', selected: false, level: 2, isInstance: false },
+    { id: '1.1.2.1', name: 'Search Text', tagName: 'SPAN', selected: false, level: 3, isInstance: false },
+    { id: '1.1.2.2', name: 'Clear Button', tagName: 'DIV', selected: false, level: 3, isInstance: false },
+    { id: '1.1.3', name: 'User Button', tagName: 'DIV', selected: false, level: 2, isInstance: false },
+    { id: '1.2', name: 'Main Content', tagName: 'DIV', selected: false, level: 1, isInstance: false },
+    { id: '1.2.1', name: 'Left Sidebar', tagName: 'DIV', selected: false, level: 2, isInstance: false },
+    { id: '1.2.1.1', name: 'Navigation Icons', tagName: 'DIV', selected: false, level: 3, isInstance: false },
+    { id: '1.2.1.1.1', name: 'Magnifying Glass', tagName: 'SVG', selected: false, level: 4, isInstance: false },
+    { id: '1.2.1.1.2', name: 'Sparkles', tagName: 'SVG', selected: false, level: 4, isInstance: false },
+    { id: '1.2.1.1.3', name: 'Chat Bubble', tagName: 'SVG', selected: false, level: 4, isInstance: false },
+    { id: '1.2.1.1.4', name: 'Person', tagName: 'SVG', selected: false, level: 4, isInstance: false },
+    { id: '1.2.1.2', name: 'Settings Icon', tagName: 'DIV', selected: false, level: 3, isInstance: false },
+    { id: '1.2.2', name: 'Image Grid', tagName: 'DIV', selected: false, level: 2, isInstance: false },
+    { id: '1.2.2.1', name: 'Image Columns', tagName: 'DIV', selected: false, level: 3, isInstance: false },
+    { id: '1.2.2.1.1', name: 'Image Card 1', tagName: 'COMPONENT', selected: true, level: 4, isInstance: false },
+    { id: '1.2.2.1.1.1', name: 'Image Container', tagName: 'DIV', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.1.1.1', name: 'Background Overlay', tagName: 'DIV', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.1.1.2', name: 'Image', tagName: 'IMG', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.1.2', name: 'Caption', tagName: 'P', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.2', name: 'Image Card 2', tagName: 'COMPONENT', selected: false, level: 4, isInstance: false },
+    { id: '1.2.2.1.2.1', name: 'Image Container', tagName: 'DIV', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.2.1.1', name: 'Background Overlay', tagName: 'DIV', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.2.1.2', name: 'Image', tagName: 'IMG', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.2.2', name: 'Caption', tagName: 'P', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.3', name: 'Image Card 3', tagName: 'COMPONENT', selected: false, level: 4, isInstance: false },
+    { id: '1.2.2.1.3.1', name: 'Image Container', tagName: 'DIV', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.3.1.1', name: 'Background Overlay', tagName: 'DIV', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.3.1.2', name: 'Image', tagName: 'IMG', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.3.2', name: 'Caption', tagName: 'P', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.4', name: 'Image Card 4', tagName: 'COMPONENT', selected: false, level: 4, isInstance: false },
+    { id: '1.2.2.1.4.1', name: 'Image Container', tagName: 'DIV', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.4.1.1', name: 'Background Overlay', tagName: 'DIV', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.4.1.2', name: 'Image', tagName: 'IMG', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.4.2', name: 'Caption', tagName: 'P', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.5', name: 'Image Card 5', tagName: 'DIV', selected: false, level: 4, isInstance: false },
+    { id: '1.2.2.1.5.1', name: 'Image Container', tagName: 'DIV', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.5.1.1', name: 'Background Overlay', tagName: 'DIV', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.5.1.2', name: 'Image', tagName: 'IMG', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.5.2', name: 'Caption', tagName: 'P', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.6', name: 'Image Card 6', tagName: 'DIV', selected: false, level: 4, isInstance: false },
+    { id: '1.2.2.1.6.1', name: 'Image Container', tagName: 'DIV', selected: false, level: 5, isInstance: false },
+    { id: '1.2.2.1.6.1.1', name: 'Background Overlay', tagName: 'DIV', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.6.1.2', name: 'Image', tagName: 'IMG', selected: false, level: 6, isInstance: false },
+    { id: '1.2.2.1.6.2', name: 'Caption', tagName: 'P', selected: false, level: 5, isInstance: false },
   ];
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [selectedId, setSelectedId] = useState<string>('3');
+  const [selectedId, setSelectedId] = useState<string>('1.2.2.1.1');
   const [layersPanelOpen, setLayersPanelOpen] = useState(true);
 
   // Canvas panning state
@@ -173,6 +197,20 @@ export function OnlookInterfaceMockup() {
               </button>
             </div>
             <DesignMockup />
+          </div>
+          <div className="relative flex flex-col items-center border-[0.5px] border-foreground-border rounded-sm shadow-xl shadow-black/50 ml-8">
+            <div
+              className="absolute left-1/2 -translate-x-1/2 -top-7 z-50 w-full flex flex-row items-center rounded-lg h-6 text-xs px-1 gap-2.5 backdrop-blur-lg"
+            >
+              <div className="flex-1 flex flex-row items-center gap-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-[12px] text-foreground-secondary">
+                Home
+                <Icons.ChevronDown className="w-4 h-4 text-foreground-secondary mb-0.5" />
+              </div>
+              <button className="w-3 h-3 flex items-center justify-center cursor-pointer" tabIndex={-1} style={{ pointerEvents: 'none' }}>
+                <Icons.DotsHorizontal className="w-3.5 h-3.5 text-foreground-secondary" />
+              </button>
+            </div>
+            <DesignMockupMobile />
           </div>
         </div>
       {/* Top Bar */}
