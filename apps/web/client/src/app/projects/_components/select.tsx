@@ -13,7 +13,6 @@ import { timeAgo } from '@onlook/utility';
 import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
 
-// Subtle text emphasis for search matches (no background highlight)
 function HighlightText({ text, searchQuery }: { text: string; searchQuery: string }) {
   if (!searchQuery) return <>{text}</>;
   const safe = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -33,7 +32,6 @@ function HighlightText({ text, searchQuery }: { text: string; searchQuery: strin
   );
 }
 
-// Square project card for horizontal rail
 function SquareProjectCard({ 
   project, 
   searchQuery = "", 
@@ -83,28 +81,23 @@ function SquareProjectCard({
       }}
     >
       <div className="w-full aspect-[4/2.8] rounded-lg overflow-hidden relative shadow-sm transition-all duration-300">
-        {/* Background image */}
         {img ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={img} alt={project.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20" />
         )}
         
-        {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        {/* Edit button center overlay (kept for parity; click-through also supported) */}
         <div className="absolute inset-0 bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <EditAppButton 
             project={project} 
             onClick={(e) => {
-              e.stopPropagation(); // Prevent event bubbling to card click
+              e.stopPropagation();
             }}
           />
         </div>
-
-        {/* Text overlay at bottom - clean, no gradient */}
+        
         <div className="absolute bottom-0 left-0 right-0 p-3">
           <div className="text-white font-medium text-sm mb-1 truncate drop-shadow-lg">
             {HighlightText ? (
@@ -128,7 +121,6 @@ function SquareProjectCard({
   );
 }
 
-// File card for masonry grid - displays individual files
 function FileCard({
   file,
   aspectRatio = "aspect-[4/2.6]",
@@ -162,7 +154,6 @@ function FileCard({
   }, [file.preview]);
 
   const handleClick = () => {
-    // Navigate to project editor for this specific file
     router.push(`/project/${file.projectId}`);
   };
 
@@ -178,23 +169,18 @@ function FileCard({
       onClick={handleClick}
     >
       <div className={`relative ${aspectRatio} rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group`}>
-        {/* Background image */}
         {img ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={img} alt={file.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20" />
         )}
         
-        {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        {/* File type indicator */}
         <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-white text-xs">
           {file.type}
         </div>
-
-        {/* Text overlay at bottom */}
+        
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="text-white font-medium text-sm mb-1 truncate drop-shadow-lg">
             {HighlightText ? (
@@ -217,7 +203,6 @@ function FileCard({
   );
 }
 
-// Project card for masonry grid
 function ProjectCard({ 
   project, 
   refetch, 
@@ -269,33 +254,27 @@ function ProjectCard({
       onClick={handleCardClick}
     >
       <div className={`relative ${aspectRatio} rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group`}>
-        {/* Background image */}
         {img ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img src={img} alt={project.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20" />
         )}
         
-        {/* Hover overlay */}
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
-        {/* Three-dot menu - top right */}
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
           <Settings project={project} refetch={refetch} />
         </div>
         
-        {/* Edit button center overlay */}
         <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 hover:opacity-100 transition-opacity">
           <EditAppButton 
             project={project} 
             onClick={(e) => {
-              e.stopPropagation(); // Prevent event bubbling to card click
+              e.stopPropagation();
             }}
           />
         </div>
-
-        {/* Text overlay at bottom - clean, no gradient */}
+        
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="text-white font-medium text-sm mb-1 truncate drop-shadow-lg">
             {HighlightText ? (
@@ -320,7 +299,6 @@ function ProjectCard({
   );
 }
 
-// Simple masonry layout with random aspect ratios
 function MasonryLayout<T extends Project>({ items, spacing, renderItem }: {
   items: T[];
   spacing: number;
@@ -554,7 +532,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
   return (
     <div className="w-full h-full flex flex-col px-6 py-8">
       <div className="max-w-6xl w-full mx-auto">
-        {/* Favorites Section */}
+        
         {favoriteProjects.length > 0 && (
           <div className="mb-8">
             <h2 className="text-2xl text-foreground font-normal mb-[12px]">Favorites</h2>
@@ -569,12 +547,12 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             </div>
           </div>
         )}
-        {/* Projects Section */}
+        
         <div className="mb-12">
           <h2 className="text-2xl text-foreground font-normal mb-[12px]">
             Projects
           </h2>
-          {/* Keep rail aligned with content by padding to the same grid gutter */}
+          
           <div className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none]">
             <AnimatePresence mode="popLayout">
               {filteredAndSortedProjects.map((project, index) => (
@@ -611,13 +589,13 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
           </div>
         </div>
 
-        {/* Files Section */}
+        
         <div>
           <div className="flex items-center justify-between mb-[12px]">
             <h2 className="text-2xl text-foreground font-normal">Files</h2>
             
             <div className="flex items-center gap-4">
-              {/* Sort Controls */}
+              
               <div className="flex items-center gap-2">
                 <div
                   className="relative"

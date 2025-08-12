@@ -28,12 +28,10 @@ export const EditAppButton = observer(({ project, onClick, ...props }: EditAppBu
         redirect(`${Routes.PROJECT}/${project.id}`);
     };
 
-    const handleClick = (e: React.MouseEvent) => {
-        // Call custom onClick first (e.g., stopPropagation)
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         if (onClick) {
             onClick(e);
         }
-        // Then execute the project selection
         selectProject(project);
     };
 

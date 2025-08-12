@@ -86,7 +86,6 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                 <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
             </Link>
 
-            {/* Center Search - only renders if handler provided */}
             {typeof onSearchChange === 'function' ? (
                 <div className="flex-1 flex justify-center">
                     <motion.div

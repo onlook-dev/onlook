@@ -4,26 +4,22 @@ import { useMemo, useRef, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import { Icons } from "@onlook/ui/icons";
-import { Button } from "@onlook/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@onlook/ui/tooltip";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@onlook/ui/dropdown-menu";
 import { EditAppButton } from "../_components/edit-app";
-import { Settings } from "../_components/settings";
-import type { Project } from "@onlook/models";
 import { api } from "@/trpc/react";
-import Link from "next/link";
+ 
 import { TopBar } from "../_components/top-bar";
-
-// Lightweight project files list derived from existing project list
 export default function ProjectDetailPage() {
   const params = useParams<{ name: string }>();
   const router = useRouter();
   const decodedName = decodeURIComponent(params.name);
 
-  const { data: projects = [] } = api.project.list.useQuery();
+  const { data: projects = [], refetch } = api.project.list.useQuery();
   const project = useMemo(() => projects.find((p) => p.name === decodedName), [projects, decodedName]);
   
-  // Fetch components for this specific project
   const { data: projectComponents = [] } = api.project.getComponents.useQuery(
-    { projectId: project?.id || "" },
+    { projectId: project?.id ?? "" },
     { enabled: !!project?.id }
   );
 
@@ -33,6 +29,8 @@ export default function ProjectDetailPage() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [isStarred, setIsStarred] = useState<boolean>(false);
+  const { mutateAsync: deleteProject } = api.project.delete.useMutation();
+  const { mutateAsync: updateProject } = api.project.update.useMutation();
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
@@ -42,21 +40,23 @@ export default function ProjectDetailPage() {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  // Favorites local storage helpers
+  
   useEffect(() => {
     if (!project) return;
     try {
-      const raw = localStorage.getItem("onlook_fav_projects") || "[]";
-      const ids: string[] = JSON.parse(raw);
+      const raw = localStorage.getItem("onlook_fav_projects") ?? "[]";
+      const parsed = JSON.parse(raw) as unknown;
+      const ids: string[] = Array.isArray(parsed) ? (parsed as string[]) : [];
       setIsStarred(ids.includes(project.id));
     } catch {}
-  }, [project?.id]);
+  }, [project?.id, project]);
 
   const toggleFavorite = () => {
     if (!project) return;
     try {
-      const raw = localStorage.getItem("onlook_fav_projects") || "[]";
-      const ids: string[] = Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
+      const raw = localStorage.getItem("onlook_fav_projects") ?? "[]";
+      const parsed = JSON.parse(raw) as unknown;
+      const ids: string[] = Array.isArray(parsed) ? (parsed as string[]) : [];
       const set = new Set(ids);
       if (set.has(project.id)) {
         set.delete(project.id);
@@ -66,13 +66,13 @@ export default function ProjectDetailPage() {
         setIsStarred(true);
       }
       localStorage.setItem("onlook_fav_projects", JSON.stringify(Array.from(set)));
-      // notify other views
+      
       window.dispatchEvent(new StorageEvent("storage", { key: "onlook_fav_projects" }));
       window.dispatchEvent(new Event("onlook_fav_projects_changed"));
     } catch {}
   };
 
-  // Transform API response to match expected file format
+  
   const projectFiles = useMemo(() => {
     if (!project || !projectComponents.length) return [];
     
@@ -112,116 +112,190 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="min-h-screen w-full flex flex-col">
-      {/* Global top bar with centered expanding search */}
-      <TopBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      <div className="w-full sticky top-0 z-50 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <TopBar searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+      </div>
 
-      {/* Project header row */}
-      <div className="w-full max-w-6xl mx-auto flex items-center justify-between px-4 py-3">
-        {/* Left controls: big back button + name + star */}
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="w-full px-4 py-8">
+        <div className="relative w-full max-w-6xl mx-auto">
           <button
             onClick={() => router.back()}
-            className="rounded-lg hover:bg-secondary text-foreground-tertiary hover:text-foreground p-3"
+            className="absolute -left-16 top-0 rounded-lg hover:bg-secondary text-foreground-tertiary hover:text-foreground p-2"
             aria-label="Back"
           >
             <Icons.ArrowLeft className="w-6 h-6" />
           </button>
-          <div className="text-lg text-foreground font-medium truncate">{decodedName}</div>
-          {project && (
-            <button
-              onClick={toggleFavorite}
-              className="p-2 rounded hover:bg-secondary text-foreground-tertiary hover:text-foreground"
-              aria-label={isStarred ? "Remove from favourites" : "Add to favourites"}
-            >
-              {isStarred ? (
-                <Icons.BookmarkFilled className="w-5 h-5 text-yellow-400" />
-              ) : (
-                <Icons.Bookmark className="w-5 h-5" />
-              )}
-            </button>
-          )}
-        </div>
 
-        {/* Right controls: Edit App -> Sort -> More */}
-        <div className="flex items-center gap-2" ref={dropdownRef}>
-          {project && <EditAppButton project={project} />}
-          <div className="relative">
-            <button
-              onClick={() => setIsSettingsOpen((v) => !v)}
-              className="p-2 rounded hover:bg-secondary text-foreground-tertiary hover:text-foreground"
-              aria-haspopup="menu"
-              aria-expanded={isSettingsOpen}
-              aria-label="Sort & Filter"
-            >
-              <Icons.MixerHorizontal className="w-4 h-4" />
-            </button>
-            <AnimatePresence>
-              {isSettingsOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                  transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-md shadow-lg z-50"
-                >
-                  <div className="p-2">
-                    <div className="text-xs font-medium text-foreground-tertiary mb-2 px-2">Sort by</div>
-                    {["Alphabetical", "Date created", "Last viewed"].map((value) => (
-                      <button
-                        key={value}
-                        onClick={() => {
-                          setSortBy(value);
-                          setIsSettingsOpen(false);
-                        }}
-                        className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-secondary transition-colors ${sortBy === value ? "text-foreground bg-secondary" : "text-foreground-secondary"}`}
-                      >
-                        {value}
-                      </button>
-                    ))}
-                    <div className="border-t border-border my-2" />
-                    <div className="text-xs font-medium text-foreground-tertiary mb-2 px-2">Order</div>
-                    {["Newest first", "Oldest first"].map((value) => (
-                      <button
-                        key={value}
-                        onClick={() => {
-                          setOrderBy(value);
-                          setIsSettingsOpen(false);
-                        }}
-                        className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-secondary transition-colors ${orderBy === value ? "text-foreground bg-secondary" : "text-foreground-secondary"}`}
-                      >
-                        {value}
-                      </button>
-                    ))}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-foreground font-normal text-[24px] truncate">{decodedName}</h1>
+                {project && (
+                  <button
+                    onClick={toggleFavorite}
+                    className="p-1 rounded hover:bg-secondary text-foreground-tertiary hover:text-foreground"
+                    aria-label={isStarred ? "Remove from favourites" : "Add to favourites"}
+                  >
+                    {isStarred ? (
+                      <Icons.BookmarkFilled className="w-5 h-5 text-yellow-400" />
+                    ) : (
+                      <Icons.Bookmark className="w-5 h-5" />
+                    )}
+                  </button>
+                )}
+              </div>
+              <div className="flex items-center gap-6 text-sm text-foreground-tertiary">
+                {project?.metadata?.updatedAt && (
+                  <div className="flex items-center gap-2">
+                    <span>
+                      Updated {new Date(project.metadata.updatedAt).toLocaleString()}
+                    </span>
                   </div>
-                </motion.div>
+                )}
+                <div className="flex items-center gap-2">
+                  <span>{items.length} files</span>
+                </div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2" ref={dropdownRef}>
+              {searchQuery && (
+                <AnimatePresence>
+                  <motion.span
+                    initial={{ opacity: 0, x: 10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 10 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                    className="text-foreground-tertiary text-sm mr-3"
+                  >
+                    {items.length} file{items.length === 1 ? "" : "s"}
+                  </motion.span>
+                </AnimatePresence>
               )}
-            </AnimatePresence>
+
+              <TooltipProvider disableHoverableContent>
+                {project && (
+                  <EditAppButton project={project} onClick={(e) => e.stopPropagation()} />
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={() => setIsSettingsOpen((v) => !v)}
+                      className="w-10 h-10 p-0 flex items-center justify-center rounded-lg hover:bg-secondary text-foreground-tertiary hover:text-foreground"
+                      aria-haspopup="menu"
+                      aria-expanded={isSettingsOpen}
+                      aria-label="Filter & Sort"
+                    >
+                      <Icons.MixerHorizontal className="w-5 h-5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">Filter & Sort</TooltipContent>
+                </Tooltip>
+
+                <AnimatePresence>
+                  {isSettingsOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                      transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      className="absolute right-12 top-full mt-2 w-48 bg-background border border-border rounded-md shadow-lg z-50"
+                    >
+                      <div className="p-2">
+                        <div className="text-xs font-medium text-foreground-tertiary mb-2 px-2">Sort by</div>
+                        {["Alphabetical", "Date created", "Last viewed"].map((value) => (
+                          <button
+                            key={value}
+                            onClick={() => {
+                              setSortBy(value);
+                              setIsSettingsOpen(false);
+                            }}
+                            className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-secondary transition-colors ${sortBy === value ? "text-foreground bg-secondary" : "text-foreground-secondary"}`}
+                          >
+                            {value}
+                          </button>
+                        ))}
+                        <div className="border-t border-border my-2" />
+                        <div className="text-xs font-medium text-foreground-tertiary mb-2 px-2">Order</div>
+                        {["Newest first", "Oldest first"].map((value) => (
+                          <button
+                            key={value}
+                            onClick={() => {
+                              setOrderBy(value);
+                              setIsSettingsOpen(false);
+                            }}
+                            className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-secondary transition-colors ${orderBy === value ? "text-foreground bg-secondary" : "text-foreground-secondary"}`}
+                          >
+                            {value}
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <DropdownMenu>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          className="w-10 h-10 p-0 flex items-center justify-center rounded-lg hover:bg-secondary text-foreground-tertiary hover:text-foreground"
+                          aria-label="More options"
+                        >
+                          <Icons.DotsHorizontal className="w-5 h-5" />
+                        </button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">More options</TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent align="end" className="w-56 z-50">
+                    <DropdownMenuItem
+                      className="gap-2"
+                      onSelect={() => {
+                        void (async () => {
+                          if (!project) return;
+                          const newName = window.prompt("Rename project", project.name)?.trim();
+                          if (newName) {
+                            await updateProject({ id: project.id, project: { name: newName } });
+                            await refetch();
+                          }
+                        })();
+                      }}
+                    >
+                      <Icons.Pencil className="w-4 h-4" />
+                      Rename Project
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="gap-2 text-red-500"
+                      onSelect={() => {
+                        void (async () => {
+                          if (!project) return;
+                          const ok = window.confirm("Delete this project?");
+                          if (ok) {
+                            await deleteProject({ id: project.id });
+                            router.push("/projects");
+                          }
+                        })();
+                      }}
+                    >
+                      <Icons.Trash className="w-4 h-4" />
+                      Delete Project
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TooltipProvider>
+            </div>
           </div>
-          <button
-            className="p-2 rounded hover:bg-secondary text-foreground-tertiary hover:text-foreground"
-            aria-label="More options"
-          >
-            <Icons.DotsHorizontal className="w-4 h-4" />
-          </button>
         </div>
       </div>
-
-      {/* Files grid (uses same card/preview pattern). Search lives in TopBar */}
-      <div className="px-6 py-6 flex justify-center">
+      <div className="px-4 py-8 flex justify-center">
         <div className="max-w-6xl w-full">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="text-2xl text-foreground">Files</div>
-            <div />
-          </div>
-
           <div className="relative">
             <MasonryLayout
               items={items}
               spacing={24}
-              renderItem={(file: any, aspectRatio?: string) => (
-                <FileCard 
-                  key={file.id} 
-                  file={file} 
+              renderItem={(file: { id: string; name: string; projectName: string; projectId: string; lastModified: string; type: 'component' | 'page' }, aspectRatio?: string) => (
+                <FileCard
+                  key={file.id}
+                  file={file}
                   aspectRatio={aspectRatio}
                   searchQuery={searchQuery}
                   HighlightText={HighlightText}
@@ -238,7 +312,6 @@ export default function ProjectDetailPage() {
   );
 }
 
-// Subtle text emphasis for search matches (no background highlight)
 function HighlightText({ text, searchQuery }: { text: string; searchQuery: string }) {
   if (!searchQuery) return <>{text}</>;
   const safe = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -258,7 +331,6 @@ function HighlightText({ text, searchQuery }: { text: string; searchQuery: strin
   );
 }
 
-// File card with exact same design as the main projects page
 function FileCard({
   file,
   aspectRatio = "aspect-[4/2.6]",
@@ -272,7 +344,7 @@ function FileCard({
     projectId: string;
     lastModified: string;
     type: 'component' | 'page';
-    preview?: any;
+    preview?: { type?: string; url?: string } | null;
     filePath?: string;
     path?: string;
   };
@@ -294,7 +366,7 @@ function FileCard({
   }, [file.preview]);
 
   const handleClick = () => {
-    // Navigate to project editor for this specific file
+    
     router.push(`/project/${file.projectId}`);
   };
 
@@ -324,23 +396,19 @@ function FileCard({
       onClick={handleClick}
     >
       <div className={`relative ${aspectRatio} rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group`}>
-        {/* Background image */}
         {img ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={img} alt={file.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
         ) : (
           <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20" />
         )}
-        
-        {/* Hover overlay */}
+
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        {/* File type indicator */}
+
         <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-white text-xs">
           {file.type}
         </div>
 
-        {/* Text overlay at bottom */}
         <div className="absolute bottom-0 left-0 right-0 p-4">
           <div className="text-white font-medium text-sm mb-1 truncate drop-shadow-lg">
             {HighlightText ? (
@@ -363,7 +431,6 @@ function FileCard({
   );
 }
 
-// Simple masonry layout with random aspect ratios (same as main projects page)
 function MasonryLayout<T extends { id: string }>({ items, spacing, renderItem }: {
   items: T[];
   spacing: number;
