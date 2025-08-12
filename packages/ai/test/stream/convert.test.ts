@@ -2,7 +2,7 @@ import type { ChatMessage } from '@onlook/models';
 import { ChatMessageRole } from '@onlook/models';
 import type { ToolInvocation } from 'ai';
 import { describe, expect, test } from 'bun:test';
-import { convertToStreamMessages, extractTextFromParts } from '../../src/stream/index.ts';
+import { convertToStreamMessages, extractTextFromParts } from '../../src/stream';
 
 type Part =
     | { type: 'text'; text: string }

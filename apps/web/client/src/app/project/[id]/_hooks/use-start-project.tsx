@@ -4,7 +4,7 @@ import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { type ProjectCreateRequest } from '@onlook/db';
-import { ChatType, CreateRequestContextType, MessageContextType, ProjectCreateRequestStatus, type ChatMessageContext, type ImageMessageContext, type Project } from '@onlook/models';
+import { ChatType, CreateRequestContextType, MessageContextType, ProjectCreateRequestStatus, type ImageMessageContext, type MessageContext, type Project } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { useEffect, useState } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
@@ -72,14 +72,14 @@ export const useStartProject = () => {
                 throw new Error('Project ID mismatch');
             }
 
-            const createContext: ChatMessageContext[] = await editorEngine.chat.context.getCreateContext();
+            const createContext: MessageContext[] = await editorEngine.chat.context.getCreateContext();
             const imageContexts: ImageMessageContext[] = creationData.context.filter((context) => context.type === CreateRequestContextType.IMAGE).map((context) => ({
                 type: MessageContextType.IMAGE,
                 content: context.content,
                 mimeType: context.mimeType,
                 displayName: 'user image',
             }));
-            const context: ChatMessageContext[] = [...createContext, ...imageContexts];
+            const context: MessageContext[] = [...createContext, ...imageContexts];
             const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
 
             const message = await editorEngine.chat.addEditMessage(

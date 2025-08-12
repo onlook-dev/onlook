@@ -1,10 +1,10 @@
 import { ChatMessageRole } from "@onlook/models";
-import type { ChatMessageContext, UserChatMessage } from "@onlook/models/chat";
+import type { MessageContext, UserChatMessage } from "@onlook/models/chat";
 import { v4 as uuidv4 } from 'uuid';
 
 export const getUserChatMessageFromString = (
     content: string,
-    context: ChatMessageContext[],
+    context: MessageContext[],
     conversationId: string,
 ): UserChatMessage => {
     return {
@@ -15,7 +15,7 @@ export const getUserChatMessageFromString = (
             format: 2,
             metadata: {
                 context,
-                snapshots: [],
+                checkpoints: [],
             }
         },
         createdAt: new Date(),

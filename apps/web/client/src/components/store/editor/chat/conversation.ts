@@ -1,7 +1,7 @@
 import { api } from '@/trpc/client';
 import { fromMessage } from '@onlook/db';
 import type { GitCommit } from '@onlook/git';
-import { ChatMessageRole, MessageSnapshotType, type ChatConversation, type ChatMessage, type ChatMessageContext, type UserChatMessage } from '@onlook/models';
+import { ChatMessageRole, MessageCheckpointType, type ChatConversation, type ChatMessage, type MessageContext, type UserChatMessage } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { toast } from 'sonner';
 import type { EditorEngine } from '../engine';
@@ -113,7 +113,7 @@ export class ConversationManager {
 
     async addUserMessage(
         content: string,
-        context: ChatMessageContext[],
+        context: MessageContext[],
     ): Promise<UserChatMessage> {
         if (!this.current) {
             console.error('No conversation found');
@@ -152,21 +152,18 @@ export class ConversationManager {
             return;
         }
         const userMessage = message as UserChatMessage;
-        const newSnapshots = [
-            ...userMessage.content.metadata?.snapshots ?? [],
+        const newCheckpoints = [
+            ...userMessage.content.metadata.checkpoints,
             {
-                type: MessageSnapshotType.GIT,
+                type: MessageCheckpointType.GIT,
                 oid: commit.oid,
                 createdAt: new Date(),
             },
         ];
-        if (!userMessage.content.metadata) {
-            userMessage.content.metadata = {};
-        }
-        userMessage.content.metadata.snapshots = newSnapshots;
-        await api.chat.message.updateSnapshot.mutate({
+        userMessage.content.metadata.checkpoints = newCheckpoints;
+        await api.chat.message.updateCheckpoints.mutate({
             messageId: message.id,
-            snapshots: newSnapshots,
+            checkpoints: newCheckpoints,
         });
         await this.addOrReplaceMessage(userMessage);
     }
@@ -176,7 +173,7 @@ export class ConversationManager {
             console.error('No conversation found');
             return;
         }
-        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.content.metadata?.vercelId && m.content.metadata.vercelId === message.content.metadata?.vercelId));
+        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.content.metadata.vercelId && m.content.metadata.vercelId === message.content.metadata.vercelId));
         if (index === -1) {
             this.current.messages.push(message);
         } else {

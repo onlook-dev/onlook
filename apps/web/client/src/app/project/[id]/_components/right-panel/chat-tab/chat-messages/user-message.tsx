@@ -1,6 +1,6 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
-import { ChatType, MessageSnapshotType, type UserChatMessage } from '@onlook/models';
+import { ChatType, MessageCheckpointType, type UserChatMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -35,7 +35,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     const [isRestoring, setIsRestoring] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const commitOid = message.content.metadata?.snapshots?.find((s) => s.type === MessageSnapshotType.GIT)?.oid;
+    const commitOid = message.content.metadata.checkpoints.find((s) => s.type === MessageCheckpointType.GIT)?.oid;
 
     useEffect(() => {
         if (isEditing && textareaRef.current) {
@@ -210,7 +210,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                 <div className="h-6 relative">
                     <div className="absolute top-1 left-0 right-0 flex flex-row justify-start items-center w-full overflow-auto pr-16">
                         <div className="flex flex-row gap-3 text-micro text-foreground-secondary">
-                            {message.content.metadata?.context?.map((context) => (
+                            {message.content.metadata.context.map((context) => (
                                 <SentContextPill key={nanoid()} context={context} />
                             ))}
                         </div>

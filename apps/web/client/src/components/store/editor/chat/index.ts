@@ -1,5 +1,5 @@
 import type { GitCommit } from '@onlook/git';
-import { type ChatMessageContext, type UserChatMessage } from '@onlook/models/chat';
+import { type MessageContext, type UserChatMessage } from '@onlook/models/chat';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
@@ -33,7 +33,7 @@ export class ChatManager {
         return this.conversation.current?.conversation.id;
     }
 
-    async addEditMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
+    async addEditMessage(content: string, contextOverride?: MessageContext[]): Promise<UserChatMessage> {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
         this.createAndAttachCommitToUserMessage(userMessage.id, content);
@@ -47,7 +47,7 @@ export class ChatManager {
         }
     }
 
-    async addAskMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
+    async addAskMessage(content: string, contextOverride?: MessageContext[]): Promise<UserChatMessage> {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
         return userMessage;
@@ -77,12 +77,8 @@ export class ChatManager {
         const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt >= oldMessage.createdAt);
 
         // Create a new message with the new content
-        const newContext = await this.context.getRefreshedContext(oldMessage.content.metadata?.context ?? []);
-        if (!oldMessage.content.metadata) {
-            oldMessage.content.metadata = {};
-        }
+        const newContext = await this.context.getRefreshedContext(oldMessage.content.metadata.context);
         oldMessage.content.metadata.context = newContext;
-        await this.conversation.addOrReplaceMessage(oldMessage);
         const newMessage = await this.conversation.addUserMessage(newMessageContent, newContext);
         if (!newMessage) {
             console.error('Failed to add user message');

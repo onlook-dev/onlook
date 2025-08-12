@@ -1,11 +1,9 @@
-import { mastra } from '@/mastra';
-import { CHAT_TYPE_KEY, ONLOOK_AGENT_KEY, type OnlookAgentRuntimeContext } from '@/mastra/agents';
 import { trackEvent } from '@/utils/analytics/server';
-import { RuntimeContext } from '@mastra/core/runtime-context';
 import { convertToStreamMessages } from '@onlook/ai';
 import { ChatType, type ChatMessage } from '@onlook/models';
+import { streamText } from 'ai';
 import { type NextRequest } from 'next/server';
-import { checkMessageLimit, decrementUsage, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
 
 export async function POST(req: NextRequest) {
     try {
@@ -54,9 +52,6 @@ export async function POST(req: NextRequest) {
 
 export const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType }: { messages: ChatMessage[], maxSteps: number, chatType: ChatType } = await req.json();
-    const agent = mastra.getAgent(ONLOOK_AGENT_KEY);
-    const runtimeContext = new RuntimeContext<OnlookAgentRuntimeContext>()
-    runtimeContext.set(CHAT_TYPE_KEY, chatType);
 
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
@@ -68,14 +63,24 @@ export const streamResponse = async (req: NextRequest) => {
     if (chatType === ChatType.EDIT) {
         usageRecord = await incrementUsage(req);
     }
-    const result = await agent.stream(convertToStreamMessages(messages), {
-        headers: {
-            'HTTP-Referer': 'https://onlook.com',
-            'X-Title': 'Onlook',
-        },
+
+    const { model, providerOptions, headers } = await getModelFromType(chatType);
+    const systemPrompt = await getSystemPromptFromType(chatType);
+    const tools = await getToolSetFromType(chatType);
+    const result = streamText({
+        model,
+        headers,
+        tools,
         maxSteps,
-        runtimeContext,
         toolCallStreaming: true,
+        messages: [
+            {
+                role: 'system',
+                content: systemPrompt,
+                providerOptions,
+            },
+            ...convertToStreamMessages(messages),
+        ],
         experimental_repairToolCall: repairToolCall,
         onError: async (error) => {
             console.error('Error in chat', error);
@@ -89,25 +94,4 @@ export const streamResponse = async (req: NextRequest) => {
             getErrorMessage: errorHandler,
         }
     );
-}
-
-export function errorHandler(error: unknown) {
-    try {
-        console.error('Error in chat', error);
-        if (!error) {
-            return 'unknown error';
-        }
-
-        if (typeof error === 'string') {
-            return error;
-        }
-
-        if (error instanceof Error) {
-            return error.message;
-        }
-        return JSON.stringify(error);
-    } catch (error) {
-        console.error('Error in errorHandler', error);
-        return 'unknown error';
-    }
 }

@@ -30,7 +30,6 @@ export const onlookAgent = new Agent({
                 systemPrompt = getSystemPrompt();
                 break;
         }
-
         return systemPrompt;
     },
     model: async ({ runtimeContext }: {
