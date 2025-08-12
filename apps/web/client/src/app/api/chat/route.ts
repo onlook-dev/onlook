@@ -17,6 +17,25 @@ export async function POST(req: NextRequest) {
                 headers: { 'Content-Type': 'application/json' }
             });
         }
+        return new Response(JSON.stringify({
+            error: 'Message limit exceeded. Please upgrade to a paid plan.',
+            code: 402,
+            usage: {
+                daily: {
+                    period: 'day',
+                    usageCount: 100,
+                    limitCount: 100,
+                },
+                monthly: {
+                    period: 'month',
+                    usageCount: 100,
+                    limitCount: 100,
+                },
+            },
+        }), {
+            status: 402,
+            headers: { 'Content-Type': 'application/json' }
+        });
         const usageCheckResult = await checkMessageLimit(req);
         if (usageCheckResult.exceeded) {
             trackEvent({

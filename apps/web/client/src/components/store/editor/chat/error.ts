@@ -15,6 +15,7 @@ export class ChatErrorManager {
 
     handleChatError(error: Error) {
         // Try to parse error message as JSON
+        console.log('handleChatError', error);
         try {
             const parsed = JSON.parse(error.message) as {
                 code: number;
@@ -23,13 +24,14 @@ export class ChatErrorManager {
             };
             if (parsed && typeof parsed === 'object') {
                 if (parsed.code === 402 && parsed.usage) {
-                    this.usage = parsed.usage as Usage;
+                    this.usage = parsed.usage;
                     this.message = parsed.error || 'Message limit exceeded.';
                 } else {
                     this.message = parsed.error || error.toString();
                 }
-                return;
             }
+            console.log('message', this.message);
+            console.log('usage', this.usage);
         } catch (e) {
             // Not JSON, fallback
             this.message = error.toString();
@@ -37,6 +39,7 @@ export class ChatErrorManager {
     }
 
     clear() {
+        console.error('clear error');
         this.message = null;
         this.usage = null;
     }
