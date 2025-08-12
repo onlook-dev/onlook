@@ -42,8 +42,6 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 editorEngine.chat.error.handleChatError(new Error('Output length limit reached'));
             } else if (finishReason === 'content-filter') {
                 editorEngine.chat.error.handleChatError(new Error('Content filter error'));
-            } else if (finishReason === 'other' || finishReason === 'unknown') {
-                editorEngine.chat.error.handleChatError(new Error('Unknown finish reason'));
             }
         },
         onError: (error) => {
