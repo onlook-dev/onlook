@@ -3,7 +3,7 @@ import { CHAT_TYPE_KEY, ONLOOK_AGENT_KEY, type OnlookAgentRuntimeContext } from 
 import { trackEvent } from '@/utils/analytics/server';
 import { RuntimeContext } from '@mastra/core/runtime-context';
 import { ChatType } from '@onlook/models';
-import { convertToCoreMessages, type Message as VercelMessage } from 'ai';
+import { type CoreMessage } from 'ai';
 import { type NextRequest } from 'next/server';
 import { checkMessageLimit, decrementUsage, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';
 
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 }
 
 export const streamResponse = async (req: NextRequest) => {
-    const { messages, maxSteps, chatType }: { messages: VercelMessage[], maxSteps: number, chatType: ChatType } = await req.json();
+    const { messages, maxSteps, chatType }: { messages: CoreMessage[], maxSteps: number, chatType: ChatType } = await req.json();
     const agent = mastra.getAgent(ONLOOK_AGENT_KEY);
     const runtimeContext = new RuntimeContext<OnlookAgentRuntimeContext>()
     runtimeContext.set(CHAT_TYPE_KEY, chatType);
@@ -68,7 +68,7 @@ export const streamResponse = async (req: NextRequest) => {
     if (chatType === ChatType.EDIT) {
         usageRecord = await incrementUsage(req);
     }
-    const result = await agent.stream(convertToCoreMessages(messages), {
+    const result = await agent.stream(messages, {
         headers: {
             'HTTP-Referer': 'https://onlook.com',
             'X-Title': 'Onlook',

@@ -1,18 +1,7 @@
-import { env } from '@/env';
 import { Agent } from '@mastra/core/agent';
 import type { RuntimeContext } from '@mastra/core/runtime-context';
 import { ASK_TOOL_SET, BUILD_TOOL_SET, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { ChatType, LLMProvider, OPENROUTER_MODELS, type InitialModelPayload } from '@onlook/models';
-
-const isProd = env.NODE_ENV === 'production';
-
-const MainModelConfig: InitialModelPayload = isProd ? {
-    provider: LLMProvider.OPENROUTER,
-    model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
-} : {
-    provider: LLMProvider.OPENROUTER,
-    model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
-};
+import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
 
 export const ONLOOK_AGENT_KEY = "onlookAgent";
 export const CHAT_TYPE_KEY = "chatType";
@@ -44,9 +33,29 @@ export const onlookAgent = new Agent({
 
         return systemPrompt;
     },
-    model: async () => {
-        const { model } = await initModel(MainModelConfig);
-        return model;
+    model: async ({ runtimeContext }: {
+        runtimeContext: RuntimeContext<OnlookAgentRuntimeContext>
+    }) => {
+        const chatType = runtimeContext.get(CHAT_TYPE_KEY);
+        let model: ModelConfig;
+        switch (chatType) {
+            case ChatType.CREATE:
+            case ChatType.FIX:
+                model = await initModel({
+                    provider: LLMProvider.OPENROUTER,
+                    model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
+                });
+                break;
+            case ChatType.ASK:
+            case ChatType.EDIT:
+            default:
+                model = await initModel({
+                    provider: LLMProvider.OPENROUTER,
+                    model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
+                });
+                break;
+        }
+        return model.model;
     },
     tools: ({ runtimeContext }: {
         runtimeContext: RuntimeContext<OnlookAgentRuntimeContext>

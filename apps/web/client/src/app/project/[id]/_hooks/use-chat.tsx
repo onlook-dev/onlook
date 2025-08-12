@@ -3,8 +3,8 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import type { HydrateUserMessageOptions } from '@onlook/ai';
-import { toOnlookMessageFromVercel, toVercelMessageFromOnlook } from '@onlook/db';
+import { convertToStreamMessages } from '@onlook/ai';
+import { toOnlookMessageFromVercel } from '@onlook/db';
 import { ChatType } from '@onlook/models';
 import type { Message } from 'ai';
 import { observer } from 'mobx-react-lite';
@@ -63,18 +63,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         }
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
-        const messageCount = editorEngine.chat.conversation.current?.messages.length ?? 0;
-        const opt: HydrateUserMessageOptions = {
-            totalMessages: messageCount + 1,
-            currentMessageIndex: messageCount,
-            lastUserMessageIndex: messageCount,
-        };
-        const messages = [
-            ...editorEngine.chat.conversation.current?.messages.map((m, i) => toVercelMessageFromOnlook(m, {
-                ...opt,
-                currentMessageIndex: i,
-            })) ?? [],
-        ];
+        const messages = convertToStreamMessages(editorEngine.chat.conversation.current?.messages ?? []) as Message[];
         chat.setMessages(messages);
         try {
             posthog.capture('user_send_message', {

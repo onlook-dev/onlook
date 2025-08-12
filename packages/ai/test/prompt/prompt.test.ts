@@ -2,7 +2,7 @@ import { MessageContextType } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
 import path from 'path';
 import {
-    type HydrateUserMessageOptions,
+    type HydrateMessageOptions,
     getCreatePageSystemPrompt,
     getFilesContent,
     getHighlightsContent,
@@ -38,7 +38,7 @@ describe('Prompt', () => {
 
     test('User message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user.txt');
-        const options: HydrateUserMessageOptions = {
+        const options: HydrateMessageOptions = {
             totalMessages: 1,
             currentMessageIndex: 0,
             lastUserMessageIndex: 0,
@@ -92,7 +92,7 @@ describe('Prompt', () => {
     test('User empty message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user-empty.txt');
 
-        const options: HydrateUserMessageOptions = {
+        const options: HydrateMessageOptions = {
             totalMessages: 1,
             currentMessageIndex: 0,
             lastUserMessageIndex: 0,

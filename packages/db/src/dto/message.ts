@@ -1,5 +1,4 @@
 import type { MastraMessageV2 } from "@mastra/core/memory";
-import { getHydratedUserMessage, type HydrateUserMessageOptions } from '@onlook/ai';
 import type { Message as DbMessage } from "@onlook/db";
 import type { MessageSnapshot } from "@onlook/models";
 import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatMessageContext, type UserChatMessage } from "@onlook/models";
@@ -56,25 +55,6 @@ export const fromMessage = (message: ChatMessage): DbMessage => {
         role: message.role as DbMessage['role'],
         snapshots: message.content.metadata?.snapshots ?? [],
     } satisfies DbMessage;
-}
-
-export const toVercelMessageFromOnlook = (message: ChatMessage, opt: HydrateUserMessageOptions): VercelMessage => {
-    const messageContent = message.content.parts.map((part) => {
-        if (part.type === 'text') {
-            return part.text;
-        }
-        return '';
-    }).join('');
-    if (message.role === ChatMessageRole.ASSISTANT) {
-        return {
-            ...message,
-            parts: message.content.parts,
-            content: messageContent,
-        } satisfies VercelMessage;
-    } else {
-        const hydratedMessage = getHydratedUserMessage(message.id, messageContent, message.content.metadata?.context ?? [], opt);
-        return hydratedMessage;
-    }
 }
 
 export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId: string): ChatMessage => {
