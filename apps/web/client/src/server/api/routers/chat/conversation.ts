@@ -1,9 +1,12 @@
+import { initModel } from '@onlook/ai';
 import {
     conversationInsertSchema,
     conversations,
     conversationUpdateSchema,
     toConversation
 } from '@onlook/db';
+import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
+import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -60,5 +63,33 @@ export const conversationRouter = createTRPCRouter({
         }))
         .mutation(async ({ ctx, input }) => {
             await ctx.db.delete(conversations).where(eq(conversations.id, input.conversationId));
+        }),
+    generateTitle: protectedProcedure
+        .input(z.object({
+            conversationId: z.string(),
+            content: z.string(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const { model, providerOptions, headers } = await initModel({
+                provider: LLMProvider.OPENROUTER,
+                model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+            });
+
+            const MAX_NAME_LENGTH = 50;
+            const result = await generateText({
+                model,
+                headers,
+                prompt: `Generate a concise and meaningful conversation title (2-4 words maximum) that reflects the main purpose or theme of the conversation based on user's creation prompt. Generate only the conversation title, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.content}</prompt>`,
+                providerOptions,
+                maxTokens: 50,
+            });
+
+            const generatedName = result.text.trim();
+            if (generatedName && generatedName.length > 0 && generatedName.length <= MAX_NAME_LENGTH) {
+                return generatedName;
+            }
+
+            console.error('Error generating conversation title', result);
+            return null;
         }),
 });

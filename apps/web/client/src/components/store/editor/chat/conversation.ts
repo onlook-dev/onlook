@@ -121,11 +121,36 @@ export class ConversationManager {
         }
         const message = getUserChatMessageFromString(content, context, this.current.conversation.id);
         await this.addOrReplaceMessage(message);
+        if (!this.current.conversation.title) {
+            this.addConversationTitle(this.current.conversation.id, content);
+        }
         return message;
     }
 
+    async addConversationTitle(conversationId: string, content: string) {
+        const title = await api.chat.conversation.generateTitle.mutate({
+            conversationId,
+            content,
+        });
+        if (!title) {
+            console.error('Error generating conversation title');
+            return;
+        }
+        await this.updateConversationInStorage({
+            id: conversationId,
+            title,
+        });
+
+        // Update conversation in list
+        const listConversation = this.conversations.find((c) => c.id === conversationId);
+        if (!listConversation) {
+            console.error('No conversation found');
+            return;
+        }
+        listConversation.title = title;
+    }
+
     async attachCommitToUserMessage(id: string, commit: GitCommit): Promise<void> {
-        console.log('attaching commit to message', id, commit.oid);
         const message = this.current?.messages.find((m) => m.id === id && m.role === ChatMessageRole.USER);
         if (!message) {
             console.error('No message found with id', id);

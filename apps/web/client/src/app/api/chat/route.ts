@@ -64,7 +64,7 @@ export const streamResponse = async (req: NextRequest) => {
     let usageRecord: {
         usageRecordId: string | undefined;
         rateLimitId: string | undefined;
-    } | undefined;
+    } | null;
     if (chatType === ChatType.EDIT) {
         usageRecord = await incrementUsage(req);
     }

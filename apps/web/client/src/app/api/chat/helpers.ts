@@ -79,7 +79,10 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
     };
 }
 
-export const incrementUsage = async (req: NextRequest) => {
+export const incrementUsage = async (req: NextRequest): Promise<{
+    usageRecordId: string | undefined,
+    rateLimitId: string | undefined,
+} | null> => {
     try {
         const user = await getSupabaseUser(req);
         if (!user) {
@@ -96,6 +99,7 @@ export const incrementUsage = async (req: NextRequest) => {
     } catch (error) {
         console.error('Error in chat usage increment', error);
     }
+    return null;
 }
 
 export const decrementUsage = async (
@@ -103,8 +107,8 @@ export const decrementUsage = async (
     usageRecord: {
         usageRecordId: string | undefined,
         rateLimitId: string | undefined,
-    } | undefined
-) => {
+    } | null
+): Promise<void> => {
     try {
         if (!usageRecord) {
             return;
