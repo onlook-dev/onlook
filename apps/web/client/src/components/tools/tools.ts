@@ -172,7 +172,7 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             throw new Error(`Unknown tool call: ${toolName}`);
         }
 
-        return await clientTool.handler(toolCall.args, editorEngine);
+        return await clientTool.handler(toolCall.input, editorEngine);
     } catch (error) {
         console.error('Error handling tool call', error);
         return 'error handling tool call ' + error;

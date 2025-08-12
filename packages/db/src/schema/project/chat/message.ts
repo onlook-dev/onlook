@@ -1,5 +1,5 @@
 import { ChatMessageRole, type MessageCheckpoints, type MessageContext } from "@onlook/models";
-import type { Message as AiMessage } from "ai";
+import type { UIMessage } from "ai";
 import { relations } from "drizzle-orm";
 import { boolean, jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
@@ -17,7 +17,7 @@ export const messages = pgTable("messages", {
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     role: messageRole("role").notNull(),
     context: jsonb("context").$type<MessageContext[]>().default([]).notNull(),
-    parts: jsonb("parts").$type<AiMessage['parts']>().default([]).notNull(),
+    parts: jsonb("parts").$type<UIMessage['parts']>().default([]).notNull(),
     checkpoints: jsonb("checkpoints").$type<MessageCheckpoints[]>().default([]).notNull(),
 
     // Deprecated

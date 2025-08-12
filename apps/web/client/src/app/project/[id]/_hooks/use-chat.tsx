@@ -2,33 +2,36 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
-import { useChat, type UseChatHelpers } from '@ai-sdk/react';
+import { useChat, type UseChatHelpers, DefaultChatTransport } from '@ai-sdk/react';
 import { toOnlookMessageFromVercel } from '@onlook/db';
 import { ChatType } from '@onlook/models';
-import type { Message } from 'ai';
+import type { UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers & { sendMessage: (type: ChatType) => Promise<string | null | undefined> };
+type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & { sendMessage: (type: ChatType) => Promise<string | null | undefined> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
-    const lastMessageRef = useRef<Message | null>(null);
+    const lastMessageRef = useRef<UIMessage | null>(null);
     const posthog = usePostHog();
 
     const conversationId = editorEngine.chat.conversation.current?.conversation.id;
-    const chat = useChat({
+    const chat = useChat<UIMessage>({
         id: 'user-chat',
-        api: '/api/chat',
-        maxSteps: 20,
+        transport: new DefaultChatTransport({ api: '/api/chat' }),
+
         body: {
             conversationId,
             projectId: editorEngine.projectId,
         },
+
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
-        onFinish: (message, { finishReason }) => {
+
+        onFinish: (event) => {
+            const { message, finishReason } = event as any;
             lastMessageRef.current = message;
             if (finishReason !== 'tool-calls') {
                 editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message, conversationId ?? ''));
@@ -44,6 +47,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 editorEngine.chat.error.handleChatError(new Error('Content filter error'));
             }
         },
+
         onError: (error) => {
             console.error('Error in chat', error);
             editorEngine.chat.error.handleChatError(error);
@@ -52,8 +56,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, conversationId ?? ''));
                 lastMessageRef.current = null;
             }
-        },
-        sendExtraMessageFields: true,
+        }
     });
 
     const sendMessage = async (type: ChatType = ChatType.EDIT) => {
@@ -70,7 +73,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         } catch (error) {
             console.error('Error tracking user send message: ', error)
         }
-        return chat.reload({
+        return chat.regenerate({
             body: {
                 chatType: type,
                 conversationId,

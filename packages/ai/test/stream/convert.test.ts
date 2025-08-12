@@ -30,9 +30,12 @@ describe('convertToStreamMessages', () => {
     test('truncates context for all user messages except the final user message', () => {
         const fileCtx = (path: string, content: string) => ({
             type: 'file',
-            path,
-            content,
-            displayName: path,
+
+            file: {
+                path,
+                content,
+                displayName: path
+            }
         });
 
         const user1 = createMessage(

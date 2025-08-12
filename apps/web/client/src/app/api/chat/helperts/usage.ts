@@ -2,7 +2,7 @@ import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { initModel } from '@onlook/ai';
 import { LLMProvider, OPENROUTER_MODELS, UsageType, type Usage } from '@onlook/models';
-import { generateObject, NoSuchToolError, type ToolCall, type ToolSet } from 'ai';
+import { generateObject } from 'ai';
 import { type NextRequest } from 'next/server';
 
 export const checkMessageLimit = async (req: NextRequest): Promise<{
