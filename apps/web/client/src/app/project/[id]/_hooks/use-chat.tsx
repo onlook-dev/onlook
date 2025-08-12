@@ -3,14 +3,15 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { toOnlookMessageFromVercel, toVercelMessageFromOnlook } from '@onlook/db';
-import { ChatType, type UserChatMessage } from '@onlook/models';
+import type { HydrateUserMessageOptions } from '@onlook/ai';
+import { toOnlookMessageFromVercel, toStreamMessageFromOnlook } from '@onlook/db';
+import { ChatType } from '@onlook/models';
 import type { Message } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers & { sendMessage: (message: UserChatMessage, type: ChatType) => Promise<string | null | undefined> };
+type ExtendedUseChatHelpers = UseChatHelpers & { sendMessage: (type: ChatType) => Promise<string | null | undefined> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
@@ -56,15 +57,23 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         sendExtraMessageFields: true,
     });
 
-    const sendMessage = async (message: UserChatMessage, type: ChatType = ChatType.EDIT) => {
+    const sendMessage = async (type: ChatType = ChatType.EDIT) => {
         if (!conversationId) {
             throw new Error('No conversation id');
         }
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
+        const messageCount = editorEngine.chat.conversation.current?.messages.length ?? 0;
+        const opt: HydrateUserMessageOptions = {
+            totalMessages: messageCount + 1,
+            currentMessageIndex: messageCount,
+            lastUserMessageIndex: messageCount,
+        };
         const messages = [
-            ...editorEngine.chat.conversation.current?.messages.map(toVercelMessageFromOnlook) ?? [],
-            toVercelMessageFromOnlook(message),
+            ...editorEngine.chat.conversation.current?.messages.map((m, i) => toStreamMessageFromOnlook(m, {
+                ...opt,
+                currentMessageIndex: i,
+            })) ?? [],
         ];
         chat.setMessages(messages);
         try {

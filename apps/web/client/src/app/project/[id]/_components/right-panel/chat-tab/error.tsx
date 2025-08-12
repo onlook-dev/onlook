@@ -18,8 +18,8 @@ export const ErrorSection = observer(() => {
 
     const sendFixError = async () => {
         try {
-            const message = await editorEngine.chat.getFixErrorMessage();
-            sendMessage(message, ChatType.FIX);
+            const message = await editorEngine.chat.addFixErrorMessage();
+            sendMessage(ChatType.FIX);
         } catch (error) {
             console.error('Error sending fix error message', error);
             toast.error('Failed to send fix error message. Please try again.');

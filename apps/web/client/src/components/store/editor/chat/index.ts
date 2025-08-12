@@ -33,7 +33,7 @@ export class ChatManager {
         return this.conversation.current?.conversation.id;
     }
 
-    async getEditMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
+    async addEditMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
         this.createCommit(content).then((commit) => {
@@ -44,13 +44,13 @@ export class ChatManager {
         return userMessage;
     }
 
-    async getAskMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
+    async addAskMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
         return userMessage;
     }
 
-    async getFixErrorMessage(): Promise<UserChatMessage> {
+    async addFixErrorMessage(): Promise<UserChatMessage> {
         const errors = this.editorEngine.error.errors;
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
         const errorContexts = this.context.getMessageContext(errors);
@@ -62,7 +62,7 @@ export class ChatManager {
         return userMessage
     }
 
-    async getResubmitMessage(id: string, newMessageContent: string): Promise<UserChatMessage | null> {
+    async resubmitMessage(id: string, newMessageContent: string): Promise<UserChatMessage | null> {
         // Remove the old message and all messages after it
         const oldMessageIndex = this.conversation.current?.messages.findIndex((m) => m.id === id);
         if (oldMessageIndex === undefined || oldMessageIndex === -1 || !this.conversation.current?.messages[oldMessageIndex]) {

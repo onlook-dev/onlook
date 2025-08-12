@@ -131,10 +131,10 @@ export const ChatInput = observer(({
         const savedInput = inputValue.trim();
         try {
             const message = chatMode === ChatType.ASK
-                ? await editorEngine.chat.getAskMessage(savedInput)
-                : await editorEngine.chat.getEditMessage(savedInput);
+                ? await editorEngine.chat.addAskMessage(savedInput)
+                : await editorEngine.chat.addEditMessage(savedInput);
 
-            await sendMessageToChat(message, chatMode);
+            await sendMessageToChat(chatMode);
             setInputValue('');
         } catch (error) {
             console.error('Error sending message', error);

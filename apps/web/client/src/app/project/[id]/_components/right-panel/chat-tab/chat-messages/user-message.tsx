@@ -84,11 +84,11 @@ export const UserMessage = ({ message }: UserMessageProps) => {
 
     const sendMessage = async (newContent: string) => {
         try {
-            const newMessage = await editorEngine.chat.getResubmitMessage(message.id, newContent);
+            const newMessage = await editorEngine.chat.resubmitMessage(message.id, newContent);
             if (!newMessage) {
                 throw new Error('Message not found');
             }
-            sendMessageToChat(newMessage, ChatType.EDIT);
+            sendMessageToChat(ChatType.EDIT);
         } catch (error) {
             console.error('Failed to resubmit message', error);
             toast.error('Failed to resubmit message. Please try again.', {
