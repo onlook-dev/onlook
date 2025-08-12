@@ -1,9 +1,9 @@
 import { trackEvent } from '@/utils/analytics/server';
-import { ASK_TOOL_SET, BUILD_TOOL_SET, convertToStreamMessages, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { ChatType, LLMProvider, OPENROUTER_MODELS, type ChatMessage, type ModelConfig } from '@onlook/models';
+import { convertToStreamMessages } from '@onlook/ai';
+import { ChatType, type ChatMessage } from '@onlook/models';
 import { streamText } from 'ai';
 import { type NextRequest } from 'next/server';
-import { checkMessageLimit, decrementUsage, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
 
 export async function POST(req: NextRequest) {
     try {
@@ -94,69 +94,4 @@ export const streamResponse = async (req: NextRequest) => {
             getErrorMessage: errorHandler,
         }
     );
-}
-
-export function errorHandler(error: unknown) {
-    try {
-        console.error('Error in chat', error);
-        if (!error) {
-            return 'unknown error';
-        }
-
-        if (typeof error === 'string') {
-            return error;
-        }
-
-        if (error instanceof Error) {
-            return error.message;
-        }
-        return JSON.stringify(error);
-    } catch (error) {
-        console.error('Error in errorHandler', error);
-        return 'unknown error';
-    }
-}
-
-async function getModelFromType(chatType: ChatType) {
-    let model: ModelConfig;
-    switch (chatType) {
-        case ChatType.CREATE:
-        case ChatType.FIX:
-            model = await initModel({
-                provider: LLMProvider.OPENROUTER,
-                model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
-            });
-            break;
-        case ChatType.ASK:
-        case ChatType.EDIT:
-        default:
-            model = await initModel({
-                provider: LLMProvider.OPENROUTER,
-                model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
-            });
-            break;
-    }
-    return model;
-}
-
-async function getToolSetFromType(chatType: ChatType) {
-    return chatType === ChatType.ASK ? ASK_TOOL_SET : BUILD_TOOL_SET;
-}
-
-async function getSystemPromptFromType(chatType: ChatType) {
-    let systemPrompt: string;
-
-    switch (chatType) {
-        case ChatType.CREATE:
-            systemPrompt = getCreatePageSystemPrompt();
-            break;
-        case ChatType.ASK:
-            systemPrompt = getAskModeSystemPrompt();
-            break;
-        case ChatType.EDIT:
-        default:
-            systemPrompt = getSystemPrompt();
-            break;
-    }
-    return systemPrompt;
 }

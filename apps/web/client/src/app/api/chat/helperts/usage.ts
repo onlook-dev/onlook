@@ -42,43 +42,6 @@ export const getSupabaseUser = async (request: NextRequest) => {
     return user;
 }
 
-export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: ToolCall<string, any>, tools: ToolSet, error: Error }) => {
-    if (NoSuchToolError.isInstance(error)) {
-        throw new Error(
-            `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
-        );
-    }
-    const tool = tools[toolCall.toolName as keyof typeof tools];
-
-    console.warn(
-        `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}, attempting to fix`,
-    );
-
-    const { model } = await initModel({
-        provider: LLMProvider.OPENROUTER,
-        model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
-    });
-
-    const { object: repairedArgs } = await generateObject({
-        model,
-        schema: tool?.parameters,
-        prompt: [
-            `The model tried to call the tool "${toolCall.toolName}"` +
-            ` with the following arguments:`,
-            JSON.stringify(toolCall.args),
-            `The tool accepts the following schema:`,
-            JSON.stringify(tool?.parameters),
-            'Please fix the arguments.',
-        ].join('\n'),
-    });
-
-    return {
-        ...toolCall,
-        args: JSON.stringify(repairedArgs),
-        toolCallType: 'function' as const
-    };
-}
-
 export const incrementUsage = async (req: NextRequest): Promise<{
     usageRecordId: string | undefined,
     rateLimitId: string | undefined,
