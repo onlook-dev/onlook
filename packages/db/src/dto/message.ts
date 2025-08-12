@@ -54,6 +54,8 @@ export const fromMessage = (message: ChatMessage): DbMessage => {
         }).join(''),
         role: message.role as DbMessage['role'],
         snapshots: message.content.metadata?.snapshots ?? [],
+        applied: null,
+        commitOid: null,
     } satisfies DbMessage;
 }
 
