@@ -8,11 +8,12 @@ import path from 'node:path';
 import './src/env';
 
 const nextConfig: NextConfig = {
-    devIndicators: false,
-    // TODO: Remove this once we have a proper ESLint and TypeScript config
+    devIndicators: {
+        buildActivity: false,
+    },
     eslint: {
         ignoreDuringBuilds: true,
-    }
+    },
 };
 
 if (process.env.NODE_ENV === 'development') {

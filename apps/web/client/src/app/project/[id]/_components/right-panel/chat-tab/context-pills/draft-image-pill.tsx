@@ -1,4 +1,4 @@
-import { type ChatMessageContext, MessageContextType } from '@onlook/models/chat';
+import { type MessageContext, MessageContextType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'motion/react';
 import React from 'react';
@@ -7,7 +7,7 @@ import { getTruncatedName } from './helpers';
 export const DraftImagePill = React.forwardRef<
     HTMLDivElement,
     {
-        context: ChatMessageContext;
+        context: MessageContext;
         onRemove: () => void;
     }
 >(({ context, onRemove }, ref) => {

@@ -3,12 +3,14 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 export const MarkdownRenderer = ({
+    type,
     messageId,
     content,
     className = '',
     applied,
     isStream,
 }: {
+    type: 'text' | 'reasoning';
     messageId: string;
     content: string;
     className?: string;
