@@ -35,7 +35,6 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 editorEngine.chat.suggestions.generateSuggestions();
                 lastMessageRef.current = null;
             }
-
             if (finishReason === 'stop') {
                 editorEngine.chat.context.clearAttachments();
                 editorEngine.chat.error.clear();
@@ -77,6 +76,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         return chat.reload({
             body: {
                 chatType: type,
+                conversationId,
             },
         });
     };

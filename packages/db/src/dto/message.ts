@@ -114,6 +114,10 @@ export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId
     }
 }
 
+export const toDbMessageFromVercel = (message: VercelMessage, conversationId: string): DbMessage => {
+    return fromMessage(toOnlookMessageFromVercel(message, conversationId));
+}
+
 export const getMastraMessageContext = (message: MastraMessageV2): ChatMessageContext[] => {
     return (message.content.metadata?.context ?? []) as ChatMessageContext[];
 }

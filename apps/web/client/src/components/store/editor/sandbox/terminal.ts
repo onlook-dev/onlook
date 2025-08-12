@@ -1,8 +1,10 @@
+'use client';
+
+import type { Provider, ProviderTask, ProviderTerminal } from '@onlook/code-provider';
 import { FitAddon } from '@xterm/addon-fit';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { v4 as uuidv4 } from 'uuid';
 import type { ErrorManager } from '../error';
-import type { Provider, ProviderTask, ProviderTerminal } from '@onlook/code-provider';
 
 export enum CLISessionType {
     TERMINAL = 'terminal',

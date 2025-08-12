@@ -35,11 +35,7 @@ export const messageRouter = createTRPCRouter({
                     throw new Error(`Conversation not found`);
                 }
             }
-            const normalizedMessage = {
-                ...input.message,
-                role: input.message.role as ChatMessageRole,
-                parts: input.message.parts as Message['parts'],
-            };
+            const normalizedMessage = normalizeMessage(input.message);
             return await ctx.db
                 .insert(messages)
                 .values(normalizedMessage)
@@ -50,6 +46,15 @@ export const messageRouter = createTRPCRouter({
                     },
                 });
         }),
+    upsertMany: protectedProcedure
+        .input(z.object({
+            messages: messageInsertSchema.array(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const normalizedMessages = input.messages.map(normalizeMessage);
+            console.log('normalizedMessages', JSON.stringify(normalizedMessages, null, 2));
+            await ctx.db.insert(messages).values(normalizedMessages);
+        }),
     delete: protectedProcedure
         .input(z.object({
             messageIds: z.array(z.string()),
@@ -58,3 +63,12 @@ export const messageRouter = createTRPCRouter({
             await ctx.db.delete(messages).where(inArray(messages.id, input.messageIds));
         }),
 })
+
+const normalizeMessage = (message: z.infer<typeof messageInsertSchema>) => {
+    return {
+        ...message,
+        role: message.role as ChatMessageRole,
+        parts: message.parts as Message['parts'],
+        createdAt: typeof message.createdAt === 'string' ? new Date(message.createdAt) : message.createdAt,
+    };
+};

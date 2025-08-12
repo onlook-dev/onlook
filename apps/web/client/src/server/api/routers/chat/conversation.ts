@@ -34,12 +34,7 @@ export const conversationRouter = createTRPCRouter({
             const [conversation] = await ctx.db.insert(conversations).values({
                 projectId: input.projectId,
                 displayName: input.title,
-            }).returning().onConflictDoUpdate({
-                target: [conversations.projectId, conversations.displayName],
-                set: {
-                    updatedAt: new Date(),
-                },
-            });
+            }).returning();
             if (!conversation) {
                 throw new Error('Conversation not created');
             }

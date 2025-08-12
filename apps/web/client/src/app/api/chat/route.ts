@@ -2,7 +2,9 @@ import { mastra } from '@/mastra';
 import { CHAT_TYPE_KEY, ONLOOK_AGENT_KEY, type OnlookAgentRuntimeContext } from '@/mastra/agents';
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { trackEvent } from '@/utils/analytics/server';
+import { type MastraMessageV2 } from '@mastra/core/memory';
 import { RuntimeContext } from '@mastra/core/runtime-context';
+import { fromMessage } from '@onlook/db';
 import { ChatType, UsageType } from '@onlook/models';
 import { type NextRequest } from 'next/server';
 import { checkMessageLimit, getSupabaseUser, repairToolCall } from './helpers';
@@ -76,14 +78,7 @@ export const streamResponse = async (req: NextRequest) => {
         usageRecordId = incrementRes?.usageRecordId;
         rateLimitId = incrementRes?.rateLimitId;
     }
-
-    console.log('__messages', JSON.stringify(messages, null, 2));
-    const lastMessage = {
-        ...messages.at(-1),
-        threadId: conversationId,
-        resourceId: projectId,
-    } as any;
-    const result = await agent.stream(lastMessage, {
+    const result = await agent.stream(messages, {
         headers: {
             'HTTP-Referer': 'https://onlook.com',
             'X-Title': 'Onlook',
@@ -100,9 +95,7 @@ export const streamResponse = async (req: NextRequest) => {
                     .then(({ api }) => api.usage.revertIncrement({ usageRecordId, rateLimitId }))
                     .catch(error => console.error('Error in chat usage decrement', error));
             }
-        },
-        resourceId: projectId,
-        threadId: conversationId,
+        }
     })
 
     return result.toDataStreamResponse(
