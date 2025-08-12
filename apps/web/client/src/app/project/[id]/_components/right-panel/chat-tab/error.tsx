@@ -17,12 +17,13 @@ export const ErrorSection = observer(() => {
     const errorCount = editorEngine.error.errors.length;
 
     const sendFixError = async () => {
-        const message = await editorEngine.chat.getFixErrorMessage();
-        if (!message) {
-            toast.error('Failed to send fix error messages. Please try again.');
-            return;
+        try {
+            const message = await editorEngine.chat.getFixErrorMessage();
+            sendMessage(message, ChatType.FIX);
+        } catch (error) {
+            console.error('Error sending fix error message', error);
+            toast.error('Failed to send fix error message. Please try again.');
         }
-        sendMessage(message, ChatType.FIX);
     }
 
     return (

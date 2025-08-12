@@ -83,12 +83,18 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     const sendMessage = async (newContent: string) => {
-        const newMessage = await editorEngine.chat.getResubmitMessage(message.id, newContent);
-        if (!newMessage) {
-            console.error('Failed to resubmit message');
-            return;
+        try {
+            const newMessage = await editorEngine.chat.getResubmitMessage(message.id, newContent);
+            if (!newMessage) {
+                throw new Error('Message not found');
+            }
+            sendMessageToChat(newMessage, ChatType.EDIT);
+        } catch (error) {
+            console.error('Failed to resubmit message', error);
+            toast.error('Failed to resubmit message. Please try again.', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         }
-        sendMessageToChat(newMessage, ChatType.EDIT);
     };
 
     const handleRestoreCheckpoint = async () => {

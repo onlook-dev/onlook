@@ -87,11 +87,6 @@ export const useStartProject = () => {
                 prompt,
                 context,
             );
-
-            if (!message) {
-                console.error('Failed to get creation messages');
-                throw new Error('Failed to get creation messages');
-            }
             sendMessage(message, ChatType.CREATE);
 
             try {

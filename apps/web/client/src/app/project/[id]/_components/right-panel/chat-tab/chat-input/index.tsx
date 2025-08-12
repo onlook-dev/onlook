@@ -129,19 +129,18 @@ export const ChatInput = observer(({
             return;
         }
         const savedInput = inputValue.trim();
+        try {
+            const message = chatMode === ChatType.ASK
+                ? await editorEngine.chat.getAskMessage(savedInput)
+                : await editorEngine.chat.getEditMessage(savedInput);
 
-        const message = chatMode === ChatType.ASK
-            ? await editorEngine.chat.getAskMessage(savedInput)
-            : await editorEngine.chat.getEditMessage(savedInput);
-
-        if (!message) {
+            await sendMessageToChat(message, chatMode);
+            setInputValue('');
+        } catch (error) {
+            console.error('Error sending message', error);
             toast.error('Failed to send message. Please try again.');
             setInputValue(savedInput);
-            return;
         }
-
-        await sendMessageToChat(message, chatMode);
-        setInputValue('');
     }
 
     const getPlaceholderText = () => {

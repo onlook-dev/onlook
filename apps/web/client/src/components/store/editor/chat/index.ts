@@ -33,53 +33,25 @@ export class ChatManager {
         return this.conversation.current?.conversation.id;
     }
 
-    async getEditMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage | null> {
-        try {
-            const context = contextOverride ?? await this.context.getChatContext();
-            const userMessage = await this.conversation.addUserMessage(content, context);
-            if (!userMessage) {
-                console.error('Failed to add user message');
-                return null;
+    async getEditMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
+        const context = contextOverride ?? await this.context.getChatContext();
+        const userMessage = await this.conversation.addUserMessage(content, context);
+        this.createCommit(content).then((commit) => {
+            if (commit) {
+                this.conversation.attachCommitToUserMessage(userMessage.id, commit);
             }
-            this.createCommit(content).then((commit) => {
-                if (commit) {
-                    this.conversation.attachCommitToUserMessage(userMessage.id, commit);
-                }
-            });
-            return userMessage;
-        } catch (error) {
-            console.error('Error getting edit message', error);
-            return null;
-        }
+        });
+        return userMessage;
     }
 
-    async getAskMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage | null> {
-        try {
-            const context = contextOverride ?? await this.context.getChatContext();
-            const userMessage = await this.conversation.addUserMessage(content, context);
-            if (!userMessage) {
-                console.error('Failed to add user message');
-                return null;
-            }
-            return userMessage;
-        } catch (error) {
-            console.error('Error getting ask message', error);
-            return null;
-        }
+    async getAskMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
+        const context = contextOverride ?? await this.context.getChatContext();
+        const userMessage = await this.conversation.addUserMessage(content, context);
+        return userMessage;
     }
 
-    async getFixErrorMessage(): Promise<UserChatMessage | null> {
+    async getFixErrorMessage(): Promise<UserChatMessage> {
         const errors = this.editorEngine.error.errors;
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return null;
-        }
-
-        if (errors.length === 0) {
-            console.error('No errors found');
-            return null;
-        }
-
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
         const errorContexts = this.context.getMessageContext(errors);
         const projectContexts = this.context.getProjectContext();
@@ -87,10 +59,6 @@ export class ChatManager {
             ...errorContexts,
             ...projectContexts,
         ]);
-        if (!userMessage) {
-            console.error('Failed to add user message');
-            return null;
-        }
         return userMessage
     }
 
