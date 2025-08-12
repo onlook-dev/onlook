@@ -80,18 +80,22 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
 }
 
 export const incrementUsage = async (req: NextRequest) => {
-    const user = await getSupabaseUser(req);
-    if (!user) {
-        throw new Error('User not found');
+    try {
+        const user = await getSupabaseUser(req);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const { api } = await createTRPCClient(req);
+        const incrementRes = await api.usage.increment({
+            type: UsageType.MESSAGE,
+        });
+        return {
+            usageRecordId: incrementRes?.usageRecordId,
+            rateLimitId: incrementRes?.rateLimitId,
+        };
+    } catch (error) {
+        console.error('Error in chat usage increment', error);
     }
-    const { api } = await createTRPCClient(req);
-    const incrementRes = await api.usage.increment({
-        type: UsageType.MESSAGE,
-    });
-    return {
-        usageRecordId: incrementRes?.usageRecordId,
-        rateLimitId: incrementRes?.rateLimitId,
-    };
 }
 
 export const decrementUsage = async (
@@ -101,14 +105,17 @@ export const decrementUsage = async (
         rateLimitId: string | undefined,
     } | undefined
 ) => {
-    if (!usageRecord) {
-        return;
+    try {
+        if (!usageRecord) {
+            return;
+        }
+        const { usageRecordId, rateLimitId } = usageRecord;
+        if (!usageRecordId || !rateLimitId) {
+            return;
+        }
+        const { api } = await createTRPCClient(req);
+        await api.usage.revertIncrement({ usageRecordId, rateLimitId });
+    } catch (error) {
+        console.error('Error in chat usage decrement', error);
     }
-    const { usageRecordId, rateLimitId } = usageRecord;
-    if (!usageRecordId || !rateLimitId) {
-        return;
-    }
-    await createTRPCClient(req)
-        .then(({ api }) => api.usage.revertIncrement({ usageRecordId, rateLimitId }))
-        .catch(error => console.error('Error in chat usage decrement', error));
 }
