@@ -6,7 +6,6 @@ import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { conversations } from "./conversation";
 
 export const CONVERSATION_MESSAGe_RELATION_NAME = 'conversation_messages';
-
 export const messageRole = pgEnum("message_role", ChatMessageRole);
 
 export const messages = pgTable("messages", {
