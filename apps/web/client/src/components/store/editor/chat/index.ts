@@ -77,8 +77,12 @@ export class ChatManager {
         const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt >= oldMessage.createdAt);
 
         // Create a new message with the new content
-        const newContext = await this.context.getRefreshedContext(oldMessage.content.metadata.context);
+        const newContext = await this.context.getRefreshedContext(oldMessage.content.metadata?.context ?? []);
+        if (!oldMessage.content.metadata) {
+            oldMessage.content.metadata = {};
+        }
         oldMessage.content.metadata.context = newContext;
+        await this.conversation.addOrReplaceMessage(oldMessage);
         const newMessage = await this.conversation.addUserMessage(newMessageContent, newContext);
         if (!newMessage) {
             console.error('Failed to add user message');

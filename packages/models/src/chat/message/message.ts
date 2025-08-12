@@ -9,12 +9,15 @@ export enum ChatMessageRole {
     ASSISTANT = 'assistant',
 }
 export interface ChatMessageContent extends MastraMessageContentV2 {
-    metadata: {
-        vercelId?: string;
-        context: ChatMessageContext[];
-        snapshots: MessageSnapshot[];
-    };
+    metadata:
+        | {
+              vercelId?: string;
+              context?: ChatMessageContext[];
+              snapshots?: MessageSnapshot[];
+          }
+        | undefined;
 }
+
 interface BaseChatMessage extends MastraMessageV2 {
     role: ChatMessageRole;
     threadId: string;

@@ -153,13 +153,16 @@ export class ConversationManager {
         }
         const userMessage = message as UserChatMessage;
         const newSnapshots = [
-            ...userMessage.content.metadata.snapshots,
+            ...userMessage.content.metadata?.snapshots ?? [],
             {
                 type: MessageSnapshotType.GIT,
                 oid: commit.oid,
                 createdAt: new Date(),
             },
         ];
+        if (!userMessage.content.metadata) {
+            userMessage.content.metadata = {};
+        }
         userMessage.content.metadata.snapshots = newSnapshots;
         await api.chat.message.updateSnapshot.mutate({
             messageId: message.id,
@@ -173,7 +176,7 @@ export class ConversationManager {
             console.error('No conversation found');
             return;
         }
-        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.content.metadata.vercelId && m.content.metadata.vercelId === message.content.metadata.vercelId));
+        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.content.metadata?.vercelId && m.content.metadata.vercelId === message.content.metadata?.vercelId));
         if (index === -1) {
             this.current.messages.push(message);
         } else {
