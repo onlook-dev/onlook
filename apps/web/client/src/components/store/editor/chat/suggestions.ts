@@ -32,7 +32,12 @@ export class SuggestionManager {
 
         const coreMessages = messages.map(msg => ({
             role: msg.role,
-            content: msg.content,
+            content: msg.content.parts.map((p) => {
+                if (p.type === 'text') {
+                    return p.text;
+                }
+                return '';
+            }).join(''),
         }));
 
         this.suggestions = await api.chat.suggestions.generate.mutate({

@@ -58,7 +58,7 @@ export const fromMessage = (message: ChatMessage): DbMessage => {
     } satisfies DbMessage;
 }
 
-export const toStreamMessageFromOnlook = (message: ChatMessage, opt: HydrateUserMessageOptions): VercelMessage => {
+export const toVercelMessageFromOnlook = (message: ChatMessage, opt: HydrateUserMessageOptions): VercelMessage => {
     const messageContent = message.content.parts.map((part) => {
         if (part.type === 'text') {
             return part.text;

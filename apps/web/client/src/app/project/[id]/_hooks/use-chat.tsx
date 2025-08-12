@@ -4,7 +4,7 @@ import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import type { HydrateUserMessageOptions } from '@onlook/ai';
-import { toOnlookMessageFromVercel, toStreamMessageFromOnlook } from '@onlook/db';
+import { toOnlookMessageFromVercel, toVercelMessageFromOnlook } from '@onlook/db';
 import { ChatType } from '@onlook/models';
 import type { Message } from 'ai';
 import { observer } from 'mobx-react-lite';
@@ -70,7 +70,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             lastUserMessageIndex: messageCount,
         };
         const messages = [
-            ...editorEngine.chat.conversation.current?.messages.map((m, i) => toStreamMessageFromOnlook(m, {
+            ...editorEngine.chat.conversation.current?.messages.map((m, i) => toVercelMessageFromOnlook(m, {
                 ...opt,
                 currentMessageIndex: i,
             })) ?? [],
