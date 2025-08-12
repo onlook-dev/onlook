@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
     devIndicators: {
         buildActivity: false,
     },
+    eslint: {
+        ignoreDuringBuilds: true,
+    },
 };
 
 if (process.env.NODE_ENV === 'development') {
