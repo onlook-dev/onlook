@@ -1,90 +1,20 @@
 'use client';
 
+import { api } from '@/trpc/react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { Create } from './create';
 import { CreateError } from './create-error';
-import { UnicornBackground } from './unicorn-background';
 import { HighDemand } from './high-demand';
-import { Icons } from '@onlook/ui/icons/index';
-import { useAuthContext } from '../../auth/auth-context';
-import { api } from '@/trpc/react';
-import { useRouter } from 'next/navigation';
-import { Routes } from '@/utils/constants';
-import { SandboxTemplates, Templates } from '@onlook/constants';
-import { toast } from 'sonner';
+import { Import } from './import';
+import { StartBlank } from './start-blank';
+import { UnicornBackground } from './unicorn-background';
 
 export function Hero() {
     const [cardKey, setCardKey] = useState(0);
     const [isCreatingProject, setIsCreatingProject] = useState(false);
-    const { setIsAuthModalOpen } = useAuthContext();
-    const router = useRouter();
     const { data: user } = api.user.get.useQuery();
-    const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
-    const { mutateAsync: createProject } = api.project.create.useMutation();
-
-    const handleStartBlankProject = async () => {
-        if (!user?.id) {
-            // Store the return URL and open auth modal
-            localStorage.setItem('returnUrl', window.location.pathname);
-            setIsAuthModalOpen(true);
-            return;
-        }
-
-        setIsCreatingProject(true);
-        try {
-            // Create a blank project using the BLANK template
-            const { sandboxId, previewUrl } = await forkSandbox({
-                sandbox: SandboxTemplates[Templates.BLANK],
-                config: {
-                    title: `Blank project - ${user.id}`,
-                    tags: ['blank', user.id],
-                },
-            });
-
-            const newProject = await createProject({
-                project: {
-                    name: 'New Project',
-                    sandboxId,
-                    sandboxUrl: previewUrl,
-                    description: 'Your new blank project',
-                },
-                userId: user.id,
-            });
-
-            if (newProject) {
-                router.push(`${Routes.PROJECT}/${newProject.id}`);
-            }
-        } catch (error) {
-            console.error('Error creating blank project:', error);
-            const errorMessage = error instanceof Error ? error.message : String(error);
-            
-            if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
-                toast.error('Sandbox service temporarily unavailable', {
-                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
-                });
-            } else {
-                toast.error('Failed to create project', {
-                    description: errorMessage,
-                });
-            }
-        } finally {
-            setIsCreatingProject(false);
-        }
-    };
-
-    const handleImportProject = () => {
-        if (!user?.id) {
-            // Store the return URL and open auth modal
-            localStorage.setItem('returnUrl', Routes.IMPORT_PROJECT);
-            setIsAuthModalOpen(true);
-            return;
-        }
-
-        // Navigate to import project flow
-        router.push(Routes.IMPORT_PROJECT);
-    };
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
@@ -123,7 +53,7 @@ export function Hero() {
                         setCardKey(prev => prev + 1);
                     }}
                 >
-                    <Create cardKey={cardKey} />
+                    <Create user={user ?? null} cardKey={cardKey} isCreatingProject={isCreatingProject} setIsCreatingProject={setIsCreatingProject} />
                 </motion.div>
                 <motion.div
                     className="flex gap-12 mt-4"
@@ -132,25 +62,8 @@ export function Hero() {
                     transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    <button 
-                        onClick={handleStartBlankProject}
-                        disabled={isCreatingProject}
-                        className="text-sm text-foreground-secondary hover:text-foreground transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-foreground-secondary"
-                    >
-                        {isCreatingProject ? (
-                            <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
-                        ) : (
-                            <Icons.File className="w-4 h-4" />
-                        )}
-                        Start a Blank Project
-                    </button>
-                    <button 
-                        onClick={handleImportProject}
-                        className="text-sm text-foreground-secondary hover:text-foreground transition-colors duration-200 flex items-center gap-2"
-                    >
-                        <Icons.Upload className="w-4 h-4" />
-                        Import a Next.js App
-                    </button>
+                    <StartBlank user={user ?? null} isCreatingProject={isCreatingProject} setIsCreatingProject={setIsCreatingProject} />
+                    <Import />
                 </motion.div>
                 <motion.div
                     className="text-center text-xs text-foreground-secondary mt-2 opacity-80"
@@ -161,7 +74,7 @@ export function Hero() {
                 >
                     No Credit Card Required &bull; Get a Site in Seconds
                 </motion.div>
-                
+
             </div>
             <div className="sm:hidden text-balance flex flex-col gap-4 items-center relative z-20 px-10">
                 Onlook isn't ready for Mobile – Please open on a larger screen
