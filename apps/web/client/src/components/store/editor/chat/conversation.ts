@@ -182,7 +182,7 @@ export class ConversationManager {
     }
 
     async upsertMessageInStorage(message: ChatMessage) {
-        await api.chat.message.upsert.mutate({ message: fromMessage(message, this.current.conversation.id) });
+        await api.chat.message.upsert.mutate({ message: fromMessage(message) });
     }
 
     clear() {
