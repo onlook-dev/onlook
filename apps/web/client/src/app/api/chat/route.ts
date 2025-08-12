@@ -72,7 +72,6 @@ export const streamResponse = async (req: NextRequest) => {
         headers,
         tools,
         maxSteps,
-        toolCallStreaming: true,
         messages: [
             {
                 role: 'system',
@@ -81,7 +80,7 @@ export const streamResponse = async (req: NextRequest) => {
             },
             ...convertToStreamMessages(messages),
         ],
-        experimental_repairToolCall: repairToolCall,
+        repairToolCall: repairToolCall,
         onError: async (error) => {
             console.error('Error in chat', error);
             // if there was an error with the API, do not penalize the user
@@ -89,9 +88,9 @@ export const streamResponse = async (req: NextRequest) => {
         }
     })
 
-    return result.toDataStreamResponse(
+    return result.toUIMessageStreamResponse(
         {
-            getErrorMessage: errorHandler,
+            onError: errorHandler,
         }
     );
 }

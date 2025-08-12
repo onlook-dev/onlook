@@ -5,7 +5,7 @@ import type {
     MessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
-import type { Attachment, Message, UserContent } from 'ai';
+import type { UIMessage, UserContent } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
@@ -66,7 +66,7 @@ export function getHydratedUserMessage(
     content: UserContent,
     context: MessageContext[],
     opt: HydrateMessageOptions,
-): Message {
+): UIMessage {
     const files = context.filter((c) => c.type === 'file').map((c) => c);
     const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
     const errors = context.filter((c) => c.type === 'error').map((c) => c);
@@ -112,17 +112,17 @@ export function getHydratedUserMessage(
                   .join('\n');
     prompt += wrapXml('instruction', textContent);
 
-    const attachments: Attachment[] = images.map((i) => ({
-        type: 'image',
-        contentType: i.mimeType,
-        url: i.content,
+    const attachments = images.map((i) => ({
+        type: 'image' as const,
+        mimeType: i.mimeType,
+        data: i.content,
     }));
 
     return {
         id,
         role: 'user',
-        content: prompt,
-        experimental_attachments: attachments,
+        parts: [{ type: 'text', text: prompt }],
+        attachments: attachments,
     };
 }
 

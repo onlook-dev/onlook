@@ -31,7 +31,7 @@ import {
 } from '@onlook/ai';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import type { ToolInvocation } from 'ai';
+import type { ToolInvocation } from '@ai-sdk/provider-utils';
 import { z } from 'zod';
 
 // Map tool names to specific icon components
@@ -192,4 +192,4 @@ export function ToolCallSimple({
             </span>
         </div>
     );
-} 
+}  

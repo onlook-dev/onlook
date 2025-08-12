@@ -2,7 +2,7 @@ import { FUZZY_EDIT_FILE_TOOL_NAME, type FUZZY_EDIT_FILE_TOOL_PARAMETERS, SEARCH
 import type { WebSearchResult } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
-import type { ToolInvocation } from 'ai';
+import type { ToolInvocation } from '@ai-sdk/provider-utils';
 import { type z } from 'zod';
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
 import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block';

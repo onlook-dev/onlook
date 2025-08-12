@@ -1,4 +1,4 @@
-import type { Message } from 'ai';
+import type { UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { MarkdownRenderer } from '../markdown-renderer';
 import { ToolCallDisplay } from './tool-call-display';
@@ -11,7 +11,7 @@ export const MessageContent = observer(
         isStream,
     }: {
         messageId: string;
-        parts: Message['parts'];
+        parts: UIMessage['parts'];
         applied: boolean;
         isStream: boolean;
     }) => {
