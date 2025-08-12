@@ -1,5 +1,5 @@
 import type { GitCommit } from '@onlook/git';
-import { type ChatMessageContext, type UserChatMessage } from '@onlook/models/chat';
+import { type MessageContext, type UserChatMessage } from '@onlook/models/chat';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
@@ -33,7 +33,7 @@ export class ChatManager {
         return this.conversation.current?.conversation.id;
     }
 
-    async addEditMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
+    async addEditMessage(content: string, contextOverride?: MessageContext[]): Promise<UserChatMessage> {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
         this.createAndAttachCommitToUserMessage(userMessage.id, content);
@@ -47,7 +47,7 @@ export class ChatManager {
         }
     }
 
-    async addAskMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
+    async addAskMessage(content: string, contextOverride?: MessageContext[]): Promise<UserChatMessage> {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
         return userMessage;

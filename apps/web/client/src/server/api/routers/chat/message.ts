@@ -6,7 +6,7 @@ import {
     toMessage,
     type Message
 } from '@onlook/db';
-import { MessageSnapshotType, type ChatMessageRole } from '@onlook/models';
+import { MessageCheckpointType, type ChatMessageRole } from '@onlook/models';
 import { asc, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -68,18 +68,18 @@ export const messageRouter = createTRPCRouter({
                 parts: input.message.parts as Message['parts'],
             }).where(eq(messages.id, input.messageId));
         }),
-    updateSnapshot: protectedProcedure
+    updateCheckpoints: protectedProcedure
         .input(z.object({
             messageId: z.string(),
-            snapshots: z.array(z.object({
-                type: z.nativeEnum(MessageSnapshotType),
+            checkpoints: z.array(z.object({
+                type: z.nativeEnum(MessageCheckpointType),
                 oid: z.string(),
                 createdAt: z.date(),
             })),
         }))
         .mutation(async ({ ctx, input }) => {
             await ctx.db.update(messages).set({
-                snapshots: input.snapshots,
+                checkpoints: input.checkpoints,
             }).where(eq(messages.id, input.messageId));
         }),
     delete: protectedProcedure

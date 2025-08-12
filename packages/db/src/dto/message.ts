@@ -1,7 +1,5 @@
-import type { MastraMessageV2 } from "@mastra/core/memory";
 import type { Message as DbMessage } from "@onlook/db";
-import type { MessageSnapshot } from "@onlook/models";
-import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type ChatMessageContext, type UserChatMessage } from "@onlook/models";
+import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type UserChatMessage } from "@onlook/models";
 import { assertNever } from '@onlook/utility';
 import type { Message as VercelMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,7 +11,7 @@ export const toMessage = (message: DbMessage): ChatMessage => {
         metadata: {
             vercelId: message.id,
             context: message.context ?? [],
-            snapshots: message.snapshots ?? [],
+            checkpoints: message.checkpoints ?? [],
         }
     }
 
@@ -53,9 +51,10 @@ export const fromMessage = (message: ChatMessage): DbMessage => {
             return '';
         }).join(''),
         role: message.role as DbMessage['role'],
-        snapshots: message.content.metadata?.snapshots ?? [],
+        checkpoints: message.content.metadata?.checkpoints ?? [],
         applied: null,
         commitOid: null,
+        snapshots: null,
     } satisfies DbMessage;
 }
 
@@ -63,7 +62,7 @@ export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId
     const metadata = {
         vercelId: message.id,
         context: [],
-        snapshots: [],
+        checkpoints: [],
     }
     const content = {
         parts: message.parts ?? [],
@@ -96,16 +95,4 @@ export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId
 
 export const toDbMessageFromVercel = (message: VercelMessage, conversationId: string): DbMessage => {
     return fromMessage(toOnlookMessageFromVercel(message, conversationId));
-}
-
-export const getMastraMessageContext = (message: MastraMessageV2): ChatMessageContext[] => {
-    return (message.content.metadata?.context ?? []) as ChatMessageContext[];
-}
-
-export const getMessageSnapshotsFromMastra = (message: MastraMessageV2): MessageSnapshot[] => {
-    return (message.content.metadata?.snapshots ?? []) as MessageSnapshot[];
-}
-
-export const getMessageSnapshotsFromOnlook = (message: ChatMessage): MessageSnapshot[] => {
-    return (message.content.metadata?.snapshots ?? []) as MessageSnapshot[];
 }

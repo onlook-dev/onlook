@@ -1,8 +1,8 @@
 import type {
-    ChatMessageContext,
     ErrorMessageContext,
     FileMessageContext,
     HighlightMessageContext,
+    MessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
 import type { Attachment, Message, UserContent } from 'ai';
@@ -64,7 +64,7 @@ export function getExampleConversation(
 export function getHydratedUserMessage(
     id: string,
     content: UserContent,
-    context: ChatMessageContext[],
+    context: MessageContext[],
     opt: HydrateMessageOptions,
 ): Message {
     const files = context.filter((c) => c.type === 'file').map((c) => c);

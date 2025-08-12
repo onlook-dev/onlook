@@ -1,15 +1,15 @@
-export enum MessageSnapshotType {
+export enum MessageCheckpointType {
     GIT = 'git',
 }
 
-interface BaseMessageSnapshot {
-    type: MessageSnapshotType;
+interface BaseMessageCheckpoint {
+    type: MessageCheckpointType;
     createdAt: Date;
 }
 
-export interface GitMessageSnapshot extends BaseMessageSnapshot {
-    type: MessageSnapshotType.GIT;
+export interface GitMessageCheckpoint extends BaseMessageCheckpoint {
+    type: MessageCheckpointType.GIT;
     oid: string;
 }
 
-export type MessageSnapshot = GitMessageSnapshot;
+export type MessageCheckpoints = GitMessageCheckpoint;
