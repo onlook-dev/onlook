@@ -200,9 +200,16 @@ export class PublishManager {
             progress: 60,
         });
 
-        const artifactLocalPath = `${CUSTOM_OUTPUT_DIR}/standalone.tar.gz`;
-
-        const tarArgs = ['-czf', artifactLocalPath, '-C', NEXT_BUILD_OUTPUT_PATH, '.'];
+        const artifactLocalPath = `${CUSTOM_OUTPUT_DIR}/standalone.tar`;
+        // Exclude node_modules
+        const tarArgs = [
+            '-cf',
+            artifactLocalPath,
+            '--exclude=node_modules',
+            '-C',
+            NEXT_BUILD_OUTPUT_PATH,
+            '.',
+        ];
         const safeTarCommand = ['tar', ...tarArgs.map(escapeShellString)].join(' ');
 
         await this.provider.runCommand({ args: { command: safeTarCommand } });
@@ -292,7 +299,7 @@ export class PublishManager {
         const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
         return await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
     }
-        
+
     /**
      * Serializes all files in a directory for deployment using parallel processing
      * @param currentDir - The directory path to serialize
