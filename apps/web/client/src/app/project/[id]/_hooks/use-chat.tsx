@@ -62,8 +62,11 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         }
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
-        const streamMessage: Message = toVercelMessageFromOnlook(message);
-        chat.setMessages([streamMessage]);
+        const messages = [
+            ...editorEngine.chat.conversation.current?.messages.map(toVercelMessageFromOnlook) ?? [],
+            toVercelMessageFromOnlook(message),
+        ];
+        chat.setMessages(messages);
         try {
             posthog.capture('user_send_message', {
                 type,
