@@ -86,6 +86,9 @@ export const conversationRouter = createTRPCRouter({
 
             const generatedName = result.text.trim();
             if (generatedName && generatedName.length > 0 && generatedName.length <= MAX_NAME_LENGTH) {
+                await ctx.db.update(conversations).set({
+                    displayName: generatedName,
+                }).where(eq(conversations.id, input.conversationId));
                 return generatedName;
             }
 

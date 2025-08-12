@@ -136,11 +136,6 @@ export class ConversationManager {
             console.error('Error generating conversation title');
             return;
         }
-        await this.updateConversationInStorage({
-            id: conversationId,
-            title,
-        });
-
         // Update conversation in list
         const listConversation = this.conversations.find((c) => c.id === conversationId);
         if (!listConversation) {
