@@ -7,9 +7,72 @@ import { Create } from './create';
 import { CreateError } from './create-error';
 import { UnicornBackground } from './unicorn-background';
 import { HighDemand } from './high-demand';
+import { Icons } from '@onlook/ui/icons/index';
+import { useAuthContext } from '../../auth/auth-context';
+import { api } from '@/trpc/react';
+import { useRouter } from 'next/navigation';
+import { Routes } from '@/utils/constants';
+import { SandboxTemplates, Templates } from '@onlook/constants';
+import { toast } from 'sonner';
 
 export function Hero() {
     const [cardKey, setCardKey] = useState(0);
+    const { setIsAuthModalOpen } = useAuthContext();
+    const router = useRouter();
+    const { data: user } = api.user.get.useQuery();
+    const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
+    const { mutateAsync: createProject } = api.project.create.useMutation();
+
+    const handleStartBlankProject = async () => {
+        if (!user?.id) {
+            // Store the return URL and open auth modal
+            localStorage.setItem('returnUrl', window.location.pathname);
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        try {
+            // Create a blank project using the BLANK template
+            const { sandboxId, previewUrl } = await forkSandbox({
+                sandbox: SandboxTemplates[Templates.BLANK],
+                config: {
+                    title: `Blank project - ${user.id}`,
+                    tags: ['blank', user.id],
+                },
+            });
+
+            const newProject = await createProject({
+                project: {
+                    name: 'New Project',
+                    sandboxId,
+                    sandboxUrl: previewUrl,
+                    description: 'Your new blank project',
+                },
+                userId: user.id,
+            });
+
+            if (newProject) {
+                router.push(`${Routes.PROJECT}/${newProject.id}`);
+            }
+        } catch (error) {
+            console.error('Error creating blank project:', error);
+            toast.error('Failed to create project', {
+                description: error instanceof Error ? error.message : String(error),
+            });
+        }
+    };
+
+    const handleImportProject = () => {
+        if (!user?.id) {
+            // Store the return URL and open auth modal
+            localStorage.setItem('returnUrl', Routes.IMPORT_PROJECT);
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        // Navigate to import project flow
+        router.push(Routes.IMPORT_PROJECT);
+    };
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
@@ -51,14 +114,37 @@ export function Hero() {
                     <Create cardKey={cardKey} />
                 </motion.div>
                 <motion.div
+                    className="flex gap-12 mt-4"
+                    initial={{ opacity: 0, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                    transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                >
+                    <button 
+                        onClick={handleStartBlankProject}
+                        className="text-sm text-foreground-secondary hover:text-foreground transition-colors duration-200 flex items-center gap-2"
+                    >
+                        <Icons.File className="w-4 h-4" />
+                        Start a Blank Project
+                    </button>
+                    <button 
+                        onClick={handleImportProject}
+                        className="text-sm text-foreground-secondary hover:text-foreground transition-colors duration-200 flex items-center gap-2"
+                    >
+                        <Icons.Upload className="w-4 h-4" />
+                        Import a Next.js App
+                    </button>
+                </motion.div>
+                <motion.div
                     className="text-center text-xs text-foreground-secondary mt-2 opacity-80"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, delay: 0.45, ease: "easeOut" }}
+                    transition={{ duration: 0.6, delay: 1, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
                     No Credit Card Required &bull; Get a Site in Seconds
                 </motion.div>
+                
             </div>
             <div className="sm:hidden text-balance flex flex-col gap-4 items-center relative z-20 px-10">
                 Onlook isn't ready for Mobile – Please open on a larger screen

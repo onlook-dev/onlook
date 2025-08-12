@@ -26,7 +26,7 @@ export default function LoginPage() {
                     </Link>
                 </div>
                 <div className="space-y-8">
-                    <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-400 border-blue-400">
+                    <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-400 border-blue-400 hidden">
                         <p>Beta</p>
                     </div>
                     <div className="space-y-4">
