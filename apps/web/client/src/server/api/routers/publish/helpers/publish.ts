@@ -20,7 +20,7 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
         requestedBy: userId,
     } = deployment;
     try {
-            const deploymentUrls = await getProjectUrls(db, projectId, type);
+        const deploymentUrls = await getProjectUrls(db, projectId, type);
         const sandboxId = await getSandboxId(db, projectId);
 
         const updateDeploymentResult1 = await updateDeployment(db, deploymentId, {
@@ -35,7 +35,11 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
             });
         }
 
-        const { provider, sandboxId: forkedSandboxId } = await forkBuildSandbox(sandboxId, userId, deploymentId);
+        const { provider, sandboxId: forkedSandboxId } = await forkBuildSandbox(
+            sandboxId,
+            userId,
+            deploymentId,
+        );
 
         try {
             const updateDeploymentResult2 = await updateDeployment(db, deploymentId, {
@@ -51,36 +55,74 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
                 });
             }
 
-
             const publishManager = new PublishManager(provider);
-            const artifactUrl = await publishManager.buildAndUploadArtifact({
-                skipBadge: type === DeploymentType.CUSTOM,
-                buildScript: buildScript ?? DefaultSettings.COMMANDS.build,
-                buildFlags: buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
-                updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
-            });
 
-            const updateDeploymentResult3 = await updateDeployment(db, deploymentId, {
-                status: DeploymentStatus.IN_PROGRESS,
-                message: 'Deploying build...',
-                progress: 80,
-            });
-            if (!updateDeploymentResult3) {
-                throw new TRPCError({
-                    code: 'BAD_REQUEST',
-                    message: 'Update deployment failed',
+            let deployed = false;
+            try {
+                const artifactUrl = await publishManager.buildAndUploadArtifact({
+                    skipBadge: type === DeploymentType.CUSTOM,
+                    buildScript: buildScript ?? DefaultSettings.COMMANDS.build,
+                    buildFlags: buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
+                    updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
                 });
+
+                const updateDeploymentResult3 = await updateDeployment(db, deploymentId, {
+                    status: DeploymentStatus.IN_PROGRESS,
+                    message: 'Deploying build...',
+                    progress: 80,
+                });
+                if (!updateDeploymentResult3) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'Update deployment failed',
+                    });
+                }
+
+                // Note: Prefer user provided env vars over sandbox env vars
+                const sandboxEnvVars = await extractEnvVarsFromSandbox(provider);
+                const mergedEnvVars = { ...sandboxEnvVars, ...(envVars ?? {}) };
+
+                await deployFreestyle({
+                    sourceUrl: artifactUrl,
+                    urls: deploymentUrls,
+                    envVars: mergedEnvVars,
+                    type: 'url',
+                });
+                deployed = true;
+            } catch (artifactError) {
+                console.warn('[publish] Artifact path failed, falling back to file deployment', artifactError);
             }
 
-            // Note: Prefer user provided env vars over sandbox env vars
-            const sandboxEnvVars = await extractEnvVarsFromSandbox(provider);
-            const mergedEnvVars = { ...sandboxEnvVars, ...(envVars ?? {}) };
+            if (!deployed) {
+                const files = await publishManager.buildFiles({
+                    skipBadge: type === DeploymentType.CUSTOM,
+                    buildScript: buildScript ?? DefaultSettings.COMMANDS.build,
+                    buildFlags: buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
+                    updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
+                });
 
-            await deployFreestyle({
-                sourceUrl: artifactUrl,
-                urls: deploymentUrls,
-                envVars: mergedEnvVars,
-            });
+                const updateDeploymentResult3 = await updateDeployment(db, deploymentId, {
+                    status: DeploymentStatus.IN_PROGRESS,
+                    message: 'Deploying build...',
+                    progress: 80,
+                });
+                if (!updateDeploymentResult3) {
+                    throw new TRPCError({
+                        code: 'BAD_REQUEST',
+                        message: 'Update deployment failed',
+                    });
+                }
+
+                const sandboxEnvVars = await extractEnvVarsFromSandbox(provider);
+                const mergedEnvVars = { ...sandboxEnvVars, ...(envVars ?? {}) };
+
+                await deployFreestyle({
+                    files,
+                    urls: deploymentUrls,
+                    envVars: mergedEnvVars,
+                    type: 'files',
+                });
+            }
         } finally {
             await provider.destroy();
         }

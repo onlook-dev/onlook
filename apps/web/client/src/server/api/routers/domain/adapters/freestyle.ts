@@ -1,19 +1,18 @@
-import type { DeploymentSource, FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
+import type { FreestyleDeployWebSuccessResponseV2 } from 'freestyle-sandboxes';
 import { initializeFreestyleSdk } from '../freestyle';
-import type {
-    HostingProviderAdapter,
-    DeploymentRequest,
-    DeploymentResponse
+import {
+    type HostingProviderAdapter,
+    type DeploymentRequest,
+    type DeploymentResponse,
 } from '@onlook/models';
 
 export class FreestyleAdapter implements HostingProviderAdapter {
     async deploy(request: DeploymentRequest): Promise<DeploymentResponse> {
         const sdk = initializeFreestyleSdk();
-        if (request.sourceUrl) {
-            // Many SDKs accept a generic URL-based source. Use a loose cast to avoid type mismatch.
-             
+
+        if (request.type === 'url') {
             const res = await sdk.deployWeb(
-                { kind: 'tar', url: request.sourceUrl } as unknown as DeploymentSource,
+                { kind: 'tar', url: request.sourceUrl },
                 request.config,
             );
 
@@ -25,9 +24,7 @@ export class FreestyleAdapter implements HostingProviderAdapter {
 
             if (freestyleResponse.error) {
                 throw new Error(
-                    freestyleResponse.error.message ??
-                    freestyleResponse.message ??
-                    'Unknown error',
+                    freestyleResponse.error.message ?? freestyleResponse.message ?? 'Unknown error',
                 );
             }
 
@@ -56,15 +53,14 @@ export class FreestyleAdapter implements HostingProviderAdapter {
 
         if (freestyleResponse.error) {
             throw new Error(
-                freestyleResponse.error.message ??
-                freestyleResponse.message ??
-                'Unknown error',
+                freestyleResponse.error.message ?? freestyleResponse.message ?? 'Unknown error',
             );
         }
 
         return {
             deploymentId: freestyleResponse.data?.deploymentId ?? '',
             success: true,
+            message: freestyleResponse.message,
         };
     }
-} 
+}

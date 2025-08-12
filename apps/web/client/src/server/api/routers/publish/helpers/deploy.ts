@@ -2,8 +2,9 @@ import { trackEvent } from '@/utils/analytics/server.ts';
 import { deployments, type Deployment } from '@onlook/db';
 import type { DrizzleDb } from '@onlook/db/src/client';
 import {
+    type DeploymentResponse,
     DeploymentStatus,
-    DeploymentType,
+    type DeploymentType,
     HostingProvider
 } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
@@ -20,35 +21,45 @@ export const deployFreestyle = async (
     ) & {
         urls: string[];
         envVars?: Record<string, string>;
+        type: "url" | "files";
     }
 ): Promise<{
     success: boolean;
     message?: string;
 }> => {
     const entrypoint = 'server.js';
-    const adapter = HostingProviderFactory.create(HostingProvider.FREESTYLE);
+    const adapter = HostingProviderFactory.create(HostingProvider.FREESTYLE)
 
-    const result = await adapter.deploy({
-        ...(('sourceUrl' in args && typeof args.sourceUrl === 'string')
-            ? { sourceUrl: args.sourceUrl }
-            : {
-                files: Object.fromEntries(
-                    Object.entries(args.files ?? {}).map(([path, file]) => [
-                        path,
-                        {
-                            content: file.content,
-                            encoding: (file.encoding === 'base64' ? 'base64' : 'utf-8'),
-                        } as const,
-                    ]),
-                ),
-            }
-        ),
-        config: {
-            domains: args.urls,
-            entrypoint,
-            envVars: args.envVars,
-        },
-    });
+    let result: DeploymentResponse;
+
+    if(args.type === 'url' && args.sourceUrl) {
+        result = await adapter.deploy({
+            type: 'url',
+            sourceUrl: args.sourceUrl,
+            config: {
+                domains: args.urls,
+                entrypoint,
+                envVars: args.envVars,
+            },
+        });
+    } else if(args.type === 'files' && args.files) {
+        result = await adapter.deploy({
+            type: 'files',
+            files: Object.fromEntries(
+                Object.entries(args.files).map(([path, file]) => [
+                    path,
+                    { content: file.content, encoding: file.encoding as 'utf-8' | 'base64' },
+                ]),
+            ),
+            config: {
+                domains: args.urls,
+                entrypoint,
+                envVars: args.envVars,
+            },
+        });
+    } else {
+        throw new Error('Invalid deployment request');
+    }
 
     if (!result.success) {
         throw new Error(result.message ?? 'Failed to deploy project');

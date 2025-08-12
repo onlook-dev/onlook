@@ -61,11 +61,22 @@ export interface DeploymentConfig {
     envVars?: Record<string, string>;
 }
 
-export interface DeploymentRequest {
-    files?: Record<string, DeploymentFile>;
-    sourceUrl?: string;
+export interface BaseDeploymentRequest {
+    type: 'url' | 'files';
     config: DeploymentConfig;
 }
+
+export interface FileDeploymentRequest extends BaseDeploymentRequest {
+    type: 'files';
+    files: Record<string, DeploymentFile>;
+}
+
+export interface UrlDeploymentRequest extends BaseDeploymentRequest {
+    type: 'url';
+    sourceUrl: string;
+}
+
+export type DeploymentRequest = FileDeploymentRequest | UrlDeploymentRequest;
 
 export interface DeploymentResponse {
     deploymentId: string;
