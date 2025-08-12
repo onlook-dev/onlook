@@ -6,6 +6,7 @@ import { api } from '@/trpc/react';
 import { ChatType, EditorMode, EditorTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
@@ -31,7 +32,7 @@ export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
         const { data: settings } = api.user.settings.get.useQuery();
-        const { sendMessages, isWaiting } = useChatContext();
+        const { sendMessage, isWaiting } = useChatContext();
         const isPreviewMode = editorEngine.state.editorMode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
@@ -81,16 +82,15 @@ export const OverlayChat = observer(
         }
 
         const handleSubmit = async () => {
-            const messageToSend = inputState.value;
-            editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
-            const streamMessages = await editorEngine.chat.getEditMessages(messageToSend);
-            if (!streamMessages) {
-                console.error('No edit messages returned');
-                return;
+            try {
+                editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
+                const message = await editorEngine.chat.addEditMessage(inputState.value);
+                sendMessage(ChatType.EDIT);
+                setInputState(DEFAULT_INPUT_STATE);
+            } catch (error) {
+                console.error('Error sending message', error);
+                toast.error('Failed to send message. Please try again.');
             }
-            sendMessages(streamMessages, ChatType.EDIT);
-
-            setInputState(DEFAULT_INPUT_STATE);
         };
         const EDITOR_HEADER_HEIGHT = 86;
         const MARGIN = 8;

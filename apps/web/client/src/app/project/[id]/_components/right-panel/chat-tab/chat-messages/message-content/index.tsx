@@ -25,6 +25,7 @@ export const MessageContent = observer(
                 return (
                     <MarkdownRenderer
                         messageId={messageId}
+                        type="text"
                         key={part.text}
                         content={part.text}
                         applied={applied}
@@ -43,8 +44,13 @@ export const MessageContent = observer(
                         applied={applied}
                     />
                 );
-            } else {
-                return null;
+            } else if (part.type === 'reasoning') {
+                if (!isStream) {
+                    return null;
+                }
+                return (
+                    <p>Introspecting...</p>
+                );
             }
         });
     },

@@ -1,34 +1,34 @@
-import type { Message } from '@ai-sdk/react';
-import type { TextPart } from 'ai';
+import type { MastraMessageContentV2 } from '@mastra/core/agent';
+import type { MastraMessageV2 } from '@mastra/core/memory';
 import type { CodeDiff } from '../../code/index.ts';
-import { type ChatMessageContext } from './context.ts';
+import type { ChatMessageContext } from './context.ts';
+import type { MessageSnapshot } from './snapshot.ts';
 
 export enum ChatMessageRole {
     USER = 'user',
     ASSISTANT = 'assistant',
-    SYSTEM = 'system',
+}
+export interface ChatMessageContent extends MastraMessageContentV2 {
+    metadata: {
+        vercelId?: string;
+        context: ChatMessageContext[];
+        snapshots: MessageSnapshot[];
+    };
+}
+interface BaseChatMessage extends MastraMessageV2 {
+    role: ChatMessageRole;
+    threadId: string;
+    content: ChatMessageContent;
 }
 
-export interface UserChatMessage extends Message {
+export interface UserChatMessage extends BaseChatMessage {
     role: ChatMessageRole.USER;
-    context: ChatMessageContext[];
-    parts: TextPart[];
-    content: string;
-    commitOid: string | null;
 }
 
-export interface AssistantChatMessage extends Message {
+export interface AssistantChatMessage extends BaseChatMessage {
     role: ChatMessageRole.ASSISTANT;
-    applied: boolean;
-    snapshots: ChatSnapshot;
-    parts: Message['parts'];
-    content: string;
 }
 
 export type ChatSnapshot = Record<string, CodeDiff>;
 
-export interface SystemChatMessage extends Message {
-    role: ChatMessageRole.SYSTEM;
-}
-
-export type ChatMessage = UserChatMessage | AssistantChatMessage | SystemChatMessage;
+export type ChatMessage = UserChatMessage | AssistantChatMessage;

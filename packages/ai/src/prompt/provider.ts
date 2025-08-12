@@ -16,10 +16,11 @@ import { SUGGESTION_SYSTEM_PROMPT } from './suggest';
 import { SUMMARY_PROMPTS } from './summary';
 import { SYSTEM_PROMPT } from './system';
 
-export interface HydrateUserMessageOptions {
+export interface HydrateMessageOptions {
     totalMessages: number;
     currentMessageIndex: number;
     lastUserMessageIndex: number;
+    lastAssistantMessageIndex: number;
 }
 
 export function getSystemPrompt() {
@@ -64,7 +65,7 @@ export function getHydratedUserMessage(
     id: string,
     content: UserContent,
     context: ChatMessageContext[],
-    opt: HydrateUserMessageOptions,
+    opt: HydrateMessageOptions,
 ): Message {
     const files = context.filter((c) => c.type === 'file').map((c) => c);
     const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);

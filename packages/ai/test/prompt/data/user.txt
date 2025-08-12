@@ -24,4 +24,4 @@ IMPORTANT: This project uses Bun as the package manager. Always use Bun commands
 
 NEVER SUGGEST THE "bun run dev" command. Assume the user is already running the app.
 test
-</errors><project-info>The project is located in the folder: test</project-info><instruction>test</instruction>
+</errors><project-info>This is a Nextjs project with TailwindCSS test</project-info><instruction>test</instruction>
