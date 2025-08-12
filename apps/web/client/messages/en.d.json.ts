@@ -87,7 +87,7 @@ declare const messages: {
     "welcome": {
         "title": "Welcome to Onlook",
         "titleReturn": "Welcome back to Onlook",
-        "description": "Onlook is an open-source visual editor for React apps. Design directly in your live product.",
+        "description": "A next-generation visual code editor that lets designers and product managers craft web experiences with AI.",
         "alpha": "Alpha",
         "login": {
             "github": "Login with GitHub",

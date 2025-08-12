@@ -84,7 +84,7 @@
     "welcome": {
         "title": "Bienvenido a Onlook",
         "titleReturn": "Bienvenido de vuelta a Onlook",
-        "description": "Onlook es un editor visual de código abierto para aplicaciones React. Diseñe directamente en su producto en vivo.",
+        "description": "Un editor visual de código de última generación que permite a diseñadores y gerentes de productos crear experiencias web con IA.",
         "alpha": "Alpha",
         "login": {
             "github": "Iniciar sesión con GitHub",
