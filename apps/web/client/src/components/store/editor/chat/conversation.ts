@@ -124,17 +124,28 @@ export class ConversationManager {
         return message;
     }
 
-    attachCommitToUserMessage(id: string, commit: GitCommit) {
+    async attachCommitToUserMessage(id: string, commit: GitCommit): Promise<void> {
+        console.log('attaching commit to message', id, commit.oid);
         const message = this.current?.messages.find((m) => m.id === id && m.role === ChatMessageRole.USER);
         if (!message) {
             console.error('No message found with id', id);
             return;
         }
-        (message as UserChatMessage).content.metadata.snapshots.push({
-            type: MessageSnapshotType.GIT,
-            oid: commit.oid,
-            createdAt: new Date(),
+        const userMessage = message as UserChatMessage;
+        const newSnapshots = [
+            ...userMessage.content.metadata.snapshots,
+            {
+                type: MessageSnapshotType.GIT,
+                oid: commit.oid,
+                createdAt: new Date(),
+            },
+        ];
+        userMessage.content.metadata.snapshots = newSnapshots;
+        await api.chat.message.updateSnapshot.mutate({
+            messageId: message.id,
+            snapshots: newSnapshots,
         });
+        await this.addOrReplaceMessage(userMessage);
     }
 
     async addOrReplaceMessage(message: ChatMessage) {

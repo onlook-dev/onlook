@@ -36,12 +36,15 @@ export class ChatManager {
     async addEditMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
-        this.createCommit(content).then((commit) => {
-            if (commit) {
-                this.conversation.attachCommitToUserMessage(userMessage.id, commit);
-            }
-        });
+        this.createAndAttachCommitToUserMessage(userMessage.id, content);
         return userMessage;
+    }
+
+    async createAndAttachCommitToUserMessage(messageId: string, content: string): Promise<void> {
+        const commit = await this.createCommit(content)
+        if (commit) {
+            await this.conversation.attachCommitToUserMessage(messageId, commit);
+        }
     }
 
     async addAskMessage(content: string, contextOverride?: ChatMessageContext[]): Promise<UserChatMessage> {

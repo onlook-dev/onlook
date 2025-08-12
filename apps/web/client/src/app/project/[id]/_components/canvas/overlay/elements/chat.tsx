@@ -87,7 +87,6 @@ export const OverlayChat = observer(
                 const message = await editorEngine.chat.addEditMessage(inputState.value);
                 sendMessage(ChatType.EDIT);
                 setInputState(DEFAULT_INPUT_STATE);
-
             } catch (error) {
                 console.error('Error sending message', error);
                 toast.error('Failed to send message. Please try again.');

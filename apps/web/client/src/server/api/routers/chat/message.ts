@@ -2,11 +2,12 @@ import {
     conversations,
     messageInsertSchema,
     messages,
+    messageUpdateSchema,
     toMessage,
     type Message
 } from '@onlook/db';
-import type { ChatMessageRole } from '@onlook/models';
-import { eq, inArray } from 'drizzle-orm';
+import { MessageSnapshotType, type ChatMessageRole } from '@onlook/models';
+import { asc, eq, inArray } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
@@ -18,6 +19,7 @@ export const messageRouter = createTRPCRouter({
         .query(async ({ ctx, input }) => {
             const result = await ctx.db.query.messages.findMany({
                 where: eq(messages.conversationId, input.conversationId),
+                orderBy: [asc(messages.createdAt)],
             });
             return result.map((message) => toMessage(message));
         }),
@@ -52,8 +54,33 @@ export const messageRouter = createTRPCRouter({
         }))
         .mutation(async ({ ctx, input }) => {
             const normalizedMessages = input.messages.map(normalizeMessage);
-            console.log('normalizedMessages', JSON.stringify(normalizedMessages, null, 2));
             await ctx.db.insert(messages).values(normalizedMessages);
+        }),
+    update: protectedProcedure
+        .input(z.object({
+            messageId: z.string(),
+            message: messageUpdateSchema
+        }))
+        .mutation(async ({ ctx, input }) => {
+            await ctx.db.update(messages).set({
+                ...input.message,
+                role: input.message.role as ChatMessageRole,
+                parts: input.message.parts as Message['parts'],
+            }).where(eq(messages.id, input.messageId));
+        }),
+    updateSnapshot: protectedProcedure
+        .input(z.object({
+            messageId: z.string(),
+            snapshots: z.array(z.object({
+                type: z.nativeEnum(MessageSnapshotType),
+                oid: z.string(),
+                createdAt: z.date(),
+            })),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            await ctx.db.update(messages).set({
+                snapshots: input.snapshots,
+            }).where(eq(messages.id, input.messageId));
         }),
     delete: protectedProcedure
         .input(z.object({
