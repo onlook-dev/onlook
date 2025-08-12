@@ -69,7 +69,7 @@ export function Hero() {
                     description: errorMessage,
                 });
             }
-        }finally {
+        } finally {
             setIsCreatingProject(false);
         }
     };
