@@ -1,5 +1,5 @@
-
 import { api } from '@/trpc/client';
+import { fromMessage } from '@onlook/db';
 import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, MessageSnapshotType, type ChatConversation, type ChatMessage, type ChatMessageContext, type UserChatMessage } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
@@ -149,6 +149,7 @@ export class ConversationManager {
         } else {
             this.current.messages[index] = message;
         }
+        await this.upsertMessageInStorage(message);
     }
 
     async removeMessages(messages: ChatMessage[]) {
@@ -178,6 +179,10 @@ export class ConversationManager {
 
     async deleteMessagesInStorage(messageIds: string[]) {
         await api.chat.message.delete.mutate({ messageIds });
+    }
+
+    async upsertMessageInStorage(message: ChatMessage) {
+        await api.chat.message.upsert.mutate({ message: fromMessage(message, this.current.conversation.id) });
     }
 
     clear() {
