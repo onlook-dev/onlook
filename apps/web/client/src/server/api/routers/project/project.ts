@@ -123,7 +123,7 @@ export const projectRouter = createTRPCRouter({
                 const newFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl);
                 await tx.insert(frames).values(newFrame);
 
-                // 6. Create the creation request
+                // 5. Create the creation request
                 if (input.creationData) {
                     await tx.insert(projectCreateRequests).values({
                         ...input.creationData,
