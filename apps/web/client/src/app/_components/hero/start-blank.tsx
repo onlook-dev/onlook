@@ -35,7 +35,7 @@ export function StartBlank({
         try {
             // Create a blank project using the BLANK template
             const { sandboxId, previewUrl } = await forkSandbox({
-                sandbox: SandboxTemplates[Templates.BLANK],
+                sandbox: SandboxTemplates[Templates.EMPTY_NEXTJS],
                 config: {
                     title: `Blank project - ${user.id}`,
                     tags: ['blank', user.id],

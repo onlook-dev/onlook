@@ -3,7 +3,6 @@
 import { useGetBackground } from '@/hooks/use-get-background';
 import { transKeys } from '@/i18n/keys';
 import { Routes } from '@/utils/constants';
-import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -26,9 +25,6 @@ export default function LoginPage() {
                     </Link>
                 </div>
                 <div className="space-y-8">
-                    <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-400 border-blue-400 hidden">
-                        <p>Beta</p>
-                    </div>
                     <div className="space-y-4">
                         <h1 className="text-title1 leading-tight">
                             {t(transKeys.welcome.title)}
