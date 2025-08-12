@@ -12,7 +12,7 @@ function createMessage(parts: Part[], role: 'user' | 'assistant' = 'user') {
         role,
         content: {
             parts,
-            metadata: { context: [], snapshots: [] },
+            metadata: { context: [], checkpoints: [] },
         },
     } as unknown as ChatMessage;
 }

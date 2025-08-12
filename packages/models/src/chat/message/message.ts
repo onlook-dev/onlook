@@ -1,8 +1,8 @@
 import type { MastraMessageContentV2 } from '@mastra/core/agent';
 import type { MastraMessageV2 } from '@mastra/core/memory';
 import type { CodeDiff } from '../../code/index.ts';
+import type { MessageCheckpoints } from './checkpoint.ts';
 import type { MessageContext } from './context.ts';
-import type { MessageCheckpoints } from './snapshot.ts';
 
 export enum ChatMessageRole {
     USER = 'user',
