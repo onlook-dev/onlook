@@ -2,12 +2,12 @@ export enum MessageSnapshotType {
     GIT = 'git',
 }
 
-interface BaserMessageSnapshot {
+interface BaseMessageSnapshot {
     type: MessageSnapshotType;
     createdAt: Date;
 }
 
-export interface GitMessageSnapshot extends BaserMessageSnapshot {
+export interface GitMessageSnapshot extends BaseMessageSnapshot {
     type: MessageSnapshotType.GIT;
     oid: string;
 }

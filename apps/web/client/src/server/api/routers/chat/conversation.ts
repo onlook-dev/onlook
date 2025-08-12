@@ -1,4 +1,5 @@
 import {
+    conversationInsertSchema,
     conversations,
     conversationUpdateSchema,
     toConversation
@@ -29,12 +30,9 @@ export const conversationRouter = createTRPCRouter({
             return toConversation(conversation);
         }),
     upsert: protectedProcedure
-        .input(z.object({ projectId: z.string(), title: z.string() }))
+        .input(conversationInsertSchema)
         .mutation(async ({ ctx, input }) => {
-            const [conversation] = await ctx.db.insert(conversations).values({
-                projectId: input.projectId,
-                displayName: input.title,
-            }).returning();
+            const [conversation] = await ctx.db.insert(conversations).values(input).returning();
             if (!conversation) {
                 throw new Error('Conversation not created');
             }

@@ -55,7 +55,6 @@ export class ConversationManager {
             }
             const newConversation = await api.chat.conversation.upsert.mutate({
                 projectId: this.editorEngine.projectId,
-                title: 'New Conversation',
             });
             this.current = {
                 conversation: newConversation,
