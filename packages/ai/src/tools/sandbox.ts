@@ -9,5 +9,5 @@ export const SANDBOX_TOOL_PARAMETERS = z.object({
 export const sandboxTool = tool({
     description:
         'Restart the development server. This should only be used if absolutely necessary such as if updating dependencies, clearing next cache, or if the server is not responding.',
-    parameters: SANDBOX_TOOL_PARAMETERS,
+    inputSchema: SANDBOX_TOOL_PARAMETERS,
 });

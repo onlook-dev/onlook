@@ -1,7 +1,7 @@
 import type { Message as DbMessage } from "@onlook/db";
 import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type UserChatMessage } from "@onlook/models";
 import { assertNever } from '@onlook/utility';
-import type { Message as VercelMessage } from 'ai';
+import type { UIMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
 export const toMessage = (message: DbMessage): ChatMessage => {
@@ -58,7 +58,7 @@ export const fromMessage = (message: ChatMessage): DbMessage => {
     } satisfies DbMessage;
 }
 
-export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId: string): ChatMessage => {
+export const toOnlookMessageFromVercel = (message: UIMessage, conversationId: string): ChatMessage => {
     const metadata = {
         vercelId: message.id,
         context: [],
@@ -70,29 +70,29 @@ export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId
         metadata,
     }
     const baseMessage = {
-        ...message,
         id: uuidv4(),
-        createdAt: message.createdAt ?? new Date(),
         threadId: conversationId,
         content,
-    }
+    } as const;
 
     switch (message.role) {
-        case ChatMessageRole.ASSISTANT:
+        case 'assistant':
             return {
                 ...baseMessage,
-                role: message.role as ChatMessageRole.ASSISTANT,
+                role: ChatMessageRole.ASSISTANT,
+                createdAt: new Date(),
             } satisfies AssistantChatMessage;
-        case ChatMessageRole.USER:
+        case 'user':
             return {
                 ...baseMessage,
-                role: message.role as ChatMessageRole.USER,
+                role: ChatMessageRole.USER,
+                createdAt: new Date(),
             } satisfies UserChatMessage;
         default:
-            throw new Error(`Unsupported message role: ${message.role}`);
+            throw new Error(`Unsupported message role: ${message.role as string}`);
     }
 }
 
-export const toDbMessageFromVercel = (message: VercelMessage, conversationId: string): DbMessage => {
+export const toDbMessageFromVercel = (message: UIMessage, conversationId: string): DbMessage => {
     return fromMessage(toOnlookMessageFromVercel(message, conversationId));
 }

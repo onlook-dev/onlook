@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 }
 
 export const streamResponse = async (req: NextRequest) => {
-    const { messages, maxSteps, chatType }: { messages: ChatMessage[], maxSteps: number, chatType: ChatType } = await req.json();
+    const { messages, chatType }: { messages: ChatMessage[], chatType: ChatType } = await req.json();
 
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
@@ -71,17 +71,18 @@ export const streamResponse = async (req: NextRequest) => {
         model,
         headers,
         tools,
-        maxSteps,
-        toolCallStreaming: true,
+        
         messages: [
             {
                 role: 'system',
+
                 content: systemPrompt,
-                providerOptions,
+
+                providerOptions
             },
             ...convertToStreamMessages(messages),
         ],
-        experimental_repairToolCall: repairToolCall,
+        onToolCallStreamingMessage: repairToolCall,
         onError: async (error) => {
             console.error('Error in chat', error);
             // if there was an error with the API, do not penalize the user
@@ -89,9 +90,5 @@ export const streamResponse = async (req: NextRequest) => {
         }
     })
 
-    return result.toDataStreamResponse(
-        {
-            getErrorMessage: errorHandler,
-        }
-    );
+    return result.toUIMessageStreamResponse({ onError: errorHandler });
 }

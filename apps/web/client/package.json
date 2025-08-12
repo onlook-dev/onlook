@@ -28,7 +28,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
-        "@ai-sdk/react": "^1.2.9",
+        "@ai-sdk/react": "^2.0.0",
         "@codemirror/lang-css": "^6.2.0",
         "@codemirror/lang-html": "^6.4.7",
         "@codemirror/lang-javascript": "^6.2.3",
@@ -61,7 +61,7 @@
         "@uiw/react-codemirror": "^4.23.10",
         "@xterm/addon-fit": "^0.10.0",
         "@xterm/xterm": "^5.5.0",
-        "ai": "^4",
+        "ai": "^5.0.0",
         "blob-util": "^2.0.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -103,7 +103,7 @@
         "use-resize-observer": "^9.1.0",
         "uuid": "^11.1.0",
         "webfontloader": "^1.6.28",
-        "zod": "^3"
+        "zod": "^3.25.0"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",

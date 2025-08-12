@@ -30,7 +30,8 @@ export const suggestionsRouter = createTRPCRouter({
                 messages: [
                     {
                         role: 'system',
-                        content: SUGGESTION_SYSTEM_PROMPT,
+
+                        content: SUGGESTION_SYSTEM_PROMPT
                     },
                     ...input.messages.map((m) => ({
                         role: m.role as ChatMessageRole,
@@ -38,10 +39,10 @@ export const suggestionsRouter = createTRPCRouter({
                     })),
                     {
                         role: 'user',
-                        content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.',
+                        content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.'
                     },
                 ],
-                maxTokens: 10000,
+                maxOutputTokens: 10000,
             });
             const suggestions = object.suggestions satisfies ChatSuggestion[];
             try {

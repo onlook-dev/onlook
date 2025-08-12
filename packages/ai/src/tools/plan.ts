@@ -10,7 +10,7 @@ const TASK_TOOL_PARAMETERS = z.object({
 });
 const taskTool = tool({
     description: 'Launch specialized agents for analysis tasks',
-    parameters: TASK_TOOL_PARAMETERS,
+    inputSchema: TASK_TOOL_PARAMETERS,
 });
 
 export const TODO_WRITE_TOOL_NAME = 'todo_write';
@@ -28,7 +28,7 @@ export const TODO_WRITE_TOOL_PARAMETERS = z.object({
 });
 export const todoWriteTool = tool({
     description: 'Create and manage structured task lists for coding sessions',
-    parameters: TODO_WRITE_TOOL_PARAMETERS,
+    inputSchema: TODO_WRITE_TOOL_PARAMETERS,
 });
 
 export const EXIT_PLAN_MODE_TOOL_NAME = 'exit_plan_mode';
@@ -37,5 +37,5 @@ export const EXIT_PLAN_MODE_TOOL_PARAMETERS = z.object({
 });
 export const exitPlanModeTool = tool({
     description: 'Exit planning mode when ready to implement code',
-    parameters: EXIT_PLAN_MODE_TOOL_PARAMETERS,
+    inputSchema: EXIT_PLAN_MODE_TOOL_PARAMETERS,
 });

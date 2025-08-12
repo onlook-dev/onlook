@@ -77,7 +77,14 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -99,8 +106,22 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
-                    { name: 'layout.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'layout.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -122,11 +143,25 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'about', type: 'directory', isSymlink: false }
                 ],
                 'app/about': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -158,11 +193,25 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: '[id]', type: 'directory', isSymlink: false }
                 ],
                 'app/[id]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -194,7 +243,14 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'components', type: 'directory', isSymlink: false },
                     { name: 'lib', type: 'directory', isSymlink: false },
                     { name: 'api', type: 'directory', isSymlink: false }
@@ -219,15 +275,36 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'blog', type: 'directory', isSymlink: false }
                 ],
                 'app/blog': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'posts', type: 'directory', isSymlink: false }
                 ],
                 'app/blog/posts': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -269,15 +346,36 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'blog', type: 'directory', isSymlink: false }
                 ],
                 'app/blog': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: '[slug]', type: 'directory', isSymlink: false }
                 ],
                 'app/blog/[slug]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -319,31 +417,80 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'users', type: 'directory', isSymlink: false },
                     { name: 'products', type: 'directory', isSymlink: false }
                 ],
                 'app/users': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: '[id]', type: 'directory', isSymlink: false }
                 ],
                 'app/users/[id]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'profile', type: 'directory', isSymlink: false }
                 ],
                 'app/users/[id]/profile': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ],
                 'app/products': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: '[category]', type: 'directory', isSymlink: false }
                 ],
                 'app/products/[category]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: '[productId]', type: 'directory', isSymlink: false }
                 ],
                 'app/products/[category]/[productId]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -424,23 +571,58 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'shop', type: 'directory', isSymlink: false }
                 ],
                 'app/shop': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: '[productId]', type: 'directory', isSymlink: false },
                     { name: 'categories', type: 'directory', isSymlink: false }
                 ],
                 'app/shop/[productId]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'reviews', type: 'directory', isSymlink: false }
                 ],
                 'app/shop/[productId]/reviews': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ],
                 'app/shop/categories': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -501,15 +683,36 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'docs', type: 'directory', isSymlink: false }
                 ],
                 'app/docs': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: '[...slug]', type: 'directory', isSymlink: false }
                 ],
                 'app/docs/[...slug]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -551,15 +754,36 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'blog', type: 'directory', isSymlink: false }
                 ],
                 'app/blog': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: '[[...slug]]', type: 'directory', isSymlink: false }
                 ],
                 'app/blog/[[...slug]]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -601,31 +825,80 @@ const testCases: TestCase[] = [
             directory: 'app',
             sandboxManager: createMockSandboxManager({
                 'app': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'dashboard', type: 'directory', isSymlink: false }
                 ],
                 'app/dashboard': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'settings', type: 'directory', isSymlink: false },
                     { name: '[userId]', type: 'directory', isSymlink: false }
                 ],
                 'app/dashboard/settings': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'profile', type: 'directory', isSymlink: false },
                     { name: 'security', type: 'directory', isSymlink: false }
                 ],
                 'app/dashboard/settings/profile': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ],
                 'app/dashboard/settings/security': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ],
                 'app/dashboard/[userId]': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false },
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    },
                     { name: 'analytics', type: 'directory', isSymlink: false }
                 ],
                 'app/dashboard/[userId]/analytics': [
-                    { name: 'page.tsx', type: 'file', isSymlink: false }
+                    {
+                        type: 'file',
+
+                        file: {
+                            name: 'page.tsx',
+                            isSymlink: false
+                        }
+                    }
                 ]
             })
         },
@@ -738,7 +1011,14 @@ describe('scanAppDirectory', () => {
     test('should handle file read errors gracefully', async () => {
         const mockSandboxManager = createMockSandboxManager({
             'app': [
-                { name: 'page.tsx', type: 'file', isSymlink: false }
+                {
+                    type: 'file',
+
+                    file: {
+                        name: 'page.tsx',
+                        isSymlink: false
+                    }
+                }
             ]
         });
         // Override readFile to throw an error
@@ -753,7 +1033,14 @@ describe('scanAppDirectory', () => {
     test('should handle metadata extraction errors', async () => {
         const mockSandboxManager = createMockSandboxManager({
             'app': [
-                { name: 'page.tsx', type: 'file', isSymlink: false }
+                {
+                    type: 'file',
+
+                    file: {
+                        name: 'page.tsx',
+                        isSymlink: false
+                    }
+                }
             ]
         });
         // Override readFile to return invalid content

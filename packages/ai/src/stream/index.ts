@@ -1,14 +1,13 @@
 import { ChatMessageRole, type ChatMessage } from '@onlook/models';
 import {
-    convertToCoreMessages,
-    type CoreMessage,
+    convertToModelMessages,
+    type ModelMessage,
     type TextPart,
-    type ToolInvocation,
-    type Message as VercelMessage,
+    type UIMessage,
 } from 'ai';
 import { getHydratedUserMessage, type HydrateMessageOptions } from '../prompt';
 
-export function convertToStreamMessages(messages: ChatMessage[]): CoreMessage[] {
+export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[] {
     const totalMessages = messages.length;
     const lastUserMessageIndex = messages.findLastIndex(
         (message) => message.role === ChatMessageRole.USER,
@@ -27,21 +26,21 @@ export function convertToStreamMessages(messages: ChatMessage[]): CoreMessage[] 
         };
         return toVercelMessageFromOnlook(message, opt, toolCallSignatures);
     });
-    return convertToCoreMessages(uiMessages);
+    return convertToModelMessages(uiMessages);
 }
 
 export const toVercelMessageFromOnlook = (
     message: ChatMessage,
     opt: HydrateMessageOptions,
     toolCallSignatures: Map<string, string>,
-): VercelMessage => {
+): UIMessage => {
     const messageContent = extractTextFromParts(message.content.parts);
     if (message.role === ChatMessageRole.ASSISTANT) {
         return {
-            ...message,
-            parts: message.content.parts,
-            content: messageContent,
-        } satisfies VercelMessage;
+            id: message.id,
+            role: 'assistant',
+            parts: getAssistantParts(message.content.parts, toolCallSignatures, opt) ?? [],
+        } satisfies UIMessage;
     } else if (message.role === ChatMessageRole.USER) {
         const hydratedMessage = getHydratedUserMessage(
             message.id,
@@ -51,7 +50,12 @@ export const toVercelMessageFromOnlook = (
         );
         return hydratedMessage;
     }
-    return message;
+    // Default fallback; should not happen
+    return {
+        id: message.id,
+        role: 'assistant',
+        parts: [],
+    } satisfies UIMessage;
 };
 
 export const extractTextFromParts = (parts: ChatMessage['content']['parts']): string => {
@@ -69,30 +73,30 @@ export const getAssistantParts = (
     parts: ChatMessage['content']['parts'] | undefined,
     toolCallSignatures: Map<string, string>,
     opt: HydrateMessageOptions,
-): VercelMessage['parts'] => {
+): any => {
     return parts?.map((part) => {
         if (part.type === 'tool-invocation') {
-            const toolInvocation = part.toolInvocation;
+            const toolInvocation = part as any;
             const toolSignature = getToolSignature(toolInvocation);
             const isLastAssistantMessage =
                 opt.currentMessageIndex === opt.lastAssistantMessageIndex;
             if (toolCallSignatures.get(toolSignature) && !isLastAssistantMessage) {
                 return getTruncatedToolInvocation(toolInvocation);
             }
-            toolCallSignatures.set(toolSignature, part.toolInvocation.toolCallId);
+            toolCallSignatures.set(toolSignature, (toolInvocation as any).toolCallId);
         }
         return part;
     });
 };
 
-const getToolSignature = (toolInvocation: ToolInvocation): string => {
+const getToolSignature = (toolInvocation: any): string => {
     const toolName = toolInvocation.toolName;
-    const args = toolInvocation.args;
-    const result = toolInvocation.state === 'result' ? toolInvocation.result : '';
-    return `${toolName}-${JSON.stringify(args)}-${JSON.stringify(result)}`;
+    const input = toolInvocation.input;
+    const output = toolInvocation.state === 'result' ? toolInvocation.output : '';
+    return `${toolName}-${JSON.stringify(input)}-${JSON.stringify(output)}`;
 };
 
-const getTruncatedToolInvocation = (toolInvocation: ToolInvocation): TextPart => {
+const getTruncatedToolInvocation = (toolInvocation: any): TextPart => {
     return {
         type: 'text',
         text: `Truncated tool invocation. Exact same tool invocation as tool name ${toolInvocation.toolName} and ID: ${toolInvocation.toolCallId}`,

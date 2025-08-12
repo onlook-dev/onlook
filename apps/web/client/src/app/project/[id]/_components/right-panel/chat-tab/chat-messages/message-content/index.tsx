@@ -1,4 +1,4 @@
-import type { Message } from 'ai';
+import type { UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { MarkdownRenderer } from '../markdown-renderer';
 import { ToolCallDisplay } from './tool-call-display';
@@ -11,7 +11,7 @@ export const MessageContent = observer(
         isStream,
     }: {
         messageId: string;
-        parts: Message['parts'];
+        parts: UIMessage['parts'];
         applied: boolean;
         isStream: boolean;
     }) => {
@@ -38,8 +38,15 @@ export const MessageContent = observer(
                         messageId={messageId}
                         index={idx}
                         lastToolInvocationIdx={lastToolInvocationIdx}
-                        toolInvocation={part.toolInvocation}
-                        key={part.toolInvocation.toolCallId}
+                        toolInvocation={{
+                            type: part.type,
+                            toolName: part.toolName,
+                            toolCallId: part.toolCallId,
+                            state: part.state,
+                            input: part.input,
+                            output: (part as any).output,
+                        } as any}
+                        key={part.toolCallId}
                         isStream={isStream}
                         applied={applied}
                     />
@@ -49,7 +56,7 @@ export const MessageContent = observer(
                     return null;
                 }
                 return (
-                    <p>Introspecting...</p>
+                    <p>{part.text ?? 'Introspecting...'}</p>
                 );
             }
         });

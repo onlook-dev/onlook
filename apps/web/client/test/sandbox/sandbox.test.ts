@@ -68,15 +68,23 @@ describe('SandboxManager', () => {
         }));
 
         const mockEntries = [
-            { name: 'file1.tsx', type: 'file' },
-            { name: 'file2.tsx', type: 'file' },
+            { type: 'file', file: {
+                name: 'file1.tsx'
+            } },
+            { type: 'file', file: {
+                name: 'file2.tsx'
+            } },
             { name: 'node_modules', type: 'directory' },
             { name: 'src', type: 'directory' },
         ];
 
         const mockSrcEntries = [
-            { name: 'component.tsx', type: 'file' },
-            { name: 'utils.ts', type: 'file' },
+            { type: 'file', file: {
+                name: 'component.tsx'
+            } },
+            { type: 'file', file: {
+                name: 'utils.ts'
+            } },
         ];
 
         // Create a sandbox with a mock FileSyncManager

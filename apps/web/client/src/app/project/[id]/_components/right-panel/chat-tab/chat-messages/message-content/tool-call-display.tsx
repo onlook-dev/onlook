@@ -2,7 +2,6 @@ import { FUZZY_EDIT_FILE_TOOL_NAME, type FUZZY_EDIT_FILE_TOOL_PARAMETERS, SEARCH
 import type { WebSearchResult } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
-import type { ToolInvocation } from 'ai';
 import { type z } from 'zod';
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
 import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block';
@@ -20,7 +19,7 @@ export const ToolCallDisplay = ({
     messageId: string,
     index: number,
     lastToolInvocationIdx: number,
-    toolInvocation: ToolInvocation,
+    toolInvocation: any,
     isStream: boolean,
     applied: boolean
 }) => {
@@ -30,17 +29,17 @@ export const ToolCallDisplay = ({
             return (
                 <BashCodeDisplay
                     key={toolInvocation.toolCallId}
-                    content={toolInvocation.args.command}
+                    content={toolInvocation.input.command}
                     isStream={isStream}
-                    defaultStdOut={toolInvocation.state === 'result' ? toolInvocation.result.output : null}
-                    defaultStdErr={toolInvocation.state === 'result' ? toolInvocation.result.error : null}
+                    defaultStdOut={toolInvocation.state === 'result' ? toolInvocation.output.output : null}
+                    defaultStdErr={toolInvocation.state === 'result' ? toolInvocation.output.error : null}
                 />
             );
         }
 
         if (toolInvocation.toolName === WEB_SEARCH_TOOL_NAME && toolInvocation.state === 'result') {
-            const searchResult: WebSearchResult | null = toolInvocation.result;
-            const args = toolInvocation.args as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
+            const searchResult: WebSearchResult | null = toolInvocation.output;
+            const args = toolInvocation.input as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
             if (args.query && searchResult?.result && searchResult.result.length > 0) {
                 return (
                     <SearchSourcesDisplay
@@ -55,7 +54,7 @@ export const ToolCallDisplay = ({
         }
 
         if (toolInvocation.toolName === WRITE_FILE_TOOL_NAME) {
-            const args = toolInvocation.args as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>
+            const args = toolInvocation.input as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>
             const filePath = args.file_path;
             const codeContent = args.content;
             return (
@@ -72,7 +71,7 @@ export const ToolCallDisplay = ({
         }
 
         if (toolInvocation.toolName === FUZZY_EDIT_FILE_TOOL_NAME) {
-            const args = toolInvocation.args as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>;
+            const args = toolInvocation.input as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>;
             const filePath = args.file_path;
             const codeContent = args.content;
             return (
@@ -89,7 +88,7 @@ export const ToolCallDisplay = ({
         }
 
         if (toolInvocation.toolName === SEARCH_REPLACE_EDIT_FILE_TOOL_NAME) {
-            const args = toolInvocation.args as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>;
+            const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>;
             const filePath = args.file_path;
             const codeContent = args.new_string;
             return (
@@ -106,7 +105,7 @@ export const ToolCallDisplay = ({
         }
 
         if (toolInvocation.toolName === SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME) {
-            const args = toolInvocation.args as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>;
+            const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>;
             const filePath = args.file_path;
             const codeContent = args.edits.map((edit) => edit.new_string).join('\n...\n');
             return (
@@ -123,7 +122,7 @@ export const ToolCallDisplay = ({
         }
 
         if (toolInvocation.toolName === TODO_WRITE_TOOL_NAME) {
-            const args = toolInvocation.args as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>;
+            const args = toolInvocation.input as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>;
             const todos = args.todos;
             return (
                 <div>
