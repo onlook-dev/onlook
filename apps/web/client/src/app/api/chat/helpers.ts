@@ -1,7 +1,7 @@
 import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
 import { initModel } from '@onlook/ai';
-import { LLMProvider, OPENROUTER_MODELS, type Usage } from '@onlook/models';
+import { LLMProvider, OPENROUTER_MODELS, UsageType, type Usage } from '@onlook/models';
 import { generateObject, NoSuchToolError, type ToolCall, type ToolSet } from 'ai';
 import { type NextRequest } from 'next/server';
 
@@ -77,4 +77,38 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
         args: JSON.stringify(repairedArgs),
         toolCallType: 'function' as const
     };
+}
+
+export const incrementUsage = async (req: NextRequest) => {
+    const user = await getSupabaseUser(req);
+    if (!user) {
+        throw new Error('User not found');
+    }
+    const { api } = await createTRPCClient(req);
+    const incrementRes = await api.usage.increment({
+        type: UsageType.MESSAGE,
+    });
+    return {
+        usageRecordId: incrementRes?.usageRecordId,
+        rateLimitId: incrementRes?.rateLimitId,
+    };
+}
+
+export const decrementUsage = async (
+    req: NextRequest,
+    usageRecord: {
+        usageRecordId: string | undefined,
+        rateLimitId: string | undefined,
+    } | undefined
+) => {
+    if (!usageRecord) {
+        return;
+    }
+    const { usageRecordId, rateLimitId } = usageRecord;
+    if (!usageRecordId || !rateLimitId) {
+        return;
+    }
+    await createTRPCClient(req)
+        .then(({ api }) => api.usage.revertIncrement({ usageRecordId, rateLimitId }))
+        .catch(error => console.error('Error in chat usage decrement', error));
 }

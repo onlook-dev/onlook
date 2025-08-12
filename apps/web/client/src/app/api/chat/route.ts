@@ -1,11 +1,10 @@
 import { mastra } from '@/mastra';
 import { CHAT_TYPE_KEY, ONLOOK_AGENT_KEY, type OnlookAgentRuntimeContext } from '@/mastra/agents';
-import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { trackEvent } from '@/utils/analytics/server';
 import { RuntimeContext } from '@mastra/core/runtime-context';
-import { ChatType, UsageType } from '@onlook/models';
+import { ChatType } from '@onlook/models';
 import { type NextRequest } from 'next/server';
-import { checkMessageLimit, getSupabaseUser, repairToolCall } from './helpers';
+import { checkMessageLimit, decrementUsage, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';
 
 export async function POST(req: NextRequest) {
     try {
@@ -62,19 +61,12 @@ export const streamResponse = async (req: NextRequest) => {
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
     // If the call below fails, the user will not be penalized.
-    let usageRecordId: string | undefined;
-    let rateLimitId: string | undefined;
+    let usageRecord: {
+        usageRecordId: string | undefined;
+        rateLimitId: string | undefined;
+    } | undefined;
     if (chatType === ChatType.EDIT) {
-        const user = await getSupabaseUser(req);
-        if (!user) {
-            throw new Error('User not found');
-        }
-        const { api } = await createTRPCClient(req);
-        const incrementRes = await api.usage.increment({
-            type: UsageType.MESSAGE,
-        });
-        usageRecordId = incrementRes?.usageRecordId;
-        rateLimitId = incrementRes?.rateLimitId;
+        usageRecord = await incrementUsage(req);
     }
     const result = await agent.stream(messages, {
         headers: {
@@ -88,11 +80,7 @@ export const streamResponse = async (req: NextRequest) => {
         onError: async (error) => {
             console.error('Error in chat', error);
             // if there was an error with the API, do not penalize the user
-            if (usageRecordId && rateLimitId) {
-                await createTRPCClient(req)
-                    .then(({ api }) => api.usage.revertIncrement({ usageRecordId, rateLimitId }))
-                    .catch(error => console.error('Error in chat usage decrement', error));
-            }
+            await decrementUsage(req, usageRecord);
         }
     })
 
