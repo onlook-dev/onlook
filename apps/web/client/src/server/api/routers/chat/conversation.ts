@@ -81,7 +81,7 @@ export const conversationRouter = createTRPCRouter({
                 headers,
                 prompt: `Generate a concise and meaningful conversation title (2-4 words maximum) that reflects the main purpose or theme of the conversation based on user's creation prompt. Generate only the conversation title, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.content}</prompt>`,
                 providerOptions,
-                maxTokens: 50,
+                maxOutputTokens: 50,
             });
 
             const generatedName = result.text.trim();

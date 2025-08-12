@@ -1,14 +1,14 @@
 import { ChatMessageRole, type ChatMessage } from '@onlook/models';
 import {
-    convertToCoreMessages,
-    type CoreMessage,
+    convertToModelMessages,
+    type ModelMessage,
     type TextPart,
     type ToolInvocation,
-    type Message as VercelMessage,
+    type UIMessage as VercelMessage,
 } from 'ai';
 import { getHydratedUserMessage, type HydrateMessageOptions } from '../prompt';
 
-export function convertToStreamMessages(messages: ChatMessage[]): CoreMessage[] {
+export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[] {
     const totalMessages = messages.length;
     const lastUserMessageIndex = messages.findLastIndex(
         (message) => message.role === ChatMessageRole.USER,
@@ -27,7 +27,7 @@ export function convertToStreamMessages(messages: ChatMessage[]): CoreMessage[] 
         };
         return toVercelMessageFromOnlook(message, opt, toolCallSignatures);
     });
-    return convertToCoreMessages(uiMessages);
+    return convertToModelMessages(uiMessages);
 }
 
 export const toVercelMessageFromOnlook = (

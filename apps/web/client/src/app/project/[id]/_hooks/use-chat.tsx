@@ -5,17 +5,17 @@ import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { toOnlookMessageFromVercel } from '@onlook/db';
 import { ChatType } from '@onlook/models';
-import type { Message } from 'ai';
+import type { UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers & { sendMessage: (type: ChatType) => Promise<string | null | undefined> };
+type ExtendedUseChatHelpers = UseChatHelpers<any> & { sendMessage: (type: ChatType) => Promise<string | null | undefined> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
-    const lastMessageRef = useRef<Message | null>(null);
+    const lastMessageRef = useRef<UIMessage | null>(null);
     const posthog = usePostHog();
 
     const conversationId = editorEngine.chat.conversation.current?.conversation.id;

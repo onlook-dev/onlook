@@ -1,7 +1,7 @@
 import type { Message as DbMessage } from "@onlook/db";
 import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type UserChatMessage } from "@onlook/models";
 import { assertNever } from '@onlook/utility';
-import type { Message as VercelMessage } from 'ai';
+import type { UIMessage as VercelMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
 export const toMessage = (message: DbMessage): ChatMessage => {

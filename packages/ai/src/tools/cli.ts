@@ -7,7 +7,7 @@ export const TERMINAL_COMMAND_TOOL_PARAMETERS = z.object({
 });
 export const terminalCommandTool = tool({
     description: 'Run any generic Linux Bash command in the terminal',
-    parameters: TERMINAL_COMMAND_TOOL_PARAMETERS,
+    inputSchema: TERMINAL_COMMAND_TOOL_PARAMETERS,
 });
 
 export const ALLOWED_BASH_READ_COMMANDS = z.enum([
@@ -39,7 +39,7 @@ export const BASH_READ_TOOL_PARAMETERS = z.object({
 });
 export const bashReadTool = tool({
     description: 'Execute read-only bash commands for exploration and analysis',
-    parameters: BASH_READ_TOOL_PARAMETERS,
+    inputSchema: BASH_READ_TOOL_PARAMETERS,
 });
 
 export const ALLOWED_BASH_EDIT_COMMANDS = z.enum([
@@ -66,7 +66,7 @@ export const BASH_EDIT_TOOL_PARAMETERS = z.object({
 });
 export const bashEditTool = tool({
     description: 'Execute file modification commands in a persistent shell session',
-    parameters: BASH_EDIT_TOOL_PARAMETERS,
+    inputSchema: BASH_EDIT_TOOL_PARAMETERS,
 });
 
 export const GLOB_TOOL_NAME = 'glob';
@@ -76,7 +76,7 @@ export const GLOB_TOOL_PARAMETERS = z.object({
 });
 export const globTool = tool({
     description: 'Fast file pattern matching tool that works with any codebase size',
-    parameters: GLOB_TOOL_PARAMETERS,
+    inputSchema: GLOB_TOOL_PARAMETERS,
 });
 
 export const GREP_TOOL_NAME = 'grep';
@@ -99,5 +99,5 @@ export const GREP_TOOL_PARAMETERS = z.object({
 });
 export const grepTool = tool({
     description: 'Powerful search tool built on ripgrep with full regex syntax support',
-    parameters: GREP_TOOL_PARAMETERS,
+    inputSchema: GREP_TOOL_PARAMETERS,
 });

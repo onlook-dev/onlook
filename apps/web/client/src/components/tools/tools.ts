@@ -34,7 +34,7 @@ import {
     WRITE_FILE_TOOL_NAME,
     WRITE_FILE_TOOL_PARAMETERS
 } from '@onlook/ai';
-import type { ToolCall } from 'ai';
+import type { ToolCall } from '@ai-sdk/provider-utils';
 import { z } from 'zod';
 import {
     handleBashEditTool,

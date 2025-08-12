@@ -1,6 +1,6 @@
 import type { ChatMessage } from '@onlook/models';
 import { ChatMessageRole } from '@onlook/models';
-import type { ToolInvocation } from 'ai';
+import type { ToolInvocation } from '@ai-sdk/provider-utils';
 import { describe, expect, test } from 'bun:test';
 import { convertToStreamMessages, extractTextFromParts } from '../../src/stream';
 

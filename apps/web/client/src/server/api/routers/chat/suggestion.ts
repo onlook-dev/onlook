@@ -41,7 +41,7 @@ export const suggestionsRouter = createTRPCRouter({
                         content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.',
                     },
                 ],
-                maxTokens: 10000,
+                maxOutputTokens: 10000,
             });
             const suggestions = object.suggestions satisfies ChatSuggestion[];
             try {
