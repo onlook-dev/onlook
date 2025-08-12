@@ -68,7 +68,6 @@ export const streamResponse = async (req: NextRequest) => {
     if (chatType === ChatType.EDIT) {
         usageRecord = await incrementUsage(req);
     }
-    console.log('MESSAGES', JSON.stringify(convertToCoreMessages(messages), null, 2));
     const result = await agent.stream(convertToCoreMessages(messages), {
         headers: {
             'HTTP-Referer': 'https://onlook.com',
