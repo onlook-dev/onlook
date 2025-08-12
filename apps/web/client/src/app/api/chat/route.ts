@@ -1,9 +1,7 @@
-import { mastra } from '@/mastra';
-import { CHAT_TYPE_KEY, ONLOOK_AGENT_KEY, type OnlookAgentRuntimeContext } from '@/mastra/agents';
 import { trackEvent } from '@/utils/analytics/server';
-import { RuntimeContext } from '@mastra/core/runtime-context';
-import { convertToStreamMessages } from '@onlook/ai';
-import { ChatType, type ChatMessage } from '@onlook/models';
+import { ASK_TOOL_SET, BUILD_TOOL_SET, convertToStreamMessages, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
+import { ChatType, LLMProvider, OPENROUTER_MODELS, type ChatMessage, type ModelConfig } from '@onlook/models';
+import { streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { checkMessageLimit, decrementUsage, getSupabaseUser, incrementUsage, repairToolCall } from './helpers';
 
@@ -54,9 +52,6 @@ export async function POST(req: NextRequest) {
 
 export const streamResponse = async (req: NextRequest) => {
     const { messages, maxSteps, chatType }: { messages: ChatMessage[], maxSteps: number, chatType: ChatType } = await req.json();
-    const agent = mastra.getAgent(ONLOOK_AGENT_KEY);
-    const runtimeContext = new RuntimeContext<OnlookAgentRuntimeContext>()
-    runtimeContext.set(CHAT_TYPE_KEY, chatType);
 
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
@@ -68,14 +63,24 @@ export const streamResponse = async (req: NextRequest) => {
     if (chatType === ChatType.EDIT) {
         usageRecord = await incrementUsage(req);
     }
-    const result = await agent.stream(convertToStreamMessages(messages), {
-        headers: {
-            'HTTP-Referer': 'https://onlook.com',
-            'X-Title': 'Onlook',
-        },
+
+    const { model, providerOptions, headers } = await getModelFromType(chatType);
+    const systemPrompt = await getSystemPromptFromType(chatType);
+    const tools = await getToolSetFromType(chatType);
+    const result = streamText({
+        model,
+        headers,
+        tools,
         maxSteps,
-        runtimeContext,
         toolCallStreaming: true,
+        messages: [
+            {
+                role: 'system',
+                content: systemPrompt,
+                providerOptions,
+            },
+            ...convertToStreamMessages(messages),
+        ],
         experimental_repairToolCall: repairToolCall,
         onError: async (error) => {
             console.error('Error in chat', error);
@@ -110,4 +115,48 @@ export function errorHandler(error: unknown) {
         console.error('Error in errorHandler', error);
         return 'unknown error';
     }
+}
+
+async function getModelFromType(chatType: ChatType) {
+    let model: ModelConfig;
+    switch (chatType) {
+        case ChatType.CREATE:
+        case ChatType.FIX:
+            model = await initModel({
+                provider: LLMProvider.OPENROUTER,
+                model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
+            });
+            break;
+        case ChatType.ASK:
+        case ChatType.EDIT:
+        default:
+            model = await initModel({
+                provider: LLMProvider.OPENROUTER,
+                model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+            });
+            break;
+    }
+    return model;
+}
+
+async function getToolSetFromType(chatType: ChatType) {
+    return chatType === ChatType.ASK ? ASK_TOOL_SET : BUILD_TOOL_SET;
+}
+
+async function getSystemPromptFromType(chatType: ChatType) {
+    let systemPrompt: string;
+
+    switch (chatType) {
+        case ChatType.CREATE:
+            systemPrompt = getCreatePageSystemPrompt();
+            break;
+        case ChatType.ASK:
+            systemPrompt = getAskModeSystemPrompt();
+            break;
+        case ChatType.EDIT:
+        default:
+            systemPrompt = getSystemPrompt();
+            break;
+    }
+    return systemPrompt;
 }
