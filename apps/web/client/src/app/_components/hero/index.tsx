@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 
 export function Hero() {
     const [cardKey, setCardKey] = useState(0);
+    const [isCreatingProject, setIsCreatingProject] = useState(false);
     const { setIsAuthModalOpen } = useAuthContext();
     const router = useRouter();
     const { data: user } = api.user.get.useQuery();
@@ -31,6 +32,7 @@ export function Hero() {
             return;
         }
 
+        setIsCreatingProject(true);
         try {
             // Create a blank project using the BLANK template
             const { sandboxId, previewUrl } = await forkSandbox({
@@ -56,9 +58,19 @@ export function Hero() {
             }
         } catch (error) {
             console.error('Error creating blank project:', error);
-            toast.error('Failed to create project', {
-                description: error instanceof Error ? error.message : String(error),
-            });
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            
+            if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
+                toast.error('Sandbox service temporarily unavailable', {
+                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                });
+            } else {
+                toast.error('Failed to create project', {
+                    description: errorMessage,
+                });
+            }
+        }finally {
+            setIsCreatingProject(false);
         }
     };
 
@@ -122,9 +134,14 @@ export function Hero() {
                 >
                     <button 
                         onClick={handleStartBlankProject}
-                        className="text-sm text-foreground-secondary hover:text-foreground transition-colors duration-200 flex items-center gap-2"
+                        disabled={isCreatingProject}
+                        className="text-sm text-foreground-secondary hover:text-foreground transition-colors duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-foreground-secondary"
                     >
-                        <Icons.File className="w-4 h-4" />
+                        {isCreatingProject ? (
+                            <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                        ) : (
+                            <Icons.File className="w-4 h-4" />
+                        )}
                         Start a Blank Project
                     </button>
                     <button 
