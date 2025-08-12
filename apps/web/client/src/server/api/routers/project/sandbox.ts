@@ -1,10 +1,10 @@
+import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
 import { getSandboxPreviewUrl } from '@onlook/constants';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { TRPCError } from '@trpc/server';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
 
 function getProvider(sandboxId: string, userId?: string) {
     return createCodeProviderClient(CodeProvider.CodeSandbox, {
@@ -73,7 +73,7 @@ export const sandboxRouter = createTRPCRouter({
         .mutation(async ({ input }) => {
             const maxRetries = 3;
             let lastError: Error | null = null;
-            
+
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
                     const provider = await getProvider(input.sandbox.id);
@@ -96,13 +96,13 @@ export const sandboxRouter = createTRPCRouter({
                 } catch (error) {
                     lastError = error instanceof Error ? error : new Error(String(error));
                     console.error(`Sandbox creation attempt ${attempt} failed:`, lastError);
-                    
+
                     if (attempt < maxRetries) {
                         await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
                     }
                 }
             }
-            
+
             throw new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
                 message: `Failed to create sandbox after ${maxRetries} attempts: ${lastError?.message}`,
