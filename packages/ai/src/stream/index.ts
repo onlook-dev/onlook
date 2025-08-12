@@ -94,6 +94,6 @@ const getToolSignature = (toolInvocation: ToolInvocation): string => {
 const getTruncatedToolInvocation = (toolInvocation: ToolInvocation): TextPart => {
     return {
         type: 'text',
-        text: `Truncated tool invocation. Duplicate tool invocation with tool with ID:  ${toolInvocation.toolCallId}`,
+        text: `Truncated tool invocation. Exact same tool invocation as tool name ${toolInvocation.toolName} and ID: ${toolInvocation.toolCallId}`,
     };
 };

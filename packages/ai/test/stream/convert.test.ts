@@ -73,15 +73,25 @@ describe('convertToStreamMessages', () => {
             result: 'result-1',
         };
 
+        const toolInvocationB = {
+            toolName: 'search-2',
+            args: { q: 'hello' },
+            state: 'call',
+            toolCallId: 'tc-2',
+            result: 'result-2',
+        };
+
         const a1 = createMessage('a1', 'assistant', [
             { type: 'tool-invocation', toolInvocation: toolInvocationA },
+            { type: 'tool-invocation', toolInvocation: toolInvocationB },
         ]);
         const a2 = createMessage('a2', 'assistant', [
-            { type: 'tool-invocation', toolInvocation: { ...toolInvocationA, toolCallId: 'tc-2' } },
             { type: 'tool-invocation', toolInvocation: { ...toolInvocationA, toolCallId: 'tc-3' } },
+            { type: 'tool-invocation', toolInvocation: toolInvocationB, toolCallId: 'tc-4' },
         ]);
         const a3 = createMessage('a3', 'assistant', [
-            { type: 'tool-invocation', toolInvocation: { ...toolInvocationA, toolCallId: 'tc-4' } },
+            { type: 'tool-invocation', toolInvocation: { ...toolInvocationA, toolCallId: 'tc-5' } },
+            { type: 'tool-invocation', toolInvocation: toolInvocationB, toolCallId: 'tc-6' },
         ]);
 
         const core = convertToStreamMessages([a1, a2, a3]);
