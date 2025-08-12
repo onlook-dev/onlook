@@ -3,7 +3,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
 import { useChat, type UseChatHelpers } from '@ai-sdk/react';
-import { convertToStreamMessages } from '@onlook/ai';
 import { toOnlookMessageFromVercel } from '@onlook/db';
 import { ChatType } from '@onlook/models';
 import type { Message } from 'ai';
@@ -63,8 +62,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         }
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
-        const messages = convertToStreamMessages(editorEngine.chat.conversation.current?.messages ?? []) as Message[];
-        chat.setMessages(messages);
+        chat.setMessages(editorEngine.chat.conversation.current?.messages ?? [] as any);
         try {
             posthog.capture('user_send_message', {
                 type,

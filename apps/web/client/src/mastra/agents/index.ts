@@ -51,7 +51,7 @@ export const onlookAgent = new Agent({
             default:
                 model = await initModel({
                     provider: LLMProvider.OPENROUTER,
-                    model: OPENROUTER_MODELS.OPEN_AI_GPT_5,
+                    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
                 });
                 break;
         }

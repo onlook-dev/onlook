@@ -42,6 +42,7 @@ describe('Prompt', () => {
             totalMessages: 1,
             currentMessageIndex: 0,
             lastUserMessageIndex: 0,
+            lastAssistantMessageIndex: 0,
         };
 
         const message = getHydratedUserMessage(
@@ -96,6 +97,7 @@ describe('Prompt', () => {
             totalMessages: 1,
             currentMessageIndex: 0,
             lastUserMessageIndex: 0,
+            lastAssistantMessageIndex: 0,
         };
 
         const message = getHydratedUserMessage('test', '', [], options);

@@ -39,10 +39,10 @@ export const toVercelMessageFromOnlook = (
     if (message.role === ChatMessageRole.ASSISTANT) {
         return {
             ...message,
-            parts: getAssistantParts(message.content.parts, toolCallSignatures, opt),
+            parts: message.content.parts,
             content: messageContent,
         } satisfies VercelMessage;
-    } else {
+    } else if (message.role === ChatMessageRole.USER) {
         const hydratedMessage = getHydratedUserMessage(
             message.id,
             messageContent,
@@ -51,6 +51,7 @@ export const toVercelMessageFromOnlook = (
         );
         return hydratedMessage;
     }
+    return message;
 };
 
 export const extractTextFromParts = (parts: ChatMessage['content']['parts']): string => {
@@ -65,11 +66,11 @@ export const extractTextFromParts = (parts: ChatMessage['content']['parts']): st
 };
 
 export const getAssistantParts = (
-    message: ChatMessage['content']['parts'],
+    parts: ChatMessage['content']['parts'] | undefined,
     toolCallSignatures: Map<string, string>,
     opt: HydrateMessageOptions,
 ): VercelMessage['parts'] => {
-    return message.map((part) => {
+    return parts?.map((part) => {
         if (part.type === 'tool-invocation') {
             const toolInvocation = part.toolInvocation;
             const toolSignature = getToolSignature(toolInvocation);

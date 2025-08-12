@@ -41,7 +41,8 @@ export const WRITE_FILE_TOOL_PARAMETERS = z.object({
     content: z.string().describe('File content'),
 });
 export const writeFileTool = tool({
-    description: 'Write or overwrite file contents completely',
+    description:
+        'Write or overwrite file contents completely. Should be used only to write new files or completely overwrite existing files. If editing an existing file, use the search and replace tool instead.',
     parameters: WRITE_FILE_TOOL_PARAMETERS,
 });
 

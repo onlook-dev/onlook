@@ -168,7 +168,6 @@ export class ConversationManager {
             return;
         }
         this.current.messages = this.current.messages.filter((m) => !messages.includes(m));
-        console.log('removing messages', messages.map((m) => m.id));
         await this.deleteMessagesInStorage(messages.map((m) => m.id));
     }
 
