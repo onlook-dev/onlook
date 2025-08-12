@@ -65,7 +65,7 @@ describe('Web Search Tool', () => {
         });
 
         it('should use the correct parameters schema', () => {
-            expect(webSearchTool.parameters).toBe(WEB_SEARCH_TOOL_PARAMETERS);
+            expect(webSearchTool.inputSchema).toBe(WEB_SEARCH_TOOL_PARAMETERS);
         });
     });
 

@@ -80,7 +80,7 @@ describe('Prompt', () => {
             options,
         );
 
-        const prompt = message.content;
+        const prompt = message.parts[0]?.text;
 
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
@@ -101,7 +101,7 @@ describe('Prompt', () => {
         };
 
         const message = getHydratedUserMessage('test', '', [], options);
-        const prompt = message.content;
+        const prompt = message.parts[0]?.text;
 
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
