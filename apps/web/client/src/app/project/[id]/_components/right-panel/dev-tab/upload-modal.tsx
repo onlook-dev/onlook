@@ -53,7 +53,7 @@ export const UploadModal = observer(({
     const getSmartDirectory = (filename: string): string => {
         const extension = filename.toLowerCase().split('.').pop();
         const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'ico'];
-        
+
         if (extension && imageExtensions.includes(extension)) {
             if (availableDirectories.includes('public')) {
                 return 'public';
@@ -66,7 +66,7 @@ export const UploadModal = observer(({
             }
             return availableDirectories.includes('public') ? 'public' : 'root';
         }
-        
+
         // For non-image files, use last selected directory or current file's directory
         if (editorEngine.ide.activeFile?.path) {
             const path = editorEngine.ide.activeFile.path;
@@ -76,7 +76,7 @@ export const UploadModal = observer(({
                 return dir;
             }
         }
-        
+
         return 'root';
     };
 
@@ -90,7 +90,7 @@ export const UploadModal = observer(({
         setSelectedFiles(fileArray);
 
         // Set smart default directory based on first file
-        if (fileArray.length > 0) {
+        if (fileArray.length > 0 && fileArray[0]) {
             const smartDir = getSmartDirectory(fileArray[0].name);
             setTargetDirectory(smartDir);
         }
@@ -106,17 +106,22 @@ export const UploadModal = observer(({
             for (const file of selectedFiles) {
                 const directory = targetDirectory === 'root' ? '' : targetDirectory;
                 const finalPath = directory ? `${directory}/${file.name}` : file.name;
-                
-                const content = await file.arrayBuffer();
-                await editorEngine.sandbox.writeFile(finalPath, new Uint8Array(content));
+
+                if (file.type.startsWith('image/')) {
+                    const content = await file.arrayBuffer();
+                    await editorEngine.sandbox.writeBinaryFile(finalPath, new Uint8Array(content));
+                } else {
+                    const content = await file.text();
+                    await editorEngine.sandbox.writeFile(finalPath, content);
+                }
             }
-            
+
             await editorEngine.sandbox.listAllFiles();
-            
+
             const fileCount = selectedFiles.length;
             const fileText = fileCount === 1 ? selectedFiles[0]?.name ?? 'file' : `${fileCount} files`;
             toast(`Successfully uploaded ${fileText}!`);
-            
+
             onOpenChange(false);
             onSuccess?.();
         } catch (error) {
@@ -239,7 +244,7 @@ export const UploadModal = observer(({
                         onClick={handleUpload}
                         disabled={selectedFiles.length === 0 || isUploading}
                     >
-                        {isUploading 
+                        {isUploading
                             ? 'Uploading...'
                             : `Upload ${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''}`
                         }
