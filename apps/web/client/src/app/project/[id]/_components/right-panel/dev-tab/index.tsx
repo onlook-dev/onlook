@@ -40,10 +40,10 @@ export const DevTab = observer(() => {
     }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
 
     // Helper function to handle sandbox not ready scenarios
-    const handleSandboxNotReady = (operation: string): void => {
+    const handleSandboxNotReady = useCallback((operation: string): void => {
         const message = `Cannot ${operation}: sandbox not connected`;
         console.error(message);
-    };
+    }, []);
 
     const getActiveEditorView = (): EditorView | undefined => {
         if (!ide.activeFile) {
@@ -322,7 +322,21 @@ export const DevTab = observer(() => {
         return ide.getFilePathFromOid(oid);
     }
 
-    async function saveFile() {
+    const closeFile = useCallback((fileId: string) => {
+        if (ide.openedFiles.find(f => f.id === fileId)?.isDirty) {
+            setShowUnsavedDialog(true);
+            return;
+        }
+
+        const editorView = editorViewsRef.current.get(fileId);
+        if (editorView) {
+            editorView.destroy();
+            editorViewsRef.current.delete(fileId);
+        }
+        ide.closeFile(fileId);
+    }, [ide, setShowUnsavedDialog]);
+
+    const saveFile = useCallback(async () => {
         if (!ide.activeFile) {
             return;
         }
@@ -360,7 +374,7 @@ export const DevTab = observer(() => {
         }
 
         toast('File saved!');
-    }
+    }, [ide, isSandboxReady, handleSandboxNotReady, pendingCloseAll, showUnsavedDialog, setShowUnsavedDialog, setPendingCloseAll, closeFile]);
 
     const handleFileTreeSelect = async (nodes: any[]) => {
         if (nodes.length > 0 && !nodes[0].data.isDirectory) {
@@ -368,20 +382,6 @@ export const DevTab = observer(() => {
             ide.setHighlightRange(null);
         }
     };
-
-    function closeFile(fileId: string) {
-        if (ide.openedFiles.find(f => f.id === fileId)?.isDirty) {
-            setShowUnsavedDialog(true);
-            return;
-        }
-
-        const editorView = editorViewsRef.current.get(fileId);
-        if (editorView) {
-            editorView.destroy();
-            editorViewsRef.current.delete(fileId);
-        }
-        ide.closeFile(fileId);
-    }
 
     function closeAllFiles() {
         const dirtyFiles = ide.openedFiles.filter((file) => file.isDirty);
@@ -440,6 +440,24 @@ export const DevTab = observer(() => {
             editorViewsRef.current.forEach((view) => view.destroy());
             editorViewsRef.current.clear();
         };
+    }, []);
+
+    // Add shortcut
+    const saveFileRef = useRef(saveFile);
+    useEffect(() => {
+        saveFileRef.current = saveFile;
+    }, [saveFile]);
+
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if ((event.metaKey || event.ctrlKey) && event.key === 's') {
+                event.preventDefault();
+                void saveFileRef.current();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
     }, []);
 
     const scrollToActiveTab = useCallback(() => {
