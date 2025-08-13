@@ -17,6 +17,7 @@ import {
     SelectValue,
 } from '@onlook/ui/select';
 import { toast } from '@onlook/ui/sonner';
+import { isBinaryFile } from '@onlook/utility/src/file';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -107,7 +108,7 @@ export const UploadModal = observer(({
                 const directory = targetDirectory === 'root' ? '' : targetDirectory;
                 const finalPath = directory ? `${directory}/${file.name}` : file.name;
 
-                if (file.type.startsWith('image/')) {
+                if (isBinaryFile(file.name)) {
                     const content = await file.arrayBuffer();
                     await editorEngine.sandbox.writeBinaryFile(finalPath, new Uint8Array(content));
                 } else {
