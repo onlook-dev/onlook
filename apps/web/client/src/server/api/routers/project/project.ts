@@ -116,12 +116,28 @@ export const projectRouter = createTRPCRouter({
                 const newCanvas = createDefaultCanvas(newProject.id);
                 await tx.insert(canvases).values(newCanvas);
 
-                const newUserCanvas = createDefaultUserCanvas(input.userId, newCanvas.id);
+                const newUserCanvas = createDefaultUserCanvas(input.userId, newCanvas.id, {
+                    x: '120',
+                    y: '120',
+                    scale: '0.56',
+                });
                 await tx.insert(userCanvases).values(newUserCanvas);
 
                 // 4. Create the default frame
-                const newFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl);
-                await tx.insert(frames).values(newFrame);
+                const desktopFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl, {
+                    x: '5',
+                    y: '0',
+                    width: '1536',
+                    height: '960',
+                });
+                await tx.insert(frames).values(desktopFrame);
+                const mobileFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl, {
+                    x: '1600',
+                    y: '0',
+                    width: '440',
+                    height: '956',
+                });
+                await tx.insert(frames).values(mobileFrame);
 
                 // 5. Create the creation request
                 if (input.creationData) {
