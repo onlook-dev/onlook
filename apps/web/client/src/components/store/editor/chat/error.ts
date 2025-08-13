@@ -14,8 +14,8 @@ export class ChatErrorManager {
     }
 
     handleChatError(error: Error) {
+        console.error('handleChatError', error);
         // Try to parse error message as JSON
-        console.log('handleChatError', error);
         try {
             const parsed = JSON.parse(error.message) as {
                 code: number;
