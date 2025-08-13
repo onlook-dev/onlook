@@ -19,20 +19,28 @@ export class SessionManager {
             return;
         }
         this.isConnecting = true;
-        this.provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
-            providerOptions: {
-                codesandbox: {
-                    sandboxId,
-                    userId,
-                    initClient: true,
-                    getSession: async (sandboxId, userId) => {
-                        return api.sandbox.start.mutate({ sandboxId, userId });
+        
+        try {
+            this.provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
+                providerOptions: {
+                    codesandbox: {
+                        sandboxId,
+                        userId,
+                        initClient: true,
+                        getSession: async (sandboxId, userId) => {
+                            return api.sandbox.start.mutate({ sandboxId, userId });
+                        },
                     },
                 },
-            },
-        });
-        await this.createTerminalSessions(this.provider);
-        this.isConnecting = false;
+            });
+            await this.createTerminalSessions(this.provider);
+        } catch (error) {
+            console.error('Failed to start sandbox session:', error);
+            this.provider = null;
+            throw error;
+        } finally {
+            this.isConnecting = false;
+        }
     }
 
     async restartDevServer(): Promise<boolean> {

@@ -1,11 +1,11 @@
 import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
-    type ChatMessageContext,
     type ErrorMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
     type ImageMessageContext,
+    type MessageContext,
     type ProjectMessageContext,
 } from '@onlook/models/chat';
 import type { ParsedError } from '@onlook/utility';
@@ -13,7 +13,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 export class ChatContext {
-    context: ChatMessageContext[] = this.getProjectContext();
+    context: MessageContext[] = this.getProjectContext();
 
     constructor(
         private editorEngine: EditorEngine,
@@ -25,7 +25,7 @@ export class ChatContext {
         );
     }
 
-    async getChatContext(): Promise<ChatMessageContext[]> {
+    async getChatContext(): Promise<MessageContext[]> {
         const selected = this.editorEngine.elements.selected;
         const fileNames = new Set<string>();
         let highlightedContext: HighlightMessageContext[] = [];
@@ -39,7 +39,7 @@ export class ChatContext {
         return context;
     }
 
-    async getRefreshedContext(context: ChatMessageContext[]): Promise<ChatMessageContext[]> {
+    async getRefreshedContext(context: MessageContext[]): Promise<MessageContext[]> {
         return await Promise.all(context.map(async (c) => {
             if (c.type === MessageContextType.FILE) {
                 const fileContent = await this.editorEngine.sandbox.readFile(c.path);
@@ -61,7 +61,7 @@ export class ChatContext {
                 return { ...c, content: codeBlock } satisfies HighlightMessageContext;
             }
             return c;
-        })) satisfies ChatMessageContext[];
+        })) satisfies MessageContext[];
     }
 
     private async getImageContext(): Promise<ImageMessageContext[]> {
@@ -154,7 +154,7 @@ export class ChatContext {
 
     async getCreateContext() {
         try {
-            const context: ChatMessageContext[] = [];
+            const context: MessageContext[] = [];
             const pageContext = await this.getDefaultPageContext();
             const styleGuideContext = await this.getDefaultStyleGuideContext();
             if (pageContext) {

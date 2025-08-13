@@ -33,9 +33,7 @@ export async function initModel({
             providerOptions = {
                 openrouter: { transforms: ['middle-out'] },
             };
-            const isClaude =
-                requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET ||
-                requestedModel === OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO;
+            const isClaude = requestedModel === OPENROUTER_MODELS.CLAUDE_4_SONNET;
             providerOptions = isClaude
                 ? { ...providerOptions, anthropic: { cacheControl: { type: 'ephemeral' } } }
                 : providerOptions;

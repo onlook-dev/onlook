@@ -84,7 +84,7 @@
     "welcome": {
         "title": "Onlook에 오신 것을 환영합니다",
         "titleReturn": "Onlook에 다시 오신 것을 환영합니다",
-        "description": "Onlook은 React 앱을 위한 오픈소스 비주얼 에디터입니다. 라이브 제품에서 직접 디자인하세요.",
+        "description": "AI를 활용한 차세대 비주얼 코드 에디터로, 디자이너와 제품 관리자가 코드로 웹 경험을 만들 수 있습니다.",
         "alpha": "알파",
         "login": {
             "github": "GitHub으로 로그인",

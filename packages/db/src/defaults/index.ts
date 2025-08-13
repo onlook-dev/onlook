@@ -1,6 +1,5 @@
 export * from './canvas';
-export * from './conversation';
 export * from './frame';
+export * from './project-settings';
 export * from './user-canvas';
 export * from './user-settings';
-export * from './project-settings';

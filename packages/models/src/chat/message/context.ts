@@ -39,7 +39,7 @@ export type ProjectMessageContext = BaseMessageContext & {
     path: string;
 };
 
-export type ChatMessageContext =
+export type MessageContext =
     | FileMessageContext
     | HighlightMessageContext
     | ImageMessageContext

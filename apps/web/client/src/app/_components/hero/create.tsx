@@ -3,8 +3,7 @@
 import { useAuthContext } from '@/app/auth/auth-context';
 import { DraftImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/draft-image-pill';
 import { useCreateManager } from '@/components/store/create';
-import { api } from '@/trpc/react';
-import { MessageContextType, type ImageMessageContext } from '@onlook/models/chat';
+import { MessageContextType, type ImageMessageContext, type User } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardHeader } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
@@ -17,11 +16,20 @@ import { AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-export function Create({ cardKey }: { cardKey: number }) {
+export function Create({
+    cardKey,
+    isCreatingProject,
+    setIsCreatingProject,
+    user,
+}: {
+    cardKey: number,
+    isCreatingProject: boolean,
+    setIsCreatingProject: (isCreatingProject: boolean) => void,
+    user: User | null,
+}) {
     const createManager = useCreateManager();
     const router = useRouter();
     const imageRef = useRef<HTMLInputElement>(null);
-    const { data: user } = api.user.get.useQuery();
 
     const { setIsAuthModalOpen } = useAuthContext();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -30,7 +38,6 @@ export function Create({ cardKey }: { cardKey: number }) {
     const [selectedImages, setSelectedImages] = useState<ImageMessageContext[]>([]);
     const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
     const [isHandlingFile, setIsHandlingFile] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const isInputInvalid = !inputValue || inputValue.trim().length < 10;
     const [isComposing, setIsComposing] = useState(false);
 
@@ -82,7 +89,7 @@ export function Create({ cardKey }: { cardKey: number }) {
             return;
         }
 
-        setIsLoading(true);
+        setIsCreatingProject(true);
         try {
             const project = await createManager.startCreate(user?.id, prompt, images);
             if (!project) {
@@ -95,7 +102,7 @@ export function Create({ cardKey }: { cardKey: number }) {
                 description: error instanceof Error ? error.message : String(error),
             });
         } finally {
-            setIsLoading(false);
+            setIsCreatingProject(false);
         }
     };
 
@@ -373,10 +380,10 @@ export function Create({ cardKey }: { cardKey: number }) {
                                         ? 'text-foreground-primary'
                                         : 'bg-foreground-primary text-white hover:bg-foreground-hover',
                                 )}
-                                disabled={isInputInvalid || isLoading}
+                                disabled={isInputInvalid || isCreatingProject}
                                 onClick={handleSubmit}
                             >
-                                {isLoading ? (
+                                {isCreatingProject ? (
                                     <Icons.LoadingSpinner className="w-5 h-5 animate-pulse text-background" />
                                 ) : (
                                     <Icons.ArrowRight
