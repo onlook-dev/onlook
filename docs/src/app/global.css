@@ -2,11 +2,18 @@
 @import 'fumadocs-ui/css/black.css';
 @import 'fumadocs-ui/css/preset.css';
 
+:root {
+  --color-fd-background: linear-gradient(135deg, #ffffff 0%, #ffffff 60%, #ffecec 100%);
+}
+.dark {
+  --color-fd-background: linear-gradient(135deg, #1a0000 0%, #000000 60%, #1a0000 100%);
+}
+
 html,
 body {
   overscroll-behavior: none;
   font-weight: 350;
-  background: linear-gradient(135deg, #141414 0%, #000000 50%, #000000 100%);
+  background: var(--color-fd-background);
   min-height: 100vh;
 }
 
@@ -25,11 +32,6 @@ h5:hover [data-hash-link],
 h6:hover [data-hash-link] {
   opacity: 1;
   cursor: pointer;
-}
-
-/* Hide subnav in production */
-#nd-subnav {
-    display: none;
 }
 
 /* Make prose headers not bold */
