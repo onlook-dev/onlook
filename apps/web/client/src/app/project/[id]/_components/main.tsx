@@ -35,14 +35,6 @@ export const Main = observer(() => {
             if (!(event.ctrlKey || event.metaKey)) {
                 return;
             }
-
-            const canvasContainer = document.getElementById(
-                EditorAttributes.CANVAS_CONTAINER_ID,
-            );
-            if (canvasContainer && canvasContainer.contains(event.target as Node)) {
-                return;
-            }
-            
             event.preventDefault();
             event.stopPropagation();
         }

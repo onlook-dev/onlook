@@ -8,6 +8,13 @@ export type PenpalParentMethods = {
     }) => void;
     onWindowResized: () => void;
     onDomProcessed: (data: { layerMap: Record<string, LayerNode>; rootNode: LayerNode }) => void;
+    onFrameWheel: (data: {
+        deltaY: number;
+        clientX: number;
+        clientY: number;
+        ctrlKey: boolean;
+        metaKey: boolean;
+    }) => void;
 };
 
 // Parent methods should be treated as promises
