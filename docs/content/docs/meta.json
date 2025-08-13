@@ -1,9 +1,9 @@
 {
-  "pages": [
-    "index",
-    "getting-started",
-    "tutorials",
-    "contributing",
-    "faq"
-  ]
+    "pages": [
+        "index",
+        "getting-started",
+        "tutorials",
+        "developers",
+        "faq"
+    ]
 }
