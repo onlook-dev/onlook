@@ -17,7 +17,7 @@ export function Hero() {
     const { data: user } = api.user.get.useQuery();
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
+        <div className="w-full h-full flex flex-col items-center justify-center p-8 gap-1 text-lg text-center relative">
             <UnicornBackground />
             <div className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2">
                 <motion.h1
@@ -44,7 +44,7 @@ export function Hero() {
                 <HighDemand />
                 <CreateError />
             </div>
-            <div className="sm:flex hidden flex-col gap-4 items-center relative z-20">
+            <div className="sm:flex hidden flex-col items-center relative z-20 gap-1">
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
