@@ -2,25 +2,28 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
+import { type Deployment } from '@onlook/db';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
+import { toast } from '@onlook/ui/sonner';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 
 interface PublishParams {
     projectId: string;
     type: DeploymentType;
-    buildScript: string;
-    buildFlags: string;
-    envVars: Record<string, string>;
+    buildScript?: string;
+    buildFlags?: string;
+    envVars?: Record<string, string>;
 }
 
 interface HostingContextValue {
     // State for each deployment type
-    deployments: Record<DeploymentType, any>;
+    deployments: Record<DeploymentType, Deployment | null>;
     isDeploying: (type: DeploymentType) => boolean;
 
     // Operations
-    publish: (params: PublishParams) => Promise<{ deploymentId: string } | null>;
+    publish: (params: PublishParams) => Promise<{ success: boolean } | null>;
     unpublish: (projectId: string, type: DeploymentType) => Promise<{ deploymentId: string } | null>;
+    cancel: (type: DeploymentType) => Promise<void>;
 
     // Utilities
     refetch: (type: DeploymentType) => void;
@@ -72,8 +75,11 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
     });
 
     // Mutations
-    const { mutateAsync: runPublish } = api.publish.publish.useMutation();
+    const { mutateAsync: runCreateDeployment } = api.publish.deployment.create.useMutation();
+    const { mutateAsync: runUpdateDeployment } = api.publish.deployment.update.useMutation();
+    const { mutateAsync: runDeployment } = api.publish.deployment.run.useMutation();
     const { mutateAsync: runUnpublish } = api.publish.unpublish.useMutation();
+    const { mutateAsync: runCancel } = api.publish.deployment.cancel.useMutation();
 
     // Organize deployments by type
     const deployments = useMemo(() => ({
@@ -85,13 +91,17 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
 
     // Check if any deployment is in progress
     const isDeploying = (type: DeploymentType): boolean => {
-        return deployments[type]?.status === DeploymentStatus.IN_PROGRESS;
+        return deployments[type]?.status === DeploymentStatus.IN_PROGRESS ||
+            deployments[type]?.status === DeploymentStatus.PENDING;
     };
 
     // Stop polling when deployments complete, start polling when in progress
     useEffect(() => {
         Object.entries(deployments).forEach(([type, deployment]) => {
-            if (deployment?.status === DeploymentStatus.IN_PROGRESS) {
+            if (
+                deployment?.status === DeploymentStatus.IN_PROGRESS ||
+                deployment?.status === DeploymentStatus.PENDING
+            ) {
                 setSubscriptionStates(prev => ({
                     ...prev,
                     [type as DeploymentType]: true,
@@ -106,18 +116,52 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
     }, [deployments]);
 
     // Publish function
-    const publish = async (params: PublishParams) => {
+    const publish = async (params: PublishParams): Promise<{ success: boolean } | null> => {
         setSubscriptionStates(prev => ({
             ...prev,
             [params.type]: true,
         }));
 
-        const response = await runPublish(params);
+        const deployment = await runCreateDeployment(params);
 
-        // Refetch the specific deployment
-        await refetch(params.type);
+        if (!deployment) {
+            return {
+                success: false,
+            };
+        }
 
-        return response;
+        toast.success('Deployment created', {
+            description: `Deployment ID: ${deployment.deploymentId}`,
+        });
+
+        try {
+            // Refetch the specific deployment
+            await refetch(params.type);
+
+            await runDeployment({
+                deploymentId: deployment.deploymentId,
+            });
+
+            refetch(params.type);
+
+            toast.success('Deployment success!');
+
+            return {
+                success: true,
+            };
+        } catch (error) {
+            toast.error('Failed to publish deployment');
+            await runUpdateDeployment({
+                deploymentId: deployment.deploymentId,
+                deployment: {
+                    status: DeploymentStatus.FAILED,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                },
+            });
+            return {
+                success: false,
+            };
+        }
     };
 
     // Unpublish function
@@ -156,20 +200,42 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
         }
     };
 
+    const cancel = async (type: DeploymentType) => {
+        if (!deployments[type]) {
+            toast.error('No deployment found');
+            return;
+        }
+        try {
+            await runCancel({
+                deploymentId: deployments[type].id,
+            });
+            toast.success('Deployment cancelled');
+            refetch(type);
+        } catch (error) {
+            toast.error('Failed to cancel deployment');
+            console.error(error);
+        }
+    };
+
     const refetchAll = () => {
         previewQuery.refetch();
         customQuery.refetch();
         unpublishPreviewQuery.refetch();
         unpublishCustomQuery.refetch();
     };
-
     const value: HostingContextValue = {
-        deployments,
+        deployments: {
+            preview: deployments.preview ?? null,
+            custom: deployments.custom ?? null,
+            unpublish_preview: deployments.unpublish_preview ?? null,
+            unpublish_custom: deployments.unpublish_custom ?? null
+        },
         isDeploying,
         publish,
         unpublish,
         refetch,
         refetchAll,
+        cancel,
     };
 
     return (

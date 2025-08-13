@@ -7,6 +7,7 @@ import { observer } from "mobx-react-lite";
 import { useEffect, useRef, useState } from "react";
 import { useDropdownControl } from "../hooks/use-dropdown-manager";
 import { HoverOnlyTooltip } from "../hover-tooltip";
+import { ToolbarButton } from "../toolbar-button";
 
 const OPACITY_PRESETS = [100, 80, 75, 50, 25, 10, 0];
 
@@ -33,7 +34,7 @@ const useOpacityControl = () => {
         // Convert percentage to decimal (e.g., 50 -> 0.5)
         const opacityDecimal = value / 100;
         const action = editorEngine.style.getUpdateStyleAction({ opacity: opacityDecimal.toString() });
-        editorEngine.action.updateStyle(action);
+        void editorEngine.action.updateStyle(action);
     };
 
     return { opacity, handleOpacityChange };
@@ -55,8 +56,8 @@ export const Opacity = observer(() => {
         handleOpacityChange(value);
     };
 
-    // Focus input when clicking anywhere in the input area
     const handleInputAreaClick = () => {
+        onOpenChange(true);
         inputRef.current?.focus();
     };
 
@@ -64,22 +65,29 @@ export const Opacity = observer(() => {
         <DropdownMenu open={isOpen} onOpenChange={onOpenChange} modal={false}>
             <HoverOnlyTooltip content="Layer Opacity" side="bottom" className="mt-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
-                    <div className="text-muted-foreground border-border/0 group h-8 rounded-lg hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex cursor-pointer items-center gap-1 border hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white" onClick={handleInputAreaClick}>
+                    <ToolbarButton
+                        isOpen={isOpen}
+                        className="group h-8 flex items-center gap-1"
+                        onClick={handleInputAreaClick}
+                    >
                         <Input
                             ref={inputRef}
                             type="number"
                             min={0}
                             max={100}
+                            data-state={isOpen ? 'open' : 'closed'}
                             value={opacity}
                             onChange={onInputChange}
-                            className="w-14 text-left text-small focus:text-foreground-primary !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary cursor-pointer transition-colors duration-150 hover"
+                            onClick={(e) => e.stopPropagation()}
+                            className="px-1 w-8 text-left data-[state=open]:text-white text-small focus:text-foreground-primary focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary transition-colors duration-150 hover"
                             aria-label="Opacity percentage"
-                            onClick={e => e.stopPropagation()} // Prevents dropdown from closing when clicking input
                         />
-                        <span className="pr-2 text-muted-foreground text-xs pointer-events-none select-none bg-transparent group-hover:text-foreground-primary transition-colors duration-150">
+                        <span
+                            onClick={(e) => e.stopPropagation()}
+                            className="pr-2 text-muted-foreground text-xs bg-transparent">
                             %
                         </span>
-                    </div>
+                    </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent align="center" className="mt-1 w-[70px] min-w-[40px] rounded-lg p-1 text-foreground-tertiary">

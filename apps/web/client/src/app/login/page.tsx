@@ -3,12 +3,11 @@
 import { useGetBackground } from '@/hooks/use-get-background';
 import { transKeys } from '@/i18n/keys';
 import { Routes } from '@/utils/constants';
-import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
-import { GithubLoginButton, GoogleLoginButton } from '../_components/login-button';
+import { DevLoginButton, GithubLoginButton, GoogleLoginButton } from '../_components/login-button';
 import { useAuthContext } from '../auth/auth-context';
 
 export default function LoginPage() {
@@ -26,9 +25,6 @@ export default function LoginPage() {
                     </Link>
                 </div>
                 <div className="space-y-8">
-                    <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-400 border-blue-400">
-                        <p>Beta</p>
-                    </div>
                     <div className="space-y-4">
                         <h1 className="text-title1 leading-tight">
                             {t(transKeys.welcome.title)}
@@ -41,11 +37,7 @@ export default function LoginPage() {
                         <GithubLoginButton />
                         <GoogleLoginButton />
                     </div>
-                    {isDev && (
-                        <Button variant="outline" className="w-full text-active text-small" onClick={handleDevLogin}>
-                            DEV MODE: Sign in as demo user
-                        </Button>
-                    )}
+                    {isDev && <DevLoginButton />}
                     <p className="text-small text-foreground-onlook">
                         {t(transKeys.welcome.terms.agreement)}{' '}
                         <Link

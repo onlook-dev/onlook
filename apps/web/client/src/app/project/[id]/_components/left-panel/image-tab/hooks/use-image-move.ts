@@ -1,7 +1,7 @@
-import { useCallback, useState } from 'react';
-import { type ImageContentData } from '@onlook/models';
 import { useEditorEngine } from '@/components/store/editor';
-import type { FolderNode } from '../providers/types';
+import { type FolderNode, type ImageContentData } from '@onlook/models';
+import { ensureImageFolderPrefix, generateNewFolderPath } from '@onlook/utility';
+import { useCallback, useEffect, useState } from 'react';
 
 interface MoveImageState {
     targetFolder: FolderNode | null;
@@ -12,7 +12,7 @@ interface MoveImageState {
 
 export const useImageMove = () => {
     const editorEngine = useEditorEngine();
-    
+
     const [moveState, setMoveState] = useState<MoveImageState>({
         targetFolder: null,
         imageToMove: null,
@@ -49,14 +49,17 @@ export const useImageMove = () => {
         try {
             const fileName = image.fileName;
             const currentPath = image.originPath;
-            
             // Construct new path based on target folder
-            const newPath = targetFolder.fullPath 
-                ? `${targetFolder.fullPath}/${fileName}`
-                : `${fileName}`;
+            const newPath = generateNewFolderPath(
+                currentPath,
+                fileName,
+                'move',
+                targetFolder.fullPath,
+            );
+            const fullPath = ensureImageFolderPrefix(newPath);
 
             // Don't move if it's already in the same location
-            if (currentPath === newPath) {
+            if (currentPath === fullPath) {
                 setMoveState((prev) => ({
                     ...prev,
                     isLoading: false,
@@ -65,18 +68,15 @@ export const useImageMove = () => {
                 return;
             }
 
-            const session = editorEngine.sandbox.session?.session;
-            if (!session) {
-                throw new Error('No sandbox session available');
+            const copied = await editorEngine.sandbox.copy(currentPath, fullPath, true);
+            if (!copied) {
+                throw new Error('Failed to copy image');
             }
-
-            await editorEngine.sandbox.copy(currentPath, newPath);
-            
-            await editorEngine.sandbox.delete(currentPath);
-            
-            await editorEngine.sandbox.updateFileCache(newPath, '');
-
-            editorEngine.image.scanImages();
+            const deleted = await editorEngine.sandbox.delete(currentPath);
+            if (!deleted) {
+                throw new Error('Failed to delete image');
+            }
+            await editorEngine.image.scanImages();
 
             setMoveState({
                 targetFolder: null,
@@ -107,6 +107,16 @@ export const useImageMove = () => {
         setMoveState((prev) => ({ ...prev, error: null }));
     }, []);
 
+    useEffect(() => {
+        if (moveState.error) {
+            const timer = setTimeout(() => {
+                setMoveState((prev) => ({ ...prev, error: null }));
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [moveState.error]);
+
     return {
         moveState,
         handleSelectTargetFolder,
@@ -115,4 +125,4 @@ export const useImageMove = () => {
         handleMoveModalToggle,
         clearError,
     };
-}; 
+};

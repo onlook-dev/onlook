@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { DefaultSettings } from '@onlook/constants';
-import type { Frame, WebFrame } from '@onlook/models';
+import type { Frame } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import type { MouseEvent } from 'react';
@@ -10,7 +10,8 @@ enum HandleType {
     Bottom = 'bottom',
 }
 
-export const ResizeHandles = observer(({ frame }: { frame: Frame }) => {
+export const ResizeHandles = observer((
+    { frame, setIsResizing }: { frame: Frame, setIsResizing: (isResizing: boolean) => void }) => {
     const editorEngine = useEditorEngine();
     // TODO implement aspect ratio lock
     const aspectRatioLocked = false;
@@ -19,6 +20,7 @@ export const ResizeHandles = observer(({ frame }: { frame: Frame }) => {
     const startResize = (e: MouseEvent, types: HandleType[]) => {
         e.preventDefault();
         e.stopPropagation();
+        setIsResizing(true);
 
         const startX = e.clientX;
         const startY = e.clientY;
@@ -63,15 +65,14 @@ export const ResizeHandles = observer(({ frame }: { frame: Frame }) => {
                 newHeight = Math.max(newHeight, minHeight);
             }
 
-            frame.dimension = { width: Math.round(newWidth), height: Math.round(newHeight) };
-            editorEngine.frames.updateAndSaveToStorage(frame as WebFrame);
+            editorEngine.frames.updateAndSaveToStorage(frame.id, { dimension: { width: Math.round(newWidth), height: Math.round(newHeight) } });
             editorEngine.overlay.undebouncedRefresh();
         };
 
         const stopResize = (e: MouseEvent) => {
             e.preventDefault();
             e.stopPropagation();
-
+            setIsResizing(false);
             window.removeEventListener('mousemove', resize as unknown as EventListener);
             window.removeEventListener('mouseup', stopResize as unknown as EventListener);
         };

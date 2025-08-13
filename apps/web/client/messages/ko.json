@@ -54,7 +54,8 @@
             "downloadCode": "코드 다운로드",
             "downloadingCode": "다운로드 준비 중...",
             "downloadSuccess": "다운로드가 성공적으로 시작되었습니다.",
-            "downloadError": "다운로드 준비에 실패했습니다."
+            "downloadError": "다운로드 준비에 실패했습니다.",
+            "recentProjects": "최근 프로젝트"
         },
         "dialogs": {
             "delete": {
@@ -83,7 +84,7 @@
     "welcome": {
         "title": "Onlook에 오신 것을 환영합니다",
         "titleReturn": "Onlook에 다시 오신 것을 환영합니다",
-        "description": "Onlook은 React 앱을 위한 오픈소스 비주얼 에디터입니다. 라이브 제품에서 직접 디자인하세요.",
+        "description": "AI를 활용한 차세대 비주얼 코드 에디터로, 디자이너와 제품 관리자가 코드로 웹 경험을 만들 수 있습니다.",
         "alpha": "알파",
         "login": {
             "github": "GitHub으로 로그인",
@@ -179,7 +180,7 @@
             }
         },
         "footer": {
-            "unusedMessages": "사용하지 않은 채팅 메시지는 다음 달로 이월되지 않습니다."
+            "unusedMessages": "사용하지 않은 채팅 메시지는 다음 달로 이월됩니다."
         }
     },
     "editor": {
@@ -227,12 +228,17 @@
                             "placeholder": "메시지를 입력하세요...",
                             "tooltip": "선택한 요소에 대해 AI와 채팅"
                         },
+                        "mode": {
+                            "tooltip": "빌드 모드와 질문 모드 전환"
+                        },
                         "controls": {
                             "newChat": "새 채팅",
                             "history": "채팅 기록"
                         },
                         "settings": {
                             "showSuggestions": "제안 표시",
+                            "showMiniChat": "미니 채팅 표시",
+                            "autoApplyCode": "결과 자동 적용",
                             "expandCodeBlocks": "렌더링 시 코드 표시"
                         },
                         "miniChat": {

@@ -12,7 +12,7 @@ export default function TermsPage() {
 
                     <div className="prose prose-invert max-w-none">
                         <p className="text-foreground-secondary mb-8">
-                            If you have any questions, please write to us at [email protected]
+                            If you have any questions, please write to us at contact@onlook.com
                         </p>
 
                         <h2 className="text-2xl font-light text-foreground-primary mt-12 mb-6">Introduction</h2>
@@ -56,7 +56,7 @@ export default function TermsPage() {
 
                         <h2 className="text-2xl font-light text-foreground-primary mt-12 mb-6">6. Communications</h2>
                         <p className="text-foreground-secondary mb-6">
-                            You agree that Onlook may send you emails concerning our products and services, as well as those of third parties. You may opt out of promotional emails by responding to the promotional email itself or emailing us at [email protected].
+                            You agree that Onlook may send you emails concerning our products and services, as well as those of third parties. You may opt out of promotional emails by responding to the promotional email itself or emailing us at contact@onlook.com.
                         </p>
 
                         <h2 className="text-2xl font-light text-foreground-primary mt-12 mb-6">7. Suspension; Termination</h2>
@@ -93,4 +93,4 @@ export default function TermsPage() {
             </main>
         </WebsiteLayout>
     );
-} 
+}  

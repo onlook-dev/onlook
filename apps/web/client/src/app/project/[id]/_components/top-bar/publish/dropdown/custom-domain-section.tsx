@@ -124,12 +124,10 @@ export const CustomDomainSection = observer(() => {
 
         return (
             <div className="w-full flex flex-col gap-2">
-                <UrlSection url={domain.url} isCopyable={false} publishError={demoNonDomainError} />
-                {demoNonDomainError && (
+                <UrlSection url={domain.url} isCopyable={false} />
+                {deployment?.status === DeploymentStatus.FAILED || deployment?.status === DeploymentStatus.CANCELLED ? (
                     <div className="w-full flex flex-col gap-2">
-                        <p className="text-red-500 max-h-20 overflow-y-auto">
-                            {stripAnsi(deployment?.error) || 'The site failed to update – Error Code 432 The site failed to update – Error Code 432 update – Error Code 432update – Error Code 432 Error Code 432 Error Code 432 Error Cod...'}
-                        </p>
+                        {deployment?.error && <p className="text-red-500 max-h-20 overflow-y-auto">{stripAnsi(deployment?.error)}</p>}
                         <div className="flex flex-row w-full gap-2">
                             <div className="flex-1">
                                 <Button
@@ -152,12 +150,20 @@ export const CustomDomainSection = observer(() => {
                             </div>
                         </div>
                     </div>
+                ) : (
+                    <Button
+                        onClick={() => publish()}
+                        variant="outline"
+                        className="w-full rounded-md p-3"
+                        disabled={isDeploying}
+                    >
+                        {isDeploying && <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />}
+                        Update
+                    </Button>
                 )}
             </div>
         );
     };
-
-    const demoNonDomainError = true; // or false to disable the demo
 
     return (
         <div className="w-full flex flex-col items-center gap-2">

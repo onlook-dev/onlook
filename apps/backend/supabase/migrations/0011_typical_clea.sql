@@ -3,6 +3,8 @@ CREATE TYPE "public"."price_keys" AS ENUM('PRO_MONTHLY_TIER_1', 'PRO_MONTHLY_TIE
 CREATE TYPE "public"."product_type" AS ENUM('free', 'pro');--> statement-breakpoint
 CREATE TYPE "public"."scheduled_subscription_action" AS ENUM('price_change', 'cancellation');--> statement-breakpoint
 CREATE TYPE "public"."usage_types" AS ENUM('message', 'deployment');--> statement-breakpoint
+CREATE TYPE "public"."subscription_status" AS ENUM('active', 'canceled');--> statement-breakpoint
+
 CREATE TABLE "project_settings" (
 	"project_id" uuid NOT NULL,
 	"run_command" text DEFAULT '' NOT NULL,
@@ -39,7 +41,7 @@ CREATE TABLE "subscriptions" (
 	"started_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"ended_at" timestamp with time zone,
-	"status" text NOT NULL,
+	"status" "subscription_status" DEFAULT 'active' NOT NULL,
 	"stripe_customer_id" text NOT NULL,
 	"stripe_subscription_id" text NOT NULL,
 	"stripe_subscription_item_id" text NOT NULL,
@@ -64,7 +66,6 @@ ALTER TABLE "custom_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "preview_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "published_domains" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "auth"."users" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ALTER COLUMN "status" SET DATA TYPE "public"."verification_request_status";--> statement-breakpoint
 ALTER TABLE "custom_domain_verification" ALTER COLUMN "status" SET DEFAULT 'active';--> statement-breakpoint
 ALTER TABLE "messages" ADD COLUMN "commit_oid" text;--> statement-breakpoint
@@ -76,4 +77,4 @@ ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_product_id_products_id
 ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_price_id_prices_id_fk" FOREIGN KEY ("price_id") REFERENCES "public"."prices"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_scheduled_price_id_prices_id_fk" FOREIGN KEY ("scheduled_price_id") REFERENCES "public"."prices"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "usage_records" ADD CONSTRAINT "usage_records_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-DROP TYPE "public"."status";
+DROP TYPE IF EXISTS "public"."status";

@@ -3,7 +3,7 @@ import { listenForDomChanges } from './events/index.ts';
 import { cssManager } from './style/css-manager.ts';
 
 export function handleBodyReady() {
-    listenForDomChanges();    
+    listenForDomChanges(); 
     keepDomUpdated();
     cssManager.injectDefaultStyles();
 }

@@ -48,6 +48,11 @@ async function fetchUserData(userId: string): Promise<User> {
             originalCode,
             updateSnippet,
             'I will add email field to User interface and improve fetchUserData function with proper typing and error handling',
+            {
+                userId: '123',
+                projectId: '456',
+                conversationId: '789',
+            },
         );
         expect(result).toBe(expectedResult);
     });

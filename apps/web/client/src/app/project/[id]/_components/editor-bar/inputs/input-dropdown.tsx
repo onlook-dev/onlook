@@ -1,5 +1,6 @@
 'use client';
 
+import { UNITS } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -9,8 +10,6 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { useInputControl } from '../hooks/use-input-control';
-
-const UNITS = ['PX', '%', 'EM', 'REM'];
 
 const OPTION_OVERRIDES: Record<string, string | undefined> = {
     Fit: 'Hug',
@@ -29,7 +28,7 @@ interface InputDropdownProps {
 
 export const InputDropdown = ({
     value,
-    unit = 'PX',
+    unit = 'px',
     dropdownValue = 'Hug',
     dropdownOptions = ['Hug'],
     onChange,
@@ -43,10 +42,12 @@ export const InputDropdown = ({
             <div className="flex flex-1 items-center bg-background-tertiary/50 justify-between rounded-l-md px-2.5 h-[36px] min-w-[72px]">
                 <input
                     type="text"
+                    inputMode="decimal"
+                    pattern="[0-9]*\.?[0-9]*"
                     value={localValue}
-                    onChange={(e) => handleChange(Number(e.target.value))}
+                    onChange={(e) => handleChange(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="w-[32px] bg-transparent text-sm text-white focus:outline-none text-left"
+                    className="w-[40px] bg-transparent text-sm text-white focus:outline-none text-left"
                     aria-label="Value input"
                 />
                 <DropdownMenu modal={false}>
@@ -60,7 +61,7 @@ export const InputDropdown = ({
                                 onClick={() => onUnitChange?.(unitOption)}
                                 className="text-sm w-full h-9 flex justify-center items-center text-center px-2 hover:bg-background-tertiary/70 hover:text-white transition-colors"
                             >
-                                {unitOption}
+                                {unitOption.toUpperCase()}
                             </DropdownMenuItem>
                         ))}
                     </DropdownMenuContent>

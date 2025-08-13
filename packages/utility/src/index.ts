@@ -22,3 +22,4 @@ export * from './tw-merge';
 export * from './unit';
 export * from './urls';
 export * from './window-metadata';
+export * from './folder';

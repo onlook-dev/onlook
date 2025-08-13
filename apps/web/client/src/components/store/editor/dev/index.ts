@@ -1,5 +1,5 @@
 import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config';
-import { BINARY_EXTENSIONS } from '@onlook/constants';
+import { convertToBase64 } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import path from 'path';
@@ -28,6 +28,7 @@ export class IDEManager {
     activeFile: EditorFile | null = null;
     files: string[] = [];
     highlightRange: CodeRange | null = null;
+    searchTerm: string = '';
     isLoading = false;
     isFilesLoading = false;
 
@@ -41,7 +42,7 @@ export class IDEManager {
 
     private isSandboxReady() {
         return !!(
-            this.editorEngine.sandbox.session.session &&
+            this.editorEngine.sandbox.session.provider &&
             !this.editorEngine.sandbox.session.isConnecting
         );
     }
@@ -61,34 +62,32 @@ export class IDEManager {
         }
     }
 
-    async openFile(filePath: string): Promise<EditorFile | null> {
+    async openFile(filePath: string, searchTerm?: string): Promise<EditorFile | null> {
         if (!this.isSandboxReady()) {
             console.error('Sandbox not connected');
             return null;
         }
         this.isLoading = true;
         try {
-
-            const ext = path.extname(filePath).toLocaleLowerCase();
             let content = "";
             let isBinary = false;
 
-            if (BINARY_EXTENSIONS.includes(ext)) {
-                const binaryContent = await this.editorEngine.sandbox.readBinaryFile(filePath);
-                if (binaryContent) {
-                    const base64String = btoa(
-                        Array.from(binaryContent)
-                            .map((byte: number) => String.fromCharCode(byte))
-                            .join(''),
-                    );
-                    content = base64String;
-                    isBinary = true;
+            const foundFile = await this.editorEngine.sandbox.readFile(filePath);
+            if (!foundFile) {
+                return null;
+            }
+
+            if (foundFile.type === 'binary') {
+                let binaryContent = foundFile.content;
+                if (!binaryContent) {
+                    return null;
                 }
+
+                const base64String = convertToBase64(binaryContent);
+                content = base64String;
+                isBinary = true;
             } else {
-                const readFileContent = await this.editorEngine.sandbox.readFile(filePath);
-                if (readFileContent) {
-                    content = readFileContent;
-                }
+                content = foundFile.content;
             }
 
             const fileName = filePath.split('/').pop() || '';
@@ -96,6 +95,9 @@ export class IDEManager {
             const existing = this.openedFiles.find((f) => f.path === filePath);
             if (existing) {
                 this.activeFile = existing;
+                if (searchTerm) {
+                    this.searchTerm = searchTerm;
+                }
                 return existing;
             }
             const file: EditorFile = {
@@ -110,6 +112,9 @@ export class IDEManager {
             };
             this.openedFiles.push(file);
             this.activeFile = file;
+            if (searchTerm) {
+                this.searchTerm = searchTerm;
+            }
             return file;
         } catch (error) {
             console.error('Error loading file:', error);
@@ -141,15 +146,19 @@ export class IDEManager {
         }
         this.isLoading = true;
         try {
-            const originalContent = await this.editorEngine.sandbox.readFile(
+            const originalFile = await this.editorEngine.sandbox.readFile(
                 this.activeFile.path,
             );
+            if (!originalFile || originalFile.type === 'binary') {
+                console.error('Error reading file');
+                return;
+            }
             this.editorEngine.action.run({
                 type: 'write-code',
                 diffs: [
                     {
                         path: this.activeFile.path,
-                        original: originalContent || '',
+                        original: originalFile.content || '',
                         generated: this.activeFile.content,
                     },
                 ],
@@ -211,8 +220,8 @@ export class IDEManager {
             console.error('File not found');
             return;
         }
-        const content = await this.editorEngine.sandbox.readFile(path);
-        if (content == null) {
+        const foundFile = await this.editorEngine.sandbox.readFile(path);
+        if (!foundFile || foundFile.type === 'binary') {
             console.error('Content is null');
             return;
         }
@@ -221,7 +230,7 @@ export class IDEManager {
             console.error('File not found');
             return;
         }
-        const updated: EditorFile = { ...file, content };
+        const updated: EditorFile = { ...file, content: foundFile.content };
         this.openedFiles.splice(index, 1, updated);
         if (this.activeFile && this.activeFile.id === file.id) {
             this.activeFile = updated;
@@ -280,13 +289,17 @@ export class IDEManager {
                 console.error('No path found');
                 return;
             }
-            const originalContent = await this.editorEngine.sandbox.readFile(path);
+            const originalFile = await this.editorEngine.sandbox.readFile(path);
+            if (!originalFile || originalFile.type === 'binary') {
+                console.error('Error reading file');
+                return;
+            }
             const file = this.openedFiles.find((f) => f.id === id);
             if (file) file.isDirty = false;
             this.activeFile = {
                 ...this.activeFile,
                 isDirty: false,
-                content: originalContent || '',
+                content: originalFile.content || '',
             };
         } catch (error) {
             console.error('Error discarding file:', error);
@@ -300,11 +313,26 @@ export class IDEManager {
         }
     }
 
+    setSearchTerm(term: string) {
+        this.searchTerm = term;
+        if (this.activeFile) {
+            this.activeFile = { ...this.activeFile };
+        }
+    }
+
+    clearSearch() {
+        this.searchTerm = '';
+        if (this.activeFile) {
+            this.activeFile = { ...this.activeFile };
+        }
+    }
+
     clear() {
         this.openedFiles = [];
         this.activeFile = null;
         this.files = [];
         this.highlightRange = null;
+        this.searchTerm = '';
         this.isLoading = false;
         this.isFilesLoading = false;
     }

@@ -1,26 +1,49 @@
-import type { WatchEvent } from '@codesandbox/sdk';
-import { EXCLUDED_SYNC_DIRECTORIES, JSX_FILE_EXTENSIONS } from '@onlook/constants';
-import { type TemplateNode } from '@onlook/models';
+import type {
+    ListFilesOutputFile,
+    Provider,
+    ProviderFileWatcher,
+    WatchEvent,
+} from '@onlook/code-provider';
+import {
+    EXCLUDED_SYNC_DIRECTORIES,
+    NEXT_JS_FILE_EXTENSIONS,
+    PRELOAD_SCRIPT_SRC,
+} from '@onlook/constants';
+import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
-import { getBaseName, getDirName, isImageFile, isSubdirectory, LogTimer } from '@onlook/utility';
+import {
+    getBaseName,
+    getDirName,
+    isImageFile,
+    isRootLayoutFile,
+    isSubdirectory,
+    LogTimer,
+} from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
+import { env } from 'process';
 import type { EditorEngine } from '../engine';
+import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
-import { FileWatcher } from './file-watcher';
-import { formatContent, normalizePath } from './helpers';
+import { normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
+const isDev = env.NODE_ENV === 'development';
+
 export class SandboxManager {
     readonly session: SessionManager;
-    private fileWatcher: FileWatcher | null = null;
-    private fileSync: FileSyncManager
-    private templateNodeMap: TemplateNodeMapper
     readonly fileEventBus: FileEventBus = new FileEventBus();
-    private isIndexed = false;
-    private isIndexing = false;
+
+    // Add router configuration
+    private _routerConfig: { type: RouterType; basePath: string } | null = null;
+
+    private fileWatcher: ProviderFileWatcher | null = null;
+    private fileSync: FileSyncManager;
+    private templateNodeMap: TemplateNodeMapper;
+    private _isIndexed = false;
+    private _isIndexing = false;
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
@@ -29,77 +52,81 @@ export class SandboxManager {
         makeAutoObservable(this);
 
         reaction(
-            () => this.session.session,
-            (session) => {
-                this.isIndexed = false;
-                if (session) {
+            () => this.session.provider,
+            (provider) => {
+                this._isIndexed = false;
+                if (provider) {
                     this.index();
                 }
             },
         );
     }
 
+    get isIndexed() {
+        return this._isIndexed;
+    }
+
+    get isIndexing() {
+        return this._isIndexing;
+    }
+
+    get routerConfig(): { type: RouterType; basePath: string } | null {
+        return this._routerConfig;
+    }
+
     async index(force = false) {
-        if (this.isIndexing || (this.isIndexed && !force)) {
+        console.log('[SandboxManager] Starting indexing, force:', force);
+
+        if (this._isIndexing || (this._isIndexed && !force)) {
             return;
         }
 
-        if (!this.session.session) {
-            console.error('No session found');
+        if (!this.session.provider) {
+            console.error('No provider found for indexing');
             return;
         }
 
-        this.isIndexing = true;
+        this._isIndexing = true;
         const timer = new LogTimer('Sandbox Indexing');
 
         try {
+            // Detect router configuration first
+            if (!this._routerConfig) {
+                this._routerConfig = await detectRouterTypeInSandbox(this);
+                if (this._routerConfig) {
+                    timer.log(
+                        `Router detected: ${this._routerConfig.type} at ${this._routerConfig.basePath}`,
+                    );
+                }
+            }
+
             // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
-            // Categorize files for optimized processing
-            const { imageFiles, jsxFiles, otherFiles } =
-                this.categorizeFilesForIndexing(allFilePaths);
-
-            const BATCH_SIZE = 50;
-
-            // Track image files first
-            if (imageFiles.length > 0) {
-                timer.log(`Tracking ${imageFiles.length} image files`);
-                for (let i = 0; i < imageFiles.length; i += BATCH_SIZE) {
-                    const batch = imageFiles.slice(i, i + BATCH_SIZE);
-                    await this.fileSync.trackBinaryFilesBatch(batch);
+            for (const filePath of allFilePaths) {
+                // Track image files first
+                if (isImageFile(filePath)) {
+                    this.fileSync.writeEmptyFile(filePath, 'binary');
+                    continue;
                 }
-            }
-
-            // Process JSX files
-            if (jsxFiles.length > 0) {
-                timer.log(`Processing ${jsxFiles.length} JSX files in batches of ${BATCH_SIZE}`);
-                for (let i = 0; i < jsxFiles.length; i += BATCH_SIZE) {
-                    const batch = jsxFiles.slice(i, i + BATCH_SIZE);
-                    await this.processJsxFilesBatch(batch);
-                }
-            }
-
-            // Process other files
-            if (otherFiles.length > 0) {
-                timer.log(
-                    `Processing ${otherFiles.length} other files in batches of ${BATCH_SIZE}`,
-                );
-                for (let i = 0; i < otherFiles.length; i += BATCH_SIZE) {
-                    const batch = otherFiles.slice(i, i + BATCH_SIZE);
-                    await this.processTextFilesBatch(batch);
+                const remoteFile = await this.readRemoteFile(filePath);
+                if (remoteFile) {
+                    this.fileSync.updateCache(remoteFile);
+                    if (this.isJsxFile(filePath)) {
+                        await this.processFileForMapping(remoteFile);
+                    }
                 }
             }
 
             await this.watchFiles();
-            this.isIndexed = true;
+            this._isIndexed = true;
             timer.log('Indexing completed successfully');
         } catch (error) {
             console.error('Error during indexing:', error);
             throw error;
         } finally {
-            this.isIndexing = false;
+            this._isIndexing = false;
         }
     }
 
@@ -107,8 +134,8 @@ export class SandboxManager {
      * Optimized flat file discovery - similar to hosting manager approach
      */
     private async getAllFilePathsFlat(rootDir: string, excludeDirs: string[]): Promise<string[]> {
-        if (!this.session.session) {
-            throw new Error('No session available for file discovery');
+        if (!this.session.provider) {
+            throw new Error('No provider available for file discovery');
         }
 
         const allPaths: string[] = [];
@@ -117,9 +144,13 @@ export class SandboxManager {
         while (dirsToProcess.length > 0) {
             const currentDir = dirsToProcess.shift()!;
             try {
-                const entries = await this.session.session.fs.readdir(currentDir);
+                const { files } = await this.session.provider?.listFiles({
+                    args: {
+                        path: currentDir,
+                    },
+                });
 
-                for (const entry of entries) {
+                for (const entry of files) {
                     const fullPath = `${currentDir}/${entry.name}`;
                     const normalizedPath = normalizePath(fullPath);
 
@@ -128,6 +159,7 @@ export class SandboxManager {
                         if (!excludeDirs.includes(entry.name)) {
                             dirsToProcess.push(normalizedPath);
                         }
+                        this.fileSync.updateDirectoryCache(normalizedPath);
                     } else if (entry.type === 'file') {
                         allPaths.push(normalizedPath);
                     }
@@ -140,195 +172,129 @@ export class SandboxManager {
         return allPaths;
     }
 
-    /**
-     * Categorize files for optimized processing
-     */
-    private categorizeFilesForIndexing(filePaths: string[]): {
-        imageFiles: string[];
-        jsxFiles: string[];
-        otherFiles: string[];
-    } {
-        const imageFiles: string[] = [];
-        const jsxFiles: string[] = [];
-        const otherFiles: string[] = [];
-
-        for (const filePath of filePaths) {
-            const normalizedPath = normalizePath(filePath);
-
-            if (isImageFile(normalizedPath)) {
-                imageFiles.push(normalizedPath);
-            } else {
-                const extension = path.extname(filePath);
-                if (JSX_FILE_EXTENSIONS.includes(extension)) {
-                    jsxFiles.push(normalizedPath);
-                } else {
-                    otherFiles.push(normalizedPath);
-                }
-            }
-        }
-
-        return { imageFiles, jsxFiles, otherFiles };
-    }
-
-    private async processJsxFilesBatch(filePaths: string[]): Promise<void> {
-        const fileContents = await this.fileSync.readOrFetchBatch(
-            filePaths,
-            this.readRemoteFile.bind(this),
-        );
-
-        const mappingPromises = Object.keys(fileContents).map(async (filePath) => {
-            try {
-                await this.processFileForMapping(filePath);
-            } catch (error) {
-                console.warn(`Error processing mapping for JSX file ${filePath}:`, error);
-            }
-        });
-
-        await Promise.all(mappingPromises);
-    }
-
-    /**
-     * Process text files in parallel batches
-     */
-    private async processTextFilesBatch(filePaths: string[]): Promise<void> {
-        await this.fileSync.readOrFetchBatch(filePaths, this.readRemoteFile.bind(this));
-    }
-
-    private async readRemoteFile(filePath: string): Promise<string | null> {
-        if (!this.session.session) {
-            console.error('No session found for remote read');
-            return null;
+    private async readRemoteFile(filePath: string): Promise<SandboxFile | null> {
+        if (!this.session.provider) {
+            console.error('No provider found for remote read');
+            throw new Error('No provider found for remote read');
         }
 
         try {
-            return await this.session.session.fs.readTextFile(filePath);
+            const { file } = await this.session.provider.readFile({
+                args: {
+                    path: filePath,
+                },
+            });
+            return file;
         } catch (error) {
             console.error(`Error reading remote file ${filePath}:`, error);
             return null;
         }
     }
 
-    private async readRemoteBinaryFile(filePath: string): Promise<Uint8Array | null> {
-        if (!this.session.session) {
-            console.error('No session found for remote binary read');
-            return null;
-        }
-
-        try {
-            return await this.session.session.fs.readFile(filePath);
-        } catch (error) {
-            console.error(`Error reading remote binary file ${filePath}:`, error);
-            return null;
-        }
-    }
-
-    private async writeRemoteFile(filePath: string, fileContent: string): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for remote write');
+    private async writeRemoteFile(
+        filePath: string,
+        content: string | Uint8Array,
+        overwrite: boolean = true,
+    ): Promise<boolean> {
+        if (!this.session.provider) {
+            console.error('No provider found for remote write');
             return false;
         }
 
         try {
-            await this.processFileForMapping(filePath);
-            await this.session.session.fs.writeTextFile(filePath, fileContent);
-            return true;
+            const res = await this.session.provider.writeFile({
+                args: {
+                    path: filePath,
+                    content,
+                    overwrite,
+                },
+            });
+            return res.success;
         } catch (error) {
             console.error(`Error writing remote file ${filePath}:`, error);
             return false;
         }
     }
 
-    private async writeRemoteBinaryFile(
-        filePath: string,
-        fileContent: Buffer | Uint8Array,
-    ): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for remote binary write');
-            return false;
-        }
-
-        try {
-            await this.session.session.fs.writeFile(filePath, fileContent);
-            return true;
-        } catch (error) {
-            console.error(`Error writing remote binary file ${filePath}:`, error);
-            return false;
-        }
-    }
-
-    async readFile(path: string): Promise<string | null> {
+    async readFile(path: string): Promise<SandboxFile | null> {
         const normalizedPath = normalizePath(path);
         return this.fileSync.readOrFetch(normalizedPath, this.readRemoteFile.bind(this));
     }
 
-    async readFiles(paths: string[]): Promise<Record<string, string>> {
-        const results: Record<string, string> = {};
+    async readFiles(paths: string[]): Promise<Record<string, SandboxFile>> {
+        const results = new Map<string, SandboxFile>();
         for (const path of paths) {
-            const content = await this.readFile(path);
-            if (!content) {
+            const file = await this.readFile(path);
+            if (!file) {
                 console.error(`Failed to read file ${path}`);
                 continue;
             }
-            results[path] = content;
+            results.set(path, file);
         }
-        return results;
-    }
-    async readBinaryFile(path: string): Promise<Uint8Array | null> {
-        const normalizedPath = normalizePath(path);
-        try {
-            return this.fileSync.readOrFetchBinaryFile(
-                normalizedPath,
-                this.readRemoteBinaryFile.bind(this),
-            );
-        } catch (error) {
-            console.error(`Error reading binary file ${normalizedPath}:`, error);
-            return null;
-        }
+        return Object.fromEntries(results);
     }
 
     async writeFile(path: string, content: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
-        const formattedContent = await formatContent(normalizedPath, content);
-        return this.fileSync.write(
-            normalizedPath,
-            formattedContent,
-            this.writeRemoteFile.bind(this),
-        );
+        let writeContent = content;
+
+        // If the file is a JSX file, we need to process it for mapping before writing
+        if (this.isJsxFile(normalizedPath)) {
+            try {
+                const { newContent } = await this.templateNodeMap.processFileForMapping(
+                    normalizedPath,
+                    content,
+                    this.routerConfig?.type,
+                );
+                writeContent = newContent;
+            } catch (error) {
+                console.error(`Error processing file ${normalizedPath}:`, error);
+            }
+        }
+        return this.fileSync.write(normalizedPath, writeContent, this.writeRemoteFile.bind(this));
+    }
+
+    isJsxFile(filePath: string): boolean {
+        const extension = path.extname(filePath);
+        if (!extension || !NEXT_JS_FILE_EXTENSIONS.includes(extension)) {
+            return false;
+        }
+        return true;
+    }
+
+    async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
+        const normalizedPath = normalizePath(path);
+        try {
+            return this.fileSync.write(normalizedPath, content, this.writeRemoteFile.bind(this));
+        } catch (error) {
+            console.error(`Error writing binary file ${normalizedPath}:`, error);
+            return false;
+        }
     }
 
     get files() {
         return this.fileSync.listAllFiles();
     }
 
+    get directories() {
+        return this.fileSync.listAllDirectories();
+    }
+
     listAllFiles() {
         return this.fileSync.listAllFiles();
     }
 
-    async updateFileCache(filePath: string, content: string): Promise<void> {
-        await this.fileSync.updateCache(filePath, content);
-    }
-
-    async listFiles(dir: string) {
-        return this.session.session?.fs.readdir(dir);
-    }
-
-    listBinaryFiles(dir: string) {
-        return this.fileSync.listBinaryFiles(dir);
-    }
-
-    async writeBinaryFile(path: string, content: Buffer | Uint8Array): Promise<boolean> {
-        const normalizedPath = normalizePath(path);
-
-        try {
-            return this.fileSync.writeBinary(
-                normalizedPath,
-                content,
-                this.writeRemoteBinaryFile.bind(this),
-            );
-        } catch (error) {
-            console.error(`Error writing binary file ${normalizedPath}:`, error);
-            return false;
+    async readDir(dir: string): Promise<ListFilesOutputFile[]> {
+        if (!this.session.provider) {
+            console.error('No provider found for read dir');
+            return Promise.resolve([]);
         }
+        const { files } = await this.session.provider.listFiles({
+            args: {
+                path: dir,
+            },
+        });
+        return files;
     }
 
     async listFilesRecursively(
@@ -336,15 +302,19 @@ export class SandboxManager {
         ignoreDirs: string[] = [],
         ignoreExtensions: string[] = [],
     ): Promise<string[]> {
-        if (!this.session.session) {
-            console.error('No session found');
+        if (!this.session.provider) {
+            console.error('No provider found for list files recursively');
             return [];
         }
 
         const results: string[] = [];
-        const entries = await this.session.session.fs.readdir(dir);
+        const { files } = await this.session.provider.listFiles({
+            args: {
+                path: dir,
+            },
+        });
 
-        for (const entry of entries) {
+        for (const entry of files) {
             const fullPath = `${dir}/${entry.name}`;
             const normalizedPath = normalizePath(fullPath);
             if (entry.type === 'directory') {
@@ -372,15 +342,21 @@ export class SandboxManager {
     async downloadFiles(
         projectName?: string,
     ): Promise<{ downloadUrl: string; fileName: string } | null> {
-        if (!this.session.session) {
-            console.error('No sandbox session found');
+        if (!this.session.provider) {
+            console.error('No sandbox provider found for download');
             return null;
         }
         try {
-            const { downloadUrl } = await this.session.session.fs.download('./');
+            const { url } = await this.session.provider.downloadFiles({
+                args: {
+                    path: './',
+                },
+            });
             return {
-                downloadUrl,
-                fileName: `${projectName || 'onlook-project'}-${Date.now()}.zip`,
+                // in case there is no URL provided then the code must be updated
+                // to handle this case
+                downloadUrl: url ?? '',
+                fileName: `${projectName ?? 'onlook-project'}-${Date.now()}.zip`,
             };
         } catch (error) {
             console.error('Error generating download URL:', error);
@@ -389,30 +365,38 @@ export class SandboxManager {
     }
 
     async watchFiles() {
-        if (!this.session.session) {
-            console.error('No session found');
+        if (!this.session.provider) {
+            console.error('No provider found for watch files');
             return;
         }
 
         // Dispose of existing watcher if it exists
         if (this.fileWatcher) {
-            this.fileWatcher.dispose();
+            // Stop previous watcher before starting a new one
+            await this.fileWatcher.stop();
             this.fileWatcher = null;
         }
 
         // Convert ignored directories to glob patterns with ** wildcard
         const excludePatterns = EXCLUDED_SYNC_DIRECTORIES.map((dir) => `${dir}/**`);
 
-        this.fileWatcher = new FileWatcher({
-            session: this.session.session,
+        const res = await this.session.provider.watchFiles({
+            args: {
+                path: './',
+                recursive: true,
+                excludes: excludePatterns,
+            },
             onFileChange: async (event) => {
+                this.fileEventBus.publish({
+                    type: event.type,
+                    paths: event.paths,
+                    timestamp: Date.now(),
+                });
                 await this.handleFileChange(event);
             },
-            excludePatterns,
-            fileEventBus: this.fileEventBus,
         });
 
-        await this.fileWatcher.start();
+        this.fileWatcher = res.watcher;
     }
 
     async handleFileChange(event: WatchEvent) {
@@ -424,6 +408,19 @@ export class SandboxManager {
                     continue;
                 }
                 const normalizedPath = normalizePath(path);
+
+                const isDirectory = this.fileSync.hasDirectory(normalizedPath);
+
+                if (isDirectory) {
+                    this.fileSync.deleteDir(normalizedPath);
+                    this.fileEventBus.publish({
+                        type: eventType,
+                        paths: [normalizedPath],
+                        timestamp: Date.now(),
+                    });
+                    continue;
+                }
+
                 await this.fileSync.delete(normalizedPath);
 
                 this.fileEventBus.publish({
@@ -432,49 +429,38 @@ export class SandboxManager {
                     timestamp: Date.now(),
                 });
             }
+            if (isDev && event.paths.some((path) => path.includes(PRELOAD_SCRIPT_SRC))) {
+                await this.editorEngine.preloadScript.ensurePreloadScriptFile();
+            }
         } else if (eventType === 'change' || eventType === 'add') {
-            if (event.paths.length === 2) {
-                // This mean rename a file or a folder, move a file or a folder
-                const [oldPath, newPath] = event.paths;
-
-                if (!oldPath || !newPath) {
-                    console.error('Invalid rename event', event);
-                    return;
-                }
-                const oldNormalizedPath = normalizePath(oldPath);
-                const newNormalizedPath = normalizePath(newPath);
-                await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
-
-                this.fileEventBus.publish({
-                    type: 'rename',
-                    paths: [oldPath, newPath],
-                    timestamp: Date.now(),
-                });
+            const provider = this.session.provider;
+            if (!provider) {
+                console.error('No provider found for handle file change');
                 return;
             }
+
+            if (event.paths.length === 2) {
+                await this.handleFileRenameEvent(event, provider);
+            }
+
             for (const path of event.paths) {
                 if (isSubdirectory(path, EXCLUDED_SYNC_DIRECTORIES)) {
                     continue;
                 }
-                const normalizedPath = normalizePath(path);
+                const stat = await provider.statFile({
+                    args: {
+                        path,
+                    },
+                });
 
-                if (isImageFile(normalizedPath)) {
-                    await this.fileSync.trackBinaryFile(normalizedPath);
-                } else {
-                    const content = await this.readRemoteFile(normalizedPath);
-                    if (content === null) {
-                        console.error(`File content for ${normalizedPath} not found`);
-                        continue;
-                    }
-                    const contentChanged = await this.fileSync.syncFromRemote(
-                        normalizedPath,
-                        content,
-                    );
-                    if (contentChanged) {
-                        await this.processFileForMapping(normalizedPath);
-                    }
+                if (stat?.type === 'directory') {
+                    const normalizedPath = normalizePath(path);
+                    this.fileSync.updateDirectoryCache(normalizedPath);
+                    continue;
                 }
 
+                const normalizedPath = normalizePath(path);
+                await this.handleFileChangedEvent(normalizedPath);
                 this.fileEventBus.publish({
                     type: eventType,
                     paths: [normalizedPath],
@@ -484,18 +470,112 @@ export class SandboxManager {
         }
     }
 
-    async processFileForMapping(file: string) {
-        const extension = path.extname(file);
-        if (!extension || !JSX_FILE_EXTENSIONS.includes(extension)) {
+    async handleFileRenameEvent(event: WatchEvent, provider: Provider) {
+        // This mean rename a file or a folder, move a file or a folder
+        const [oldPath, newPath] = event.paths;
+
+        if (!oldPath || !newPath) {
+            console.error('Invalid rename event', event);
             return;
         }
 
-        const normalizedPath = normalizePath(file);
-        await this.templateNodeMap.processFileForMapping(
-            normalizedPath,
-            this.readFile.bind(this),
-            this.writeFile.bind(this),
-        );
+        const oldNormalizedPath = normalizePath(oldPath);
+        const newNormalizedPath = normalizePath(newPath);
+
+        const stat = await provider.statFile({
+            args: {
+                path: newPath,
+            },
+        });
+
+        if (stat.type === 'directory') {
+            await this.fileSync.renameDir(oldNormalizedPath, newNormalizedPath);
+        } else {
+            await this.fileSync.rename(oldNormalizedPath, newNormalizedPath);
+        }
+
+        this.fileEventBus.publish({
+            type: 'rename',
+            paths: [oldPath, newPath],
+            timestamp: Date.now(),
+        });
+        return;
+    }
+
+    async handleFileChangedEvent(normalizedPath: string) {
+        const cachedFile = this.fileSync.readCache(normalizedPath);
+
+        if (isImageFile(normalizedPath)) {
+            if (!cachedFile || cachedFile.content === null) {
+                // If the file was not cached, we need to write an empty file
+                this.fileSync.writeEmptyFile(normalizedPath, 'binary');
+            } else {
+                // If the file was already cached, we need to read the remote file and update the cache
+                const remoteFile = await this.readRemoteFile(normalizedPath);
+                if (!remoteFile || remoteFile.content === null) {
+                    console.error(`File content for ${normalizedPath} not found in remote`);
+                    return;
+                }
+                this.fileSync.updateCache(remoteFile);
+            }
+        } else {
+            // If the file is not an image, we need to read the remote file and update the cache
+            const remoteFile = await this.readRemoteFile(normalizedPath);
+            if (!remoteFile || remoteFile.content === null) {
+                console.error(`File content for ${normalizedPath} not found in remote`);
+                return;
+            }
+            if (remoteFile.type === 'text') {
+                // If the file is a text file, we need to process it for mapping
+                this.fileSync.updateCache({
+                    type: 'text',
+                    path: normalizedPath,
+                    content: remoteFile.content,
+                });
+                if (remoteFile.content !== cachedFile?.content) {
+                    await this.processFileForMapping(remoteFile);
+                }
+            } else {
+                this.fileSync.updateCache({
+                    type: 'binary',
+                    path: normalizedPath,
+                    content: remoteFile.content,
+                });
+            }
+        }
+    }
+
+    async processFileForMapping(file: SandboxFile) {
+        try {
+            if (file.type === 'binary' || !this.isJsxFile(file.path)) {
+                return;
+            }
+
+            // If this is a layout file, ensure the preload script file exists
+            if (isRootLayoutFile(file.path, this.routerConfig?.type)) {
+                try {
+                    await this.editorEngine.preloadScript.ensurePreloadScriptFile();
+                } catch (error) {
+                    console.warn(
+                        `[SandboxManager] Failed to ensure preload script file for layout ${file.path}:`,
+                        error,
+                    );
+                    // Continue processing even if preload script file check fails
+                }
+            }
+
+            const { modified, newContent } = await this.templateNodeMap.processFileForMapping(
+                file.path,
+                file.content,
+                this.routerConfig?.type,
+            );
+
+            if (modified && file.content !== newContent) {
+                await this.writeFile(file.path, newContent);
+            }
+        } catch (error) {
+            console.error(`Error processing file ${file.path}:`, error);
+        }
     }
 
     async getTemplateNode(oid: string): Promise<TemplateNode | null> {
@@ -507,7 +587,6 @@ export class SandboxManager {
         child: TemplateNode,
         index: number,
     ): Promise<{ instanceId: string; component: string } | null> {
-
         const codeBlock = await this.getCodeBlock(parentOid);
 
         if (codeBlock == null) {
@@ -525,29 +604,38 @@ export class SandboxManager {
             return null;
         }
 
-        const content = await this.readFile(templateNode.path);
-        if (!content) {
+        const file = await this.readFile(templateNode.path);
+        if (!file) {
             console.error(`No file found for template node ${oid}`);
             return null;
         }
 
-        const codeBlock = await getContentFromTemplateNode(templateNode, content);
+        if (file.type === 'binary') {
+            console.error(`File ${templateNode.path} is a binary file`);
+            return null;
+        }
+
+        const codeBlock = await getContentFromTemplateNode(templateNode, file.content);
         return codeBlock;
     }
 
     async fileExists(path: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
 
-        if (!this.session.session) {
-            console.error('No session found for file existence check');
+        if (!this.session.provider) {
+            console.error('No provider found for file existence check');
             return false;
         }
 
         try {
             const dirPath = getDirName(normalizedPath);
             const fileName = getBaseName(normalizedPath);
-            const dirEntries = await this.session.session.fs.readdir(dirPath);
-            return dirEntries.some((entry: any) => entry.name === fileName);
+            const { files } = await this.session.provider.listFiles({
+                args: {
+                    path: dirPath,
+                },
+            });
+            return files.some((entry) => entry.name === fileName);
         } catch (error) {
             console.error(`Error checking file existence ${normalizedPath}:`, error);
             return false;
@@ -560,8 +648,8 @@ export class SandboxManager {
         recursive?: boolean,
         overwrite?: boolean,
     ): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for copy');
+        if (!this.session.provider) {
+            console.error('No provider found for copy');
             return false;
         }
 
@@ -576,12 +664,14 @@ export class SandboxManager {
                 return false;
             }
 
-            await this.session.session.fs.copy(
-                normalizedSourcePath,
-                normalizedTargetPath,
-                recursive,
-                overwrite,
-            );
+            await this.session.provider.copyFiles({
+                args: {
+                    sourcePath: normalizedSourcePath,
+                    targetPath: normalizedTargetPath,
+                    recursive,
+                    overwrite,
+                },
+            });
 
             return true;
         } catch (error) {
@@ -591,8 +681,8 @@ export class SandboxManager {
     }
 
     async delete(path: string, recursive?: boolean): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for delete file');
+        if (!this.session.provider) {
+            console.error('No provider found for delete file');
             return false;
         }
 
@@ -607,7 +697,12 @@ export class SandboxManager {
             }
 
             // Delete the file using the filesystem API
-            await this.session.session.fs.remove(normalizedPath, recursive);
+            await this.session.provider.deleteFiles({
+                args: {
+                    path: normalizedPath,
+                    recursive,
+                },
+            });
 
             // Clean up the file sync cache
             await this.fileSync.delete(normalizedPath);
@@ -628,8 +723,8 @@ export class SandboxManager {
     }
 
     async rename(oldPath: string, newPath: string): Promise<boolean> {
-        if (!this.session.session) {
-            console.error('No session found for rename');
+        if (!this.session.provider) {
+            console.error('No provider found for rename');
             return false;
         }
 
@@ -637,7 +732,12 @@ export class SandboxManager {
             const normalizedOldPath = normalizePath(oldPath);
             const normalizedNewPath = normalizePath(newPath);
 
-            await this.session.session.fs.rename(normalizedOldPath, normalizedNewPath);
+            await this.session.provider.renameFile({
+                args: {
+                    oldPath: normalizedOldPath,
+                    newPath: normalizedNewPath,
+                },
+            });
 
             return true;
         } catch (error) {
@@ -646,17 +746,43 @@ export class SandboxManager {
         }
     }
 
-    get isIndexingFiles() {
-        return this.isIndexing;
+    /**
+     * Gets the root layout path and router config
+     */
+    async getRootLayoutPath(): Promise<string | null> {
+        const routerConfig = this.routerConfig;
+        if (!routerConfig) {
+            console.log('Could not detect Next.js router type');
+            return null;
+        }
+
+        let layoutFileName: string;
+
+        if (routerConfig.type === RouterType.PAGES) {
+            layoutFileName = '_app';
+        } else {
+            layoutFileName = 'layout';
+        }
+
+        for (const extension of NEXT_JS_FILE_EXTENSIONS) {
+            const layoutPath = path.join(routerConfig.basePath, `${layoutFileName}${extension}`);
+            if (await this.fileExists(layoutPath)) {
+                return normalizePath(layoutPath);
+            }
+        }
+
+        console.log('Could not find layout file');
+        return null;
     }
 
     clear() {
-        this.fileWatcher?.dispose();
+        void this.fileWatcher?.stop();
         this.fileWatcher = null;
         this.fileSync.clear();
         this.templateNodeMap.clear();
         this.session.clear();
-        this.isIndexed = false;
-        this.isIndexing = false;
+        this._isIndexed = false;
+        this._isIndexing = false;
+        this._routerConfig = null;
     }
 }

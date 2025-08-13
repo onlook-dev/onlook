@@ -1,14 +1,14 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
+import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
-import { useRef } from 'react';
+import { useRef, useEffect } from 'react';
 import { usePanelMeasurements } from '../_hooks/use-panel-measure';
 import { useStartProject } from '../_hooks/use-start-project';
 import { BottomBar } from './bottom-bar';
@@ -17,6 +17,7 @@ import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
+import { EditorAttributes } from '@onlook/constants';
 
 export const Main = observer(() => {
     const editorEngine = useEditorEngine();
@@ -28,6 +29,29 @@ export const Main = observer(() => {
         leftPanelRef,
         rightPanelRef,
     );
+
+    useEffect(() => {
+        function handleGlobalWheel(event: WheelEvent) {
+            if (!(event.ctrlKey || event.metaKey)) {
+                return;
+            }
+
+            const canvasContainer = document.getElementById(
+                EditorAttributes.CANVAS_CONTAINER_ID,
+            );
+            if (canvasContainer && canvasContainer.contains(event.target as Node)) {
+                return;
+            }
+            
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        window.addEventListener('wheel', handleGlobalWheel, { passive: false });
+        return () => {
+            window.removeEventListener('wheel', handleGlobalWheel);
+        };
+    }, []);
 
     if (error) {
         return (

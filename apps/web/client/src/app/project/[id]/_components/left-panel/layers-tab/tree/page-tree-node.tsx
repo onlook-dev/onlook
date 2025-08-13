@@ -25,11 +25,12 @@ interface PageTreeNodeProps {
 }
 
 export const PageTreeNode: React.FC<PageTreeNodeProps> = observer(({ node, style }) => {
-    const hasChildren = node.data.children && node.data.children.length > 0;
     const editorEngine = useEditorEngine();
-    const isActive = !hasChildren && editorEngine.pages.isNodeActive(node.data);
     const [showModal, setShowModal] = useState(false);
     const [modalMode, setModalMode] = useState<'create' | 'rename'>('create');
+
+    const hasChildren = node.data.children && node.data.children.length > 0;
+    const isActive = editorEngine.pages.isNodeActive(node.data);
 
     const getBaseName = (fullPath: string) => {
         return fullPath.split('/').pop() ?? '';
@@ -38,7 +39,6 @@ export const PageTreeNode: React.FC<PageTreeNodeProps> = observer(({ node, style
     const handleClick = async (e: React.MouseEvent) => {
         if (hasChildren) {
             node.toggle();
-            return;
         }
 
         const webviewId = editorEngine.frames.selected[0]?.frame.id;
@@ -123,9 +123,8 @@ export const PageTreeNode: React.FC<PageTreeNodeProps> = observer(({ node, style
                     <div
                         style={style}
                         className={cn(
-                            'flex items-center h-6 cursor-pointer hover:bg-background-hover rounded',
-                            !hasChildren && isActive && 'bg-red-500 text-white',
-                            isActive && 'hover:bg-red-500',
+                            'flex items-center h-6 cursor-pointer rounded hover:bg-background-hover',
+                            isActive && 'hover:bg-red-500/90 bg-red-500 text-white',
                         )}
                         onClick={handleClick}
                     >

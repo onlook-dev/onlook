@@ -1,5 +1,5 @@
-import { LAYOUT_FILE_CONDITIONS } from '@onlook/constants';
 import type { TemplateNode } from '@onlook/models';
+import { RouterType } from '@onlook/models';
 import {
     addOidsToAst,
     createTemplateNodeMap,
@@ -7,7 +7,8 @@ import {
     getContentFromAst,
     injectPreloadScript,
 } from '@onlook/parser';
-import { isTargetFile } from '@onlook/utility/src/path';
+import { isRootLayoutFile } from '@onlook/utility/src/path';
+import { formatContent } from './helpers';
 
 export class TemplateNodeMapper {
     private oidToTemplateNodeMap = new Map<string, TemplateNode>();
@@ -17,39 +18,40 @@ export class TemplateNodeMapper {
     }
 
     async processFileForMapping(
-        file: string,
-        readFile: (path: string) => Promise<string | null>,
-        writeFile: (path: string, content: string) => Promise<boolean>,
-    ) {
-        const content = await readFile(file);
-        if (!content) {
-            console.error(`Failed to read file ${file}`);
-            return;
-        }
-
+        filePath: string,
+        content: string,
+        routerType: RouterType = RouterType.APP,
+    ): Promise<{
+        modified: boolean;
+        newContent: string;
+    }> {
         const ast = getAstFromContent(content);
         if (!ast) {
-            console.error(`Failed to get ast for file ${file}`);
-            return;
+            throw new Error(`Failed to get ast for file ${filePath}`);
         }
 
-        if (isTargetFile(file, LAYOUT_FILE_CONDITIONS)) {
+        if (isRootLayoutFile(filePath, routerType)) {
             injectPreloadScript(ast);
         }
 
         const { ast: astWithIds, modified } = addOidsToAst(ast);
-        const templateNodeMap = createTemplateNodeMap(astWithIds, file);
-        this.updateMapping(templateNodeMap);
 
-        // Write the file if it has changed
-        if (modified) {
-            const contentWithIds = await getContentFromAst(astWithIds);
-            await writeFile(file, contentWithIds);
-        }
+        // Format content then create map
+        const unformattedContent = await getContentFromAst(astWithIds, content);
+        const formattedContent = await formatContent(filePath, unformattedContent);
+        const astWithIdsAndFormatted = getAstFromContent(formattedContent);
+        const finalAst = astWithIdsAndFormatted ?? astWithIds;
+        const templateNodeMap = createTemplateNodeMap(finalAst, filePath);
+        this.updateMapping(templateNodeMap);
+        const newContent = await getContentFromAst(finalAst, content);
+        return {
+            modified,
+            newContent,
+        };
     }
 
     getTemplateNode(oid: string): TemplateNode | null {
-        return this.oidToTemplateNodeMap.get(oid) || null;
+        return this.oidToTemplateNodeMap.get(oid) ?? null;
     }
 
     getTemplateNodeMap(): Map<string, TemplateNode> {

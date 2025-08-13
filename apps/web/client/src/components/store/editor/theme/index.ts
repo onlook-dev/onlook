@@ -13,12 +13,12 @@ import type { CodeDiffRequest } from '@onlook/models/code';
 import type { TailwindColor } from '@onlook/models/style';
 import {
     generate,
+    getAstFromContent,
     getNodeClasses,
     isColorsObjectProperty,
     isObjectExpression,
-    parse,
     transformAst,
-    traverse,
+    traverse
 } from '@onlook/parser';
 import { getOidFromJsxElement } from '@onlook/parser/src/code-edit/helpers';
 import { Color } from '@onlook/utility';
@@ -391,10 +391,10 @@ export class ThemeManager {
             const camelCaseName = camelCase(groupName);
 
             // Update config file
-            const updateAst = parse(configContent, {
-                sourceType: 'module',
-                plugins: ['typescript', 'jsx'],
-            });
+            const updateAst = getAstFromContent(configContent);
+            if (!updateAst) {
+                throw new Error(`Failed to parse file ${configPath}`);
+            }
 
             traverse(updateAst, {
                 ObjectProperty(path) {
@@ -406,7 +406,7 @@ export class ThemeManager {
 
                         // Find the group
                         const groupProp = colorObj.properties.find((prop) =>
-                            isValidTailwindConfigProperty(prop, camelCaseName),
+                            isValidTailwindConfigProperty(prop as any, camelCaseName),
                         );
 
                         if (groupProp && 'value' in groupProp) {
@@ -414,7 +414,7 @@ export class ThemeManager {
                                 if (colorName) {
                                     // Delete specific color within group
                                     const colorIndex = groupProp.value.properties.findIndex(
-                                        (prop) => isValidTailwindConfigProperty(prop, colorName),
+                                        (prop) => isValidTailwindConfigProperty(prop as any, colorName),
                                     );
 
                                     if (colorIndex !== -1) {
@@ -689,28 +689,15 @@ export class ThemeManager {
                 return null;
             }
 
-            const configContent = await this.editorEngine.sandbox.readFile(configPath);
-            if (!configContent) {
-                console.log('Could not read Tailwind config file');
-                return null;
-            }
-
-            const cssContent = await this.editorEngine.sandbox.readFile(cssPath);
-            if (!cssContent) {
-                console.log('Could not read CSS file');
-                return {
-                    configPath,
-                    configContent: extractColorsFromTailwindConfig(configContent),
-                    cssPath,
-                    cssContent: extractTailwindCssVariables(''),
-                };
-            }
-
+            const configFile = await this.editorEngine.sandbox.readFile(configPath);
+            const cssFile = await this.editorEngine.sandbox.readFile(cssPath);
+            const configContent = configFile && configFile.type === 'text' ? extractColorsFromTailwindConfig(configFile.content) : '';
+            const cssContent = cssFile && cssFile.type === 'text' ? extractTailwindCssVariables(cssFile.content) : '';
             return {
                 configPath,
-                configContent: extractColorsFromTailwindConfig(configContent),
+                configContent,
                 cssPath,
-                cssContent: extractTailwindCssVariables(cssContent),
+                cssContent,
             };
         } catch (error) {
             console.error('Error scanning Tailwind config:', error);
@@ -725,10 +712,10 @@ export class ThemeManager {
         newColor: string,
         theme?: SystemTheme,
     ): Promise<boolean> {
-        const updateAst = parse(configContent, {
-            sourceType: 'module',
-            plugins: ['typescript', 'jsx'],
-        });
+        const updateAst = getAstFromContent(configContent);
+        if (!updateAst) {
+            throw new Error(`Failed to parse file ${configPath}`);
+        }
 
         let isUpdated = false;
         // Update the specific shade base on tailwinds color scale
@@ -938,10 +925,10 @@ export class ThemeManager {
         }
 
         // Update config file
-        const updateAst = parse(configContent, {
-            sourceType: 'module',
-            plugins: ['typescript', 'jsx'],
-        });
+        const updateAst = getAstFromContent(configContent);
+        if (!updateAst) {
+            throw new Error(`Failed to parse file ${configPath}`);
+        }
 
         traverse(updateAst, {
             ObjectProperty(path) {
@@ -952,9 +939,9 @@ export class ThemeManager {
                     }
 
                     if (!parentName) {
-                        addTailwindRootColor(colorObj, newName, newCssVarName);
+                        addTailwindRootColor(colorObj as any, newName, newCssVarName);
                     } else {
-                        addTailwindNestedColor(colorObj, parentName, newName, newCssVarName);
+                        addTailwindNestedColor(colorObj as any, parentName, newName, newCssVarName);
                     }
                 }
             },
@@ -977,11 +964,15 @@ export class ThemeManager {
             return null;
         }
 
+        if (files[configPath].type === 'binary' || files[cssPath].type === 'binary') {
+            throw new Error('Config or CSS file is a binary file');
+        }
+
         return {
             configPath,
             cssPath,
-            configContent: files[configPath],
-            cssContent: files[cssPath],
+            configContent: files[configPath].content,
+            cssContent: files[cssPath].content,
         };
     }
 
@@ -1151,19 +1142,18 @@ export class ThemeManager {
     async updateClassReferences(replacements: ClassReplacement[]): Promise<void> {
         const sourceFiles = this.editorEngine.sandbox.listAllFiles();
         const filesToUpdate = sourceFiles.filter((file) => file.endsWith('.tsx')) as string[];
-        const contents = await this.editorEngine.sandbox.readFiles(filesToUpdate);
 
         await Promise.all(
             filesToUpdate.map(async (file) => {
-                const content = contents[file];
-                if (!content) {
+                const foundFile = await this.editorEngine.sandbox.readFile(file);
+                if (!foundFile || foundFile.type === 'binary') {
                     return;
                 }
 
-                const ast = parse(content, {
-                    sourceType: 'module',
-                    plugins: ['typescript', 'jsx'],
-                });
+                const ast = getAstFromContent(foundFile.content);
+                if (!ast) {
+                    throw new Error(`Failed to parse file ${file}`);
+                }
 
                 const updates = new Map<string, CodeDiffRequest>();
 
@@ -1204,7 +1194,7 @@ export class ThemeManager {
 
                 if (updates.size > 0) {
                     transformAst(ast, updates);
-                    const output = generate(ast, { retainLines: true }, content).code;
+                    const output = generate(ast, { retainLines: true }, foundFile.content).code;
                     await this.editorEngine.sandbox.writeFile(file, output);
                 }
             }),

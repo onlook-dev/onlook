@@ -54,7 +54,8 @@
             "downloadCode": "Descargar Código",
             "downloadingCode": "Preparando descarga...",
             "downloadSuccess": "Descarga iniciada correctamente",
-            "downloadError": "Error al preparar la descarga"
+            "downloadError": "Error al preparar la descarga",
+            "recentProjects": "Proyectos Recientes"
         },
         "dialogs": {
             "delete": {
@@ -83,7 +84,7 @@
     "welcome": {
         "title": "Bienvenido a Onlook",
         "titleReturn": "Bienvenido de vuelta a Onlook",
-        "description": "Onlook es un editor visual de código abierto para aplicaciones React. Diseñe directamente en su producto en vivo.",
+        "description": "Un editor visual de código de última generación que permite a diseñadores y gerentes de productos crear experiencias web con IA.",
         "alpha": "Alpha",
         "login": {
             "github": "Iniciar sesión con GitHub",
@@ -179,7 +180,7 @@
             }
         },
         "footer": {
-            "unusedMessages": "Los mensajes de chat no utilizados no se transfieren al siguiente mes"
+            "unusedMessages": "Los mensajes de chat no utilizados se transferirán al siguiente mes"
         }
     },
     "editor": {
@@ -236,6 +237,8 @@
                         },
                         "settings": {
                             "showSuggestions": "Mostrar sugerencias",
+                            "showMiniChat": "Mostrar mini chat",
+                            "autoApplyCode": "Aplicar resultados automáticamente",
                             "expandCodeBlocks": "Mostrar código durante la renderización"
                         },
                         "miniChat": {

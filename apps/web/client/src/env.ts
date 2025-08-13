@@ -33,12 +33,19 @@ export const env = createEnv({
 
         // Model providers
         ANTHROPIC_API_KEY: z.string(),
+        OPENROUTER_API_KEY: z.string().optional(),
         GOOGLE_AI_STUDIO_API_KEY: z.string().optional(),
         OPENAI_API_KEY: z.string().optional(),
 
         // n8n
         N8N_WEBHOOK_URL: z.string().optional(),
         N8N_API_KEY: z.string().optional(),
+
+        // Firecrawl
+        FIRECRAWL_API_KEY: z.string().optional(),
+
+        // Exa
+        EXA_API_KEY: z.string().optional(),
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -101,10 +108,17 @@ export const env = createEnv({
         ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
         GOOGLE_AI_STUDIO_API_KEY: process.env.GOOGLE_AI_STUDIO_API_KEY,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+        OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
 
         // n8n
         N8N_WEBHOOK_URL: process.env.N8N_WEBHOOK_URL,
         N8N_API_KEY: process.env.N8N_API_KEY,
+
+        // Firecrawl
+        FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+
+        // Exa
+        EXA_API_KEY: process.env.EXA_API_KEY,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

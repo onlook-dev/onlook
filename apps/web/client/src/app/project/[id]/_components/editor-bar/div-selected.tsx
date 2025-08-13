@@ -19,18 +19,17 @@ import { FontFamilySelector } from './text-inputs/font/font-family-selector';
 import { FontSizeSelector } from './text-inputs/font/font-size';
 import { FontWeightSelector } from './text-inputs/font/font-weight';
 import { TextColor } from './text-inputs/text-color';
+import { TextAlignSelector } from './text-inputs/text-align';
+import { InputImage } from './inputs/input-image';
+import { AdvancedTypography } from './text-inputs/advanced-typography';
 
 // Group definitions for the div-selected toolbar
 export const DIV_SELECTED_GROUPS = [
-    {
-        key: 'dimensions',
-        label: 'Dimensions',
-        components: [<Width />, <Height />],
-    },
+
     {
         key: 'base',
         label: 'Base',
-        components: [<ColorBackground />, <Border />, <BorderColor />, <Radius />],
+        components: [<ColorBackground />, <InputImage />, <Border />, <BorderColor />, <Radius />],
     },
     {
         key: 'layout',
@@ -38,8 +37,8 @@ export const DIV_SELECTED_GROUPS = [
         components: [<Display />, <Padding />, <Margin />],
     },
     {
-        key: 'typography',
-        label: 'Typography',
+        key: 'font',
+        label: 'Font',
         components: [
             <FontFamilySelector />,
             <InputSeparator />,
@@ -49,9 +48,9 @@ export const DIV_SELECTED_GROUPS = [
         ],
     },
     {
-        key: 'text-color',
-        label: 'Text Color',
-        components: [<TextColor />],
+        key: 'text-typography',
+        label: 'Typography',
+        components: [<TextColor />, <TextAlignSelector />, <AdvancedTypography />],
     },
     {
         key: 'opacity',
@@ -60,15 +59,23 @@ export const DIV_SELECTED_GROUPS = [
     },
 ];
 
+const MUST_EXTEND_GROUPS = [
+    {
+        key: 'dimensions',
+        label: 'Dimensions',
+        components: [<Width />, <Height />],
+    },
+]
+
 export const DivSelected = memo(({ availableWidth = 0 }: { availableWidth?: number }) => {
-    const { visibleCount } = useMeasureGroup({ availableWidth, count: DIV_SELECTED_GROUPS.length });
+    const { visibleCount } = useMeasureGroup({ availableWidth, count: DIV_SELECTED_GROUPS.length});
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'div-selected-overflow-dropdown',
         isOverflow: true
     });
 
     const visibleGroups = DIV_SELECTED_GROUPS.slice(0, visibleCount);
-    const overflowGroups = DIV_SELECTED_GROUPS.slice(visibleCount);
+    const overflowGroups = [...DIV_SELECTED_GROUPS.slice(visibleCount), ...MUST_EXTEND_GROUPS];
 
     return (
         <div className="flex items-center justify-center gap-0.5 w-full overflow-hidden">

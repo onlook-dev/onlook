@@ -1,0 +1,3 @@
+- This is a Bun workspace, only use bun, not npm
+- Unit tests can be ran with bun test
+- Run type checking with `cd apps/web/client && bun run typecheck`

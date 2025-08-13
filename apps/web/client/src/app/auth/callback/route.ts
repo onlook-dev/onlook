@@ -1,4 +1,4 @@
-import { client } from '@/utils/analytics/server';
+import { trackEvent } from '@/utils/analytics/server';
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { api } from '~/trpc/server';
@@ -22,10 +22,17 @@ export async function GET(request: Request) {
                 return NextResponse.redirect(`${origin}/auth/auth-code-error`);
             }
 
-            trackUserSignedIn(data.user.id, {
-                name: data.user.user_metadata.name,
-                email: data.user.email,
-                avatar_url: data.user.user_metadata.avatar_url,
+            trackEvent({
+                distinctId: data.user.id,
+                event: 'user_signed_in',
+                properties: {
+                    name: data.user.user_metadata.name,
+                    email: data.user.email,
+                    avatar_url: data.user.user_metadata.avatar_url,
+                    $set_once: {
+                        signup_date: new Date().toISOString(),
+                    }
+                }
             });
 
             // Redirect to the redirect page which will handle the return URL
@@ -42,25 +49,4 @@ export async function GET(request: Request) {
 
     // return the user to an error page with instructions
     return NextResponse.redirect(`${origin}/auth/auth-code-error`);
-}
-
-function trackUserSignedIn(userId: string, properties: Record<string, any>) {
-    try {
-        if (!client) {
-            console.warn('PostHog client not found, skipping user signed in tracking');
-            return;
-        }
-        client.identify({
-            distinctId: userId,
-            properties: {
-                ...properties,
-                $set_once: {
-                    signup_date: new Date().toISOString(),
-                }
-            }
-        });
-        client.capture({ event: 'user_signed_in', distinctId: userId });
-    } catch (error) {
-        console.error('Error tracking user signed in:', error);
-    }
 }

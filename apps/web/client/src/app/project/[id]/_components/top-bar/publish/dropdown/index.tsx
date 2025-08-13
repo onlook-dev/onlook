@@ -22,8 +22,8 @@ export const PublishDropdown = observer(() => {
 
     return (
         <div className="rounded-md flex flex-col text-foreground-secondary">
-            {isDeploying ? (
-                <LoadingState message={deployment?.message ?? 'Deploying...'} progress={deployment?.progress ?? 0} />
+            {isPreviewDeploying ? (
+                <LoadingState type={DeploymentType.PREVIEW} />
             ) : (
                 <>
                     <PreviewDomainSection />

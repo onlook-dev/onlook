@@ -29,7 +29,8 @@ export class CodeManager {
     }
 
     viewSourceFile(fileName: string) {
-        console.log('viewSourceFile', fileName);
+        this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
+        this.editorEngine.ide.openFile(fileName);
     }
 
     async viewCodeBlock(oid: string) {
@@ -120,15 +121,15 @@ export class CodeManager {
             if (!templateNode) {
                 throw new Error(`Template node not found for oid: ${request.oid}`);
             }
-            const codeBlock = await this.editorEngine.sandbox.readFile(templateNode.path);
-            if (!codeBlock) {
+            const file = await this.editorEngine.sandbox.readFile(templateNode.path);
+            if (!file || file.type === 'binary') {
                 throw new Error(`Failed to read file: ${templateNode.path}`);
             }
             const path = templateNode.path;
 
             let groupedRequest = requestByFile.get(path);
             if (!groupedRequest) {
-                groupedRequest = { oidToRequest: new Map(), content: codeBlock };
+                groupedRequest = { oidToRequest: new Map(), content: file.content };
             }
             groupedRequest.oidToRequest.set(request.oid, request);
             requestByFile.set(path, groupedRequest);

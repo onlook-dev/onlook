@@ -6,13 +6,14 @@ import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { nanoid } from 'nanoid';
 import path from 'path';
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
+import useResizeObserver from 'use-resize-observer';
 import { FileTreeNode } from './file-tree-node';
 import { FileTreeRow } from './file-tree-row';
 
 interface FileTreeProps {
-    onFileSelect: (filePath: string) => void;
+    onFileSelect: (filePath: string, searchTerm?: string) => void;
     files: string[];
     isLoading?: boolean;
     onRefresh?: () => Promise<void>;
@@ -24,23 +25,82 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
     const [treeData, setTreeData] = useState<FileNode[]>([]);
+    const [contentMatches, setContentMatches] = useState<Map<string, number>>(new Map());
+    const [isSearching, setIsSearching] = useState(false);
     const treeRef = useRef<TreeApi<FileNode>>(null);
     const inputRef = useRef<HTMLInputElement>(null);
-    const [filesWidth, setFilesWidth] = useState(250);
-    const containerRef = useRef<HTMLDivElement>(null);
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const { ref: containerRef, width: filesWidth } = useResizeObserver();
+    const { ref: treeContainerRef, height: filesHeight } = useResizeObserver();
 
-    useEffect(() => {
-        if (!containerRef.current) return;
-        const resizeObserver = new ResizeObserver(entries => {
-            for (const entry of entries) {
-                setFilesWidth(entry.contentRect.width);
-            }
-        });
-        resizeObserver.observe(containerRef.current);
-        return () => resizeObserver.disconnect();
+    const isTextFile = useCallback((filePath: string): boolean => {
+        const ext = path.extname(filePath).toLowerCase();
+        return ['.js', '.jsx', '.ts', '.tsx', '.html', '.css', '.scss', '.sass', '.md', '.mdx', '.txt', '.json', '.xml', '.yaml', '.yml'].includes(ext);
     }, []);
 
-    // Convert flat file paths to tree structure
+    const searchFileContent = useCallback(async (filePath: string, query: string): Promise<number> => {
+        if (!isTextFile(filePath)) return 0;
+        
+        try {
+            const file = await editorEngine.sandbox.readFile(filePath);
+            if (!file || file.type !== 'text' || typeof file.content !== 'string') return 0;
+            
+            const content = file.content.toLowerCase();
+            const searchTerm = query.toLowerCase();
+            let count = 0;
+            let index = 0;
+            
+            while ((index = content.indexOf(searchTerm, index)) !== -1) {
+                count++;
+                index += searchTerm.length;
+            }
+            
+            return count;
+        } catch {
+            return 0;
+        }
+    }, [editorEngine.sandbox, isTextFile]);
+
+    const performContentSearch = useCallback(async (query: string) => {
+        if (!query.trim() || query.length < 2) {
+            setContentMatches(new Map());
+            setIsSearching(false);
+            return;
+        }
+
+        setIsSearching(true);
+        const matches = new Map<string, number>();
+        
+        const searchPromises = files
+            .filter(isTextFile)
+            .map(async (filePath) => {
+                const count = await searchFileContent(filePath, query);
+                if (count > 0) {
+                    matches.set(filePath, count);
+                }
+            });
+
+        await Promise.all(searchPromises);
+        setContentMatches(matches);
+        setIsSearching(false);
+    }, [files, isTextFile, searchFileContent]);
+
+    useEffect(() => {
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
+        }
+
+        searchTimeoutRef.current = setTimeout(() => {
+            performContentSearch(searchQuery);
+        }, 300);
+
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
+    }, [searchQuery, performContentSearch]);
+
     const buildFileTree = useMemo(() => (files: string[]): FileNode[] => {
         const root: FileNode = {
             id: 'root',
@@ -115,7 +175,6 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
         }
     }, [activeFilePath, treeData]);
 
-    // Filter files based on search
     const filteredFiles = useMemo(() => {
         if (!searchQuery.trim()) {
             return treeData;
@@ -126,9 +185,10 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
         const filterNodes = (nodes: FileNode[]): FileNode[] => {
             return nodes.reduce<FileNode[]>((filtered, node) => {
                 const nameMatches = node.name.toLowerCase().includes(searchLower);
+                const hasContentMatches = !node.isDirectory && contentMatches.has(node.path);
                 const childMatches = node.children ? filterNodes(node.children) : [];
 
-                if (nameMatches || childMatches.length > 0) {
+                if (nameMatches || hasContentMatches || childMatches.length > 0) {
                     const newNode = { ...node };
                     if (childMatches.length > 0) {
                         newNode.children = childMatches;
@@ -141,7 +201,7 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
         };
 
         return filterNodes(treeData);
-    }, [treeData, searchQuery]);
+    }, [treeData, searchQuery, contentMatches]);
 
     // Handle keyboard navigation
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -183,7 +243,8 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
         if (e.key === 'Enter' && highlightedIndex !== null) {
             const selectedNode = flattenedNodes[highlightedIndex];
             if (selectedNode && !selectedNode.isInternal && !selectedNode.data.isDirectory) {
-                onFileSelect(selectedNode.data.path);
+                const hasSearchTerm = searchQuery.trim().length > 0;
+                onFileSelect(selectedNode.data.path, hasSearchTerm ? searchQuery : undefined);
                 setHighlightedIndex(null);
             }
         }
@@ -191,19 +252,22 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
 
     const handleFileTreeSelect = (nodes: any[]) => {
         if (nodes.length > 0 && !nodes[0].data.isDirectory) {
-            onFileSelect(nodes[0].data.path);
+            const hasSearchTerm = searchQuery.trim().length > 0;
+            onFileSelect(nodes[0].data.path, hasSearchTerm ? searchQuery : undefined);
         }
     };
 
     const filesTreeDimensions = useMemo(
         () => ({
             width: filesWidth ?? 250,
-            height: 1000,
+            height: filesHeight ?? 300,
         }),
-        [filesWidth],
+        [filesWidth, filesHeight, editorEngine.state.rightPanelTab],
     );
 
     const handleRefresh = async () => {
+        setContentMatches(new Map());
+        editorEngine.ide.clearSearch();
         if (onRefresh) {
             await onRefresh();
         } else {
@@ -237,7 +301,10 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
                             {searchQuery && (
                                 <button
                                     className="absolute right-[1px] top-[1px] bottom-[1px] aspect-square hover:bg-background-onlook active:bg-transparent flex items-center justify-center rounded-r-[calc(theme(borderRadius.md)-1px)] group"
-                                    onClick={() => setSearchQuery('')}
+                                    onClick={() => {
+                                        setSearchQuery('');
+                                        editorEngine.ide.clearSearch();
+                                    }}
                                 >
                                     <Icons.CrossS className="h-3 w-3 text-foreground-primary/50 group-hover:text-foreground-primary" />
                                 </button>
@@ -267,7 +334,7 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
                         </Tooltip>
                     </div>
                 </div>
-                <div className="min-w-full h-full overflow-x-auto text-xs w-full h-full px-2 flex-1">
+                <div ref={treeContainerRef} className="min-w-full h-full overflow-x-auto text-xs w-full h-full px-2 flex-1">
                     {isLoading ? (
                         <div className="flex flex-col justify-center items-center h-full text-sm text-foreground/50">
                             <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>
@@ -304,8 +371,8 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
                                     }
                                 />
                             )}
-                        >
-                            {(props) => <FileTreeNode {...props} files={files} />}
+                                                >
+                            {(props) => <FileTreeNode {...props} files={files} contentMatches={contentMatches} />}
                         </Tree>
                     )}
                 </div>

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -10,6 +9,7 @@ import { useColorUpdate } from '../hooks/use-color-update';
 import { useDropdownControl } from '../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { ColorPickerContent } from '../inputs/color-picker';
+import { ToolbarButton } from '../toolbar-button';
 import { hasGradient } from '../utils/gradient';
 
 export const ColorBackground = observer(() => {
@@ -46,14 +46,13 @@ export const ColorBackground = observer(() => {
                     disabled={isOpen}
                 >
                     <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
-                            className="flex h-9 w-9 cursor-pointer flex-col items-center justify-center gap-0.5 text-muted-foreground hover:text-foreground border border-border/0 rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:text-white data-[state=open]:border data-[state=open]:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-foreground-primary"
+                        <ToolbarButton
+                            isOpen={isOpen}
+                            className="flex w-10 flex-col items-center justify-center gap-0.5"
                         >
                             <Icons.PaintBucket className="h-2 w-2" />
                             <div className="h-[4px] w-6 rounded-full" style={previewStyle} />
-                        </Button>
+                        </ToolbarButton>
                     </DropdownMenuTrigger>
                 </HoverOnlyTooltip>
                 <DropdownMenuContent

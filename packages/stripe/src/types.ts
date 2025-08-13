@@ -5,6 +5,16 @@ export enum ProductType {
     PRO = 'pro',
 }
 
+export enum SubscriptionStatus {
+    ACTIVE = 'active',
+    CANCELED = 'canceled',
+}
+
+export enum ScheduledSubscriptionAction {
+    PRICE_CHANGE = 'price_change',
+    CANCELLATION = 'cancellation',
+}
+
 export interface Product {
     name: string;
     type: ProductType;
@@ -21,7 +31,7 @@ export interface Price {
 
 export interface Subscription {
     id: string;
-    status: string;
+    status: SubscriptionStatus;
     startedAt: Date;
     endedAt: Date | null;
     product: Product;
@@ -32,11 +42,6 @@ export interface Subscription {
     stripeSubscriptionId: string;
     stripeSubscriptionItemId: string;
     stripeCustomerId: string;
-}
-
-export enum ScheduledSubscriptionAction {
-    PRICE_CHANGE = 'price_change',
-    CANCELLATION = 'cancellation',
 }
 
 export interface ScheduledChange {

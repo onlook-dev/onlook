@@ -1,25 +1,23 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { useHostingType } from '@/components/store/hosting';
 import { api } from '@/trpc/react';
-import { DefaultSettings } from '@onlook/constants';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
 import { toast } from '@onlook/ui/sonner';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { UrlSection } from './url';
+import { useState } from 'react';
 import stripAnsi from 'strip-ansi';
-import { Icons } from '@onlook/ui/icons';
+import { UrlSection } from './url';
 
 export const PreviewDomainSection = observer(() => {
     const editorEngine = useEditorEngine();
+    const [isLoading, setIsLoading] = useState(false);
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: domain, refetch: refetchDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: previewDomain, refetch: refetchPreviewDomain } = api.domain.preview.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: createPreviewDomain, isPending: isCreatingDomain } = api.domain.preview.create.useMutation();
     const { deployment, publish: runPublish, isDeploying } = useHostingType(DeploymentType.PREVIEW);
-
-    // DEMO: Always show the error UI for non-domain publishing errors
-    const demoNonDomainError = true; // Set to true to always show error for demo
 
     const createBaseDomain = async (): Promise<void> => {
         const previewDomain = await createPreviewDomain({ projectId: editorEngine.projectId });
@@ -28,7 +26,7 @@ export const PreviewDomainSection = observer(() => {
             toast.error('Failed to create preview domain');
             return;
         }
-        await refetchDomain();
+        await refetchPreviewDomain();
         publish();
     };
 
@@ -38,34 +36,28 @@ export const PreviewDomainSection = observer(() => {
             toast.error('No project found');
             return;
         }
-
-        const res = await runPublish({
-            projectId: editorEngine.projectId,
-            buildScript: DefaultSettings.COMMANDS.build,
-            buildFlags: DefaultSettings.EDITOR_SETTINGS.buildFlags,
-            envVars: {},
-        });
-
-        if (!res) {
-            toast.error('Failed to create deployment');
-            return;
+        setIsLoading(true);
+        try {
+            await runPublish({
+                projectId: editorEngine.projectId
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsLoading(false);
         }
-        toast.success('Created Deployment', {
-            description: 'Deployment ID: ' + res.deploymentId,
-        });
     };
 
     const retry = () => {
-        if (!domain?.url) {
+        if (!previewDomain?.url) {
             console.error(`No preview domain info found`);
             return;
         }
-        // editorEngine.hosting.resetState();
         publish();
     };
 
     const renderDomain = () => {
-        if (!domain) {
+        if (!previewDomain) {
             return 'Something went wrong';
         }
 
@@ -86,6 +78,11 @@ export const PreviewDomainSection = observer(() => {
                         <div className="ml-auto flex items-center gap-2">
                             <span className="text-red-500">Error</span>
                             <span className="text-foreground-secondary">• Try again or fix with AI Chat</span>
+                        </div>
+                    )}
+                    {deployment?.status === DeploymentStatus.CANCELLED && (
+                        <div className="ml-auto flex items-center gap-2">
+                            <p className="text-foreground-secondary">Cancelled</p>
                         </div>
                     )}
                     {isDeploying && (
@@ -119,21 +116,16 @@ export const PreviewDomainSection = observer(() => {
     };
 
     const renderActionSection = () => {
-        if (!domain?.url) {
-            console.warn('No domain URL found:', domain);
+        if (!previewDomain?.url) {
             return 'Something went wrong';
         }
 
-        console.log('Domain URL being passed to UrlSection:', domain.url);
-
         return (
             <div className="w-full flex flex-col gap-2">
-                <UrlSection url={domain.url} isCopyable={true} publishError={demoNonDomainError} />
-                {demoNonDomainError ? (
+                <UrlSection url={previewDomain.url} isCopyable={true} />
+                {deployment?.status === DeploymentStatus.FAILED || deployment?.status === DeploymentStatus.CANCELLED ? (
                     <div className="w-full flex flex-col gap-2">
-                        <p className="text-red-500 max-h-20 overflow-y-auto">
-                            {stripAnsi(deployment?.error) || 'The site failed to update – Error Code 432 The site failed to update – Error Code 432 update – Error Code 432update – Error Code 432 Error Code 432 Error Code 432 Error Cod...'}
-                        </p>
+                        {deployment?.error && <p className="text-red-500 max-h-20 overflow-y-auto">{stripAnsi(deployment?.error)}</p>}
                         <div className="flex flex-row w-full gap-2">
                             <div className="flex-1">
                                 <Button
@@ -161,8 +153,9 @@ export const PreviewDomainSection = observer(() => {
                         onClick={() => publish()}
                         variant="outline"
                         className="w-full rounded-md p-3"
-                        disabled={isDeploying}
+                        disabled={isDeploying || isLoading}
                     >
+                        {isLoading && <Icons.LoadingSpinner className="w-4 h-4 mr-2 animate-spin" />}
                         Update
                     </Button>
                 )}
@@ -172,7 +165,7 @@ export const PreviewDomainSection = observer(() => {
 
     return (
         <div className="p-4 flex flex-col items-center gap-2">
-            {domain?.url
+            {previewDomain?.url
                 ? renderDomain()
                 : renderNoDomain()}
         </div>

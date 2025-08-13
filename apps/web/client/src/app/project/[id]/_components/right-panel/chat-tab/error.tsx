@@ -11,18 +11,19 @@ import { useState } from 'react';
 import { useChatContext } from '../../../_hooks/use-chat';
 
 export const ErrorSection = observer(() => {
-    const { isWaiting, sendMessages } = useChatContext();
+    const { isWaiting, sendMessage } = useChatContext();
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
     const errorCount = editorEngine.error.errors.length;
 
     const sendFixError = async () => {
-        const messages = await editorEngine.chat.getFixErrorMessages();
-        if (!messages) {
-            toast.error('Failed to send fix error messages. Please try again.');
-            return;
+        try {
+            const message = await editorEngine.chat.addFixErrorMessage();
+            sendMessage(ChatType.FIX);
+        } catch (error) {
+            console.error('Error sending fix error message', error);
+            toast.error('Failed to send fix error message. Please try again.');
         }
-        sendMessages(messages, ChatType.FIX);
     }
 
     return (

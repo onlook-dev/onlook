@@ -20,6 +20,7 @@ import {
     BorderSolidIcon,
     BorderTopIcon,
     BoxIcon,
+    BoxModelIcon,
     ButtonIcon,
     ChatBubbleIcon,
     CheckCircledIcon,
@@ -114,7 +115,13 @@ import {
     ViewHorizontalIcon,
     ViewVerticalIcon,
 } from '@radix-ui/react-icons';
-import { CreditCardIcon, MailXIcon, SquareXIcon } from 'lucide-react';
+import {
+    CreditCardIcon,
+    ListCheckIcon,
+    MailXIcon,
+    SquareCheckIcon,
+    SquareXIcon,
+} from 'lucide-react';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
 import H2Icon from './header-level-icons/h2Icon';
@@ -1418,6 +1425,50 @@ export const Icons = {
             />
         </svg>
     ),
+    Library: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="17"
+            height="18"
+            viewBox="0 0 17 18"
+            fill="none"
+            className={className}
+            {...props}
+        >
+            <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M10.3264 2.5957L15.0808 15.0758L13.7569 15.5801L9.00256 3.10003L10.3264 2.5957ZM3.54167 2.62438V15.3744H2.125V2.62438H3.54167ZM7.08333 2.62438V15.3744H5.66667V2.62438H7.08333Z"
+                fill="currentColor"
+            />
+        </svg>
+    ),
+    Rotate: ({ className, ...props }: { className?: string; [key: string]: any }) => (
+        <svg
+            width="16"
+            height="16"
+            viewBox="0 0 15 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M12.197 9.65567C12.3003 7.94296 12.0004 6.57856 10.7554 5.33352C8.74176 3.31988 5.477 3.31988 3.46336 5.33352C2.48972 6.30716 1.98685 7.57332 1.95477 8.84912"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            <path
+                d="M13.8576 8.65058L12.4213 10.0869C12.2382 10.2699 11.9414 10.2699 11.7584 10.0869L10.3221 8.65058"
+                stroke="currentColor"
+                strokeWidth="0.9375"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    ),
 
     ArrowDown: ArrowDownIcon,
     ArrowLeft: ArrowLeftIcon,
@@ -1442,6 +1493,7 @@ export const Icons = {
     Button: ButtonIcon,
     Bookmark: BookmarkIcon,
     BookmarkFilled: BookmarkFilledIcon,
+    BoxModel: BoxModelIcon,
 
     ChatBubble: ChatBubbleIcon,
     Check: CheckIcon,
@@ -1501,6 +1553,7 @@ export const Icons = {
     Link: Link2Icon,
     LinkNone: LinkNone1Icon,
     ListBullet: ListBulletIcon,
+    ListCheck: ListCheckIcon,
     LockOpen: LockOpen1Icon,
     LockClosed: LockClosedIcon,
 
@@ -1537,6 +1590,7 @@ export const Icons = {
     SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
     Square: SquareIcon,
     SquareX: SquareXIcon,
+    SquareCheck: SquareCheckIcon,
     SketchLogo: SketchLogoIcon,
 
     MailX: MailXIcon,

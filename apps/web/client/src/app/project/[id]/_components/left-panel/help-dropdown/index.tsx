@@ -8,7 +8,7 @@ import {
     DropdownMenuSub,
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
-    DropdownMenuTrigger
+    DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -115,11 +115,15 @@ export const HelpDropdown = observer(() => {
                             <Icons.Globe className="w-4 h-4 mr-2" />
                             {t(transKeys.help.menu.contactUs.website)}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => window.open(Links.DISCORD, '_blank')}>
+                        <DropdownMenuItem
+                            onClick={() => window.open(Links.DISCORD, '_blank')}
+                        >
                             <Icons.DiscordLogo className="w-4 h-4 mr-2" />
                             {t(transKeys.help.menu.contactUs.discord)}
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => window.open(Links.GITHUB, '_blank')}>
+                        <DropdownMenuItem
+                            onClick={() => window.open(Links.GITHUB, '_blank')}
+                        >
                             <Icons.GitHubLogo className="w-4 h-4 mr-2" />
                             {t(transKeys.help.menu.contactUs.github)}
                         </DropdownMenuItem>
@@ -131,7 +135,9 @@ export const HelpDropdown = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
-                <DropdownMenuItem onClick={() => window.open(Links.OPEN_ISSUE, '_blank')}>
+                <DropdownMenuItem
+                    onClick={() => window.open(Links.OPEN_ISSUE, '_blank')}
+                >
                     <Icons.ExclamationTriangle className="w-4 h-4 mr-2" />
                     {t(transKeys.help.menu.reportIssue)}
                 </DropdownMenuItem>

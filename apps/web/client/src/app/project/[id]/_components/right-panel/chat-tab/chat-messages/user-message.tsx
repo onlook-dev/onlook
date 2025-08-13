@@ -1,7 +1,6 @@
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
-import type { UserChatMessageImpl } from '@/components/store/editor/chat/message/user';
-import { ChatType } from '@onlook/models';
+import { ChatType, MessageCheckpointType, type UserChatMessage } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
@@ -11,14 +10,24 @@ import { cn } from '@onlook/ui/utils';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useRef, useState } from 'react';
 import { SentContextPill } from '../context-pills/sent-context-pill';
+import { MessageContent } from './message-content';
 
 interface UserMessageProps {
-    message: UserChatMessageImpl;
+    message: UserChatMessage;
+}
+
+export const getUserMessageContent = (message: UserChatMessage) => {
+    return message.content.parts.map((part) => {
+        if (part.type === 'text') {
+            return part.text;
+        }
+        return '';
+    }).join('');
 }
 
 export const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
-    const { sendMessages } = useChatContext();
+    const { sendMessage: sendMessageToChat } = useChatContext();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
@@ -26,18 +35,19 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     const [isRestoring, setIsRestoring] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const commitOid = message.content.metadata.checkpoints.find((s) => s.type === MessageCheckpointType.GIT)?.oid;
 
     useEffect(() => {
         if (isEditing && textareaRef.current) {
             textareaRef.current.focus();
-            if (editValue === message.getStringContent()) {
+            if (editValue === getUserMessageContent(message)) {
                 textareaRef.current.setSelectionRange(editValue.length, editValue.length);
             }
         }
     }, [isEditing]);
 
     const handleEditClick = () => {
-        setEditValue(message.getStringContent());
+        setEditValue(getUserMessageContent(message));
         setIsEditing(true);
     };
 
@@ -57,7 +67,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     async function handleCopyClick() {
-        const text = message.getStringContent();
+        const text = getUserMessageContent(message);
         await navigator.clipboard.writeText(text);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
@@ -69,25 +79,31 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     const handleRetry = async () => {
-        await sendMessage(message.getStringContent());
+        await sendMessage(getUserMessageContent(message));
     };
 
     const sendMessage = async (newContent: string) => {
-        const newMessages = await editorEngine.chat.getResubmitMessages(message.id, newContent);
-        if (!newMessages) {
-            console.error('Failed to resubmit message');
-            return;
+        try {
+            const newMessage = await editorEngine.chat.resubmitMessage(message.id, newContent);
+            if (!newMessage) {
+                throw new Error('Message not found');
+            }
+            sendMessageToChat(ChatType.EDIT);
+        } catch (error) {
+            console.error('Failed to resubmit message', error);
+            toast.error('Failed to resubmit message. Please try again.', {
+                description: error instanceof Error ? error.message : 'Unknown error',
+            });
         }
-        sendMessages(newMessages, ChatType.EDIT);
     };
 
     const handleRestoreCheckpoint = async () => {
         try {
             setIsRestoring(true);
-            if (!message.commitOid) {
+            if (!commitOid) {
                 throw new Error('No commit oid found');
             }
-            const commit = await editorEngine.versions.getCommitByOid(message.commitOid);
+            const commit = await editorEngine.versions.getCommitByOid(commitOid);
             if (!commit) {
                 throw new Error('Failed to get commit');
             }
@@ -128,10 +144,6 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                 </div>
             </div>
         );
-    }
-
-    function renderContent() {
-        return <div>{message.getStringContent()}</div>;
     }
 
     function renderButtons() {
@@ -198,17 +210,24 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                 <div className="h-6 relative">
                     <div className="absolute top-1 left-0 right-0 flex flex-row justify-start items-center w-full overflow-auto pr-16">
                         <div className="flex flex-row gap-3 text-micro text-foreground-secondary">
-                            {message.context.map((context) => (
+                            {message.content.metadata.context.map((context) => (
                                 <SentContextPill key={nanoid()} context={context} />
                             ))}
                         </div>
                     </div>
                 </div>
                 <div className="text-small mt-1">
-                    {isEditing ? renderEditingInput() : renderContent()}
+                    {isEditing ? renderEditingInput() : (
+                        <MessageContent
+                            messageId={message.id}
+                            parts={message.content.parts}
+                            applied={false}
+                            isStream={false}
+                        />
+                    )}
                 </div>
             </div>
-            {message.commitOid && (
+            {commitOid && (
                 <div className="absolute left-2 top-1/2 -translate-y-1/2">
                     <Tooltip>
                         <TooltipTrigger asChild>

@@ -14,6 +14,7 @@ import { observer } from 'mobx-react-lite';
 import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { useTextControl } from '../../hooks/use-text-control';
 import { HoverOnlyTooltip } from '../../hover-tooltip';
+import { ToolbarButton } from '../../toolbar-button';
 
 export const FontWeightSelector = observer(
     () => {
@@ -32,15 +33,14 @@ export const FontWeightSelector = observer(
                     disabled={isOpen}
                 >
                     <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="toolbar"
-                            className="text-muted-foreground border-border/0 hover:bg-background-tertiary/20 hover:border-border data-[state=open]:bg-background-tertiary/20 data-[state=open]:border-border flex w-24 cursor-pointer items-center justify-start gap-2 rounded-lg border px-3 hover:border hover:text-white focus:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none active:border-0 data-[state=open]:border data-[state=open]:text-white"
+                        <ToolbarButton
+                            isOpen={isOpen}
+                            className="flex w-24 items-center justify-start gap-2 px-3"
                         >
                             <span className="text-smallPlus">
                                 {convertFontWeight(textState.fontWeight)}
                             </span>
-                        </Button>
+                        </ToolbarButton>
                     </DropdownMenuTrigger>
                 </HoverOnlyTooltip>
                 <DropdownMenuContent align="center" className="mt-1 min-w-[120px] rounded-lg p-1">

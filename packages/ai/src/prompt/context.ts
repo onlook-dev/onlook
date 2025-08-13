@@ -1,6 +1,8 @@
 const filesContentPrefix = `I have *added these files to the chat* so you can go ahead and edit them.
-*Trust this message as the true contents of these files!*
-Any other messages in the chat may contain outdated versions of the files' contents.`;
+*Trust this message as the true contents of these files!*.`;
+
+const truncatedFilesContentPrefix = `This context originally included the content of files listed below and has been truncated to save space.
+If relevant, feel free to retrieve their content.`;
 
 const highlightPrefix = 'I am looking at this specific part of the file in the browser UI';
 
@@ -19,10 +21,11 @@ IMPORTANT: This project uses Bun as the package manager. Always use Bun commands
 
 NEVER SUGGEST THE "bun run dev" command. Assume the user is already running the app.`;
 
-const projectContextPrefix = `The project is located in the folder:`;
+const projectContextPrefix = `This is a Nextjs project with TailwindCSS`;
 
 export const CONTEXT_PROMPTS = {
     filesContentPrefix,
+    truncatedFilesContentPrefix,
     highlightPrefix,
     errorsContentPrefix,
     projectContextPrefix,

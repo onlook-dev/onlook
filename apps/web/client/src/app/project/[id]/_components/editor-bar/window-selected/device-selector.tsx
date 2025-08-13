@@ -1,12 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { DEVICE_OPTIONS, Orientation } from '@onlook/constants';
-import type { WebFrame, WindowMetadata } from '@onlook/models';
+import type { WindowMetadata } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger } from '@onlook/ui/select';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { computeWindowMetadata, getDeviceType } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
+import { HoverOnlyTooltip } from '../hover-tooltip';
 
 const DeviceIcon = ({ deviceType, orientation }: { deviceType: string, orientation: Orientation }) => {
     switch (deviceType) {
@@ -67,32 +67,27 @@ export const DeviceSelector = observer(() => {
         if (
             category &&
             deviceName &&
-            DEVICE_OPTIONS[category] &&
-            DEVICE_OPTIONS[category][deviceName] &&
+            DEVICE_OPTIONS[category]?.[deviceName] &&
             deviceName !== 'Custom'
         ) {
             const [w, h] = DEVICE_OPTIONS[category][deviceName].split('x').map(Number);
             if (typeof w === 'number' && !isNaN(w) && typeof h === 'number' && !isNaN(h)) {
-                frameData.frame.dimension = {
-                    width: w,
-                    height: h,
-                };
-                editorEngine.frames.updateAndSaveToStorage(frameData.frame as WebFrame);
+
+                const roundedWidth = Math.round(w);
+                const roundedHeight = Math.round(h);
+                editorEngine.frames.updateAndSaveToStorage(frameData.frame.id, { dimension: { width: roundedWidth, height: roundedHeight } });
             }
         }
     };
 
     return (
         <Select value={device} onValueChange={handleDeviceChange}>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <SelectTrigger className="flex items-center gap-2 text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0">
-                        <DeviceIcon deviceType={deviceType} orientation={metadata.orientation} />
-                        <span className="font-medium">{deviceType}</span>
-                    </SelectTrigger>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Device</TooltipContent>
-            </Tooltip>
+            <HoverOnlyTooltip content="Device" side="bottom" sideOffset={10}>
+                <SelectTrigger className="flex items-center gap-2 text-muted-foreground dark:bg-transparent border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none">
+                    <DeviceIcon deviceType={deviceType} orientation={metadata.orientation} />
+                    <span className="font-medium">{deviceType}</span>
+                </SelectTrigger>
+            </HoverOnlyTooltip>
             <SelectContent>
                 {Object.entries(DEVICE_OPTIONS).map(([category, devices]) => (
                     <SelectGroup key={category}>

@@ -175,7 +175,6 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
 
         try {
             const organizationsData = await clientApi.github.getOrganizations.query();
-            console.log('organizationsData', organizationsData);
             // TODO: remove this
             setOrganizations(FAKE_ORGANIZATIONS as GitHubOrganization[]);
         } catch (error) {
@@ -274,7 +273,6 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
 
         try {
             const result = await clientApi.github.checkGitHubConnection.query();
-            console.log('result', result);
             setIsGitHubConnected(result.connected);
         } catch (error) {
             const errorMessage =

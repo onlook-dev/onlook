@@ -1,10 +1,12 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { useState } from 'react';
+import { HoverOnlyTooltip } from '../hover-tooltip';
+import { ToolbarButton } from '../toolbar-button';
+import type { FrameData } from '@/components/store/editor/frames';
 
-export function WindowActionsGroup({ frameData }: { frameData: any }) {
+export function WindowActionsGroup({ frameData }: { frameData: FrameData }) {
     const editorEngine = useEditorEngine();
     const [isDeleting, setIsDeleting] = useState(false);
     const [isDuplicating, setIsDuplicating] = useState(false);
@@ -37,42 +39,33 @@ export function WindowActionsGroup({ frameData }: { frameData: any }) {
 
     return (
         <>
-            <Tooltip key="duplicate">
-                <TooltipTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        className="flex items-center text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                        onClick={duplicateWindow}
-                        disabled={isDuplicating}
+            <HoverOnlyTooltip content="Duplicate Window" side="bottom" sideOffset={10}>
+                <ToolbarButton
+                    className="flex items-center w-10"
+                    onClick={duplicateWindow}
+                    disabled={isDuplicating}
+                >
+                    {isDuplicating ? (
+                        <Icons.LoadingSpinner className="size-4 min-size-4 animate-spin" />
+                    ) : (
+                        <Icons.Copy className="size-4 min-size-4" />
+                    )}
+                </ToolbarButton>
+            </HoverOnlyTooltip>
+            {editorEngine.frames.canDelete() && (
+                <HoverOnlyTooltip content="Delete Window" side="bottom" sideOffset={10}>
+                    <ToolbarButton
+                        className="flex items-center w-10"
+                        disabled={!editorEngine.frames.canDelete() || isDeleting}
+                        onClick={deleteWindow}
                     >
-                        {isDuplicating ? (
+                        {isDeleting ? (
                             <Icons.LoadingSpinner className="size-4 min-size-4 animate-spin" />
                         ) : (
-                            <Icons.Copy className="size-4 min-size-4" />
+                            <Icons.Trash className="size-4 min-size-4" />
                         )}
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">Duplicate Window</TooltipContent>
-            </Tooltip>
-            {editorEngine.frames.canDelete() && (
-                <Tooltip key="delete">
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className="flex items-center text-muted-foreground border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none active:border-0"
-                            disabled={!editorEngine.frames.canDelete() || isDeleting}
-                            onClick={deleteWindow}
-                        >
-                            {isDeleting ? (
-                                <Icons.LoadingSpinner className="size-4 min-size-4 animate-spin" />
-                            ) : (
-                                <Icons.Trash className="size-4 min-size-4" />
-                            )}
-                        </Button>
-
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">Delete Window</TooltipContent>
-                </Tooltip>
+                    </ToolbarButton>
+                </HoverOnlyTooltip>
             )}
         </>
     );

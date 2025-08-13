@@ -2,7 +2,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
-import { sendAnalytics } from '@/utils/analytics';
 import { Routes } from '@/utils/constants';
 import { uploadBlobToStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
@@ -22,11 +21,14 @@ import { base64ToBlob, getScreenshotPath } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
+import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
+import { RecentProjectsMenu } from './recent-projects';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
+    const posthog = usePostHog();
 
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: updateProject } = api.project.update.useMutation()
@@ -77,7 +79,7 @@ export const ProjectBreadcrumb = observer(() => {
             },
         })
         if (project?.metadata) {
-            updateProject({
+            await updateProject({
                 id: project.id,
                 project: {
                     ...dbPreviewImg,
@@ -100,10 +102,9 @@ export const ProjectBreadcrumb = observer(() => {
             if (result) {
                 window.open(result.downloadUrl, '_blank');
 
-                sendAnalytics('download project code', {
+                posthog.capture('download_project_code', {
                     projectId: project.id,
                     projectName: project.name,
-                    method: 'codesandbox_download_url'
                 });
 
                 toast.success(t(transKeys.projects.actions.downloadSuccess));
@@ -116,7 +117,7 @@ export const ProjectBreadcrumb = observer(() => {
                 description: error instanceof Error ? error.message : 'Unknown error'
             });
 
-            sendAnalytics('download project code failed', {
+            posthog.capture('download_project_code_failed', {
                 projectId: project.id,
                 error: error instanceof Error ? error.message : 'Unknown error'
             });
@@ -183,6 +184,8 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    <RecentProjectsMenu />
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => router.push(Routes.HOME)} className="cursor-pointer">
                         <div className="flex row center items-center group">
                             <Icons.Plus className="mr-2" />
@@ -206,7 +209,9 @@ export const ProjectBreadcrumb = observer(() => {
                         </div>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => stateManager.isSettingsModalOpen = true}>
+                    <DropdownMenuItem
+                        className='cursor-pointer'
+                        onClick={() => stateManager.isSettingsModalOpen = true}>
                         <div className="flex row center items-center group">
                             <Icons.Gear className="mr-2 group-hover:rotate-12 transition-transform" />
                             {t(transKeys.help.menu.openSettings)}
