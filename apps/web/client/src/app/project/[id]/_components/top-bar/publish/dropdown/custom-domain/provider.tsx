@@ -25,7 +25,6 @@ const useCustomDomain = () => {
 
     const publish = async () => {
         if (!customDomain) {
-            console.error(`No custom domain hosting manager found`);
             return;
         }
         setIsLoading(true);
@@ -34,7 +33,6 @@ const useCustomDomain = () => {
                 projectId: editorEngine.projectId
             });
         } catch (error) {
-            console.error(error);
         } finally {
             setIsLoading(false);
         }
@@ -42,7 +40,6 @@ const useCustomDomain = () => {
 
     const retry = () => {
         if (!customDomain) {
-            console.error(`No custom domain hosting manager found`);
             return;
         }
         publish();

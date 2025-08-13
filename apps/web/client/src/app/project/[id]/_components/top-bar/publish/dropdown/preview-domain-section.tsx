@@ -22,7 +22,6 @@ export const PreviewDomainSection = observer(() => {
     const createBaseDomain = async (): Promise<void> => {
         const previewDomain = await createPreviewDomain({ projectId: editorEngine.projectId });
         if (!previewDomain) {
-            console.error('Failed to create preview domain');
             toast.error('Failed to create preview domain');
             return;
         }
@@ -32,7 +31,6 @@ export const PreviewDomainSection = observer(() => {
 
     const publish = async (): Promise<void> => {
         if (!project) {
-            console.error('No project found');
             toast.error('No project found');
             return;
         }
@@ -42,7 +40,7 @@ export const PreviewDomainSection = observer(() => {
                 projectId: editorEngine.projectId
             });
         } catch (error) {
-            console.error(error);
+            toast.error('Failed to publish');
         } finally {
             setIsLoading(false);
         }
@@ -50,7 +48,6 @@ export const PreviewDomainSection = observer(() => {
 
     const retry = () => {
         if (!previewDomain?.url) {
-            console.error(`No preview domain info found`);
             return;
         }
         publish();

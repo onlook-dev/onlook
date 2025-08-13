@@ -23,7 +23,6 @@ export const UrlSection = ({ url, isCopyable, publishError }: { url: string, isC
         new URL(validUrl);
         isValidUrl = true;
     } catch (error) {
-        console.error('Invalid URL:', url, error);
         validUrl = url || 'Invalid URL';
         isValidUrl = false;
     }

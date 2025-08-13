@@ -33,7 +33,7 @@ export const CustomDomainSection = observer(() => {
 
     const publish = async () => {
         if (!domain) {
-            console.error(`No custom domain hosting manager found`);
+            toast.error('No custom domain found');
             return;
         }
         const res = await runPublish({
@@ -53,7 +53,7 @@ export const CustomDomainSection = observer(() => {
 
     const retry = () => {
         if (!domain) {
-            console.error(`No custom domain hosting manager found`);
+            toast.error('No custom domain found');
             return;
         }
         publish();

@@ -20,13 +20,17 @@ export const EditorEngineProvider = ({ children, projectId }: {
     const editorEngine = useMemo(() => new EditorEngine(projectId, posthog), [projectId, posthog]);
 
     useEffect(() => {
-        // Expose editor engine to window for debugging purposes
-        (window as any).editorEngine = editorEngine;
+        // Expose editor engine to window for debugging purposes in development only
+        if (process.env.NODE_ENV !== "production") {
+            (window as any).editorEngine = editorEngine;
+        }
         
         return () => {
             editorEngine.clear();
             // Clean up window reference
-            delete (window as any).editorEngine;
+            if (process.env.NODE_ENV !== "production") {
+                delete (window as any).editorEngine;
+            }
         };
     }, [editorEngine]);
 
