@@ -46,7 +46,10 @@ import {
     handleListFilesTool,
     handleReadFileTool,
     handleReadStyleGuideTool,
-    handleSandboxTool, handleScrapeUrlTool, handleSearchReplaceEditFileTool, handleTerminalCommandTool,
+    handleSandboxTool,
+    handleScrapeUrlTool,
+    handleSearchReplaceEditFileTool,
+    handleTerminalCommandTool,
     handleTodoWriteTool,
     handleWebSearchTool,
     handleWriteFileTool
