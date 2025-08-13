@@ -88,6 +88,8 @@ function SquareProjectCard({
         
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+        
         <div className="absolute inset-0 bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <EditAppButton 
             project={project} 
@@ -177,6 +179,8 @@ function ProjectCard({
         
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         
+        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+        
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
           <Settings project={project} refetch={refetch} />
         </div>
@@ -191,16 +195,19 @@ function ProjectCard({
         </div>
         
         <div className="absolute bottom-0 left-0 right-0 p-4">
-          <div className="text-white font-medium text-sm mb-1 truncate drop-shadow-lg">
+          <div className="text-white font-medium text-base mb-1 truncate drop-shadow-lg">
             {HighlightText ? (
               <HighlightText text={project.name} searchQuery={searchQuery} />
             ) : (
               project.name
             )}
           </div>
-          <div className="text-white/80 text-xs mb-1 drop-shadow-lg">Last edited {lastUpdated}</div>
+          <div className="text-white/70 text-xs mb-1 drop-shadow-lg flex items-center">
+            <Icons.CounterClockwiseClock className="w-3.5 h-3.5 mr-1" />
+            <span>Last edited {lastUpdated}</span>
+          </div>
           {project.metadata?.description && (
-            <div className="text-white/70 text-xs line-clamp-1 drop-shadow-lg">
+            <div className="text-white/60 text-xs line-clamp-1 drop-shadow-lg">
               {HighlightText ? (
                 <HighlightText text={project.metadata.description} searchQuery={searchQuery} />
               ) : (
@@ -464,52 +471,78 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         
         <div className="mb-12">
           <h2 className="text-2xl text-foreground font-normal mb-[12px]">
-            Projects
+            Recent projects
           </h2>
           
           <div className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none]">
-            <AnimatePresence mode="popLayout">
-              {filteredAndSortedProjects.map((project, index) => (
+            {filteredAndSortedProjects.length === 0 ? (
+              <div className="w-full flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="text-foreground-secondary text-base">No projects found</div>
+                  <div className="text-foreground-tertiary text-sm">Try adjusting your search terms</div>
+                </div>
+              </div>
+            ) : (
+              <AnimatePresence mode="popLayout">
+                {filteredAndSortedProjects.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    className="flex-shrink-0 w-72"
+                    initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                      filter: "blur(0px)",
+                      transition: {
+                        duration: 0.4,
+                        delay: index * 0.1,
+                        ease: [0.25, 0.46, 0.45, 0.94],
+                      },
+                    }}
+                    exit={{
+                      opacity: 0,
+                      y: -20,
+                      filter: "blur(10px)",
+                      transition: { duration: 0.2 },
+                    }}
+                    layout
+                  >
+                    <SquareProjectCard 
+                      project={project}
+                      searchQuery={debouncedSearchQuery}
+                      HighlightText={HighlightText}
+                    />
+                  </motion.div>
+                ))}
+                
                 <motion.div
-                  key={project.id}
+                  key="create-tile"
                   className="flex-shrink-0 w-72"
                   initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                    filter: "blur(0px)",
-                    transition: {
-                      duration: 0.4,
-                      delay: index * 0.1,
-                      ease: [0.25, 0.46, 0.45, 0.94],
-                    },
-                  }}
-                  exit={{
-                    opacity: 0,
-                    y: -20,
-                    filter: "blur(10px)",
-                    transition: { duration: 0.2 },
-                  }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.4, delay: filteredAndSortedProjects.length * 0.1, ease: [0.25, 0.46, 0.45, 0.94] } }}
+                  exit={{ opacity: 0, y: -20, filter: "blur(10px)", transition: { duration: 0.2 } }}
                   layout
                 >
-                  <SquareProjectCard 
-                    project={project}
-                    searchQuery={debouncedSearchQuery}
-                    HighlightText={HighlightText}
-                  />
+                  <Link href="/">
+                    <div className="relative aspect-[4/2.8] rounded-lg border border-border bg-secondary/40 hover:bg-secondary transition-colors flex items-center justify-center">
+                      <div className="flex flex-col items-center justify-center text-foreground-tertiary">
+                        <Icons.Plus className="w-7 h-7 mb-1" />
+                        <span className="text-sm">Create</span>
+                      </div>
+                    </div>
+                  </Link>
                 </motion.div>
-              ))}
-            </AnimatePresence>
+              </AnimatePresence>
+            )}
           </div>
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-[12px]">
-            <h2 className="text-2xl text-foreground font-normal">Files</h2>
+            <h2 className="text-2xl text-foreground font-normal">Projects</h2>
             <div className="flex items-center gap-2">
               
-              <motion.button
-                whileTap={{ scale: 0.95, rotate: 5 }}
+              <button
                 onClick={() => setLayoutMode((m) => (m === 'masonry' ? 'grid' : 'masonry'))}
                 className="p-2 rounded transition-colors hover:bg-secondary text-foreground-tertiary hover:text-foreground"
                 aria-label="Toggle layout"
@@ -520,7 +553,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                 ) : (
                   <Icons.ListBullet className="w-5 h-5" />
                 )}
-              </motion.button>
+              </button>
 
               
               <div className="relative" ref={settingsDropdownRef}>

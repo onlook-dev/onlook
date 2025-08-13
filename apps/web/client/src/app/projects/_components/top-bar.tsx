@@ -81,7 +81,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     }, [searchQuery]);
 
     return (
-        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 h-12 text-small text-foreground-secondary select-none gap-4">
+        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 h-12 text-small text-foreground-secondary select-none gap-6">
             <Link href={Routes.HOME} className="flex items-center justify-start mt-0 py-3">
                 <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
             </Link>
@@ -159,18 +159,17 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                 <div className="flex-1" />
             )}
 
-            <div className="flex justify-end space-x-2 mt-0 items-center">
+            <div className="flex justify-end gap-3 mt-0 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
-                            className="text-sm text-foreground-onlook focus:outline-none cursor-pointer"
-                            variant="ghost"
+                            className="text-sm focus:outline-none cursor-pointer"
+                            variant="default"
                         >
-                            <Icons.Plus className="w-5 h-5 mr-1" />
-                            New Project
+                            Create
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+                    <DropdownMenuContent sideOffset={8} className="translate-x-[-12px]">
                         <DropdownMenuItem
                             className={cn(
                                 'focus:bg-blue-100 focus:text-blue-900',
