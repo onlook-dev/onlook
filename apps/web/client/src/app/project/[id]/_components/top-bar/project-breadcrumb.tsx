@@ -83,8 +83,27 @@ export const ProjectBreadcrumb = observer(() => {
                 id: project.id,
                 project: {
                     ...dbPreviewImg,
+                    metadata: {
+                        ...project.metadata,
+                        updatedAt: new Date().toISOString(),
+                    },
                 },
             });
+            // Optimistically update Projects UI: move to front and update description/name if provided elsewhere
+            window.dispatchEvent(new CustomEvent('onlook_project_updated', {
+                detail: {
+                    id: project.id,
+                    metadata: {
+                        updatedAt: new Date().toISOString(),
+                        description: project.metadata?.description,
+                    },
+                    name: project.name,
+                },
+            }));
+            // Also emit a generic modification event used by the dashboard's flow helpers
+            window.dispatchEvent(new CustomEvent('onlook_project_modified', {
+                detail: { id: project.id },
+            }));
         }
     }
 

@@ -49,9 +49,25 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                 id: project.id,
                 project: {
                     name: projectName,
+                    metadata: {
+                        ...project.metadata,
+                        updatedAt: new Date().toISOString(),
+                    },
                 },
             },
         );
+        // Optimistically update list ordering and title immediately
+        window.dispatchEvent(new CustomEvent('onlook_project_updated', {
+            detail: {
+                id: project.id,
+                name: projectName,
+                metadata: {
+                    updatedAt: new Date().toISOString(),
+                    description: project.metadata?.description,
+                },
+            },
+        }));
+        window.dispatchEvent(new CustomEvent('onlook_project_modified', { detail: { id: project.id } }));
         setShowRenameDialog(false);
     };
 

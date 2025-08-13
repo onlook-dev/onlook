@@ -45,8 +45,7 @@ function SquareProjectCard({
   const router = useRouter();
 
   const handleClick = () => {
-    const slug = encodeURIComponent(project.name);
-    router.push(`/projects/${slug}`);
+    router.push(`/project/${project.id}`);
   };
 
   useEffect(() => {
@@ -120,89 +119,6 @@ function SquareProjectCard({
     </div>
   );
 }
-
-function FileCard({
-  file,
-  aspectRatio = "aspect-[4/2.6]",
-  searchQuery = "",
-  HighlightText
-}: {
-  file: {
-    id: string;
-    name: string;
-    projectName: string;
-    projectId: string;
-    lastModified: string;
-    type: 'component' | 'page';
-    preview?: any;
-  };
-  aspectRatio?: string;
-  searchQuery?: string;
-  HighlightText?: React.ComponentType<{ text: string; searchQuery: string }>;
-}) {
-  const [img, setImg] = useState<string | null>(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    let isMounted = true;
-    if (file.preview?.type === 'url' && file.preview.url) {
-      if (isMounted) setImg(file.preview.url);
-    }
-    return () => {
-      isMounted = false;
-    };
-  }, [file.preview]);
-
-  const handleClick = () => {
-    router.push(`/project/${file.projectId}`);
-  };
-
-  const lastUpdated = useMemo(() => timeAgo(file.lastModified), [file.lastModified]);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02, y: -4 }}
-      transition={{ type: 'spring', stiffness: 300, damping: 24 }}
-      className="w-full break-inside-avoid cursor-pointer"
-      onClick={handleClick}
-    >
-      <div className={`relative ${aspectRatio} rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group`}>
-        {img ? (
-          <img src={img} alt={file.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
-        ) : (
-          <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20" />
-        )}
-        
-        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-        
-        <div className="absolute top-3 left-3 px-2 py-1 bg-black/60 backdrop-blur-sm rounded text-white text-xs">
-          {file.type}
-        </div>
-        
-        <div className="absolute bottom-0 left-0 right-0 p-4">
-          <div className="text-white font-medium text-sm mb-1 truncate drop-shadow-lg">
-            {HighlightText ? (
-              <HighlightText text={file.name} searchQuery={searchQuery} />
-            ) : (
-              file.name
-            )}
-          </div>
-          <div className="text-white/80 text-xs mb-1 drop-shadow-lg">Last edited {lastUpdated}</div>
-          <div className="text-white/70 text-xs truncate drop-shadow-lg">
-            {HighlightText ? (
-              <HighlightText text={file.projectName} searchQuery={searchQuery} />
-            ) : (
-              file.projectName
-            )}
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
-
 function ProjectCard({ 
   project, 
   refetch, 
@@ -220,8 +136,7 @@ function ProjectCard({
   const router = useRouter();
 
   const handleCardClick = () => {
-    const slug = encodeURIComponent(project.name);
-    router.push(`/projects/${slug}`);
+    router.push(`/project/${project.id}`);
   };
 
   useEffect(() => {
@@ -337,13 +252,17 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const searchQuery = externalSearchQuery ?? internalQuery;
   const [spacing] = useState<number>(24);
-  const [sortBy, setSortBy] = useState("Last viewed");
-  const [orderBy, setOrderBy] = useState("Newest first");
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  
+  const [filesSortBy, setFilesSortBy] = useState<'Alphabetical' | 'Date created' | 'Last viewed'>(
+    'Last viewed',
+  );
+  const [filesOrderBy, setFilesOrderBy] = useState<'Newest first' | 'Oldest first'>('Newest first');
   const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] = useState(false);
   const settingsDropdownRef = useRef<HTMLDivElement>(null);
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [layoutMode, setLayoutMode] = useState<'masonry' | 'grid'>('masonry');
 
-  // Debounce search query for better performance
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchQuery(searchQuery);
@@ -352,7 +271,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Favorites rail state from localStorage
+  
   useEffect(() => {
     const readFavs = () => {
       try {
@@ -371,119 +290,129 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     };
   }, []);
 
-  const projects: Project[] = fetchedProjects ?? [];
+  const baseProjects: Project[] = fetchedProjects ?? [];
+  
+  const [localOverrides, setLocalOverrides] = useState<Record<string, Partial<Project>>>({});
+
+  useEffect(() => {
+    const handler = (ev: Event) => {
+      const custom = ev as CustomEvent;
+      const detail = (custom?.detail ?? {}) as Partial<Project> & { id?: string };
+      const id = (detail as any).id ?? (detail as any).projectId;
+      if (!id) return;
+      setLocalOverrides((prev) => ({
+        ...prev,
+        [id]: {
+          ...prev[id],
+          ...(detail as any),
+          
+          metadata: {
+            ...(prev[id]?.metadata as any),
+            ...(detail as any).metadata,
+          },
+        },
+      }));
+    };
+    window.addEventListener('onlook_project_updated' as any, handler as EventListener);
+    window.addEventListener('onlook_project_modified' as any, handler as EventListener);
+    return () => {
+      window.removeEventListener('onlook_project_updated' as any, handler as EventListener);
+      window.removeEventListener('onlook_project_modified' as any, handler as EventListener);
+    };
+  }, []);
+
+  
+  const updateFunctionalDescription = (projectId: string, newDescription?: string) => {
+    setLocalOverrides((prev) => ({
+      ...prev,
+      [projectId]: {
+        ...prev[projectId],
+        metadata: {
+          ...((prev[projectId]?.metadata as any) ?? {}),
+          description: newDescription ?? 'Edited just now',
+        },
+      },
+    }));
+  };
+
+  const reorderRailSequence = (projectId: string) => {
+    setLocalOverrides((prev) => ({
+      ...prev,
+      [projectId]: {
+        ...prev[projectId],
+        metadata: {
+          ...((prev[projectId]?.metadata as any) ?? {}),
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    }));
+  };
+
+  const onProjectModified = (projectId: string, newDescription?: string) => {
+    updateFunctionalDescription(projectId, newDescription);
+    reorderRailSequence(projectId);
+  };
+
+  
+  const projects: Project[] = useMemo(() => {
+    return baseProjects.map((p) => {
+      const o = localOverrides[p.id] ?? {};
+      const merged = {
+        ...p,
+        ...o,
+        metadata: {
+          ...p.metadata,
+          ...(o as any).metadata,
+        },
+      } as Project;
+      return merged;
+    });
+  }, [baseProjects, localOverrides]);
+
   const favoriteProjects = useMemo(() => projects.filter(p => favoriteIds.includes(p.id)), [projects, favoriteIds]);
 
-  // Get recent files from all projects for Files section
-  const recentFiles = useMemo(() => {
-    if (!projects.length) return [];
-    
-    // Create mock file data based on project frames/pages
-    const files = projects.flatMap(project => [
-      {
-        id: `${project.id}-main`,
-        name: 'HomePage.jsx',
-        projectName: project.name,
-        projectId: project.id,
-        lastModified: project.metadata.updatedAt,
-        type: 'component' as const,
-        preview: project.metadata?.previewImg
-      },
-      {
-        id: `${project.id}-dashboard`,
-        name: 'Dashboard.jsx', 
-        projectName: project.name,
-        projectId: project.id,
-        lastModified: new Date(new Date(project.metadata.updatedAt).getTime() - 1000 * 60 * 30).toISOString(), // 30 min ago
-        type: 'page' as const,
-        preview: project.metadata?.previewImg
-      },
-      {
-        id: `${project.id}-login`,
-        name: 'LoginPage.jsx',
-        projectName: project.name, 
-        projectId: project.id,
-        lastModified: new Date(new Date(project.metadata.updatedAt).getTime() - 1000 * 60 * 60).toISOString(), // 1 hour ago
-        type: 'page' as const,
-        preview: project.metadata?.previewImg
-      }
-    ]);
-
-    // Sort by last modified and return most recent
-    return files.sort((a, b) => new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime());
-  }, [projects]);
-
   const filteredAndSortedProjects = useMemo(() => {
-    // Filter projects based on debounced search query
     let filtered = projects;
     if (debouncedSearchQuery) {
       const q = debouncedSearchQuery.toLowerCase();
       filtered = projects.filter((p) =>
-        [p.name, p.metadata?.description ?? "", p.sandbox?.url ?? ""].some((s) =>
-          (s ?? "").toLowerCase().includes(q),
+        [p.name, p.metadata?.description ?? '', p.sandbox?.url ?? ''].some((s) =>
+          (s ?? '').toLowerCase().includes(q),
         ),
       );
     }
+    return [...filtered].sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
+  }, [projects, debouncedSearchQuery]);
 
-    // Sort projects based on current sort criteria
-    const sorted = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case "Alphabetical":
+  
+  const filesProjects = useMemo(() => {
+    let list = filteredAndSortedProjects;
+    const sorted = [...list].sort((a, b) => {
+      switch (filesSortBy) {
+        case 'Alphabetical':
           return a.name.localeCompare(b.name);
-        
-        case "Date created":
+        case 'Date created':
           return new Date(a.metadata.createdAt).getTime() - new Date(b.metadata.createdAt).getTime();
-        
-        case "Last viewed":
+        case 'Last viewed':
         default:
           return new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime();
       }
     });
-
-    // Apply order (oldest/newest first)
-    if (orderBy === "Oldest first") {
-      return sorted.reverse();
-    }
-    
-    return sorted;
-  }, [projects, debouncedSearchQuery, sortBy, orderBy]);
-
-  // Filter and sort files for Files section
-  const filteredAndSortedFiles = useMemo(() => {
-    let filtered = recentFiles;
-    if (debouncedSearchQuery) {
-      const q = debouncedSearchQuery.toLowerCase();
-      filtered = recentFiles.filter((f) =>
-        [f.name, f.projectName].some((s) => s.toLowerCase().includes(q))
-      );
-    }
-
-    const sorted = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case "Alphabetical":
-          return a.name.localeCompare(b.name);
-        case "Date created":
-        case "Last viewed":
-        default:
-          return new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime();
-      }
-    });
-
-    return orderBy === "Oldest first" ? sorted.reverse() : sorted;
-  }, [recentFiles, debouncedSearchQuery, sortBy, orderBy]);
+    return filesOrderBy === 'Oldest first' ? sorted.reverse() : sorted;
+  }, [filteredAndSortedProjects, filesSortBy, filesOrderBy]);
 
   const sortOptions = [
-    { value: "Alphabetical", label: "Alphabetical" },
-    { value: "Date created", label: "Date created" },
-    { value: "Last viewed", label: "Last viewed" },
-  ];
+    { value: 'Alphabetical', label: 'Alphabetical' },
+    { value: 'Date created', label: 'Date created' },
+    { value: 'Last viewed', label: 'Last viewed' },
+  ] as const;
 
   const orderOptions = [
-    { value: "Oldest first", label: "Oldest first" },
-    { value: "Newest first", label: "Newest first" },
-  ];
+    { value: 'Oldest first', label: 'Oldest first' },
+    { value: 'Newest first', label: 'Newest first' },
+  ] as const;
 
-  // Close dropdowns when clicking outside
+  
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -494,9 +423,9 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
       }
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
@@ -532,21 +461,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
   return (
     <div className="w-full h-full flex flex-col px-6 py-8">
       <div className="max-w-6xl w-full mx-auto">
-        
-        {favoriteProjects.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-2xl text-foreground font-normal mb-[12px]">Favorites</h2>
-            <div className="flex gap-4 overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none]">
-              <AnimatePresence mode="popLayout">
-                {favoriteProjects.map((project) => (
-                  <motion.div key={`fav-${project.id}`} className="flex-shrink-0 w-72" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-                    <SquareProjectCard project={project} searchQuery={debouncedSearchQuery} HighlightText={HighlightText} />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
-          </div>
-        )}
         
         <div className="mb-12">
           <h2 className="text-2xl text-foreground font-normal mb-[12px]">
@@ -589,51 +503,56 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
           </div>
         </div>
 
-        
         <div>
           <div className="flex items-center justify-between mb-[12px]">
             <h2 className="text-2xl text-foreground font-normal">Files</h2>
-            
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               
-              <div className="flex items-center gap-2">
-                <div
-                  className="relative"
-                  ref={settingsDropdownRef}
-                >
-                  <button
-                    onClick={() =>
-                      setIsSettingsDropdownOpen(!isSettingsDropdownOpen)
-                    }
-                    className="p-2 rounded transition-colors hover:bg-secondary hover:text-foreground text-foreground-tertiary"
-                  >
-                    <Icons.Gear className="w-4 h-4" />
-                  </button>
+              <motion.button
+                whileTap={{ scale: 0.95, rotate: 5 }}
+                onClick={() => setLayoutMode((m) => (m === 'masonry' ? 'grid' : 'masonry'))}
+                className="p-2 rounded transition-colors hover:bg-secondary text-foreground-tertiary hover:text-foreground"
+                aria-label="Toggle layout"
+                title={layoutMode === 'masonry' ? 'Switch to grid' : 'Switch to masonry'}
+              >
+                {layoutMode === 'masonry' ? (
+                  <Icons.ViewGrid className="w-5 h-5" />
+                ) : (
+                  <Icons.ListBullet className="w-5 h-5" />
+                )}
+              </motion.button>
 
-                  <AnimatePresence>
-                    {isSettingsDropdownOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: -6, scale: 0.98 }}
-                        transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-                        className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-md shadow-lg z-50"
-                      >
+              
+              <div className="relative" ref={settingsDropdownRef}>
+                <button
+                  onClick={() => setIsSettingsDropdownOpen(!isSettingsDropdownOpen)}
+                  className="p-2 rounded transition-colors hover:bg-secondary hover:text-foreground text-foreground-tertiary"
+                  aria-haspopup="menu"
+                  aria-expanded={isSettingsDropdownOpen}
+                >
+                  <Icons.Gear className="w-4 h-4" />
+                </button>
+
+                <AnimatePresence>
+                  {isSettingsDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                      transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
+                      className="absolute right-0 top-full mt-2 w-48 bg-background border border-border rounded-md shadow-lg z-50"
+                    >
                       <div className="p-2">
-                        <div className="text-xs font-medium text-foreground-tertiary mb-2 px-2">
-                          Sort by
-                        </div>
+                        <div className="text-xs font-medium text-foreground-tertiary mb-2 px-2">Sort by</div>
                         {sortOptions.map((option) => (
                           <button
                             key={option.value}
                             onClick={() => {
-                              setSortBy(option.value);
+                              setFilesSortBy(option.value);
                               setIsSettingsDropdownOpen(false);
                             }}
                             className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-secondary transition-colors ${
-                              sortBy === option.value
-                                ? "text-foreground bg-secondary"
-                                : "text-foreground-secondary"
+                              filesSortBy === option.value ? 'text-foreground bg-secondary' : 'text-foreground-secondary'
                             }`}
                           >
                             {option.label}
@@ -642,46 +561,61 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
                         <div className="border-t border-border my-2"></div>
 
-                        <div className="text-xs font-medium text-foreground-tertiary mb-2 px-2">
-                          Order
-                        </div>
+                        <div className="text-xs font-medium text-foreground-tertiary mb-2 px-2">Order</div>
                         {orderOptions.map((option) => (
                           <button
                             key={option.value}
                             onClick={() => {
-                              setOrderBy(option.value);
+                              setFilesOrderBy(option.value);
                               setIsSettingsDropdownOpen(false);
                             }}
                             className={`w-full text-left px-2 py-1.5 text-sm rounded hover:bg-secondary transition-colors ${
-                              orderBy === option.value
-                                ? "text-foreground bg-secondary"
-                                : "text-foreground-secondary"
+                              filesOrderBy === option.value ? 'text-foreground bg-secondary' : 'text-foreground-secondary'
                             }`}
                           >
                             {option.label}
                           </button>
                         ))}
-                    </div>
-                      </motion.div>
-                        )}
-                  </AnimatePresence>
-                </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
               </div>
+
             </div>
-                    </div>
-          <MasonryLayout
-            items={filteredAndSortedFiles}
-            spacing={spacing}
-            renderItem={(file: any, aspectRatio?: string) => (
-              <FileCard 
-                key={file.id} 
-                file={file} 
-                aspectRatio={aspectRatio}
-                searchQuery={debouncedSearchQuery}
-                HighlightText={HighlightText}
-              />
-            )}
-          />
+          </div>
+
+          
+          {layoutMode === 'masonry' ? (
+            <MasonryLayout
+              items={filesProjects}
+              spacing={spacing}
+              renderItem={(project: Project, aspectRatio?: string) => (
+                <ProjectCard
+                  key={`files-${project.id}`}
+                  project={project}
+                  refetch={refetch}
+                  aspectRatio={aspectRatio}
+                  searchQuery={debouncedSearchQuery}
+                  HighlightText={HighlightText}
+                />
+              )}
+            />
+          ) : (
+            <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filesProjects.map((project) => (
+                <ProjectCard
+                  key={`files-${project.id}`}
+                  project={project}
+                  refetch={refetch}
+                  aspectRatio="aspect-[4/2.6]"
+                  searchQuery={debouncedSearchQuery}
+                  HighlightText={HighlightText}
+                />
+              ))}
+            </motion.div>
+          )}
         </div>
       </div>
         </div>
