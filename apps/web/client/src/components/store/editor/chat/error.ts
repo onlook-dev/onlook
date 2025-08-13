@@ -14,9 +14,8 @@ export class ChatErrorManager {
     }
 
     handleChatError(error: Error) {
-        console.error('handleChatError', error);
-        // Try to parse error message as JSON
         try {
+            // Try to parse error message as JSON
             const parsed = JSON.parse(error.message) as {
                 code: number;
                 error: string;
@@ -30,8 +29,6 @@ export class ChatErrorManager {
                     this.message = parsed.error || error.toString();
                 }
             }
-            console.log('message', this.message);
-            console.log('usage', this.usage);
         } catch (e) {
             // Not JSON, fallback
             this.message = error.toString();
@@ -39,7 +36,6 @@ export class ChatErrorManager {
     }
 
     clear() {
-        console.error('clear error');
         this.message = null;
         this.usage = null;
     }
