@@ -96,9 +96,9 @@ export function ToolCallSimple({
                 case WRITE_FILE_TOOL_NAME:
                     const params3 = toolInvocation.args as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>;
                     if (params3.file_path) {
-                        return 'Creating file ' + (params3.file_path.split('/').pop() || '');
+                        return 'Writing file ' + (params3.file_path.split('/').pop() || '');
                     } else {
-                        return 'Creating file';
+                        return 'Writing file';
                     }
                 case LIST_FILES_TOOL_NAME:
                     const params4 = toolInvocation.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>;

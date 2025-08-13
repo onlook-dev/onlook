@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
+import { transKeys } from '@/i18n/keys';
 import type { ChatSettings } from '@onlook/models';
 import { EditorTabValue } from '@onlook/models';
 import {
@@ -10,7 +11,11 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { useCallback, useEffect, useMemo } from 'react';
+import { debounce } from 'lodash';
+import { useTranslations } from 'next-intl';
 
 export const ChatPanelDropdown = observer(({
     children,
@@ -21,16 +26,48 @@ export const ChatPanelDropdown = observer(({
     isChatHistoryOpen: boolean;
     setIsChatHistoryOpen: (isOpen: boolean) => void;
 }) => {
-    const { mutate: updateSettings } = api.user.settings.upsert.useMutation();
+    const t = useTranslations();
+    const { mutate: updateSettings } = api.user.settings.upsert.useMutation({
+        onSuccess: () => {
+            void apiUtils.user.settings.get.invalidate();
+        },
+    });
+    const { data: userSettings } = api.user.settings.get.useQuery();
+    const apiUtils = api.useUtils();
     const editorEngine = useEditorEngine();
     const selectedTab = editorEngine.state.rightPanelTab;
 
-    const updateChatSettings = (e: React.MouseEvent, settings: Partial<ChatSettings>) => {
+    const debouncedUpdateSettings = useMemo(
+        () => debounce((settings: Partial<ChatSettings>) => {
+            updateSettings({
+                ...settings,
+            });
+        }, 300),
+        [updateSettings]
+    );
+
+    useEffect(() => {
+        return () => {
+            debouncedUpdateSettings.cancel();
+        };
+    }, [debouncedUpdateSettings]);
+
+    const updateChatSettings = useCallback((e: React.MouseEvent, settings: Partial<ChatSettings>) => {
         e.preventDefault();
-        updateSettings({
-            ...settings,
+
+        apiUtils.user.settings.get.setData(undefined, (oldData) => {
+            if (!oldData) return oldData;
+            return {
+                ...oldData,
+                chat: {
+                    ...oldData.chat,
+                    ...settings,
+                },
+            };
         });
-    };
+        
+        debouncedUpdateSettings(settings);
+    }, [apiUtils.user.settings.get, debouncedUpdateSettings]);
 
     return (
         <DropdownMenu modal={false}>
@@ -52,7 +89,7 @@ export const ChatPanelDropdown = observer(({
                             chatSettings.autoApplyCode ? 'opacity-100' : 'opacity-0',
                         )}
                     />
-                    Auto - apply results
+                    {t(transKeys.editor.panels.edit.tabs.chat.settings.autoApplyCode)}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                     className="flex items-center py-1.5"
@@ -68,48 +105,45 @@ export const ChatPanelDropdown = observer(({
                             chatSettings.expandCodeBlocks ? 'opacity-100' : 'opacity-0',
                         )}
                     />
-                    Show code while rendering
+                    {t(transKeys.editor.panels.edit.tabs.chat.settings.expandCodeBlocks)}
                 </DropdownMenuItem> */}
-
-                {/* TODO: Reenable */}
-                {/* <DropdownMenuItem
+                <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {
                         updateChatSettings(e, {
-                            showSuggestions: !chatSettings.showSuggestions,
+                            showSuggestions: !userSettings?.chat.showSuggestions,
                         });
                     }}
                 >
                     <Icons.Check
                         className={cn(
                             'mr-2 h-4 w-4',
-                            chatSettings.showSuggestions ? 'opacity-100' : 'opacity-0',
+                            userSettings?.chat.showSuggestions ? 'opacity-100' : 'opacity-0',
                         )}
                     />
-                    Show suggestions
-                </DropdownMenuItem> */}
+                    {t(transKeys.editor.panels.edit.tabs.chat.settings.showSuggestions)}
+                </DropdownMenuItem>
 
-                {/* TODO: Reenable */}
-                {/* <DropdownMenuItem
+                <DropdownMenuItem
                     className="flex items-center py-1.5"
                     onClick={(e) => {
                         updateChatSettings(e, {
-                            showMiniChat: !chatSettings.showMiniChat,
+                            showMiniChat: !userSettings?.chat.showMiniChat,
                         });
                     }}
                 >
                     <Icons.Check
                         className={cn(
                             'mr-2 h-4 w-4',
-                            chatSettings.showMiniChat ? 'opacity-100' : 'opacity-0',
+                            userSettings?.chat.showMiniChat ? 'opacity-100' : 'opacity-0',
                         )}
                     />
-                    Show mini chat
-                </DropdownMenuItem> */}
+                    {t(transKeys.editor.panels.edit.tabs.chat.settings.showMiniChat)}
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setIsChatHistoryOpen(!isChatHistoryOpen)}>
                     <Icons.CounterClockwiseClock className="mr-2 h-4 w-4" />
-                    Chat History
+                    {t(transKeys.editor.panels.edit.tabs.chat.controls.history)}
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

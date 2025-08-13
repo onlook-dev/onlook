@@ -1,6 +1,6 @@
 {
-    "name": "@onlook/mastra",
-    "description": "A Mastra AI library for Onlook",
+    "name": "@onlook/code-provider",
+    "description": "A library with a set of providers for code sandboxing",
     "main": "./src/index.ts",
     "type": "module",
     "module": "src/index.ts",
@@ -19,8 +19,7 @@
     },
     "keywords": [
         "onlook",
-        "AI",
-        "Mastra"
+        "sandbox"
     ],
     "author": {
         "name": "Onlook",
@@ -32,10 +31,10 @@
         "@onlook/typescript": "*"
     },
     "dependencies": {
-        "@ai-sdk/anthropic": "^1.2.10",
-        "@mastra/core": "^0.9.0",
-        "ai": "^4.2.6",
-        "fg": "^0.0.3",
-        "marked": "^15.0.7"
+        "@codesandbox/sdk": "^1.1.6",
+        "@onlook/models": "*",
+        "@onlook/parser": "*",
+        "@onlook/utility": "*",
+        "prettier": "^3.5.3"
     }
 }

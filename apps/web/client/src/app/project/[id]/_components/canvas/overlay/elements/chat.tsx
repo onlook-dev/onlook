@@ -6,6 +6,7 @@ import { api } from '@/trpc/react';
 import { ChatType, EditorMode, EditorTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
@@ -31,7 +32,7 @@ export const OverlayChat = observer(
     ({ selectedEl, elementId }: { selectedEl: ClickRectState | null; elementId: string }) => {
         const editorEngine = useEditorEngine();
         const { data: settings } = api.user.settings.get.useQuery();
-        const { sendMessages, reload, isWaiting } = useChatContext();
+        const { sendMessage, isWaiting } = useChatContext();
         const isPreviewMode = editorEngine.state.editorMode === EditorMode.PREVIEW;
         const [inputState, setInputState] = useState(DEFAULT_INPUT_STATE);
         const [isComposing, setIsComposing] = useState(false);
@@ -81,22 +82,23 @@ export const OverlayChat = observer(
         }
 
         const handleSubmit = async () => {
-            const messageToSend = inputState.value;
-            editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
-            const streamMessages = await editorEngine.chat.getEditMessages(messageToSend);
-            if (!streamMessages) {
-                console.error('No edit messages returned');
-                return;
+            try {
+                editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
+                const message = await editorEngine.chat.addEditMessage(inputState.value);
+                sendMessage(ChatType.EDIT);
+                setInputState(DEFAULT_INPUT_STATE);
+            } catch (error) {
+                console.error('Error sending message', error);
+                toast.error('Failed to send message. Please try again.');
             }
-            sendMessages(streamMessages, ChatType.EDIT);
-            reload();
-
-            setInputState(DEFAULT_INPUT_STATE);
         };
+        const EDITOR_HEADER_HEIGHT = 86;
+        const MARGIN = 8;
+        const CHAT_BUTTON_HEIGHT = 42;
 
         const containerStyle: React.CSSProperties = {
             position: 'fixed',
-            top: Math.max(74 + 8, selectedEl.top - 8),
+            top: Math.max(EDITOR_HEADER_HEIGHT + MARGIN, selectedEl.top - (CHAT_BUTTON_HEIGHT + MARGIN)),
             left: selectedEl.left + selectedEl.width / 2,
             transform: 'translate(-50%, 0)',
             transformOrigin: 'center center',
@@ -128,13 +130,13 @@ export const OverlayChat = observer(
                             className="rounded-lg hover:text-foreground-primary transition-colors px-2.5 py-1.5 flex flex-row items-center gap-2 w-full"
                         >
                             <Icons.Sparkles className="w-4 h-4" />
-                            <span className="text-miniPlus whitespace-nowrap">
+                            <span className="text-mini !font-medium whitespace-nowrap">
                                 {t(transKeys.editor.panels.edit.tabs.chat.miniChat.button)}
                             </span>
                         </button>
                     ) : (
                         // Input Field
-                        <div className="flex flex-row items-top gap-1 w-full min-w-[280px] relative">
+                        <div className="flex flex-row items-center gap-1 w-[280px] relative">
                             <Button
                                 size="icon"
                                 onClick={() =>
@@ -156,18 +158,20 @@ export const OverlayChat = observer(
                                 <Icons.CrossS className="h-4 w-4 text-foreground-secondary group-hover:text-foreground transition-colors" />
                             </Button>
                             <Textarea
+                                id="chat-input"
                                 aria-label="Chat message input"
                                 ref={textareaRef}
                                 className={cn(
-                                    'w-full text-xs break-words p-1.5 focus-visible:ring-0 resize-none shadow-none border-[0.5px] rounded-lg',
+                                    'w-full !text-xs break-words focus-visible:!ring-0 resize-none shadow-none !border-[0.5px] rounded-lg',
                                     'transition-all duration-150 ease-in-out',
                                     'pr-10 backdrop-blur-lg',
                                     inputState.value.trim().length >= DIMENSIONS.minCharsToSubmit
-                                        ? 'pl-2'
-                                        : 'pl-8',
-                                    'bg-background-secondary/75 text-foreground-primary border-background-secondary/75',
+                                        ? '!pl-2'
+                                        : '!pl-8',
+                                    '!bg-background-secondary/75 text-foreground-primary !border-background-secondary/75',
                                     'max-h-[80px] caret-[#FA003C]',
                                     'selection:bg-[#FA003C]/30 selection:text-[#FA003C]',
+                                    '!min-h-0',
                                 )}
                                 value={inputState.value}
                                 onChange={(e) => {

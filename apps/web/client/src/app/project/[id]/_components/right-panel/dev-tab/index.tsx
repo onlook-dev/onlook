@@ -36,8 +36,8 @@ export const DevTab = observer(() => {
 
     // Helper function to check if sandbox is connected and ready
     const isSandboxReady = useCallback((): boolean => {
-        return !!(editorEngine.sandbox.session.session && !editorEngine.sandbox.session.isConnecting);
-    }, [editorEngine.sandbox.session.session, editorEngine.sandbox.session.isConnecting]);
+        return !!(editorEngine.sandbox.session.provider && !editorEngine.sandbox.session.isConnecting);
+    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
 
     // Helper function to handle sandbox not ready scenarios
     const handleSandboxNotReady = useCallback((operation: string): void => {
@@ -254,7 +254,7 @@ export const DevTab = observer(() => {
         };
 
         loadInitialFiles();
-    }, [editorEngine.sandbox.session.session, editorEngine.sandbox.session.isConnecting]);
+    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
 
     // Clear files and opened files when sandbox disconnects
     useEffect(() => {
@@ -264,7 +264,7 @@ export const DevTab = observer(() => {
             editorViewsRef.current.forEach((view) => view.destroy());
             editorViewsRef.current.clear();
         }
-    }, [editorEngine.sandbox.session.session, editorEngine.sandbox.session.isConnecting]);
+    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
 
     const handleRefreshFiles = useCallback(async () => {
         if (!isSandboxReady()) {

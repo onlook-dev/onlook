@@ -111,7 +111,7 @@ export async function handleFuzzyEditFileTool(
 
     const metadata = {
         projectId: editorEngine.projectId,
-        conversationId: editorEngine.chat.conversation.current?.id,
+        conversationId: editorEngine.chat.conversation.current?.conversation.id,
     };
 
     const updatedContent = await api.code.applyDiff.mutate({

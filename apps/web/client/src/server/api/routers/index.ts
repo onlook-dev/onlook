@@ -1,3 +1,4 @@
+export * from './chat';
 export * from './code';
 export * from './domain';
 export * from './forward';

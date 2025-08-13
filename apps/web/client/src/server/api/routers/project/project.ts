@@ -2,8 +2,9 @@ import { trackEvent } from '@/utils/analytics/server';
 import { initModel } from '@onlook/ai';
 import {
     canvases,
-    conversations,
-    createDefaultCanvas, createDefaultConversation, createDefaultFrame, createDefaultUserCanvas,
+    createDefaultCanvas,
+    createDefaultFrame,
+    createDefaultUserCanvas,
     frames,
     projectCreateRequestInsertSchema,
     projectCreateRequests,
@@ -11,7 +12,6 @@ import {
     projects,
     projectUpdateSchema,
     toCanvas,
-    toConversation,
     toFrame,
     toProject,
     userCanvases,
@@ -21,7 +21,7 @@ import {
 } from '@onlook/db';
 import { LLMProvider, OPENROUTER_MODELS, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
 import { generateText } from 'ai';
-import { eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { projectCreateRequestRouter } from './createRequest';
@@ -29,12 +29,20 @@ import { projectCreateRequestRouter } from './createRequest';
 export const projectRouter = createTRPCRouter({
     createRequest: projectCreateRequestRouter,
     list: protectedProcedure
-        .query(async ({ ctx }) => {
+        .input(z.object({
+            limit: z.number().optional(),
+            excludeProjectId: z.string().optional(),
+        }).optional())
+        .query(async ({ ctx, input }) => {
             const fetchedUserProjects = await ctx.db.query.userProjects.findMany({
-                where: eq(userProjects.userId, ctx.user.id),
+                where: input?.excludeProjectId ? and(
+                    eq(userProjects.userId, ctx.user.id),
+                    ne(userProjects.projectId, input.excludeProjectId),
+                ) : eq(userProjects.userId, ctx.user.id),
                 with: {
                     project: true,
                 },
+                limit: input?.limit,
             });
             return fetchedUserProjects.map((userProject) => toProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
         }),
@@ -50,7 +58,7 @@ export const projectRouter = createTRPCRouter({
             }
             return toProject(project)
         }),
-    getFullProject: protectedProcedure
+    getProjectWithCanvas: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
             const project = await ctx.db.query.projects.findFirst({
@@ -63,9 +71,6 @@ export const projectRouter = createTRPCRouter({
                                 where: eq(userCanvases.userId, ctx.user.id),
                             },
                         },
-                    },
-                    conversations: {
-                        orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
                     },
                 },
             });
@@ -80,7 +85,6 @@ export const projectRouter = createTRPCRouter({
                 project: toProject(project),
                 userCanvas: toCanvas(userCanvas),
                 frames: project.canvas?.frames.map(toFrame) ?? [],
-                conversations: project.conversations.map(toConversation) ?? [],
             };
         }),
     create: protectedProcedure
@@ -119,11 +123,7 @@ export const projectRouter = createTRPCRouter({
                 const newFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl);
                 await tx.insert(frames).values(newFrame);
 
-                // 5. Create the default conversation
-                const newConversation = createDefaultConversation(newProject.id);
-                await tx.insert(conversations).values(newConversation);
-
-                // 6. Create the creation request
+                // 5. Create the creation request
                 if (input.creationData) {
                     await tx.insert(projectCreateRequests).values({
                         ...input.creationData,
@@ -150,7 +150,7 @@ export const projectRouter = createTRPCRouter({
             try {
                 const { model, providerOptions, headers } = await initModel({
                     provider: LLMProvider.OPENROUTER,
-                    model: OPENROUTER_MODELS.OPEN_AI_GPT_4_1_NANO,
+                    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
                 });
 
                 const MAX_NAME_LENGTH = 50;

@@ -1,4 +1,6 @@
-import type { Task, Terminal, WebSocketSession } from '@codesandbox/sdk';
+'use client';
+
+import type { Provider, ProviderTask, ProviderTerminal } from '@onlook/code-provider';
 import { FitAddon } from '@xterm/addon-fit';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,34 +15,34 @@ export interface CLISession {
     id: string;
     name: string;
     type: CLISessionType;
-    terminal: Terminal | null;
+    terminal: ProviderTerminal | null;
     // Task is readonly
-    task: Task | null;
+    task: ProviderTask | null;
     xterm: XTerm;
     fitAddon: FitAddon;
 }
 
 export interface TaskSession extends CLISession {
     type: CLISessionType.TASK;
-    task: Task;
+    task: ProviderTask;
 }
 
 export interface TerminalSession extends CLISession {
     type: CLISessionType.TERMINAL;
-    terminal: Terminal;
+    terminal: ProviderTerminal;
 }
 
 export class CLISessionImpl implements CLISession {
     id: string;
-    terminal: Terminal | null;
-    task: Task | null;
+    terminal: ProviderTerminal | null;
+    task: ProviderTask | null;
     xterm: XTerm;
     fitAddon: FitAddon;
 
     constructor(
         public readonly name: string,
         public readonly type: CLISessionType,
-        private readonly session: WebSocketSession,
+        private readonly provider: Provider,
         private readonly errorManager: ErrorManager,
     ) {
         this.id = uuidv4();
@@ -59,7 +61,7 @@ export class CLISessionImpl implements CLISession {
 
     async initTerminal() {
         try {
-            const terminal = await this.session?.terminals.create();
+            const { terminal } = await this.provider.createTerminal({});
             if (!terminal) {
                 console.error('Failed to create terminal');
                 return;
@@ -159,7 +161,11 @@ export class CLISessionImpl implements CLISession {
     }
 
     async createDevTaskTerminal() {
-        const task = this.session?.tasks.get('dev');
+        const { task } = await this.provider.getTask({
+            args: {
+                id: 'dev',
+            },
+        });
         if (!task) {
             console.error('No dev task found');
             return;
