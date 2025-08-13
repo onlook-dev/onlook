@@ -6,7 +6,7 @@ html,
 body {
   overscroll-behavior: none;
   font-weight: 350;
-  background: linear-gradient(135deg, #220000 0%, #000000 50%, #220000 100%);
+  background: linear-gradient(135deg, #1a0000 0%, #000000 60%, #1a0000 100%);
   min-height: 100vh;
 }
 
