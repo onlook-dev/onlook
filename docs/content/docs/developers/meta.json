@@ -1,8 +1,9 @@
 {
-  "title": "Developers",
-  "pages": [
-    "architecture",
-    "running-locally",
-    "appendix"
-  ]
+    "title": "Developers",
+    "pages": [
+        "architecture",
+        "running-locally",
+        "troubleshooting",
+        "appendix"
+    ]
 }
