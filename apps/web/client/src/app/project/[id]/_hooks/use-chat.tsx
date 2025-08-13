@@ -30,6 +30,10 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, { finishReason }) => {
             lastMessageRef.current = message;
+            if (finishReason !== 'error') {
+                editorEngine.chat.error.clear();
+            }
+
             if (finishReason !== 'tool-calls') {
                 editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message, conversationId ?? ''));
                 editorEngine.chat.suggestions.generateSuggestions();
@@ -37,7 +41,6 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             }
             if (finishReason === 'stop') {
                 editorEngine.chat.context.clearAttachments();
-                editorEngine.chat.error.clear();
             } else if (finishReason === 'length') {
                 editorEngine.chat.error.handleChatError(new Error('Output length limit reached'));
             } else if (finishReason === 'content-filter') {

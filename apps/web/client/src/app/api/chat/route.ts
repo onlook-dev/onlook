@@ -40,9 +40,8 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
         console.error('Error in chat', error);
         return new Response(JSON.stringify({
-            error: 'Internal Server Error',
+            error: error instanceof Error ? error.message : String(error),
             code: 500,
-            details: error instanceof Error ? error.message : String(error)
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
