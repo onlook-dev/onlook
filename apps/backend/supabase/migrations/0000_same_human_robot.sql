@@ -7,7 +7,7 @@ END $$;--> statement-breakpoint
 DO $$ 
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'role') THEN
-        CREATE TYPE "public"."role" AS ENUM('user', 'assistant', 'system');
+        CREATE TYPE "public"."message_role" AS ENUM('user', 'assistant');
     END IF;
 END $$;--> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "canvas" (
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS "messages" (
 	"conversation_id" uuid NOT NULL,
 	"content" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"role" "role" NOT NULL,
+	"role" "message_role" NOT NULL,
 	"applied" boolean DEFAULT false NOT NULL,
 	"snapshots" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"context" jsonb DEFAULT '[]'::jsonb NOT NULL,
