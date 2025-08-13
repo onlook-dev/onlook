@@ -43,7 +43,11 @@ export const codeRouter = createTRPCRouter({
     scrapeUrl: protectedProcedure
         .input(z.object({
             url: z.string().url(),
-            formats: z.array(z.enum(['markdown', 'html', 'json'])).default(['markdown']),
+            formats: z.array(z.enum(['markdown', 'html', 'json', 'screenshot'])).default(['markdown']),
+            actions: z.array(z.object({
+                type: z.enum(['screenshot']),
+                fullPage: z.boolean().default(false).optional(),
+            })).optional(),
             onlyMainContent: z.boolean().default(true),
             includeTags: z.array(z.string()).optional(),
             excludeTags: z.array(z.string()).optional(),
@@ -60,6 +64,7 @@ export const codeRouter = createTRPCRouter({
                 const result = await app.scrapeUrl(input.url, {
                     formats: input.formats,
                     onlyMainContent: input.onlyMainContent,
+                    ...(input.actions && { actions: input.actions }),
                     ...(input.includeTags && { includeTags: input.includeTags }),
                     ...(input.excludeTags && { excludeTags: input.excludeTags }),
                     ...(input.waitFor !== undefined && { waitFor: input.waitFor }),
@@ -71,7 +76,11 @@ export const codeRouter = createTRPCRouter({
 
                 // Return the primary content format (markdown by default)
                 // or the first available format if markdown isn't available
-                const content = result.markdown ?? result.html ?? JSON.stringify(result.json, null, 2);
+                const markdown = result.markdown ?? result.html ?? JSON.stringify(result.json, null, 2);
+                // Return the screenshot if it exists
+                const screenshot = result.screenshot;
+
+                const content = markdown ?? screenshot;
 
                 if (!content) {
                     throw new Error('No content was scraped from the URL');

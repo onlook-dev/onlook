@@ -1,10 +1,10 @@
 import { api } from '@/trpc/client';
 import {
-    SCRAPE_URL_TOOL_PARAMETERS,
-    WEB_SEARCH_TOOL_PARAMETERS
+    type SCRAPE_URL_TOOL_PARAMETERS,
+    type WEB_SEARCH_TOOL_PARAMETERS
 } from '@onlook/ai';
 import type { WebSearchResult } from '@onlook/models';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 export async function handleScrapeUrlTool(
     args: z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>,
@@ -17,6 +17,7 @@ export async function handleScrapeUrlTool(
             includeTags: args.includeTags,
             excludeTags: args.excludeTags,
             waitFor: args.waitFor,
+            actions: args.actions,
         });
 
         if (!result.result) {
