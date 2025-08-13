@@ -1,5 +1,5 @@
 import type { GitCommit } from '@onlook/git';
-import { type MessageContext, type UserChatMessage } from '@onlook/models/chat';
+import { ChatMessageRole, type MessageContext, type UserChatMessage } from '@onlook/models/chat';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
@@ -66,26 +66,23 @@ export class ChatManager {
     }
 
     async resubmitMessage(id: string, newMessageContent: string): Promise<UserChatMessage | null> {
-        // Remove the old message and all messages after it
-        const oldMessageIndex = this.conversation.current?.messages.findIndex((m) => m.id === id);
+        const oldMessageIndex = this.conversation.current?.messages.findIndex((m) => m.id === id && m.role === ChatMessageRole.USER);
         if (oldMessageIndex === undefined || oldMessageIndex === -1 || !this.conversation.current?.messages[oldMessageIndex]) {
             console.error('No message found with id', id);
             return null;
         }
 
-        const oldMessage = this.conversation.current?.messages[oldMessageIndex];
-        const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt >= oldMessage.createdAt);
+        const oldMessage = this.conversation.current?.messages[oldMessageIndex] as UserChatMessage;
 
-        // Create a new message with the new content
+        // Update the old message with the new content
         const newContext = await this.context.getRefreshedContext(oldMessage.content.metadata.context);
         oldMessage.content.metadata.context = newContext;
-        const newMessage = await this.conversation.addUserMessage(newMessageContent, newContext);
-        if (!newMessage) {
-            console.error('Failed to add user message');
-            return null;
-        }
+        oldMessage.content.parts = [{ type: 'text', text: newMessageContent }];
+
+        // Remove all messages after the old message
+        const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt > oldMessage.createdAt);
         await this.conversation.removeMessages(messagesToRemove);
-        return newMessage;
+        return oldMessage;
     }
 
     async createCommit(userPrompt: string): Promise<GitCommit | null> {
