@@ -46,8 +46,9 @@ import {
     handleListFilesTool,
     handleReadFileTool,
     handleReadStyleGuideTool,
-    handleSandboxTool, handleScrapeUrlTool, handleSearchReplaceEditFileTool, handleTerminalCommandTool, handleWebSearchTool,
+    handleSandboxTool, handleScrapeUrlTool, handleSearchReplaceEditFileTool, handleTerminalCommandTool,
     handleTodoWriteTool,
+    handleWebSearchTool,
     handleWriteFileTool
 } from './handlers';
 import { EMPTY_TOOL_PARAMETERS } from './helpers';

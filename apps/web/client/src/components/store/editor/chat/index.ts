@@ -66,7 +66,6 @@ export class ChatManager {
     }
 
     async resubmitMessage(id: string, newMessageContent: string): Promise<UserChatMessage | null> {
-        // Remove the old message and all messages after it
         const oldMessageIndex = this.conversation.current?.messages.findIndex((m) => m.id === id && m.role === ChatMessageRole.USER);
         if (oldMessageIndex === undefined || oldMessageIndex === -1 || !this.conversation.current?.messages[oldMessageIndex]) {
             console.error('No message found with id', id);
@@ -74,17 +73,14 @@ export class ChatManager {
         }
 
         const oldMessage = this.conversation.current?.messages[oldMessageIndex] as UserChatMessage;
-        const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt > oldMessage.createdAt);
 
-        // Create a new message with the new content
+        // Update the old message with the new content
         const newContext = await this.context.getRefreshedContext(oldMessage.content.metadata.context);
         oldMessage.content.metadata.context = newContext;
         oldMessage.content.parts = [{ type: 'text', text: newMessageContent }];
-        // const newMessage = await this.conversation.addUserMessage(newMessageContent, newContext);
-        // if (!newMessage) {
-        //     console.error('Failed to add user message');
-        //     return null;
-        // }
+
+        // Remove all messages after the old message
+        const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt > oldMessage.createdAt);
         await this.conversation.removeMessages(messagesToRemove);
         return oldMessage;
     }
