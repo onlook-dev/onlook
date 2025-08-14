@@ -60,12 +60,13 @@ export const projectRouter = createTRPCRouter({
                     formats: ['screenshot'],
                     onlyMainContent: true,
                     timeout: 10000,
-                    actions: [
-                        {
-                            type: 'click',
-                            selector: '#btn-answer-yes',
-                        },
-                    ],
+                    // Optional: Add actions to click the button for CSB free tier
+                    // actions: [
+                    //     {
+                    //         type: 'click',
+                    //         selector: '#btn-answer-yes',
+                    //     },
+                    // ],
                 });
 
                 if (!result.success) {
@@ -129,7 +130,7 @@ export const projectRouter = createTRPCRouter({
                         previewImgUrl: dbPreviewImg.previewImgUrl,
                         previewImgPath: dbPreviewImg.previewImgPath,
                         previewImgBucket: dbPreviewImg.previewImgBucket,
-                        updatedPreviewImgAt: new Date(),
+                        updatedPreviewImgAt: dbPreviewImg.updatedPreviewImgAt,
                         updatedAt: new Date(),
                     })
                     .where(eq(projects.id, project.id));

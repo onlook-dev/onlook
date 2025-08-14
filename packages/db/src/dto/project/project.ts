@@ -57,15 +57,22 @@ export function toPreviewImg(dbProject: DbProject): PreviewImg | null {
     return previewImg;
 }
 
-export function fromPreviewImg(previewImg: PreviewImg | null): { previewImgUrl: string | null, previewImgPath: string | null, previewImgBucket: string | null } {
+export function fromPreviewImg(previewImg: PreviewImg | null): {
+    previewImgUrl: string | null,
+    previewImgPath: string | null,
+    previewImgBucket: string | null,
+    updatedPreviewImgAt: Date | null,
+} {
     let res: {
         previewImgUrl: string | null,
         previewImgPath: string | null,
         previewImgBucket: string | null,
+        updatedPreviewImgAt: Date | null,
     } = {
         previewImgUrl: null,
         previewImgPath: null,
         previewImgBucket: null,
+        updatedPreviewImgAt: null,
     };
 
     if (!previewImg) {
@@ -78,5 +85,6 @@ export function fromPreviewImg(previewImg: PreviewImg | null): { previewImgUrl: 
         res.previewImgPath = previewImg.storagePath.path;
         res.previewImgBucket = previewImg.storagePath.bucket;
     }
+    res.updatedPreviewImgAt = new Date();
     return res;
 }

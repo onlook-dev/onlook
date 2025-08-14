@@ -22,7 +22,7 @@ export const projects = pgTable('projects', {
     previewImgUrl: varchar('preview_img_url'),
     previewImgPath: varchar('preview_img_path'),
     previewImgBucket: varchar('preview_img_bucket'),
-    updatedPreviewImgAt: timestamp('updated_preview_img_at', { withTimezone: true }).defaultNow(),
+    updatedPreviewImgAt: timestamp('updated_preview_img_at', { withTimezone: true }),
 
     // sandbox
     sandboxId: varchar('sandbox_id').notNull(),

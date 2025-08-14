@@ -20,14 +20,10 @@ export class ScreenshotManager {
         this._lastScreenshotTime = time;
     }
 
-    // 5 minute debounce
+    // 10 second debounce
     captureScreenshot = debounce(
         this.debouncedCaptureScreenshot,
-        5 * 60 * 1000,
-        {
-            leading: true,
-            trailing: false,
-        },
+        10000,
     );
 
     private async debouncedCaptureScreenshot() {
