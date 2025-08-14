@@ -40,9 +40,11 @@ export const EditAppButton = observer(({ project, onClick, ...props }: EditAppBu
             size="default"
             variant={'outline'}
             className="gap-2 bg-background-active border-[0.5px] border-border-active w-auto hover:bg-background-onlook cursor-pointer"
+            {...props}
+
+            // Prevent consumer from overriding these props
             onClick={handleClick}
             disabled={isLoading}
-            {...props}
         >
             {isLoading ? (
                 <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
