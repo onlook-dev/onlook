@@ -27,7 +27,7 @@ export const ProjectBreadcrumb = observer(() => {
     const posthog = usePostHog();
 
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { mutate: captureScreenshot } = api.project.captureScreenshot.useMutation();
+
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
     const router = useRouter();
@@ -39,7 +39,7 @@ export const ProjectBreadcrumb = observer(() => {
         try {
             setIsClosingProject(true);
 
-            captureProjectScreenshot();
+            editorEngine.screenshot.captureScreenshot();
         } catch (error) {
             console.error('Failed to take screenshots:', error);
         } finally {
@@ -47,18 +47,6 @@ export const ProjectBreadcrumb = observer(() => {
                 setIsClosingProject(false);
                 redirect('/projects');
             }, 100);
-        }
-    }
-
-    function captureProjectScreenshot() {
-        if (!project?.id) {
-            console.error('No project ID found');
-            return;
-        }
-        try {
-            captureScreenshot({ projectId: project.id });
-        } catch (error) {
-            console.error('Failed to capture screenshot on server:', error);
         }
     }
 

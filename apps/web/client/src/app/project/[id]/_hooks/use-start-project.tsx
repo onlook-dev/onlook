@@ -32,6 +32,7 @@ export const useStartProject = () => {
     useEffect(() => {
         if (project) {
             startSandbox(project);
+            editorEngine.screenshot.getProjectScreenshot();
         }
     }, [project]);
 

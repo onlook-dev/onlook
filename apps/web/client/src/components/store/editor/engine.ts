@@ -26,6 +26,7 @@ import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
+import { ScreenshotManager } from './screenshot';
 
 export class EditorEngine {
     readonly projectId: string;
@@ -57,6 +58,7 @@ export class EditorEngine {
     readonly frames: FramesManager = new FramesManager(this);
     readonly frameEvent: FrameEventManager = new FrameEventManager(this);
     readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
+    readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
@@ -88,6 +90,7 @@ export class EditorEngine {
         this.error.clear();
         this.sandbox.clear();
         this.frameEvent.clear();
+        this.screenshot.clear();
     }
 
     clearUI() {
