@@ -55,5 +55,7 @@ export class ScreenshotManager {
         }
     }
 
-    clear() { }
+    clear() {
+        this.lastScreenshotAt = null;
+    }
 }

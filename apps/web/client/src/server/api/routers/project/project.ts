@@ -25,7 +25,7 @@ import {
 } from '@onlook/db';
 import { compressImageServer } from '@onlook/image-server';
 import { LLMProvider, OPENROUTER_MODELS, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
-import { getScreenshotPath, getValidUrl } from '@onlook/utility';
+import { getScreenshotPath } from '@onlook/utility';
 import { generateText } from 'ai';
 import { and, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
@@ -72,8 +72,7 @@ export const projectRouter = createTRPCRouter({
                     throw new Error(`Failed to scrape URL: ${result.error || 'Unknown error'}`);
                 }
 
-                const screenshotUrlRaw = result.screenshot;
-                const screenshotUrl = screenshotUrlRaw ? getValidUrl(screenshotUrlRaw) : null;
+                const screenshotUrl = result.screenshot;
 
                 if (!screenshotUrl) {
                     throw new Error('Invalid screenshot URL');
@@ -88,7 +87,6 @@ export const projectRouter = createTRPCRouter({
 
                 const arrayBuffer = await response.arrayBuffer();
                 const mimeType = response.headers.get('content-type') ?? 'image/png';
-
                 const buffer = Buffer.from(arrayBuffer);
 
                 const compressedImage = await compressImageServer(buffer, undefined, {
