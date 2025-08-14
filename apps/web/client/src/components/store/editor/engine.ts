@@ -21,6 +21,7 @@ import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
 import { PreloadScriptManager } from './preload';
 import { SandboxManager } from './sandbox';
+import { ScreenshotManager } from './screenshot';
 import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
@@ -33,7 +34,7 @@ export class EditorEngine {
 
     readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
-    readonly canvas: CanvasManager = new CanvasManager();
+    readonly canvas: CanvasManager = new CanvasManager(this);
     readonly text: TextEditingManager = new TextEditingManager(this);
     readonly sandbox: SandboxManager = new SandboxManager(this);
     readonly history: HistoryManager = new HistoryManager(this);
@@ -57,6 +58,7 @@ export class EditorEngine {
     readonly frames: FramesManager = new FramesManager(this);
     readonly frameEvent: FrameEventManager = new FrameEventManager(this);
     readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
+    readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
@@ -88,6 +90,7 @@ export class EditorEngine {
         this.error.clear();
         this.sandbox.clear();
         this.frameEvent.clear();
+        this.screenshot.clear();
     }
 
     clearUI() {
