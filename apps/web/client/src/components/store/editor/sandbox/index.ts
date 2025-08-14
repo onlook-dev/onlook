@@ -10,19 +10,19 @@ import {
     PRELOAD_SCRIPT_SRC,
     STORAGE_BUCKETS,
 } from '@onlook/constants';
+import { fromPreviewImg } from '@onlook/db';
 import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import {
+    base64ToBlob,
     getBaseName,
     getDirName,
+    getScreenshotPath,
     isImageFile,
     isRootLayoutFile,
     isSubdirectory,
     LogTimer,
-    base64ToBlob,
-    getScreenshotPath,
 } from '@onlook/utility';
-import { fromPreviewImg } from '@onlook/db';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import { env } from 'process';
@@ -203,7 +203,7 @@ export class SandboxManager {
     private async writeRemoteFile(
         filePath: string,
         content: string | Uint8Array,
-        overwrite: boolean = true,
+        overwrite = true,
     ): Promise<boolean> {
         if (!this.session.provider) {
             console.error('No provider found for remote write');
@@ -260,15 +260,18 @@ export class SandboxManager {
                 console.error(`Error processing file ${normalizedPath}:`, error);
             }
         }
+        const success = await this.fileSync.write(
+            normalizedPath,
+            writeContent,
+            this.writeRemoteFile.bind(this),
+        );
 
-        const writeResult = await this.fileSync.write(normalizedPath, writeContent, this.writeRemoteFile.bind(this));
-        
-        // Trigger screenshot capture after successful file write
-        if (writeResult) {
-            void this.captureScreenshot();
+        if (!success) {
+            return false;
         }
 
-        return writeResult;
+        this.editorEngine.screenshot.captureScreenshot();
+        return success;
     }
 
     isJsxFile(filePath: string): boolean {
@@ -853,16 +856,16 @@ export class SandboxManager {
     private getReadyFrames() {
         return this.editorEngine.frames.getAll().filter(f => {
             if (!f.view) return false;
-            
+
             // Check if the frame view has the captureScreenshot method
             if (!f.view.captureScreenshot) return false;
-            
+
             // Check if frame is loading
             if (f.view?.isLoading?.()) return false;
-            
+
             // Check if iframe src is loaded
             if (!f.view.src || f.view.src === 'about:blank') return false;
-            
+
             return true;
         });
     }
@@ -872,7 +875,7 @@ export class SandboxManager {
         for (const frame of framesWithViews) {
             try {
                 console.log(`Screenshot: Attempting capture from frame ${frame.frame.id}`);
-                
+
                 // Additional check for iframe readiness
                 const iframe = frame.view;
                 if (!iframe || !iframe.contentDocument || iframe.contentDocument.readyState !== 'complete') {
@@ -883,13 +886,13 @@ export class SandboxManager {
                 // Try to capture with timeout
                 const capturePromise = frame.view?.captureScreenshot();
                 if (!capturePromise) continue;
-                
-                const timeoutPromise = new Promise<never>((_, reject) => 
+
+                const timeoutPromise = new Promise<never>((_, reject) =>
                     setTimeout(() => reject(new Error('Screenshot timeout')), 10000)
                 );
 
                 const result = await Promise.race([capturePromise, timeoutPromise]);
-                
+
                 if (result?.data) {
                     console.log('Screenshot: Successfully captured from frame', frame.frame.id);
                     return {
@@ -918,17 +921,17 @@ export class SandboxManager {
 
             console.log('Screenshot: Starting upload...');
             const file = base64ToBlob(screenshotResult.data, screenshotResult.mimeType);
-            
+
             // Import uploadBlobToStorage dynamically since it might not be available in this context
             const { uploadBlobToStorage } = await import('@/utils/supabase/client');
-            
+
             const uploadRes = await uploadBlobToStorage(
                 STORAGE_BUCKETS.PREVIEW_IMAGES,
                 getScreenshotPath(projectId, screenshotResult.mimeType),
                 file,
                 { contentType: screenshotResult.mimeType },
             );
-            
+
             if (!uploadRes?.path) {
                 console.error('Screenshot: Upload failed');
                 return false;
@@ -942,9 +945,9 @@ export class SandboxManager {
             // Update project through the editor engine's API access
             const { api } = await import('@/trpc/react');
             const updateProject = api.project.update.useMutation();
-            await updateProject.mutateAsync({ 
-                id: projectId, 
-                project: { ...dbPreviewImg } 
+            await updateProject.mutateAsync({
+                id: projectId,
+                project: { ...dbPreviewImg }
             });
 
             console.log('Screenshot: Successfully updated project preview');
@@ -964,7 +967,7 @@ export class SandboxManager {
         this._isIndexed = false;
         this._isIndexing = false;
         this._routerConfig = null;
-        
+
         // Reset screenshot state
         this.isCapturing = false;
         this.lastScreenshotTime = 0;

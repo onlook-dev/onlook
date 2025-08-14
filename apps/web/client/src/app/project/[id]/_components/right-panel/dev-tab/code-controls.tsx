@@ -27,7 +27,13 @@ export const CodeControls = observer(() => {
         void editorEngine.ide.saveActiveFile();
     };
 
-    const basePath = editorEngine.ide.activeFile?.path ?? '';
+    const basePath = (() => {
+        const activeFilePath = editorEngine.ide.activeFile?.path ?? '';
+        if (!activeFilePath) return '';
+        
+        const lastSlash = activeFilePath.lastIndexOf('/');
+        return lastSlash > 0 ? activeFilePath.substring(0, lastSlash) : '';
+    })();
     const files = editorEngine.ide.files;
 
     return (
@@ -126,6 +132,7 @@ export const CodeControls = observer(() => {
                 open={uploadModalOpen}
                 onOpenChange={setUploadModalOpen}
                 files={files}
+                basePath={basePath}
             />
         </>
     );
