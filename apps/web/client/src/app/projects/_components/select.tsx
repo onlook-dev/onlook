@@ -648,7 +648,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
         <div className="mb-12">
           <h2 className="text-2xl text-foreground font-normal mb-[12px]">
-            Templates v1 – Modal
+            Templates
           </h2>
           
           <div 
@@ -685,7 +685,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                       <TemplateCard
                         title={template.title}
                         description={template.description}
-                        category={template.category}
                         image={template.image}
                         isNew={template.isNew}
                         isStarred={template.isStarred}
@@ -905,7 +904,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
           onClose={handleCloseTemplateModal}
           title={selectedTemplate.title}
           description={selectedTemplate.description}
-          category={selectedTemplate.category}
           image={selectedTemplate.image}
           isNew={selectedTemplate.isNew}
           isStarred={selectedTemplate.isStarred}
