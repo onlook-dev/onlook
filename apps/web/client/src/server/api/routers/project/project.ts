@@ -2,12 +2,14 @@ import { env } from '@/env';
 import { trackEvent } from '@/utils/analytics/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { initModel } from '@onlook/ai';
+import { STORAGE_BUCKETS } from '@onlook/constants';
 import {
     canvases,
     createDefaultCanvas,
     createDefaultFrame,
     createDefaultUserCanvas,
     frames,
+    fromPreviewImg,
     projectCreateRequestInsertSchema,
     projectCreateRequests,
     projectInsertSchema,
@@ -21,16 +23,14 @@ import {
     type Canvas,
     type UserCanvas
 } from '@onlook/db';
+import { compressImageServer } from '@onlook/image-server';
 import { LLMProvider, OPENROUTER_MODELS, ProjectCreateRequestStatus, ProjectRole } from '@onlook/models';
+import { getScreenshotPath, getValidUrl } from '@onlook/utility';
 import { generateText } from 'ai';
 import { and, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { projectCreateRequestRouter } from './createRequest';
-import { STORAGE_BUCKETS } from '@onlook/constants';
-import { fromPreviewImg } from '@onlook/db';
-import { getScreenshotPath, getValidUrl } from '@onlook/utility';
-import { compressImageServer } from '@onlook/image-server';
 
 export const projectRouter = createTRPCRouter({
     createRequest: projectCreateRequestRouter,
@@ -123,6 +123,7 @@ export const projectRouter = createTRPCRouter({
                         previewImgUrl: dbPreviewImg.previewImgUrl,
                         previewImgPath: dbPreviewImg.previewImgPath,
                         previewImgBucket: dbPreviewImg.previewImgBucket,
+                        updatedPreviewImgAt: new Date(),
                         updatedAt: new Date(),
                     })
                     .where(eq(projects.id, project.id));

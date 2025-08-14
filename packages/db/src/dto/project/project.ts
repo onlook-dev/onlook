@@ -16,6 +16,7 @@ export const toProject = (
             updatedAt: dbProject.updatedAt.toISOString(),
             previewImg: toPreviewImg(dbProject),
             description: dbProject.description,
+            updatedPreviewImgAt: dbProject.updatedPreviewImgAt ? new Date(dbProject.updatedPreviewImgAt) : null,
         },
     };
 };
@@ -33,6 +34,7 @@ export const fromProject = (project: Project): DbProject => {
         previewImgUrl,
         previewImgPath,
         previewImgBucket,
+        updatedPreviewImgAt: project.metadata.updatedPreviewImgAt ? new Date(project.metadata.updatedPreviewImgAt) : null,
     };
 };
 

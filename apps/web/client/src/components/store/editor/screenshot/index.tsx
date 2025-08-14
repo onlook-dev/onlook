@@ -1,8 +1,6 @@
 import { api } from '@/trpc/client';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-import { getFileInfoFromStorage } from '@/utils/supabase/client';
-import { STORAGE_BUCKETS } from '@onlook/constants';
 
 export class ScreenshotManager {
     _lastScreenshotTime: Date | null = null;
@@ -13,11 +11,11 @@ export class ScreenshotManager {
         makeAutoObservable(this);
     }
 
-    get lastScreenshotTime() {
+    get lastScreenshotAt() {
         return this._lastScreenshotTime;
     }
 
-    setLastScreenshotTime(time: Date) {
+    set lastScreenshotAt(time: Date | null) {
         this._lastScreenshotTime = time;
     }
 
@@ -27,8 +25,8 @@ export class ScreenshotManager {
         }
         // If the screenshot was captured less than 30 minutes ago, skip capturing
 
-        if (this.lastScreenshotTime) {
-            const lastScreenshotTime = new Date(this.lastScreenshotTime);
+        if (this.lastScreenshotAt) {
+            const lastScreenshotTime = new Date(this.lastScreenshotAt);
             const thirtyMinutesAgo = new Date(Date.now() - this.cooldownTime);
             if (lastScreenshotTime > thirtyMinutesAgo) {
                 return;
@@ -41,27 +39,11 @@ export class ScreenshotManager {
         if (!screenshot) {
             return;
         }
-        this.setLastScreenshotTime(new Date());
+        this.lastScreenshotAt = new Date();
         this.isCapturing = false;
     }
 
-    async getProjectScreenshot() {
-        const project = await api.project.get.query({ projectId: this.editorEngine.projectId });
-
-        if (!project?.metadata.previewImg?.storagePath?.path) {
-            return null;
-        }
-        const screenshot = await getFileInfoFromStorage(
-            STORAGE_BUCKETS.PREVIEW_IMAGES,
-            project.metadata.previewImg.storagePath?.path ?? '',
-        );
-        if (!screenshot?.lastModified) {
-            return null;
-        }
-        this.setLastScreenshotTime(new Date(screenshot.lastModified));
-    }
-
     clear() {
-        this._lastScreenshotTime = null;
+        this.lastScreenshotAt = null;
     }
 }
