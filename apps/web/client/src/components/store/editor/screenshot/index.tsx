@@ -1,4 +1,5 @@
 import { api } from '@/trpc/client';
+import { isAfter, subMinutes } from 'date-fns';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -6,7 +7,6 @@ import type { EditorEngine } from '../engine';
 export class ScreenshotManager {
     _lastScreenshotTime: Date | null = null;
     isCapturing = false;
-    readonly cooldownTime = 30 * 60 * 1000; // 30 minutes
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -17,6 +17,7 @@ export class ScreenshotManager {
     }
 
     set lastScreenshotAt(time: Date | null) {
+        console.error('lastScreenshotAt set', time);
         this._lastScreenshotTime = time;
     }
 
@@ -35,11 +36,9 @@ export class ScreenshotManager {
             return;
         }
         // If the screenshot was captured less than 30 minutes ago, skip capturing
-
         if (this.lastScreenshotAt) {
-            const lastScreenshotTime = new Date(this.lastScreenshotAt);
-            const thirtyMinutesAgo = new Date(Date.now() - this.cooldownTime);
-            if (lastScreenshotTime > thirtyMinutesAgo) {
+            const thirtyMinutesAgo = subMinutes(new Date(), 30);
+            if (isAfter(this.lastScreenshotAt, thirtyMinutesAgo)) {
                 return;
             }
         }
@@ -54,7 +53,5 @@ export class ScreenshotManager {
         this.isCapturing = false;
     }
 
-    clear() {
-        this.lastScreenshotAt = null;
-    }
+    clear() { }
 }
