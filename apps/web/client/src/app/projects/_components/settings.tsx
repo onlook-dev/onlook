@@ -48,10 +48,7 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                 id: project.id,
                 project: {
                     name: projectName,
-                    metadata: {
-                        ...project.metadata,
-                        updatedAt: new Date().toISOString(),
-                    },
+                    updatedAt: new Date()
                 },
             },
         );
@@ -74,19 +71,19 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button 
-                        size="default" 
-                        variant="ghost" 
+                    <Button
+                        size="default"
+                        variant="ghost"
                         className="w-10 h-10 p-0 flex items-center justify-center hover:bg-background-onlook cursor-pointer"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <Icons.DotsVertical />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent 
-                    className="z-50" 
-                    align="end" 
-                    alignOffset={-4} 
+                <DropdownMenuContent
+                    className="z-50"
+                    align="end"
+                    alignOffset={-4}
                     sideOffset={8}
                     onClick={(e) => e.stopPropagation()}
                 >

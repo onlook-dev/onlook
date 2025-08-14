@@ -8,16 +8,12 @@ import {
     EXCLUDED_SYNC_DIRECTORIES,
     NEXT_JS_FILE_EXTENSIONS,
     PRELOAD_SCRIPT_SRC,
-    STORAGE_BUCKETS,
 } from '@onlook/constants';
-import { fromPreviewImg } from '@onlook/db';
 import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import {
-    base64ToBlob,
     getBaseName,
     getDirName,
-    getScreenshotPath,
     isImageFile,
     isRootLayoutFile,
     isSubdirectory,
@@ -48,11 +44,6 @@ export class SandboxManager {
     private templateNodeMap: TemplateNodeMapper;
     private _isIndexed = false;
     private _isIndexing = false;
-
-    // Screenshot management
-    private isCapturing = false;
-    private lastScreenshotTime = 0;
-    private readonly cooldownDuration = 30 * 60 * 1000; // 30 minutes in milliseconds
 
     constructor(private readonly editorEngine: EditorEngine) {
         this.session = new SessionManager(this.editorEngine);
@@ -271,7 +262,8 @@ export class SandboxManager {
         }
 
         this.editorEngine.screenshot.captureScreenshot();
-        return success;
+
+        return true;
     }
 
     isJsxFile(filePath: string): boolean {
@@ -795,169 +787,6 @@ export class SandboxManager {
         return null;
     }
 
-    async captureScreenshot(): Promise<boolean> {
-        // Prevent concurrent captures
-        if (this.isCapturing) {
-            console.log('Screenshot: Already capturing, skipping');
-            return false;
-        }
-
-        // Check cooldown
-        const now = Date.now();
-        if (now - this.lastScreenshotTime < this.cooldownDuration) {
-            console.log(`Screenshot: Cooldown active, ${Math.round((this.cooldownDuration - (now - this.lastScreenshotTime)) / 1000 / 60)} minutes remaining`);
-            return false;
-        }
-
-        this.isCapturing = true;
-
-        try {
-            // Get ready frames
-            const framesWithViews = this.getReadyFrames();
-            if (framesWithViews.length === 0) {
-                console.log('Screenshot: No ready frames available');
-                return false;
-            }
-
-            // Attempt screenshot capture
-            const screenshotResult = await this.attemptScreenshotCapture(framesWithViews);
-            if (!screenshotResult) {
-                console.log('Screenshot: Capture failed');
-                return false;
-            }
-
-            // Upload and update project
-            const success = await this.uploadAndUpdateProject(screenshotResult);
-            if (success) {
-                this.lastScreenshotTime = now;
-                console.log('Screenshot: Successfully captured and uploaded');
-            }
-
-            return success;
-        } catch (error) {
-            console.error('Screenshot: Error during capture:', error);
-            return false;
-        } finally {
-            this.isCapturing = false;
-        }
-    }
-
-    async getProjectScreenshot(): Promise<void> {
-        // This method can be called during project initialization
-        // It will respect the cooldown but won't prevent multiple calls
-        const now = Date.now();
-        if (now - this.lastScreenshotTime < this.cooldownDuration) {
-            return;
-        }
-
-        await this.captureScreenshot();
-    }
-
-    private getReadyFrames() {
-        return this.editorEngine.frames.getAll().filter(f => {
-            if (!f.view) return false;
-
-            // Check if the frame view has the captureScreenshot method
-            if (!f.view.captureScreenshot) return false;
-
-            // Check if frame is loading
-            if (f.view?.isLoading?.()) return false;
-
-            // Check if iframe src is loaded
-            if (!f.view.src || f.view.src === 'about:blank') return false;
-
-            return true;
-        });
-    }
-
-    private async attemptScreenshotCapture(framesWithViews: any[]): Promise<{ data: string; mimeType: string } | null> {
-        // Try each frame until we get a successful screenshot
-        for (const frame of framesWithViews) {
-            try {
-                console.log(`Screenshot: Attempting capture from frame ${frame.frame.id}`);
-
-                // Additional check for iframe readiness
-                const iframe = frame.view;
-                if (!iframe || !iframe.contentDocument || iframe.contentDocument.readyState !== 'complete') {
-                    console.log(`Screenshot: Frame ${frame.frame.id} not fully loaded`);
-                    continue;
-                }
-
-                // Try to capture with timeout
-                const capturePromise = frame.view?.captureScreenshot();
-                if (!capturePromise) continue;
-
-                const timeoutPromise = new Promise<never>((_, reject) =>
-                    setTimeout(() => reject(new Error('Screenshot timeout')), 10000)
-                );
-
-                const result = await Promise.race([capturePromise, timeoutPromise]);
-
-                if (result?.data) {
-                    console.log('Screenshot: Successfully captured from frame', frame.frame.id);
-                    return {
-                        data: result.data,
-                        mimeType: result.mimeType ?? 'image/jpeg'
-                    };
-                }
-            } catch (frameError) {
-                const errorMessage = frameError instanceof Error ? frameError.message : 'Unknown error';
-                console.warn(`Screenshot: Frame ${frame.frame.id} capture failed:`, errorMessage);
-                continue;
-            }
-        }
-
-        return null;
-    }
-
-    private async uploadAndUpdateProject(screenshotResult: { data: string; mimeType: string }): Promise<boolean> {
-        try {
-            // We need to get project info from the editor engine
-            const projectId = this.editorEngine.projectId;
-            if (!projectId) {
-                console.log('Screenshot: No project ID available');
-                return false;
-            }
-
-            console.log('Screenshot: Starting upload...');
-            const file = base64ToBlob(screenshotResult.data, screenshotResult.mimeType);
-
-            // Import uploadBlobToStorage dynamically since it might not be available in this context
-            const { uploadBlobToStorage } = await import('@/utils/supabase/client');
-
-            const uploadRes = await uploadBlobToStorage(
-                STORAGE_BUCKETS.PREVIEW_IMAGES,
-                getScreenshotPath(projectId, screenshotResult.mimeType),
-                file,
-                { contentType: screenshotResult.mimeType },
-            );
-
-            if (!uploadRes?.path) {
-                console.error('Screenshot: Upload failed');
-                return false;
-            }
-
-            const dbPreviewImg = fromPreviewImg({
-                type: 'storage',
-                storagePath: { bucket: STORAGE_BUCKETS.PREVIEW_IMAGES, path: uploadRes.path },
-            });
-
-            // Update project through the editor engine's API access
-            const { api } = await import('@/trpc/react');
-            const updateProject = api.project.update.useMutation();
-            await updateProject.mutateAsync({
-                id: projectId,
-                project: { ...dbPreviewImg }
-            });
-
-            console.log('Screenshot: Successfully updated project preview');
-            return true;
-        } catch (error) {
-            console.error('Screenshot: Error during upload/update:', error);
-            return false;
-        }
-    }
-
     clear() {
         void this.fileWatcher?.stop();
         this.fileWatcher = null;
@@ -967,9 +796,5 @@ export class SandboxManager {
         this._isIndexed = false;
         this._isIndexing = false;
         this._routerConfig = null;
-
-        // Reset screenshot state
-        this.isCapturing = false;
-        this.lastScreenshotTime = 0;
     }
 }

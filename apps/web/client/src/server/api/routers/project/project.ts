@@ -335,6 +335,4 @@ export const projectRouter = createTRPCRouter({
             updatedAt: new Date(),
         }).where(eq(projects.id, input.id));
     }),
-
-    // Removed: getComponents (no file-level views in simplified dashboard)
 });
