@@ -4,7 +4,15 @@ import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { type ProjectCreateRequest } from '@onlook/db';
-import { ChatType, CreateRequestContextType, MessageContextType, ProjectCreateRequestStatus, type ImageMessageContext, type MessageContext, type Project } from '@onlook/models';
+import {
+    ChatType,
+    CreateRequestContextType,
+    MessageContextType,
+    ProjectCreateRequestStatus,
+    type ImageMessageContext,
+    type MessageContext,
+    type Project,
+} from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { useEffect, useState } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
@@ -19,7 +27,7 @@ export const useStartProject = () => {
     const apiUtils = api.useUtils();
     const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
     const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.canvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
+    const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
     const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
     const { sendMessage } = useChatContext();
@@ -32,6 +40,7 @@ export const useStartProject = () => {
     useEffect(() => {
         if (project) {
             startSandbox(project);
+            editorEngine.screenshot.lastScreenshotAt = project.metadata.updatedPreviewImgAt;
         }
     }, [project]);
 
