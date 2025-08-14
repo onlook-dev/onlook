@@ -92,7 +92,7 @@ export const projectRouter = createTRPCRouter({
 
                 const useCompressed = !!compressedImage.buffer;
                 const finalMimeType = useCompressed ? 'image/jpeg' : mimeType;
-                const finalBuffer = useCompressed ? compressedImage.buffer : buffer;
+                const finalBuffer = useCompressed ? (compressedImage.buffer ?? buffer) : buffer;
 
                 const path = getScreenshotPath(project.id, finalMimeType);
 

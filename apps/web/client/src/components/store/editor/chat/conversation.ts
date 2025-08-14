@@ -128,7 +128,10 @@ export class ConversationManager {
     }
 
     async addConversationTitle(conversationId: string, content: string) {
-        const title = "RANDOM TITLE";
+        const title = await api.chat.conversation.generateTitle.mutate({
+            conversationId,
+            content,
+        });
         if (!title) {
             console.error('Error generating conversation title');
             return;
