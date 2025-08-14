@@ -3,13 +3,13 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
+import { EditorAttributes } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
-import { useRef, useEffect } from 'react';
-import { api } from '@/trpc/react';
+import { useEffect, useRef } from 'react';
 import { usePanelMeasurements } from '../_hooks/use-panel-measure';
 import { useStartProject } from '../_hooks/use-start-project';
 import { BottomBar } from './bottom-bar';
@@ -18,37 +18,17 @@ import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
-import { EditorAttributes } from '@onlook/constants';
 
 export const Main = observer(() => {
     const editorEngine = useEditorEngine();
     const router = useRouter();
     const { isProjectReady, error } = useStartProject();
-    const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
     const rightPanelRef = useRef<HTMLDivElement | null>(null);
     const { toolbarLeft, toolbarRight, editorBarAvailableWidth } = usePanelMeasurements(
         leftPanelRef,
         rightPanelRef,
     );
-
-    const hasInitialScreenshotRef = useRef(false);
-
-    // Take first screenshot on initial load if not present
-    useEffect(() => {
-        if (!isProjectReady || hasInitialScreenshotRef.current === true) return;
-        hasInitialScreenshotRef.current = true;
-        
-        // Wait for frames and connections to be established, then trigger initial screenshot
-        const timeoutId = setTimeout(() => {
-            if (!project?.metadata?.previewImg) {
-                console.log('Screenshot: Taking initial screenshot for project');
-                void editorEngine.sandbox.getProjectScreenshot();
-            }
-        }, 5000);
-
-        return () => clearTimeout(timeoutId);
-    }, [isProjectReady, project?.id, project?.metadata?.previewImg, editorEngine.sandbox]);
 
     useEffect(() => {
         function handleGlobalWheel(event: WheelEvent) {
@@ -62,7 +42,6 @@ export const Main = observer(() => {
             if (canvasContainer?.contains(event.target as Node | null)) {
                 return;
             }
-            
             event.preventDefault();
             event.stopPropagation();
         }
