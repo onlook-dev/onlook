@@ -60,6 +60,12 @@ export const projectRouter = createTRPCRouter({
                     formats: ['screenshot'],
                     onlyMainContent: true,
                     timeout: 10000,
+                    actions: [
+                        {
+                            type: 'click',
+                            selector: '#btn-answer-yes',
+                        },
+                    ],
                 });
 
                 if (!result.success) {

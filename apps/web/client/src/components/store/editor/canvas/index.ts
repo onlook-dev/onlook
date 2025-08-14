@@ -47,7 +47,7 @@ export class CanvasManager {
 
     set scale(value: number) {
         this._scale = value;
-        this.saveCanvas({ scale: value });
+        this.saveCanvas();
     }
 
     get position() {
@@ -56,20 +56,20 @@ export class CanvasManager {
 
     set position(value: RectPosition) {
         this._position = value;
-        this.saveCanvas({ position: value });
+        this.saveCanvas();
     }
 
     // 5 second debounce. Database is used to save working state per user, so we don't need to save too often.
     saveCanvas = debounce(this.undebouncedSaveCanvas, 5000);
 
-    private async undebouncedSaveCanvas(canvas: Partial<Canvas>) {
+    private async undebouncedSaveCanvas() {
         const success = await api.userCanvas.update.mutate({
             projectId: this.editorEngine.projectId,
             canvasId: this.id,
             canvas: {
-                scale: canvas.scale?.toString(),
-                x: canvas.position?.x?.toString(),
-                y: canvas.position?.y?.toString(),
+                scale: this.scale.toString(),
+                x: this.position.x.toString(),
+                y: this.position.y.toString(),
             },
         });
         if (!success) {
