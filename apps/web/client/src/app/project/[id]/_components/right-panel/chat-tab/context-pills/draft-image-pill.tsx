@@ -29,25 +29,22 @@ export const DraftImagePill = React.forwardRef<
                     ease: 'easeOut',
                 },
             }}
-            className="group relative flex flex-row items-center gap-1 justify-center border bg-background-tertiary rounded-md h-7"
+            className="group relative flex flex-row items-center gap-2 justify-center border bg-background-tertiary rounded-md h-7 "
             key={context.displayName}
             ref={ref}
         >
             {/* Left side: Image thumbnail */}
-            <div className="w-7 h-7 flex items-center justify-center overflow-hidden relative">
+            <div className="w-14 h-14 relative">
                 <img
                     src={context.content}
                     alt={context.displayName}
-                    className="w-full h-full object-cover rounded-l-md"
+                    className="w-full h-full object-cover rounded-lg"
                 />
                 <div className="absolute inset-0 border-l-[1px] border-y-[1px] rounded-l-md border-white/10 pointer-events-none" />
             </div>
 
             {/* Right side: Filename */}
-            <span className="text-xs overflow-hidden whitespace-nowrap text-ellipsis max-w-[100px] pr-1">
-                {getTruncatedName(context)}
-            </span>
-
+           
             {/* Hover X button */}
             <button
                 onClick={(e) => {
@@ -55,7 +52,7 @@ export const DraftImagePill = React.forwardRef<
                     e.stopPropagation();
                     onRemove();
                 }}
-                className="absolute -top-1.5 -right-1.5 w-6 h-6 p-1 rounded-full bg-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                className="absolute -top-4.5 -right-2.5 w-6 h-6 p-1 rounded-full bg-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
             >
                 <Icons.CrossL className="w-2.5 h-2.5 text-primary-foreground" />
             </button>
