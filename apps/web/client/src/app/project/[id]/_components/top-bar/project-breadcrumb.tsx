@@ -3,9 +3,6 @@ import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
-import { uploadBlobToStorage } from '@/utils/supabase/client';
-import { STORAGE_BUCKETS } from '@onlook/constants';
-import { fromPreviewImg } from '@onlook/db';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -17,14 +14,12 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
-import { getScreenshotPath, getValidUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { redirect, useRouter } from 'next/navigation';
 import { usePostHog } from 'posthog-js/react';
 import { useRef, useState } from 'react';
 import { RecentProjectsMenu } from './recent-projects';
-import { handleScrapeUrlTool } from '@/components/tools/handlers/web';
 
 export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -32,7 +27,7 @@ export const ProjectBreadcrumb = observer(() => {
     const posthog = usePostHog();
 
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { mutateAsync: updateProject } = api.project.update.useMutation();
+    const { mutate: captureScreenshot } = api.project.captureScreenshot.useMutation();
     const t = useTranslations();
     const closeTimeoutRef = useRef<Timer | null>(null);
     const router = useRouter();
@@ -44,7 +39,7 @@ export const ProjectBreadcrumb = observer(() => {
         try {
             setIsClosingProject(true);
 
-            await captureProjectScreenshot();
+            captureProjectScreenshot();
         } catch (error) {
             console.error('Failed to take screenshots:', error);
         } finally {
@@ -55,71 +50,15 @@ export const ProjectBreadcrumb = observer(() => {
         }
     }
 
-    async function captureProjectScreenshot() {
-        if (!project?.sandbox?.url) {
-            console.error('No sandbox URL found');
-            return;
-        }
-
-        if (!project.id) {
+    function captureProjectScreenshot() {
+        if (!project?.id) {
             console.error('No project ID found');
             return;
         }
-
-        const screenShot = await handleScrapeUrlTool({
-            url: project.sandbox.url,
-            formats: ['screenshot'],
-            actions: [
-                {
-                    type: 'screenshot',
-                    fullPage: true,
-                },
-            ],
-            onlyMainContent: true,
-        });
-
-        const validUrl = getValidUrl(screenShot);
-
-        if (!validUrl) {
-            console.error('Invalid screenshot URL');
-            return;
-        }
-
         try {
-            const response = await fetch(screenShot, { mode: 'cors' });
-            if (response.ok) {
-                const blob = await response.blob();
-                const mimeType = blob.type || 'image/png';
-                const uploaded = await uploadBlobToStorage(
-                    STORAGE_BUCKETS.PREVIEW_IMAGES,
-                    getScreenshotPath(project.id, mimeType),
-                    blob,
-                    { contentType: mimeType },
-                );
-
-                if (uploaded) {
-                    const dbPreviewImg = fromPreviewImg({
-                        type: 'storage',
-                        storagePath: {
-                            bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
-                            path: uploaded.path,
-                        },
-                    });
-                    if (project?.metadata) {
-                        await updateProject({
-                            id: project.id,
-                            project: {
-                                ...dbPreviewImg,
-                            },
-                        });
-                    }
-                    return;
-                }
-            } else {
-                console.error('Failed to fetch screenshot URL:', response.statusText);
-            }
-        } catch (err) {
-            console.error('Error handling screenshot URL upload:', err);
+            captureScreenshot({ projectId: project.id });
+        } catch (error) {
+            console.error('Failed to capture screenshot on server:', error);
         }
     }
 

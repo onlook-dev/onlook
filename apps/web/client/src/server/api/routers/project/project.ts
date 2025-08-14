@@ -1,4 +1,6 @@
+import { env } from '@/env';
 import { trackEvent } from '@/utils/analytics/server';
+import FirecrawlApp from '@mendable/firecrawl-js';
 import { initModel } from '@onlook/ai';
 import {
     canvases,
@@ -25,9 +27,102 @@ import { and, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { projectCreateRequestRouter } from './createRequest';
+import { STORAGE_BUCKETS } from '@onlook/constants';
+import { fromPreviewImg } from '@onlook/db';
+import { getScreenshotPath, getValidUrl } from '@onlook/utility';
 
 export const projectRouter = createTRPCRouter({
     createRequest: projectCreateRequestRouter,
+    captureScreenshot: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            try {
+                if (!env.FIRECRAWL_API_KEY) {
+                    throw new Error('FIRECRAWL_API_KEY is not configured');
+                }
+
+                const project = await ctx.db.query.projects.findFirst({
+                    where: eq(projects.id, input.projectId),
+                });
+
+                if (!project) {
+                    throw new Error('Project not found');
+                }
+
+                if (!project.sandboxUrl) {
+                    throw new Error('No sandbox URL found');
+                }
+
+                const app = new FirecrawlApp({ apiKey: env.FIRECRAWL_API_KEY });
+
+                const result = await app.scrapeUrl(project.sandboxUrl, {
+                    formats: ['screenshot'],
+                    onlyMainContent: true,
+                    actions: [
+                        {
+                            type: 'screenshot',
+                            fullPage: true,
+                        },
+                    ],
+                });
+
+                if (!result.success) {
+                    throw new Error(`Failed to scrape URL: ${result.error || 'Unknown error'}`);
+                }
+
+                const screenshotUrlRaw = result.screenshot;
+                const screenshotUrl = screenshotUrlRaw ? getValidUrl(screenshotUrlRaw) : null;
+
+                if (!screenshotUrl) {
+                    throw new Error('Invalid screenshot URL');
+                }
+
+                const response = await fetch(screenshotUrl);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch screenshot: ${response.status} ${response.statusText}`);
+                }
+
+                const arrayBuffer = await response.arrayBuffer();
+                const mimeType = response.headers.get('content-type') ?? 'image/png';
+                const path = getScreenshotPath(project.id, mimeType);
+
+                const { data, error } = await ctx.supabase.storage
+                    .from(STORAGE_BUCKETS.PREVIEW_IMAGES)
+                    .upload(path, arrayBuffer, {
+                        contentType: mimeType,
+                    });
+
+                if (error) {
+                    throw new Error(`Supabase upload error: ${error.message}`);
+                }
+
+                if (!data) {
+                    throw new Error('No data returned from storage upload');
+                }
+
+                const dbPreviewImg = fromPreviewImg({
+                    type: 'storage',
+                    storagePath: {
+                        bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
+                        path: data.path,
+                    },
+                });
+
+                await ctx.db.update(projects)
+                    .set({
+                        previewImgUrl: dbPreviewImg.previewImgUrl,
+                        previewImgPath: dbPreviewImg.previewImgPath,
+                        previewImgBucket: dbPreviewImg.previewImgBucket,
+                        updatedAt: new Date(),
+                    })
+                    .where(eq(projects.id, project.id));
+
+                return { success: true, path: data.path };
+            } catch (error) {
+                console.error('Error capturing project screenshot:', error);
+                return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+            }
+        }),
     list: protectedProcedure
         .input(z.object({
             limit: z.number().optional(),

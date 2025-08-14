@@ -17,7 +17,6 @@ export async function handleScrapeUrlTool(
             includeTags: args.includeTags,
             excludeTags: args.excludeTags,
             waitFor: args.waitFor,
-            actions: args.actions,
         });
 
         if (!result.result) {

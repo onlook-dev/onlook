@@ -5,7 +5,7 @@ export const SCRAPE_URL_TOOL_NAME = 'scrape_url';
 export const SCRAPE_URL_TOOL_PARAMETERS = z.object({
     url: z.string().url().describe('The URL to scrape. Must be a valid HTTP or HTTPS URL.'),
     formats: z
-        .array(z.enum(['markdown', 'html', 'json', 'screenshot']))
+        .array(z.enum(['markdown', 'html', 'json']))
         .default(['markdown'])
         .describe('The formats to return the scraped content in. Defaults to markdown.'),
     onlyMainContent: z
@@ -26,14 +26,6 @@ export const SCRAPE_URL_TOOL_PARAMETERS = z.object({
         .number()
         .optional()
         .describe('Time in milliseconds to wait for the page to load before scraping.'),
-    actions: z
-        .array(
-            z.object({
-                type: z.enum(['screenshot']),
-                fullPage: z.boolean().default(false).optional(),
-            }),
-        )
-        .optional(),
 });
 
 export const scrapeUrlTool = tool({
