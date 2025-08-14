@@ -43,7 +43,10 @@ export const projectRouter = createTRPCRouter({
                 }
 
                 const project = await ctx.db.query.projects.findFirst({
-                    where: eq(projects.id, input.projectId),
+                    where: and(
+                        eq(projects.id, input.projectId),
+                        eq(userProjects.userId, ctx.user.id),
+                    ),
                 });
 
                 if (!project) {

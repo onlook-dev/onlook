@@ -31,7 +31,6 @@ export class ScreenshotManager {
     );
 
     private async debouncedCaptureScreenshot() {
-        console.log('captureScreenshot check');
         if (this.isCapturing) {
             return;
         }
