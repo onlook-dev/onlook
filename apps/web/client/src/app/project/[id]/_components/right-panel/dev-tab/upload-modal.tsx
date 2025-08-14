@@ -102,7 +102,7 @@ export const UploadModal = observer(({
         setIsUploading(true);
         try {
             const uploadResults: boolean[] = [];
-            
+
             for (const file of selectedFiles) {
                 const directory = targetDirectory === 'root' ? '' : targetDirectory;
                 const finalPath = directory ? `${directory}/${file.name}` : file.name;
@@ -115,16 +115,16 @@ export const UploadModal = observer(({
                     const content = await file.text();
                     success = await editorEngine.sandbox.writeFile(finalPath, content);
                 }
-                
+
                 uploadResults.push(success);
             }
 
             // Check if all uploads succeeded
             const failedCount = uploadResults.filter(result => !result).length;
-            
+
             if (failedCount === 0) {
                 editorEngine.sandbox.listAllFiles();
-                
+
                 const fileCount = selectedFiles.length;
                 const fileText = fileCount === 1 ? selectedFiles[0]?.name ?? 'file' : `${fileCount} files`;
                 toast(`Successfully uploaded ${fileText}!`);
@@ -137,10 +137,10 @@ export const UploadModal = observer(({
             } else {
                 // Some uploads failed
                 const successCount = selectedFiles.length - failedCount;
-                toast(`Partially uploaded files`, { 
-                    description: `${successCount} uploaded successfully, ${failedCount} failed. Please try again for the failed files.` 
+                toast(`Partially uploaded files`, {
+                    description: `${successCount} uploaded successfully, ${failedCount} failed. Please try again for the failed files.`
                 });
-                
+
                 // Refresh file list even for partial success
                 editorEngine.sandbox.listAllFiles();
             }
@@ -170,47 +170,54 @@ export const UploadModal = observer(({
         }
     }, [open]);
 
-    const displayPath = targetDirectory === 'root' ? '/' : `/${targetDirectory}/`;
-
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Upload Files</DialogTitle>
-                    <DialogDescription>
-                        Upload files to{' '}
-                        <code className="bg-background-secondary px-1 py-0.5 rounded text-xs">
-                            {displayPath}
-                        </code>
+                    <DialogDescription className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2">
+                            <span className="w-full">Upload files to</span>
+                            <Select value={targetDirectory} onValueChange={setTargetDirectory}>
+                                <SelectTrigger size="sm" className="h-6">
+                                    <SelectValue placeholder="Select directory" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="root">/ (root)</SelectItem>
+                                    {availableDirectories.map(dir => (
+                                        <SelectItem key={dir} value={dir}>
+                                            /{dir}/
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="grid gap-4 py-4">
+                <div className="flex flex-col space-y-4">
                     {/* File Selection */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium">Select Files</label>
-                        <div className="border-2 border-dashed border-border-primary rounded-lg p-4 text-center">
-                            <input
-                                ref={fileInputRef}
-                                type="file"
-                                multiple
-                                className="hidden"
-                                onChange={handleFileSelect}
-                            />
-                            <Button
-                                variant="ghost"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="w-full"
-                            >
-                                <Icons.Upload className="h-4 w-4 mr-2" />
-                                Choose Files
-                            </Button>
-                        </div>
+                    <div className="border-2 border-dashed border-border-primary rounded-lg h-18 flex items-center justify-center cursor-pointer">
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            multiple
+                            className="hidden"
+                            onChange={handleFileSelect}
+                        />
+                        <Button
+                            variant="ghost"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full h-full"
+                        >
+                            <Icons.Upload className="h-4 w-4 mr-2" />
+                            Choose Files
+                        </Button>
                     </div>
 
                     {/* Selected Files List */}
                     {selectedFiles.length > 0 && (
-                        <div className="space-y-2">
+                        <div className="flex flex-col space-y-2">
                             <label className="text-sm font-medium">Selected Files</label>
                             <div className="max-h-32 overflow-y-auto space-y-1">
                                 {selectedFiles.map((file, index) => (
@@ -229,28 +236,7 @@ export const UploadModal = observer(({
                             </div>
                         </div>
                     )}
-
-                    {/* Directory Selection */}
-                    {selectedFiles.length > 0 && (
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Target Directory</label>
-                            <Select value={targetDirectory} onValueChange={setTargetDirectory}>
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Select directory" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="root">/ (root)</SelectItem>
-                                    {availableDirectories.map(dir => (
-                                        <SelectItem key={dir} value={dir}>
-                                            /{dir}/
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    )}
                 </div>
-
                 <DialogFooter>
                     <Button
                         variant="ghost"
@@ -266,7 +252,9 @@ export const UploadModal = observer(({
                     >
                         {isUploading
                             ? 'Uploading...'
-                            : `Upload ${selectedFiles.length} file${selectedFiles.length !== 1 ? 's' : ''}`
+                            : selectedFiles.length === 0
+                                ? 'Upload files'
+                                : `Upload ${selectedFiles.length} files`
                         }
                     </Button>
                 </DialogFooter>
