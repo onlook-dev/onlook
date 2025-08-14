@@ -1,4 +1,5 @@
 import { api } from '@/trpc/client';
+import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 
@@ -19,7 +20,18 @@ export class ScreenshotManager {
         this._lastScreenshotTime = time;
     }
 
-    async captureScreenshot() {
+    // 5 minute debounce
+    captureScreenshot = debounce(
+        this.debouncedCaptureScreenshot,
+        5 * 60 * 1000,
+        {
+            leading: true,
+            trailing: false,
+        },
+    );
+
+    private async debouncedCaptureScreenshot() {
+        console.log('captureScreenshot check');
         if (this.isCapturing) {
             return;
         }

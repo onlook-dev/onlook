@@ -261,7 +261,6 @@ export class SandboxManager {
             return false;
         }
 
-        // Trigger screenshot capture without blocking the write flow
         this.editorEngine.screenshot.captureScreenshot();
 
         return true;

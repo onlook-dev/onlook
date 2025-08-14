@@ -1,17 +1,14 @@
 import { api } from '@/trpc/client';
 import { DefaultSettings } from '@onlook/constants';
-import type { Canvas, Frame, RectPosition } from '@onlook/models';
+import type { Canvas, RectPosition } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
-
-type SettingsObserver = (settings: Frame) => void;
 
 export class CanvasManager {
     private _id: string = '';
     private _scale: number = DefaultSettings.SCALE;
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
-    private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
     constructor(private readonly editorEngine: EditorEngine) {
         this._position = this.getDefaultPanPosition();
@@ -50,7 +47,7 @@ export class CanvasManager {
 
     set scale(value: number) {
         this._scale = value;
-        this.saveSettings({ scale: value });
+        this.saveCanvas({ scale: value });
     }
 
     get position() {
@@ -59,31 +56,13 @@ export class CanvasManager {
 
     set position(value: RectPosition) {
         this._position = value;
-        this.saveSettings({ position: value });
+        this.saveCanvas({ position: value });
     }
 
-    clear() {
-        this._scale = DefaultSettings.SCALE;
-        this._position = DefaultSettings.PAN_POSITION;
-    }
+    // 5 second debounce. Database is used to save working state per user, so we don't need to save too often.
+    saveCanvas = debounce(this.undebouncedSaveCanvas, 5000);
 
-    saveSettings = debounce(this.undebouncedSaveSettings, 1000);
-
-    observeSettings(id: string, observer: SettingsObserver): void {
-        if (!this.settingsObservers.has(id)) {
-            this.settingsObservers.set(id, new Set());
-        }
-        this.settingsObservers.get(id)!.add(observer);
-    }
-
-    unobserveSettings(id: string, observer: SettingsObserver): void {
-        this.settingsObservers.get(id)?.delete(observer);
-        if (this.settingsObservers.get(id)?.size === 0) {
-            this.settingsObservers.delete(id);
-        }
-    }
-
-    private async undebouncedSaveSettings(canvas: Partial<Canvas>) {
+    private async undebouncedSaveCanvas(canvas: Partial<Canvas>) {
         const success = await api.userCanvas.update.mutate({
             projectId: this.editorEngine.projectId,
             canvasId: this.id,
@@ -96,5 +75,10 @@ export class CanvasManager {
         if (!success) {
             console.error('Failed to update canvas');
         }
+    }
+
+    clear() {
+        this._scale = DefaultSettings.SCALE;
+        this._position = DefaultSettings.PAN_POSITION;
     }
 }
