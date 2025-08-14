@@ -16,13 +16,13 @@ export const toProject = (
             updatedAt: dbProject.updatedAt.toISOString(),
             previewImg: toPreviewImg(dbProject),
             description: dbProject.description,
-            updatedPreviewImgAt: dbProject.updatedPreviewImgAt ? new Date(dbProject.updatedPreviewImgAt) : null,
+            updatedPreviewImgAt: dbProject.updatedPreviewImgAt,
         },
     };
 };
 
 export const fromProject = (project: Project): DbProject => {
-    const { previewImgUrl, previewImgPath, previewImgBucket } = fromPreviewImg(project.metadata.previewImg);
+    const { previewImgUrl, previewImgPath, previewImgBucket, updatedPreviewImgAt } = fromPreviewImg(project.metadata.previewImg);
     return {
         id: project.id,
         name: project.name,
@@ -34,7 +34,7 @@ export const fromProject = (project: Project): DbProject => {
         previewImgUrl,
         previewImgPath,
         previewImgBucket,
-        updatedPreviewImgAt: project.metadata.updatedPreviewImgAt ? new Date(project.metadata.updatedPreviewImgAt) : null,
+        updatedPreviewImgAt,
     };
 };
 

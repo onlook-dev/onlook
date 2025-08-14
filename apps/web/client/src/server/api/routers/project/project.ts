@@ -117,7 +117,12 @@ export const projectRouter = createTRPCRouter({
                     throw new Error('No data returned from storage upload');
                 }
 
-                const dbPreviewImg = fromPreviewImg({
+                const {
+                    previewImgUrl,
+                    previewImgPath,
+                    previewImgBucket,
+                    updatedPreviewImgAt,
+                } = fromPreviewImg({
                     type: 'storage',
                     storagePath: {
                         bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
@@ -127,10 +132,10 @@ export const projectRouter = createTRPCRouter({
 
                 await ctx.db.update(projects)
                     .set({
-                        previewImgUrl: dbPreviewImg.previewImgUrl,
-                        previewImgPath: dbPreviewImg.previewImgPath,
-                        previewImgBucket: dbPreviewImg.previewImgBucket,
-                        updatedPreviewImgAt: dbPreviewImg.updatedPreviewImgAt,
+                        previewImgUrl,
+                        previewImgPath,
+                        previewImgBucket,
+                        updatedPreviewImgAt,
                         updatedAt: new Date(),
                     })
                     .where(eq(projects.id, project.id));
