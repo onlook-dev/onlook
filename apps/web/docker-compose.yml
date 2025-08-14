@@ -38,21 +38,19 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-    command: bun run server/index.ts
 
   template:
     build:
       context: ./template
       dockerfile: Dockerfile
     ports:
-      - "8084:8084"
+      - "8084:3000"
     volumes:
-      - ./packages/template:/app
+      - ./template:/app
       - /app/node_modules
       - template-volume:/app
     environment:
       - NODE_ENV=development
-    command: bun run dev
 
 volumes:
   template-volume: 
