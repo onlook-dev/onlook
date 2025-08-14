@@ -17,7 +17,7 @@ import {
     SelectValue,
 } from '@onlook/ui/select';
 import { toast } from '@onlook/ui/sonner';
-import { isBinaryFile } from '@onlook/utility/src/file';
+import { isBinaryFile } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
