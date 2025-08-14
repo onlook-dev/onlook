@@ -83,7 +83,7 @@ export class CreateManager {
             previewImgUrl: null,
             previewImgPath: null,
             previewImgBucket: null,
-            updatedPreviewImgAt: new Date(),
+            updatedPreviewImgAt: null,
             description: 'Your new project',
         } satisfies DbProject;
         return newProject;

@@ -21,12 +21,12 @@ import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
 import { PreloadScriptManager } from './preload';
 import { SandboxManager } from './sandbox';
+import { ScreenshotManager } from './screenshot';
 import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
-import { ScreenshotManager } from './screenshot';
 
 export class EditorEngine {
     readonly projectId: string;
@@ -34,7 +34,7 @@ export class EditorEngine {
 
     readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
-    readonly canvas: CanvasManager = new CanvasManager();
+    readonly canvas: CanvasManager = new CanvasManager(this);
     readonly text: TextEditingManager = new TextEditingManager(this);
     readonly sandbox: SandboxManager = new SandboxManager(this);
     readonly history: HistoryManager = new HistoryManager(this);

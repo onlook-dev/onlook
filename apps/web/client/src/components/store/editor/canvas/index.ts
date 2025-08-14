@@ -1,9 +1,9 @@
 import { api } from '@/trpc/client';
 import { DefaultSettings } from '@onlook/constants';
-import { fromCanvas } from '@onlook/db';
 import type { Canvas, Frame, RectPosition } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '../engine';
 
 type SettingsObserver = (settings: Frame) => void;
 
@@ -13,7 +13,7 @@ export class CanvasManager {
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
     private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
-    constructor() {
+    constructor(private readonly editorEngine: EditorEngine) {
         this._position = this.getDefaultPanPosition();
         makeAutoObservable(this);
     }
@@ -50,7 +50,7 @@ export class CanvasManager {
 
     set scale(value: number) {
         this._scale = value;
-        this.saveSettings();
+        this.saveSettings({ scale: value });
     }
 
     get position() {
@@ -59,14 +59,7 @@ export class CanvasManager {
 
     set position(value: RectPosition) {
         this._position = value;
-        this.saveSettings();
-    }
-
-    async updateCanvas(canvas: Canvas) {
-        const success = await api.userCanvas.update.mutate(fromCanvas(canvas));
-        if (!success) {
-            console.error('Failed to update canvas');
-        }
+        this.saveSettings({ position: value });
     }
 
     clear() {
@@ -90,11 +83,18 @@ export class CanvasManager {
         }
     }
 
-    private undebouncedSaveSettings() {
-        this.updateCanvas({
-            id: this.id,
-            position: this.position,
-            scale: this.scale,
+    private async undebouncedSaveSettings(canvas: Partial<Canvas>) {
+        const success = await api.userCanvas.update.mutate({
+            projectId: this.editorEngine.projectId,
+            canvasId: this.id,
+            canvas: {
+                scale: canvas.scale?.toString(),
+                x: canvas.position?.x?.toString(),
+                y: canvas.position?.y?.toString(),
+            },
         });
+        if (!success) {
+            console.error('Failed to update canvas');
+        }
     }
 }

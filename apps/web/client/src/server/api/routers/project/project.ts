@@ -318,6 +318,9 @@ export const projectRouter = createTRPCRouter({
         id: z.string(),
         project: projectUpdateSchema,
     })).mutation(async ({ ctx, input }) => {
-        await ctx.db.update(projects).set(input.project).where(eq(projects.id, input.id));
+        await ctx.db.update(projects).set({
+            ...input.project,
+            updatedAt: new Date(),
+        }).where(eq(projects.id, input.id));
     }),
 });
