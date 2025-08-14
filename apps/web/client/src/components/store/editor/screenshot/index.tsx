@@ -17,7 +17,6 @@ export class ScreenshotManager {
     }
 
     set lastScreenshotAt(time: Date | null) {
-        console.error('lastScreenshotAt set', time);
         this._lastScreenshotTime = time;
     }
 
@@ -35,22 +34,25 @@ export class ScreenshotManager {
         if (this.isCapturing) {
             return;
         }
-        // If the screenshot was captured less than 30 minutes ago, skip capturing
-        if (this.lastScreenshotAt) {
-            const thirtyMinutesAgo = subMinutes(new Date(), 30);
-            if (isAfter(this.lastScreenshotAt, thirtyMinutesAgo)) {
-                return;
-            }
-        }
-
         this.isCapturing = true;
-
-        const screenshot = await api.project.captureScreenshot.mutate({ projectId: this.editorEngine.projectId });
-        if (!screenshot) {
-            return;
+        try {
+            // If the screenshot was captured less than 30 minutes ago, skip capturing
+            if (this.lastScreenshotAt) {
+                const thirtyMinutesAgo = subMinutes(new Date(), 30);
+                if (isAfter(this.lastScreenshotAt, thirtyMinutesAgo)) {
+                    return;
+                }
+            }
+            const result = await api.project.captureScreenshot.mutate({ projectId: this.editorEngine.projectId });
+            if (!result || !result.success) {
+                throw new Error('Failed to capture screenshot');
+            }
+            this.lastScreenshotAt = new Date();
+        } catch (error) {
+            console.error('Error capturing screenshot', error);
+        } finally {
+            this.isCapturing = false;
         }
-        this.lastScreenshotAt = new Date();
-        this.isCapturing = false;
     }
 
     clear() { }
