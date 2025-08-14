@@ -101,30 +101,52 @@ export const UploadModal = observer(({
 
         setIsUploading(true);
         try {
+            const uploadResults: boolean[] = [];
+            
             for (const file of selectedFiles) {
                 const directory = targetDirectory === 'root' ? '' : targetDirectory;
                 const finalPath = directory ? `${directory}/${file.name}` : file.name;
 
+                let success: boolean;
                 if (isBinaryFile(file.name)) {
                     const content = await file.arrayBuffer();
-                    await editorEngine.sandbox.writeBinaryFile(finalPath, new Uint8Array(content));
+                    success = await editorEngine.sandbox.writeBinaryFile(finalPath, new Uint8Array(content));
                 } else {
                     const content = await file.text();
-                    await editorEngine.sandbox.writeFile(finalPath, content);
+                    success = await editorEngine.sandbox.writeFile(finalPath, content);
                 }
+                
+                uploadResults.push(success);
             }
 
-            editorEngine.sandbox.listAllFiles();
+            // Check if all uploads succeeded
+            const failedCount = uploadResults.filter(result => !result).length;
+            
+            if (failedCount === 0) {
+                editorEngine.sandbox.listAllFiles();
+                
+                const fileCount = selectedFiles.length;
+                const fileText = fileCount === 1 ? selectedFiles[0]?.name ?? 'file' : `${fileCount} files`;
+                toast(`Successfully uploaded ${fileText}!`);
 
-            const fileCount = selectedFiles.length;
-            const fileText = fileCount === 1 ? selectedFiles[0]?.name ?? 'file' : `${fileCount} files`;
-            toast(`Successfully uploaded ${fileText}!`);
-
-            onOpenChange(false);
-            onSuccess?.();
+                onOpenChange(false);
+                onSuccess?.();
+            } else if (failedCount === selectedFiles.length) {
+                // All uploads failed
+                toast('Failed to upload files', { description: 'All uploads failed. Please try again.' });
+            } else {
+                // Some uploads failed
+                const successCount = selectedFiles.length - failedCount;
+                toast(`Partially uploaded files`, { 
+                    description: `${successCount} uploaded successfully, ${failedCount} failed. Please try again for the failed files.` 
+                });
+                
+                // Refresh file list even for partial success
+                editorEngine.sandbox.listAllFiles();
+            }
         } catch (error) {
             console.error('Error uploading files:', error);
-            toast('Failed to upload files', { description: 'Please try again' });
+            toast('Failed to upload files', { description: 'Upload process encountered an error. Please try again.' });
         } finally {
             setIsUploading(false);
         }
