@@ -79,7 +79,9 @@ export const projectRouter = createTRPCRouter({
                     throw new Error('Invalid screenshot URL');
                 }
 
-                const response = await fetch(screenshotUrl);
+                const response = await fetch(screenshotUrl, {
+                    signal: AbortSignal.timeout(10000),
+                });
                 if (!response.ok) {
                     throw new Error(`Failed to fetch screenshot: ${response.status} ${response.statusText}`);
                 }
