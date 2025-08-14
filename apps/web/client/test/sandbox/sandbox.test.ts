@@ -126,6 +126,9 @@ describe('SandboxManager', () => {
         // Create mock EditorEngine
         mockEditorEngine = {
             // Add any required properties/methods that EditorEngine needs
+            screenshot: {
+                captureScreenshot: mock(async () => { }),
+            },
         };
 
         sandboxManager = new SandboxManager(mockEditorEngine);

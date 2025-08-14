@@ -6,6 +6,8 @@ import { STORAGE_BUCKETS } from '@onlook/constants';
 
 export class ScreenshotManager {
     _lastScreenshotTime: Date | null = null;
+    isCapturing = false;
+    readonly cooldownTime = 30 * 60 * 1000; // 30 minutes
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -20,21 +22,27 @@ export class ScreenshotManager {
     }
 
     async captureScreenshot() {
+        if (this.isCapturing) {
+            return;
+        }
         // If the screenshot was captured less than 30 minutes ago, skip capturing
 
         if (this.lastScreenshotTime) {
             const lastScreenshotTime = new Date(this.lastScreenshotTime);
-            const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+            const thirtyMinutesAgo = new Date(Date.now() - this.cooldownTime);
             if (lastScreenshotTime > thirtyMinutesAgo) {
                 return;
             }
         }
+
+        this.isCapturing = true;
 
         const screenshot = await api.project.captureScreenshot.mutate({ projectId: this.editorEngine.projectId });
         if (!screenshot) {
             return;
         }
         this.setLastScreenshotTime(new Date());
+        this.isCapturing = false;
     }
 
     async getProjectScreenshot() {
