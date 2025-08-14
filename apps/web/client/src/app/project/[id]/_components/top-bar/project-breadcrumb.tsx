@@ -29,6 +29,7 @@ export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
     const posthog = usePostHog();
+    const utils = api.useUtils();
 
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { mutateAsync: updateProject } = api.project.update.useMutation()
@@ -85,6 +86,9 @@ export const ProjectBreadcrumb = observer(() => {
                     ...dbPreviewImg,
                 },
             });
+            // Invalidate queries to refresh UI
+            await utils.project.list.invalidate();
+            await utils.project.get.invalidate({ projectId: project.id });
         }
     }
 

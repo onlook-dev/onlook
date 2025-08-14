@@ -25,6 +25,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 export function Settings({ project, refetch }: { project: Project; refetch: () => void }) {
     const t = useTranslations();
+    const utils = api.useUtils();
     const { mutateAsync: deleteProject } = api.project.delete.useMutation();
     const { mutateAsync: updateProject } = api.project.update.useMutation();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -51,7 +52,11 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                 },
             },
         );
+        // Invalidate queries to refresh UI
+        await utils.project.list.invalidate();
+        await utils.project.get.invalidate({ projectId: project.id });
         setShowRenameDialog(false);
+        refetch();
     };
 
     return (
