@@ -59,12 +59,7 @@ export const projectRouter = createTRPCRouter({
                 const result = await app.scrapeUrl(project.sandboxUrl, {
                     formats: ['screenshot'],
                     onlyMainContent: true,
-                    actions: [
-                        {
-                            type: 'screenshot',
-                            fullPage: true,
-                        },
-                    ],
+                    timeout: 10000,
                 });
 
                 if (!result.success) {
@@ -85,7 +80,6 @@ export const projectRouter = createTRPCRouter({
 
                 const arrayBuffer = await response.arrayBuffer();
                 const mimeType = response.headers.get('content-type') ?? 'image/png';
-                const path = getScreenshotPath(project.id, mimeType);
 
                 const buffer = Buffer.from(arrayBuffer);
 
@@ -96,10 +90,16 @@ export const projectRouter = createTRPCRouter({
                     format: 'jpeg',
                 });
 
+                const useCompressed = !!compressedImage.buffer;
+                const finalMimeType = useCompressed ? 'image/jpeg' : mimeType;
+                const finalBuffer = useCompressed ? compressedImage.buffer : buffer;
+
+                const path = getScreenshotPath(project.id, finalMimeType);
+
                 const { data, error } = await ctx.supabase.storage
                     .from(STORAGE_BUCKETS.PREVIEW_IMAGES)
-                    .upload(path, compressedImage.buffer ?? buffer, {
-                        contentType: mimeType,
+                    .upload(path, finalBuffer, {
+                        contentType: finalMimeType,
                     });
 
                 if (error) {
