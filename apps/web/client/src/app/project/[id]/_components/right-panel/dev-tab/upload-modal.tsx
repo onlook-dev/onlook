@@ -25,6 +25,7 @@ interface UploadModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     files: string[];
+    basePath?: string;
     onSuccess?: () => void;
 }
 
@@ -32,6 +33,7 @@ export const UploadModal = observer(({
     open,
     onOpenChange,
     files,
+    basePath,
     onSuccess,
 }: UploadModalProps) => {
     const editorEngine = useEditorEngine();
@@ -68,14 +70,9 @@ export const UploadModal = observer(({
             return availableDirectories.includes('public') ? 'public' : 'root';
         }
 
-        // For non-image files, use last selected directory or current file's directory
-        if (editorEngine.ide.activeFile?.path) {
-            const path = editorEngine.ide.activeFile.path;
-            const lastSlash = path.lastIndexOf('/');
-            const dir = lastSlash > 0 ? path.substring(0, lastSlash) : 'root';
-            if (dir === 'root' || availableDirectories.includes(dir)) {
-                return dir;
-            }
+        // For non-image files, use the provided basePath or fall back to current file's directory
+        if (basePath && availableDirectories.includes(basePath)) {
+            return basePath;
         }
 
         return 'root';
@@ -117,7 +114,7 @@ export const UploadModal = observer(({
                 }
             }
 
-            await editorEngine.sandbox.listAllFiles();
+            editorEngine.sandbox.listAllFiles();
 
             const fileCount = selectedFiles.length;
             const fileText = fileCount === 1 ? selectedFiles[0]?.name ?? 'file' : `${fileCount} files`;
