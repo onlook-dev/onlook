@@ -30,6 +30,7 @@ import { projectCreateRequestRouter } from './createRequest';
 import { STORAGE_BUCKETS } from '@onlook/constants';
 import { fromPreviewImg } from '@onlook/db';
 import { getScreenshotPath, getValidUrl } from '@onlook/utility';
+import { compressImageServer } from '@onlook/image-server';
 
 export const projectRouter = createTRPCRouter({
     createRequest: projectCreateRequestRouter,
@@ -86,9 +87,18 @@ export const projectRouter = createTRPCRouter({
                 const mimeType = response.headers.get('content-type') ?? 'image/png';
                 const path = getScreenshotPath(project.id, mimeType);
 
+                const buffer = Buffer.from(arrayBuffer);
+
+                const compressedImage = await compressImageServer(buffer, undefined, {
+                    quality: 80,
+                    width: 1024,
+                    height: 1024,
+                    format: 'jpeg',
+                });
+
                 const { data, error } = await ctx.supabase.storage
                     .from(STORAGE_BUCKETS.PREVIEW_IMAGES)
-                    .upload(path, arrayBuffer, {
+                    .upload(path, compressedImage.buffer ?? buffer, {
                         contentType: mimeType,
                     });
 
