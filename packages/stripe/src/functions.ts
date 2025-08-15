@@ -109,6 +109,69 @@ export const updateSubscription = async ({
     });
 };
 
+export const upgradeSubscription = async ({
+    subscriptionId,
+    subscriptionItemId,
+    priceId,
+}: {
+    subscriptionId: string;
+    subscriptionItemId: string;
+    priceId: string;
+}) => {
+    const stripe = createStripeClient();
+    const currentSubscription = await stripe.subscriptions.retrieve(subscriptionId);
+    if (!currentSubscription) {
+        throw new Error('Subscription not found');
+    }
+
+    const currentPrice = currentSubscription.items.data[0]?.price.id;
+    if (currentPrice === priceId) {
+        throw new Error('New price is the same as the current price');
+    }
+
+    const currentPriceAmount = currentSubscription.items.data[0]?.price.unit_amount;
+    if (!currentPriceAmount) {
+        throw new Error('Current price amount not found');
+    }
+
+    const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
+        items: [
+            {
+                id: subscriptionItemId,
+                price: priceId,
+            },
+        ],
+        // We don't want to prorate the price difference because it would be based on time remaining in the current period
+        proration_behavior: 'none',
+    });
+
+    const newPriceAmount = updatedSubscription.items.data[0]?.price.unit_amount;
+    if (!newPriceAmount) {
+        throw new Error('New price amount not found');
+    }
+
+    const priceDifferenceAmount = newPriceAmount - currentPriceAmount;
+
+    // Create a one-off invoice item for the price difference if the new price is higher
+    if (priceDifferenceAmount > 0) {
+        await stripe.invoiceItems.create({
+            customer: updatedSubscription.customer as string,
+            amount: priceDifferenceAmount,
+            currency: updatedSubscription.currency || 'usd',
+            description: 'Price upgrade difference',
+        });
+
+        // Create invoice immediately
+        const invoice = await stripe.invoices.create({
+            customer: updatedSubscription.customer as string,
+            auto_advance: true,
+        });
+    }
+
+    return updatedSubscription;
+};
+
+
 export const updateSubscriptionNextPeriod = async ({
     subscriptionId,
     priceId,
