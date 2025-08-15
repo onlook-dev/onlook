@@ -260,11 +260,11 @@ export function Create({
                     onDrop={handleDrop}
                 >
                     <div
-                        className={`flex flex-col w-full ${selectedImages.length > 0 ? 'p-4' : 'px-2 pt-1'}`}
+                        className={`flex flex-col w-full ${selectedImages.length > 0 ? 'p-5' : 'px-2 pt-1'}`}
                     >
                         <div
                             className={cn(
-                                'flex flex-row flex-wrap w-full gap-1.5 text-micro text-foreground-secondary',
+                                'flex flex-row flex-wrap w-full gap-2 text-micro text-foreground-secondary',
                                 selectedImages.length > 0 ? 'min-h-6' : 'h-0',
                             )}
                         >
@@ -278,7 +278,49 @@ export function Create({
                                 ))}
                             </AnimatePresence>
                         </div>
-                        <div className="relative flex items-center w-full mt-1">
+                        
+                        <div className="flex flex-row w-full justify-between items-center pt-2 pb-2 px-0">
+                            <div className="flex flex-row justify-start gap-1.5">
+                                <Tooltip
+                                    open={imageTooltipOpen && !isHandlingFile}
+                                    onOpenChange={(open) =>
+                                        !isHandlingFile && setImageTooltipOpen(open)
+                                    }
+                                >
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent cursor-pointer"
+                                            onClick={() =>
+                                                document.getElementById('image-input')?.click()
+                                            }
+                                        >
+                                            <input
+                                                id="image-input"
+                                                type="file"
+                                                ref={imageRef}
+                                                accept="image/*"
+                                                multiple
+                                                className="hidden"
+                                                onChange={handleFileSelect}
+                                            />
+                                            <Icons.Image
+                                                className={cn(
+                                                    'w-5 h-5',
+                                                    'group-hover:text-foreground',
+                                                )}
+                                            />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipPortal>
+                                        <TooltipContent side="top" sideOffset={5}>
+                                            Upload image
+                                        </TooltipContent>
+                                    </TooltipPortal>
+                                </Tooltip>
+                            </div>
+                            <div className="flex items-center w-full mt-6">
                             <Textarea
                                 ref={textareaRef}
                                 className={cn(
@@ -329,48 +371,7 @@ export function Create({
                                 rows={3}
                                 style={{ resize: 'none' }}
                             />
-                        </div>
-                        <div className="flex flex-row w-full justify-between items-center pt-2 pb-2 px-0">
-                            <div className="flex flex-row justify-start gap-1.5">
-                                <Tooltip
-                                    open={imageTooltipOpen && !isHandlingFile}
-                                    onOpenChange={(open) =>
-                                        !isHandlingFile && setImageTooltipOpen(open)
-                                    }
-                                >
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent cursor-pointer"
-                                            onClick={() =>
-                                                document.getElementById('image-input')?.click()
-                                            }
-                                        >
-                                            <input
-                                                id="image-input"
-                                                type="file"
-                                                ref={imageRef}
-                                                accept="image/*"
-                                                multiple
-                                                className="hidden"
-                                                onChange={handleFileSelect}
-                                            />
-                                            <Icons.Image
-                                                className={cn(
-                                                    'w-5 h-5',
-                                                    'group-hover:text-foreground',
-                                                )}
-                                            />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipPortal>
-                                        <TooltipContent side="top" sideOffset={5}>
-                                            Upload image
-                                        </TooltipContent>
-                                    </TooltipPortal>
-                                </Tooltip>
-                            </div>
+                           </div>
                             <Button
                                 size="icon"
                                 variant="secondary"
