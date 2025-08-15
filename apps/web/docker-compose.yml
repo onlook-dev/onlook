@@ -44,11 +44,11 @@ services:
       context: ./template
       dockerfile: Dockerfile
     ports:
-      - "8084:3000"
+      - "8084:8084"
     volumes:
       - ./template:/app
       - /app/node_modules
-      - template-volume:/app
+      - template-volume:/data
     environment:
       - NODE_ENV=development
 
