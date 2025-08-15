@@ -9,7 +9,7 @@ export const verificationRequestStatus = pgEnum('verification_request_status', V
 export const customDomainVerification = pgTable('custom_domain_verification', {
     id: uuid('id').primaryKey().defaultRandom(),
     customDomainId: uuid('custom_domain_id').references(() => customDomains.id).notNull(),
-    projectId: uuid('project_id').references(() => projects.id).notNull(),
+    projectId: uuid('project_id').references(() => projects.id, { onDelete: 'cascade', onUpdate: 'cascade' }).notNull(),
 
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
