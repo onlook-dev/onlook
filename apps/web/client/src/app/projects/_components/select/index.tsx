@@ -52,7 +52,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearchQuery(searchQuery);
-        }, 300);
+        }, 100);
 
         return () => clearTimeout(timer);
     }, [searchQuery]);
