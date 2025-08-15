@@ -1,6 +1,7 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
+import { EditorAttributes } from '@onlook/constants';
 import type { WebFrame } from '@onlook/models';
 import {
     PENPAL_PARENT_CHANNEL,
@@ -121,6 +122,39 @@ export const WebFrameComponent = observer(
                         },
                         onDomProcessed: (data: { layerMap: Record<string, any>; rootNode: any }) => {
                             editorEngine.frameEvent.handleDomProcessed(frame.id, data);
+                        },
+                        onFrameWheel: (data: {
+                            deltaY: number;
+                            clientX: number;
+                            clientY: number;
+                            ctrlKey: boolean;
+                            metaKey: boolean;
+                        }) => {
+                            try {
+                                const iframe = iframeRef.current;
+                                if (!iframe) return;
+                                const rect = iframe.getBoundingClientRect();
+                                const parentClientX = rect.left + data.clientX;
+                                const parentClientY = rect.top + data.clientY;
+
+                                const container = document.getElementById(
+                                    EditorAttributes.CANVAS_CONTAINER_ID,
+                                );
+                                if (!container) return;
+
+                                const wheelEvent = new WheelEvent('wheel', {
+                                    deltaY: data.deltaY,
+                                    clientX: parentClientX,
+                                    clientY: parentClientY,
+                                    ctrlKey: data.ctrlKey,
+                                    metaKey: data.metaKey,
+                                    bubbles: true,
+                                    cancelable: true,
+                                });
+                                container.dispatchEvent(wheelEvent);
+                            } catch (error) {
+                                console.error('Failed to forward wheel event to canvas', error);
+                            }
                         },
                     } satisfies PenpalParentMethods,
                 });
