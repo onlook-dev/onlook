@@ -88,7 +88,7 @@ export const Main = observer(() => {
 
     return (
         <TooltipProvider>
-            <div className="h-screen w-screen flex flex-row select-none relative">
+            <div className="h-screen w-screen flex flex-row select-none relative overflow-hidden">
                 <Canvas />
 
                 <div className="absolute top-0 w-full">
