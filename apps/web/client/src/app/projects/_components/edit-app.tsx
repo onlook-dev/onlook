@@ -17,7 +17,7 @@ interface EditAppButtonProps extends ComponentProps<typeof ButtonMotion> {
     project: Project;
 }
 
-export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps) => {
+export const EditAppButton = observer(({ project, onClick, ...props }: EditAppButtonProps) => {
     const t = useTranslations();
     const posthog = usePostHog();
     const [isLoading, setIsLoading] = useState(false);
@@ -28,14 +28,23 @@ export const EditAppButton = observer(({ project, ...props }: EditAppButtonProps
         redirect(`${Routes.PROJECT}/${project.id}`);
     };
 
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        if (onClick) {
+            onClick(e);
+        }
+        selectProject(project);
+    };
+
     return (
         <ButtonMotion
             size="default"
             variant={'outline'}
             className="gap-2 bg-background-active border-[0.5px] border-border-active w-auto hover:bg-background-onlook cursor-pointer"
-            onClick={() => selectProject(project)}
-            disabled={isLoading}
             {...props}
+
+            // Prevent consumer from overriding these props
+            onClick={handleClick}
+            disabled={isLoading}
         >
             {isLoading ? (
                 <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
