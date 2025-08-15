@@ -1,4 +1,3 @@
-export * from './canvas';
 export * from './frame';
 export * from './invitation';
 export * from './member';

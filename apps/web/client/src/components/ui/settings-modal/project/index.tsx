@@ -63,8 +63,10 @@ export const ProjectTab = observer(() => {
                     project: { name: formData.name }
                 });
                 // Invalidate queries to refresh UI
-                await utils.project.list.invalidate();
-                await utils.project.get.invalidate({ projectId: editorEngine.projectId });
+                await Promise.all([
+                    utils.project.list.invalidate(),
+                    utils.project.get.invalidate({ projectId: editorEngine.projectId }),
+                ]);
             }
 
             // Update commands if any changed
@@ -164,7 +166,7 @@ export const ProjectTab = observer(() => {
                     </div>
                 </div>
             </div>
-            
+
             {/* Save/Discard buttons matching site tab pattern */}
             <div className="sticky bottom-0 bg-background border-t border-border/50 p-6" style={{ borderTopWidth: '0.5px' }}>
                 <div className="flex justify-end gap-4">

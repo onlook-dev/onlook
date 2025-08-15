@@ -49,12 +49,28 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                 id: project.id,
                 project: {
                     name: projectName,
+                    updatedAt: new Date()
                 },
             },
         );
         // Invalidate queries to refresh UI
-        await utils.project.list.invalidate();
-        await utils.project.get.invalidate({ projectId: project.id });
+        await Promise.all([
+            utils.project.list.invalidate(),
+            utils.project.get.invalidate({ projectId: project.id })
+        ]);
+
+        // Optimistically update list ordering and title immediately
+        window.dispatchEvent(new CustomEvent('onlook_project_updated', {
+            detail: {
+                id: project.id,
+                name: projectName,
+                metadata: {
+                    updatedAt: new Date().toISOString(),
+                    description: project.metadata?.description,
+                },
+            },
+        }));
+        window.dispatchEvent(new CustomEvent('onlook_project_modified', { detail: { id: project.id } }));
         setShowRenameDialog(false);
         refetch();
     };
@@ -63,11 +79,22 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
         <>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button size="default" variant="ghost" className="w-10 h-10 p-0 flex items-center justify-center hover:bg-background-onlook cursor-pointer">
+                    <Button
+                        size="default"
+                        variant="ghost"
+                        className="w-10 h-10 p-0 flex items-center justify-center hover:bg-background-onlook cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <Icons.DotsVertical />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent
+                    className="z-50"
+                    align="end"
+                    alignOffset={-4}
+                    sideOffset={8}
+                    onClick={(e) => e.stopPropagation()}
+                >
                     <DropdownMenuItem
                         onSelect={() => setShowRenameDialog(true)}
                         className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
@@ -100,7 +127,10 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                         <Button
                             variant={'destructive'}
                             className="rounded-md text-sm"
-                            onClick={handleDeleteProject}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProject();
+                            }}
                         >
                             {t(transKeys.projects.actions.delete)}
                         </Button>

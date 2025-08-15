@@ -1,5 +1,5 @@
 import { api } from '@/trpc/client';
-import { CodeProvider, Provider, createCodeProviderClient } from '@onlook/code-provider';
+import { CodeProvider, type Provider, createCodeProviderClient } from '@onlook/code-provider';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
@@ -7,8 +7,8 @@ import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession }
 export class SessionManager {
     provider: Provider | null = null;
     isConnecting = false;
-    terminalSessions: Map<string, CLISession> = new Map();
-    activeTerminalSessionId: string = 'cli';
+    terminalSessions = new Map<string, CLISession>();
+    activeTerminalSessionId = 'cli';
 
     constructor(private readonly editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -89,14 +89,26 @@ export class SessionManager {
 
         this.terminalSessions.set(terminal.id, terminal);
         this.activeTerminalSessionId = task.id;
+
+        // Initialize the sessions after creation
+        try {
+            await Promise.all([
+                task.initTask(),
+                terminal.initTerminal()
+            ]);
+        } catch (error) {
+            console.error('Failed to initialize terminal sessions:', error);
+        }
     }
 
     async disposeTerminal(id: string) {
         const terminal = this.terminalSessions.get(id) as TerminalSession | undefined;
         if (terminal) {
-            if (terminal.type === 'terminal') {
+            if (terminal.type === CLISessionType.TERMINAL) {
                 await terminal.terminal?.kill();
-                terminal.xterm?.dispose();
+                if (terminal.xterm) {
+                    terminal.xterm.dispose();
+                }
             }
             this.terminalSessions.delete(id);
         }
@@ -178,9 +190,11 @@ export class SessionManager {
     async clear() {
         // probably need to be moved in `Provider.destroy()`
         this.terminalSessions.forEach((terminal) => {
-            if (terminal.type === 'terminal') {
+            if (terminal.type === CLISessionType.TERMINAL) {
                 terminal.terminal?.kill();
-                terminal.xterm?.dispose();
+                if (terminal.xterm) {
+                    terminal.xterm.dispose();
+                }
             }
         });
         if (this.provider) {
