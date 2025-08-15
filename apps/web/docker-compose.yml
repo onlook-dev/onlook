@@ -44,7 +44,7 @@ services:
       context: ./template
       dockerfile: Dockerfile
     ports:
-      - "8084:8084"
+      - "8084:3000"
     volumes:
       - ./template:/app
       - /app/node_modules
