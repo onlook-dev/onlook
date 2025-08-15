@@ -30,21 +30,6 @@ export const Main = observer(() => {
         rightPanelRef,
     );
 
-    useEffect(() => {
-        function handleGlobalWheel(event: WheelEvent) {
-            if (!(event.ctrlKey || event.metaKey)) {
-                return;
-            }
-            event.preventDefault();
-            event.stopPropagation();
-        }
-
-        window.addEventListener('wheel', handleGlobalWheel, { passive: false });
-        return () => {
-            window.removeEventListener('wheel', handleGlobalWheel);
-        };
-    }, []);
-
     if (error) {
         return (
             <div className="h-screen w-screen flex items-center justify-center gap-2 flex-col">
