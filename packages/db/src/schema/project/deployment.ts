@@ -11,7 +11,7 @@ export const deploymentType = pgEnum('deployment_type', DeploymentType);
 export const deployments = pgTable('deployments', {
     id: uuid('id').primaryKey(),
     requestedBy: uuid('requested_by').references(() => users.id).notNull(),
-    projectId: uuid('project_id').references(() => projects.id).notNull(),
+    projectId: uuid('project_id').references(() => projects.id, { onDelete: 'cascade', onUpdate: 'cascade' }).notNull(),
     sandboxId: text('sandbox_id'),
     urls: text('urls').array(),
     type: deploymentType('type').notNull(),

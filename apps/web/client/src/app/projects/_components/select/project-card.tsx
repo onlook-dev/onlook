@@ -100,13 +100,13 @@ export function ProjectCard({
                             <div className="text-white/70 text-xs mb-1 drop-shadow-lg flex items-center">
                                 <span>{lastUpdated} ago</span>
                             </div>
-                            {SHOW_DESCRIPTION && project.metadata?.description && (
+                            {project.metadata?.description && (
                                 <div className="text-white/60 text-xs line-clamp-1 drop-shadow-lg">
                                     {HighlightText ? (
                                         <HighlightText text={project.metadata.description} searchQuery={searchQuery} />
-                                    ) : (
+                                    ) : SHOW_DESCRIPTION ? (
                                         project.metadata.description
-                                    )}
+                                    ) : null}
                                 </div>
                             )}
                         </div>

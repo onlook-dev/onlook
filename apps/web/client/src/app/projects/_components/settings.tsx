@@ -119,7 +119,10 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                         <Button
                             variant={'destructive'}
                             className="rounded-md text-sm"
-                            onClick={handleDeleteProject}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteProject();
+                            }}
                         >
                             {t(transKeys.projects.actions.delete)}
                         </Button>
