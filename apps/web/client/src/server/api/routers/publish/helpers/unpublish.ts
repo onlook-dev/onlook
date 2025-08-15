@@ -22,6 +22,7 @@ export const unpublish = async (db: DrizzleDb, deployment: Deployment, urls: str
 
     try {
         await deployFreestyle({
+            type: 'files',
             files: {},
             urls,
             envVars: {},

@@ -1,4 +1,3 @@
-import type { Provider } from '@onlook/code-provider';
 import {
     CUSTOM_OUTPUT_DIR,
     DefaultSettings,
@@ -10,51 +9,40 @@ import type { Deployment, deploymentUpdateSchema } from '@onlook/db';
 import { addBuiltWithScript, injectBuiltWithScript } from '@onlook/growth';
 import { DeploymentStatus } from '@onlook/models';
 import { addNextBuildConfig } from '@onlook/parser';
+import { escapeShellString } from '@/utils/git';
 import {
     convertToBase64,
     isBinaryFile,
     isEmptyString,
     isNullOrUndefined,
-    LogTimer,
     updateGitignore,
     type FileOperations,
 } from '@onlook/utility';
-import { type FreestyleFile } from 'freestyle-sandboxes';
 import type { z } from 'zod';
+import type { FreestyleFile } from 'freestyle-sandboxes';
+import type { Provider } from '@onlook/code-provider';
 
 export class PublishManager {
-    constructor(private readonly provider: Provider) { }
+    constructor(private readonly provider: Provider) {}
 
-    private get fileOps(): FileOperations {
+    private get fileOperations(): FileOperations {
         return {
             readFile: async (path: string) => {
-                const { file } = await this.provider.readFile({
-                    args: {
-                        path,
-                    },
-                });
+                const { file } = await this.provider.readFile({ args: { path } });
                 return file.toString();
             },
             writeFile: async (path: string, content: string) => {
                 const res = await this.provider.writeFile({
-                    args: {
-                        path,
-                        content,
-                        overwrite: true,
-                    },
+                    args: { path, content, overwrite: true },
                 });
                 return res.success;
             },
             fileExists: async (path: string) => {
                 try {
-                    const stat = await this.provider.statFile({
-                        args: {
-                            path,
-                        },
-                    });
+                    const stat = await this.provider.statFile({ args: { path } });
                     return stat.type === 'file';
                 } catch (error) {
-                    console.error(`[fileExists] Error checking if file exists at ${path}:`, error);
+                    console.error(`Error checking file existence at ${path}:`, error);
                     return false;
                 }
             },
@@ -65,28 +53,193 @@ export class PublishManager {
                 overwrite?: boolean,
             ) => {
                 await this.provider.copyFiles({
-                    args: {
-                        sourcePath: source,
-                        targetPath: destination,
-                        recursive,
-                        overwrite,
-                    },
+                    args: { sourcePath: source, targetPath: destination, recursive, overwrite },
                 });
                 return true;
             },
             delete: async (path: string, recursive?: boolean) => {
-                await this.provider.deleteFiles({
-                    args: {
-                        path,
-                        recursive,
-                    },
-                });
+                await this.provider.deleteFiles({ args: { path, recursive } });
                 return true;
             },
         };
     }
 
-    async publish({
+    private async addBadge(folderPath: string) {
+        await injectBuiltWithScript(folderPath, this.fileOperations);
+        await addBuiltWithScript(folderPath, this.fileOperations);
+    }
+
+    private async prepareProject() {
+        const preprocessSuccess = await addNextBuildConfig(this.fileOperations);
+        if (!preprocessSuccess) {
+            throw new Error('Failed to prepare project for deployment');
+        }
+        const gitignoreSuccess = await updateGitignore(CUSTOM_OUTPUT_DIR, this.fileOperations);
+        if (!gitignoreSuccess) {
+            console.warn('Failed to update .gitignore');
+        }
+    }
+
+    private async runBuildStep(buildScript: string, buildFlags: string): Promise<void> {
+        try {
+            const buildFlagsString = isNullOrUndefined(buildFlags)
+                ? DefaultSettings.EDITOR_SETTINGS.buildFlags
+                : buildFlags;
+
+            const buildCommand = isEmptyString(buildFlagsString)
+                ? buildScript
+                : `${buildScript} -- ${buildFlagsString}`;
+
+            const { output } = await this.provider.runCommand({ args: { command: buildCommand } });
+            console.log('Build output: ', output);
+        } catch (error) {
+            console.error('Failed to run build step', error);
+            throw error;
+        }
+    }
+
+    private async postprocessBuild(): Promise<{ success: boolean; error?: string }> {
+        const entrypointExists = await this.fileOperations.fileExists(
+            `${CUSTOM_OUTPUT_DIR}/standalone/server.js`,
+        );
+
+        if (!entrypointExists) {
+            return {
+                success: false,
+                error: `Failed to find entrypoint server.js in ${CUSTOM_OUTPUT_DIR}/standalone`,
+            } as const;
+        }
+
+        await this.fileOperations.copy(
+            `public`,
+            `${CUSTOM_OUTPUT_DIR}/standalone/public`,
+            true,
+            true,
+        );
+        await this.fileOperations.copy(
+            `${CUSTOM_OUTPUT_DIR}/static`,
+            `${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
+            true,
+            true,
+        );
+
+        for (const lockFile of SUPPORTED_LOCK_FILES) {
+            const lockFileExists = await this.fileOperations.fileExists(`./${lockFile}`);
+            if (lockFileExists) {
+                await this.fileOperations.copy(
+                    `./${lockFile}`,
+                    `${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
+                    true,
+                    true,
+                );
+                return { success: true };
+            }
+        }
+
+        return {
+            success: false,
+            error:
+                'Failed to find lock file. Supported lock files: ' +
+                SUPPORTED_LOCK_FILES.join(', '),
+        };
+    }
+
+    async buildAndUploadArtifact({
+        buildScript,
+        buildFlags,
+        skipBadge,
+        updateDeployment,
+    }: {
+        buildScript: string;
+        buildFlags: string;
+        skipBadge: boolean;
+        updateDeployment: (
+            deployment: z.infer<typeof deploymentUpdateSchema>,
+        ) => Promise<Deployment | null>;
+    }): Promise<string> {
+        await this.prepareProject();
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Preparing deployment...',
+            progress: 30,
+        });
+
+        if (!skipBadge) {
+            await updateDeployment({
+                status: DeploymentStatus.IN_PROGRESS,
+                message: 'Adding "Built with Onlook" badge...',
+                progress: 35,
+            });
+            await this.addBadge('./');
+        }
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Building project...',
+            progress: 40,
+        });
+        await this.runBuildStep(buildScript, buildFlags);
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Postprocessing project...',
+            progress: 50,
+        });
+
+        const { success: postprocessSuccess, error: postprocessError } =
+            await this.postprocessBuild();
+        if (!postprocessSuccess) {
+            throw new Error(`Failed to postprocess project for deployment: ${postprocessError}`);
+        }
+
+        const NEXT_BUILD_OUTPUT_PATH = `${CUSTOM_OUTPUT_DIR}/standalone`;
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Creating build artifact...',
+            progress: 60,
+        });
+
+        const artifactLocalPath = `${CUSTOM_OUTPUT_DIR}/standalone.tar`;
+        // Exclude node_modules
+        const tarArgs = [
+            '-cf',
+            artifactLocalPath,
+            '--exclude=node_modules',
+            '-C',
+            NEXT_BUILD_OUTPUT_PATH,
+            '.',
+        ];
+        const safeTarCommand = ['tar', ...tarArgs.map(escapeShellString)].join(' ');
+
+        await this.provider.runCommand({ args: { command: safeTarCommand } });
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Preparing artifact URL...',
+            progress: 70,
+        });
+
+        // Get a provider-hosted download URL for the artifact to avoid loading bytes into memory
+        const { url: downloadUrl } = await this.provider.downloadFiles({
+            args: { path: artifactLocalPath },
+        });
+        if (!downloadUrl) {
+            throw new Error('Failed to get artifact download URL');
+        }
+
+        await updateDeployment({
+            status: DeploymentStatus.IN_PROGRESS,
+            message: 'Artifact ready. Deploying...',
+            progress: 80,
+        });
+
+        // NOTE: Do not delete the artifact yet to prevent race during provider fetch.
+        // The sandbox may be ephemeral; hosting should fetch immediately.
+        return String(downloadUrl);
+    }
+
+    async buildFiles({
         buildScript,
         buildFlags,
         skipBadge,
@@ -99,7 +252,7 @@ export class PublishManager {
             deployment: z.infer<typeof deploymentUpdateSchema>,
         ) => Promise<Deployment | null>;
     }): Promise<Record<string, FreestyleFile>> {
-        await this.runPrepareStep();
+        await this.prepareProject();
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing deployment...',
@@ -129,14 +282,13 @@ export class PublishManager {
             progress: 50,
         });
         const { success: postprocessSuccess, error: postprocessError } =
-            await this.postprocessNextBuild();
+            await this.postprocessBuild();
 
         if (!postprocessSuccess) {
             throw new Error(
                 `Failed to postprocess project for deployment, error: ${postprocessError}`,
             );
         }
-
         await updateDeployment({
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing files for publish...',
@@ -148,105 +300,14 @@ export class PublishManager {
         return await this.serializeFiles(NEXT_BUILD_OUTPUT_PATH);
     }
 
-    private async addBadge(folderPath: string) {
-        await injectBuiltWithScript(folderPath, this.fileOps);
-        await addBuiltWithScript(folderPath, this.fileOps);
-    }
-
-    private async runPrepareStep() {
-        // Preprocess the project
-        const preprocessSuccess = await addNextBuildConfig(this.fileOps);
-
-        if (!preprocessSuccess) {
-            throw new Error(`Failed to prepare project for deployment`);
-        }
-
-        // Update .gitignore to ignore the custom output directory
-        const gitignoreSuccess = await updateGitignore(CUSTOM_OUTPUT_DIR, this.fileOps);
-        if (!gitignoreSuccess) {
-            console.warn('Failed to update .gitignore');
-        }
-    }
-
-    private async runBuildStep(buildScript: string, buildFlags: string): Promise<void> {
-        try {
-            // Use default build flags if no build flags are provided
-            const buildFlagsString: string = isNullOrUndefined(buildFlags)
-                ? DefaultSettings.EDITOR_SETTINGS.buildFlags
-                : buildFlags;
-
-            const BUILD_SCRIPT_NO_LINT = isEmptyString(buildFlagsString)
-                ? buildScript
-                : `${buildScript} -- ${buildFlagsString}`;
-
-            const { output } = await this.provider.runCommand({
-                args: {
-                    command: BUILD_SCRIPT_NO_LINT,
-                },
-            });
-            console.log('Build output: ', output);
-        } catch (error) {
-            console.error('Failed to run build step', error);
-            throw error;
-        }
-    }
-
-    private async postprocessNextBuild(): Promise<{
-        success: boolean;
-        error?: string;
-    }> {
-        const entrypointExists = await this.fileOps.fileExists(
-            `${CUSTOM_OUTPUT_DIR}/standalone/server.js`,
-        );
-        if (!entrypointExists) {
-            return {
-                success: false,
-                error: `Failed to find entrypoint server.js in ${CUSTOM_OUTPUT_DIR}/standalone`,
-            };
-        }
-
-        await this.fileOps.copy(`public`, `${CUSTOM_OUTPUT_DIR}/standalone/public`, true, true);
-        await this.fileOps.copy(
-            `${CUSTOM_OUTPUT_DIR}/static`,
-            `${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
-            true,
-            true,
-        );
-
-        for (const lockFile of SUPPORTED_LOCK_FILES) {
-            const lockFileExists = await this.fileOps.fileExists(`./${lockFile}`);
-            if (lockFileExists) {
-                await this.fileOps.copy(
-                    `./${lockFile}`,
-                    `${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
-                    true,
-                    true,
-                );
-                return { success: true };
-            } else {
-                console.error(`lockFile not found: ${lockFile}`);
-            }
-        }
-
-        return {
-            success: false,
-            error:
-                'Failed to find lock file. Supported lock files: ' +
-                SUPPORTED_LOCK_FILES.join(', '),
-        };
-    }
-
     /**
      * Serializes all files in a directory for deployment using parallel processing
      * @param currentDir - The directory path to serialize
      * @returns Record of file paths to their content (base64 for binary, utf-8 for text)
      */
     private async serializeFiles(currentDir: string): Promise<Record<string, FreestyleFile>> {
-        const timer = new LogTimer('File Serialization');
-
         try {
             const allFilePaths = await this.getAllFilePathsFlat(currentDir);
-            timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
             const filteredPaths = allFilePaths.filter((filePath) => !this.shouldSkipFile(filePath));
 
@@ -256,28 +317,21 @@ export class PublishManager {
             const files: Record<string, FreestyleFile> = {};
 
             if (textFiles.length > 0) {
-                timer.log(`Processing ${textFiles.length} text files in batches of ${BATCH_SIZE}`);
                 for (let i = 0; i < textFiles.length; i += BATCH_SIZE) {
                     const batch = textFiles.slice(i, i + BATCH_SIZE);
                     const batchFiles = await this.processTextFilesBatch(batch, currentDir);
                     Object.assign(files, batchFiles);
                 }
-                timer.log('Text files processing completed');
             }
 
             if (binaryFiles.length > 0) {
-                timer.log(
-                    `Processing ${binaryFiles.length} binary files in batches of ${BATCH_SIZE}`,
-                );
                 for (let i = 0; i < binaryFiles.length; i += BATCH_SIZE) {
                     const batch = binaryFiles.slice(i, i + BATCH_SIZE);
                     const batchFiles = await this.processBinaryFilesBatch(batch, currentDir);
                     Object.assign(files, batchFiles);
                 }
-                timer.log('Binary files processing completed');
             }
 
-            timer.log(`Serialization completed - ${Object.keys(files).length} files processed`);
             return files;
         } catch (error) {
             console.error(`[serializeFiles] Error during serialization:`, error);
