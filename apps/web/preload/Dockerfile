@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8083
 
 # Start the server
-CMD ["bun", "server/index.ts"] 
+CMD ["bun", "run" ,"server/index.ts"] 
