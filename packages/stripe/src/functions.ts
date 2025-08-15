@@ -171,7 +171,6 @@ export const upgradeSubscription = async ({
     return updatedSubscription;
 };
 
-
 export const updateSubscriptionNextPeriod = async ({
     subscriptionId,
     priceId,
