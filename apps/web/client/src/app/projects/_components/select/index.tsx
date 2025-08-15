@@ -3,7 +3,6 @@
 import { api } from '@/trpc/react';
 import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -354,24 +353,17 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                         <h2 className="text-2xl text-foreground font-normal">Projects</h2>
                         <div className="flex items-center gap-2">
 
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <button
-                                        onClick={() => setLayoutMode((m) => (m === 'masonry' ? 'grid' : 'masonry'))}
-                                        className="p-2 rounded transition-colors hover:bg-secondary text-foreground-tertiary hover:text-foreground"
-                                        aria-label="Toggle layout"
-                                    >
-                                        {layoutMode === 'masonry' ? (
-                                            <Icons.LayoutWindow className="w-5 h-5" />
-                                        ) : (
-                                            <Icons.LayoutMasonry className="w-5 h-5" />
-                                        )}
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="bottom">
-                                    {layoutMode === 'masonry' ? 'Switch to grid' : 'Switch to masonry'}
-                                </TooltipContent>
-                            </Tooltip>
+                            <button
+                                onClick={() => setLayoutMode((m) => (m === 'masonry' ? 'grid' : 'masonry'))}
+                                className="p-2 rounded transition-colors hover:bg-secondary text-foreground-tertiary hover:text-foreground"
+                                aria-label="Toggle layout"
+                            >
+                                {layoutMode === 'masonry' ? (
+                                    <Icons.LayoutWindow className="w-5 h-5" />
+                                ) : (
+                                    <Icons.LayoutMasonry className="w-5 h-5" />
+                                )}
+                            </button>
 
 
                             <div className="relative" ref={settingsDropdownRef}>
