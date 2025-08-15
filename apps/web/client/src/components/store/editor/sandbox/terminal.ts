@@ -3,10 +3,12 @@
 import type { Provider, ProviderTask, ProviderTerminal } from '@onlook/code-provider';
 import { v4 as uuidv4 } from 'uuid';
 import type { ErrorManager } from '../error';
+import type { Terminal as XTermType } from '@xterm/xterm';
+import type { FitAddon as FitAddonType } from '@xterm/addon-fit';
 
 // Dynamic imports to avoid SSR issues
-let FitAddon: any;
-let XTerm: any;
+let FitAddon: FitAddonType;
+let XTerm: XTermType;
 
 export enum CLISessionType {
     TERMINAL = 'terminal',
@@ -20,8 +22,8 @@ export interface CLISession {
     terminal: ProviderTerminal | null;
     // Task is readonly
     task: ProviderTask | null;
-    xterm: any; // Changed from XTerm to any to avoid type issues
-    fitAddon: any; // Changed from FitAddon to any to avoid type issues
+    xterm: XTermType | null;
+    fitAddon: FitAddonType | null;
 }
 
 export interface TaskSession extends CLISession {
@@ -38,8 +40,8 @@ export class CLISessionImpl implements CLISession {
     id: string;
     terminal: ProviderTerminal | null;
     task: ProviderTask | null;
-    xterm: any;
-    fitAddon: any;
+    xterm: XTermType | null;
+    fitAddon: FitAddonType | null;
 
     constructor(
         public readonly name: string,
@@ -62,8 +64,8 @@ export class CLISessionImpl implements CLISession {
                     import('@xterm/addon-fit'),
                     import('@xterm/xterm')
                 ]);
-                FitAddon = fitAddonModule.FitAddon;
-                XTerm = xtermModule.Terminal;
+                FitAddon = new fitAddonModule.FitAddon();
+                XTerm = new xtermModule.Terminal();
             } catch (error) {
                 console.error('Failed to load xterm libraries:', error);
                 throw new Error('Failed to load terminal libraries');
