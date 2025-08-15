@@ -64,8 +64,8 @@ export class CLISessionImpl implements CLISession {
                     import('@xterm/addon-fit'),
                     import('@xterm/xterm')
                 ]);
-                FitAddon = new fitAddonModule.FitAddon();
-                XTerm = new xtermModule.Terminal();
+                FitAddon = fitAddonModule.FitAddon;
+                XTerm = xtermModule.Terminal;
             } catch (error) {
                 console.error('Failed to load xterm libraries:', error);
                 throw new Error('Failed to load terminal libraries');
