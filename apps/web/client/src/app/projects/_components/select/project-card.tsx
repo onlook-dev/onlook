@@ -25,7 +25,7 @@ export function ProjectCard({
 }) {
     const [img, setImg] = useState<string | null>(null);
     const router = useRouter();
-    const showDescription = false;
+    const SHOW_DESCRIPTION = false;
 
     const handleCardClick = () => {
         router.push(`/project/${project.id}`);
@@ -100,7 +100,7 @@ export function ProjectCard({
                             <div className="text-white/70 text-xs mb-1 drop-shadow-lg flex items-center">
                                 <span>{lastUpdated} ago</span>
                             </div>
-                            {showDescription && project.metadata?.description && (
+                            {SHOW_DESCRIPTION && project.metadata?.description && (
                                 <div className="text-white/60 text-xs line-clamp-1 drop-shadow-lg">
                                     {HighlightText ? (
                                         <HighlightText text={project.metadata.description} searchQuery={searchQuery} />

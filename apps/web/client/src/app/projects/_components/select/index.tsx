@@ -14,6 +14,7 @@ import { ProjectCard } from './project-card';
 import { SquareProjectCard } from './square-project-card';
 
 export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: string } = {}) => {
+    const SHOW_TEMPLATE = false;
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
     const [internalQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
@@ -314,11 +315,13 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                     </div>
                 </div>
 
-                <Templates
-                    searchQuery={debouncedSearchQuery}
-                    onTemplateClick={handleTemplateClick}
-                    onToggleStar={handleToggleStar}
-                />
+                {SHOW_TEMPLATE && (
+                    <Templates
+                        searchQuery={debouncedSearchQuery}
+                        onTemplateClick={handleTemplateClick}
+                        onToggleStar={handleToggleStar}
+                    />
+                )}
 
                 <div>
                     <div className="flex items-center justify-between mb-[12px]">
@@ -434,7 +437,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             </div>
 
             {
-                selectedTemplate && (
+                selectedTemplate && SHOW_TEMPLATE && (
                     <TemplateModal
                         isOpen={isTemplateModalOpen}
                         onClose={handleCloseTemplateModal}
