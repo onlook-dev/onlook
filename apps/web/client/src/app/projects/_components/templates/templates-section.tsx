@@ -20,12 +20,10 @@ interface TemplatesProps {
     searchQuery: string;
     onTemplateClick: (template: Template) => void;
     onToggleStar: (templateId: string) => void;
+    starredTemplates?: Set<string>;
 }
 
-export function Templates({ searchQuery, onTemplateClick, onToggleStar }: TemplatesProps) {
-    const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
-        new Set(["template-2", "template-5"])
-    );
+export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredTemplates = new Set(["template-2", "template-5"]) }: TemplatesProps) {
 
     // Template data
     const templatesData: Template[] = [
@@ -104,18 +102,6 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar }: Templa
         return sorted.slice(0, 8); // Limit to 8 templates
     }, [searchQuery, starredTemplates]);
 
-    const handleToggleStar = (templateId: string) => {
-        setStarredTemplates((prev) => {
-            const newStarred = new Set(prev);
-            if (newStarred.has(templateId)) {
-                newStarred.delete(templateId);
-            } else {
-                newStarred.add(templateId);
-            }
-            return newStarred;
-        });
-        onToggleStar(templateId);
-    };
 
     return (
         <div className="mb-12">
@@ -160,7 +146,7 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar }: Templa
                                         image={template.image}
                                         isNew={template.isNew}
                                         isStarred={template.isStarred}
-                                        onToggleStar={() => handleToggleStar(template.id)}
+                                        onToggleStar={() => onToggleStar(template.id)}
                                         onClick={() => onTemplateClick(template)}
                                     />
                                 </motion.div>

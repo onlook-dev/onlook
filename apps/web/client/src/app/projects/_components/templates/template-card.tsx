@@ -71,9 +71,15 @@ export function TemplateCard({
                                 className="p-1 rounded-full hover:bg-secondary transition-colors flex-shrink-0 mt-[-2px]"
                                 aria-label={isStarred ? "Remove from favorites" : "Add to favorites"}
                             >
-                                <Icons.BookmarkFilled
-                                    className={`w-3.5 h-3.5 ${isStarred ? "text-yellow-400" : "text-foreground-tertiary hover:text-foreground"}`}
-                                />
+{isStarred ? (
+                                    <Icons.BookmarkFilled
+                                        className="w-3.5 h-3.5 text-white"
+                                    />
+                                ) : (
+                                    <Icons.Bookmark
+                                        className="w-3.5 h-3.5 text-foreground-tertiary hover:text-foreground"
+                                    />
+                                )}
                             </button>
                         )}
                     </div>
