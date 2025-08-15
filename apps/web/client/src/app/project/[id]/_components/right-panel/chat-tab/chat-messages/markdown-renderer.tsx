@@ -26,7 +26,7 @@ export const MarkdownRenderer = ({
         <div
             className={cn(
                 // TODO: Restore dark:invert once theming is fixed
-                'prose prose-stone prose-invert prose-compact text-small break-words',
+                'prose prose-stone prose-invert prose-compact text-small break-words select-text',
                 className,
             )}
         >

@@ -8,7 +8,7 @@ import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { usePanelMeasurements } from '../_hooks/use-panel-measure';
 import { useStartProject } from '../_hooks/use-start-project';
 import { BottomBar } from './bottom-bar';
@@ -17,7 +17,6 @@ import { EditorBar } from './editor-bar';
 import { LeftPanel } from './left-panel';
 import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
-import { EditorAttributes } from '@onlook/constants';
 
 export const Main = observer(() => {
     const editorEngine = useEditorEngine();
@@ -66,7 +65,7 @@ export const Main = observer(() => {
 
     return (
         <TooltipProvider>
-            <div className="h-screen w-screen flex flex-row select-none relative">
+            <div className="h-screen w-screen flex flex-row select-none relative overflow-hidden">
                 <Canvas />
 
                 <div className="absolute top-0 w-full">

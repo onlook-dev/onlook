@@ -1,39 +1,19 @@
+import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
-import { api } from '@/trpc/react';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
 
 export const ErrorMessage = observer(() => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
-    const error = editorEngine.chat.error.message;
+    const { error: chatError } = useChatContext();
+
     const usage = editorEngine.chat.error.usage;
-    const isUsageError = usage && usage.usageCount >= usage.limitCount;
+    const error = editorEngine.chat.error.message;
 
-    const { data: usageData, refetch: refetchUsage } = api.usage.get.useQuery();
-
-    useEffect(() => {
-        if (isUsageError) {
-            // Start polling for subscription changes.
-            const interval = setInterval(() => {
-                refetchUsage();
-            }, 3000);
-            return () => clearInterval(interval);
-        }
-    }, [isUsageError]);
-
-    // Clear error when usage data shows user is no longer over limit
-    useEffect(() => {
-        const isUnderLimit = usageData && usageData.daily.usageCount < usageData.daily.limitCount && usageData.monthly.usageCount < usageData.monthly.limitCount;
-        if (isUsageError && isUnderLimit) {
-            editorEngine.chat.error.usage = null;
-        }
-    }, [usageData, isUsageError]);
-
-    if (isUsageError) {
+    if (usage) {
         return (
             <div className="flex w-full flex-col items-center justify-center gap-2 text-small px-4 pb-4">
                 <p className="text-foreground-secondary text-mini my-1 text-blue-300 select-none">
@@ -45,6 +25,15 @@ export const ErrorMessage = observer(() => {
                 >
                     Get more {usage.period === 'day' ? 'daily' : 'monthly'} messages
                 </Button>
+            </div>
+        );
+    }
+
+    if (chatError) {
+        return (
+            <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-red">
+                <Icons.ExclamationTriangle className="w-6" />
+                <p className="w-5/6 text-wrap overflow-auto">{error}</p>
             </div>
         );
     }

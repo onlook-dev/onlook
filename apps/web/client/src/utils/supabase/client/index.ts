@@ -18,6 +18,17 @@ export const getFileUrlFromStorage = (bucket: string, path: string) => {
     return data.publicUrl;
 };
 
+export const getFileInfoFromStorage = async (bucket: string, path: string) => {
+    const supabase = createClient();
+    const { data, error } = await supabase.storage
+        .from(bucket).info(path);
+    if (error) {
+        console.error('Error getting file info:', error);
+        return null;
+    }
+    return data;
+};
+
 export const uploadBlobToStorage = async (bucket: string, path: string, file: Blob, options: {
     upsert?: boolean;
     contentType?: string;
