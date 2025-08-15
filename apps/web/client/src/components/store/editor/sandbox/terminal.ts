@@ -3,12 +3,9 @@
 import type { Provider, ProviderTask, ProviderTerminal } from '@onlook/code-provider';
 import { v4 as uuidv4 } from 'uuid';
 import type { ErrorManager } from '../error';
-import type { Terminal as XTermType } from '@xterm/xterm';
-import type { FitAddon as FitAddonType } from '@xterm/addon-fit';
-
 // Dynamic imports to avoid SSR issues
-let FitAddon: FitAddonType;
-let XTerm: XTermType;
+let FitAddon: any;
+let XTerm: any;
 
 export enum CLISessionType {
     TERMINAL = 'terminal',
@@ -22,8 +19,8 @@ export interface CLISession {
     terminal: ProviderTerminal | null;
     // Task is readonly
     task: ProviderTask | null;
-    xterm: XTermType | null;
-    fitAddon: FitAddonType | null;
+    xterm: any;
+    fitAddon: any;
 }
 
 export interface TaskSession extends CLISession {
@@ -40,8 +37,8 @@ export class CLISessionImpl implements CLISession {
     id: string;
     terminal: ProviderTerminal | null;
     task: ProviderTask | null;
-    xterm: XTermType | null;
-    fitAddon: FitAddonType | null;
+    xterm: any;
+    fitAddon: any;
 
     constructor(
         public readonly name: string,
