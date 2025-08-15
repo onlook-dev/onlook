@@ -25,6 +25,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 export function Settings({ project, refetch }: { project: Project; refetch: () => void }) {
     const t = useTranslations();
+    const utils = api.useUtils();
     const { mutateAsync: deleteProject } = api.project.delete.useMutation();
     const { mutateAsync: updateProject } = api.project.update.useMutation();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -52,6 +53,12 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                 },
             },
         );
+        // Invalidate queries to refresh UI
+        await Promise.all([
+            utils.project.list.invalidate(),
+            utils.project.get.invalidate({ projectId: project.id })
+        ]);
+
         // Optimistically update list ordering and title immediately
         window.dispatchEvent(new CustomEvent('onlook_project_updated', {
             detail: {
@@ -65,6 +72,7 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
         }));
         window.dispatchEvent(new CustomEvent('onlook_project_modified', { detail: { id: project.id } }));
         setShowRenameDialog(false);
+        refetch();
     };
 
     return (
