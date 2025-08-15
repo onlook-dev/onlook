@@ -25,7 +25,6 @@ export const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const stateManager = useStateManager();
     const posthog = usePostHog();
-    const utils = api.useUtils();
 
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
 
