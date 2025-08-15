@@ -124,13 +124,18 @@ export const upgradeSubscription = async ({
         throw new Error('Subscription not found');
     }
 
-    const currentPrice = currentSubscription.items.data[0]?.price.id;
+    const currentItem = currentSubscription.items.data.find((item) => item.id === subscriptionItemId);
+    if (!currentItem) {
+        throw new Error('Subscription item not found');
+    }
+
+    const currentPrice = currentItem.price.id;
     if (currentPrice === priceId) {
         throw new Error('New price is the same as the current price');
     }
 
-    const currentPriceAmount = currentSubscription.items.data[0]?.price.unit_amount;
-    if (!currentPriceAmount) {
+    const currentPriceAmount = currentItem.price.unit_amount;
+    if (currentPriceAmount == null) {
         throw new Error('Current price amount not found');
     }
 
@@ -145,20 +150,26 @@ export const upgradeSubscription = async ({
         proration_behavior: 'none',
     });
 
-    const newPriceAmount = updatedSubscription.items.data[0]?.price.unit_amount;
-    if (!newPriceAmount) {
+    const newItem =
+        updatedSubscription.items.data.find((i) => i.id === subscriptionItemId)
+        ?? updatedSubscription.items.data[0];
+    if (!newItem) {
+        throw new Error('Subscription item not found on updated subscription');
+    }
+    const newPriceAmount = newItem.price?.unit_amount;
+    if (newPriceAmount == null) {
         throw new Error('New price amount not found');
     }
 
-    const priceDifferenceAmount = newPriceAmount - currentPriceAmount;
+    const quantity = newItem.quantity ?? 1;
+    const priceDifferenceAmount = (newPriceAmount - currentPriceAmount) * quantity;
 
     // Create a one-off invoice item for the price difference if the new price is higher
     if (priceDifferenceAmount > 0) {
         await stripe.invoiceItems.create({
             customer: updatedSubscription.customer as string,
             amount: priceDifferenceAmount,
-            currency: updatedSubscription.currency || 'usd',
-            description: 'Price upgrade difference',
+            description: 'Onlook subscription upgrade',
         });
 
         // Create invoice immediately
@@ -166,6 +177,11 @@ export const upgradeSubscription = async ({
             customer: updatedSubscription.customer as string,
             auto_advance: true,
         });
+
+        if (!invoice.id) {
+            throw new Error('Invoice not created');
+        }
+        await stripe.invoices.pay(invoice.id);
     }
 
     return updatedSubscription;
