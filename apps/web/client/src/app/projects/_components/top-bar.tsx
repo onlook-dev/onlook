@@ -9,13 +9,13 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
+import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
-import { Input } from '@onlook/ui/input';
 
 interface TopBarProps {
     searchQuery?: string;
@@ -49,15 +49,15 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
         try {
             const rs = JSON.parse(localStorage.getItem('onlook_recent_searches') || '[]');
             if (Array.isArray(rs)) setRecentSearches(rs.slice(0, 6));
-        } catch {}
+        } catch { }
         try {
             const rc = JSON.parse(
                 localStorage.getItem('onlook_recent_colors') ||
-                    localStorage.getItem('usedColors') ||
-                    '[]',
+                localStorage.getItem('usedColors') ||
+                '[]',
             );
             if (Array.isArray(rc)) setRecentColors(rc.slice(0, 10));
-        } catch {}
+        } catch { }
     }, []);
 
     // Persist non-empty search queries to recent
@@ -75,13 +75,13 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                 const arr = Array.from(rs).slice(0, 8);
                 localStorage.setItem('onlook_recent_searches', JSON.stringify(arr));
                 setRecentSearches(arr);
-            } catch {}
+            } catch { }
         }, 600);
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
     return (
-        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 h-12 text-small text-foreground-secondary select-none gap-6">
+        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 text-small text-foreground-secondary select-none gap-6">
             <Link href={Routes.HOME} className="flex items-center justify-start mt-0 py-3">
                 <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
             </Link>
@@ -166,7 +166,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                             className="text-sm focus:outline-none cursor-pointer"
                             variant="default"
                         >
-                            Create
+                            Create <Icons.ChevronDown />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent sideOffset={8} className="translate-x-[-12px]">
