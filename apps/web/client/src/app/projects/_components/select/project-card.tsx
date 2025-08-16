@@ -75,7 +75,7 @@ export function ProjectCard({
                     <Settings project={project} refetch={refetch} />
                 </div>
 
-                <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 hover:opacity-100 transition-opacity">
+                <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto">
                     <EditAppButton
                         project={project}
                         onClick={(e) => {

@@ -82,10 +82,10 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                     <Button
                         size="default"
                         variant="ghost"
-                        className="w-10 h-10 p-0 flex items-center justify-center hover:bg-background-onlook cursor-pointer"
+                        className="w-8 h-8 p-0 flex items-center justify-center hover:bg-background-onlook cursor-pointer backdrop-blur-lg"
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <Icons.DotsVertical />
+                        <Icons.DotsHorizontal />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent

@@ -245,7 +245,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     }
 
     return (
-        <div className="w-full h-full flex flex-col px-6 py-8">
+        <div className="w-full h-full flex flex-col px-6 py-8" style={{ userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none' }}>
             <div className="max-w-6xl w-full mx-auto pb-12">
                 <div className="mb-12">
                     <h2 className="text-2xl text-foreground font-normal mb-[12px]">
@@ -335,9 +335,9 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                 title={layoutMode === 'masonry' ? 'Switch to grid' : 'Switch to masonry'}
                             >
                                 {layoutMode === 'masonry' ? (
-                                    <Icons.ViewGrid className="w-5 h-5" />
+                                    <Icons.ViewGrid className="w-4 h-4" />
                                 ) : (
-                                    <Icons.ListBullet className="w-5 h-5" />
+                                    <Icons.ListBullet className="w-4 h-4" />
                                 )}
                             </button>
 

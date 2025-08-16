@@ -80,8 +80,22 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
+    useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+            setIsSearchFocused(false);
+            searchInputRef.current?.blur();
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+        };
+    }, []);
+
     return (
-        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 text-small text-foreground-secondary select-none gap-6">
+        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 px-0 text-small text-foreground-secondary gap-6">
             <Link href={Routes.HOME} className="flex items-center justify-start mt-0 py-3">
                 <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
             </Link>
@@ -102,7 +116,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                             onChange={(e) => onSearchChange?.(e.currentTarget.value)}
                             onFocus={() => setIsSearchFocused(true)}
                             placeholder="Search projects"
-                            className="pl-9 pr-7"
+                            className="pl-9 pr-7 focus-visible:border-transparent focus-visible:ring-0"
                         />
                         {(isSearchFocused || (searchQuery ?? '').length > 0) && (
                             <div className="absolute left-0 right-0 top-full mt-2 rounded-md border bg-background shadow-lg p-2 z-50">
@@ -163,7 +177,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
-                            className="text-sm focus:outline-none cursor-pointer"
+                            className="text-sm focus:outline-none cursor-pointer py-[0.4rem] h-8"
                             variant="default"
                         >
                             Create <Icons.ChevronDown />
