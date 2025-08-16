@@ -44,3 +44,6 @@ yarn.lock
 .env.production.local
 
 mise.toml
+
+# Setup keys file (contains sensitive API keys)
+keys.md
