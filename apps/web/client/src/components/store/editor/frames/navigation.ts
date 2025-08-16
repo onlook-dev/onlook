@@ -24,7 +24,7 @@ export class FrameNavigationManager {
         if (!navigationObject) {
             return false;
         }
-        return navigationObject.currentIndex > -1;
+        return navigationObject.currentIndex > 0;
     }
 
     canGoForward(frameId: string): boolean {
@@ -32,7 +32,7 @@ export class FrameNavigationManager {
         if (!navigationObject) {
             return false;
         }
-        return navigationObject.currentIndex < navigationObject.history.length - 1;
+        return (navigationObject.history.length - navigationObject.currentIndex) > 1;
     }
 
     getHistoryLength(frameId: string): number {
