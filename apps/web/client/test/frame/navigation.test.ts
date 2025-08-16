@@ -1,5 +1,5 @@
 import { FrameNavigationManager } from '../../src/components/store/editor/frames/index';
-
+import { describe, expect , it ,beforeEach } from 'bun:test';
 describe('FrameNavigationManager', () => {
     let navigationManager: FrameNavigationManager;
     const testFrameId = 'test-frame-1';
