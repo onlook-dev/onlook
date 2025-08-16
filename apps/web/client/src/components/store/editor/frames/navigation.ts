@@ -32,7 +32,7 @@ export class FrameNavigationManager {
         if (!navigationObject) {
             return false;
         }
-        return navigationObject.currentIndex < navigationObject.history.length - 1;
+        return (navigationObject.history.length - navigationObject.currentIndex) > 1;
     }
 
     getHistoryLength(frameId: string): number {
@@ -53,7 +53,7 @@ export class FrameNavigationManager {
     addToHistory(frameId: string, path: string): void {
         const navigationObject = this.frameIdToNavigationObject.get(frameId) ?? {
             history: [],
-            currentIndex: 0,
+            currentIndex: -1,
         };
 
         if (navigationObject.history[navigationObject.currentIndex] === path) {
@@ -61,7 +61,7 @@ export class FrameNavigationManager {
         }
 
         // Remove forward history if we're not at the end
-        if (navigationObject.currentIndex < navigationObject.history.length - 1) {
+        if ((navigationObject.history.length - navigationObject.currentIndex) > 1) {
             navigationObject.history = navigationObject.history.slice(0, navigationObject.currentIndex + 1);
         }
 

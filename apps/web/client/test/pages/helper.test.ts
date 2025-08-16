@@ -37,17 +37,18 @@ const createMockSandboxManager = (directoryStructure: Record<string, ReaddirEntr
                 type: 'text' as const,
                 path,
                 content: `export default function Page() {
-    return <div>Test Page</div>;
-}`
+                                  return <div>Test Page</div>;
+                          }`
             });
         }
         if (path.endsWith('layout.tsx')) {
             return Promise.resolve({
                 type: 'text' as const,
                 path,
-                content: `export default function Layout({ children }: { children: React.ReactNode }) {
-    return <>{children}</>;
-}`
+                content: `export default function Layout({ children }: 
+                                   { children: React.ReactNode }) {
+                              return <>{children}</>;
+                          }`
             });
         }
         return Promise.resolve(null);
