@@ -213,7 +213,7 @@ The following technical fixes were successfully implemented to resolve the setup
 #### 3. Port Conflict Resolution
 **Problem**: Port 8083 (preload server) already in use causing `EADDRINUSE` errors
 **Solution**:
-- Kill existing processes on conflicting ports: `lsof -ti:8083 | xargs kill -9`
+- Kill existing processes on conflicting ports: `lsof -ti:8083 | xargs -r kill -9`
 - Restart development server which auto-detects available ports
 - Main app successfully runs on port 3001 when 3000 is occupied
 
