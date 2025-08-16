@@ -240,7 +240,7 @@ export function TailwindColorEditorMockup() {
         <div className="px-1 pb-3 mt-0.5">
           <div className="flex flex-col gap-3">
             {/* Color picker */}
-            {/* @ts-expect-error static mockup component */}
+            {/* @ts-ignore */}
             <ColorPicker
               color={color}
               onChange={(c) => setColor(c)}
