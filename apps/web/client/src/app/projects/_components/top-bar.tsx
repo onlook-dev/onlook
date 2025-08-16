@@ -95,7 +95,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     }, []);
 
     return (
-        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 px-0 text-small text-foreground-secondary select-none gap-6">
+        <div className="w-full max-w-6xl mx-auto flex items-center justify-between p-4 px-0 text-small text-foreground-secondary gap-6">
             <Link href={Routes.HOME} className="flex items-center justify-start mt-0 py-3">
                 <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
             </Link>
