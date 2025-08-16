@@ -8,9 +8,7 @@ import path from 'node:path';
 import './src/env';
 
 const nextConfig: NextConfig = {
-    devIndicators: {
-        buildActivity: false,
-    },
+    devIndicators: false,
     eslint: {
         ignoreDuringBuilds: true,
     },

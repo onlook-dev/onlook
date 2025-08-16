@@ -13,7 +13,7 @@ import { getResendClient, sendInvitationEmail } from '@onlook/email';
 import { ProjectRole } from '@onlook/models';
 import { isFreeEmail } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
-import dayjs from 'dayjs';
+import { addDays, isAfter } from 'date-fns';
 import { and, eq, ilike, isNull } from 'drizzle-orm';
 import urlJoin from 'url-join';
 import { v4 as uuidv4 } from 'uuid';
@@ -77,8 +77,18 @@ export const invitationRouter = createTRPCRouter({
                     message: 'You must be logged in to invite a user',
                 });
             }
+            const inviter = await ctx.db.query.users.findFirst({
+                where: eq(users.id, ctx.user.id),
+            });
 
-            const invitation = await ctx.db
+            if (!inviter) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Inviter not found',
+                });
+            }
+
+            const [invitation] = await ctx.db
                 .transaction(async (tx) => {
                     const existingUser = await tx
                         .select()
@@ -107,12 +117,11 @@ export const invitationRouter = createTRPCRouter({
                                 role: input.role as ProjectRole,
                                 token: uuidv4(),
                                 inviterId: ctx.user.id,
-                                expiresAt: dayjs().add(7, 'day').toDate(),
+                                expiresAt: addDays(new Date(), 7),
                             },
                         ])
                         .returning();
                 })
-                .then(([invitation]) => invitation);
 
             if (invitation) {
                 if (!env.RESEND_API_KEY) {
@@ -125,19 +134,20 @@ export const invitationRouter = createTRPCRouter({
                     apiKey: env.RESEND_API_KEY,
                 });
 
-                await sendInvitationEmail(
+                const result = await sendInvitationEmail(
                     emailClient,
                     {
+                        inviteeEmail: input.inviteeEmail,
+                        invitedByName: inviter.firstName ?? inviter.displayName ?? undefined,
                         invitedByEmail: ctx.user.email,
                         inviteLink: urlJoin(
                             env.NEXT_PUBLIC_SITE_URL,
                             'invitation',
-                            invitation.id,
-                            new URLSearchParams([['token', invitation.token]]).toString(),
+                            `${invitation.id}?token=${invitation.token}`,
                         ),
                     },
                     {
-                        dryRun: process.env.NODE_ENV !== 'production',
+                        // dryRun: process.env.NODE_ENV !== 'production',
                     },
                 );
             }
@@ -165,7 +175,6 @@ export const invitationRouter = createTRPCRouter({
                 where: and(
                     eq(projectInvitations.id, input.id),
                     eq(projectInvitations.token, input.token),
-                    eq(projectInvitations.inviteeEmail, ctx.user.email),
                 ),
                 with: {
                     project: {
@@ -176,7 +185,21 @@ export const invitationRouter = createTRPCRouter({
                 },
             });
 
-            if (!invitation || dayjs().isAfter(dayjs(invitation.expiresAt))) {
+            if (invitation?.inviteeEmail !== ctx.user.email) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'You are not the invitee of this invitation',
+                });
+            }
+
+            if (!invitation) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Invitation does not exist',
+                });
+            }
+
+            if (isAfter(new Date(), invitation.expiresAt)) {
                 if (invitation) {
                     await ctx.db
                         .delete(projectInvitations)
@@ -185,7 +208,7 @@ export const invitationRouter = createTRPCRouter({
 
                 throw new TRPCError({
                     code: 'BAD_REQUEST',
-                    message: 'Invitation does not exist or has expired',
+                    message: 'Invitation has expired',
                 });
             }
 

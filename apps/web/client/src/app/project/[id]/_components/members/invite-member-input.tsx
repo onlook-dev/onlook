@@ -9,8 +9,9 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
     const apiUtils = api.useUtils();
     const [email, setEmail] = useState('');
     const [selectedRole, setSelectedRole] = useState<ProjectRole>(ProjectRole.ADMIN);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const createInvitationMutation = api.invitation.create.useMutation({
+    const createInvitation = api.invitation.create.useMutation({
         onSuccess: () => {
             apiUtils.invitation.list.invalidate();
             apiUtils.invitation.suggested.invalidate();
@@ -22,13 +23,15 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
         },
     });
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        setIsLoading(true);
         e.preventDefault();
-        createInvitationMutation.mutate({
+        await createInvitation.mutateAsync({
             inviteeEmail: email,
             role: selectedRole,
             projectId: projectId,
         });
+        setIsLoading(false);
     };
 
     return (
@@ -59,7 +62,7 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
                     </SelectContent>
                 </Select> */}
             </div>
-            <Button type="submit" disabled={!email}>
+            <Button type="submit" disabled={!email || isLoading}>
                 Invite
             </Button>
         </form>

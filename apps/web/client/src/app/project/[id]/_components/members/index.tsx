@@ -16,7 +16,7 @@ export const Members = () => {
                     <Icons.Plus className="size-4" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="p-0 w-96" align="end">
+            <PopoverContent className="p-0 w-96" >
                 <MembersContent />
             </PopoverContent>
         </Popover>

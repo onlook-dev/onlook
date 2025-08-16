@@ -33,6 +33,20 @@ import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { projectCreateRequestRouter } from './createRequest';
 
 export const projectRouter = createTRPCRouter({
+    hasAccess: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const user = ctx.user;
+            const project = await ctx.db.query.projects.findFirst({
+                where: eq(projects.id, input.projectId),
+                with: {
+                    userProjects: {
+                        where: eq(userProjects.userId, user.id),
+                    },
+                },
+            });
+            return !!project && project.userProjects.length > 0;
+        }),
     createRequest: projectCreateRequestRouter,
     captureScreenshot: protectedProcedure
         .input(z.object({ projectId: z.string() }))
