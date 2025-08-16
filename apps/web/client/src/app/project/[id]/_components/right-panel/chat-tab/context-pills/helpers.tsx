@@ -13,6 +13,9 @@ export function getTruncatedName(context: MessageContext) {
     if (context.type === MessageContextType.HIGHLIGHT) {
         name = name.toLowerCase();
     }
+    if (context.type === MessageContextType.FIGMA) {
+        name = name || 'Figma Design';
+    }
     return name.length > 20 ? `${name.slice(0, 20)}...` : name;
 }
 
@@ -27,6 +30,9 @@ export function getContextIcon(context: MessageContext) {
             break;
         case MessageContextType.ERROR:
             icon = Icons.InfoCircled;
+            break;
+        case MessageContextType.FIGMA:
+            icon = Icons.FigmaLogo as React.ComponentType;
             break;
         case MessageContextType.HIGHLIGHT:
             return (
