@@ -3,6 +3,7 @@ import {
     chatRouter,
     codeRouter,
     domainRouter,
+    figmaRouter,
     frameRouter,
     githubRouter,
     invitationRouter,
@@ -38,6 +39,7 @@ export const appRouter = createTRPCRouter({
     subscription: subscriptionRouter,
     usage: usageRouter,
     publish: publishRouter,
+    figma: figmaRouter,
 });
 
 // export type definition of API

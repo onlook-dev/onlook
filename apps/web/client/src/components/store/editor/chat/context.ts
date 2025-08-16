@@ -2,6 +2,7 @@ import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
     type ErrorMessageContext,
+    type FigmaMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
     type ImageMessageContext,
@@ -33,8 +34,8 @@ export class ChatContext {
             highlightedContext = await this.getHighlightedContext(selected, fileNames);
         }
         const fileContext = await this.getFileContext(fileNames);
-        const imageContext = await this.getImageContext();
-        const projectContext = await this.getProjectContext();
+        const imageContext = this.getImageContext();
+        const projectContext = this.getProjectContext();
         const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext];
         return context;
     }
@@ -64,7 +65,7 @@ export class ChatContext {
         })) satisfies MessageContext[];
     }
 
-    private async getImageContext(): Promise<ImageMessageContext[]> {
+    private getImageContext(): ImageMessageContext[] {
         const imageContext = this.context.filter(
             (context) => context.type === MessageContextType.IMAGE,
         );
@@ -217,6 +218,34 @@ export class ChatContext {
             console.error('Error getting default style guide context', error);
             return null;
         }
+    }
+
+    addFigmaContext(figmaUrl: string, nodeId: string, displayName: string, content: string, fileName?: string) {
+        const figmaContext: FigmaMessageContext = {
+            type: MessageContextType.FIGMA,
+            displayName,
+            content,
+            figmaUrl,
+            nodeId,
+            fileName,
+        };
+
+        // Removes any existing Figma context with the same nodeId to avoid duplicates
+        this.context = this.context.filter(
+            (context) => 
+                context.type !== MessageContextType.FIGMA || 
+                (context.type === MessageContextType.FIGMA && context.nodeId !== nodeId)
+        );
+
+        this.context.push(figmaContext as MessageContext);
+    }
+
+    removeFigmaContext(nodeId: string) {
+        this.context = this.context.filter(
+            (context) => 
+                context.type !== MessageContextType.FIGMA || 
+                (context.type === MessageContextType.FIGMA && context.nodeId !== nodeId)
+        );
     }
 
     clearAttachments() {

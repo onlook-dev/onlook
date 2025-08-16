@@ -3,6 +3,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
+import { FigmaInput } from './figma-input';
+import { useState } from 'react';
 
 export const ActionButtons = ({
     disabled,
@@ -13,6 +15,7 @@ export const ActionButtons = ({
     handleImageEvent: (file: File, fileName: string) => Promise<void>;
     handleScreenshot: () => Promise<void>;
 }) => {
+    const [isFigmaOpen, setIsFigmaOpen] = useState(false);
 
     const handleOpenFileDialog = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -33,46 +36,59 @@ export const ActionButtons = ({
     };
 
     return (
-        <DropdownMenu>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant={'ghost'}
-                            size={'icon'}
-                            className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent cursor-pointer"
-                            disabled={disabled}
-                            onMouseDown={(e) => {
-                                e.currentTarget.blur();
-                            }}
-                        >
-                            <Icons.Image
-                                className={cn(
-                                    'w-5 h-5',
-                                    disabled
-                                        ? 'text-foreground-tertiary'
-                                        : 'group-hover:text-foreground',
-                                )}
-                            />
-                        </Button>
-                    </DropdownMenuTrigger>
-                </TooltipTrigger>
-                <TooltipPortal>
-                    <TooltipContent side="top" sideOffset={5}>
-                        {disabled ? 'Select an element to start' : 'Add Image or Screenshot'}
-                    </TooltipContent>
-                </TooltipPortal>
-            </Tooltip>
-            <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={handleOpenFileDialog} disabled={disabled}>
-                    <Icons.Upload className="mr-2 h-4 w-4" />
-                    Upload Image
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleScreenshot} disabled={disabled}>
-                    <Icons.Laptop className="mr-2 h-4 w-4" />
-                    Add Screenshot
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+            <DropdownMenu>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                            <Button
+                                variant={'ghost'}
+                                size={'icon'}
+                                className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent cursor-pointer"
+                                disabled={disabled}
+                                onMouseDown={(e) => {
+                                    e.currentTarget.blur();
+                                }}
+                            >
+                                <Icons.Image
+                                    className={cn(
+                                        'w-5 h-5',
+                                        disabled
+                                            ? 'text-foreground-tertiary'
+                                            : 'group-hover:text-foreground',
+                                    )}
+                                />
+                            </Button>
+                        </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipPortal>
+                        <TooltipContent side="top" sideOffset={5}>
+                            {disabled ? 'Select an element to start' : 'Add Image, Screenshot, or Figma Design'}
+                        </TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
+                <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={handleOpenFileDialog} disabled={disabled}>
+                        <Icons.Upload className="mr-2 h-4 w-4" />
+                        Upload Image
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleScreenshot} disabled={disabled}>
+                        <Icons.Laptop className="mr-2 h-4 w-4" />
+                        Add Screenshot
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsFigmaOpen(true)} disabled={disabled}>
+                        <Icons.FigmaLogo className="mr-2 h-4 w-4" />
+                        Add Figma Design
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            
+            {isFigmaOpen && (
+                <FigmaInput 
+                    isOpen={isFigmaOpen} 
+                    onOpenChange={setIsFigmaOpen} 
+                />
+            )}
+        </>
     );
 };
