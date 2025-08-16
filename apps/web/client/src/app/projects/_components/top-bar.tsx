@@ -177,7 +177,7 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button
-                            className="text-sm focus:outline-none cursor-pointer py-0.4 h-8"
+                            className="text-sm focus:outline-none cursor-pointer py-[0.4rem] h-8"
                             variant="default"
                         >
                             Create <Icons.ChevronDown />
