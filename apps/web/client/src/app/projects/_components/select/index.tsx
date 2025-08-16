@@ -33,10 +33,18 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     // Template-related state
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+    const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
+        new Set(["template-2", "template-5"])
+    );
 
     // Template handlers
     const handleTemplateClick = (template: any) => {
-        setSelectedTemplate(template);
+        // Update the template with current starred status
+        const updatedTemplate = {
+            ...template,
+            isStarred: starredTemplates.has(template.id)
+        };
+        setSelectedTemplate(updatedTemplate);
         setIsTemplateModalOpen(true);
     };
 
@@ -46,7 +54,23 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     };
 
     const handleToggleStar = (templateId: string) => {
-        // This will be handled by the Templates component internally
+        setStarredTemplates((prev) => {
+            const newStarred = new Set(prev);
+            if (newStarred.has(templateId)) {
+                newStarred.delete(templateId);
+            } else {
+                newStarred.add(templateId);
+            }
+            return newStarred;
+        });
+        
+        // Update the selected template if it's the one being toggled
+        if (selectedTemplate && selectedTemplate.id === templateId) {
+            setSelectedTemplate((prev: any) => ({
+                ...prev,
+                isStarred: !prev.isStarred
+            }));
+        }
     };
 
     useEffect(() => {
@@ -320,6 +344,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                         searchQuery={debouncedSearchQuery}
                         onTemplateClick={handleTemplateClick}
                         onToggleStar={handleToggleStar}
+                        starredTemplates={starredTemplates}
                     />
                 )}
 
@@ -332,12 +357,11 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                 onClick={() => setLayoutMode((m) => (m === 'masonry' ? 'grid' : 'masonry'))}
                                 className="p-2 rounded transition-colors hover:bg-secondary text-foreground-tertiary hover:text-foreground"
                                 aria-label="Toggle layout"
-                                title={layoutMode === 'masonry' ? 'Switch to grid' : 'Switch to masonry'}
                             >
                                 {layoutMode === 'masonry' ? (
-                                    <Icons.ViewGrid className="w-5 h-5" />
+                                    <Icons.LayoutWindow className="w-5 h-5" />
                                 ) : (
-                                    <Icons.ListBullet className="w-5 h-5" />
+                                    <Icons.LayoutMasonry className="w-5 h-5" />
                                 )}
                             </button>
 

@@ -95,9 +95,15 @@ export function TemplateModal({
                                         onClick={onToggleStar}
                                         aria-label={isStarred ? "Remove from favorites" : "Add to favorites"}
                                     >
-                                        <Icons.BookmarkFilled
-                                            className={`w-5 h-5 ${isStarred ? "text-yellow-400" : "text-foreground-tertiary"}`}
-                                        />
+{isStarred ? (
+                                            <Icons.BookmarkFilled
+                                                className="w-5 h-5 text-white"
+                                            />
+                                        ) : (
+                                            <Icons.Bookmark
+                                                className="w-5 h-5 text-foreground-tertiary"
+                                            />
+                                        )}
                                     </Button>
                                 )}
 
