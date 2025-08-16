@@ -62,7 +62,7 @@ export class FrameNavigationManager {
 
         // Remove forward history if we're not at the end
         if ((navigationObject.history.length - navigationObject.currentIndex) > 1) {
-            navigationObject.history = navigationObject.history.slice(0, navigationObject.currentIndex + 2);
+            navigationObject.history = navigationObject.history.slice(0, navigationObject.currentIndex + 1);
         }
 
         // Add new path to history if it's not the same as the previous path
