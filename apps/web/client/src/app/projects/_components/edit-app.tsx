@@ -38,8 +38,8 @@ export const EditAppButton = observer(({ project, onClick, ...props }: EditAppBu
     return (
         <ButtonMotion
             size="default"
-            variant={'outline'}
-            className="gap-2 bg-background-active border-[0.5px] border-border-active w-auto hover:bg-background-onlook cursor-pointer"
+            // variant={'outline'}
+            className="gap-2 bg-white text-black border border-gray-300 w-auto hover:bg-gray-100 cursor-pointer"
             {...props}
 
             // Prevent consumer from overriding these props

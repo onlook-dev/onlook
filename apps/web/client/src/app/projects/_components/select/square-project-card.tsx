@@ -4,8 +4,9 @@ import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { EditAppButton } from '../edit-app';
+import { timeAgo } from '@onlook/utility';
 
 export function SquareProjectCard({
     project,
@@ -40,6 +41,8 @@ export function SquareProjectCard({
             isMounted = false;
         };
     }, [project.metadata?.previewImg]);
+
+    const lastUpdated = useMemo(() => timeAgo(new Date(project.metadata.updatedAt).toISOString()), [project.metadata.updatedAt]);
 
     return (
         <div
@@ -82,7 +85,10 @@ export function SquareProjectCard({
                             project.name
                         )}
                     </div>
-                    {project.metadata?.description && (
+                    <div className="text-white/70 text-xs mb-1 drop-shadow-lg flex items-center">
+                        <span>{lastUpdated} ago</span>
+                    </div>
+                    {/* {project.metadata?.description && (
                         <div className="text-white/70 text-xs line-clamp-1 drop-shadow-lg">
                             {HighlightText ? (
                                 <HighlightText text={project.metadata.description} searchQuery={searchQuery} />
@@ -90,7 +96,7 @@ export function SquareProjectCard({
                                 project.metadata.description
                             )}
                         </div>
-                    )}
+                    )} */}
                 </div>
             </div>
         </div>
