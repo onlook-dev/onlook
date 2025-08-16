@@ -14,6 +14,7 @@ import {
 } from '@react-email/components';
 
 export interface InviteUserEmailProps {
+    inviteeEmail: string;
     invitedByEmail: string;
     inviteLink: string;
 }
@@ -24,32 +25,19 @@ export const InviteUserEmail = ({ invitedByEmail, inviteLink }: InviteUserEmailP
     return (
         <Html>
             <Head />
-            <Tailwind
-                config={{
-                    theme: {
-                        extend: {
-                            colors: {
-                                background: '#19191d',
-                                brand: '#af90ff',
-                                foreground: '#fff',
-                                border: 'rgb(56, 53, 53)',
-                            },
-                        },
-                    },
-                }}
-            >
-                <Body className="mx-auto my-auto bg-background text-foreground px-2 font-sans">
+            <Tailwind>
+                <Body className="mx-auto my-auto bg-white px-2 font-sans">
                     <Preview>{previewText}</Preview>
-                    <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-border border-solid p-[20px]">
-                        <Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-white">
+                    <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-[#eaeaea] border-solid p-[20px]">
+                        <Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-black">
                             Join <strong>{invitedByEmail}</strong> on <strong>Onlook</strong>
                         </Heading>
-                        <Text className="text-[14px] text-white leading-[24px]">Hello,</Text>
-                        <Text className="text-[14px] text-white leading-[24px]">
+                        <Text className="text-[14px] text-black leading-[24px]">Hello,</Text>
+                        <Text className="text-[14px] text-black leading-[24px]">
                             <strong>{invitedByEmail}</strong> (
                             <Link
                                 href={`mailto:${invitedByEmail}`}
-                                className="text-brand no-underline"
+                                className="text-blue-600 no-underline"
                             >
                                 {invitedByEmail}
                             </Link>
@@ -57,23 +45,23 @@ export const InviteUserEmail = ({ invitedByEmail, inviteLink }: InviteUserEmailP
                         </Text>
                         <Section className="mt-[32px] mb-[32px] text-center">
                             <Button
-                                className="rounded bg-brand px-5 py-3 text-center font-semibold text-[12px] text-white no-underline"
+                                className="rounded bg-[#000000] px-5 py-3 text-center font-semibold text-[12px] text-white no-underline"
                                 href={inviteLink}
                             >
-                                Join
+                                Join the project
                             </Button>
                         </Section>
-                        <Text className="text-[14px] leading-[24px]">
+                        <Text className="text-[14px] text-black leading-[24px]">
                             or copy and paste this URL into your browser:{' '}
-                            <Link href={inviteLink} className="text-brand no-underline">
+                            <Link href={inviteLink} className="text-blue-600 no-underline">
                                 {inviteLink}
                             </Link>
                         </Text>
-                        <Hr className="mx-0 my-[26px] w-full border border-border border-solid" />
-                        <Text className="text-foreground/50 text-[12px] leading-[24px]">
+                        <Hr className="mx-0 my-[26px] w-full border border-[#eaeaea] border-solid" />
+                        <Text className="text-[#666666] text-[12px] leading-[24px]">
                             This invitation was intended for{' '}
-                            <span className="text-foreground">{invitedByEmail}</span>. If you were
-                            not expecting this invitation, you can ignore this email. If you are
+                            <span className="text-black">{invitedByEmail}</span>. If you were not
+                            expecting this invitation, you can ignore this email. If you are
                             concerned about your account's safety, please reply to this email to get
                             in touch with us.
                         </Text>

@@ -78,7 +78,7 @@ export const invitationRouter = createTRPCRouter({
                 });
             }
 
-            const invitation = await ctx.db
+            const [invitation] = await ctx.db
                 .transaction(async (tx) => {
                     const existingUser = await tx
                         .select()
@@ -112,7 +112,6 @@ export const invitationRouter = createTRPCRouter({
                         ])
                         .returning();
                 })
-                .then(([invitation]) => invitation);
 
             if (invitation) {
                 if (!env.RESEND_API_KEY) {
@@ -125,21 +124,22 @@ export const invitationRouter = createTRPCRouter({
                     apiKey: env.RESEND_API_KEY,
                 });
 
-                await sendInvitationEmail(
+                const result = await sendInvitationEmail(
                     emailClient,
                     {
+                        inviteeEmail: input.inviteeEmail,
                         invitedByEmail: ctx.user.email,
                         inviteLink: urlJoin(
                             env.NEXT_PUBLIC_SITE_URL,
                             'invitation',
-                            invitation.id,
-                            new URLSearchParams([['token', invitation.token]]).toString(),
+                            `${invitation.id}?${new URLSearchParams([['token', invitation.token]]).toString()}`,
                         ),
                     },
                     {
                         dryRun: process.env.NODE_ENV !== 'production',
                     },
                 );
+                console.log(result);
             }
 
             return invitation;
