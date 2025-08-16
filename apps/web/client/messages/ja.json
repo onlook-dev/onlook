@@ -135,6 +135,8 @@
                         },
                         "settings": {
                             "showSuggestions": "提案を表示",
+                            "showMiniChat": "ミニチャットを表示",
+                            "autoApplyCode": "結果を自動適用",
                             "expandCodeBlocks": "レンダリング時にコードを表示"
                         },
                         "miniChat": {
@@ -275,7 +277,8 @@
             "downloadCode": "コードをダウンロード",
             "downloadingCode": "ダウンロードを準備中...",
             "downloadSuccess": "ダウンロードが正常に開始されました",
-            "downloadError": "ダウンロードの準備に失敗しました"
+            "downloadError": "ダウンロードの準備に失敗しました",
+            "recentProjects": "最近のプロジェクト"
         },
         "dialogs": {
             "delete": {
@@ -304,7 +307,7 @@
     "welcome": {
         "title": "Onlookへようこそ",
         "titleReturn": "Onlookにお帰りなさい",
-        "description": "Onlookは、Reactアプリ向けのオープンソースビジュアルエディタです。実際に稼働する製品上で直接デザインできます。",
+        "description": "AIを活用した次世代のビジュアルコードエディタで、デザイナーとプロダクトマネージャーがコードでウェブ体験を作成できます。",
         "alpha": "アルファ版",
         "login": {
             "github": "GitHubでログイン",

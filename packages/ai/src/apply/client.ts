@@ -86,7 +86,7 @@ export async function applyCodeChange(
     updateSnippet: string,
     instruction: string,
     metadata?: ApplyCodeChangeMetadata,
-    preferredProvider: FastApplyProvider = FastApplyProvider.RELACE,
+    preferredProvider: FastApplyProvider = FastApplyProvider.MORPH,
 ): Promise<string | null> {
     const providerAttempts = [
         {

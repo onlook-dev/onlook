@@ -1,10 +1,8 @@
+import type { StorageThreadType } from '@mastra/core/memory';
 import type { ChatSuggestion } from '../suggestion';
 
-export type ChatConversation = {
-    id: string;
-    projectId: string;
-    displayName: string | null;
-    createdAt: string;
-    updatedAt: string;
-    suggestions: ChatSuggestion[];
-};
+export interface ChatConversation extends StorageThreadType {
+    metadata?: {
+        suggestions: ChatSuggestion[];
+    };
+}

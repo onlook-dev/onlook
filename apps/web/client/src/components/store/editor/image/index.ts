@@ -1,7 +1,6 @@
 import { DefaultSettings } from '@onlook/constants';
-import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models/actions';
-import { generateNewFolderPath, stripImageFolderPrefix } from '@onlook/utility';
-import { convertToBase64, getBaseName, getMimeType, isImageFile } from '@onlook/utility/src/file';
+import type { ActionTarget, ImageContentData, InsertImageAction } from '@onlook/models';
+import { convertToBase64, generateNewFolderPath, getBaseName, getMimeType, isImageFile, stripImageFolderPrefix } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 

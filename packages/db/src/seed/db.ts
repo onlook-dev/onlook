@@ -31,7 +31,7 @@ import {
     ChatMessageRole,
     MessageContextType,
     ProjectRole,
-    type ChatMessageContext,
+    type MessageContext,
 } from '@onlook/models';
 import { PriceKey, ProductType, SubscriptionStatus } from '@onlook/stripe';
 import { v4 as uuidv4 } from 'uuid';
@@ -93,7 +93,7 @@ const context0 = {
     path: 'src/index.ts',
     displayName: 'index.ts',
     content: 'console.log("Hello, world!");',
-} satisfies ChatMessageContext;
+} satisfies MessageContext;
 
 const context1 = {
     type: MessageContextType.HIGHLIGHT,
@@ -102,7 +102,7 @@ const context1 = {
     content: 'console.log("Hello, world!");',
     start: 0,
     end: 10,
-} satisfies ChatMessageContext;
+} satisfies MessageContext;
 
 const contexts = [context0, context1];
 
@@ -115,8 +115,9 @@ const message0 = {
     createdAt: new Date(),
     applied: false,
     context: contexts,
-    snapshots: {},
+    checkpoints: [],
     parts: [{ type: 'text', text: 'Test message 0' }],
+    snapshots: null,
 } satisfies Message;
 
 const message1 = {
@@ -129,7 +130,8 @@ const message1 = {
     applied: false,
     context: contexts,
     parts: [{ type: 'text', text: 'Test message 1' }],
-    snapshots: {},
+    checkpoints: [],
+    snapshots: null,
 } satisfies Message;
 
 const message2 = {
@@ -142,7 +144,8 @@ const message2 = {
     applied: false,
     context: contexts,
     parts: [{ type: 'text', text: 'Test message 2' }],
-    snapshots: {},
+    checkpoints: [],
+    snapshots: null,
 } satisfies Message;
 
 const message3 = {
@@ -155,7 +158,8 @@ const message3 = {
     applied: false,
     context: contexts,
     parts: [{ type: 'text', text: 'Test message 3' }],
-    snapshots: {},
+    checkpoints: [],
+    snapshots: null,
 } satisfies Message;
 
 const message4 = {
@@ -167,7 +171,8 @@ const message4 = {
     applied: false,
     context: contexts,
     parts: [{ type: 'text', text: 'Test message 4' }],
-    snapshots: {},
+    checkpoints: [],
+    snapshots: null,
     commitOid: null,
 } satisfies Message;
 

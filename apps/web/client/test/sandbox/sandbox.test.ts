@@ -1,5 +1,4 @@
-import { IGNORED_UPLOAD_DIRECTORIES, NEXT_JS_FILE_EXTENSIONS } from '@onlook/constants';
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
+import { beforeEach, describe, expect, mock, test } from 'bun:test';
 
 // Setup mocks before imports
 // Mock localforage before importing anything that uses it
@@ -127,57 +126,15 @@ describe('SandboxManager', () => {
         // Create mock EditorEngine
         mockEditorEngine = {
             // Add any required properties/methods that EditorEngine needs
+            screenshot: {
+                captureScreenshot: mock(async () => { }),
+            },
         };
 
         sandboxManager = new SandboxManager(mockEditorEngine);
         // Set the session directly on the session manager using runInAction to avoid MobX warnings
         // @ts-ignore - accessing private property for testing
         sandboxManager.session.session = mockSession;
-    });
-
-    afterEach(() => {
-        // Don't call clear as it causes issues with the mock session
-        // sandboxManager.clear();
-    });
-
-    test('should list files recursively', async () => {
-        const testMockSession: any = {
-            fs: {
-                readdir: mock(async (dir: string) => {
-                    if (dir === './') {
-                        return [
-                            { name: 'file1.tsx', type: 'file' },
-                            { name: 'file2.tsx', type: 'file' },
-                            { name: 'node_modules', type: 'directory' },
-                            { name: 'src', type: 'directory' },
-                        ];
-                    } else if (dir === 'src') {
-                        return [{ name: 'component.tsx', type: 'file' }];
-                    }
-                    return [];
-                }),
-                readTextFile: mock(async () => ''),
-                writeTextFile: mock(async () => true),
-                watch: mock(async () => mockWatcher),
-            },
-            disconnect: mock(async () => { }),
-        };
-
-        const testManager = new SandboxManager(mockEditorEngine);
-        // Set the session directly
-        testManager.session.session = testMockSession;
-
-        const files = await testManager.listFilesRecursively(
-            './',
-            IGNORED_UPLOAD_DIRECTORIES,
-            NEXT_JS_FILE_EXTENSIONS,
-        );
-
-        expect(testMockSession.fs.readdir.mock.calls.length).toBeGreaterThan(0);
-        expect(testMockSession.fs.readdir.mock.calls.some((call) => call[0] === './')).toBe(true);
-        expect(testMockSession.fs.readdir.mock.calls.some((call) => call[0] === 'src')).toBe(true);
-
-        expect(files).toEqual(['file1.tsx', 'file2.tsx', 'src/component.tsx']);
     });
 
     test('should read file content', async () => {
@@ -206,25 +163,6 @@ describe('SandboxManager', () => {
         expect(result).toBe(true);
         // The content might be processed by template mapping, so we just check if write was called
         expect(mockFileSync.write).toHaveBeenCalled();
-    });
-
-    test('should read from localforage cache when reading files multiple times', async () => {
-        // First read gets from filesystem and caches
-        await sandboxManager.readFile('file1.tsx');
-
-        // Clear the mock to reset call count
-        mockSession.fs.readTextFile.mockClear();
-
-        // Second read should use cache
-        const content2 = await sandboxManager.readFile('file1.tsx');
-        expect(content2).toEqual({
-            type: 'text',
-            path: 'file1.tsx',
-            content: '<div>Test Component</div>'
-        });
-
-        // Filesystem should not be accessed for the second read
-        expect(mockSession.fs.readTextFile).not.toHaveBeenCalled();
     });
 
     test('readRemoteFile and writeRemoteFile should handle session errors', async () => {

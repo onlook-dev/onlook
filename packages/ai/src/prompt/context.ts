@@ -21,7 +21,7 @@ IMPORTANT: This project uses Bun as the package manager. Always use Bun commands
 
 NEVER SUGGEST THE "bun run dev" command. Assume the user is already running the app.`;
 
-const projectContextPrefix = `The project is located in the folder:`;
+const projectContextPrefix = `This is a Nextjs project with TailwindCSS`;
 
 export const CONTEXT_PROMPTS = {
     filesContentPrefix,

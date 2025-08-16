@@ -16,12 +16,13 @@ export const toProject = (
             updatedAt: dbProject.updatedAt.toISOString(),
             previewImg: toPreviewImg(dbProject),
             description: dbProject.description,
+            updatedPreviewImgAt: dbProject.updatedPreviewImgAt,
         },
     };
 };
 
 export const fromProject = (project: Project): DbProject => {
-    const { previewImgUrl, previewImgPath, previewImgBucket } = fromPreviewImg(project.metadata.previewImg);
+    const { previewImgUrl, previewImgPath, previewImgBucket, updatedPreviewImgAt } = fromPreviewImg(project.metadata.previewImg);
     return {
         id: project.id,
         name: project.name,
@@ -33,6 +34,7 @@ export const fromProject = (project: Project): DbProject => {
         previewImgUrl,
         previewImgPath,
         previewImgBucket,
+        updatedPreviewImgAt,
     };
 };
 
@@ -55,15 +57,22 @@ export function toPreviewImg(dbProject: DbProject): PreviewImg | null {
     return previewImg;
 }
 
-export function fromPreviewImg(previewImg: PreviewImg | null): { previewImgUrl: string | null, previewImgPath: string | null, previewImgBucket: string | null } {
+export function fromPreviewImg(previewImg: PreviewImg | null): {
+    previewImgUrl: string | null,
+    previewImgPath: string | null,
+    previewImgBucket: string | null,
+    updatedPreviewImgAt: Date | null,
+} {
     let res: {
         previewImgUrl: string | null,
         previewImgPath: string | null,
         previewImgBucket: string | null,
+        updatedPreviewImgAt: Date | null,
     } = {
         previewImgUrl: null,
         previewImgPath: null,
         previewImgBucket: null,
+        updatedPreviewImgAt: null,
     };
 
     if (!previewImg) {
@@ -76,5 +85,6 @@ export function fromPreviewImg(previewImg: PreviewImg | null): { previewImgUrl: 
         res.previewImgPath = previewImg.storagePath.path;
         res.previewImgBucket = previewImg.storagePath.bucket;
     }
+    res.updatedPreviewImgAt = new Date();
     return res;
 }
