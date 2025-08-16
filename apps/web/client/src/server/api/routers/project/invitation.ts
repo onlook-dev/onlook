@@ -132,7 +132,7 @@ export const invitationRouter = createTRPCRouter({
                         inviteLink: urlJoin(
                             env.NEXT_PUBLIC_SITE_URL,
                             'invitation',
-                            `${invitation.id}?${new URLSearchParams([['token', invitation.token]]).toString()}`,
+                            `${invitation.id}?token=${invitation.token}`,
                         ),
                     },
                     {
