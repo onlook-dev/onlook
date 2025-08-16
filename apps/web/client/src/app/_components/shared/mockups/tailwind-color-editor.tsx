@@ -240,14 +240,19 @@ export function TailwindColorEditorMockup() {
         <div className="px-1 pb-3 mt-0.5">
           <div className="flex flex-col gap-3">
             {/* Color picker */}
-            {/* @ts-ignore */}
-            <ColorPicker
-              color={color}
-              onChange={(c) => setColor(c)}
-              onChangeEnd={(c) => setColor(c)}
-              onMouseDown={(c) => setColor(c)}
-              className="bg-transparent"
-            />
+            {React.createElement(ColorPicker as unknown as React.FC<{
+              color: Color;
+              onChange?: (color: Color) => void;
+              onChangeEnd?: (color: Color) => void;
+              onMouseDown?: (color: Color) => void;
+              className?: string;
+            }>, {
+              color,
+              onChange: (c: Color) => setColor(c),
+              onChangeEnd: (c: Color) => setColor(c),
+              onMouseDown: (c: Color) => setColor(c),
+              className: "bg-transparent"
+            })}
             <div className="mt-3">
                 <ColorSwatchGroup label="bunker" colorClasses={bunkerSwatches} />
            </div>
