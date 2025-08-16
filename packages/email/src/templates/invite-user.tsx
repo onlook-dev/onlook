@@ -15,12 +15,19 @@ import {
 
 export interface InviteUserEmailProps {
     inviteeEmail: string;
+    invitedByName?: string;
     invitedByEmail: string;
     inviteLink: string;
 }
 
-export const InviteUserEmail = ({ invitedByEmail, inviteLink }: InviteUserEmailProps) => {
-    const previewText = `Join ${invitedByEmail} on Onlook`;
+export const InviteUserEmail = ({
+    inviteeEmail,
+    invitedByName,
+    invitedByEmail,
+    inviteLink,
+}: InviteUserEmailProps) => {
+    const previewText = `Join ${invitedByName ?? invitedByEmail} on Onlook`;
+    const headingText = `Join ${invitedByName ?? invitedByEmail} on Onlook`;
 
     return (
         <Html>
@@ -30,18 +37,17 @@ export const InviteUserEmail = ({ invitedByEmail, inviteLink }: InviteUserEmailP
                     <Preview>{previewText}</Preview>
                     <Container className="mx-auto my-[40px] max-w-[465px] rounded border border-[#eaeaea] border-solid p-[20px]">
                         <Heading className="mx-0 my-[30px] p-0 text-center font-normal text-[24px] text-black">
-                            Join <strong>{invitedByEmail}</strong> on <strong>Onlook</strong>
+                            {headingText}
                         </Heading>
                         <Text className="text-[14px] text-black leading-[24px]">Hello,</Text>
                         <Text className="text-[14px] text-black leading-[24px]">
-                            <strong>{invitedByEmail}</strong> (
                             <Link
                                 href={`mailto:${invitedByEmail}`}
                                 className="text-blue-600 no-underline"
                             >
-                                {invitedByEmail}
+                                <strong>{invitedByName ?? invitedByEmail}</strong>
                             </Link>
-                            ) has invited you to their project on <strong>Onlook</strong>.
+                            has invited you to their project on <strong>Onlook</strong>.
                         </Text>
                         <Section className="mt-[32px] mb-[32px] text-center">
                             <Button
@@ -60,7 +66,7 @@ export const InviteUserEmail = ({ invitedByEmail, inviteLink }: InviteUserEmailP
                         <Hr className="mx-0 my-[26px] w-full border border-[#eaeaea] border-solid" />
                         <Text className="text-[#666666] text-[12px] leading-[24px]">
                             This invitation was intended for{' '}
-                            <span className="text-black">{invitedByEmail}</span>. If you were not
+                            <span className="text-black">{inviteeEmail}</span>. If you were not
                             expecting this invitation, you can ignore this email. If you are
                             concerned about your account's safety, please reply to this email to get
                             in touch with us.
@@ -71,10 +77,5 @@ export const InviteUserEmail = ({ invitedByEmail, inviteLink }: InviteUserEmailP
         </Html>
     );
 };
-
-InviteUserEmail.PreviewProps = {
-    invitedByEmail: 'kiet@onlook.com',
-    inviteLink: 'https://onlook.com',
-} as InviteUserEmailProps;
 
 export default InviteUserEmail;

@@ -3,7 +3,8 @@ import { type InviteUserEmailProps, InviteUserEmail } from './templates';
 import type { SendEmailParams } from './types/send-email';
 
 export const sendInvitationEmail = async (...params: SendEmailParams<InviteUserEmailProps>) => {
-    const [client, { inviteeEmail, invitedByEmail, inviteLink }, { dryRun = false } = {}] = params;
+    const [client, inviteParams, { dryRun = false } = {}] = params;
+    const { inviteeEmail, invitedByEmail, inviteLink, invitedByName } = inviteParams;
 
     if (dryRun) {
         const rendered = await render(
@@ -16,7 +17,7 @@ export const sendInvitationEmail = async (...params: SendEmailParams<InviteUserE
     return await client.emails.send({
         from: 'Onlook <support@onlook.com>',
         to: inviteeEmail,
-        subject: 'You have been invited to Onlook',
-        react: InviteUserEmail({ inviteeEmail, invitedByEmail, inviteLink }),
+        subject: `Join ${invitedByName ?? invitedByEmail} on Onlook`,
+        react: InviteUserEmail(inviteParams),
     });
 };
