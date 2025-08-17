@@ -102,6 +102,5 @@ export function VillainstagramMobileMockup() {
           <div className="w-3 h-3 bg-gradient-to-br from-purple-600 to-red-600 rounded-full"></div>
         </div>
       </div>
-    </div>
   );
 }
