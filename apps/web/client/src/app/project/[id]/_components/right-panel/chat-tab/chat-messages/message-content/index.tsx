@@ -25,6 +25,7 @@ export const MessageContent = observer(
                 return (
                     <MarkdownRenderer
                         messageId={messageId}
+                        type="text"
                         key={part.text}
                         content={part.text}
                         applied={applied}
@@ -44,10 +45,11 @@ export const MessageContent = observer(
                     />
                 );
             } else if (part.type === 'reasoning') {
+                if (!isStream) {
+                    return null;
+                }
                 return (
-                    <div key={part.reasoning} className="border-2 border-green-500">
-                        reasoning: {JSON.stringify(part, null, 2)}
-                    </div>
+                    <p>Introspecting...</p>
                 );
             }
         });

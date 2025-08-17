@@ -60,6 +60,10 @@ describe('isImageFile', () => {
             expect(isImageFile('vector.svg')).toBe(true);
         });
 
+        it('returns true for ICO files', () => {
+            expect(isImageFile('favicon.ico')).toBe(true);
+        });
+
         it('handles case insensitive extensions', () => {
             expect(isImageFile('PHOTO.JPG')).toBe(true);
             expect(isImageFile('IMAGE.PNG')).toBe(true);
@@ -88,7 +92,6 @@ describe('isImageFile', () => {
 
     describe('should return false for unsupported formats', () => {
         it('returns false for unsupported image formats', () => {
-            expect(isImageFile('favicon.ico')).toBe(false);
             expect(isImageFile('image.tiff')).toBe(false);
             expect(isImageFile('image.tif')).toBe(false);
         });

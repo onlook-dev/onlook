@@ -1,3 +1,4 @@
+import { trackEvent } from '@/utils/analytics/server';
 import { callUserWebhook } from '@/utils/n8n/webhook';
 import { toUser, userInsertSchema, users, type User } from '@onlook/db';
 import { extractNames } from '@onlook/utility';
@@ -16,14 +17,12 @@ export const userRouter = createTRPCRouter({
 
         const { displayName, firstName, lastName } = getUserName(authUser);
         const userData = user ? toUser({
-            id: user.id,
+            ...user,
             firstName: user.firstName ?? firstName,
             lastName: user.lastName ?? lastName,
             displayName: user.displayName ?? displayName,
             email: user.email ?? authUser.email,
             avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
-            createdAt: user.createdAt ?? new Date(authUser.created_at ?? Date.now()),
-            updatedAt: user.updatedAt ?? new Date(authUser.updated_at ?? Date.now()),
         }) : null;
         return userData;
     }),
@@ -60,15 +59,30 @@ export const userRouter = createTRPCRouter({
                 avatarUrl: input.avatarUrl ?? authUser.user_metadata.avatarUrl,
             };
 
-            const [user] = await ctx.db.insert(users).values(userData).onConflictDoUpdate({
-                target: [users.id],
-                set: {
-                    ...userData,
-                    updatedAt: new Date(),
-                },
-            }).returning();
+            const [user] = await ctx.db
+                .insert(users)
+                .values(userData)
+                .onConflictDoUpdate({
+                    target: [users.id],
+                    set: {
+                        ...userData,
+                        updatedAt: new Date(),
+                    },
+                }).returning();
 
             if (!existingUser) {
+                await trackEvent({
+                    distinctId: input.id,
+                    event: 'user_first_signup',
+                    properties: {
+                        email: userData.email,
+                        firstName: userData.firstName,
+                        lastName: userData.lastName,
+                        displayName: userData.displayName,
+                        source: 'web beta',
+                    },
+                });
+
                 await callUserWebhook({
                     email: userData.email,
                     firstName: userData.firstName,

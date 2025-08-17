@@ -64,6 +64,22 @@ export const InputRange = ({
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const step = e.shiftKey ? 10 : 1;
+            const direction = e.key === 'ArrowUp' ? 1 : -1;
+            const currentValue = Number(localValue);
+            if (!isNaN(currentValue)) {
+                const newValue = currentValue + (step * direction);
+                setLocalValue(String(newValue));
+                debouncedOnChange(newValue);
+            }
+        } else if (e.key === 'Enter') {
+            handleBlur();
+        }
+    };
+
     const handleMouseDown = (e: React.MouseEvent) => {
         if (rangeRef.current) {
             setIsDragging(true);
@@ -113,17 +129,13 @@ export const InputRange = ({
                 <div className="flex items-center bg-background-tertiary/50 justify-between rounded-md px-3 h-[36px]">
                     <input
                         type="text"
-                        inputMode="numeric"
-                        pattern="[0-9]*"
+                        inputMode="decimal"
+                        pattern="[0-9]*\.?[0-9]*"
                         value={localValue}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        onKeyDown={handleKeyDown}
                         className="min-w-[40px] max-w-[40px] bg-transparent text-sm text-white focus:outline-none uppercase input-range-text"
-                        onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                                handleBlur();
-                            }
-                        }}
                     />
 
                     <DropdownMenu modal={false}>

@@ -11,15 +11,13 @@ export const StreamMessage = () => {
     return (
         <>
             {streamMessage && isAssistantStreamMessage && streamMessage.parts && isWaiting && (
-                <div className="px-4 py-2 text-small content-start">
-                    <div className="flex flex-col text-wrap gap-2">
-                        <MessageContent
-                            messageId={streamMessage.id}
-                            parts={streamMessage.parts}
-                            applied={false}
-                            isStream={true}
-                        />
-                    </div>
+                <div className="px-4 py-2 text-small content-start flex flex-col text-wrap gap-2">
+                    <MessageContent
+                        messageId={streamMessage.id}
+                        parts={streamMessage.parts}
+                        applied={false}
+                        isStream={true}
+                    />
                 </div>
             )}
             {isWaiting && (

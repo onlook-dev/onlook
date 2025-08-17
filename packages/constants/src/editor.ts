@@ -53,7 +53,7 @@ export const DefaultSettings = {
     },
     IMAGE_FOLDER: 'public',
     IMAGE_DIMENSION: { width: '100px', height: '100px' },
-    FONT_FOLDER: 'public/fonts',
+    FONT_FOLDER: 'fonts',
     FONT_CONFIG: 'app/fonts.ts',
     TAILWIND_CONFIG: 'tailwind.config.ts',
     CHAT_SETTINGS: {
@@ -69,9 +69,18 @@ export const DefaultSettings = {
     },
 };
 
+const isDev = process.env.NODE_ENV === 'development';
 export const DEFAULT_COLOR_NAME = 'DEFAULT';
 
-export const PRELOAD_SCRIPT_SRC =
-    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js';
+const CDN_PRELOAD_SCRIPT_SRC =
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/client/public/onlook-preload-script.js';
+export const LOCAL_PRELOAD_SCRIPT_SRC = `/onlook-preload-script.js`;
+export const PRELOAD_SCRIPT_SRC = isDev ? LOCAL_PRELOAD_SCRIPT_SRC : CDN_PRELOAD_SCRIPT_SRC;
 
-export const DEPRECATED_PRELOAD_SCRIPT_SRC = 'onlook-dev/web';
+export const DEPRECATED_PRELOAD_SCRIPT_SRCS = [
+    'https://cdn.jsdelivr.net/gh/onlook-dev/web@latest/apps/web/preload/dist/index.js',
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/packages/preload/dist/index.js',
+    'https://cdn.jsdelivr.net/gh/onlook-dev/onlook@main/apps/web/preload/dist/index.js',
+    // Intentionally reversed to deprecate non-preferred (local in prod, CDN in dev) usage.
+    isDev ? CDN_PRELOAD_SCRIPT_SRC : LOCAL_PRELOAD_SCRIPT_SRC,
+];

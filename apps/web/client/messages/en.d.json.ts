@@ -57,7 +57,8 @@ declare const messages: {
             "downloadCode": "Download Code",
             "downloadingCode": "Preparing download...",
             "downloadSuccess": "Download started successfully",
-            "downloadError": "Failed to prepare download"
+            "downloadError": "Failed to prepare download",
+            "recentProjects": "Recent Projects"
         },
         "dialogs": {
             "delete": {
@@ -86,7 +87,7 @@ declare const messages: {
     "welcome": {
         "title": "Welcome to Onlook",
         "titleReturn": "Welcome back to Onlook",
-        "description": "Onlook is an open-source visual editor for React apps. Design directly in your live product.",
+        "description": "A next-generation visual code editor that lets designers and product managers craft web experiences with AI.",
         "alpha": "Alpha",
         "login": {
             "github": "Login with GitHub",
@@ -182,7 +183,7 @@ declare const messages: {
             }
         },
         "footer": {
-            "unusedMessages": "Unused chat messages don't rollover to the next month"
+            "unusedMessages": "Unused chat messages will roll over to the next month."
         }
     },
     "editor": {
@@ -230,12 +231,17 @@ declare const messages: {
                             "placeholder": "Type your message...",
                             "tooltip": "Chat with AI about the selected element"
                         },
+                        "mode": {
+                            "tooltip": "Switch between Build and Ask modes"
+                        },
                         "controls": {
                             "newChat": "New Chat",
                             "history": "Chat History"
                         },
                         "settings": {
                             "showSuggestions": "Show suggestions",
+                            "showMiniChat": "Show mini chat",
+                            "autoApplyCode": "Auto-apply results",
                             "expandCodeBlocks": "Show code while rendering"
                         },
                         "miniChat": {

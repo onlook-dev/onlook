@@ -12,12 +12,11 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { cn } from '@onlook/ui/utils';
-import { useImagesContext } from '../../providers/images-provider';
+import { useFolderContext } from '../../providers/folder-provider';
 
 export const FolderRenameModal = observer(() => {
-    const { folderOperations } = useImagesContext();
     const { renameState, handleRenameInputChange, onRenameFolder, handleRenameModalToggle } =
-        folderOperations;
+        useFolderContext();
 
     const [inputValue, setInputValue] = useState(renameState.newFolderName);
 

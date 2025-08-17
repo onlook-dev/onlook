@@ -1,14 +1,15 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import { SubscriptionModal } from '@/components/ui/pricing-modal.tsx';
+import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
+import { EditorAttributes } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { TooltipProvider } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useRouter } from 'next/navigation';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePanelMeasurements } from '../_hooks/use-panel-measure';
 import { useStartProject } from '../_hooks/use-start-project';
 import { BottomBar } from './bottom-bar';
@@ -28,6 +29,28 @@ export const Main = observer(() => {
         leftPanelRef,
         rightPanelRef,
     );
+
+    useEffect(() => {
+        function handleGlobalWheel(event: WheelEvent) {
+            if (!(event.ctrlKey || event.metaKey)) {
+                return;
+            }
+
+            const canvasContainer = document.getElementById(
+                EditorAttributes.CANVAS_CONTAINER_ID,
+            );
+            if (canvasContainer?.contains(event.target as Node | null)) {
+                return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        window.addEventListener('wheel', handleGlobalWheel, { passive: false });
+        return () => {
+            window.removeEventListener('wheel', handleGlobalWheel);
+        };
+    }, []);
 
     if (error) {
         return (
@@ -65,7 +88,7 @@ export const Main = observer(() => {
 
     return (
         <TooltipProvider>
-            <div className="h-screen w-screen flex flex-row select-none relative">
+            <div className="h-screen w-screen flex flex-row select-none relative overflow-hidden">
                 <Canvas />
 
                 <div className="absolute top-0 w-full">

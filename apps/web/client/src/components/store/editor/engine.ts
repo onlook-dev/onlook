@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import type { PostHog } from 'posthog-js';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
@@ -9,7 +10,7 @@ import { IDEManager } from './dev';
 import { ElementsManager } from './element';
 import { ErrorManager } from './error';
 import { FontManager } from './font';
-import { FrameEventManager } from './frame-view-events';
+import { FrameEventManager } from './frame-events';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
@@ -18,7 +19,9 @@ import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
+import { PreloadScriptManager } from './preload';
 import { SandboxManager } from './sandbox';
+import { ScreenshotManager } from './screenshot';
 import { StateManager } from './state';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
@@ -27,9 +30,11 @@ import { VersionsManager } from './version';
 
 export class EditorEngine {
     readonly projectId: string;
+    readonly posthog: PostHog;
+
     readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
-    readonly canvas: CanvasManager = new CanvasManager();
+    readonly canvas: CanvasManager = new CanvasManager(this);
     readonly text: TextEditingManager = new TextEditingManager(this);
     readonly sandbox: SandboxManager = new SandboxManager(this);
     readonly history: HistoryManager = new HistoryManager(this);
@@ -52,9 +57,12 @@ export class EditorEngine {
     readonly pages: PagesManager = new PagesManager(this);
     readonly frames: FramesManager = new FramesManager(this);
     readonly frameEvent: FrameEventManager = new FrameEventManager(this);
+    readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
+    readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
 
-    constructor(projectId: string) {
+    constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
+        this.posthog = posthog;
         makeAutoObservable(this);
     }
 
@@ -82,6 +90,7 @@ export class EditorEngine {
         this.error.clear();
         this.sandbox.clear();
         this.frameEvent.clear();
+        this.screenshot.clear();
     }
 
     clearUI() {

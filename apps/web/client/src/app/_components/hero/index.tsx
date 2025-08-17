@@ -1,16 +1,21 @@
 'use client';
 
+import { api } from '@/trpc/react';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { Create } from './create';
 import { CreateError } from './create-error';
-import { UnicornBackground } from './unicorn-background';
 import { HighDemand } from './high-demand';
+import { Import } from './import';
+import { StartBlank } from './start-blank';
+import { UnicornBackground } from './unicorn-background';
 import { Icons } from '@onlook/ui/icons';
 
 export function Hero() {
     const [cardKey, setCardKey] = useState(0);
+    const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const { data: user } = api.user.get.useQuery();
 
     return (
         <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
@@ -38,9 +43,8 @@ export function Hero() {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    Make your<br />
-                    <span className="font-light">designs </span>
-                    <span className={`italic font-normal ${vujahdayScript.className} text-[4.75rem] ml-1 leading-[1.0]`}>real</span>
+                    Cursor for<br />
+                    <span className={`italic font-normal ${vujahdayScript.className} text-[4.6rem] ml-1 leading-[1.0]`}>Designers</span>
                 </motion.h1>
                 <motion.p
                     className="text-lg text-foreground-secondary max-w-xl text-center mt-2"
@@ -65,17 +69,28 @@ export function Hero() {
                         setCardKey(prev => prev + 1);
                     }}
                 >
-                    <Create cardKey={cardKey} />
+                    <Create user={user ?? null} cardKey={cardKey} isCreatingProject={isCreatingProject} setIsCreatingProject={setIsCreatingProject} />
+                </motion.div>
+                <motion.div
+                    className="flex gap-12 mt-4"
+                    initial={{ opacity: 0, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, filter: "blur(0px)" }}
+                    transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+                >
+                    <StartBlank user={user ?? null} isCreatingProject={isCreatingProject} setIsCreatingProject={setIsCreatingProject} />
+                    <Import />
                 </motion.div>
                 <motion.div
                     className="text-center text-xs text-foreground-secondary mt-2 opacity-80"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, delay: 0.45, ease: "easeOut" }}
+                    transition={{ duration: 0.6, delay: 1, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
                     No Credit Card Required &bull; Get a Site in Seconds
                 </motion.div>
+
             </div>
             <motion.div className="sm:hidden text-balance flex flex-col gap-4 items-center relative z-20 px-10 text-foreground-secondary bg-foreground-secondary/10 backdrop-blur-lg rounded-lg border-[0.5px] border-foreground-secondary/20 p-4"
                 initial={{ opacity: 0, filter: "blur(4px)" }}

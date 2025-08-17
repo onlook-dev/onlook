@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { UploadState } from '../providers/types';
 
 export const useImageUpload = () => {
@@ -51,6 +51,16 @@ export const useImageUpload = () => {
             input.click();
         }
     }, []);
+
+    useEffect(() => {
+        if (uploadState.error) {
+            const timer = setTimeout(() => {
+                setUploadState((prev) => ({ ...prev, error: null }));
+            }, 3000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [uploadState.error]);
 
     return {
         uploadState,

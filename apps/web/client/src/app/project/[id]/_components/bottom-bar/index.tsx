@@ -68,11 +68,12 @@ export const BottomBar = observer(() => {
 
     return (
         <AnimatePresence mode="wait">
-            {editorEngine.state.editorMode !== EditorMode.PREVIEW && (
-                <motion.div
+            <motion.div
                     initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
+                    animate={{ 
+                        opacity: editorEngine.state.editorMode !== EditorMode.PREVIEW  ? 1 : 0, 
+                        y: editorEngine.state.editorMode !== EditorMode.PREVIEW  ? 0 : 20, 
+                    }}
                     className="absolute left-1/2 -translate-x-1/2 bottom-4 flex flex-col border-[0.5px] border-border p-1 px-1 bg-background rounded-lg backdrop-blur drop-shadow-xl overflow-hidden"
                     transition={{
                         type: 'spring',
@@ -80,6 +81,10 @@ export const BottomBar = observer(() => {
                         duration: 0.4,
                         stiffness: 200,
                         damping: 25,
+                    }}
+                    style={{
+                        pointerEvents: editorEngine.state.editorMode !== EditorMode.PREVIEW ? 'auto' : 'none',
+                        visibility: editorEngine.state.editorMode !== EditorMode.PREVIEW ? 'visible' : 'hidden'
                     }}
                 >
                     <TerminalArea>
@@ -119,7 +124,6 @@ export const BottomBar = observer(() => {
                         </ToggleGroup>
                     </TerminalArea>
                 </motion.div>
-            )}
         </AnimatePresence>
     );
 });

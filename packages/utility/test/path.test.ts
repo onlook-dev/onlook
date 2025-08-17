@@ -1,6 +1,5 @@
-import { LAYOUT_FILE_CONDITIONS } from '@onlook/constants';
 import { describe, expect, test } from 'bun:test';
-import { isSubdirectory, isTargetFile } from '../src/path';
+import { isRootLayoutFile, isSubdirectory } from '../src/path';
 
 describe('isSubdirectory', () => {
     test('returns true for direct subdirectory', () => {
@@ -147,60 +146,48 @@ describe('isSubdirectory', () => {
 });
 
 describe('isTargetFile', () => {
-    const defaultConditions = LAYOUT_FILE_CONDITIONS;
-
     test('returns true for a valid file in a primary potential path', () => {
         const targetFile = 'src/app/layout.tsx';
-        expect(isTargetFile(targetFile, defaultConditions)).toBe(true);
+        expect(isRootLayoutFile(targetFile)).toBe(true);
     });
 
     test('returns true for a valid file in a secondary potential path', () => {
         const targetFile = 'app/layout.tsx';
-        expect(isTargetFile(targetFile, defaultConditions)).toBe(true);
+        expect(isRootLayoutFile(targetFile)).toBe(true);
     });
 
     test('returns true for a valid file with an alternative valid extension', () => {
         const targetFile = 'app/layout.jsx';
-        expect(isTargetFile(targetFile, defaultConditions)).toBe(true);
+        expect(isRootLayoutFile(targetFile)).toBe(true);
     });
 
     test('returns false for a file in a non-specified subdirectory', () => {
         const targetFile = 'app/test/layout.jsx';
-        expect(isTargetFile(targetFile, defaultConditions)).toBe(false);
+        expect(isRootLayoutFile(targetFile)).toBe(false);
     });
 
     test('returns false for a file with an invalid extension', () => {
-        const targetFile = 'app/layout.js';
-        expect(isTargetFile(targetFile, defaultConditions)).toBe(false);
+        const targetFile = 'app/layout.md';
+        expect(isRootLayoutFile(targetFile)).toBe(false);
     });
 
     test('returns false for a file with a different name', () => {
         const targetFile = 'app/layout2.jsx';
-        expect(isTargetFile(targetFile, { ...defaultConditions, fileName: 'layout2' })).toBe(true);
-        expect(isTargetFile(targetFile, defaultConditions)).toBe(false);
+        expect(isRootLayoutFile(targetFile)).toBe(false);
     });
 
     test('handles extensions with or without leading dot', () => {
         const targetFile = 'src/app/layout.tsx';
-        const conditionsWithDot = {
-            ...defaultConditions,
-            targetExtensions: ['.tsx', '.jsx'],
-        };
-        const conditionsWithoutDot = {
-            ...defaultConditions,
-            targetExtensions: ['tsx', 'jsx'],
-        };
-        expect(isTargetFile(targetFile, conditionsWithDot)).toBe(true);
-        expect(isTargetFile(targetFile, conditionsWithoutDot)).toBe(true);
+        expect(isRootLayoutFile(targetFile)).toBe(true);
     });
 
     test('returns false when targetFile has no extension', () => {
         const targetFile = 'src/app/layout';
-        expect(isTargetFile(targetFile, defaultConditions)).toBe(false);
+        expect(isRootLayoutFile(targetFile)).toBe(false);
     });
 
     test('returns false for a file in a completely different directory', () => {
         const targetFile = 'src/components/layout.tsx';
-        expect(isTargetFile(targetFile, defaultConditions)).toBe(false);
+        expect(isRootLayoutFile(targetFile)).toBe(false);
     });
 });

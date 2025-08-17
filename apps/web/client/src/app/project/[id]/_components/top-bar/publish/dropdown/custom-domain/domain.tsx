@@ -33,6 +33,11 @@ export const DomainSection = () => {
                         <p className="text-red-500">Error</p>
                     </div>
                 )}
+                {deployment?.status === DeploymentStatus.CANCELLED && (
+                    <div className="ml-auto flex items-center gap-2">
+                        <p className="text-foreground-secondary">Cancelled</p>
+                    </div>
+                )}
                 {isDeploying && (
                     <div className="ml-auto flex items-center gap-2">
                         <p className="">Updating • In progress</p>

@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -55,6 +54,7 @@ export const TextColor = observer(
                         color={tempColor}
                         onChange={handleColorUpdate}
                         onChangeEnd={handleColorUpdateEnd}
+                        hideGradient={true}
                     />
                 </DropdownMenuContent>
             </DropdownMenu>

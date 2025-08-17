@@ -1,3 +1,4 @@
+import { trackEvent } from '@/utils/analytics/server.ts';
 import { deployments, type Deployment } from '@onlook/db';
 import type { DrizzleDb } from '@onlook/db/src/client';
 import {
@@ -52,12 +53,23 @@ export const deployFreestyle = async (
     return result;
 }
 
-export async function createDeployment(db: DrizzleDb, projectId: string, type: DeploymentType, userId: string): Promise<Deployment> {
+export async function createDeployment(
+    db: DrizzleDb,
+    projectId: string,
+    type: DeploymentType,
+    userId: string,
+    buildScript?: string,
+    buildFlags?: string,
+    envVars?: Record<string, string>,
+): Promise<Deployment> {
     const [deployment] = await db.insert(deployments).values({
         id: randomUUID(),
         projectId,
         type,
-        status: DeploymentStatus.IN_PROGRESS,
+        buildScript,
+        buildFlags,
+        envVars,
+        status: DeploymentStatus.PENDING,
         requestedBy: userId,
         message: 'Creating deployment...',
         progress: 0,
@@ -69,6 +81,16 @@ export async function createDeployment(db: DrizzleDb, projectId: string, type: D
             message: 'Failed to create deployment',
         });
     }
+
+    trackEvent({
+        distinctId: userId,
+        event: 'user_deployed_project',
+        properties: {
+            type,
+            projectId,
+            deploymentId: deployment.id,
+        },
+    });
 
     return deployment;
 }

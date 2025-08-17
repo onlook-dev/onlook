@@ -1,10 +1,19 @@
-import { env } from "@/env";
-import { CodeSandbox, type SandboxBrowserSession } from "@codesandbox/sdk";
+import { CodeProvider, createCodeProviderClient, type Provider } from '@onlook/code-provider';
 
-const sdk = new CodeSandbox(env.CSB_API_KEY);
+export async function forkBuildSandbox(
+    sandboxId: string,
+    userId: string,
+    deploymentId: string,
+): Promise<{ provider: Provider; sandboxId: string }> {
+    // not a big fan of this pattern... may need to refactor `createProject` into a static method
+    // though, that entirely depends on other provider implementations
+    const provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
+        providerOptions: {
+            codesandbox: {},
+        },
+    });
 
-export async function forkBuildSandbox(sandboxId: string, userId: string, deploymentId: string): Promise<SandboxBrowserSession> {
-    const sandbox = await sdk.sandboxes.create({
+    const project = await provider.createProject({
         source: 'template',
         id: sandboxId,
         title: 'Deployment Fork of ' + sandboxId,
@@ -12,9 +21,20 @@ export async function forkBuildSandbox(sandboxId: string, userId: string, deploy
         tags: ['deployment', 'preview', userId, deploymentId],
     });
 
-    const session = await sandbox.connect()
+    await provider.destroy();
+
+    const forkedProvider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
+        providerOptions: {
+            codesandbox: {
+                sandboxId: project.id,
+                userId,
+                initClient: true,
+            },
+        },
+    });
+
     return {
-        session,
-        sandboxId: sandbox.id,
-    }
+        provider: forkedProvider,
+        sandboxId: project.id,
+    };
 }

@@ -1,24 +1,25 @@
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { memo } from 'react';
-import { useImagesContext } from '../providers/images-provider';
 import FolderTab from './folder-tab';
 import { FolderDeleteModal } from './modal/folder-delete-modal';
 import { FolderMoveModal } from './modal/folder-move-modal';
 import { FolderRenameModal } from './modal/folder-rename-modal';
 import type { FolderNode } from '@onlook/models';
+import { useFolderContext } from '../providers/folder-provider';
+import { FolderCreateModal } from './modal/folder-create-modal';
 
 interface FolderListProps {
     childFolders: FolderNode[];
     onSelectFolder: (folder: FolderNode) => void;
     folder: FolderNode;
+    rootDir: FolderNode;
     showCreateButton: boolean;
 }
 
 export const FolderList = memo(
-    ({ childFolders, onSelectFolder, folder, showCreateButton }: FolderListProps) => {
-        const { folderOperations } = useImagesContext();
-        const { handleCreateFolder, isOperating } = folderOperations;
+    ({ childFolders, onSelectFolder, folder, showCreateButton, rootDir }: FolderListProps) => {
+        const { handleCreateFolder, isOperating, getImagesInFolder } = useFolderContext();
 
         if (!childFolders.length) {
             return null;
@@ -32,9 +33,10 @@ export const FolderList = memo(
                         <FolderTab
                             key={item.fullPath || index}
                             folder={item}
-                            totalItems={item.images.length}
+                            totalImages={getImagesInFolder(item).length}
                             onSelect={() => onSelectFolder(item)}
                             isDisabled={isOperating}
+                            rootDir={rootDir}
                         />
                     ))}
                 </div>
@@ -51,11 +53,6 @@ export const FolderList = memo(
                         Create a Folder
                     </Button>
                 )}
-
-                {/* Folder Operation Modals */}
-                <FolderRenameModal />
-                <FolderDeleteModal />
-                <FolderMoveModal />
             </div>
         );
     },

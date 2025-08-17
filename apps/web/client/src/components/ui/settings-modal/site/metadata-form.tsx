@@ -1,5 +1,6 @@
 import type { OGImage, PageMetadata, TitleMetadata } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Textarea } from '@onlook/ui/textarea';
@@ -31,6 +32,7 @@ interface MetadataFormProps {
     projectUrl?: string;
     isSimpleTitle: boolean;
     disabled?: boolean;
+    isSaving?: boolean;
     onTitleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onTitleTemplateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
     onTitleAbsoluteChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -57,6 +59,7 @@ export const MetadataForm = ({
     projectUrl,
     isSimpleTitle,
     disabled = false,
+    isSaving = false,
     onTitleChange,
     onTitleTemplateChange,
     onTitleAbsoluteChange,
@@ -151,8 +154,8 @@ export const MetadataForm = ({
     };
 
     return (
-        <div className="text-sm">
-            <div className="flex flex-col gap-6 p-6">
+        <div className="text-sm flex flex-col h-full">
+            <div className="flex flex-col gap-6 p-6 pb-24 overflow-y-auto flex-1">
                 {renderTitle()}
 
                 <Separator />
@@ -227,10 +230,14 @@ export const MetadataForm = ({
                         </div>
                     )}
                 </div>
+            </div>
+            
+            {/* Pinned buttons at the bottom */}
+            <div className="sticky bottom-0 bg-background border-t border-border/50 p-6" style={{ borderTopWidth: '0.5px' }}>
                 <div className="flex justify-end gap-4">
                     <Button
-                        variant="ghost"
-                        className="flex items-center gap-2 px-4 py-0"
+                        variant="outline"
+                        className="flex items-center gap-2 px-4 py-2 bg-background border border-border/50"
                         type="button"
                         onClick={handleDiscard}
                         disabled={!isDirty || disabled}
@@ -239,12 +246,13 @@ export const MetadataForm = ({
                     </Button>
                     <Button
                         variant="secondary"
-                        className="flex items-center gap-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20"
+                        className="flex items-center gap-2 px-4 py-2"
                         type="button"
                         onClick={onSave}
-                        disabled={!isDirty || disabled}
+                        disabled={!isDirty || disabled || isSaving}
                     >
-                        <span>Save changes</span>
+                        {isSaving && <Icons.LoadingSpinner className="h-4 w-4 animate-spin" />}
+                        <span>{isSaving ? 'Saving...' : 'Save changes'}</span>
                     </Button>
                 </div>
             </div>

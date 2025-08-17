@@ -3,10 +3,11 @@
 import { ProcessedFileType, type NextJsProjectValidation, type ProcessedFile } from '@/app/projects/types';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
-import { type SandboxBrowserSession, type WebSocketSession } from '@codesandbox/sdk';
-import { connectToSandbox } from '@codesandbox/sdk/browser';
-import { SandboxTemplates, Templates } from '@onlook/constants';
-import { generate, injectPreloadScript, parse } from '@onlook/parser';
+import { CodeProvider, createCodeProviderClient, Provider } from '@onlook/code-provider';
+import { NEXT_JS_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
+import { RouterType } from '@onlook/models';
+import { generate, getAstFromContent, injectPreloadScript } from '@onlook/parser';
+import { isRootLayoutFile, isTargetFile } from '@onlook/utility';
 import { useRouter } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
@@ -39,6 +40,40 @@ interface ProjectCreationContextValue {
 }
 
 const ProjectCreationContext = createContext<ProjectCreationContextValue | undefined>(undefined);
+
+export function detectPortFromPackageJson(packageJsonFile: ProcessedFile | undefined): number {
+    const defaultPort = 3000;
+
+    if (!packageJsonFile || typeof packageJsonFile.content !== 'string' || packageJsonFile.type !== ProcessedFileType.TEXT) {
+        return defaultPort;
+    }
+
+    try {
+        const pkg = JSON.parse(packageJsonFile.content) as Record<string, unknown>;
+        const scripts = pkg.scripts as Record<string, string> | undefined;
+        const devScript = scripts?.dev;
+
+        if (!devScript || typeof devScript !== 'string') {
+            return defaultPort;
+        }
+
+        const portRegex = /(?:PORT=|--port[=\s]|-p\s*?)(\d+)/;
+        const portMatch = portRegex.exec(devScript);
+
+        if (portMatch?.[1]) {
+            const port = parseInt(portMatch[1], 10);
+            if (port > 0 && port <= 65535) {
+                return port;
+            }
+        }
+
+        return defaultPort;
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        console.warn('Failed to parse package.json for port detection:', errorMessage);
+        return defaultPort;
+    }
+}
 
 interface ProjectCreationProviderProps {
     children: ReactNode;
@@ -80,11 +115,15 @@ export const ProjectCreationProvider = ({
                 return;
             }
 
+            const packageJsonFile = projectData.files.find(
+                (f) => f.path.endsWith('package.json') && f.type === ProcessedFileType.TEXT
+            );
+
             const template = SandboxTemplates[Templates.BLANK];
             const forkedSandbox = await forkSandbox({
                 sandbox: {
                     id: template.id,
-                    port: template.port,
+                    port: detectPortFromPackageJson(packageJsonFile),
                 },
                 config: {
                     title: `Imported project - ${user.id}`,
@@ -92,25 +131,26 @@ export const ProjectCreationProvider = ({
                 },
             });
 
-            const browserSession: SandboxBrowserSession = await startSandbox({
-                sandboxId: forkedSandbox.sandboxId,
-                userId: user.id,
-            });
-
-            const session = await connectToSandbox({
-                session: browserSession,
-                getSession: async (id) => {
-                    return await startSandbox({
-                        sandboxId: id,
+            const provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
+                providerOptions: {
+                    codesandbox: {
+                        sandboxId: forkedSandbox.sandboxId,
                         userId: user.id,
-                    });
+                        initClient: true,
+                        keepActiveWhileConnected: false,
+                        getSession: async (sandboxId, userId) => {
+                            return startSandbox({
+                                sandboxId,
+                                userId,
+                            });
+                        },
+                    },
                 },
             });
 
-            await uploadToSandbox(projectData.files, session);
-            await session.setup.run();
-            await session.setup.waitUntilComplete();
-            await session.disconnect();
+            await uploadToSandbox(projectData.files, provider);
+            await provider.setup({});
+            await provider.destroy();
 
             const project = await createProject({
                 project: {
@@ -157,19 +197,18 @@ export const ProjectCreationProvider = ({
                 return { isValid: false, error: 'React not found in dependencies' };
             }
 
-            let routerType: 'app' | 'pages' = 'pages';
+            let routerType: RouterType = RouterType.PAGES;
 
             const hasAppLayout = files.some(
-                (f) =>
-                    (f.path.includes('app/layout.') || f.path.includes('src/app/layout.')) &&
-                    (f.path.endsWith('.tsx') ||
-                        f.path.endsWith('.ts') ||
-                        f.path.endsWith('.jsx') ||
-                        f.path.endsWith('.js')),
+                (f) => isTargetFile(f.path, {
+                    fileName: 'layout',
+                    targetExtensions: NEXT_JS_FILE_EXTENSIONS,
+                    potentialPaths: ['app', 'src/app'],
+                })
             );
 
             if (hasAppLayout) {
-                routerType = 'app';
+                routerType = RouterType.APP;
             } else {
                 // Check for Pages Router (pages directory)
                 const hasPagesDir = files.some(
@@ -262,24 +301,28 @@ export const useProjectCreation = (): ProjectCreationContextValue => {
     return context;
 };
 
-export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocketSession) => {
+export const uploadToSandbox = async (files: ProcessedFile[], provider: Provider) => {
     for (const file of files) {
         try {
             if (file.type === ProcessedFileType.BINARY) {
                 const uint8Array = new Uint8Array(file.content);
-                await session.fs.writeFile(file.path, uint8Array, {
-                    overwrite: true,
+                await provider.writeFile({
+                    args: {
+                        path: file.path,
+                        content: uint8Array,
+                        overwrite: true,
+                    },
                 });
             } else {
                 let content = file.content;
 
-                const isLayout = file.path.endsWith('app/layout.tsx') || file.path.endsWith('src/app/layout.tsx');
+                const isLayout = isRootLayoutFile(file.path);
                 if (isLayout) {
                     try {
-                        const ast = parse(content, {
-                            sourceType: 'module',
-                            plugins: ['jsx', 'typescript'],
-                        });
+                        const ast = getAstFromContent(content);
+                        if (!ast) {
+                            throw new Error('Failed to parse layout file');
+                        }
                         const modifiedAst = injectPreloadScript(ast);
                         content = generate(modifiedAst, {}, content).code;
                     } catch (parseError) {
@@ -289,8 +332,12 @@ export const uploadToSandbox = async (files: ProcessedFile[], session: WebSocket
                         );
                     }
                 }
-                await session.fs.writeTextFile(file.path, content, {
-                    overwrite: true,
+                await provider.writeFile({
+                    args: {
+                        path: file.path,
+                        content,
+                        overwrite: true,
+                    },
                 });
             }
         } catch (fileError) {

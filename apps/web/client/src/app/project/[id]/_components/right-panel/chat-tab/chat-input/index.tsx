@@ -15,7 +15,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { InputContextPills } from '../context-pills/input-context-pills';
-import { type SuggestionsRef } from '../suggestions';
+import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
 
@@ -26,7 +26,7 @@ export const ChatInput = observer(({
     inputValue: string;
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-    const { sendMessages, stop, isWaiting } = useChatContext();
+    const { sendMessage: sendMessageToChat, stop, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -45,7 +45,7 @@ export const ChatInput = observer(({
         if (textareaRef.current && !isWaiting) {
             focusInput();
         }
-    }, [editorEngine.chat.conversation.current?.messages.length]);
+    }, [editorEngine.chat.conversation.current?.messages]);
 
     useEffect(() => {
         if (editorEngine.state.rightPanelTab === EditorTabValue.CHAT) {
@@ -99,7 +99,7 @@ export const ChatInput = observer(({
             e.stopPropagation();
 
             // Only let natural tab order continue if handleTabNavigation returns false
-            const handled = suggestionRef.current?.handleTabNavigation();
+            const handled = suggestionRef.current?.handleTabNavigation(e.shiftKey);
             if (!handled) {
                 // Focus the textarea
                 textareaRef.current?.focus();
@@ -129,19 +129,18 @@ export const ChatInput = observer(({
             return;
         }
         const savedInput = inputValue.trim();
-        setInputValue('');
-        
-        const streamMessages = chatMode === ChatType.ASK 
-            ? await editorEngine.chat.getAskMessages(savedInput)
-            : await editorEngine.chat.getEditMessages(savedInput);
-            
-        if (!streamMessages) {
+        try {
+            const message = chatMode === ChatType.ASK
+                ? await editorEngine.chat.addAskMessage(savedInput)
+                : await editorEngine.chat.addEditMessage(savedInput);
+
+            await sendMessageToChat(chatMode);
+            setInputValue('');
+        } catch (error) {
+            console.error('Error sending message', error);
             toast.error('Failed to send message. Please try again.');
             setInputValue(savedInput);
-            return;
         }
-
-        sendMessages(streamMessages, chatMode);
     }
 
     const getPlaceholderText = () => {
@@ -203,7 +202,7 @@ export const ChatInput = observer(({
     const handleScreenshot = async () => {
         try {
             const framesWithViews = editorEngine.frames.getAll().filter(f => !!f.view);
-            
+
             if (framesWithViews.length === 0) {
                 toast.error('No active frame available for screenshot');
                 return;
@@ -211,7 +210,7 @@ export const ChatInput = observer(({
 
             let screenshotData = null;
             let mimeType = 'image/jpeg';
-            
+
             for (const frame of framesWithViews) {
                 try {
                     if (!frame.view?.captureScreenshot) {
@@ -300,8 +299,7 @@ export const ChatInput = observer(({
                 }
             }}
         >
-            {/* TODO: Reenable suggestions */}
-            {/* <Suggestions
+            <Suggestions
                 ref={suggestionRef}
                 disabled={disabled}
                 inputValue={inputValue}
@@ -319,7 +317,7 @@ export const ChatInput = observer(({
                         textareaRef.current?.focus();
                     }
                 }}
-            /> */}
+            />
             <div className="flex flex-col w-full p-4">
                 <InputContextPills />
                 <Textarea
@@ -357,15 +355,15 @@ export const ChatInput = observer(({
             </div>
             <div className="flex flex-row w-full justify-between pt-2 pb-2 px-2">
                 <div className="flex flex-row items-center gap-1.5">
-                    <ChatModeToggle 
+                    <ChatModeToggle
                         chatMode={chatMode}
                         onChatModeChange={setChatMode}
                         disabled={disabled}
                     />
                 </div>
                 <div className="flex flex-row items-center gap-1.5">
-                    <ActionButtons 
-                        disabled={disabled} 
+                    <ActionButtons
+                        disabled={disabled}
                         handleImageEvent={handleImageEvent}
                         handleScreenshot={handleScreenshot}
                     />

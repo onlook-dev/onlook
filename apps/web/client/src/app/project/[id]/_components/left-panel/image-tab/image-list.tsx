@@ -4,9 +4,6 @@ import { ImageItem } from './image-item';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { useImagesContext } from './providers/images-provider';
-import DeleteImageModal from './delete-modal';
-import RenameImageModal from './rename-modal';
-import MoveImageModal from './move-modal';
 import { useImageDragDrop } from './hooks/use-image-drag-drop';
 import { cn } from '@onlook/ui/utils';
 
@@ -16,12 +13,9 @@ interface ImageListProps {
 }
 
 export const ImageList = memo(({ images, currentFolder }: ImageListProps) => {
-    const { uploadOperations, deleteOperations, renameOperations, moveOperations } =
-        useImagesContext();
+    const { uploadOperations, error } = useImagesContext();
     const { handleClickAddButton, handleUploadFile, uploadState } = uploadOperations;
-    const { deleteState, onDeleteImage, handleDeleteModalToggle } = deleteOperations;
-    const { renameState, onRenameImage, handleRenameModalToggle } = renameOperations;
-    const { moveState, moveImageToFolder, handleMoveModalToggle } = moveOperations;
+    
     const { handleDragEnter, handleDragLeave, handleDragOver, handleDrop, isDragging } =
         useImageDragDrop(currentFolder);
 
@@ -39,6 +33,12 @@ export const ImageList = memo(({ images, currentFolder }: ImageListProps) => {
                     <div className="mb-2 px-3 py-2 text-sm text-blue-600 bg-blue-50 dark:bg-blue-950/50 rounded-md flex items-center gap-2">
                         <Icons.Reload className="w-4 h-4 animate-spin" />
                         Uploading image...
+                    </div>
+                )}
+                {error && (
+                    <div className="mb-2 px-3 py-2 text-sm text-red-600 bg-red-50 dark:bg-red-950/50 rounded-md flex items-center gap-2">
+                        <Icons.ExclamationTriangle className="w-4 h-4" />
+                        {error}
                     </div>
                 )}
                 {images.length === 0 && (
@@ -68,31 +68,6 @@ export const ImageList = memo(({ images, currentFolder }: ImageListProps) => {
                     ))}
                 </div>
             </div>
-            <DeleteImageModal
-                onDelete={onDeleteImage}
-                isOpen={!!deleteState.imageToDelete}
-                toggleOpen={handleDeleteModalToggle}
-                isLoading={deleteState.isLoading}
-            />
-            <RenameImageModal
-                onRename={onRenameImage}
-                isOpen={
-                    !!renameState.imageToRename &&
-                    !!renameState.newImageName &&
-                    renameState.newImageName !== renameState.imageToRename
-                }
-                toggleOpen={handleRenameModalToggle}
-                newName={renameState.newImageName}
-                isLoading={renameState.isLoading}
-            />
-            <MoveImageModal
-                onMove={moveImageToFolder}
-                isOpen={!!moveState.imageToMove && !!moveState.targetFolder}
-                toggleOpen={handleMoveModalToggle}
-                isLoading={moveState.isLoading}
-                image={moveState.imageToMove}
-                targetFolder={moveState.targetFolder}
-            />
         </div>
     );
 });

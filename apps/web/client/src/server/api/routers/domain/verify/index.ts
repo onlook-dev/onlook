@@ -1,3 +1,4 @@
+import { trackEvent } from '@/utils/analytics/server';
 import { customDomains, customDomainVerification, projectCustomDomains, type CustomDomainVerification } from '@onlook/db';
 import { VerificationRequestStatus } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
@@ -90,6 +91,14 @@ export const verificationRouter = createTRPCRouter({
                     }).where(eq(customDomainVerification.id, verification.id));
                 },
             );
+
+        trackEvent({
+            distinctId: ctx.user.id,
+            event: 'user_verified_domain',
+            properties: {
+                domain: verification.fullDomain,
+            }
+        })
         return {
             success: true,
             failureReason: null,

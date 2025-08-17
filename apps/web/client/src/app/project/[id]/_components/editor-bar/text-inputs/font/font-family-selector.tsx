@@ -2,13 +2,12 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { BrandTabValue, LeftPanelTabValue } from '@onlook/models';
-import type { Font } from '@onlook/models/assets';
 import { Button } from '@onlook/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { toNormalCase } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { ToolbarButton } from '../../toolbar-button';
 import { useTextControl } from '../../hooks/use-text-control';
@@ -17,27 +16,13 @@ import { FontFamily } from './font-family';
 
 export const FontFamilySelector = observer(() => {
     const editorEngine = useEditorEngine();
-    const [fonts, setFonts] = useState<Font[]>([]);
     const [search, setSearch] = useState('');
     const { handleFontFamilyChange, textState } = useTextControl();
     const { isOpen, onOpenChange } = useDropdownControl({
         id: 'font-family-dropdown',
     });
 
-    useEffect(() => {
-        if (!isOpen) return;
-        void (async () => {
-            try {
-                const fonts = await editorEngine.font.scanFonts();
-                setFonts(fonts);
-            } catch (error) {
-                console.error('Failed to scan fonts:', error);
-            }
-        })();
-    }, [isOpen]);
-
-    // Filter fonts by search
-    const filteredFonts = fonts.filter((font) =>
+    const filteredFonts = editorEngine.font.fonts.filter((font) =>
         font.family.toLowerCase().includes(search.toLowerCase()),
     );
 

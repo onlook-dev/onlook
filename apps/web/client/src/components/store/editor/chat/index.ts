@@ -1,7 +1,5 @@
-import { sendAnalytics } from '@/utils/analytics';
 import type { GitCommit } from '@onlook/git';
-import { ChatMessageRole, type ChatMessageContext } from '@onlook/models/chat';
-import type { Message } from 'ai';
+import { ChatMessageRole, type MessageContext, type UserChatMessage } from '@onlook/models/chat';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { ChatContext } from './context';
@@ -31,104 +29,60 @@ export class ChatManager {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }
 
-    async getEditMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return null;
-        }
-
-        const context = contextOverride ?? await this.context.getChatContext();
-        const userMessage = await this.conversation.addUserMessage(content, context);
-
-        this.conversation.current.updateName(content);
-        if (!userMessage) {
-            console.error('Failed to add user message');
-            return null;
-        }
-        this.createCommit(content).then((commit) => {
-            if (commit) {
-                this.conversation.attachCommitToUserMessage(userMessage.id, commit);
-            }
-        });
-        return this.generateStreamMessages();
+    getCurrentConversationId() {
+        return this.conversation.current?.conversation.id;
     }
 
-    async getAskMessages(content: string, contextOverride?: ChatMessageContext[]): Promise<Message[] | null> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return null;
-        }
-
+    async addEditMessage(content: string, contextOverride?: MessageContext[]): Promise<UserChatMessage> {
         const context = contextOverride ?? await this.context.getChatContext();
         const userMessage = await this.conversation.addUserMessage(content, context);
-
-        this.conversation.current.updateName(content);
-        if (!userMessage) {
-            console.error('Failed to add user message');
-            return null;
-        }
-        return this.generateStreamMessages();
+        this.createAndAttachCommitToUserMessage(userMessage.id, content);
+        return userMessage;
     }
 
-    async getFixErrorMessages(): Promise<Message[] | null> {
+    async createAndAttachCommitToUserMessage(messageId: string, content: string): Promise<void> {
+        const commit = await this.createCommit(content)
+        if (commit) {
+            await this.conversation.attachCommitToUserMessage(messageId, commit);
+        }
+    }
+
+    async addAskMessage(content: string, contextOverride?: MessageContext[]): Promise<UserChatMessage> {
+        const context = contextOverride ?? await this.context.getChatContext();
+        const userMessage = await this.conversation.addUserMessage(content, context);
+        return userMessage;
+    }
+
+    async addFixErrorMessage(): Promise<UserChatMessage> {
         const errors = this.editorEngine.error.errors;
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return null;
-        }
-
-        if (errors.length === 0) {
-            console.error('No errors found');
-            return null;
-        }
-
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
         const errorContexts = this.context.getMessageContext(errors);
         const projectContexts = this.context.getProjectContext();
-        const userMessage = this.conversation.addUserMessage(prompt, [
+        const userMessage = await this.conversation.addUserMessage(prompt, [
             ...errorContexts,
             ...projectContexts,
         ]);
-        this.conversation.current.updateName(errors[0]?.content ?? 'Fix errors');
-        if (!userMessage) {
-            console.error('Failed to add user message');
-            return null;
-        }
-        sendAnalytics('send fix error chat message', {
-            errors: errors.map((e) => e.content),
-        });
-        return this.generateStreamMessages();
+        return userMessage
     }
 
-    async getResubmitMessages(id: string, newMessageContent: string) {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return;
-        }
-        const message = this.conversation.current.messages.find((m) => m.id === id);
-        if (!message) {
+    async resubmitMessage(id: string, newMessageContent: string): Promise<UserChatMessage | null> {
+        const oldMessageIndex = this.conversation.current?.messages.findIndex((m) => m.id === id && m.role === ChatMessageRole.USER);
+        if (oldMessageIndex === undefined || oldMessageIndex === -1 || !this.conversation.current?.messages[oldMessageIndex]) {
             console.error('No message found with id', id);
-            return;
-        }
-        if (message.role !== ChatMessageRole.USER) {
-            console.error('Can only edit user messages');
-            return;
-        }
-
-        const newContext = await this.context.getRefreshedContext(message.context);
-        message.updateMessage(newMessageContent, newContext);
-
-        await this.conversation.current.removeAllMessagesAfter(message);
-        await this.conversation.current.updateMessage(message);
-        return this.generateStreamMessages();
-    }
-
-    private async generateStreamMessages(): Promise<Message[] | null> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
             return null;
         }
-        return this.conversation.current.getMessagesForStream();
+
+        const oldMessage = this.conversation.current?.messages[oldMessageIndex] as UserChatMessage;
+
+        // Update the old message with the new content
+        const newContext = await this.context.getRefreshedContext(oldMessage.content.metadata.context);
+        oldMessage.content.metadata.context = newContext;
+        oldMessage.content.parts = [{ type: 'text', text: newMessageContent }];
+
+        // Remove all messages after the old message
+        const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt > oldMessage.createdAt);
+        await this.conversation.removeMessages(messagesToRemove);
+        return oldMessage;
     }
 
     async createCommit(userPrompt: string): Promise<GitCommit | null> {

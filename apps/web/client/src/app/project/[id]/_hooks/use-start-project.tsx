@@ -4,7 +4,15 @@ import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/react';
 import { type ProjectCreateRequest } from '@onlook/db';
-import { ChatType, CreateRequestContextType, MessageContextType, ProjectCreateRequestStatus, type ChatMessageContext, type ImageMessageContext, type Project } from '@onlook/models';
+import {
+    ChatType,
+    CreateRequestContextType,
+    MessageContextType,
+    ProjectCreateRequestStatus,
+    type ImageMessageContext,
+    type MessageContext,
+    type Project,
+} from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { useEffect, useState } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
@@ -16,18 +24,23 @@ export const useStartProject = () => {
     const [error, setError] = useState<string | null>(null);
 
     const { tabState } = useTabActive();
+    const apiUtils = api.useUtils();
     const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
     const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.canvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
-    const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
+    const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
-    const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation();
-
-    const { sendMessages } = useChatContext();
+    const { sendMessage } = useChatContext();
+    const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation({
+        onSettled: async () => {
+            await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
+        },
+    });
 
     useEffect(() => {
         if (project) {
             startSandbox(project);
+            editorEngine.screenshot.lastScreenshotAt = project.metadata.updatedPreviewImgAt;
         }
     }, [project]);
 
@@ -68,26 +81,21 @@ export const useStartProject = () => {
                 throw new Error('Project ID mismatch');
             }
 
-            const createContext: ChatMessageContext[] = await editorEngine.chat.context.getCreateContext();
+            const createContext: MessageContext[] = await editorEngine.chat.context.getCreateContext();
             const imageContexts: ImageMessageContext[] = creationData.context.filter((context) => context.type === CreateRequestContextType.IMAGE).map((context) => ({
                 type: MessageContextType.IMAGE,
                 content: context.content,
                 mimeType: context.mimeType,
                 displayName: 'user image',
             }));
-            const context: ChatMessageContext[] = [...createContext, ...imageContexts];
+            const context: MessageContext[] = [...createContext, ...imageContexts];
             const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
 
-            const messages = await editorEngine.chat.getEditMessages(
+            const message = await editorEngine.chat.addEditMessage(
                 prompt,
                 context,
             );
-
-            if (!messages) {
-                console.error('Failed to get creation messages');
-                throw new Error('Failed to get creation messages');
-            }
-            sendMessages(messages, ChatType.CREATE);
+            sendMessage(ChatType.CREATE);
 
             try {
                 await updateCreateRequest({

@@ -31,7 +31,9 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.SELECT.command, () => (editorEngine.state.editorMode = EditorMode.DESIGN));
     useHotkeys(Hotkey.ESCAPE.command, () => {
         editorEngine.state.editorMode = EditorMode.DESIGN;
-        !editorEngine.text.isEditing && editorEngine.clearUI();
+        if (!editorEngine.text.isEditing) {
+            editorEngine.clearUI();
+        }
     });
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.state.editorMode = EditorMode.PAN));
     useHotkeys(Hotkey.PREVIEW.command, () => (editorEngine.state.editorMode = EditorMode.PREVIEW));
@@ -56,7 +58,14 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
         preventDefault: true,
     });
     useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement(), { preventDefault: true });
-    useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => editorEngine.elements.delete(), { preventDefault: true });
+    useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
+        if (editorEngine.elements.selected.length > 0) {
+            editorEngine.elements.delete();
+        }
+        else if (editorEngine.frames.selected.length > 0 && editorEngine.frames.canDelete()) {
+            editorEngine.frames.deleteSelected();
+        }
+    }, { preventDefault: true });
 
     // Group
     useHotkeys(Hotkey.GROUP.command, () => editorEngine.group.groupSelectedElements());
@@ -67,7 +76,12 @@ export const HotkeysArea = ({ children }: { children: ReactNode }) => {
     useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste(), { preventDefault: true });
     useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut(), { preventDefault: true });
     useHotkeys(Hotkey.DUPLICATE.command, () => {
-        editorEngine.copy.duplicate();
+        if (editorEngine.elements.selected.length > 0) {
+            editorEngine.copy.duplicate();
+        }
+        else if (editorEngine.frames.selected.length > 0 && editorEngine.frames.canDuplicate()) {
+            editorEngine.frames.duplicateSelected();
+        }
     }, { preventDefault: true });
 
     // AI

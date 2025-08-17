@@ -67,7 +67,7 @@ export const Opacity = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="mr-1 group h-8 flex items-center gap-1"
+                        className="group h-8 flex items-center gap-1"
                         onClick={handleInputAreaClick}
                     >
                         <Input
@@ -79,10 +79,12 @@ export const Opacity = observer(() => {
                             value={opacity}
                             onChange={onInputChange}
                             onClick={(e) => e.stopPropagation()}
-                            className="w-14 text-left data-[state=open]:text-white text-small focus:text-foreground-primary focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary transition-colors duration-150 hover"
+                            className="px-1 w-8 text-left data-[state=open]:text-white text-small focus:text-foreground-primary focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none !bg-transparent border-none group-hover:text-foreground-primary focus:ring-0 focus:outline-none text-muted-foreground !hide-spin-buttons no-focus-ring [appearance:textfield] group-hover:text-foreground-primary transition-colors duration-150 hover"
                             aria-label="Opacity percentage"
                         />
-                        <span className="pr-2 cursor-text text-muted-foreground text-xs pointer-events-none select-none bg-transparent group-hover:text-foreground-primary transition-colors duration-150">
+                        <span
+                            onClick={(e) => e.stopPropagation()}
+                            className="pr-2 text-muted-foreground text-xs bg-transparent">
                             %
                         </span>
                     </ToolbarButton>

@@ -9,9 +9,13 @@ export class ChatErrorManager {
         makeAutoObservable(this);
     }
 
+    hasError() {
+        return this.message !== null || this.usage !== null;
+    }
+
     handleChatError(error: Error) {
-        // Try to parse error message as JSON
         try {
+            // Try to parse error message as JSON
             const parsed = JSON.parse(error.message) as {
                 code: number;
                 error: string;
@@ -19,12 +23,11 @@ export class ChatErrorManager {
             };
             if (parsed && typeof parsed === 'object') {
                 if (parsed.code === 402 && parsed.usage) {
-                    this.usage = parsed.usage as Usage;
+                    this.usage = parsed.usage;
                     this.message = parsed.error || 'Message limit exceeded.';
                 } else {
                     this.message = parsed.error || error.toString();
                 }
-                return;
             }
         } catch (e) {
             // Not JSON, fallback
