@@ -58,7 +58,6 @@ export function ProjectCard({
             whileHover={{ scale: 1.02, y: -4 }}
             transition={{ type: 'spring', stiffness: 300, damping: 24 }}
             className="w-full break-inside-avoid cursor-pointer"
-            onClick={handleCardClick}
         >
             <div className={`relative ${aspectRatio} rounded-lg overflow-hidden shadow-sm hover:shadow-xl hover:shadow-black/20 transition-all duration-300 group`}>
                 {img ? (
@@ -71,16 +70,13 @@ export function ProjectCard({
 
                 <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
 
-                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-20">
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
                     <Settings project={project} refetch={refetch} />
                 </div>
 
-                <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 hover:opacity-100 transition-opacity">
+                <div className="absolute inset-0 flex items-center justify-center bg-background/30 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-20">
                     <EditAppButton
                         project={project}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                        }}
                     />
                 </div>
 
