@@ -30,7 +30,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
-        router.push(Routes.LOGIN);
+        router.push(`${Routes.LOGIN}?returnUrl=${window.location.pathname}`);
     };
 
     const handleOpenSubscription = () => {

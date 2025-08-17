@@ -2,6 +2,7 @@
 
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
+import { createClient } from '@/utils/supabase/client';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Skeleton } from '@onlook/ui/skeleton';
@@ -24,6 +25,12 @@ export function Main({ invitationId }: { invitationId: string }) {
             }
         },
     });
+
+    const handleLogin = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        router.push(`${Routes.LOGIN}?returnUrl=${window.location.href}`);
+    }
 
     const error = getInvitationError || acceptInvitationError;
 
@@ -52,15 +59,22 @@ export function Main({ invitationId }: { invitationId: string }) {
                     <div className="text-md">
                         {error.message}
                     </div>
-                    <div className="flex justify-center">
+                    <div className="flex justify-center gap-4">
                         <Button
                             type="button"
+                            variant="outline"
                             onClick={() => {
                                 router.push(Routes.PROJECTS);
                             }}
                         >
                             <Icons.ArrowLeft className="h-4 w-4" />
                             Back to home
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={handleLogin}
+                        >
+                            Log in with different account
                         </Button>
                     </div>
                 </div>
