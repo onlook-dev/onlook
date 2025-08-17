@@ -1,22 +1,23 @@
+import { env } from '@/env';
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '../trpc';
 
 class ServerSideFigmaMCP {
-    private readonly MCP_BASE_URL = process.env.MCP_SERVER_URL || 'http://127.0.0.1:3845';
+    private readonly MCP_BASE_URL = env.MCP_SERVER_URL || 'http://127.0.0.1:3845';
     private requestId = 0;
     private sessionId: string | null = null;
     private lastConnectionTime = 0;
     private sessionExpiry = 5 * 60 * 1000; // 5 minutes
-    
+
     // For persistent SSE connection
     private sseController: AbortController | null = null;
     private pendingRequests = new Map<number, { resolve: Function, reject: Function, timeout: NodeJS.Timeout }>();
     private isConnected = false;
 
     private isSessionValid(): boolean {
-        return this.sessionId !== null && 
-               this.isConnected &&
-               (Date.now() - this.lastConnectionTime) < this.sessionExpiry;
+        return this.sessionId !== null &&
+            this.isConnected &&
+            (Date.now() - this.lastConnectionTime) < this.sessionExpiry;
     }
 
     async connectAndMaintainSession(): Promise<boolean> {
@@ -28,9 +29,9 @@ class ServerSideFigmaMCP {
         if (this.sseController) {
             this.sseController.abort();
         }
-        
+
         this.sseController = new AbortController();
-        
+
         try {
             const response = await fetch(`${this.MCP_BASE_URL}/sse`, {
                 headers: {
@@ -51,7 +52,7 @@ class ServerSideFigmaMCP {
 
             // Starts processing the SSE stream in the background
             this.processSSEStream(reader);
-            
+
             // Waits for session establishment
             return new Promise((resolve, reject) => {
                 const timeout = setTimeout(() => {
@@ -97,7 +98,7 @@ class ServerSideFigmaMCP {
                     }
                     if (line.startsWith('data: ')) {
                         const eventData = line.substring(6).trim();
-                        
+
                         // Checks if this is session establishment
                         if (eventData.includes('sessionId=')) {
                             const sessionMatch = /sessionId=([^&]+)/.exec(eventData);
@@ -108,7 +109,7 @@ class ServerSideFigmaMCP {
                                 continue;
                             }
                         }
-                        
+
                         // Try to parse as JSON-RPC response
                         try {
                             const mcpResponse = JSON.parse(eventData);
@@ -132,11 +133,11 @@ class ServerSideFigmaMCP {
     private handleMCPResponse(response: any) {
         const requestId = response.id;
         const pending = this.pendingRequests.get(requestId);
-        
+
         if (pending) {
             clearTimeout(pending.timeout);
             this.pendingRequests.delete(requestId);
-            
+
             if (response.error) {
                 pending.reject(new Error(`MCP error: ${response.error.message}`));
             } else {
@@ -148,12 +149,12 @@ class ServerSideFigmaMCP {
     private cleanup() {
         this.isConnected = false;
         this.sessionId = null;
-        
+
         if (this.sseController) {
             this.sseController.abort();
             this.sseController = null;
         }
-        
+
         // Reject all pending requests
         for (const [id, pending] of this.pendingRequests) {
             clearTimeout(pending.timeout);
@@ -201,9 +202,9 @@ class ServerSideFigmaMCP {
 
         const endpoint = `${this.MCP_BASE_URL}/messages?sessionId=${this.sessionId}`;
         const abortController = new AbortController();
-        
+
         const timeoutId = setTimeout(() => abortController.abort(), 30000);
-        
+
         try {
             const response = await fetch(endpoint, {
                 method: 'POST',
@@ -257,7 +258,7 @@ class ServerSideFigmaMCP {
     extractNodeIdFromUrl(figmaUrl: string): string | null {
         try {
             const url = new URL(figmaUrl);
-            
+
             // First try to get node-id from query parameters
             const nodeIdParam = url.searchParams.get('node-id');
             if (nodeIdParam) {
@@ -297,12 +298,12 @@ class ServerSideFigmaMCP {
         if (!data) {
             return null;
         }
-        
+
         // Handle different response formats
         if (data.content && Array.isArray(data.content)) {
             return data.content.map((item: any) => item.text || item.data || item).join('\n');
         }
-        
+
         if (typeof data === 'string') {
             return data;
         }
@@ -312,7 +313,7 @@ class ServerSideFigmaMCP {
         if (data.data) {
             return data.data;
         }
-        
+
         return JSON.stringify(data, null, 2);
     }
 
@@ -447,8 +448,8 @@ export const figmaRouter = createTRPCRouter({
                 const connected = await figmaMCP.connectAndMaintainSession();
                 return {
                     connected,
-                    message: connected 
-                        ? 'Successfully connected to Figma MCP server' 
+                    message: connected
+                        ? 'Successfully connected to Figma MCP server'
                         : 'Failed to connect. Make sure Figma desktop app is running with MCP server enabled.'
                 };
             } catch (error) {
@@ -475,7 +476,7 @@ export const figmaRouter = createTRPCRouter({
         .query(async () => {
             try {
                 const { isValid, sessionId, lastConnectionTime } = figmaMCP.getSessionInfo();
-                
+
                 return {
                     sessionValid: isValid,
                     sessionId: sessionId ? sessionId.substring(0, 8) + '...' : null,
