@@ -1,5 +1,6 @@
 import type {
     ErrorMessageContext,
+    FigmaMessageContext,
     FileMessageContext,
     HighlightMessageContext,
     MessageContext,
@@ -72,6 +73,7 @@ export function getHydratedUserMessage(
     const errors = context.filter((c) => c.type === 'error').map((c) => c);
     const project = context.filter((c) => c.type === 'project').map((c) => c);
     const images = context.filter((c) => c.type === 'image').map((c) => c);
+    const figma = context.filter((c) => c.type === 'figma').map((c) => c);
 
     // If there are 50 user messages in the contexts, we can trim all of them except
     // the last one. The logic could be adjusted to trim more or less messages.
@@ -85,9 +87,13 @@ export function getHydratedUserMessage(
             prompt += wrapXml('truncated-context', contextPrompt);
         }
     } else {
-        const contextPrompt = getFilesContent(files, highlights);
-        if (contextPrompt) {
-            prompt += wrapXml('context', contextPrompt);
+        const fileContextPrompt = getFilesContent(files, highlights);
+        if (fileContextPrompt) {
+            prompt += wrapXml('context', fileContextPrompt);
+        }
+        const figmaContextPrompt = getFigmaContent(figma);
+        if (figmaContextPrompt) {
+            prompt += wrapXml('figma-context', figmaContextPrompt);
         }
     }
 
@@ -165,6 +171,18 @@ export function getFilesContent(
         index++;
     }
 
+    return prompt;
+}
+
+export function getFigmaContent(figmaContext: FigmaMessageContext[]) {
+    if (figmaContext.length === 0) {
+        return '';
+    }
+    let prompt = '';
+    prompt += `${CONTEXT_PROMPTS.figmaContentPrefix}\n`;
+    for (const figma of figmaContext) {
+        prompt += `${JSON.stringify(figma)}\n`;
+    }
     return prompt;
 }
 

@@ -1,13 +1,13 @@
 ---
 title: Figma to Onlook
-description: Export Figma designs directly into Onlook
+description: Import Figma designs directly into Onlook
 ---
 
-# Figma to Onlook
+# Import Figma designs to Onlook
 
-Export Figma designs directly into Onlook. No developers needed. This guide shows you how to structure your design, export it, and turn it into a working React application with Onlook.
+Import Figma designs directly into Onlook. No developers needed. This guide shows you how to import your Figma design into Onlook.
 
-{/* ![Figma to Onlook Banner](/images/figma-to-onlook-banner.png) */}
+![Figma to Onlook Banner](/images/figma-to-onlook-banner.png)
 *Transform your Figma designs into working code with Onlook*
 
 ## Why This Integration Changes Everything
@@ -19,7 +19,7 @@ Designers no longer have to stop at mockups. With Onlook, you can:
 - Connect your UI to real data sources
 - Deploy your work as a fully functional application
 
-## Step-by-Step: Figma to React App
+## How do I import Figma Designs into Onlook?
 
 ### 1. Structure Your Figma Design
 
@@ -37,7 +37,6 @@ For smooth importing, your Figma file needs to be well-organized. Here's how to 
 - Avoid symbols and nested clutter
 - Group similar components logically
 
-{/* ![Layer Naming](/images/layer-naming.png) */}
 *Properly named layers make for better code generation*
 
 #### Build Reusable Components
@@ -50,34 +49,126 @@ For smooth importing, your Figma file needs to be well-organized. Here's how to 
 - Apply global styles
 - Use a shared component library if available
 
-### 2. Import into Onlook
+You'll need to be on Figma's Professional or Developer Plan to use the Import from Figma MCP feature. To read more about the feature, visit <a href="https://help.figma.com/hc/en-us/articles/32132100833559-Guide-to-the-Dev-Mode-MCP-Server" target="_blank" rel="noopener noreferrer">Figma's official documentation</a>.
 
-1. Export your Figma design as SVG or PNG
-2. Open Onlook and create a new project
-3. Import your design assets
-4. Use Onlook's tools to recreate the design as React components
 
-### 3. Refine in Onlook
+### 2. Setup the Figma connection
+1. Open Figma desktop and make sure you're on the latest version of Figma by clicking the "Figma" menu item in the upper left corner and selecting the "Check for Updates" menu item.
 
-This is where the magic happens—turning static designs into real, usable apps.
+![Figma Check for Updates](/images/figma-check-for-updates.png)
 
-1. Use AI prompts to improve your components
-2. Preview in real-time
-3. Add interactions and functionality
-4. Connect to data sources if needed
+2. Open a Figma design or create a new one that you'd like to use as a reference for Onlook.
+3. Select the Figma logo in the upper left corner to open the menu. 
+4. Under Preferences, select "Enable Dev Mode MCP Server." You should see a confirmation message at the bottom of the screen letting you know the server is enabled and running.
+
+
+### 3. Import your design into Onlook.
+
+Once you have the connection established, there are two ways you can import your design into Onlook: 
+1. Link-based
+2. Selection-based
+
+#### Link-based import
+1. Copy the link to a frame or layer in Figma.
+
+![Copy link to frame or layer](/images/figma-link-to-selection.png)
+
+2. Prompt your client to help you implement the design. 
+
+
+#### Selection-based import
+
+1. Select a frame or layer inside Figma using the desktop app. Click the "Add Selected Frame from Figma" button to add it to your prompt. Your design will be added as a badge above the prompt box when it has been successfully attached to the prompt.
+
+![Use Figma selection](/images/figma-selection.png)
+
+2. Prompt your client to help you implement your current selection. When you submit your prompt, the design context will be included automatically.
+
+
+### 3. Refine your design in Onlook
+
+Once you've brought your design into Onlook, you can use it as the foundation continuing to iterate with AI. Some ideas for things you can ask Onlook to do with your design include: 
+
+* Add animations to this design.
+* Make this design interactive.
+* Add missing elements to this design.
+* Rewrite the copy to be simpler or easier to understand.
 
 ### 4. Deploy Your App
 
 When you're ready:
 - Push your app live with one click
 - Share it with your team or users
-- Iterate based on feedback
+- Iterate based on feedback from your users.
 
-## Resources
+## Questions
 
-- [Figma Auto-Layout Tips](https://help.figma.com/hc/en-us/articles/360040451373-Create-dynamic-designs-with-Auto-layout)
+### How do I import Figma designs into Onlook?
+To import Figma designs into Onlook, you'll need to:
+1. Be on Figma's Professional or Developer Plan
+2. Enable Dev Mode MCP Server in Figma
+3. Either copy a frame/layer link or select elements directly in Figma
+4. Use the "Add Selected Frame from Figma" button in Onlook
 
+### Can I import Figma designs into Onlook without coding?
+Yes! Onlook allows you to import Figma designs directly without any coding knowledge. The platform automatically converts your Figma designs into working React components that you can then refine using AI prompts.
 
-## Got Feedback?
+### What are the requirements for importing Figma to Onlook?
+You need:
+- A Figma Professional or Developer Plan subscription
+- The latest version of the Figma desktop app
+- The Dev Mode MCP Server enabled in Figma
+- An Onlook account
 
-We're building this for *you*. Tag us, DM us, or share your experience—we're listening.
+### How do I enable Figma's Dev Mode MCP Server?
+1. Open Figma desktop
+2. Click the Figma logo in the upper left corner
+3. Go to Preferences
+4. Select "Enable Dev Mode MCP Server"
+5. You'll see a confirmation message when it's running
+
+### Can I import specific elements from my Figma design?
+Yes, you can import specific elements in two ways:
+1. Link-based: Copy the link to a specific frame or layer
+2. Selection-based: Select elements directly in Figma and use the "Add Selected Frame from Figma" button
+
+### What can I do with my Figma design after importing it to Onlook?
+After importing, you can:
+- Add animations to the design
+- Make it interactive
+- Add missing elements
+- Rewrite copy
+- Connect it to data sources
+- Deploy it as a working application
+
+### Why isn't my Figma import to Onlook working?
+Common issues include:
+- Not being on the latest Figma version
+- Not having a Professional/Developer Plan
+- Dev Mode MCP Server not enabled
+- Network connectivity issues
+
+### Can I edit my Figma design after importing it to Onlook?
+Yes! After importing, you can use AI prompts to:
+- Modify the design
+- Add new elements
+- Change the styling
+- Make it interactive
+- Add animations
+
+### Do I need to be a developer to use Figma with Onlook?
+No, you don't need any coding knowledge. Onlook is designed for designers and non-technical users. The platform handles the code conversion automatically, and you can make changes using natural language prompts.
+
+### How do I make my Figma design interactive in Onlook?
+After importing your design, you can use AI prompts to add interactivity. Simply ask Onlook to:
+- Add click interactions
+- Create hover effects
+- Implement form functionality
+- Add navigation
+- Create animations
+
+## Help
+
+If you're running into issues, you can contact us at <a href="mailto:support@onlook.com?subject=Help%20with%20Figma%20Import%20feature">support@onlook.com</a> or join our <a href="https://discord.gg/ZZzadNQtns" target="_blank" rel="noopener noreferrer">Discord channel</a> and ask the community for help.
+
+Double-check that you're on the latest version of Figma and that you're on a paid plan in Figma, otherwise you won't be able to use the Figma Import feature.
