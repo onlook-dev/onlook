@@ -141,6 +141,9 @@
                         },
                         "miniChat": {
                             "button": "AIとチャット"
+                        },
+                        "openInCode": {
+                            "button": "コードで開く"
                         }
                     },
                     "styles": {

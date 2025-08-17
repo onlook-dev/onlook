@@ -74,6 +74,7 @@ export const Overlay = observer(() => {
                 <OverlayChat
                     elementId={editorEngine.elements.selected[0]?.domId ?? ''}
                     selectedEl={overlayState.clickRects[0] ?? null}
+                    oid={editorEngine.elements.selected[0]?.oid || ''}
                 />
             )}
         </div>

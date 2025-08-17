@@ -243,6 +243,9 @@
                         },
                         "miniChat": {
                             "button": "Chatear con IA"
+                        },
+                        "openInCode": {
+                            "button": "Abrir en Code"
                         }
                     },
                     "styles": {

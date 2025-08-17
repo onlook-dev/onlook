@@ -243,6 +243,9 @@
                         },
                         "miniChat": {
                             "button": "AI와 채팅하기"
+                        },
+                        "openInCode": {
+                            "button": "코드에서 열기"
                         }
                     },
                     "styles": {
