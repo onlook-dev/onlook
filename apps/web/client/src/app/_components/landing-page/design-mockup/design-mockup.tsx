@@ -71,174 +71,84 @@ export function DesignMockup() {
         </div>
         
         {/* Image Grid */}
-        <div className="flex-1 pt-3 pr-4 h-full">
-          <div className="columns-4 gap-4 h-full overflow-y-auto">
+        <div className="flex-1 pt-3 pr-4">
+          <div className="columns-4 gap-4">
             {/* Image Cards */}
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.run4iXjsEavMyQ_minimalist_interior_wit_310f6c88-ea16-448f-af55-16f51782132a_1.png"
+              src="/assets/the___daniel_httpss.mj.run4iXjsEavMyQ_minimalist_interior_wit_310f6c88-ea16-448f-af55-16f51782132a_1.jpg"
               alt="Minimalist Interior with Dramatic Lighting"
               caption="Minimalist Interior with Dramatic Lighting"
               isSelected={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.run8EdjwNCSTns_black_leather_bar_stool_013dbd70-a2cc-44f7-a314-bbe275b86563_3.png"
+              src="/assets/the___daniel_httpss.mj.run8EdjwNCSTns_black_leather_bar_stool_013dbd70-a2cc-44f7-a314-bbe275b86563_3.jpg"
               alt="Black Leather Bar Stool"
               caption="Black Leather Bar Stool with Brass Accents"
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.runAp9BRoSUG-Q_silhouette_of_a_black_b_66ef6127-e9fd-4a70-8769-989d81178b23_1.png"
-              alt="Black Bar Stool Silhouette"
-              caption="Black Bar Stool Silhouette Design"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runcW6Xiv8NRPs_close-up_of_two_ceramic_de5b83cb-7ee5-4430-af5b-f868d487ebe4_2.png"
-              alt="Ceramic Brutalist Objects"
-              caption="Ceramic Brutalist Objects with Spikes"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runF-rvbzgq3F8_brutalist_dark_glass_va_748a3c8c-a6a5-4840-93e7-efbbffcce8f1_1.png"
-              alt="Brutalist Dark Glass Vase"
-              caption="Brutalist Dark Glass Vase Sculpture"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runKt88JTu6rPQ_golden_muted_sharp_inte_324633e8-d399-4025-9a0f-a6010f1c4df2_0.png"
-              alt="Golden Muted Interior"
-              caption="Golden Muted Interior with Sharp Lines"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runMVYWfDFX_XE_realistic_contemporary__fe607fdd-058e-47bf-ab6f-d22b732c2f66_2.png"
-              alt="Contemporary Brutalist Interior"
-              caption="Contemporary Brutalist Interior Design"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runPguWEsbeT0k_two_minimalist_zig-zag__7f026ef1-b94a-4fce-a7c3-551f51cf0726_0.png"
-              alt="Minimalist Zig-Zag Chairs"
-              caption="Minimalist Zig-Zag Chair Design"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runpYhbRvhCgnQ_minimalist_metalic_shee_8daa01a7-2b6e-4bb4-9e13-6c6ac6f05959_1.png"
-              alt="Minimalist Metallic Sheer"
-              caption="Minimalist Metallic Sheer Design"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runSh8wz2Xb28A_lounge_chair_against_a__ddb9bc7d-889d-4ea1-9129-48646172c544_2.png"
-              alt="Lounge Chair Against Wall"
-              caption="Lounge Chair Against Clean Wall"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runzX8_66H3mvo_spikey_ceramic_iron_met_4e9c30d0-e0cd-4f56-87f7-f62c2f691c08_2.png"
+              src="/assets/the___daniel_httpss.mj.runzX8_66H3mvo_spikey_ceramic_iron_met_4e9c30d0-e0cd-4f56-87f7-f62c2f691c08_2.jpg"
               alt="Spikey Ceramic Iron Metal"
               caption="Spikey Ceramic Iron Metal Sculpture"
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.run4iXjsEavMyQ_minimalist_interior_wit_310f6c88-ea16-448f-af55-16f51782132a_1.png"
-              alt="Minimalist Interior Design"
-              caption="Minimalist Interior Design Concepts"
+              src="/assets/the___daniel_httpss.mj.runAp9BRoSUG-Q_silhouette_of_a_black_b_66ef6127-e9fd-4a70-8769-989d81178b23_1.jpg"
+              alt="Black Bar Stool Silhouette"
+              caption="Black Bar Stool Silhouette Design"
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.run8EdjwNCSTns_black_leather_bar_stool_013dbd70-a2cc-44f7-a314-bbe275b86563_3.png"
+              src="/assets/the___daniel_httpss.mj.runcW6Xiv8NRPs_close-up_of_two_ceramic_de5b83cb-7ee5-4430-af5b-f868d487ebe4_2.jpg"
+              alt="Ceramic Brutalist Objects"
+              caption="Ceramic Brutalist Objects with Spikes"
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.runF-rvbzgq3F8_brutalist_dark_glass_va_748a3c8c-a6a5-4840-93e7-efbbffcce8f1_1.jpg"
+              alt="Brutalist Dark Glass Vase"
+              caption="Brutalist Dark Glass Vase Sculpture"
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.runKt88JTu6rPQ_golden_muted_sharp_inte_324633e8-d399-4025-9a0f-a6010f1c4df2_0.jpg"
+              alt="Golden Muted Interior"
+              caption="Golden Muted Interior with Sharp Lines"
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.runMVYWfDFX_XE_realistic_contemporary__fe607fdd-058e-47bf-ab6f-d22b732c2f66_2.jpg"
+              alt="Contemporary Brutalist Interior"
+              caption="Contemporary Brutalist Interior Design"
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.runPguWEsbeT0k_two_minimalist_zig-zag__7f026ef1-b94a-4fce-a7c3-551f51cf0726_0.jpg"
+              alt="Minimalist Zig-Zag Chairs"
+              caption="Minimalist Zig-Zag Chair Design"
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.runpYhbRvhCgnQ_minimalist_metalic_shee_8daa01a7-2b6e-4bb4-9e13-6c6ac6f05959_1.jpg"
+              alt="Minimalist Metallic Sheer"
+              caption="Minimalist Metallic Sheer Design"
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.runSh8wz2Xb28A_lounge_chair_against_a__ddb9bc7d-889d-4ea1-9129-48646172c544_2.jpg"
+              alt="Lounge Chair Against Wall"
+              caption="Lounge Chair Against Clean Wall"
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.run0PLeZ5UEQR0_Metallic_chair_with_a_b_df9ea8f5-80e6-494a-9275-e01030e157b9_2.jpg"
+              alt="Metallic Chair with Brutalist Design"
+              caption="Metallic Chair with Brutalist Design"
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.runtlX3nAWDPCk_Living_room_with_metal__53bf67c2-354a-4072-bd46-abf7aa0e555e_0.jpg"
+              alt="Living Room with Metal Furniture"
+              caption="Living Room with Metal Furniture Design"
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.runIdTptP6hhTA_a_metallic_brushed_meta_76b89c75-015d-4127-bef8-cbf67bf63e3d_2%20(1).jpg"
+              alt="Metallic Brushed Metal Chair"
+              caption="Metallic Brushed Metal Chair Design"
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.run8EdjwNCSTns_black_leather_bar_stool_013dbd70-a2cc-44f7-a314-bbe275b86563_3.jpg"
               alt="Black Leather Furniture"
               caption="Black Leather Furniture Design"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runAp9BRoSUG-Q_silhouette_of_a_black_b_66ef6127-e9fd-4a70-8769-989d81178b23_1.png"
-              alt="Black Silhouette Design"
-              caption="Black Silhouette Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runcW6Xiv8NRPs_close-up_of_two_ceramic_de5b83cb-7ee5-4430-af5b-f868d487ebe4_2.png"
-              alt="Ceramic Brutalist Art"
-              caption="Ceramic Brutalist Art Objects"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runF-rvbzgq3F8_brutalist_dark_glass_va_748a3c8c-a6a5-4840-93e7-efbbffcce8f1_1.png"
-              alt="Dark Glass Vase"
-              caption="Dark Glass Vase Sculpture"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runKt88JTu6rPQ_golden_muted_sharp_inte_324633e8-d399-4025-9a0f-a6010f1c4df2_0.png"
-              alt="Golden Interior Design"
-              caption="Golden Interior Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runMVYWfDFX_XE_realistic_contemporary__fe607fdd-058e-47bf-ab6f-d22b732c2f66_2.png"
-              alt="Contemporary Interior"
-              caption="Contemporary Interior Styling"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runPguWEsbeT0k_two_minimalist_zig-zag__7f026ef1-b94a-4fce-a7c3-551f51cf0726_0.png"
-              alt="Zig-Zag Chair Design"
-              caption="Zig-Zag Chair Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runpYhbRvhCgnQ_minimalist_metalic_shee_8daa01a7-2b6e-4bb4-9e13-6c6ac6f05959_1.png"
-              alt="Metallic Sheer Design"
-              caption="Metallic Sheer Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runSh8wz2Xb28A_lounge_chair_against_a__ddb9bc7d-889d-4ea1-9129-48646172c544_2.png"
-              alt="Lounge Chair Design"
-              caption="Lounge Chair Design Concepts"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runzX8_66H3mvo_spikey_ceramic_iron_met_4e9c30d0-e0cd-4f56-87f7-f62c2f691c08_2.png"
-              alt="Spikey Ceramic Design"
-              caption="Spikey Ceramic Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.run4iXjsEavMyQ_minimalist_interior_wit_310f6c88-ea16-448f-af55-16f51782132a_1.png"
-              alt="Minimalist Design"
-              caption="Minimalist Design Concepts"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.run8EdjwNCSTns_black_leather_bar_stool_013dbd70-a2cc-44f7-a314-bbe275b86563_3.png"
-              alt="Black Leather Design"
-              caption="Black Leather Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runAp9BRoSUG-Q_silhouette_of_a_black_b_66ef6127-e9fd-4a70-8769-989d81178b23_1.png"
-              alt="Black Design Elements"
-              caption="Black Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runcW6Xiv8NRPs_close-up_of_two_ceramic_de5b83cb-7ee5-4430-af5b-f868d487ebe4_2.png"
-              alt="Ceramic Design"
-              caption="Ceramic Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runF-rvbzgq3F8_brutalist_dark_glass_va_748a3c8c-a6a5-4840-93e7-efbbffcce8f1_1.png"
-              alt="Glass Vase Design"
-              caption="Glass Vase Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runKt88JTu6rPQ_golden_muted_sharp_inte_324633e8-d399-4025-9a0f-a6010f1c4df2_0.png"
-              alt="Golden Design"
-              caption="Golden Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runMVYWfDFX_XE_realistic_contemporary__fe607fdd-058e-47bf-ab6f-d22b732c2f66_2.png"
-              alt="Contemporary Design"
-              caption="Contemporary Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runPguWEsbeT0k_two_minimalist_zig-zag__7f026ef1-b94a-4fce-a7c3-551f51cf0726_0.png"
-              alt="Zig-Zag Design"
-              caption="Zig-Zag Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runpYhbRvhCgnQ_minimalist_metalic_shee_8daa01a7-2b6e-4bb4-9e13-6c6ac6f05959_1.png"
-              alt="Metallic Elements"
-              caption="Metallic Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runSh8wz2Xb28A_lounge_chair_against_a__ddb9bc7d-889d-4ea1-9129-48646172c544_2.png"
-              alt="Lounge Elements"
-              caption="Lounge Design Elements"
-            />
-            <ImageCard
-              src="/assets/the___daniel_httpss.mj.runzX8_66H3mvo_spikey_ceramic_iron_met_4e9c30d0-e0cd-4f56-87f7-f62c2f691c08_2.png"
-              alt="Spikey Elements"
-              caption="Spikey Design Elements"
             />
           </div>
         </div>
@@ -292,70 +202,88 @@ export function DesignMockupMobile() {
           <div className="columns-2 gap-2 h-full overflow-y-auto">
             {/* Image Cards */}
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.run4iXjsEavMyQ_minimalist_interior_wit_310f6c88-ea16-448f-af55-16f51782132a_1.png"
+              src="/assets/the___daniel_httpss.mj.run4iXjsEavMyQ_minimalist_interior_wit_310f6c88-ea16-448f-af55-16f51782132a_1.jpg"
               alt="Minimalist Interior with Dramatic Lighting"
               caption="Minimalist Interior with Dramatic Lighting"
               isSelected={false}
               lightMode={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.run8EdjwNCSTns_black_leather_bar_stool_013dbd70-a2cc-44f7-a314-bbe275b86563_3.png"
+              src="/assets/the___daniel_httpss.mj.run8EdjwNCSTns_black_leather_bar_stool_013dbd70-a2cc-44f7-a314-bbe275b86563_3.jpg"
               alt="Black Leather Bar Stool"
               caption="Black Leather Bar Stool with Brass Accents"
               lightMode={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.runAp9BRoSUG-Q_silhouette_of_a_black_b_66ef6127-e9fd-4a70-8769-989d81178b23_1.png"
+              src="/assets/the___daniel_httpss.mj.runAp9BRoSUG-Q_silhouette_of_a_black_b_66ef6127-e9fd-4a70-8769-989d81178b23_1.jpg"
               alt="Black Bar Stool Silhouette"
               caption="Black Bar Stool Silhouette Design"
               lightMode={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.runcW6Xiv8NRPs_close-up_of_two_ceramic_de5b83cb-7ee5-4430-af5b-f868d487ebe4_2.png"
+              src="/assets/the___daniel_httpss.mj.runcW6Xiv8NRPs_close-up_of_two_ceramic_de5b83cb-7ee5-4430-af5b-f868d487ebe4_2.jpg"
               alt="Ceramic Brutalist Objects"
               caption="Ceramic Brutalist Objects with Spikes"
               lightMode={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.runF-rvbzgq3F8_brutalist_dark_glass_va_748a3c8c-a6a5-4840-93e7-efbbffcce8f1_1.png"
+              src="/assets/the___daniel_httpss.mj.runF-rvbzgq3F8_brutalist_dark_glass_va_748a3c8c-a6a5-4840-93e7-efbbffcce8f1_1.jpg"
               alt="Brutalist Dark Glass Vase"
               caption="Brutalist Dark Glass Vase Sculpture"
               lightMode={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.runKt88JTu6rPQ_golden_muted_sharp_inte_324633e8-d399-4025-9a0f-a6010f1c4df2_0.png"
+              src="/assets/the___daniel_httpss.mj.runKt88JTu6rPQ_golden_muted_sharp_inte_324633e8-d399-4025-9a0f-a6010f1c4df2_0.jpg"
               alt="Golden Muted Interior"
               caption="Golden Muted Interior with Sharp Lines"
               lightMode={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.runMVYWfDFX_XE_realistic_contemporary__fe607fdd-058e-47bf-ab6f-d22b732c2f66_2.png"
+              src="/assets/the___daniel_httpss.mj.runMVYWfDFX_XE_realistic_contemporary__fe607fdd-058e-47bf-ab6f-d22b732c2f66_2.jpg"
               alt="Contemporary Brutalist Interior"
               caption="Contemporary Brutalist Interior Design"
               lightMode={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.runPguWEsbeT0k_two_minimalist_zig-zag__7f026ef1-b94a-4fce-a7c3-551f51cf0726_0.png"
+              src="/assets/the___daniel_httpss.mj.runPguWEsbeT0k_two_minimalist_zig-zag__7f026ef1-b94a-4fce-a7c3-551f51cf0726_0.jpg"
               alt="Minimalist Zig-Zag Chairs"
               caption="Minimalist Zig-Zag Chair Design"
               lightMode={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.runpYhbRvhCgnQ_minimalist_metalic_shee_8daa01a7-2b6e-4bb4-9e13-6c6ac6f05959_1.png"
+              src="/assets/the___daniel_httpss.mj.runpYhbRvhCgnQ_minimalist_metalic_shee_8daa01a7-2b6e-4bb4-9e13-6c6ac6f05959_1.jpg"
               alt="Minimalist Metallic Sheer"
               caption="Minimalist Metallic Sheer Design"
               lightMode={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.runSh8wz2Xb28A_lounge_chair_against_a__ddb9bc7d-889d-4ea1-9129-48646172c544_2.png"
+              src="/assets/the___daniel_httpss.mj.runSh8wz2Xb28A_lounge_chair_against_a__ddb9bc7d-889d-4ea1-9129-48646172c544_2.jpg"
               alt="Lounge Chair Against Wall"
               caption="Lounge Chair Against Clean Wall"
               lightMode={true}
             />
             <ImageCard
-              src="/assets/the___daniel_httpss.mj.runzX8_66H3mvo_spikey_ceramic_iron_met_4e9c30d0-e0cd-4f56-87f7-f62c2f691c08_2.png"
+              src="/assets/the___daniel_httpss.mj.runzX8_66H3mvo_spikey_ceramic_iron_met_4e9c30d0-e0cd-4f56-87f7-f62c2f691c08_2.jpg"
               alt="Spikey Ceramic Iron Metal"
               caption="Spikey Ceramic Iron Metal Sculpture"
+              lightMode={true}
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.run0PLeZ5UEQR0_Metallic_chair_with_a_b_df9ea8f5-80e6-494a-9275-e01030e157b9_2.jpg"
+              alt="Metallic Chair with Brutalist Design"
+              caption="Metallic Chair with Brutalist Design"
+              lightMode={true}
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.runtlX3nAWDPCk_Living_room_with_metal__53bf67c2-354a-4072-bd46-abf7aa0e555e_0.jpg"
+              alt="Living Room with Metal Furniture"
+              caption="Living Room with Metal Furniture Design"
+              lightMode={true}
+            />
+            <ImageCard
+              src="/assets/the___daniel_httpss.mj.runIdTptP6hhTA_a_metallic_brushed_meta_76b89c75-015d-4127-bef8-cbf67bf63e3d_2%20(1).jpg"
+              alt="Metallic Brushed Metal Chair"
+              caption="Metallic Brushed Metal Chair Design"
               lightMode={true}
             />
           </div>
