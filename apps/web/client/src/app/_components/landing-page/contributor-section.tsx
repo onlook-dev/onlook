@@ -178,7 +178,7 @@ export function ContributorSection({
                 {/* Floating Circles: two concentric rings */}
                 <FloatingRings />
                 <h2 className="text-foreground-primary text-3xl md:text-4xl font-light text-center mb-2">
-                    Supported by You &<br />
+                    Supported by you &<br />
                     {isLoading ? '...' : starCount} other builders
                 </h2>
                 <p className="text-foreground-secondary text-regular text-center mb-8 max-w-xl">Join the community building <br /> the open source prompt-to-build app</p>

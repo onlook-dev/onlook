@@ -7,6 +7,7 @@ import { Create } from './create';
 import { CreateError } from './create-error';
 import { UnicornBackground } from './unicorn-background';
 import { HighDemand } from './high-demand';
+import { Icons } from '@onlook/ui/icons';
 
 export function Hero() {
     const [cardKey, setCardKey] = useState(0);
@@ -15,6 +16,21 @@ export function Hero() {
         <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
             <UnicornBackground />
             <div className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2">
+                <motion.div 
+                    className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2 mb-6"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 1.2, ease: "easeOut" }}
+                >
+                    <a 
+                        href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack" target="_blank" 
+                        className="inline-flex items-center gap-2 px-3 py-1.5 hover:bg-foreground-secondary/20 backdrop-blur-sm border border-foreground-secondary/20 rounded-full text-xs text-foreground-secondary transition-all duration-200 hover:scale-102"
+                    >
+                        We're hiring engineers
+                        <Icons.ArrowRight className="w-4 h-4" />
+                    </a>
+                    
+                </motion.div>
                 <motion.h1
                     className="text-6xl font-light leading-tight text-center !leading-[0.9]"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
@@ -61,9 +77,14 @@ export function Hero() {
                     No Credit Card Required &bull; Get a Site in Seconds
                 </motion.div>
             </div>
-            <div className="sm:hidden text-balance flex flex-col gap-4 items-center relative z-20 px-10">
+            <motion.div className="sm:hidden text-balance flex flex-col gap-4 items-center relative z-20 px-10 text-foreground-secondary bg-foreground-secondary/10 backdrop-blur-lg rounded-lg border-[0.5px] border-foreground-secondary/20 p-4"
+                initial={{ opacity: 0, filter: "blur(4px)" }}
+                animate={{ opacity: 1, filter: "blur(0px)" }}
+                transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+                style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
+            >
                 Onlook isn't ready for Mobile – Please open on a larger screen
-            </div>
+            </motion.div>
         </div>
     );
 }

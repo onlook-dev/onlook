@@ -78,6 +78,17 @@ function ToolCallDisplay({ toolName }: { toolName: string }) {
 // --- End chat mockup code ---
 
 export function OnlookInterfaceMockup() {
+  const [isVisible, setIsVisible] = useState(false);
+  
+  // Trigger animation after a delay to match jumbotron text timing
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 1200); // Delay to allow jumbotron text to animate first
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
   // For the mockup, the chat input is static (not interactive)
   const displayedText = PRESET_SENTENCE;
   const currentIndex = PRESET_SENTENCE.length;
@@ -173,7 +184,12 @@ export function OnlookInterfaceMockup() {
   };
 
       return (
-      <div className="relative w-full max-w-6xl mx-auto aspect-[16/10] rounded-xl overflow-hidden shadow-2xl border border-neutral-800 bg-background-onlook select-none">
+      <div className={cn(
+        "relative w-full max-w-6xl mx-auto aspect-[16/10] rounded-xl overflow-hidden shadow-2xl border border-neutral-800 bg-background-onlook select-none -mt-10 transition-all duration-1000 ease-out",
+        isVisible 
+          ? "opacity-100 translate-y-0" 
+          : "opacity-0 translate-y-8"
+      )}>
         <div 
           className="absolute inset-0 flex items-start mt-30 justify-center pointer-events-none z-0 right-36 select-none gap-12"
           style={{
@@ -212,7 +228,7 @@ export function OnlookInterfaceMockup() {
           </div>
         </div>
       {/* Top Bar */}
-      <div className="grid grid-cols-3 items-center h-10 px-2.5 relative z-[100]">
+      <div className="grid grid-cols-3 items-center h-10 px-2.5 relative z-10">
         {/* Left: Logo + Project Name + Chevron */}
         <div className="flex items-center gap-1 min-w-0">
           <Icons.OnlookLogo className="w-5 h-5 shrink-0" />
