@@ -185,17 +185,17 @@ export const invitationRouter = createTRPCRouter({
                 },
             });
 
-            if (invitation?.inviteeEmail !== ctx.user.email) {
-                throw new TRPCError({
-                    code: 'BAD_REQUEST',
-                    message: 'You are not the invitee of this invitation',
-                });
-            }
-
             if (!invitation) {
                 throw new TRPCError({
                     code: 'BAD_REQUEST',
                     message: 'Invitation does not exist',
+                });
+            }
+
+            if (invitation.inviteeEmail !== ctx.user.email) {
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'You are not the invitee of this invitation',
                 });
             }
 

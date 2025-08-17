@@ -49,4 +49,4 @@ yarn-error.log*
 .mastra/
 
 # Ignore preload script changes unless the script should be updated. Uncomment to update.
-/public/onlook-preload-script.js
+/public/onlook-preload-script.*
