@@ -47,7 +47,6 @@ export function SquareProjectCard({
     return (
         <div
             className="cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20 group"
-            onClick={handleClick}
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
@@ -73,6 +72,7 @@ export function SquareProjectCard({
                         project={project}
                         onClick={(e) => {
                             e.stopPropagation();
+                            handleClick();
                         }}
                     />
                 </div>
