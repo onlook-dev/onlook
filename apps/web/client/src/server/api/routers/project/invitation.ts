@@ -194,7 +194,7 @@ export const invitationRouter = createTRPCRouter({
             if (invitation.inviteeEmail !== ctx.user.email) {
                 throw new TRPCError({
                     code: 'BAD_REQUEST',
-                    message: 'You are not the invitee of this invitation',
+                    message: `This invitation was sent to ${invitation.inviteeEmail}. Please sign in with that email address.`,
                 });
             }
 

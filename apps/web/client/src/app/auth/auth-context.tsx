@@ -13,8 +13,8 @@ interface AuthContextType {
     lastSignInMethod: SignInMethod | null;
     isAuthModalOpen: boolean;
     setIsAuthModalOpen: (open: boolean) => void;
-    handleLogin: (method: SignInMethod.GITHUB | SignInMethod.GOOGLE) => void;
-    handleDevLogin: () => void;
+    handleLogin: (method: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl: string | null) => void;
+    handleDevLogin: (returnUrl: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,9 +30,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         });
     }, []);
 
-    const handleLogin = async (method: SignInMethod.GITHUB | SignInMethod.GOOGLE) => {
+    const handleLogin = async (method: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl: string | null) => {
         setSigningInMethod(method);
-        await login(method);
+        await login(method, returnUrl);
 
         localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
         setTimeout(() => {
@@ -40,9 +40,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }, 5000);
     };
 
-    const handleDevLogin = async () => {
+    const handleDevLogin = async (returnUrl: string | null) => {
         setSigningInMethod(SignInMethod.DEV);
-        await devLogin();
+        await devLogin(returnUrl);
         setTimeout(() => {
             setSigningInMethod(null);
         }, 5000);

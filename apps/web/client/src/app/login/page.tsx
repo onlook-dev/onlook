@@ -7,14 +7,14 @@ import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { DevLoginButton, GithubLoginButton, GoogleLoginButton } from '../_components/login-button';
-import { useAuthContext } from '../auth/auth-context';
 
 export default function LoginPage() {
     const isDev = process.env.NODE_ENV === 'development';
     const t = useTranslations();
-    const { handleDevLogin } = useAuthContext();
     const backgroundUrl = useGetBackground('login');
+    const returnUrl = useSearchParams().get('returnUrl');
 
     return (
         <div className="flex h-screen w-screen" >
@@ -34,10 +34,10 @@ export default function LoginPage() {
                         </p>
                     </div>
                     <div className="space-x-2 flex flex-row">
-                        <GithubLoginButton />
-                        <GoogleLoginButton />
+                        <GithubLoginButton returnUrl={returnUrl} />
+                        <GoogleLoginButton returnUrl={returnUrl} />
                     </div>
-                    {isDev && <DevLoginButton />}
+                    {isDev && <DevLoginButton returnUrl={returnUrl} />}
                     <p className="text-small text-foreground-onlook">
                         {t(transKeys.welcome.terms.agreement)}{' '}
                         <Link

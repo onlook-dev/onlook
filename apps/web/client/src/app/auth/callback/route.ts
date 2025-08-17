@@ -6,13 +6,13 @@ import { api } from '~/trpc/server';
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
+    const returnUrl = searchParams.get('returnUrl');
 
     if (code) {
         const supabase = await createClient();
         const { error, data } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
             const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
-            const isLocalEnv = process.env.NODE_ENV === 'development';
             const user = await api.user.upsert({
                 id: data.user.id,
             });
@@ -36,12 +36,10 @@ export async function GET(request: Request) {
             });
 
             // Redirect to the redirect page which will handle the return URL
-            if (isLocalEnv) {
-                return NextResponse.redirect(`${origin}/auth/redirect`);
-            } else if (forwardedHost) {
-                return NextResponse.redirect(`https://${forwardedHost}/auth/redirect`);
+            if (forwardedHost) {
+                return NextResponse.redirect(`https://${forwardedHost}${returnUrl || '/'}`);
             } else {
-                return NextResponse.redirect(`${origin}/auth/redirect`);
+                return NextResponse.redirect(`${origin}${returnUrl || '/'}`);
             }
         }
         console.error(`Error exchanging code for session: ${error}`);

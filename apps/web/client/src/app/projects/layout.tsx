@@ -1,6 +1,7 @@
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 import { type Metadata } from 'next';
+import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
@@ -14,7 +15,9 @@ export default async function Layout({ children }: Readonly<{ children: React.Re
         data: { session },
     } = await supabase.auth.getSession();
     if (!session) {
-        redirect(Routes.LOGIN);
+        const headersList = await headers();
+        const pathname = headersList.get('x-pathname') || '/projects';
+        redirect(`${Routes.LOGIN}?returnUrl=${pathname}`);
     }
     return <>{children}</>;
 }

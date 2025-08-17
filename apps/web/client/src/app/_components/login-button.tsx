@@ -8,8 +8,10 @@ import { useAuthContext } from '../auth/auth-context';
 
 export const GithubLoginButton = ({
     className,
+    returnUrl,
 }: {
     className?: string;
+    returnUrl: string | null;
 }) => {
     const t = useTranslations();
     const { lastSignInMethod, handleLogin, signingInMethod } = useAuthContext();
@@ -26,7 +28,7 @@ export const GithubLoginButton = ({
                         ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500'
                         : 'bg-background-onlook',
                 )}
-                onClick={() => handleLogin(SignInMethod.GITHUB)}
+                onClick={() => handleLogin(SignInMethod.GITHUB, returnUrl)}
                 disabled={!!signingInMethod}
             >
                 {isSigningIn ? (
@@ -45,8 +47,10 @@ export const GithubLoginButton = ({
 
 export const GoogleLoginButton = ({
     className,
+    returnUrl,
 }: {
     className?: string;
+    returnUrl: string | null;
 }) => {
     const t = useTranslations();
     const { lastSignInMethod, handleLogin, signingInMethod } = useAuthContext();
@@ -63,7 +67,7 @@ export const GoogleLoginButton = ({
                         ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500'
                         : 'bg-background-onlook',
                 )}
-                onClick={() => handleLogin(SignInMethod.GOOGLE)}
+                onClick={() => handleLogin(SignInMethod.GOOGLE, returnUrl)}
                 disabled={!!signingInMethod}
             >
                 {isSigningIn ? (
@@ -82,8 +86,10 @@ export const GoogleLoginButton = ({
 
 export const DevLoginButton = ({
     className,
+    returnUrl,
 }: {
     className?: string;
+    returnUrl: string | null;
 }) => {
     const t = useTranslations();
     const { handleDevLogin, signingInMethod } = useAuthContext();
@@ -93,7 +99,7 @@ export const DevLoginButton = ({
         <Button
             variant="outline"
             className="w-full text-active text-small"
-            onClick={handleDevLogin}
+            onClick={() => handleDevLogin(returnUrl)}
             disabled={!!signingInMethod}
         >
             {isSigningIn ? (
