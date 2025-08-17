@@ -200,6 +200,9 @@ class ServerSideFigmaMCP {
         }
 
         const endpoint = `${this.MCP_BASE_URL}/messages?sessionId=${this.sessionId}`;
+        const abortController = new AbortController();
+        
+        const timeoutId = setTimeout(() => abortController.abort(), 30000);
         
         try {
             const response = await fetch(endpoint, {
@@ -207,14 +210,21 @@ class ServerSideFigmaMCP {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(request)
+                body: JSON.stringify(request),
+                signal: abortController.signal
             });
+
+            clearTimeout(timeoutId);
 
             if (!response.ok) {
                 const responseText = await response.text();
                 throw new Error(`HTTP request failed: ${response.status} ${response.statusText} - ${responseText}`);
             }
         } catch (error) {
+            clearTimeout(timeoutId);
+            if (error instanceof Error && error.name === 'AbortError') {
+                throw new Error('Request timed out');
+            }
             console.error('Figma MCP: Failed to send JSON-RPC:', error);
             throw error;
         }
@@ -246,6 +256,15 @@ class ServerSideFigmaMCP {
 
     extractNodeIdFromUrl(figmaUrl: string): string | null {
         try {
+            const url = new URL(figmaUrl);
+            
+            // First try to get node-id from query parameters
+            const nodeIdParam = url.searchParams.get('node-id');
+            if (nodeIdParam) {
+                return decodeURIComponent(nodeIdParam);
+            }
+
+            // Fallback to regex patterns for edge cases
             const patterns = [
                 /node-id=([^&]+)/,
                 /\/([^\/]+)\?/,
@@ -260,6 +279,7 @@ class ServerSideFigmaMCP {
             }
             return null;
         } catch (error) {
+            console.error('Failed to parse Figma URL:', error);
             return null;
         }
     }

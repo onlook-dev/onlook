@@ -72,7 +72,10 @@ export const FigmaInput = observer(({ isOpen, onOpenChange }: {
 
         // Adds image if available
         if (designData.image) {
-            content += `Design Image:\n![Figma Design](data:image/png;base64,${designData.image})\n\n`;
+            const imageData = designData.image.startsWith('data:image/png;base64,') 
+                ? designData.image 
+                : `data:image/png;base64,${designData.image}`;
+            content += `Design Image:\n![Figma Design](${imageData})\n\n`;
             successfulFeatures.push('Design screenshot');
         } else {
             successfulFeatures.push('Screenshot (no data fetched)');
@@ -206,6 +209,11 @@ export const FigmaInput = observer(({ isOpen, onOpenChange }: {
                                     placeholder="https://www.figma.com/file/..."
                                     value={figmaUrl}
                                     onChange={(e) => setFigmaUrl(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && figmaUrl.trim() && !isLoading) {
+                                            handleAddFigmaUrl().catch(console.error);
+                                        }
+                                    }}
                                     className="text-xs"
                                 />
                                 <Tooltip>
@@ -213,8 +221,9 @@ export const FigmaInput = observer(({ isOpen, onOpenChange }: {
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            onClick={handlePasteFromClipboard}
+                                            onClick={() => void handlePasteFromClipboard().catch(console.error)}
                                             className="px-2 h-9 hover:text-foreground-primary text-foreground-secondary"
+                                            aria-label="Paste Figma URL from clipboard"
                                         >
                                             <Icons.Clipboard className="w-3 h-3" />
                                         </Button>
@@ -225,7 +234,7 @@ export const FigmaInput = observer(({ isOpen, onOpenChange }: {
                         </div>
 
                         <Button
-                            onClick={handleAddFigmaUrl}
+                            onClick={() => void handleAddFigmaUrl().catch(console.error)}
                             disabled={!figmaUrl.trim() || isLoading}
                             className="w-full text-xs h-9"
                             size="sm"
@@ -247,7 +256,7 @@ export const FigmaInput = observer(({ isOpen, onOpenChange }: {
                         </div>
 
                         <Button
-                            onClick={handleAddCurrentSelection}
+                            onClick={() => void handleAddCurrentSelection().catch(console.error)}
                             disabled={isLoading}
                             variant="outline"
                             className="w-full text-xs h-9"

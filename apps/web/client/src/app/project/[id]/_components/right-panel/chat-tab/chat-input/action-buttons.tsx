@@ -72,7 +72,8 @@ export const ActionButtons = ({
                         <Icons.Upload className="mr-2 h-4 w-4" />
                         Upload Image
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleScreenshot} disabled={disabled}>
+                    <DropdownMenuItem onClick={() => void handleScreenshot().catch(console.error)}
+                        disabled={disabled}>
                         <Icons.Laptop className="mr-2 h-4 w-4" />
                         Add Screenshot
                     </DropdownMenuItem>

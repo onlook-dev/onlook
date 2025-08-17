@@ -35,8 +35,9 @@ export class ChatContext {
         }
         const fileContext = await this.getFileContext(fileNames);
         const imageContext = this.getImageContext();
+        const figmaContext = this.getFigmaContext();
         const projectContext = this.getProjectContext();
-        const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext];
+        const context = [...fileContext, ...highlightedContext, ...imageContext, ...figmaContext, ...projectContext];
         return context;
     }
 
@@ -70,6 +71,13 @@ export class ChatContext {
             (context) => context.type === MessageContextType.IMAGE,
         );
         return imageContext;
+    }
+
+    private getFigmaContext(): FigmaMessageContext[] {
+        const figmaContext = this.context.filter(
+            (context) => context.type === MessageContextType.FIGMA,
+        );
+        return figmaContext;
     }
 
     private async getFileContext(filePaths: Set<string>): Promise<FileMessageContext[]> {
