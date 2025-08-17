@@ -23,10 +23,13 @@ NEVER SUGGEST THE "bun run dev" command. Assume the user is already running the 
 
 const projectContextPrefix = `This is a Nextjs project with TailwindCSS`;
 
+const figmaContentPrefix = `This is included Figma design files or selection that you can use the Figma tool to fetch the content.`;
+
 export const CONTEXT_PROMPTS = {
     filesContentPrefix,
     truncatedFilesContentPrefix,
     highlightPrefix,
     errorsContentPrefix,
     projectContextPrefix,
+    figmaContentPrefix,
 };

@@ -240,8 +240,8 @@ export class ChatContext {
 
         // Removes any existing Figma context with the same nodeId to avoid duplicates
         this.context = this.context.filter(
-            (context) => 
-                context.type !== MessageContextType.FIGMA || 
+            (context) =>
+                context.type !== MessageContextType.FIGMA ||
                 (context.type === MessageContextType.FIGMA && context.nodeId !== nodeId)
         );
 
@@ -250,8 +250,8 @@ export class ChatContext {
 
     removeFigmaContext(nodeId: string) {
         this.context = this.context.filter(
-            (context) => 
-                context.type !== MessageContextType.FIGMA || 
+            (context) =>
+                context.type !== MessageContextType.FIGMA ||
                 (context.type === MessageContextType.FIGMA && context.nodeId !== nodeId)
         );
     }
