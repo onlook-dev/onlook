@@ -11,9 +11,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 export function Main({ invitationId }: { invitationId: string }) {
     const router = useRouter();
     const token = useSearchParams().get('token');
-    const { data: invitation, isLoading: loadingInvitation } = api.invitation.get.useQuery({
+    const { data: invitation, isLoading: loadingInvitation, error: getInvitationError } = api.invitation.get.useQuery({
         id: invitationId,
     });
+
     const { mutate: acceptInvitation, isPending: isAcceptingInvitation, error: acceptInvitationError } = api.invitation.accept.useMutation({
         onSuccess: () => {
             if (invitation?.projectId) {
@@ -23,6 +24,8 @@ export function Main({ invitationId }: { invitationId: string }) {
             }
         },
     });
+
+    const error = getInvitationError || acceptInvitationError;
 
     if (loadingInvitation) {
         return (
@@ -38,7 +41,7 @@ export function Main({ invitationId }: { invitationId: string }) {
         );
     }
 
-    if (acceptInvitationError) {
+    if (error) {
         return (
             <div className="flex flex-row w-full">
                 <div className="w-full h-full flex flex-col items-center justify-center gap-4">
@@ -47,7 +50,7 @@ export function Main({ invitationId }: { invitationId: string }) {
                         <div className="text-2xl">Error accepting invitation</div>
                     </div>
                     <div className="text-md">
-                        {acceptInvitationError.message}
+                        {error.message}
                     </div>
                     <div className="flex justify-center">
                         <Button

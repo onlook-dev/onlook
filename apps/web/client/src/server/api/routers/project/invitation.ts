@@ -9,13 +9,12 @@ import {
     userProjects,
     users,
 } from '@onlook/db';
-import { getResendClient, sendInvitationEmail } from '@onlook/email';
+import { constructInvitationLink, getResendClient, sendInvitationEmail } from '@onlook/email';
 import { ProjectRole } from '@onlook/models';
 import { isFreeEmail } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
 import { addDays, isAfter } from 'date-fns';
 import { and, eq, ilike, isNull } from 'drizzle-orm';
-import urlJoin from 'url-join';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -24,6 +23,9 @@ export const invitationRouter = createTRPCRouter({
     get: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
         const invitation = await ctx.db.query.projectInvitations.findFirst({
             where: eq(projectInvitations.id, input.id),
+            with: {
+                inviter: true,
+            },
         });
 
         if (!invitation) {
@@ -33,11 +35,7 @@ export const invitationRouter = createTRPCRouter({
             });
         }
 
-        const inviter = await ctx.db.query.users.findFirst({
-            where: eq(users.id, invitation.inviterId),
-        });
-
-        if (!inviter) {
+        if (!invitation.inviter) {
             throw new TRPCError({
                 code: 'NOT_FOUND',
                 message: 'Inviter not found',
@@ -46,7 +44,8 @@ export const invitationRouter = createTRPCRouter({
 
         return {
             ...invitation,
-            inviter: toUser(inviter),
+            // @ts-expect-error - Drizzle is not typed correctly
+            inviter: toUser(invitation.inviter),
         };
     }),
     list: protectedProcedure
@@ -140,14 +139,14 @@ export const invitationRouter = createTRPCRouter({
                         inviteeEmail: input.inviteeEmail,
                         invitedByName: inviter.firstName ?? inviter.displayName ?? undefined,
                         invitedByEmail: ctx.user.email,
-                        inviteLink: urlJoin(
+                        inviteLink: constructInvitationLink(
                             env.NEXT_PUBLIC_SITE_URL,
-                            'invitation',
-                            `${invitation.id}?token=${invitation.token}`,
+                            invitation.id,
+                            invitation.token,
                         ),
                     },
                     {
-                        // dryRun: process.env.NODE_ENV !== 'production',
+                        dryRun: env.NODE_ENV !== 'production',
                     },
                 );
             }

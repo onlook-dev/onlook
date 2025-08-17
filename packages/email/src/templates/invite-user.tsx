@@ -43,11 +43,13 @@ export const InviteUserEmail = ({
                         <Text className="text-[14px] text-black leading-[24px]">
                             <Link
                                 href={`mailto:${invitedByEmail}`}
-                                className="text-blue-600 no-underline"
+                                className="text-blue-600 no-underline mr-1"
                             >
                                 <strong>{invitedByName ?? invitedByEmail}</strong>
                             </Link>
-                            has invited you to their project on <strong>Onlook</strong>.
+                            <span>
+                                has invited you to their project on <strong>Onlook</strong>.
+                            </span>
                         </Text>
                         <Section className="mt-[32px] mb-[32px] text-center">
                             <Button

@@ -37,6 +37,7 @@
         "react": "19.1.0",
         "react-dom": "19.1.0",
         "react-email": "4.0.15",
-        "resend": "^4.5.1"
+        "resend": "^4.5.1",
+        "url-join": "^5.0.0"
     }
 }

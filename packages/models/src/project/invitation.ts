@@ -5,4 +5,5 @@ export interface Invitation {
     inviteeEmail: string;
     role: ProjectRole;
     expiresAt: Date;
+    token: string;
 }
