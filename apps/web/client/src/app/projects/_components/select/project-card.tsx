@@ -3,6 +3,7 @@
 import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { Project } from '@onlook/models';
+import { Icons } from '@onlook/ui/icons';
 import { timeAgo } from '@onlook/utility';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
@@ -26,6 +27,7 @@ export function ProjectCard({
     const [img, setImg] = useState<string | null>(null);
     const router = useRouter();
     const SHOW_DESCRIPTION = false;
+    const isTemplate = project.tags?.includes('template') || false;
 
     const handleCardClick = () => {
         router.push(`/project/${project.id}`);
@@ -69,6 +71,16 @@ export function ProjectCard({
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
                 <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
+
+                {/* Template badge - always visible when it's a template */}
+                {isTemplate && (
+                    <div className="absolute top-3 left-3 z-20">
+                        <div className="bg-purple-600 text-white px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1">
+                            <Icons.BookmarkFilled className="w-3 h-3" />
+                            Template
+                        </div>
+                    </div>
+                )}
 
                 <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
                     <Settings project={project} refetch={refetch} />

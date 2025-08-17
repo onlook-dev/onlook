@@ -1,6 +1,8 @@
 'use client';
 
 import { api } from '@/trpc/react';
+import { getFileUrlFromStorage } from '@/utils/supabase/client';
+import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { AnimatePresence, motion } from 'motion/react';
@@ -14,7 +16,7 @@ import { ProjectCard } from './project-card';
 import { SquareProjectCard } from './square-project-card';
 
 export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: string } = {}) => {
-    const SHOW_TEMPLATE = false;
+    const SHOW_TEMPLATE = true;
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
     const [internalQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
@@ -38,11 +40,11 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     );
 
     // Template handlers
-    const handleTemplateClick = (template: any) => {
+    const handleTemplateClick = (project: Project) => {
         // Update the template with current starred status
         const updatedTemplate = {
-            ...template,
-            isStarred: starredTemplates.has(template.id)
+            ...project,
+            isStarred: starredTemplates.has(project.id)
         };
         setSelectedTemplate(updatedTemplate);
         setIsTemplateModalOpen(true);
@@ -465,10 +467,18 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                     <TemplateModal
                         isOpen={isTemplateModalOpen}
                         onClose={handleCloseTemplateModal}
-                        title={selectedTemplate.title}
-                        description={selectedTemplate.description}
-                        image={selectedTemplate.image}
-                        isNew={selectedTemplate.isNew}
+                        title={selectedTemplate.name}
+                        description={selectedTemplate.metadata?.description || 'No description available'}
+                        image={
+                            selectedTemplate.metadata?.previewImg?.url ||
+                            (selectedTemplate.metadata?.previewImg?.storagePath 
+                                ? getFileUrlFromStorage(
+                                    selectedTemplate.metadata.previewImg.storagePath.bucket || STORAGE_BUCKETS.PREVIEW_IMAGES,
+                                    selectedTemplate.metadata.previewImg.storagePath.path
+                                )
+                                : undefined)
+                        }
+                        isNew={false}
                         isStarred={selectedTemplate.isStarred}
                         onToggleStar={() => handleToggleStar(selectedTemplate.id)}
                     />

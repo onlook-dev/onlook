@@ -48,6 +48,7 @@ export function StartBlank({
                     sandboxId,
                     sandboxUrl: previewUrl,
                     description: 'Your new blank project',
+                    tags: ['blank'],
                 },
                 userId: user.id,
             });

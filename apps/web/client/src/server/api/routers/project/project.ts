@@ -164,6 +164,25 @@ export const projectRouter = createTRPCRouter({
             });
             return fetchedUserProjects.map((userProject) => toProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
         }),
+    listTemplates: protectedProcedure
+        .input(z.object({
+            limit: z.number().optional(),
+        }).optional())
+        .query(async ({ ctx, input }) => {
+            const fetchedUserProjects = await ctx.db.query.userProjects.findMany({
+                where: eq(userProjects.userId, ctx.user.id),
+                with: {
+                    project: true,
+                },
+                limit: input?.limit,
+            });
+            const allProjects = fetchedUserProjects.map((userProject) => toProject(userProject.project));
+            // Filter projects that have "template" in their tags
+            const templateProjects = allProjects.filter((project) => 
+                project.tags && project.tags.includes('template')
+            );
+            return templateProjects.sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
+        }),
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
@@ -334,5 +353,51 @@ export const projectRouter = createTRPCRouter({
             ...input.project,
             updatedAt: new Date(),
         }).where(eq(projects.id, input.id));
+    }),
+    addTag: protectedProcedure.input(z.object({
+        projectId: z.string(),
+        tag: z.string(),
+    })).mutation(async ({ ctx, input }) => {
+        const project = await ctx.db.query.projects.findFirst({
+            where: eq(projects.id, input.projectId),
+        });
+        
+        if (!project) {
+            throw new Error('Project not found');
+        }
+        
+        const currentTags = project.tags as string[] || [];
+        const newTags = currentTags.includes(input.tag) 
+            ? currentTags 
+            : [...currentTags, input.tag];
+            
+        await ctx.db.update(projects).set({
+            tags: newTags,
+            updatedAt: new Date(),
+        }).where(eq(projects.id, input.projectId));
+        
+        return { success: true, tags: newTags };
+    }),
+    removeTag: protectedProcedure.input(z.object({
+        projectId: z.string(),
+        tag: z.string(),
+    })).mutation(async ({ ctx, input }) => {
+        const project = await ctx.db.query.projects.findFirst({
+            where: eq(projects.id, input.projectId),
+        });
+        
+        if (!project) {
+            throw new Error('Project not found');
+        }
+        
+        const currentTags = project.tags as string[] || [];
+        const newTags = currentTags.filter(tag => tag !== input.tag);
+            
+        await ctx.db.update(projects).set({
+            tags: newTags,
+            updatedAt: new Date(),
+        }).where(eq(projects.id, input.projectId));
+        
+        return { success: true, tags: newTags };
     }),
 });

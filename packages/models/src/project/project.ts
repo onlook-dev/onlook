@@ -1,6 +1,7 @@
 export interface Project {
     id: string;
     name: string;
+    tags: string[];
     metadata: {
         createdAt: string;
         updatedAt: string;

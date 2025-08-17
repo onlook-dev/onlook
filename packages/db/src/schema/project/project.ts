@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { jsonb, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME, projectCustomDomains } from '../domain';
 import { PREVIEW_DOMAIN_PROJECT_RELATION_NAME, previewDomains } from '../domain/preview';
@@ -15,6 +15,7 @@ export const projects = pgTable('projects', {
     // metadata
     name: varchar('name').notNull(),
     description: text('description'),
+    tags: jsonb('tags').$type<string[]>().default([]),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 

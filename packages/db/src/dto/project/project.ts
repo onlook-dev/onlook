@@ -7,6 +7,7 @@ export const toProject = (
     return {
         id: dbProject.id,
         name: dbProject.name,
+        tags: dbProject.tags as string[] || [],
         sandbox: {
             id: dbProject.sandboxId,
             url: dbProject.sandboxUrl,
@@ -26,6 +27,7 @@ export const fromProject = (project: Project): DbProject => {
     return {
         id: project.id,
         name: project.name,
+        tags: project.tags || [],
         sandboxId: project.sandbox.id,
         sandboxUrl: project.sandbox.url,
         createdAt: new Date(project.metadata.createdAt),
