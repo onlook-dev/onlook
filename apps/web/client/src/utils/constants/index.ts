@@ -8,6 +8,9 @@ export const Routes = {
     FEATURES: '/features',
     // Auth
     LOGIN: '/login',
+    AUTH_CALLBACK: '/auth/callback',
+    AUTH_CODE_ERROR: '/auth/auth-code-error',
+    AUTH_REDIRECT: '/auth/redirect',
 
     // Dashboard
     PROJECTS: '/projects',
@@ -34,4 +37,8 @@ export const ExternalRoutes = {
 export const Git = {
     MAX_COMMIT_MESSAGE_LENGTH: 72,
     MAX_COMMIT_MESSAGE_BODY_LENGTH: 500,
+} as const;
+
+export const LocalForageKeys = {
+    RETURN_URL: 'returnUrl',
 } as const;

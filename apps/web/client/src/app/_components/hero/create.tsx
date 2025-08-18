@@ -13,6 +13,7 @@ import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { compressImageInBrowser } from '@onlook/utility';
+import localforage from 'localforage';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
@@ -52,21 +53,24 @@ export const Create = observer(({
 
     // Restore draft from localStorage if exists
     useEffect(() => {
-        const draft = localStorage.getItem(SAVED_INPUT_KEY);
-        if (draft) {
-            try {
-                const { prompt, images } = JSON.parse(draft) as CreateInputContext;
-                // Only restore if draft is less than 1 hour old
-                setInputValue(prompt);
-                setSelectedImages(images);
+        const getDraft = async () => {
+            const draft = await localforage.getItem<CreateInputContext>(SAVED_INPUT_KEY);
+            if (draft) {
+                try {
+                    const { prompt, images } = draft;
+                    // Only restore if draft is less than 1 hour old
+                    setInputValue(prompt);
+                    setSelectedImages(images);
 
-                // Clear the draft after restoring
-                localStorage.removeItem(SAVED_INPUT_KEY);
-            } catch (error) {
-                console.error('Error restoring draft:', error);
-                localStorage.removeItem(SAVED_INPUT_KEY);
+                    // Clear the draft after restoring
+                    localforage.removeItem(SAVED_INPUT_KEY);
+                } catch (error) {
+                    console.error('Error restoring draft:', error);
+                    localforage.removeItem(SAVED_INPUT_KEY);
+                }
             }
-        }
+        };
+        getDraft();
     }, []);
 
     const handleSubmit = async () => {
@@ -86,9 +90,7 @@ export const Create = observer(({
                 images,
                 timestamp: Date.now()
             };
-
-            // Store the current input and images in localStorage
-            localStorage.setItem(SAVED_INPUT_KEY, JSON.stringify(createInputContext));
+            localforage.setItem(SAVED_INPUT_KEY, createInputContext);
             // Open the auth modal
             setIsAuthModalOpen(true);
             return;
@@ -101,7 +103,7 @@ export const Create = observer(({
                 throw new Error('Failed to create project: No project returned');
             }
             router.push(`${Routes.PROJECT}/${project.id}`);
-            localStorage.removeItem(SAVED_INPUT_KEY);
+            localforage.removeItem(SAVED_INPUT_KEY);
 
         } catch (error) {
             console.error('Error creating project:', error);

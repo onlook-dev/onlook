@@ -1,4 +1,5 @@
 import { trackEvent } from '@/utils/analytics/server';
+import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { api } from '~/trpc/server';
@@ -6,12 +7,6 @@ import { api } from '~/trpc/server';
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
-
-    // Ensure returnUrl is a valid relative URL
-    const returnUrl = (() => {
-        const url = searchParams.get('returnUrl');
-        return url && url.startsWith('/') && !url.startsWith('//') ? url : null;
-    })();
 
     if (code) {
         const supabase = await createClient();
@@ -43,9 +38,9 @@ export async function GET(request: Request) {
             // Redirect to the redirect page which will handle the return URL
             if (forwardedHost) {
                 const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
-                return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${returnUrl || '/'}`);
+                return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${Routes.AUTH_REDIRECT}`);
             } else {
-                return NextResponse.redirect(`${origin}${returnUrl || '/'}`);
+                return NextResponse.redirect(`${origin}${Routes.AUTH_REDIRECT}`);
             }
         }
         console.error(`Error exchanging code for session: ${error}`);

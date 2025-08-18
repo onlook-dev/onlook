@@ -1,5 +1,6 @@
 'use server';
 
+import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 import { SEED_USER } from '@onlook/db';
 import { SignInMethod } from '@onlook/models';
@@ -9,9 +10,7 @@ import { redirect } from 'next/navigation';
 export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl: string | null) {
     const supabase = await createClient();
     const origin = (await headers()).get('origin');
-    const redirectTo = returnUrl
-        ? `${origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`
-        : `${origin}/auth/callback`;
+    const redirectTo = `${origin}${Routes.AUTH_CALLBACK}`;
 
     // If already session, redirect
     const {
@@ -20,8 +19,6 @@ export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE,
     if (session) {
         redirect(returnUrl || '/');
     }
-
-
 
     // Start OAuth flow
     // Note: User object will be created in the auth callback route if it doesn't exist

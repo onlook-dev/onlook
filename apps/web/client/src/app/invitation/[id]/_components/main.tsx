@@ -7,10 +7,12 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Skeleton } from '@onlook/ui/skeleton';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export function Main({ invitationId }: { invitationId: string }) {
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const token = useSearchParams().get('token');
     const { data: invitation, isLoading: loadingInvitation, error: getInvitationError } = api.invitation.get.useQuery({
         id: invitationId,
@@ -19,7 +21,7 @@ export function Main({ invitationId }: { invitationId: string }) {
     const { mutate: acceptInvitation, isPending: isAcceptingInvitation, error: acceptInvitationError } = api.invitation.accept.useMutation({
         onSuccess: () => {
             if (invitation?.projectId) {
-                router.push(`${Routes.PROJECTS}/${invitation.projectId}`);
+                router.push(`${Routes.PROJECT}/${invitation.projectId}`);
             } else {
                 router.push(Routes.PROJECTS);
             }
@@ -29,7 +31,8 @@ export function Main({ invitationId }: { invitationId: string }) {
     const handleLogin = async () => {
         const supabase = createClient();
         await supabase.auth.signOut();
-        router.push(`${Routes.LOGIN}?returnUrl=${window.location.href}`);
+        const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        router.push(`${Routes.LOGIN}?returnUrl=${currentUrl}`);
     }
 
     const error = getInvitationError || acceptInvitationError;

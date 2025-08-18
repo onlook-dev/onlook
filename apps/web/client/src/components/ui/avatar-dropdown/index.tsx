@@ -15,7 +15,7 @@ import {
 } from '@onlook/ui/popover';
 import { Separator } from '@onlook/ui/separator';
 import { getInitials } from '@onlook/utility';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { UsageSection } from './plans';
 
@@ -23,6 +23,8 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const stateManager = useStateManager();
     const supabase = createClient();
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
 
     const { data: user } = api.user.get.useQuery();
     const initials = getInitials(user?.displayName ?? user?.firstName ?? '');
@@ -30,7 +32,8 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
-        router.push(`${Routes.LOGIN}?returnUrl=${window.location.pathname}`);
+        const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        router.push(`${Routes.LOGIN}?returnUrl=${currentUrl}`);
     };
 
     const handleOpenSubscription = () => {

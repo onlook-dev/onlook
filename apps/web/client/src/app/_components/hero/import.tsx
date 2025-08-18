@@ -1,8 +1,9 @@
 'use client';
 
 import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
+import { LocalForageKeys, Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons/index';
+import localforage from 'localforage';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '../../auth/auth-context';
 
@@ -14,7 +15,7 @@ export function Import() {
     const handleImportProject = () => {
         if (!user?.id) {
             // Store the return URL and open auth modal
-            localStorage.setItem('returnUrl', Routes.IMPORT_PROJECT);
+            localforage.setItem(LocalForageKeys.RETURN_URL, Routes.IMPORT_PROJECT);
             setIsAuthModalOpen(true);
             return;
         }
