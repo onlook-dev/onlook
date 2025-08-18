@@ -8,11 +8,39 @@ import path from 'node:path';
 import './src/env';
 
 const nextConfig: NextConfig = {
-    devIndicators: {
-        buildActivity: false,
-    },
     eslint: {
         ignoreDuringBuilds: true,
+    },
+    // Security headers
+    async headers() {
+        return [
+            {
+                source: '/(.*)',
+                headers: [
+                    {
+                        key: 'X-Frame-Options',
+                        value: 'DENY',
+                    },
+                    {
+                        key: 'X-Content-Type-Options',
+                        value: 'nosniff',
+                    },
+                    {
+                        key: 'Referrer-Policy',
+                        value: 'strict-origin-when-cross-origin',
+                    },
+                ],
+            },
+        ];
+    },
+    // Optimize images
+    images: {
+        formats: ['image/webp', 'image/avif'],
+        minimumCacheTTL: 60,
+    },
+    // Enable experimental features for better performance
+    experimental: {
+        optimizePackageImports: ['@onlook/ui', 'lucide-react'],
     },
 };
 
