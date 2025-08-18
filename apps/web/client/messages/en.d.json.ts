@@ -94,7 +94,7 @@ declare const messages: {
             "google": "Login with Google",
             "lastUsed": "You used this last time",
             "loginToEdit": "Login to Edit",
-            "shareProjects": "Share projects, collaborate, and design more in code."
+            "shareProjects": "No credit card required • Get a site in seconds"
         },
         "terms": {
             "agreement": "By signing up, you agree to our",
