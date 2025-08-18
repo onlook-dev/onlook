@@ -9,6 +9,9 @@ import { redirect } from 'next/navigation';
 export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl: string | null) {
     const supabase = await createClient();
     const origin = (await headers()).get('origin');
+    const redirectTo = returnUrl
+        ? `${origin}/auth/callback?returnUrl=${encodeURIComponent(returnUrl)}`
+        : `${origin}/auth/callback`;
 
     // If already session, redirect
     const {
@@ -18,12 +21,14 @@ export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE,
         redirect(returnUrl || '/');
     }
 
+
+
     // Start OAuth flow
     // Note: User object will be created in the auth callback route if it doesn't exist
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-            redirectTo: `${origin}/auth/callback${returnUrl ? `?returnUrl=${returnUrl}` : ''}`,
+            redirectTo,
         },
     });
 

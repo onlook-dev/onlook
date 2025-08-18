@@ -82,8 +82,6 @@ export function Create({
                 images,
                 timestamp: Date.now()
             }));
-            // Store the return URL
-            localStorage.setItem('returnUrl', window.location.pathname);
             // Open the auth modal
             setIsAuthModalOpen(true);
             return;

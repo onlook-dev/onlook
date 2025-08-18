@@ -42,7 +42,8 @@ export async function GET(request: Request) {
 
             // Redirect to the redirect page which will handle the return URL
             if (forwardedHost) {
-                return NextResponse.redirect(`https://${forwardedHost}${returnUrl || '/'}`);
+                const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
+                return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${returnUrl || '/'}`);
             } else {
                 return NextResponse.redirect(`${origin}${returnUrl || '/'}`);
             }

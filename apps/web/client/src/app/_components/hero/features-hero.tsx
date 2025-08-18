@@ -1,26 +1,18 @@
 'use client';
 
-import React from 'react';
-import { motion } from 'framer-motion';
+import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { UnicornBackground } from './unicorn-background';
 import { useGitHubStats } from '../top-bar/github';
+import { UnicornBackground } from './unicorn-background';
 
 export function FeaturesHero() {
     const router = useRouter();
     const { formatted: starCount } = useGitHubStats();
 
     const handleStartBuilding = () => {
-        const heroSection = document.getElementById('hero');
-        if (heroSection) {
-            heroSection.scrollIntoView({ 
-                behavior: 'smooth',
-                block: 'start'
-            });
-        } else {
-            router.push('/');
-        }
+        router.push(Routes.HOME);
     };
 
     return (
@@ -61,10 +53,10 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    <Button 
-                        variant="secondary" 
-                        size="lg" 
-                        className="p-6 cursor-pointer hover:bg-foreground-primary hover:text-background-primary transition-colors"
+                    <Button
+                        variant="secondary"
+                        size="lg"
+                        className="p-6 cursor-pointer hover:bg-foreground-primary hover:text-background-primary transition-all duration-300"
                         onClick={handleStartBuilding}
                     >
                         START BUILDING
