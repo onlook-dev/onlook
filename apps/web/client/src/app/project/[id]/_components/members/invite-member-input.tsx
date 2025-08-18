@@ -24,14 +24,21 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
     });
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        setIsLoading(true);
-        e.preventDefault();
-        await createInvitation.mutateAsync({
-            inviteeEmail: email,
-            role: selectedRole,
-            projectId: projectId,
-        });
-        setIsLoading(false);
+        try {
+            setIsLoading(true);
+            e.preventDefault();
+            await createInvitation.mutateAsync({
+                inviteeEmail: email,
+                role: selectedRole,
+                projectId: projectId,
+            });
+        } catch (error) {
+            toast.error('Failed to invite member', {
+                description: error instanceof Error ? error.message : String(error),
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
