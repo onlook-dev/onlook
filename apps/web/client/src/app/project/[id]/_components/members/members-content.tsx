@@ -26,7 +26,7 @@ export const MembersContent = () => {
     return (
         <>
             <div className="border-b border-b-[0.5px] p-3 text-muted-foreground text-sm">
-                Invite Others
+                Invite Team Members
             </div>
             <InviteMemberInput projectId={projectId} />
             {members?.map((member) => (

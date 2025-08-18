@@ -46,7 +46,7 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
                 <Input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="kiet@onlook.com"
+                    placeholder="Add email address"
                     className="flex-1"
                 />
                 {/* <Select
