@@ -294,6 +294,7 @@ export const projectRouter = createTRPCRouter({
                     prompt: `Generate a concise and meaningful project name (2-4 words maximum) that reflects the main purpose or theme of the project based on user's creation prompt. Generate only the project name, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.prompt}</prompt>`,
                     providerOptions,
                     maxTokens: 50,
+                    experimental_telemetry: { isEnabled: true },
                 });
 
                 const generatedName = result.text.trim();

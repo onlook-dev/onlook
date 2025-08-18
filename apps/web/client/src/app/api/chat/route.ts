@@ -80,6 +80,9 @@ export const streamResponse = async (req: NextRequest) => {
             },
             ...convertToStreamMessages(messages),
         ],
+        experimental_telemetry: {
+            isEnabled: true,
+        },
         experimental_repairToolCall: repairToolCall,
         onError: async (error) => {
             console.error('Error in chat', error);
