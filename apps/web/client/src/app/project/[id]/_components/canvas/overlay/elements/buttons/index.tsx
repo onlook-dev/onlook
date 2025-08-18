@@ -4,7 +4,8 @@ import { api } from '@/trpc/react';
 import { EditorMode } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { OverlayOpenCodeButton } from './code';
+import { OverlayChatInput } from './chat';
+import { OverlayOpenCode } from './code';
 import { DEFAULT_INPUT_STATE } from './helpers';
 
 export const OverlayButtons = observer(() => {
@@ -15,8 +16,7 @@ export const OverlayButtons = observer(() => {
     const prevChatPositionRef = useRef<{ x: number; y: number } | null>(null);
 
     const selectedRect = editorEngine.overlay.state.clickRects[0] ?? null;
-    const selectedElement = editorEngine.elements.selected[0] ?? null;
-    const domId = selectedElement?.domId ?? '';
+    const domId = editorEngine.elements.selected[0]?.domId;
 
     const isPreviewMode = editorEngine.state.editorMode === EditorMode.PREVIEW;
     const shouldHideButton =
@@ -83,8 +83,8 @@ export const OverlayButtons = observer(() => {
             data-element-id={domId}
         >
             <div className="flex flex-row items-center gap-2">
-
-                <OverlayOpenCodeButton isVisible={inputState.isVisible} />
+                <OverlayChatInput inputState={inputState} setInputState={setInputState} />
+                <OverlayOpenCode isInputting={inputState.isInputting} />
             </div>
         </div>
     );

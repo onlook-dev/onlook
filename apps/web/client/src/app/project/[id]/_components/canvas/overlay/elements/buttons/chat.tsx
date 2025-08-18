@@ -42,16 +42,16 @@ export const OverlayChatInput = observer(({
             className={cn(
                 'rounded-xl backdrop-blur-lg transition-all duration-300',
                 'shadow-xl shadow-background-secondary/50',
-                inputState.isVisible
+                inputState.isInputting
                     ? 'bg-background/80 border shadow-xl shadow-background-secondary/50 p-1'
                     : 'bg-background-secondary/85 dark:bg-background/85 border-foreground-secondary/20 hover:border-foreground-secondary/50 p-0.5',
                 'border flex relative',
             )}
         >
-            {!inputState.isVisible ? (
+            {!inputState.isInputting ? (
                 // Chat Button
                 <button
-                    onClick={() => setInputState((prev) => ({ ...prev, isVisible: true }))}
+                    onClick={() => setInputState((prev) => ({ ...prev, isInputting: true }))}
                     className="rounded-lg hover:text-foreground-primary transition-colors px-2.5 py-1.5 flex flex-row items-center gap-2 w-full"
                 >
                     <Icons.Sparkles className="w-4 h-4" />
@@ -67,7 +67,7 @@ export const OverlayChatInput = observer(({
                         onClick={() =>
                             setInputState((prev) => ({
                                 ...prev,
-                                isVisible: false,
+                                isInputting: false,
                                 value: '',
                             }))
                         }
@@ -133,7 +133,7 @@ export const OverlayChatInput = observer(({
                                 e.preventDefault();
                                 setInputState((prev) => ({
                                     ...prev,
-                                    isVisible: false,
+                                    isInputting: false,
                                     value: '',
                                 }));
                             }

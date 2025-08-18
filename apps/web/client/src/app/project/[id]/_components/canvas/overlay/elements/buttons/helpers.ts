@@ -1,13 +1,13 @@
 export interface InputState {
     value: string;
-    isVisible: boolean;
+    isInputting: boolean;
     isMultiline: boolean;
     isSubmitting: boolean;
 }
 
 export const DEFAULT_INPUT_STATE: InputState = {
     value: '',
-    isVisible: false,
+    isInputting: false,
     isMultiline: false,
     isSubmitting: false,
 };

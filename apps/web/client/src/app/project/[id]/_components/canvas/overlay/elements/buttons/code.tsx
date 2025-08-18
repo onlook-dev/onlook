@@ -4,12 +4,12 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 
-export const OverlayOpenCodeButton = observer(({ isVisible }: { isVisible: boolean }) => {
+export const OverlayOpenCode = observer(({ isInputting }: { isInputting: boolean }) => {
     const editorEngine = useEditorEngine();
     const isDevMode = editorEngine.state.rightPanelTab === EditorTabValue.DEV;
     const oid = editorEngine.elements.selected[0]?.oid;
 
-    if (!isDevMode || !isVisible || !oid) {
+    if (isDevMode || isInputting || !oid) {
         return null;
     }
 
@@ -28,7 +28,7 @@ export const OverlayOpenCodeButton = observer(({ isVisible }: { isVisible: boole
         >
             <button
                 onClick={handleCodeButtonClick}
-                className="rounded-lg hover:text-foreground-primary transition-colors px-2.5 py-1.5 flex flex-row items-center gap-2 w-full"
+                className="rounded-lg hover:text-foreground-primary transition-colors px-1.5 py-1.5 flex flex-row items-center gap-2 w-full"
                 title="Open in Code"
             >
                 <Icons.Code className="w-4 h-4" />
