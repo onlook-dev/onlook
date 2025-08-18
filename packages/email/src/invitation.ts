@@ -1,5 +1,4 @@
 import { render } from '@react-email/components';
-import urlJoin from 'url-join';
 import { type InviteUserEmailProps, InviteUserEmail } from './templates';
 import type { SendEmailParams } from './types/send-email';
 
@@ -24,5 +23,7 @@ export const sendInvitationEmail = async (...params: SendEmailParams<InviteUserE
 };
 
 export const constructInvitationLink = (publicUrl: string, invitationId: string, token: string) => {
-    return urlJoin(publicUrl, 'invitation', `${invitationId}?token=${token}`);
+    const url = new URL(`/invitation/${invitationId}`, publicUrl);
+    url.searchParams.set('token', token);
+    return url.toString();
 };
