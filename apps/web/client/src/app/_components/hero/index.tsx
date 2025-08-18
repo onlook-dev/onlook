@@ -18,9 +18,9 @@ export function Hero() {
     const { data: user } = api.user.get.useQuery();
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
+        <div className="w-full h-full flex flex-col items-center justify-center gap-10 p-8 text-lg text-center relative">
             <UnicornBackground />
-            <div className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2">
+            <div className="flex flex-col gap-3 items-center relative z-20 pt-0 pb-2">
                 <motion.div 
                     className="flex flex-col gap-3 items-center relative z-20 pt-4 pb-2 mb-6"
                     initial={{ opacity: 0, y: -10 }}
@@ -72,7 +72,7 @@ export function Hero() {
                     <Create user={user ?? null} cardKey={cardKey} isCreatingProject={isCreatingProject} setIsCreatingProject={setIsCreatingProject} />
                 </motion.div>
                 <motion.div
-                    className="flex gap-12 mt-4"
+                    className="flex gap-12 mt-0"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
@@ -80,15 +80,6 @@ export function Hero() {
                 >
                     <StartBlank user={user ?? null} isCreatingProject={isCreatingProject} setIsCreatingProject={setIsCreatingProject} />
                     <Import />
-                </motion.div>
-                <motion.div
-                    className="text-center text-xs text-foreground-secondary mt-2 opacity-80"
-                    initial={{ opacity: 0, filter: "blur(4px)" }}
-                    animate={{ opacity: 1, filter: "blur(0px)" }}
-                    transition={{ duration: 0.6, delay: 1, ease: "easeOut" }}
-                    style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
-                >
-                    No Credit Card Required &bull; Get a Site in Seconds
                 </motion.div>
 
             </div>
