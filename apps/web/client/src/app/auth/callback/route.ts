@@ -12,7 +12,6 @@ export async function GET(request: Request) {
         const supabase = await createClient();
         const { error, data } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
-            const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
             const user = await api.user.upsert({
                 id: data.user.id,
             });
@@ -35,6 +34,7 @@ export async function GET(request: Request) {
                 }
             });
 
+            const forwardedHost = request.headers.get('x-forwarded-host');
             // Redirect to the redirect page which will handle the return URL
             if (forwardedHost) {
                 const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';

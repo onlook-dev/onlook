@@ -1,5 +1,6 @@
 import { api } from "@/trpc/server";
 import { Routes } from "@/utils/constants";
+import { SUPPORT_EMAIL } from "@onlook/constants";
 import { Icons } from "@onlook/ui/icons/index";
 import Link from "next/link";
 
@@ -13,7 +14,6 @@ export default async function Layout({ params, children }: Readonly<{ params: Pr
 }
 
 const NoAccess = () => {
-    const SUPPORT_EMAIL = 'support@onlook.com';
     return (
         <main className="flex flex-1 flex-col items-center justify-center h-screen w-screen p-4 text-center">
             <div className="space-y-6">

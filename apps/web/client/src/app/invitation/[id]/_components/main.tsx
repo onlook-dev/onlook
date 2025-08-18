@@ -1,8 +1,9 @@
 'use client';
 
 import { api } from '@/trpc/react';
-import { LocalForageKeys, Routes } from '@/utils/constants';
+import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
+import { getReturnUrlQueryParam } from '@/utils/url';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Skeleton } from '@onlook/ui/skeleton';
@@ -32,7 +33,7 @@ export function Main({ invitationId }: { invitationId: string }) {
         const supabase = createClient();
         await supabase.auth.signOut();
         const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-        router.push(`${Routes.LOGIN}?${LocalForageKeys.RETURN_URL}=${currentUrl}`);
+        router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(currentUrl)}`);
     }
 
     const error = getInvitationError || acceptInvitationError;
