@@ -9,8 +9,9 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
     const apiUtils = api.useUtils();
     const [email, setEmail] = useState('');
     const [selectedRole, setSelectedRole] = useState<ProjectRole>(ProjectRole.ADMIN);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const createInvitationMutation = api.invitation.create.useMutation({
+    const createInvitation = api.invitation.create.useMutation({
         onSuccess: () => {
             apiUtils.invitation.list.invalidate();
             apiUtils.invitation.suggested.invalidate();
@@ -22,13 +23,18 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
         },
     });
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        createInvitationMutation.mutate({
-            inviteeEmail: email,
-            role: selectedRole,
-            projectId: projectId,
-        });
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        try {
+            setIsLoading(true);
+            e.preventDefault();
+            await createInvitation.mutateAsync({
+                inviteeEmail: email,
+                role: selectedRole,
+                projectId: projectId,
+            });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -40,7 +46,7 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
                 <Input
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="kiet@onlook.com"
+                    placeholder="Add email address"
                     className="flex-1"
                 />
                 {/* <Select
@@ -59,7 +65,7 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
                     </SelectContent>
                 </Select> */}
             </div>
-            <Button type="submit" disabled={!email}>
+            <Button type="submit" disabled={!email || isLoading}>
                 Invite
             </Button>
         </form>

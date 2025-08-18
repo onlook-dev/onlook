@@ -1,4 +1,5 @@
 export * from './colors';
+export * from './contact';
 export * from './csb';
 export * from './dom';
 export * from './editor';
