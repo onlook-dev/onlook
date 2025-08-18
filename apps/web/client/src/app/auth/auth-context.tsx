@@ -29,10 +29,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             setLastSignInMethod(lastSignInMethod as SignInMethod | null);
         });
     }, []);
-
+   
     const handleLogin = async (method: SignInMethod.GITHUB | SignInMethod.GOOGLE) => {
         setSigningInMethod(method);
-        await login(method);
+      
+        const returnUrl = localStorage.getItem('returnUrl') || '/';
+        await login(method, returnUrl);
 
         localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
         setTimeout(() => {
