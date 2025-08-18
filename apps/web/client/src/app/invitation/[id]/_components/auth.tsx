@@ -3,15 +3,17 @@
 import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
-import { redirect, usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/router';
 
 export const HandleAuth = () => {
+    const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
     const handleLogin = () => {
         const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-        redirect(`${Routes.LOGIN}?returnUrl=${currentUrl}`);
+        router.push(`${Routes.LOGIN}?returnUrl=${currentUrl}`);
     }
 
     return (
