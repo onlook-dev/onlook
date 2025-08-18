@@ -63,10 +63,9 @@ export const Create = observer(({
                     setSelectedImages(images);
 
                     // Clear the draft after restoring
-                    localforage.removeItem(SAVED_INPUT_KEY);
+                    await localforage.removeItem(SAVED_INPUT_KEY);
                 } catch (error) {
                     console.error('Error restoring draft:', error);
-                    localforage.removeItem(SAVED_INPUT_KEY);
                 }
             }
         };
@@ -103,8 +102,7 @@ export const Create = observer(({
                 throw new Error('Failed to create project: No project returned');
             }
             router.push(`${Routes.PROJECT}/${project.id}`);
-            localforage.removeItem(SAVED_INPUT_KEY);
-
+            await localforage.removeItem(SAVED_INPUT_KEY);
         } catch (error) {
             console.error('Error creating project:', error);
             toast.error('Failed to create project', {
