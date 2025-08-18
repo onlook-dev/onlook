@@ -47,7 +47,7 @@ export function Hero() {
                     <span className={`italic font-normal ${vujahdayScript.className} text-[4.6rem] ml-1 leading-[1.0]`}>Designers</span>
                 </motion.h1>
                 <motion.p
-                    className="text-lg text-foreground-secondary max-w-xl text-center mt-2"
+                    className="text-lg text-foreground-secondary max-w-xl text-center mt-2 text-balance"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}

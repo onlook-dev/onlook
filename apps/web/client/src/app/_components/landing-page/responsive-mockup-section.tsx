@@ -21,10 +21,10 @@ export function ResponsiveMockupSection() {
           {/* Text section - positioned below mockup */}
           <div className="mt-[700px] px-8 text-left">
             <h2 className="text-4xl font-light text-foreground-primary leading-tight mb-4 text-balance">
-              Chat with AI on an infinite canvas
+              Design with AI on an infinite canvas
             </h2>
             <p className="text-large text-foreground-secondary leading-relaxed text-balance">
-              Design, iterate, and collaborate with AI assistance
+              Craft, preview, and iterate with AI to ship better websites and prototypes faster than ever.
             </p>
           </div>
         </div>
@@ -39,10 +39,10 @@ export function ResponsiveMockupSection() {
           {/* Text section - positioned below mockup */}
           <div className="mt-[700px] px-8 text-left">
             <h2 className="text-4xl font-light text-foreground-primary leading-tight mb-4 text-balance">
-              All the design features you need
+              Native design tool features that work 1:1 with code.
             </h2>
             <p className="text-large text-foreground-secondary leading-relaxed text-balance">
-              Professional tools for modern designers
+              A true developer tool for designers, helping you code without knowing anything about code.
             </p>
           </div>
         </div>
