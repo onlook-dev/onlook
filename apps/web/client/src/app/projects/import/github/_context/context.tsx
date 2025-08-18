@@ -152,7 +152,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     const nextStep = async () => {
         if (currentStep < totalSteps - 1) {
             if (!isGitHubConnected) {
-                await login(SignInMethod.GITHUB);
+                await login(SignInMethod.GITHUB, null);
             }
             setCurrentStep((prev) => prev + 1);
         } else {
