@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
         }
 
         return streamResponse(req);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Error in chat', error);
         return new Response(JSON.stringify({
             error: error instanceof Error ? error.message : String(error),
@@ -50,7 +50,13 @@ export async function POST(req: NextRequest) {
 }
 
 export const streamResponse = async (req: NextRequest) => {
-    const { messages, maxSteps, chatType }: { messages: ChatMessage[], maxSteps: number, chatType: ChatType } = await req.json();
+    const { messages, maxSteps, chatType, conversationId, projectId } = await req.json() as { 
+        messages: ChatMessage[], 
+        maxSteps: number, 
+        chatType: ChatType,
+        conversationId?: string,
+        projectId?: string
+    };
 
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
@@ -62,6 +68,9 @@ export const streamResponse = async (req: NextRequest) => {
     if (chatType === ChatType.EDIT) {
         usageRecord = await incrementUsage(req);
     }
+
+    const user = await getSupabaseUser(req);
+    const userId = user?.id;
 
     const { model, providerOptions, headers } = await getModelFromType(chatType);
     const systemPrompt = await getSystemPromptFromType(chatType);
@@ -82,6 +91,13 @@ export const streamResponse = async (req: NextRequest) => {
         ],
         experimental_telemetry: {
             isEnabled: true,
+            metadata: {
+                conversationId: conversationId ?? 'unknown',
+                projectId: projectId ?? 'unknown',
+                userId: userId ?? 'unknown',
+                chatType: chatType,
+                tags: ['chat'],
+            },
         },
         experimental_repairToolCall: repairToolCall,
         onError: async (error) => {

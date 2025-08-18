@@ -280,7 +280,7 @@ export const projectRouter = createTRPCRouter({
         .input(z.object({
             prompt: z.string(),
         }))
-        .mutation(async ({ input }): Promise<string> => {
+        .mutation(async ({ ctx, input }): Promise<string> => {
             try {
                 const { model, providerOptions, headers } = await initModel({
                     provider: LLMProvider.OPENROUTER,
@@ -294,7 +294,10 @@ export const projectRouter = createTRPCRouter({
                     prompt: `Generate a concise and meaningful project name (2-4 words maximum) that reflects the main purpose or theme of the project based on user's creation prompt. Generate only the project name, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.prompt}</prompt>`,
                     providerOptions,
                     maxTokens: 50,
-                    experimental_telemetry: { isEnabled: true },
+                    experimental_telemetry: { isEnabled: true, metadata: {
+                        userId: ctx.user.id,
+                        tags: ['project-name-generation'],
+                    } },
                 });
 
                 const generatedName = result.text.trim();
