@@ -4,6 +4,7 @@ import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
+import { getReturnUrlQueryParam } from '@/utils/url';
 import { Links } from '@onlook/constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import { Button } from '@onlook/ui/button';
@@ -32,8 +33,8 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
 
     const handleSignOut = async () => {
         await supabase.auth.signOut();
-        const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-        router.push(`${Routes.LOGIN}?returnUrl=${currentUrl}`);
+        const returnUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(returnUrl)}`);
     };
 
     const handleOpenSubscription = () => {

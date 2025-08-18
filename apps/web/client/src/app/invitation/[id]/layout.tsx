@@ -1,6 +1,6 @@
+import { createClient } from '@/utils/supabase/server';
 import { type Metadata } from 'next';
 import { HandleAuth } from './_components/auth';
-import { createClient } from '@/utils/supabase/server';
 
 export const metadata: Metadata = {
     title: 'Onlook',

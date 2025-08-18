@@ -1,6 +1,7 @@
 'use client';
 
-import { LocalForageKeys, Routes } from '@/utils/constants';
+import { Routes } from '@/utils/constants';
+import { getReturnUrlQueryParam } from '@/utils/url';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -12,7 +13,7 @@ export const HandleAuth = () => {
 
     const handleLogin = () => {
         const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
-        router.push(`${Routes.LOGIN}?${LocalForageKeys.RETURN_URL}=${currentUrl}`);
+        router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(currentUrl)}`);
     }
 
     return (

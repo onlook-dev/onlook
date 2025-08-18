@@ -14,7 +14,7 @@ export function Main({ invitationId }: { invitationId: string }) {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const token = useSearchParams().get('token');
-    const { data: invitation, isLoading: loadingInvitation, error: getInvitationError } = api.invitation.get.useQuery({
+    const { data: invitation, isLoading: loadingInvitation, error: getInvitationError } = api.invitation.getWithoutToken.useQuery({
         id: invitationId,
     });
 
@@ -125,10 +125,10 @@ export function Main({ invitationId }: { invitationId: string }) {
                         onClick={() => {
                             acceptInvitation({
                                 id: invitationId,
-                                token: invitation.token,
+                                token: token,
                             });
                         }}
-                        disabled={isAcceptingInvitation}
+                        disabled={!token || isAcceptingInvitation}
                     >
                         Accept Invitation
                     </Button>

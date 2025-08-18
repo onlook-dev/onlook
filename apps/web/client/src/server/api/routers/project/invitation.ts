@@ -48,6 +48,35 @@ export const invitationRouter = createTRPCRouter({
             inviter: toUser(invitation.inviter),
         };
     }),
+    getWithoutToken: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
+        const invitation = await ctx.db.query.projectInvitations.findFirst({
+            where: eq(projectInvitations.id, input.id),
+            with: {
+                inviter: true,
+            },
+        });
+
+        if (!invitation) {
+            throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: 'Invitation not found',
+            });
+        }
+
+        if (!invitation.inviter) {
+            throw new TRPCError({
+                code: 'NOT_FOUND',
+                message: 'Inviter not found',
+            });
+        }
+
+        return {
+            ...invitation,
+            token: null,
+            // @ts-expect-error - Drizzle is not typed correctly
+            inviter: toUser(invitation.inviter),
+        };
+    }),
     list: protectedProcedure
         .input(
             z.object({

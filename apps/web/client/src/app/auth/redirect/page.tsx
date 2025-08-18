@@ -1,7 +1,7 @@
 'use client';
 
 import { LocalForageKeys } from '@/utils/constants';
-import { sanitizeReturnUrl } from '@onlook/utility';
+import { sanitizeReturnUrl } from '@/utils/url';
 import localforage from 'localforage';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';

@@ -1,5 +1,6 @@
-import { LocalForageKeys, Routes } from '@/utils/constants';
+import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
+import { getReturnUrlQueryParam } from '@/utils/url';
 import { type Metadata } from 'next';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -17,7 +18,7 @@ export default async function Layout({ children }: Readonly<{ children: React.Re
     if (!session) {
         const headersList = await headers();
         const pathname = headersList.get('x-pathname') || Routes.PROJECTS;
-        redirect(`${Routes.LOGIN}?${LocalForageKeys.RETURN_URL}=${pathname}`);
+        redirect(`${Routes.LOGIN}?${getReturnUrlQueryParam(pathname)}`);
     }
     return <>{children}</>;
 }
