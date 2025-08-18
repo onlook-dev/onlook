@@ -21,12 +21,18 @@ export const InvitationRow = ({ invitation }: { invitation: ProjectInvitation })
     });
 
     const copyInvitationLink = () => {
-        navigator.clipboard.writeText(constructInvitationLink(env.NEXT_PUBLIC_SITE_URL, invitation.id, invitation.token));
-        setIsCopied(true);
-        toast.success('Invitation link copied to clipboard');
-        setTimeout(() => {
+        try {
+            navigator.clipboard.writeText(constructInvitationLink(env.NEXT_PUBLIC_SITE_URL, invitation.id, invitation.token));
+            setIsCopied(true);
+            toast.success('Invitation link copied to clipboard');
+            setTimeout(() => {
+                setIsCopied(false);
+            }, 2000);
+        } catch (error) {
+            console.error('Failed to copy invitation link:', error);
+            toast.error('Failed to copy invitation link');
             setIsCopied(false);
-        }, 2000);
+        }
     };
 
     return (
