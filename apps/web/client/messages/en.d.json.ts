@@ -57,7 +57,8 @@ declare const messages: {
             "downloadCode": "Download Code",
             "downloadingCode": "Preparing download...",
             "downloadSuccess": "Download started successfully",
-            "downloadError": "Failed to prepare download"
+            "downloadError": "Failed to prepare download",
+            "recentProjects": "Recent Projects"
         },
         "dialogs": {
             "delete": {
@@ -86,14 +87,14 @@ declare const messages: {
     "welcome": {
         "title": "Welcome to Onlook",
         "titleReturn": "Welcome back to Onlook",
-        "description": "Onlook is an open-source visual editor for React apps. Design directly in your live product.",
+        "description": "A next-generation visual code editor that lets designers and product managers craft web experiences with AI.",
         "alpha": "Alpha",
         "login": {
             "github": "Login with GitHub",
             "google": "Login with Google",
             "lastUsed": "You used this last time",
             "loginToEdit": "Login to Edit",
-            "shareProjects": "Share projects, collaborate, and design more in code."
+            "shareProjects": "No credit card required • Get a site in seconds"
         },
         "terms": {
             "agreement": "By signing up, you agree to our",
@@ -182,7 +183,7 @@ declare const messages: {
             }
         },
         "footer": {
-            "unusedMessages": "Unused chat messages don't rollover to the next month"
+            "unusedMessages": "Unused chat messages will roll over to the next month."
         }
     },
     "editor": {
@@ -239,10 +240,15 @@ declare const messages: {
                         },
                         "settings": {
                             "showSuggestions": "Show suggestions",
+                            "showMiniChat": "Show mini chat",
+                            "autoApplyCode": "Auto-apply results",
                             "expandCodeBlocks": "Show code while rendering"
                         },
                         "miniChat": {
                             "button": "Chat with AI"
+                        },
+                        "openInCode": {
+                            "button": "Open in Code"
                         }
                     },
                     "styles": {

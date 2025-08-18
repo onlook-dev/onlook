@@ -44,7 +44,7 @@ export class CopyManager {
 
         const targetEl: ActionElement | null = (await frameData.view.getActionElement(
             selectedEl.domId,
-        )) as ActionElement | null;
+        ));
 
         if (!targetEl) {
             console.error('Failed to copy element');

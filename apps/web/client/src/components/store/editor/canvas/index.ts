@@ -1,19 +1,16 @@
 import { api } from '@/trpc/client';
 import { DefaultSettings } from '@onlook/constants';
-import { fromCanvas } from '@onlook/db';
-import type { Canvas, Frame, RectPosition } from '@onlook/models';
+import type { Canvas, RectPosition } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-
-type SettingsObserver = (settings: Frame) => void;
+import type { EditorEngine } from '../engine';
 
 export class CanvasManager {
     private _id: string = '';
     private _scale: number = DefaultSettings.SCALE;
     private _position: RectPosition = DefaultSettings.PAN_POSITION;
-    private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
-    constructor() {
+    constructor(private readonly editorEngine: EditorEngine) {
         this._position = this.getDefaultPanPosition();
         makeAutoObservable(this);
     }
@@ -50,7 +47,7 @@ export class CanvasManager {
 
     set scale(value: number) {
         this._scale = value;
-        this.saveSettings();
+        this.saveCanvas();
     }
 
     get position() {
@@ -59,11 +56,22 @@ export class CanvasManager {
 
     set position(value: RectPosition) {
         this._position = value;
-        this.saveSettings();
+        this.saveCanvas();
     }
 
-    async updateCanvas(canvas: Canvas) {
-        const success = await api.userCanvas.update.mutate(fromCanvas(canvas));
+    // 5 second debounce. Database is used to save working state per user, so we don't need to save too often.
+    saveCanvas = debounce(this.undebouncedSaveCanvas, 5000);
+
+    private async undebouncedSaveCanvas() {
+        const success = await api.userCanvas.update.mutate({
+            projectId: this.editorEngine.projectId,
+            canvasId: this.id,
+            canvas: {
+                scale: this.scale.toString(),
+                x: this.position.x.toString(),
+                y: this.position.y.toString(),
+            },
+        });
         if (!success) {
             console.error('Failed to update canvas');
         }
@@ -72,29 +80,5 @@ export class CanvasManager {
     clear() {
         this._scale = DefaultSettings.SCALE;
         this._position = DefaultSettings.PAN_POSITION;
-    }
-
-    saveSettings = debounce(this.undebouncedSaveSettings, 1000);
-
-    observeSettings(id: string, observer: SettingsObserver): void {
-        if (!this.settingsObservers.has(id)) {
-            this.settingsObservers.set(id, new Set());
-        }
-        this.settingsObservers.get(id)!.add(observer);
-    }
-
-    unobserveSettings(id: string, observer: SettingsObserver): void {
-        this.settingsObservers.get(id)?.delete(observer);
-        if (this.settingsObservers.get(id)?.size === 0) {
-            this.settingsObservers.delete(id);
-        }
-    }
-
-    private undebouncedSaveSettings() {
-        this.updateCanvas({
-            id: this.id,
-            position: this.position,
-            scale: this.scale,
-        });
     }
 }

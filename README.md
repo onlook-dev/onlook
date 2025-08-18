@@ -100,7 +100,7 @@ builders.
 ## Getting Started
 
 Available soon with a [hosted app](https://onlook.com) or
-[run locally](https://docs.onlook.com/contributing/developers/running-locally).
+[run locally](https://docs.onlook.com/developers/running-locally).
 
 ### Usage
 
@@ -138,8 +138,7 @@ objects, and experiment with layouts.
 For full documentation, visit [docs.onlook.com](https://docs.onlook.com)
 
 To see how to Contribute, visit
-[Contributing to Onlook](https://docs.onlook.com/contributing/developers) in our
-docs.
+[Contributing to Onlook](https://docs.onlook.com/developers) in our docs.
 
 ## How it works
 
@@ -158,7 +157,7 @@ displays DOM elements declaratively (e.g. jsx/tsx/html). We are focused on
 making it work well with Next.js and TailwindCSS for now.
 
 For a full walkthrough, check out our
-[Architecture Docs](https://docs.onlook.com/contributing/developers/architecture).
+[Architecture Docs](https://docs.onlook.com/developers/architecture).
 
 ### Our Tech Stack
 

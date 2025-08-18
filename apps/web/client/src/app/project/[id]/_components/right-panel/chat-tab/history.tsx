@@ -12,7 +12,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverAnchor, PopoverContent } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
+
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
@@ -76,9 +76,8 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                                 className={cn(
                                                     'flex flex-row w-full py-2 items-center rounded-md hover:bg-background-onlook cursor-pointer select-none group relative',
                                                     conversation.id ===
-                                                        editorEngine.chat.conversation.current
-                                                            ?.id &&
-                                                        'bg-background-onlook text-primary font-semibold',
+                                                    editorEngine.chat.conversation.current?.conversation.id &&
+                                                    'bg-background-onlook text-primary font-semibold',
                                                 )}
                                                 key={conversation.id}
                                                 onClick={() =>
@@ -89,7 +88,7 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                             >
                                                 <Icons.ChatBubble className="flex-none mx-2" />
                                                 <span className="text-xs truncate w-80 text-left">
-                                                    {conversation.displayName ?? 'New Conversation'}
+                                                    {conversation.title ?? 'New Conversation'}
                                                 </span>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
@@ -112,7 +111,6 @@ export const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps)
                                                         <p className="font-normal">
                                                             Delete Conversation
                                                         </p>
-                                                        <TooltipArrow className="fill-foreground" />
                                                     </TooltipContent>
                                                 </Tooltip>
                                             </div>

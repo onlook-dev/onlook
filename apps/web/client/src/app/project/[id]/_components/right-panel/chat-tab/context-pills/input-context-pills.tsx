@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { ChatMessageContext } from '@onlook/models/chat';
+import type { MessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
@@ -10,7 +10,7 @@ import { DraftImagePill } from './draft-image-pill';
 export const InputContextPills = observer(() => {
     const editorEngine = useEditorEngine();
 
-    const handleRemoveContext = (contextToRemove: ChatMessageContext) => {
+    const handleRemoveContext = (contextToRemove: MessageContext) => {
         const newContext = [...editorEngine.chat.context.context].filter(
             (context) => context !== contextToRemove,
         );
@@ -27,7 +27,7 @@ export const InputContextPills = observer(() => {
         >
             <AnimatePresence mode="popLayout">
                 {editorEngine.chat.context.context.map(
-                    (context: ChatMessageContext, index: number) => {
+                    (context: MessageContext, index: number) => {
                         if (context.type === MessageContextType.IMAGE) {
                             return (
                                 <DraftImagePill

@@ -19,7 +19,7 @@
         "@fastify/websocket": "^11.0.2",
         "@trpc/server": "^11.0.0",
         "fastify": "^5.2.2",
-        "zod": "^3.24.2",
+        "zod": "^3",
         "@onlook/rpc": "*"
     }
 }

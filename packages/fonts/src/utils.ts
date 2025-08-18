@@ -1,4 +1,5 @@
 import { type Font, type RawFont, RouterType } from '@onlook/models';
+import { types as t, type t as T } from '@onlook/parser';
 
 /**
  * Converts a RawFont to a Font
@@ -21,12 +22,25 @@ export function getFontRootElements(type: RouterType): string[] {
 }
 
 /**
- * Cleans up comma-separated strings by removing extra commas and spaces
+ * Creates a new import declaration and inserts it at the correct position in the AST
+ * @param ast - The AST file to modify
+ * @param importName - The name to import
+ * @param sourcePath - The import source path
  */
-export function cleanComma(str: string): string {
-    return str
-        .replace(/,\s*,+/g, ',') // Replace multiple commas with single comma
-        .replace(/^\s*,+\s*|\s*,+\s*$/g, '') // Remove leading/trailing commas
-        .replace(/\s+/g, ' ') // Normalize multiple spaces
-        .trim();
+export function createAndInsertImport(ast: T.File, importName: string, sourcePath: string): void {
+    const newImport = t.importDeclaration(
+        [t.importSpecifier(t.identifier(importName), t.identifier(importName))],
+        t.stringLiteral(sourcePath),
+    );
+
+    let insertionIndex = 0;
+    for (let i = 0; i < ast.program.body.length; i++) {
+        if (t.isImportDeclaration(ast.program.body[i])) {
+            insertionIndex = i + 1;
+        } else {
+            break;
+        }
+    }
+
+    ast.program.body.splice(insertionIndex, 0, newImport);
 }

@@ -1,6 +1,6 @@
-import type { ParseResult } from '@babel/parser';
 import { DefaultSettings } from '@onlook/constants';
 import {
+    createFontSrcObjects,
     createLocalFontConfig,
     findFontExportDeclaration,
     hasLocalFontImport,
@@ -31,8 +31,8 @@ export class FontUploadManager {
     async uploadFonts(
         fontFiles: FontUploadFile[],
         basePath: string,
-        fontConfigAst: ParseResult<T.File>,
-    ): Promise<{ success: boolean; fontConfigAst: ParseResult<T.File> }> {
+        fontConfigAst: T.File,
+    ): Promise<{ success: boolean; fontConfigAst: T.File }> {
         this._isUploading = true;
         try {
             if (fontFiles.length === 0) {
@@ -48,7 +48,7 @@ export class FontUploadManager {
             const { fontNameExists, existingFontNode } = findFontExportDeclaration(fontConfigAst, fontName);
 
             const fontConfigs = await this.processFontFiles(fontFiles, baseFontName, basePath);
-            const fontsSrc = this.createFontSrcObjects(fontConfigs);
+            const fontsSrc = createFontSrcObjects(fontConfigs);
 
             await this.updateAstWithFontConfig(
                 fontConfigAst,
@@ -105,23 +105,10 @@ export class FontUploadManager {
     }
 
     /**
-     * Creates font source objects for AST
-     */
-    private createFontSrcObjects(fontConfigs: FontConfig[]): T.ObjectExpression[] {
-        return fontConfigs.map((config: FontConfig) =>
-            t.objectExpression([
-                t.objectProperty(t.identifier('path'), t.stringLiteral(config.path)),
-                t.objectProperty(t.identifier('weight'), t.stringLiteral(config.weight)),
-                t.objectProperty(t.identifier('style'), t.stringLiteral(config.style)),
-            ]),
-        );
-    }
-
-    /**
      * Updates AST with font configuration
      */
     private async updateAstWithFontConfig(
-        ast: ParseResult<T.File>,
+        ast: T.File,
         fontName: string,
         fontsSrc: T.ObjectExpression[],
         fontNameExists: boolean,

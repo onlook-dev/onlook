@@ -1,0 +1,11 @@
+{
+    "font": {
+        "id": "playfair-display",
+        "family": "Playfair Display",
+        "subsets": ["latin", "latin-ext"],
+        "variable": "--font-playfair-display",
+        "weight": ["400", "500", "600", "700", "800", "900"],
+        "styles": ["normal", "italic"],
+        "type": "google"
+    }
+}

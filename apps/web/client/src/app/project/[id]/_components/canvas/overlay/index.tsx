@@ -5,6 +5,7 @@ import { EditorMode } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
+import { OverlayButtons } from './elements/buttons';
 import { MeasurementOverlay } from './elements/measurement';
 import { ClickRect } from './elements/rect/click';
 import { HoverRect } from './elements/rect/hover';
@@ -69,13 +70,9 @@ export const Overlay = observer(() => {
                     toRect={overlayState.measurement.toRect}
                 />
             )}
-            {/* TODO: Reenable overlay chat */}
-            {/* {overlayState.clickRects.length > 0 && (
-                <OverlayChat
-                    elementId={editorEngine.elements.selected[0]?.domId ?? ''}
-                    selectedEl={overlayState.clickRects[0] ?? null}
-                />
-            )} */}
+            {overlayState.clickRects.length > 0 && (
+                <OverlayButtons />
+            )}
         </div>
     );
 });

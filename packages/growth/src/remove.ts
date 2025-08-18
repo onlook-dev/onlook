@@ -1,4 +1,4 @@
-import { generate, parse, types as t, traverse, type t as T } from '@onlook/parser';
+import { generate, getAstFromContent, types as t, traverse, type t as T } from '@onlook/parser';
 import { type FileOperations } from '@onlook/utility';
 import { getLayoutPath } from './helpers';
 
@@ -26,10 +26,10 @@ export async function removeBuiltWithScriptFromLayout(
         }
 
         // Parse the layout file
-        const ast = parse(layoutContent, {
-            sourceType: 'module',
-            plugins: ['jsx', 'typescript'],
-        });
+        const ast = getAstFromContent(layoutContent);
+        if (!ast) {
+            throw new Error(`Failed to parse file ${layoutPath}`);
+        }
 
         let scriptImportRemoved = false;
         let scriptElementRemoved = false;

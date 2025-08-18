@@ -25,30 +25,13 @@ export const ProjectInfo = ({ project, direction, refetch }: { project: Project;
         }),
     };
 
-    // useEffect(() => {
-    //     loadFavicon();
-    // }, [project.sandbox.url]);
-
-    // const loadFavicon = async () => {
-    //     // How to get a favicon from a url?
-    //     const favicon = await getFavicon(project.sandbox.url);
-    //     if (favicon) {
-    //         setFavicon(favicon);
-    //     }
-    // }
+    
 
     return (
         project && (
             <div className="flex flex-col gap-4 max-w-[480px] w-full">
                 <div className="flex items-center gap-3 mb-1">
-                    {/* TODO: This should show the favicon */}
-                    {/* {favicon && (
-                            <img
-                                src={favicon}
-                                alt="Preview"
-                                className="w-8 h-8 rounded-lg bg-white object-cover border border-border"
-                            />
-                        )} */}
+                    
                     <span className="text-foreground-onlook text-regular">{project.sandbox.url}</span>
                 </div>
                 <AnimatePresence mode="wait" custom={direction}>

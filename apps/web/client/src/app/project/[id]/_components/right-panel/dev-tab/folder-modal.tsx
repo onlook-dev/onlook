@@ -80,12 +80,7 @@ export function FolderModal({
         try {
             setIsLoading(true);
 
-            const session = editorEngine?.sandbox?.session?.session;
-            if (!session) {
-                throw new Error('No sandbox session available');
-            }
-
-            await createFolderInSandbox(session, fullPath, editorEngine.sandbox);
+            await createFolderInSandbox(editorEngine?.sandbox?.session?.provider, fullPath, editorEngine.sandbox);
             toast(`Folder "${name}" created successfully!`);
 
             setName('');

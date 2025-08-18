@@ -1,4 +1,7 @@
 import imageCompression from 'browser-image-compression';
+import { DefaultSettings } from '@onlook/constants';
+import { normalizePath } from './folder';
+import { isImageFile } from './file';
 
 // Browser-side image compression
 export async function compressImageInBrowser(file: File): Promise<string | undefined> {
@@ -62,4 +65,43 @@ export function canHaveBackgroundImage(tagName: string): boolean {
     const tag = tagName.toLowerCase();
     const backgroundElements = ['div', 'section', 'header', 'footer', 'main', 'article', 'aside'];
     return backgroundElements.includes(tag);
+}
+
+/**
+ * Convert image path to relative path by removing the image folder path
+ * Example: public/images/a.jpg -> /images/a.jpg
+ * @param imagePath
+ * @returns url
+ */
+export function stripImageFolderPrefix(imagePath: string): string {
+    return imagePath.replace(new RegExp(`^${DefaultSettings.IMAGE_FOLDER}\/`), '');
+}
+
+/**
+ * Convert image path to absolute path by adding the image folder path
+ * Example: /images/a.jpg -> public/images/a.jpg
+ *          public/images/a.jpg -> public/images/a.jpg
+ *          images/a.jpg -> public/images/a.jpg
+ *          url("/images/a.jpg") -> public/images/a.jpg
+ *          url("https://example.com/images/a.jpg") -> public/images/a.jpg
+ *
+ * @param imagePath
+ * @returns url
+ */
+
+export function addImageFolderPrefix(imagePath: string): string {
+    const relativePath = urlToRelativePath(imagePath);
+
+    // Remove url() wrapper
+    const path = relativePath.replace(/url\s*\(\s*["']?([^"')]+)["']?\s*\)/, '$1');
+
+    if (!isImageFile(path)) {
+        return '';
+    }
+
+    if (path.startsWith(DefaultSettings.IMAGE_FOLDER)) {
+        return normalizePath(path);
+    }
+
+    return normalizePath(`${DefaultSettings.IMAGE_FOLDER}/${path}`);
 }

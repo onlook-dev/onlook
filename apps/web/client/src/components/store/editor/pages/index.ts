@@ -11,7 +11,7 @@ import {
     renamePageInSandbox,
     scanPagesFromSandbox,
     updatePageMetadataInSandbox,
-    validateNextJsRoute
+    validateNextJsRoute,
 } from './helper';
 
 export class PagesManager {
@@ -21,9 +21,7 @@ export class PagesManager {
     private groupedRoutes = '';
     private _isScanning = false;
 
-    constructor(
-        private editorEngine: EditorEngine,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -55,15 +53,6 @@ export class PagesManager {
 
         const activePath = this.activeRoute;
         if (!activePath) {
-            return false;
-        }
-
-        if (node.children && node.children?.length > 0) {
-            return false;
-        }
-
-        // Skip folder nodes
-        if (node.children && node.children?.length > 0) {
             return false;
         }
 
@@ -131,9 +120,10 @@ export class PagesManager {
                 return;
             }
             this._isScanning = true;
-            if (this.editorEngine?.sandbox?.session?.session) {
+            if (this.editorEngine?.sandbox?.session?.provider) {
                 try {
                     const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox);
+
                     this.setPages(realPages);
                     this._isScanning = false;
                     return;
@@ -143,7 +133,7 @@ export class PagesManager {
                     this._isScanning = false;
                 }
             } else {
-                console.log('Sandbox session not available');
+                console.log('Sandbox provider not available');
                 this.setPages([]);
             }
         } catch (error) {
@@ -203,7 +193,7 @@ export class PagesManager {
             await duplicatePageInSandbox(
                 this.editorEngine.sandbox,
                 normalizeRoute(sourcePath),
-                normalizeRoute(targetPath)
+                normalizeRoute(targetPath),
             );
             await this.scanPages();
             this.editorEngine.posthog.capture('page_duplicate');
@@ -246,7 +236,7 @@ export class PagesManager {
         }
     }
 
-    async navigateTo(path: string) {
+    async navigateTo(path: string, addToHistory = true) {
         const frameData = this.getActiveFrame();
 
         if (!frameData?.view) {
@@ -271,25 +261,8 @@ export class PagesManager {
             this.groupedRoutes = '';
         }
 
-        try {
-            const currentUrl = frameData.view.src;
-            const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
-
-            if (!baseUrl) {
-                console.warn('No base URL found');
-                return;
-            }
-
-            await frameData.view.loadURL(`${baseUrl}${path}`);
-            this.setActivePath(frameData.frame.id, originalPath);
-            await frameData.view.processDom();
-
-            this.editorEngine.posthog.capture('page_navigate', {
-                path,
-            });
-        } catch (error) {
-            console.error('Navigation failed:', error);
-        }
+        await this.editorEngine.frames.navigateToPath(frameData.frame.id, path, addToHistory);
+        this.setActivePath(frameData.frame.id, originalPath);
     }
 
     public setCurrentPath(path: string) {

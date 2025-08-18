@@ -1,21 +1,9 @@
-import { env } from '@/env';
-import { createClient as createTRPCClient } from '@/trpc/request-server';
 import { trackEvent } from '@/utils/analytics/server';
-import { createClient as createSupabaseClient } from '@/utils/supabase/request-server';
-import { askToolSet, buildToolSet, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
-import { ChatType, CLAUDE_MODELS, type InitialModelPayload, LLMProvider, OPENROUTER_MODELS, type Usage, UsageType } from '@onlook/models';
-import { generateObject, NoSuchToolError, streamText } from 'ai';
+import { convertToStreamMessages } from '@onlook/ai';
+import { ChatType, type ChatMessage } from '@onlook/models';
+import { streamText } from 'ai';
 import { type NextRequest } from 'next/server';
-
-const isProd = env.NODE_ENV === 'production';
-
-const MainModelConfig: InitialModelPayload = isProd ? {
-    provider: LLMProvider.OPENROUTER,
-    model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
-} : {
-    provider: LLMProvider.ANTHROPIC,
-    model: CLAUDE_MODELS.SONNET_4,
-};
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
 
 export async function POST(req: NextRequest) {
     try {
@@ -29,7 +17,6 @@ export async function POST(req: NextRequest) {
                 headers: { 'Content-Type': 'application/json' }
             });
         }
-
         const usageCheckResult = await checkMessageLimit(req);
         if (usageCheckResult.exceeded) {
             trackEvent({
@@ -53,9 +40,8 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
         console.error('Error in chat', error);
         return new Response(JSON.stringify({
-            error: 'Internal Server Error',
+            error: error instanceof Error ? error.message : String(error),
             code: 500,
-            details: error instanceof Error ? error.message : String(error)
         }), {
             status: 500,
             headers: { 'Content-Type': 'application/json' }
@@ -63,123 +49,48 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export const checkMessageLimit = async (req: NextRequest): Promise<{
-    exceeded: boolean;
-    usage: Usage;
-}> => {
-    const { api } = await createTRPCClient(req);
-    const usage = await api.usage.get();
-
-    const dailyUsage = usage.daily;
-    const dailyExceeded = dailyUsage.usageCount >= dailyUsage.limitCount;
-    if (dailyExceeded) {
-        return {
-            exceeded: true,
-            usage: dailyUsage,
-        };
-    }
-
-    const monthlyUsage = usage.monthly;
-    const monthlyExceeded = monthlyUsage.usageCount >= monthlyUsage.limitCount;
-    if (monthlyExceeded) {
-        return {
-            exceeded: true,
-            usage: monthlyUsage,
-        };
-    }
-
-    return {
-        exceeded: false,
-        usage: monthlyUsage,
-    };
-}
-
-export const getSupabaseUser = async (request: NextRequest) => {
-    const supabase = await createSupabaseClient(request);
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
-}
-
 export const streamResponse = async (req: NextRequest) => {
-    const { messages, maxSteps, chatType } = await req.json();
-    const { model, providerOptions, headers } = await initModel(MainModelConfig);
+    const { messages, maxSteps, chatType }: { messages: ChatMessage[], maxSteps: number, chatType: ChatType } = await req.json();
 
-    let systemPrompt: string;
-    switch (chatType) {
-        case ChatType.CREATE:
-            systemPrompt = getCreatePageSystemPrompt();
-            break;
-        case ChatType.ASK:
-            systemPrompt = getAskModeSystemPrompt();
-            break;
-        case ChatType.EDIT:
-        default:
-            systemPrompt = getSystemPrompt();
-            break;
+    // Updating the usage record and rate limit is done here to avoid
+    // abuse in the case where a single user sends many concurrent requests.
+    // If the call below fails, the user will not be penalized.
+    let usageRecord: {
+        usageRecordId: string | undefined;
+        rateLimitId: string | undefined;
+    } | null;
+    if (chatType === ChatType.EDIT) {
+        usageRecord = await incrementUsage(req);
     }
-    const toolSet = chatType === ChatType.ASK ? askToolSet : buildToolSet;
+
+    const { model, providerOptions, headers } = await getModelFromType(chatType);
+    const systemPrompt = await getSystemPromptFromType(chatType);
+    const tools = await getToolSetFromType(chatType);
     const result = streamText({
         model,
         headers,
+        tools,
+        maxSteps,
+        toolCallStreaming: true,
         messages: [
             {
                 role: 'system',
                 content: systemPrompt,
                 providerOptions,
             },
-            ...messages,
+            ...convertToStreamMessages(messages),
         ],
-        maxSteps,
-        tools: toolSet,
-        toolCallStreaming: true,
-        maxTokens: 64000,
-        experimental_repairToolCall: async ({ toolCall, tools, parameterSchema, error }) => {
-            if (NoSuchToolError.isInstance(error)) {
-                throw new Error(
-                    `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
-                );
-            }
-            const tool = tools[toolCall.toolName as keyof typeof tools];
-
-            console.warn(
-                `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}, attempting to fix`,
-            );
-
-            const { object: repairedArgs } = await generateObject({
-                model,
-                schema: tool?.parameters,
-                prompt: [
-                    `The model tried to call the tool "${toolCall.toolName}"` +
-                    ` with the following arguments:`,
-                    JSON.stringify(toolCall.args),
-                    `The tool accepts the following schema:`,
-                    JSON.stringify(parameterSchema(toolCall)),
-                    'Please fix the arguments.',
-                ].join('\n'),
-            });
-
-            return { ...toolCall, args: JSON.stringify(repairedArgs) };
-        },
-        onError: (error) => {
+        experimental_repairToolCall: repairToolCall,
+        onError: async (error) => {
             console.error('Error in chat', error);
-            throw error;
-        },
-    });
-
-    try {
-        if (chatType === ChatType.EDIT) {
-            const user = await getSupabaseUser(req);
-            if (!user) {
-                throw new Error('User not found');
-            }
-            const { api } = await createTRPCClient(req);
-            await api.usage.increment({
-                type: UsageType.MESSAGE,
-            });
+            // if there was an error with the API, do not penalize the user
+            await decrementUsage(req, usageRecord);
         }
-    } catch (error) {
-        console.error('Error in chat usage increment', error);
-    }
+    })
 
-    return result.toDataStreamResponse();
+    return result.toDataStreamResponse(
+        {
+            getErrorMessage: errorHandler,
+        }
+    );
 }

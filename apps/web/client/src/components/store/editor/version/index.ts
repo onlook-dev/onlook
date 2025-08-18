@@ -1,3 +1,4 @@
+import { sanitizeCommitMessage } from '@/utils/git';
 import { type GitCommit } from '@onlook/git';
 import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
@@ -16,6 +17,7 @@ export class VersionsManager {
     isSaving = false;
     isLoadingCommits = false;
     private gitManager: GitManager;
+    private listCommitsPromise: Promise<GitCommit[]> | null = null;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -95,8 +97,9 @@ export class VersionsManager {
             //Check config is set
             await this.gitManager.ensureGitConfig();
 
-            // Create the commit
-            const commitResult = await this.gitManager.commit(message);
+            // Create the commit with sanitized message
+            const sanitizedMessage = sanitizeCommitMessage(message);
+            const commitResult = await this.gitManager.commit(sanitizedMessage);
             if (!commitResult.success) {
                 if (showToast) {
                     toast.error('Failed to create backup');
@@ -108,18 +111,18 @@ export class VersionsManager {
                 };
             }
 
-            // Refresh the commits list
+            // Refresh the commits list after creating commit
             const commits = await this.listCommits();
 
             if (showToast) {
                 toast.success('Backup created successfully!', {
-                    description: `Created backup: "${message}"`,
+                    description: `Created backup: "${sanitizedMessage}"`,
                 });
             }
             this.isSaving = true;
 
             this.editorEngine.posthog.capture('versions_create_commit_success', {
-                message,
+                message: sanitizedMessage,
             });
 
             const latestCommit = commits.length > 0 ? commits[0] ?? null : null;
@@ -145,9 +148,27 @@ export class VersionsManager {
         }
     };
 
-    listCommits = async () => {
-        this.isLoadingCommits = true;
+    listCommits = async (): Promise<GitCommit[]> => {
+        // Return existing promise if already in progress
+        if (this.listCommitsPromise) {
+            return this.listCommitsPromise;
+        }
+
+        // Create and store the promise
+        this.listCommitsPromise = this.performListCommits();
+
         try {
+            const result = await this.listCommitsPromise;
+            return result;
+        } finally {
+            // Clear the promise when complete
+            this.listCommitsPromise = null;
+        }
+    };
+
+    private performListCommits = async (): Promise<GitCommit[]> => {
+        try {
+            this.isLoadingCommits = true;
             this.commits = await this.gitManager.listCommits();
 
             // Enhance commits with display names from notes
