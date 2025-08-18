@@ -42,6 +42,15 @@ export const ToolCallDisplay = ({
         if (toolInvocation.toolName === TERMINAL_COMMAND_TOOL_NAME) {
             const args = toolInvocation.args as { command: string };
             const result = toolInvocation.result as { output?: string; error?: string } | null;
+            if (!args?.command) {
+                return (
+                    <ToolCallSimple
+                        toolInvocation={toolInvocation}
+                        key={toolInvocation.toolCallId}
+                        loading={false}
+                    />
+                );
+            }
             return (
                 <BashCodeDisplay
                     key={toolInvocation.toolCallId}
@@ -56,7 +65,7 @@ export const ToolCallDisplay = ({
         if (toolInvocation.toolName === WEB_SEARCH_TOOL_NAME && toolInvocation.state === 'result') {
             const searchResult: WebSearchResult | null = toolInvocation.result as WebSearchResult | null;
             const args = toolInvocation.args as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
-            if (args.query && searchResult?.result && searchResult.result.length > 0) {
+            if (args?.query && searchResult?.result && searchResult.result.length > 0) {
                 return (
                     <SearchSourcesDisplay
                         query={String(args.query)}
@@ -71,8 +80,17 @@ export const ToolCallDisplay = ({
 
         if (toolInvocation.toolName === WRITE_FILE_TOOL_NAME) {
             const args = toolInvocation.args as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>
-            const filePath = args.file_path;
-            const codeContent = args.content;
+            const filePath = args?.file_path;
+            const codeContent = args?.content;
+            if (!filePath || !codeContent) {
+                return (
+                    <ToolCallSimple
+                        toolInvocation={toolInvocation}
+                        key={toolInvocation.toolCallId}
+                        loading={false}
+                    />
+                );
+            }
             return (
                 <CollapsibleCodeBlock
                     path={filePath}
@@ -88,8 +106,17 @@ export const ToolCallDisplay = ({
 
         if (toolInvocation.toolName === FUZZY_EDIT_FILE_TOOL_NAME) {
             const args = toolInvocation.args as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>;
-            const filePath = args.file_path;
-            const codeContent = args.content;
+            const filePath = args?.file_path;
+            const codeContent = args?.content;
+            if (!filePath || !codeContent) {
+                return (
+                    <ToolCallSimple
+                        toolInvocation={toolInvocation}
+                        key={toolInvocation.toolCallId}
+                        loading={false}
+                    />
+                );
+            }
             return (
                 <CollapsibleCodeBlock
                     path={filePath}
@@ -105,8 +132,17 @@ export const ToolCallDisplay = ({
 
         if (toolInvocation.toolName === SEARCH_REPLACE_EDIT_FILE_TOOL_NAME) {
             const args = toolInvocation.args as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>;
-            const filePath = args.file_path;
-            const codeContent = args.new_string;
+            const filePath = args?.file_path;
+            const codeContent = args?.new_string;
+            if (!filePath || !codeContent) {
+                return (
+                    <ToolCallSimple
+                        toolInvocation={toolInvocation}
+                        key={toolInvocation.toolCallId}
+                        loading={false}
+                    />
+                );
+            }
             return (
                 <CollapsibleCodeBlock
                     path={filePath}
@@ -122,8 +158,17 @@ export const ToolCallDisplay = ({
 
         if (toolInvocation.toolName === SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME) {
             const args = toolInvocation.args as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>;
-            const filePath = args.file_path;
-            const codeContent = args.edits.map((edit) => edit.new_string).join('\n...\n');
+            const filePath = args?.file_path;
+            const codeContent = args?.edits.map((edit) => edit.new_string).join('\n...\n');
+            if (!filePath || !codeContent) {
+                return (
+                    <ToolCallSimple
+                        toolInvocation={toolInvocation}
+                        key={toolInvocation.toolCallId}
+                        loading={false}
+                    />
+                );
+            }
             return (
                 <CollapsibleCodeBlock
                     path={filePath}
@@ -139,7 +184,16 @@ export const ToolCallDisplay = ({
 
         if (toolInvocation.toolName === TODO_WRITE_TOOL_NAME) {
             const args = toolInvocation.args as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>;
-            const todos = args.todos;
+            const todos = args?.todos;
+            if (!todos || todos.length === 0) {
+                return (
+                    <ToolCallSimple
+                        toolInvocation={toolInvocation}
+                        key={toolInvocation.toolCallId}
+                        loading={false}
+                    />
+                );
+            }
             return (
                 <div>
                     {todos.map((todo) => (
