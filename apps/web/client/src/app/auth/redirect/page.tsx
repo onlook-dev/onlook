@@ -1,6 +1,7 @@
 'use client';
 
 import { LocalForageKeys } from '@/utils/constants';
+import { sanitizeReturnUrl } from '@onlook/utility';
 import localforage from 'localforage';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
@@ -11,8 +12,9 @@ export default function AuthRedirect() {
     useEffect(() => {
         const getReturnUrl = async () => {
             const returnUrl = await localforage.getItem<string>(LocalForageKeys.RETURN_URL);
-            localforage.removeItem(LocalForageKeys.RETURN_URL);
-            router.push(returnUrl || '/');
+            await localforage.removeItem(LocalForageKeys.RETURN_URL);
+            const sanitizedUrl = sanitizeReturnUrl(returnUrl);
+            router.replace(sanitizedUrl);
         };
         getReturnUrl();
     }, [router]);

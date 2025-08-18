@@ -2,7 +2,7 @@
 
 import { useGetBackground } from '@/hooks/use-get-background';
 import { transKeys } from '@/i18n/keys';
-import { Routes } from '@/utils/constants';
+import { LocalForageKeys, Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons';
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
@@ -14,7 +14,7 @@ export default function LoginPage() {
     const isDev = process.env.NODE_ENV === 'development';
     const t = useTranslations();
     const backgroundUrl = useGetBackground('login');
-    const returnUrl = useSearchParams().get('returnUrl');
+    const returnUrl = useSearchParams().get(LocalForageKeys.RETURN_URL);
 
     return (
         <div className="flex h-screen w-screen" >

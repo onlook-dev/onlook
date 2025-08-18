@@ -38,9 +38,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         if (returnUrl) {
             await localforage.setItem(LocalForageKeys.RETURN_URL, returnUrl);
         }
-        await login(method, returnUrl);
-
-        localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
+        await localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
+        await login(method);
         setTimeout(() => {
             setSigningInMethod(null);
         }, 5000);
@@ -48,7 +47,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const handleDevLogin = async (returnUrl: string | null) => {
         setSigningInMethod(SignInMethod.DEV);
-        await devLogin(returnUrl);
+        if (returnUrl) {
+            await localforage.setItem(LocalForageKeys.RETURN_URL, returnUrl);
+        }
+        await devLogin();
         setTimeout(() => {
             setSigningInMethod(null);
         }, 5000);

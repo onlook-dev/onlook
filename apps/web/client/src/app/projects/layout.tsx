@@ -1,4 +1,4 @@
-import { Routes } from '@/utils/constants';
+import { LocalForageKeys, Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 import { type Metadata } from 'next';
 import { headers } from 'next/headers';
@@ -16,8 +16,8 @@ export default async function Layout({ children }: Readonly<{ children: React.Re
     } = await supabase.auth.getSession();
     if (!session) {
         const headersList = await headers();
-        const pathname = headersList.get('x-pathname') || '/projects';
-        redirect(`${Routes.LOGIN}?returnUrl=${pathname}`);
+        const pathname = headersList.get('x-pathname') || Routes.PROJECTS;
+        redirect(`${Routes.LOGIN}?${LocalForageKeys.RETURN_URL}=${pathname}`);
     }
     return <>{children}</>;
 }

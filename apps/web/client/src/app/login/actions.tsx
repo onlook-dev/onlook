@@ -7,7 +7,7 @@ import { SignInMethod } from '@onlook/models';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl: string | null) {
+export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE) {
     const supabase = await createClient();
     const origin = (await headers()).get('origin');
     const redirectTo = `${origin}${Routes.AUTH_CALLBACK}`;
@@ -17,7 +17,7 @@ export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE,
         data: { session },
     } = await supabase.auth.getSession();
     if (session) {
-        redirect(returnUrl || '/');
+        redirect(Routes.AUTH_REDIRECT);
     }
 
     // Start OAuth flow
@@ -36,7 +36,7 @@ export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE,
     redirect(data.url);
 }
 
-export async function devLogin(returnUrl: string | null) {
+export async function devLogin() {
     if (process.env.NODE_ENV !== 'development') {
         throw new Error('Dev login is only available in development mode');
     }
@@ -46,7 +46,7 @@ export async function devLogin(returnUrl: string | null) {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (session) {
-        redirect(returnUrl || '/');
+        redirect(Routes.AUTH_REDIRECT);
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -58,5 +58,5 @@ export async function devLogin(returnUrl: string | null) {
         console.error('Error signing in with password:', error);
         throw new Error('Error signing in with password');
     }
-    redirect(returnUrl || '/');
+    redirect(Routes.AUTH_REDIRECT);
 }
