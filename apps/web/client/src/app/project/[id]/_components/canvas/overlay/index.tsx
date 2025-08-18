@@ -5,12 +5,12 @@ import { EditorMode } from '@onlook/models';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useMemo } from 'react';
+import { OverlayButtons } from './elements/buttons';
 import { MeasurementOverlay } from './elements/measurement';
 import { ClickRect } from './elements/rect/click';
 import { HoverRect } from './elements/rect/hover';
 import { InsertRect } from './elements/rect/insert';
 import { TextEditor } from './elements/text';
-import { OverlayChat } from './elements/chat';
 
 export const Overlay = observer(() => {
     const editorEngine = useEditorEngine();
@@ -71,11 +71,7 @@ export const Overlay = observer(() => {
                 />
             )}
             {overlayState.clickRects.length > 0 && (
-                <OverlayChat
-                    elementId={editorEngine.elements.selected[0]?.domId ?? ''}
-                    selectedEl={overlayState.clickRects[0] ?? null}
-                    oid={editorEngine.elements.selected[0]?.oid || ''}
-                />
+                <OverlayButtons />
             )}
         </div>
     );
