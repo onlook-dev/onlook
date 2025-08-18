@@ -14,8 +14,8 @@ interface AuthContextType {
     lastSignInMethod: SignInMethod | null;
     isAuthModalOpen: boolean;
     setIsAuthModalOpen: (open: boolean) => void;
-    handleLogin: (method: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl: string | null) => void;
-    handleDevLogin: (returnUrl: string | null) => void;
+    handleLogin: (method: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl: string | null) => Promise<void>;
+    handleDevLogin: (returnUrl: string | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

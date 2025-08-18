@@ -32,10 +32,6 @@ export const InviteMemberInput = ({ projectId }: { projectId: string }) => {
                 role: selectedRole,
                 projectId: projectId,
             });
-        } catch (error) {
-            toast.error('Failed to invite member', {
-                description: error instanceof Error ? error.message : String(error),
-            });
         } finally {
             setIsLoading(false);
         }
