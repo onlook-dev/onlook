@@ -24,19 +24,19 @@ export const ToolCallDisplay = ({
     messageId,
     index,
     lastToolInvocationIdx,
-    _toolInvocation,
+    toolInvocationData,
     isStream,
     applied
 }: {
     messageId: string,
     index: number,
     lastToolInvocationIdx: number,
-    _toolInvocation: ToolInvocation,
+    toolInvocationData: ToolInvocation,
     isStream: boolean,
     applied: boolean
 }) => {
     // Ensure the toolInvocation has a result property
-    const toolInvocation = ensureToolInvocationResult(_toolInvocation);
+    const toolInvocation = ensureToolInvocationResult(toolInvocationData);
 
     if (!isStream || toolInvocation.state === 'result') {
         if (toolInvocation.toolName === TERMINAL_COMMAND_TOOL_NAME) {
