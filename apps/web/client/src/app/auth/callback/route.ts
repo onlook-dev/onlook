@@ -6,7 +6,7 @@ import { api } from '~/trpc/server';
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get('code');
-    const returnUrl = searchParams.get('returnUrl');
+    const returnUrl = (() => { const url = searchParams.get('returnUrl'); return url && url.startsWith('/') && !url.startsWith('//') ? url : null; })();
 
     if (code) {
         const supabase = await createClient();
