@@ -20,9 +20,9 @@ export const InvitationRow = ({ invitation }: { invitation: ProjectInvitation })
         },
     });
 
-    const copyInvitationLink = () => {
+    const copyInvitationLink = async () => {
         try {
-            navigator.clipboard.writeText(constructInvitationLink(env.NEXT_PUBLIC_SITE_URL, invitation.id, invitation.token));
+            await navigator.clipboard.writeText(constructInvitationLink(env.NEXT_PUBLIC_SITE_URL, invitation.id, invitation.token));
             setIsCopied(true);
             toast.success('Invitation link copied to clipboard');
             setTimeout(() => {
