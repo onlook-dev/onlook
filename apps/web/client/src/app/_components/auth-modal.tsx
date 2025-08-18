@@ -22,7 +22,7 @@ export function AuthModal() {
                     <AlertDialogTitle className="text-center text-xl font-normal">
                         {t(transKeys.welcome.login.loginToEdit)}
                     </AlertDialogTitle>
-                    <AlertDialogDescription className="text-center">
+                    <AlertDialogDescription className="text-center text-balance">
                         {t(transKeys.welcome.login.shareProjects)}
                     </AlertDialogDescription>
                 </AlertDialogHeader>

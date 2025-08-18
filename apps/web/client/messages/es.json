@@ -91,7 +91,7 @@
             "google": "Iniciar sesión con Google",
             "lastUsed": "Usó esto la última vez",
             "loginToEdit": "Iniciar sesión para Editar",
-            "shareProjects": "Comparta proyectos, colabore y diseñe más en código."
+            "shareProjects": "Sin tarjeta de crédito • Crea un sitio en segundos"
         },
         "terms": {
             "agreement": "Al registrarse, acepta nuestra",
@@ -243,6 +243,9 @@
                         },
                         "miniChat": {
                             "button": "Chatear con IA"
+                        },
+                        "openInCode": {
+                            "button": "Abrir en Code"
                         }
                     },
                     "styles": {

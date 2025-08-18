@@ -172,13 +172,13 @@ export function ContributorSection({
     }, [contributorCount]);
 
     return (
-        <div className="relative w-full flex items-center justify-center py-32 mt-8 overflow-hidden">
+        <div className="relative w-full flex items-center justify-center py-32 mt-8 overflow-hidden px-4">
             {/* Main Contributors Content */}
             <div className="w-full max-w-6xl mx-auto relative z-10 flex flex-col items-center justify-center bg-background-onlook rounded-3xl px-12 py-32 shadow-xl overflow-hidden md:[--md-scale:1] [--md-scale:0]" style={{ minWidth: 420 }}>
                 {/* Floating Circles: two concentric rings */}
                 <FloatingRings />
                 <h2 className="text-foreground-primary text-3xl md:text-4xl font-light text-center mb-2">
-                    Supported by You &<br />
+                    Supported by you &<br />
                     {isLoading ? '...' : starCount} other builders
                 </h2>
                 <p className="text-foreground-secondary text-regular text-center mb-8 max-w-xl">Join the community building <br /> the open source prompt-to-build app</p>
