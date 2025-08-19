@@ -1,4 +1,5 @@
 import { trackEvent } from '@/utils/analytics/server';
+import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 import { NextResponse } from 'next/server';
 import { api } from '~/trpc/server';
@@ -11,8 +12,6 @@ export async function GET(request: Request) {
         const supabase = await createClient();
         const { error, data } = await supabase.auth.exchangeCodeForSession(code);
         if (!error) {
-            const forwardedHost = request.headers.get('x-forwarded-host'); // original origin before load balancer
-            const isLocalEnv = process.env.NODE_ENV === 'development';
             const user = await api.user.upsert({
                 id: data.user.id,
             });
@@ -35,13 +34,13 @@ export async function GET(request: Request) {
                 }
             });
 
+            const forwardedHost = request.headers.get('x-forwarded-host');
             // Redirect to the redirect page which will handle the return URL
-            if (isLocalEnv) {
-                return NextResponse.redirect(`${origin}/auth/redirect`);
-            } else if (forwardedHost) {
-                return NextResponse.redirect(`https://${forwardedHost}/auth/redirect`);
+            if (forwardedHost) {
+                const forwardedProto = request.headers.get('x-forwarded-proto') || 'https';
+                return NextResponse.redirect(`${forwardedProto}://${forwardedHost}${Routes.AUTH_REDIRECT}`);
             } else {
-                return NextResponse.redirect(`${origin}/auth/redirect`);
+                return NextResponse.redirect(`${origin}${Routes.AUTH_REDIRECT}`);
             }
         }
         console.error(`Error exchanging code for session: ${error}`);

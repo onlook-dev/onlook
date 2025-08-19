@@ -243,6 +243,9 @@
                         },
                         "miniChat": {
                             "button": "与 AI 聊天"
+                        },
+                        "openInCode": {
+                            "button": "在代码中打开"
                         }
                     },
                     "styles": {

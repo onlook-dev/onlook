@@ -246,6 +246,9 @@ declare const messages: {
                         },
                         "miniChat": {
                             "button": "Chat with AI"
+                        },
+                        "openInCode": {
+                            "button": "Open in Code"
                         }
                     },
                     "styles": {
