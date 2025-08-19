@@ -48,9 +48,9 @@ export const env = createEnv({
         EXA_API_KEY: z.string().optional(),
 
         // Langfuse
-        LANGFUSE_SECRET: z.string().optional(),
+        LANGFUSE_SECRET_KEY: z.string().optional(),
         LANGFUSE_PUBLIC_KEY: z.string().optional(),
-        LANGFUSE_BASEURL: z.string().optional(),
+        LANGFUSE_BASE_URL: z.string().url().optional(),
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -126,9 +126,9 @@ export const env = createEnv({
         EXA_API_KEY: process.env.EXA_API_KEY,
 
         // Langfuse
-        LANGFUSE_SECRET: process.env.LANGFUSE_SECRET,
+        LANGFUSE_SECRET_KEY: process.env.LANGFUSE_SECRET_KEY,
         LANGFUSE_PUBLIC_KEY: process.env.LANGFUSE_PUBLIC_KEY,
-        LANGFUSE_BASEURL: process.env.LANGFUSE_BASEURL,
+        LANGFUSE_BASE_URL: process.env.LANGFUSE_BASE_URL,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

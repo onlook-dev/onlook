@@ -97,6 +97,8 @@ export const streamResponse = async (req: NextRequest) => {
                 userId: userId ?? 'unknown',
                 chatType: chatType,
                 tags: ['chat'],
+                langfuseTraceId: conversationId ?? 'unknown',
+                langfuseUpdateParent: false, // Do not update the parent trace with execution results
             },
         },
         experimental_repairToolCall: repairToolCall,
