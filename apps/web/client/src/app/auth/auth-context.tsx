@@ -1,5 +1,6 @@
 'use client';
 
+import { LocalForageKeys } from '@/utils/constants';
 import { SignInMethod } from '@onlook/models/auth';
 import localforage from 'localforage';
 import type { ReactNode } from 'react';
@@ -13,8 +14,8 @@ interface AuthContextType {
     lastSignInMethod: SignInMethod | null;
     isAuthModalOpen: boolean;
     setIsAuthModalOpen: (open: boolean) => void;
-    handleLogin: (method: SignInMethod.GITHUB | SignInMethod.GOOGLE) => void;
-    handleDevLogin: () => void;
+    handleLogin: (method: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl: string | null) => Promise<void>;
+    handleDevLogin: (returnUrl: string | null) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -25,23 +26,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
     useEffect(() => {
-        localforage.getItem(LAST_SIGN_IN_METHOD_KEY).then((lastSignInMethod) => {
-            setLastSignInMethod(lastSignInMethod as SignInMethod | null);
-        });
+        const getLastSignInMethod = async () => {
+            const lastSignInMethod = await localforage.getItem<SignInMethod | null>(LAST_SIGN_IN_METHOD_KEY);
+            setLastSignInMethod(lastSignInMethod);
+        };
+        getLastSignInMethod();
     }, []);
 
-    const handleLogin = async (method: SignInMethod.GITHUB | SignInMethod.GOOGLE) => {
+    const handleLogin = async (method: SignInMethod.GITHUB | SignInMethod.GOOGLE, returnUrl: string | null) => {
         setSigningInMethod(method);
+        if (returnUrl) {
+            await localforage.setItem(LocalForageKeys.RETURN_URL, returnUrl);
+        }
+        await localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
         await login(method);
-
-        localforage.setItem(LAST_SIGN_IN_METHOD_KEY, method);
         setTimeout(() => {
             setSigningInMethod(null);
         }, 5000);
     };
 
-    const handleDevLogin = async () => {
+    const handleDevLogin = async (returnUrl: string | null) => {
         setSigningInMethod(SignInMethod.DEV);
+        if (returnUrl) {
+            await localforage.setItem(LocalForageKeys.RETURN_URL, returnUrl);
+        }
         await devLogin();
         setTimeout(() => {
             setSigningInMethod(null);

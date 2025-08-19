@@ -2,10 +2,11 @@
 
 import { useAuthContext } from '@/app/auth/auth-context';
 import { api } from '@/trpc/react';
-import { Routes } from '@/utils/constants';
+import { LocalForageKeys, Routes } from '@/utils/constants';
 import { SandboxTemplates, Templates } from '@onlook/constants';
 import type { User } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
+import localforage from 'localforage';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -26,7 +27,7 @@ export function StartBlank({
     const handleStartBlankProject = async () => {
         if (!user?.id) {
             // Store the return URL and open auth modal
-            localStorage.setItem('returnUrl', window.location.pathname);
+            localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
             setIsAuthModalOpen(true);
             return;
         }

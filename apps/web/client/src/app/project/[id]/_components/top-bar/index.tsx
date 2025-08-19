@@ -49,9 +49,8 @@ export const TopBar = observer(() => {
             </div>
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2 mr-2">
-                {isEnabled('NEXT_PUBLIC_FEATURE_COLLABORATION') && (
-                    <Members />
-                )}
+                <Members />
+                <CurrentUserAvatar className="size-7 cursor-pointer hover:opacity-80" />
                 <motion.div
                     className="space-x-0 hidden lg:block"
                     layout
@@ -102,7 +101,6 @@ export const TopBar = observer(() => {
                     </TooltipContent>
                 </Tooltip>
                 <PublishButton />
-                <CurrentUserAvatar className="size-8 cursor-pointer hover:opacity-80" />
             </div>
         </div>
     );

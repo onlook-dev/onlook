@@ -1,5 +1,7 @@
 'use server';
 
+import { env } from '@/env';
+import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/server';
 import { SEED_USER } from '@onlook/db';
 import { SignInMethod } from '@onlook/models';
@@ -8,14 +10,15 @@ import { redirect } from 'next/navigation';
 
 export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE) {
     const supabase = await createClient();
-    const origin = (await headers()).get('origin');
+    const origin = (await headers()).get('origin') ?? env.NEXT_PUBLIC_SITE_URL;
+    const redirectTo = `${origin}${Routes.AUTH_CALLBACK}`;
 
     // If already session, redirect
     const {
         data: { session },
     } = await supabase.auth.getSession();
     if (session) {
-        redirect('/');
+        redirect(Routes.AUTH_REDIRECT);
     }
 
     // Start OAuth flow
@@ -23,7 +26,7 @@ export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE)
     const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-            redirectTo: `${origin}/auth/callback`,
+            redirectTo,
         },
     });
 
@@ -44,7 +47,7 @@ export async function devLogin() {
     const { data: { session } } = await supabase.auth.getSession();
 
     if (session) {
-        redirect('/');
+        redirect(Routes.AUTH_REDIRECT);
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -56,5 +59,5 @@ export async function devLogin() {
         console.error('Error signing in with password:', error);
         throw new Error('Error signing in with password');
     }
-    redirect('/');
+    redirect(Routes.AUTH_REDIRECT);
 }

@@ -33,6 +33,20 @@ import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { projectCreateRequestRouter } from './createRequest';
 
 export const projectRouter = createTRPCRouter({
+    hasAccess: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .query(async ({ ctx, input }) => {
+            const user = ctx.user;
+            const project = await ctx.db.query.projects.findFirst({
+                where: eq(projects.id, input.projectId),
+                with: {
+                    userProjects: {
+                        where: eq(userProjects.userId, user.id),
+                    },
+                },
+            });
+            return !!project && project.userProjects.length > 0;
+        }),
     createRequest: projectCreateRequestRouter,
     captureScreenshot: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -299,7 +313,7 @@ export const projectRouter = createTRPCRouter({
         .input(z.object({
             prompt: z.string(),
         }))
-        .mutation(async ({ input }): Promise<string> => {
+        .mutation(async ({ ctx, input }): Promise<string> => {
             try {
                 const { model, providerOptions, headers } = await initModel({
                     provider: LLMProvider.OPENROUTER,
@@ -313,6 +327,12 @@ export const projectRouter = createTRPCRouter({
                     prompt: `Generate a concise and meaningful project name (2-4 words maximum) that reflects the main purpose or theme of the project based on user's creation prompt. Generate only the project name, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.prompt}</prompt>`,
                     providerOptions,
                     maxTokens: 50,
+                    experimental_telemetry: {
+                        isEnabled: true, metadata: {
+                            userId: ctx.user.id,
+                            tags: ['project-name-generation'],
+                        }
+                    },
                 });
 
                 const generatedName = result.text.trim();

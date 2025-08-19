@@ -1,6 +1,6 @@
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
-import { Links } from '@onlook/constants';
+import { Links, SUPPORT_EMAIL } from '@onlook/constants';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -128,7 +128,7 @@ export const HelpDropdown = observer(() => {
                             {t(transKeys.help.menu.contactUs.github)}
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                            onClick={() => window.open('mailto:support@onlook.com', '_blank')}
+                            onClick={() => window.open(`mailto:${SUPPORT_EMAIL}`, '_blank')}
                         >
                             <Icons.EnvelopeClosed className="w-4 h-4 mr-2" />
                             {t(transKeys.help.menu.contactUs.email)}
