@@ -76,7 +76,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         return chat.reload({
             body: {
                 chatType: type,
-                conversationId,
+                conversationId
             },
         });
     };

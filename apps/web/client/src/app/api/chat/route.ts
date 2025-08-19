@@ -3,6 +3,7 @@ import { convertToStreamMessages } from '@onlook/ai';
 import { ChatType, type ChatMessage } from '@onlook/models';
 import { streamText } from 'ai';
 import { type NextRequest } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
 
 export async function POST(req: NextRequest) {
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
             });
         }
 
-        return streamResponse(req);
+        return streamResponse(req, user.id);
     } catch (error: unknown) {
         console.error('Error in chat', error);
         return new Response(JSON.stringify({
@@ -49,13 +50,13 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export const streamResponse = async (req: NextRequest) => {
-    const { messages, maxSteps, chatType, conversationId, projectId } = await req.json() as { 
-        messages: ChatMessage[], 
-        maxSteps: number, 
+export const streamResponse = async (req: NextRequest, userId: string) => {
+    const { messages, maxSteps, chatType, conversationId, projectId } = await req.json() as {
+        messages: ChatMessage[],
+        maxSteps: number,
         chatType: ChatType,
-        conversationId?: string,
-        projectId?: string
+        conversationId: string,
+        projectId: string,
     };
 
     // Updating the usage record and rate limit is done here to avoid
@@ -68,13 +69,12 @@ export const streamResponse = async (req: NextRequest) => {
     if (chatType === ChatType.EDIT) {
         usageRecord = await incrementUsage(req);
     }
-
-    const user = await getSupabaseUser(req);
-    const userId = user?.id;
-
     const { model, providerOptions, headers } = await getModelFromType(chatType);
     const systemPrompt = await getSystemPromptFromType(chatType);
     const tools = await getToolSetFromType(chatType);
+
+    const lastUserMessage = messages.findLast((message) => message.role === 'user');
+    const traceId = lastUserMessage?.id ?? uuidv4();
     const result = streamText({
         model,
         headers,
@@ -92,13 +92,13 @@ export const streamResponse = async (req: NextRequest) => {
         experimental_telemetry: {
             isEnabled: true,
             metadata: {
-                conversationId: conversationId ?? 'unknown',
-                projectId: projectId ?? 'unknown',
-                userId: userId ?? 'unknown',
+                conversationId,
+                projectId,
+                userId,
                 chatType: chatType,
                 tags: ['chat'],
-                langfuseTraceId: conversationId ?? 'unknown',
-                langfuseUpdateParent: false, // Do not update the parent trace with execution results
+                langfuseTraceId: traceId,
+                sessionId: conversationId,
             },
         },
         experimental_repairToolCall: repairToolCall,
