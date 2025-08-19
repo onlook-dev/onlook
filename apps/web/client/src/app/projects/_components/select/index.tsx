@@ -8,6 +8,7 @@ import { Icons } from '@onlook/ui/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { TemplateModal } from '../templates/template-modal';
 import { Templates } from '../templates/templates-section';
 import { HighlightText } from './highlight-text';
@@ -17,13 +18,13 @@ import { SquareProjectCard } from './square-project-card';
 
 export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: string } = {}) => {
     const SHOW_TEMPLATE = true;
+    const utils = api.useUtils();
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
     const removeTagMutation = api.project.removeTag.useMutation();
     const [internalQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const searchQuery = externalSearchQuery ?? internalQuery;
     const [spacing] = useState<number>(24);
-    const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
 
     const [filesSortBy, setFilesSortBy] = useState<'Alphabetical' | 'Date created' | 'Last viewed'>(
         'Last viewed',
@@ -33,16 +34,13 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const settingsDropdownRef = useRef<HTMLDivElement>(null);
     const [layoutMode, setLayoutMode] = useState<'masonry' | 'grid'>('masonry');
 
-    // Template-related state
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
         new Set(["template-2", "template-5"])
     );
 
-    // Template handlers
     const handleTemplateClick = (project: Project) => {
-        // Update the template with current starred status
         const updatedTemplate = {
             ...project,
             isStarred: starredTemplates.has(project.id)
@@ -67,7 +65,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             return newStarred;
         });
         
-        // Update the selected template if it's the one being toggled
         if (selectedTemplate && selectedTemplate.id === templateId) {
             setSelectedTemplate((prev: any) => ({
                 ...prev,
@@ -85,14 +82,19 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                 tag: 'template'
             });
             
-            // Close the modal
+            toast.success('Removed from templates');
+            
             setIsTemplateModalOpen(false);
             setSelectedTemplate(null);
             
-            // Refetch projects to update the UI
+            await Promise.all([
+                utils.project.list.invalidate(),
+                utils.project.listTemplates.invalidate(),
+            ]);
+            
             refetch();
         } catch (error) {
-            console.error('Failed to unmark template:', error);
+            toast.error('Failed to update template tag');
         }
     };
 
@@ -105,23 +107,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     }, [searchQuery]);
 
 
-    useEffect(() => {
-        const readFavs = () => {
-            try {
-                const raw = localStorage.getItem('onlook_fav_projects') || '[]';
-                const ids: string[] = JSON.parse(raw);
-                if (Array.isArray(ids)) setFavoriteIds(ids);
-            } catch { }
-        };
-        readFavs();
-        const onChange = () => readFavs();
-        window.addEventListener('storage', onChange);
-        window.addEventListener('onlook_fav_projects_changed', onChange as EventListener);
-        return () => {
-            window.removeEventListener('storage', onChange);
-            window.removeEventListener('onlook_fav_projects_changed', onChange as EventListener);
-        };
-    }, []);
 
     const baseProjects: Project[] = fetchedProjects ?? [];
 
@@ -155,36 +140,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     }, []);
 
 
-    const updateFunctionalDescription = (projectId: string, newDescription?: string) => {
-        setLocalOverrides((prev) => ({
-            ...prev,
-            [projectId]: {
-                ...prev[projectId],
-                metadata: {
-                    ...((prev[projectId]?.metadata as any) ?? {}),
-                    description: newDescription ?? 'Edited just now',
-                },
-            },
-        }));
-    };
 
-    const reorderRailSequence = (projectId: string) => {
-        setLocalOverrides((prev) => ({
-            ...prev,
-            [projectId]: {
-                ...prev[projectId],
-                metadata: {
-                    ...((prev[projectId]?.metadata as any) ?? {}),
-                    updatedAt: new Date().toISOString(),
-                },
-            },
-        }));
-    };
-
-    const onProjectModified = (projectId: string, newDescription?: string) => {
-        updateFunctionalDescription(projectId, newDescription);
-        reorderRailSequence(projectId);
-    };
 
 
     const projects: Project[] = useMemo(() => {
@@ -202,7 +158,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         });
     }, [baseProjects, localOverrides]);
 
-    const favoriteProjects = useMemo(() => projects.filter(p => favoriteIds.includes(p.id)), [projects, favoriteIds]);
 
     const filteredAndSortedProjects = useMemo(() => {
         let filtered = projects;
@@ -219,7 +174,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
 
     const filesProjects = useMemo(() => {
-        // Filter out projects tagged as templates from the Projects section
         let list = filteredAndSortedProjects.filter(project => !project.tags?.includes('template'));
         
         const sorted = [...list].sort((a, b) => {
