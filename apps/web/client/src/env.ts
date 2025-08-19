@@ -50,7 +50,7 @@ export const env = createEnv({
         // Langfuse
         LANGFUSE_SECRET_KEY: z.string().optional(),
         LANGFUSE_PUBLIC_KEY: z.string().optional(),
-        LANGFUSE_BASE_URL: z.string().url().optional(),
+        LANGFUSE_BASEURL: z.string().url().optional(),
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -128,7 +128,7 @@ export const env = createEnv({
         // Langfuse
         LANGFUSE_SECRET_KEY: process.env.LANGFUSE_SECRET_KEY,
         LANGFUSE_PUBLIC_KEY: process.env.LANGFUSE_PUBLIC_KEY,
-        LANGFUSE_BASE_URL: process.env.LANGFUSE_BASE_URL,
+        LANGFUSE_BASEURL: process.env.LANGFUSE_BASEURL,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
