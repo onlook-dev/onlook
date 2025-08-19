@@ -8,6 +8,7 @@ import {
 import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { generateText } from 'ai';
 import { eq } from 'drizzle-orm';
+import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
@@ -82,14 +83,16 @@ export const conversationRouter = createTRPCRouter({
                 prompt: `Generate a concise and meaningful conversation title (2-4 words maximum) that reflects the main purpose or theme of the conversation based on user's creation prompt. Generate only the conversation title, nothing else. Keep it short and descriptive. User's creation prompt: <prompt>${input.content}</prompt>`,
                 providerOptions,
                 maxTokens: 50,
-                            experimental_telemetry: {
-                isEnabled: true,
-                metadata: {
-                    conversationId: input.conversationId,
-                    userId: ctx.user.id,
-                    tags: ['conversation-title-generation'],
+                experimental_telemetry: {
+                    isEnabled: true,
+                    metadata: {
+                        conversationId: input.conversationId,
+                        userId: ctx.user.id,
+                        tags: ['conversation-title-generation'],
+                        sessionId: input.conversationId,
+                        langfuseTraceId: uuidv4(),
+                    },
                 },
-            },
             });
 
             const generatedName = result.text.trim();
