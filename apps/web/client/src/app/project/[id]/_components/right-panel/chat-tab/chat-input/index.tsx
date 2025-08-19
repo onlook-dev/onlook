@@ -3,7 +3,6 @@ import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
-import { DefaultSettings } from '@onlook/constants';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -17,6 +16,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 import { InputContextPills } from '../context-pills/input-context-pills';
+import { validateImageLimit } from '../context-pills/helpers';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
@@ -191,8 +191,7 @@ export const ChatInput = observer(({
             ctx => ctx.type === MessageContextType.IMAGE
         );
         
-        if (currentImages.length >= DefaultSettings.CHAT_SETTINGS.maxImages) {
-            toast.error(`Maximum ${DefaultSettings.CHAT_SETTINGS.maxImages} images allowed. Please remove an image before adding a new one.`);
+        if (!validateImageLimit(currentImages, (message) => toast.error(message))) {
             return;
         }
 
@@ -218,8 +217,7 @@ export const ChatInput = observer(({
                 ctx => ctx.type === MessageContextType.IMAGE
             );
             
-            if (currentImages.length >= DefaultSettings.CHAT_SETTINGS.maxImages) {
-                toast.error(`Maximum ${DefaultSettings.CHAT_SETTINGS.maxImages} images allowed. Please remove an image before adding a new one.`);
+            if (!validateImageLimit(currentImages, (message) => toast.error(message))) {
                 return;
             }
 

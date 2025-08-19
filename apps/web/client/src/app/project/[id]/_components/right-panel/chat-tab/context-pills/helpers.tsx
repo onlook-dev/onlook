@@ -2,6 +2,7 @@ import { MessageContextType, type MessageContext } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { getTruncatedFileName } from '@onlook/ui/utils';
 import { assertNever } from '@onlook/utility';
+import { DefaultSettings } from '@onlook/constants';
 import React from 'react';
 import { NodeIcon } from '../../../left-panel/layers-tab/tree/node-icon';
 
@@ -41,4 +42,16 @@ export function getContextIcon(context: MessageContext) {
     if (icon) {
         return React.createElement(icon);
     }
+}
+
+export function validateImageLimit(
+    currentImages: MessageContext[], 
+    onError?: (message: string) => void
+): boolean {
+    if (currentImages.length >= DefaultSettings.CHAT_SETTINGS.maxImages) {
+        const errorMessage = `Maximum ${DefaultSettings.CHAT_SETTINGS.maxImages} images allowed. Please remove an image before adding a new one.`;
+        onError?.(errorMessage);
+        return false;
+    }
+    return true;
 }
