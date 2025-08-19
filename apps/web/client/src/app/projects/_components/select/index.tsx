@@ -18,6 +18,7 @@ import { SquareProjectCard } from './square-project-card';
 export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: string } = {}) => {
     const SHOW_TEMPLATE = true;
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
+    const removeTagMutation = api.project.removeTag.useMutation();
     const [internalQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const searchQuery = externalSearchQuery ?? internalQuery;
@@ -72,6 +73,26 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                 ...prev,
                 isStarred: !prev.isStarred
             }));
+        }
+    };
+
+    const handleUnmarkTemplate = async () => {
+        if (!selectedTemplate?.id) return;
+        
+        try {
+            await removeTagMutation.mutateAsync({
+                projectId: selectedTemplate.id,
+                tag: 'template'
+            });
+            
+            // Close the modal
+            setIsTemplateModalOpen(false);
+            setSelectedTemplate(null);
+            
+            // Refetch projects to update the UI
+            refetch();
+        } catch (error) {
+            console.error('Failed to unmark template:', error);
         }
     };
 
@@ -198,7 +219,9 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
 
     const filesProjects = useMemo(() => {
-        let list = filteredAndSortedProjects;
+        // Filter out projects tagged as templates from the Projects section
+        let list = filteredAndSortedProjects.filter(project => !project.tags?.includes('template'));
+        
         const sorted = [...list].sort((a, b) => {
             switch (filesSortBy) {
                 case 'Alphabetical':
@@ -481,6 +504,8 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                         isNew={false}
                         isStarred={selectedTemplate.isStarred}
                         onToggleStar={() => handleToggleStar(selectedTemplate.id)}
+                        projectId={selectedTemplate.id}
+                        onUnmarkTemplate={handleUnmarkTemplate}
                     />
                 )
             }

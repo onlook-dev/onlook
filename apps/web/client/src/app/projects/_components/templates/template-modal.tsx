@@ -21,6 +21,8 @@ interface TemplateModalProps {
     isNew?: boolean;
     isStarred?: boolean;
     onToggleStar?: () => void;
+    projectId?: string;
+    onUnmarkTemplate?: () => void;
 }
 
 export function TemplateModal({
@@ -31,7 +33,9 @@ export function TemplateModal({
     image,
     isNew = false,
     isStarred = false,
-    onToggleStar
+    onToggleStar,
+    projectId,
+    onUnmarkTemplate
 }: TemplateModalProps) {
     return (
         <AnimatePresence>
@@ -131,6 +135,15 @@ export function TemplateModal({
                                             Download
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
+                                        {onUnmarkTemplate && (
+                                            <DropdownMenuItem 
+                                                onClick={onUnmarkTemplate}
+                                                className="text-foreground-secondary focus:text-foreground"
+                                            >
+                                                <Icons.BookmarkFilled className="w-4 h-4 mr-3" />
+                                                Remove Template
+                                            </DropdownMenuItem>
+                                        )}
                                         <DropdownMenuItem className="text-red-400 focus:text-red-300">
                                             Report Template
                                         </DropdownMenuItem>
