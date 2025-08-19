@@ -192,7 +192,7 @@ export const projectRouter = createTRPCRouter({
             });
             const allProjects = fetchedUserProjects.map((userProject) => toProject(userProject.project));
             // Filter projects that have "template" in their tags
-            const templateProjects = allProjects.filter((project) => 
+            const templateProjects = allProjects.filter((project) =>
                 project.tags && project.tags.includes('template')
             );
             return templateProjects.sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
@@ -381,21 +381,21 @@ export const projectRouter = createTRPCRouter({
         const project = await ctx.db.query.projects.findFirst({
             where: eq(projects.id, input.projectId),
         });
-        
+
         if (!project) {
             throw new Error('Project not found');
         }
-        
-        const currentTags = project.tags as string[] || [];
-        const newTags = currentTags.includes(input.tag) 
-            ? currentTags 
+
+        const currentTags = project.tags ?? [];
+        const newTags = currentTags.includes(input.tag)
+            ? currentTags
             : [...currentTags, input.tag];
-            
+
         await ctx.db.update(projects).set({
             tags: newTags,
             updatedAt: new Date(),
         }).where(eq(projects.id, input.projectId));
-        
+
         return { success: true, tags: newTags };
     }),
     removeTag: protectedProcedure.input(z.object({
@@ -405,19 +405,19 @@ export const projectRouter = createTRPCRouter({
         const project = await ctx.db.query.projects.findFirst({
             where: eq(projects.id, input.projectId),
         });
-        
+
         if (!project) {
             throw new Error('Project not found');
         }
-        
-        const currentTags = project.tags as string[] || [];
+
+        const currentTags = project.tags ?? [];
         const newTags = currentTags.filter(tag => tag !== input.tag);
-            
+
         await ctx.db.update(projects).set({
             tags: newTags,
             updatedAt: new Date(),
         }).where(eq(projects.id, input.projectId));
-        
+
         return { success: true, tags: newTags };
     }),
 });

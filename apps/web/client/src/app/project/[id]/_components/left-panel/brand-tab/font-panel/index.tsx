@@ -200,8 +200,8 @@ const FontPanel = observer(() => {
                                                             (weight) =>
                                                                 VARIANTS.find(
                                                                     (v) => v.value === weight,
-                                                                )?.name,
-                                                        ) as string[]
+                                                                )?.name.toString(),
+                                                        ).filter((v) => v !== undefined) ?? []
                                                     }
                                                     showDropdown={true}
                                                     showAddButton={false}
