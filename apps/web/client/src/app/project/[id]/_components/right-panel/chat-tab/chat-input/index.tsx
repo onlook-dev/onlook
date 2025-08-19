@@ -1,7 +1,9 @@
+
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
 import { transKeys } from '@/i18n/keys';
+import { DefaultSettings } from '@onlook/constants';
 import { ChatType, EditorTabValue, type ImageMessageContext } from '@onlook/models';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -184,6 +186,16 @@ export const ChatInput = observer(({
     };
 
     const handleImageEvent = async (file: File, displayName?: string) => {
+        // Check image limit before processing
+        const currentImages = editorEngine.chat.context.context.filter(
+            ctx => ctx.type === MessageContextType.IMAGE
+        );
+        
+        if (currentImages.length >= DefaultSettings.CHAT_SETTINGS.maxImages) {
+            toast.error(`Maximum ${DefaultSettings.CHAT_SETTINGS.maxImages} images allowed. Please remove an image before adding a new one.`);
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = async (event) => {
             const compressedImage = await compressImageInBrowser(file);
@@ -201,6 +213,16 @@ export const ChatInput = observer(({
 
     const handleScreenshot = async () => {
         try {
+            // Check image limit before processing
+            const currentImages = editorEngine.chat.context.context.filter(
+                ctx => ctx.type === MessageContextType.IMAGE
+            );
+            
+            if (currentImages.length >= DefaultSettings.CHAT_SETTINGS.maxImages) {
+                toast.error(`Maximum ${DefaultSettings.CHAT_SETTINGS.maxImages} images allowed. Please remove an image before adding a new one.`);
+                return;
+            }
+
             const framesWithViews = editorEngine.frames.getAll().filter(f => !!f.view);
 
             if (framesWithViews.length === 0) {

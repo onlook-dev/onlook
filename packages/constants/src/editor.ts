@@ -61,6 +61,7 @@ export const DefaultSettings = {
         autoApplyCode: true,
         expandCodeBlocks: false,
         showMiniChat: true,
+        maxImages: 5,
     },
     EDITOR_SETTINGS: {
         shouldWarnDelete: false,
