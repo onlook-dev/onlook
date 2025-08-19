@@ -37,35 +37,17 @@ bun install
 
 ### 2. Setup Environment Variables
 
-For Docker Compose deployment, you need to create a production environment file. Choose one of these approaches:
-
-**Option A: Use Interactive Setup Script**
+For Docker Compose deployment, you need to create a environment file.
 
 ```bash
-
 # Run interactive environment setup
 bun run setup:env
-
-# Copy the generated .env to .env.production for Docker
-cp apps/web/client/.env .env.production
 ```
 
-**Option B: Copy from Example and Configure Manually**
-
-```bash
-# Copy example file and edit with your values
-cp apps/web/client/.env.example apps/web/client/.env
-# Edit apps/web/client/.env with your API keys and configuration
-
-# Copy to production environment for Docker
-cp apps/web/client/.env .env.production
-```
-
-**Required variables for production:**
+**Required variables:**
 - **Supabase**: Production database URL and API keys
 - **OpenRouter API Key**: For AI chat features  
 - **CodeSandbox Token**: For development containers
-- **Fast Apply Provider**: Choose MorphLLM or Relace for AI code changes
 
 For detailed instructions on obtaining these API keys, see the [development setup guide](/developers/running-locally#3-get-api-keys).
 
@@ -75,16 +57,13 @@ For detailed instructions on obtaining these API keys, see the [development setu
 bun backend:start
 ```
 
-This starts Supabase locally with PostgreSQL database, authentication, and storage.
+This starts Supabase locally with PostgreSQL database, authentication, and storage. This will spin up a separate Docker compose service. For production supabase connection, change the Supabase API keys in the `.env` file.
 
 ### 4. Initialize Database
 
 ```bash
 # Push database schema
 bun db:push
-
-# Seed with initial data (optional for production)
-bun db:seed
 ```
 
 ### 5. Deploy with Docker Compose
@@ -160,7 +139,7 @@ sudo certbot --nginx -d yourdomain.com
 git pull origin main
 bun install
 # Update production environment if needed
-cp apps/web/client/.env .env.production
+cp apps/web/client/.env apps/web/client/.env
 # Rebuild and restart
 docker-compose down
 docker-compose build --no-cache
@@ -186,7 +165,6 @@ pg_dump -h localhost -U postgres -d onlook > backup-$(date +%Y%m%d).sql
 ## Troubleshooting
 
 **Common issues:**
-- **Missing .env.production**: Copy your `.env` file to `.env.production` before running docker-compose
 - **Port 3000 in use**: Stop other services or change port  
 - **Docker build fails**: Run `docker system prune` and retry
 - **Database connection**: Verify `bun backend:start` is running and Supabase is accessible at http://127.0.0.1:54321

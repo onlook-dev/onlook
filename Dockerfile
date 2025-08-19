@@ -5,7 +5,7 @@ WORKDIR /app
 COPY . .
 
 # Install all dependencies
-RUN bun install --frozen-lockfile
+RUN bun install
 
 # Build the application
 WORKDIR /app/apps/web/client
