@@ -54,14 +54,14 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     useEffect(() => {
         const loadRecentSearches = async () => {
             try {
-                const rs = await localforage.getItem(RECENT_SEARCHES_KEY) ?? []
+                const rs = await localforage.getItem<string[]>(RECENT_SEARCHES_KEY) ?? []
                 if (Array.isArray(rs)) setRecentSearches(rs.slice(0, 6));
             } catch { }
         };
         loadRecentSearches();
         const loadRecentColors = async () => {
             try {
-                const rc = await localforage.getItem(RECENT_COLORS_KEY) ?? []
+                const rc = await localforage.getItem<string[]>(RECENT_COLORS_KEY) ?? []
                 if (Array.isArray(rc)) setRecentColors(rc.slice(0, 10));
             } catch { }
         };
