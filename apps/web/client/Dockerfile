@@ -1,14 +1,17 @@
 FROM oven/bun:slim AS base
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package.json bun.lock* ./
-RUN bun install --frozen-lockfile
-
-# Copy application code
+# Copy everything
 COPY . .
 
+# Install all dependencies
+RUN bun install --frozen-lockfile
+
 # Build the application
+WORKDIR /app/apps/web/client
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
 RUN bun run build
 
 # Expose port 3000

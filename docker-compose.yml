@@ -1,15 +1,15 @@
 services:
   web:
     build:
-      context: ./client
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/web/client/Dockerfile
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
+    env_file:
+      - .env.production
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:3000 || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3 
+      retries: 3
