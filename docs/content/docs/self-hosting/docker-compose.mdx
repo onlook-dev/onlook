@@ -1,0 +1,197 @@
+---
+title: Docker Compose Deployment
+description: Simple single-container deployment for small teams and basic self-hosting
+---
+
+# Docker Compose Deployment
+
+Deploy Onlook using Docker Compose on VMs or local machines. This is a simple, single-container deployment designed for small teams and basic self-hosting needs. For enterprise-grade deployments requiring high availability and scalability, use the [Cloud Deployment](/docs/self-hosting/cloud-deployment) option.
+
+## Prerequisites
+
+**System Requirements:**
+- 4+ CPU cores
+- 8GB+ RAM (16GB recommended)
+- 50GB+ available disk space
+- Docker 20.10+ and Docker Compose 2.0+
+
+**Software Requirements:**
+- [Bun](https://bun.sh) - Package manager and runtime
+- [Node.js](https://nodejs.org/en/download) v20.16.0+ (avoid v20.11.0)
+- [Git](https://git-scm.com/downloads)
+- [Docker](https://docs.docker.com/get-docker/) & [Docker Compose](https://docs.docker.com/compose/install/)
+
+## Basic Deployment
+
+> **Note**: This is a simple deployment suitable for small teams and testing. For development, use `bun dev` in the repository root.
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/onlook-dev/onlook.git
+cd onlook
+```
+
+### 2. Setup Environment Variables
+
+Run the interactive setup script to configure production environment:
+
+```bash
+bun install
+bun run setup:env
+```
+
+Configure the following for production:
+- **Supabase**: Production database URL and API keys
+- **Anthropic API Key**: For AI chat features
+- **CodeSandbox Token**: For development containers
+- **Fast Apply Provider**: Choose MorphLLM or Relace for AI code changes
+
+### 3. Start Backend Services
+
+```bash
+bun backend:start
+```
+
+This starts Supabase locally with PostgreSQL database, authentication, and storage.
+
+### 4. Initialize Database
+
+```bash
+# Push database schema
+bun db:push
+
+# Seed with initial data (optional for production)
+bun db:seed
+```
+
+### 5. Deploy with Docker Compose
+
+Navigate to the web directory and deploy the production container:
+
+```bash
+cd apps/web
+docker-compose up -d
+```
+
+This builds and starts:
+- **Web Application**: Production-built Next.js application (port 3000)
+- **Health checks**: Automatic container health monitoring
+- **Auto-restart**: Container restarts automatically on failure
+
+### 6. Verify Deployment
+
+- **Main Application**: http://localhost:3000
+- **Supabase Dashboard**: http://localhost:54323 (from backend:start)
+
+Check the service is running:
+```bash
+docker-compose ps
+curl http://localhost:3000
+```
+
+## Additional Setup (Optional)
+
+### SSL/TLS for Remote Access
+
+If deploying on a remote server with a domain:
+
+```bash
+# Install Nginx and Certbot
+sudo apt install nginx certbot python3-certbot-nginx
+
+# Configure reverse proxy
+sudo nano /etc/nginx/sites-available/onlook
+```
+
+Add this configuration:
+```nginx
+server {
+    listen 80;
+    server_name yourdomain.com;
+    
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+```bash
+# Enable site and get SSL certificate
+sudo ln -s /etc/nginx/sites-available/onlook /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+sudo certbot --nginx -d yourdomain.com
+```
+
+## Management
+
+### Updates
+
+```bash
+# Pull latest changes and rebuild
+git pull origin main
+bun install
+cd apps/web
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+```
+
+### Monitoring
+
+```bash
+# Check status and logs
+docker-compose ps
+docker-compose logs -f web
+curl http://localhost:3000
+```
+
+### Backup
+
+```bash
+# Database backup
+pg_dump -h localhost -U postgres -d onlook > backup-$(date +%Y%m%d).sql
+```
+
+## Troubleshooting
+
+**Common issues:**
+- **Port 3000 in use**: Stop other services or change port
+- **Docker build fails**: Run `docker system prune` and retry
+- **Database connection**: Verify `bun backend:start` is running
+
+**Reset everything:**
+```bash
+rm .env && bun run setup:env
+bun db:push --force && bun db:seed
+cd apps/web && docker-compose down && docker-compose build --no-cache && docker-compose up -d
+```
+
+## Limitations & Considerations
+
+**This deployment is designed for simplicity, not high reliability:**
+
+**Limitations:**
+- Single container (single point of failure)
+- No built-in load balancing or auto-scaling  
+- Manual backup and disaster recovery
+- Limited to vertical scaling only
+- No high availability guarantees
+
+**Suitable for:**
+- Small teams (< 10 users)
+- Development/testing environments
+- Proof of concept deployments
+- Basic self-hosting needs
+
+**Not suitable for:**
+- Mission-critical production workloads
+- Large teams requiring high availability
+- Environments needing 99.9%+ uptime
+
+For enterprise-grade deployments, use the [Cloud Deployment](/docs/self-hosting/cloud-deployment) option with proper redundancy and scaling.
