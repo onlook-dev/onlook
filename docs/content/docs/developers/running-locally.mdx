@@ -24,15 +24,10 @@ These are the prerequisites for setting up Onlook development environment.
    ```bash
    git clone https://github.com/onlook-dev/onlook.git
    cd onlook
-   ```
-
-### 2. Install dependencies
-
-   ```bash
    bun install
    ```
 
-### 3. Run backend
+### 2. Run backend
 
    Make sure you have Docker running from the instructions above.
 
@@ -42,7 +37,7 @@ These are the prerequisites for setting up Onlook development environment.
 
     Grab the `anon key` and `service role key` from the output. We'll use these in the environment setup step.
 
-### 4. Get API keys
+### 3. Get API keys
 
 #### a. Get Codesandbox API key
 
@@ -67,7 +62,7 @@ Request an API key from OpenRouter. This is used for chatting with your project.
 
     You only need to get one of the keys and set it in the environment variables in later steps.
 
-### 5. Set environment variables
+### 4. Set environment variables
 
 Run the interactive environment setup script:
 
@@ -77,7 +72,7 @@ bun run setup:env
 
 Note: If you'd prefer manually setting up the environment variables, see the [appendix](/developers/appendix) for instructions.
 
-### 6. Initialize the database
+### 5. Initialize the database
 
 Set up the database schema. You will need to run this command every time there's a change to the database schema.
 
@@ -86,14 +81,14 @@ Note: If prompted for interaction such as choosing an option, cd into `packages/
    bun db:push
    ```
 
-### 7. Seed the database with test data
+### 6. Seed the database with test data
 
 Seed the database with test data. This will create test users and projects.
    ```bash
    bun db:seed
    ```
 
-### 8. Run development server
+### 7. Run development server
 
    ```bash
    bun dev

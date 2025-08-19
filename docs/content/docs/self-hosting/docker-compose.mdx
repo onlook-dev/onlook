@@ -1,9 +1,9 @@
 ---
-title: Docker Compose Deployment
+title: Docker Compose
 description: Simple single-container deployment for small teams and basic self-hosting
 ---
 
-# Docker Compose Deployment
+# Docker Compose
 
 Deploy Onlook using Docker Compose on VMs or local machines. This is a simple, single-container deployment designed for small teams and basic self-hosting needs. For enterprise-grade deployments requiring high availability and scalability, use the [Cloud Deployment](/self-hosting/cloud-deployment) option.
 
@@ -30,25 +30,35 @@ Deploy Onlook using Docker Compose on VMs or local machines. This is a simple, s
 ```bash
 git clone https://github.com/onlook-dev/onlook.git
 cd onlook
+
+# Install dependencies
+bun install
 ```
 
 ### 2. Setup Environment Variables
 
-For Docker Compose deployment, create a production environment file:
+For Docker Compose deployment, you need to create a production environment file. Choose one of these approaches:
+
+**Option A: Use Interactive Setup Script**
 
 ```bash
-# Install dependencies first
-bun install
 
-# Copy your existing .env to .env.production for Docker
-cp .env .env.production
+# Run interactive environment setup
+bun run setup:env
+
+# Copy the generated .env to .env.production for Docker
+cp apps/web/client/.env .env.production
 ```
 
-Or run the interactive setup script and then copy:
+**Option B: Copy from Example and Configure Manually**
 
 ```bash
-bun run setup:env
-cp .env .env.production
+# Copy example file and edit with your values
+cp apps/web/client/.env.example apps/web/client/.env
+# Edit apps/web/client/.env with your API keys and configuration
+
+# Copy to production environment for Docker
+cp apps/web/client/.env .env.production
 ```
 
 **Required variables for production:**
@@ -56,6 +66,8 @@ cp .env .env.production
 - **OpenRouter API Key**: For AI chat features  
 - **CodeSandbox Token**: For development containers
 - **Fast Apply Provider**: Choose MorphLLM or Relace for AI code changes
+
+For detailed instructions on obtaining these API keys, see the [development setup guide](/developers/running-locally#3-get-api-keys).
 
 ### 3. Start Backend Services
 
@@ -87,6 +99,8 @@ This builds and starts:
 - **Web Application**: Production-built Next.js application (port 3000)
 - **Health checks**: Automatic container health monitoring
 - **Auto-restart**: Container restarts automatically on failure
+
+**Note**: The Docker container uses `network_mode: "host"` to access the local Supabase services running on your host machine. This allows the container to connect to `http://127.0.0.1:54321` (Supabase API) and `127.0.0.1:54322` (PostgreSQL).
 
 ### 6. Verify Deployment
 
@@ -146,7 +160,7 @@ sudo certbot --nginx -d yourdomain.com
 git pull origin main
 bun install
 # Update production environment if needed
-cp .env .env.production
+cp apps/web/client/.env .env.production
 # Rebuild and restart
 docker-compose down
 docker-compose build --no-cache
@@ -175,7 +189,8 @@ pg_dump -h localhost -U postgres -d onlook > backup-$(date +%Y%m%d).sql
 - **Missing .env.production**: Copy your `.env` file to `.env.production` before running docker-compose
 - **Port 3000 in use**: Stop other services or change port  
 - **Docker build fails**: Run `docker system prune` and retry
-- **Database connection**: Verify `bun backend:start` is running
+- **Database connection**: Verify `bun backend:start` is running and Supabase is accessible at http://127.0.0.1:54321
+- **Container can't connect to Supabase**: Ensure `network_mode: "host"` is set in docker-compose.yml for localhost access
 
 ## Limitations & Considerations
 
