@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     eslint: {
         ignoreDuringBuilds: true,
     },
+    ...(process.env.STANDALONE_BUILD === 'true' && { output: 'standalone' }),
 };
 
 if (process.env.NODE_ENV === 'development') {
