@@ -38,12 +38,13 @@
         "@ai-sdk/google-vertex": "2.2.24",
         "@ai-sdk/openai": "2.0.0",
         "@mendable/firecrawl-js": "^1.29.1",
-        "@openrouter/ai-sdk-provider": "^0.7.4",
+        "@openrouter/ai-sdk-provider": "^1.1.2",
         "ai": "5.0.0",
         "exa-js": "^1.8.26",
         "fg": "^0.0.3",
         "gpt-tokenizer": "^3.0.1",
         "marked": "^15.0.7",
-        "openai": "^4.103.0"
+        "openai": "^4.103.0",
+        "zod": "^4.0.17"
     }
 }

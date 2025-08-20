@@ -1,14 +1,14 @@
 import { ChatMessageRole, type ChatMessage } from '@onlook/models';
 import {
     convertToModelMessages,
-    type CoreMessage,
+    type ModelMessage,
     type TextPart,
     type ToolInvocation,
-    type Message as VercelMessage,
+    type UIMessage as VercelMessage,
 } from 'ai';
 import { getHydratedUserMessage, type HydrateMessageOptions } from '../prompt';
 
-export function convertToStreamMessages(messages: ChatMessage[]): CoreMessage[] {
+export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[] {
     const totalMessages = messages.length;
     const lastUserMessageIndex = messages.findLastIndex(
         (message) => message.role === ChatMessageRole.USER,
@@ -16,7 +16,6 @@ export function convertToStreamMessages(messages: ChatMessage[]): CoreMessage[] 
     const lastAssistantMessageIndex = messages.findLastIndex(
         (message) => message.role === ChatMessageRole.ASSISTANT,
     );
-    const toolCallSignatures = new Map<string, string>();
 
     const uiMessages = messages.map((message, index) => {
         const opt: HydrateMessageOptions = {
@@ -25,7 +24,7 @@ export function convertToStreamMessages(messages: ChatMessage[]): CoreMessage[] 
             lastUserMessageIndex,
             lastAssistantMessageIndex,
         };
-        return toVercelMessageFromOnlook(message, opt, toolCallSignatures);
+        return toVercelMessageFromOnlook(message, opt);
     });
     return convertToModelMessages(uiMessages);
 }
@@ -33,14 +32,13 @@ export function convertToStreamMessages(messages: ChatMessage[]): CoreMessage[] 
 export const toVercelMessageFromOnlook = (
     message: ChatMessage,
     opt: HydrateMessageOptions,
-    toolCallSignatures: Map<string, string>,
 ): VercelMessage => {
     const messageContent = extractTextFromParts(message.content.parts);
     if (message.role === ChatMessageRole.ASSISTANT) {
         return {
             ...message,
             parts: message.content.parts,
-            content: messageContent,
+            // content: messageContent,
         } satisfies VercelMessage;
     } else if (message.role === ChatMessageRole.USER) {
         const hydratedMessage = getHydratedUserMessage(

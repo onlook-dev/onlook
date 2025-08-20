@@ -27,7 +27,7 @@ export const getUserMessageContent = (message: UserChatMessage) => {
 
 export const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
-    const { sendMessage: sendMessageToChat } = useChatContext();
+    const { sendMessageToChat } = useChatContext();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');

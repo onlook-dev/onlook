@@ -37,8 +37,8 @@
         "@codemirror/lang-javascript": "^6.2.3",
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/lang-markdown": "^6.1.7",
-        "@mastra/core": "^0.13.1",
-        "@mastra/memory": "^0.12.1",
+        "@mastra/core": "^0.0.0-ai-v5-20250813235735",
+        "@mastra/memory": "^0.0.0-ai-v5-20250813235735",
         "@mastra/pg": "^0.13.3",
         "@onlook/code-provider": "*",
         "@onlook/constants": "*",
@@ -80,6 +80,7 @@
         "langfuse-vercel": "^3.38.4",
         "localforage": "^1.10.0",
         "lucide-react": "^0.486.0",
+        "mastra": "^0.0.0-ai-v5-20250813235735",
         "mobx-react-lite": "^4.1.0",
         "motion": "^12.6.3",
         "next": "^15.2.3",
@@ -109,7 +110,7 @@
         "use-resize-observer": "^9.1.0",
         "uuid": "^11.1.0",
         "webfontloader": "^1.6.28",
-        "zod": "3.25.0"
+        "zod": "^4.0.17"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",

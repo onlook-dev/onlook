@@ -1,10 +1,11 @@
 import { trackEvent } from '@/utils/analytics/server';
 import { convertToStreamMessages } from '@onlook/ai';
 import { ChatType, type ChatMessage } from '@onlook/models';
-import { streamText } from 'ai';
+import { stepCountIs, streamText } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
+const MAX_STEPS = 20;
 
 export async function POST(req: NextRequest) {
     try {
@@ -51,9 +52,8 @@ export async function POST(req: NextRequest) {
 }
 
 export const streamResponse = async (req: NextRequest, userId: string) => {
-    const { messages, maxSteps, chatType, conversationId, projectId } = await req.json() as {
+    const { messages, chatType, conversationId, projectId } = await req.json() as {
         messages: ChatMessage[],
-        maxSteps: number,
         chatType: ChatType,
         conversationId: string,
         projectId: string,
@@ -79,8 +79,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         model,
         headers,
         tools,
-        maxSteps,
-        toolCallStreaming: true,
+        stopWhen: stepCountIs(MAX_STEPS),
         messages: [
             {
                 role: 'system',

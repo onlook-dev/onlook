@@ -2,15 +2,16 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
-import { useChat, type UseChatHelpers } from '@ai-sdk/react';
+import { useChat, type UseChatHelpers} from '@ai-sdk/react';
+import { toVercelMessageFromOnlook } from '@onlook/ai';
 import { toOnlookMessageFromVercel } from '@onlook/db';
 import { ChatType } from '@onlook/models';
-import type { UIMessage } from 'ai';
+import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers & { sendMessage: (type: ChatType) => Promise<string | null | undefined> };
+type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & { sendMessageToChat: (type: ChatType) => Promise<string | null | undefined> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
@@ -21,14 +22,19 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
     const conversationId = editorEngine.chat.conversation.current?.conversation.id;
     const chat = useChat({
         id: 'user-chat',
-        api: '/api/chat',
-        maxSteps: 20,
-        body: {
-            conversationId,
-            projectId: editorEngine.projectId,
-        },
+        sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+        transport: new DefaultChatTransport({
+            api: '/api/chat',
+            body: {
+                conversationId,
+                projectId: editorEngine.projectId,
+            },
+        }),
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
-        onFinish: (message, { finishReason }) => {
+        onFinish: ({message}) => {
+            const finishReason = message.metadata.finishReason;
+            console.log('finishReason', finishReason);
+            console.log('message', message.metadata);
             lastMessageRef.current = message;
             if (finishReason !== 'error') {
                 editorEngine.chat.error.clear();
@@ -55,17 +61,19 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, conversationId ?? ''));
                 lastMessageRef.current = null;
             }
-        },
-        sendExtraMessageFields: true,
+        }
     });
 
-    const sendMessage = async (type: ChatType = ChatType.EDIT) => {
+    const sendMessageToChat = async (type: ChatType = ChatType.EDIT) => {
         if (!conversationId) {
             throw new Error('No conversation id');
         }
         lastMessageRef.current = null;
         editorEngine.chat.error.clear();
-        chat.setMessages(editorEngine.chat.conversation.current?.messages ?? [] as any);
+
+        const messages = editorEngine.chat.conversation.current?.messages ?? [];
+
+        chat.setMessages(messages.map(m => toVercelMessageFromOnlook(m, conversationId)));
         try {
             posthog.capture('user_send_message', {
                 type,
@@ -73,7 +81,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         } catch (error) {
             console.error('Error tracking user send message: ', error)
         }
-        return chat.reload({
+        return chat.regenerate({
             body: {
                 chatType: type,
                 conversationId
@@ -81,7 +89,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         });
     };
 
-    return <ChatContext.Provider value={{ ...chat, sendMessage }}>{children}</ChatContext.Provider>;
+    return <ChatContext.Provider value={{ ...chat, sendMessageToChat }}>{children}</ChatContext.Provider>;
 });
 
 export function useChatContext() {
