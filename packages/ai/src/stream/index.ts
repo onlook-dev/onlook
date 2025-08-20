@@ -1,6 +1,6 @@
 import { ChatMessageRole, type ChatMessage } from '@onlook/models';
 import {
-    convertToCoreMessages,
+    convertToModelMessages,
     type CoreMessage,
     type TextPart,
     type ToolInvocation,
@@ -27,7 +27,7 @@ export function convertToStreamMessages(messages: ChatMessage[]): CoreMessage[] 
         };
         return toVercelMessageFromOnlook(message, opt, toolCallSignatures);
     });
-    return convertToCoreMessages(uiMessages);
+    return convertToModelMessages(uiMessages);
 }
 
 export const toVercelMessageFromOnlook = (
