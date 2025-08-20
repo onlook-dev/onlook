@@ -17,10 +17,11 @@ import { ProjectCard } from './project-card';
 import { SquareProjectCard } from './square-project-card';
 
 export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: string } = {}) => {
-    const SHOW_TEMPLATE = true;
     const utils = api.useUtils();
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
+    const { data: templateProjects = [] } = api.project.listTemplates.useQuery({ limit: 8 });
     const removeTagMutation = api.project.removeTag.useMutation();
+    const SHOW_TEMPLATE = templateProjects.length > 0;
     const [internalQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const searchQuery = externalSearchQuery ?? internalQuery;
@@ -37,7 +38,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
-        new Set(["template-2", "template-5"])
+        new Set()
     );
 
     const handleTemplateClick = (project: Project) => {
