@@ -148,8 +148,9 @@ export const Create = observer(({
         const imageFiles = files.filter((file) => file.type.startsWith('image/'));
 
         // Check image limit before processing
-        const currentImages = selectedImages.map(img => ({ type: MessageContextType.IMAGE, ...img }));
-        if (!validateImageLimit(currentImages, (message) => toast.error(message), imageFiles.length)) {
+        const { success, errorMessage } = validateImageLimit(selectedImages, imageFiles.length);
+        if (!success) {
+            toast.error(errorMessage);
             setIsHandlingFile(false);
             return;
         }
