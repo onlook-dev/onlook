@@ -46,10 +46,15 @@ export function getContextIcon(context: MessageContext) {
 
 export function validateImageLimit(
     currentImages: MessageContext[], 
-    onError?: (message: string) => void
+    onError?: (message: string) => void,
+    additionalCount: number = 0
 ): boolean {
-    if (currentImages.length >= DefaultSettings.CHAT_SETTINGS.maxImages) {
-        const errorMessage = `Maximum ${DefaultSettings.CHAT_SETTINGS.maxImages} images allowed. Please remove an image before adding a new one.`;
+    const totalCount = currentImages.length + additionalCount;
+    if (totalCount > DefaultSettings.CHAT_SETTINGS.maxImages) {
+        const remaining = DefaultSettings.CHAT_SETTINGS.maxImages - currentImages.length;
+        const errorMessage = remaining > 0 
+            ? `You can only add ${remaining} more image(s). Maximum ${DefaultSettings.CHAT_SETTINGS.maxImages} images allowed.`
+            : `Maximum ${DefaultSettings.CHAT_SETTINGS.maxImages} images allowed. Please remove an image before adding a new one.`;
         onError?.(errorMessage);
         return false;
     }

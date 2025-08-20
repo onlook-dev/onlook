@@ -191,7 +191,7 @@ export const ChatInput = observer(({
             ctx => ctx.type === MessageContextType.IMAGE
         );
         
-        if (!validateImageLimit(currentImages, (message) => toast.error(message))) {
+        if (!validateImageLimit(currentImages, (message) => toast.error(message), 1)) {
             return;
         }
 
@@ -217,7 +217,7 @@ export const ChatInput = observer(({
                 ctx => ctx.type === MessageContextType.IMAGE
             );
             
-            if (!validateImageLimit(currentImages, (message) => toast.error(message))) {
+            if (!validateImageLimit(currentImages, (message) => toast.error(message), 1)) {
                 return;
             }
 
