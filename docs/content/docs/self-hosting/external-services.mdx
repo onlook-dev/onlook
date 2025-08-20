@@ -21,7 +21,7 @@ For assistance with self-hosting these services, please contact us at [founders@
 
 ### 3. AI Providers
 To configure custom AI providers:
-1. Update the providers in [`packages/ai/src/chat/providers.ts`](https://github.com/onlook-dev/onlook/blob/main/packages/ai/src/chat/providers.ts)
+1. Update the providers in [`packages/ai/src/chat/providers.ts`](https://github.com/onlook-dev/onlook/blob/main/packages/ai/src/chat/providers.ts). We already support Anthropic and OpenRouter as examples. You can follow the same format to add a new provider.
 2. Update the usages by searching for [`initModel`](https://github.com/search?q=repo%3Aonlook-dev%2Fonlook+%22await+initModel%22&type=code)
 3. Update your API keys in the `apps/web/client/.env` file to the provider's expected API keys.
 
