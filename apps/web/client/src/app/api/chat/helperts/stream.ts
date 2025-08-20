@@ -66,13 +66,13 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
 
     const { object: repairedArgs } = await generateObject({
         model,
-        schema: tool?.parameters,
+        schema: tool?.inputSchema,
         prompt: [
             `The model tried to call the tool "${toolCall.toolName}"` +
             ` with the following arguments:`,
             JSON.stringify(toolCall.args),
             `The tool accepts the following schema:`,
-            JSON.stringify(tool?.parameters),
+            JSON.stringify(tool?.inputSchema),
             'Please fix the arguments.',
         ].join('\n'),
     });
