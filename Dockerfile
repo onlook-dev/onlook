@@ -14,8 +14,5 @@ ENV NODE_ENV=production
 
 RUN bun run build
 
-# Expose port 3000
-EXPOSE 3000
-
 # Start the production server
 CMD ["bun", "run", "start"]

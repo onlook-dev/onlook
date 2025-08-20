@@ -1,10 +1,10 @@
+name: onlook
+
 services:
-  web:
+  web-client:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     env_file:
       - apps/web/client/.env
     network_mode: "host"
