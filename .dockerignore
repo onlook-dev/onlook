@@ -19,6 +19,7 @@ build
 .vscode
 .idea
 *.log
+.next
 
 # Parts of the app that does not need to be deployed
 apps/web/backend
