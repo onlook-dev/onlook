@@ -1,37 +1,28 @@
-# Build locally first with: bun run build
-# Then copy the built artifacts
+# Build Onlook web client
+FROM oven/bun:1
 
-FROM oven/bun:slim AS runner
 WORKDIR /app
 
+# Set build and production environment
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV STANDALONE_BUILD=true
 ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
-# Copy monorepo root files for workspace dependencies
-COPY package.json bun.lock ./
+# Copy everything (monorepo structure)
+COPY . .
 
-# Copy all workspace packages
-COPY packages ./packages
-COPY tooling ./tooling
-COPY docs ./docs
-
-# Copy all apps (needed for workspace dependencies)
-COPY apps ./apps
-
-# Install all dependencies (needed for monorepo workspaces)
+# Install dependencies and build
 RUN bun install
+RUN cd apps/web/client && bun run build:standalone
 
-# Set working directory to the client app
-WORKDIR /app/apps/web/client
-
-# Copy public and .next directories to where the server.js expects them
-# The server.js changes directory to its own location and expects public/.next there
-RUN cp -r public .next/standalone/apps/web/client/ 2>/dev/null || true
-RUN cp -r .next/static .next/standalone/apps/web/client/.next/ 2>/dev/null || true
-
+# Expose the application port
 EXPOSE 3000
 
-CMD ["bun", ".next/standalone/apps/web/client/server.js"]
+# Health check to ensure the application is running
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD bun -e "fetch('http://localhost:3000').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"
+
+# Start the Next.js server
+CMD ["bun", "apps/web/client/server.js"]
