@@ -15,3 +15,10 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - default
+      - supabase_network_onlook-backend
+
+networks:
+  supabase_network_onlook-backend:
+    external: true
