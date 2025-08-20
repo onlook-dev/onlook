@@ -11,10 +11,7 @@ services:
       - "3000:3000"
     restart: unless-stopped
     network_mode: host
-    # networks:
-    #   - default
-    #   - supabase_network_onlook-backend
 
 networks:
-  supabase_network_onlook-backend:
+  supabase_network_onlook-web:
     external: true
