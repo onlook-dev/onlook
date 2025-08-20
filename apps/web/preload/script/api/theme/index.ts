@@ -14,9 +14,17 @@ export function setTheme(theme: SystemTheme) {
         if (theme === SystemTheme.DARK) {
             document.documentElement.classList.add('dark');
             window?.localStorage.setItem('theme', SystemTheme.DARK);
-        } else {
+        } else if (theme === SystemTheme.LIGHT) {
             document.documentElement.classList.remove('dark');
             window?.localStorage.setItem('theme', SystemTheme.LIGHT);
+        } else if (theme === SystemTheme.SYSTEM) {
+            const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            window?.localStorage.setItem('theme', SystemTheme.SYSTEM);
         }
         return true;
     } catch (error) {
