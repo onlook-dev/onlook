@@ -1,0 +1,32 @@
+---
+title: External Services
+description: External services for Onlook
+---
+
+# External Services
+
+Onlook requires several external services to provide its features. Each of these services is self-hostable under Apache 2.0 or equivalently permissive licenses.
+
+## Services Overview
+
+### Required Services
+- **[Supabase](https://supabase.com/)** - Database and authentication backend
+
+### Optional Services
+- **AI Providers** - Any provider from the [AI SDK providers](https://ai-sdk.dev/providers/ai-sdk-providers) can be added on request
+- **Sandbox Providers** - We are working to add [E2B](https://github.com/e2b-dev/E2B) as a self-hosted alternative to CodeSandbox
+
+## Self-hosting Guides
+
+For assistance with self-hosting these services, please contact us at [founders@onlook.com](mailto:founders@onlook.com).
+
+### Supabase
+Follow the official [Supabase self-hosting guide](https://supabase.com/docs/guides/self-hosting/docker) to deploy with Docker.
+
+### E2B
+Deploy E2B to GCP using their [self-hosting guide](https://github.com/e2b-dev/infra/blob/main/self-host.md).
+
+### AI Providers
+To configure custom AI providers:
+1. Update the providers in [`packages/ai/src/chat/providers.ts`](https://github.com/onlook-dev/onlook/blob/main/packages/ai/src/chat/providers.ts)
+2. Update the usages by searching for [`initModel`](https://github.com/search?q=repo%3Aonlook-dev%2Fonlook%20initModel&type=code)
