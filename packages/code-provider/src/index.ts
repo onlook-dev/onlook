@@ -1,6 +1,7 @@
 import { CodeProvider } from './providers';
 import { CodesandboxProvider, type CodesandboxProviderOptions } from './providers/codesandbox';
 import { NodeFsProvider, type NodeFsProviderOptions } from './providers/nodefs';
+import { CoderouterProvider, type CoderouterProviderOptions } from './providers/coderouter';
 
 export * from './types';
 export * from './providers';
@@ -27,6 +28,7 @@ export async function createCodeProviderClient(
 export interface ProviderInstanceOptions {
     codesandbox?: CodesandboxProviderOptions;
     nodefs?: NodeFsProviderOptions;
+    coderouter?: CoderouterProviderOptions;
 }
 
 function newProviderInstance(codeProvider: CodeProvider, providerOptions: ProviderInstanceOptions) {
@@ -42,6 +44,13 @@ function newProviderInstance(codeProvider: CodeProvider, providerOptions: Provid
             throw new Error('NodeFs provider options are required.');
         }
         return new NodeFsProvider(providerOptions.nodefs);
+    }
+
+    if (codeProvider === CodeProvider.Coderouter) {
+        if (!providerOptions.coderouter) {
+            throw new Error('Coderouter provider options are required.');
+        }
+        return new CoderouterProvider(providerOptions.coderouter);
     }
 
     throw new Error(`Unimplemented code provider: ${codeProvider}`);

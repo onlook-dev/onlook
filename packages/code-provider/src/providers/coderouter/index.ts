@@ -1,0 +1,485 @@
+import {
+    Provider,
+    ProviderBackgroundCommand,
+    ProviderFileWatcher,
+    ProviderTask,
+    ProviderTerminal,
+    type CopyFileOutput,
+    type CopyFilesInput,
+    type CreateProjectInput,
+    type CreateProjectOutput,
+    type CreateSessionInput,
+    type CreateSessionOutput,
+    type CreateTerminalInput,
+    type CreateTerminalOutput,
+    type DeleteFilesInput,
+    type DeleteFilesOutput,
+    type DownloadFilesInput,
+    type DownloadFilesOutput,
+    type GetProjectUrlInput,
+    type GetProjectUrlOutput,
+    type GetTaskInput,
+    type GetTaskOutput,
+    type GitStatusInput,
+    type GitStatusOutput,
+    type InitializeInput,
+    type InitializeOutput,
+    type ListFilesInput,
+    type ListFilesOutput,
+    type ListProjectsInput,
+    type ListProjectsOutput,
+    type PauseProjectInput,
+    type PauseProjectOutput,
+    type ReadFileInput,
+    type ReadFileOutput,
+    type RenameFileInput,
+    type RenameFileOutput,
+    type SetupInput,
+    type SetupOutput,
+    type StatFileInput,
+    type StatFileOutput,
+    type StopProjectInput,
+    type StopProjectOutput,
+    type TerminalBackgroundCommandInput,
+    type TerminalBackgroundCommandOutput,
+    type TerminalCommandInput,
+    type TerminalCommandOutput,
+    type WatchEvent,
+    type WatchFilesInput,
+    type WatchFilesOutput,
+    type WriteFileInput,
+    type WriteFileOutput,
+} from '../../types';
+
+import * as OpenAPI from './codegen';
+
+export interface CoderouterProviderOptions {
+    // URL to Coderouter
+    url?: string;
+    // Onlook's sandbox ID
+    sandboxId?: string;
+    // Onlook's user ID
+    userId?: string;
+    getSession?: (
+        provider: CoderouterProvider,
+        sandboxId: string,
+        userId?: string,
+    ) => Promise<{ jwt?: string }>;
+}
+
+export class CoderouterProvider extends Provider {
+    private readonly options: CoderouterProviderOptions;
+    private jwt: string | null = null;
+
+    private readonly api: OpenAPI.DefaultApi;
+
+    constructor(options: CoderouterProviderOptions) {
+        super();
+        this.options = options;
+
+        const configurationParameters: OpenAPI.ConfigurationParameters = {
+            basePath: this.options.url || 'https://onlook.internal',
+        };
+        const configuration = new OpenAPI.Configuration(configurationParameters);
+
+        // Use configuration with your_api
+        this.api = new OpenAPI.DefaultApi(configuration);
+    }
+
+    async initialize(input: InitializeInput): Promise<InitializeOutput> {
+        if (!this.options.sandboxId) {
+            return {};
+        }
+        if (this.options.getSession) {
+            const res = await this.options.getSession(
+                this,
+                this.options.sandboxId,
+                this.options.userId,
+            );
+            this.jwt = res.jwt ?? null;
+
+            if (typeof window !== 'undefined') {
+                const url = await this.getProjectUrl({ args: {} });
+                console.log('----> url', url);
+            }
+        }
+        return {};
+    }
+
+    async writeFile(input: WriteFileInput): Promise<WriteFileOutput> {
+        const res = await this.api.coderouterApiSandboxFileWritePost(
+            {
+                coderouterApiSandboxFileWritePostRequest: {
+                    files: [
+                        {
+                            path: input.args.path,
+                            data:
+                                input.args.content instanceof Uint8Array
+                                    ? Buffer.from(input.args.content).toString('utf-8')
+                                    : input.args.content,
+                            overwrite: input.args.overwrite ?? true,
+                        },
+                    ],
+                },
+            },
+            this.requestInitOverrides(),
+        );
+        return {
+            success: true,
+        };
+    }
+
+    async renameFile(input: RenameFileInput): Promise<RenameFileOutput> {
+        await this.api.coderouterApiSandboxFileRenamePost(
+            {
+                coderouterApiSandboxFileRenamePostRequest: {
+                    oldPath: input.args.oldPath,
+                    newPath: input.args.newPath,
+                },
+            },
+            this.requestInitOverrides(),
+        );
+        return {};
+    }
+
+    async statFile(input: StatFileInput): Promise<StatFileOutput> {
+        const res = await this.api.coderouterApiSandboxFileStatPost(
+            {
+                coderouterApiSandboxFileStatPostRequest: {
+                    path: input.args.path,
+                },
+            },
+            this.requestInitOverrides(),
+        );
+        return {
+            type: res.type,
+        };
+    }
+
+    async deleteFiles(input: DeleteFilesInput): Promise<DeleteFilesOutput> {
+        await this.api.coderouterApiSandboxFileDeletePost(
+            {
+                coderouterApiSandboxFileDeletePostRequest: {
+                    path: input.args.path,
+                },
+            },
+            this.requestInitOverrides(),
+        );
+        return {};
+    }
+
+    async listFiles(input: ListFilesInput): Promise<ListFilesOutput> {
+        const res = await this.api
+            .coderouterApiSandboxFileListPost(
+                {
+                    coderouterApiSandboxFileListPostRequest: {
+                        path: input.args.path,
+                    },
+                },
+                this.requestInitOverrides(),
+            )
+            .catch((error: any) => {
+                if (error?.response?.status === 404) {
+                    return {
+                        files: [],
+                    };
+                }
+                throw error;
+            });
+        return {
+            files: res.files.map((file) => ({
+                name: file.name,
+                path: file.path,
+                type: file.type,
+                isSymlink: false,
+            })),
+        };
+    }
+
+    async readFile(input: ReadFileInput): Promise<ReadFileOutput> {
+        try {
+            const res = await this.api.coderouterApiSandboxFileReadPost(
+                {
+                    coderouterApiSandboxFileReadPostRequest: {
+                        path: input.args.path,
+                    },
+                },
+                this.requestInitOverrides(),
+            );
+            return {
+                file: {
+                    path: input.args.path,
+                    content: res.data,
+                    type: 'text',
+                    toString: () => {
+                        return res.data;
+                    },
+                },
+            };
+        } catch (error: any) {
+            if (error?.response?.status === 404) {
+                return {
+                    file: null,
+                };
+            }
+            throw error;
+        }
+    }
+
+    async downloadFiles(input: DownloadFilesInput): Promise<DownloadFilesOutput> {
+        const res: any = await this.api.coderouterApiSandboxFileDownloadPost(
+            {
+                coderouterApiSandboxFileDownloadPostRequest: {
+                    path: input.args.path,
+                },
+            },
+            this.requestInitOverrides(),
+        );
+        return {
+            url: res.url,
+        };
+    }
+
+    async copyFiles(input: CopyFilesInput): Promise<CopyFileOutput> {
+        await this.api.coderouterApiSandboxFileCopyPost(
+            {
+                coderouterApiSandboxFileCopyPostRequest: {
+                    source: input.args.sourcePath,
+                    destination: input.args.targetPath,
+                    recursive: input.args.recursive ?? true,
+                    overwrite: input.args.overwrite ?? true,
+                },
+            },
+            this.requestInitOverrides(),
+        );
+        return {};
+    }
+
+    async watchFiles(input: WatchFilesInput): Promise<WatchFilesOutput> {
+        return {
+            watcher: new CoderouterFileWatcher(),
+        };
+    }
+
+    async createTerminal(input: CreateTerminalInput): Promise<CreateTerminalOutput> {
+        return {
+            terminal: new CoderouterTerminal(),
+        };
+    }
+
+    async getTask(input: GetTaskInput): Promise<GetTaskOutput> {
+        return {
+            task: new CoderouterTask(),
+        };
+    }
+
+    async runCommand(input: TerminalCommandInput): Promise<TerminalCommandOutput> {
+        return {
+            output: '',
+        };
+    }
+
+    async runBackgroundCommand(
+        input: TerminalBackgroundCommandInput,
+    ): Promise<TerminalBackgroundCommandOutput> {
+        return {
+            command: new CoderouterCommand(),
+        };
+    }
+
+    async gitStatus(input: GitStatusInput): Promise<GitStatusOutput> {
+        return {
+            changedFiles: [],
+        };
+    }
+
+    async setup(input: SetupInput): Promise<SetupOutput> {
+        return {};
+    }
+
+    async createSession(input: CreateSessionInput): Promise<CreateSessionOutput> {
+        // called in the backend
+        const res = await this.api.coderouterApiAuthSignPost(
+            {
+                coderouterApiAuthSignPostRequest: {
+                    sandboxId: this.options.sandboxId,
+                    userId: this.options.userId,
+                },
+            },
+            {
+                headers: {
+                    'content-type': 'application/json',
+                    authorization: `Bearer ${process?.env?.CODEROUTER_API_KEY}`,
+                },
+            },
+        );
+        const { jwt } = res;
+        return {
+            jwt,
+        };
+    }
+
+    async reload(): Promise<boolean> {
+        // TODO: Implement
+        return true;
+    }
+
+    async reconnect(): Promise<void> {
+        // TODO: Implement
+    }
+
+    async ping(): Promise<boolean> {
+        return true;
+    }
+
+    async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
+        const res = await this.api.coderouterApiSandboxCreatePost(
+            {
+                coderouterApiSandboxCreatePostRequest: {
+                    templateId: input.templateId ?? 'default',
+                    metadata: {},
+                },
+            },
+            this.requestInitOverrides(),
+        );
+        return {
+            id: input.id,
+        };
+    }
+
+    async pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput> {
+        return {};
+    }
+
+    async stopProject(input: StopProjectInput): Promise<StopProjectOutput> {
+        return {};
+    }
+
+    async listProjects(input: ListProjectsInput): Promise<ListProjectsOutput> {
+        return { projects: [] };
+    }
+
+    async getProjectUrl(input: GetProjectUrlInput): Promise<GetProjectUrlOutput> {
+        const res = await this.api.coderouterApiSandboxUrlPost(this.requestInitOverrides());
+        return {
+            url: res.url,
+        };
+    }
+
+    async destroy(): Promise<void> {
+        // TODO: Implement
+    }
+
+    private requestInitOverrides() {
+        return {
+            headers: {
+                'content-type': 'application/json',
+                'X-Auth-Jwt': this.jwt ?? '',
+            },
+        };
+    }
+}
+
+export class CoderouterFileWatcher extends ProviderFileWatcher {
+    start(input: WatchFilesInput): Promise<void> {
+        return Promise.resolve();
+    }
+
+    stop(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    registerEventCallback(callback: (event: WatchEvent) => Promise<void>): void {
+        // TODO: Implement
+    }
+}
+
+export class CoderouterTerminal extends ProviderTerminal {
+    get id(): string {
+        return 'unimplemented';
+    }
+
+    get name(): string {
+        return 'unimplemented';
+    }
+
+    open(): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    write(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    run(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    kill(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    onOutput(callback: (data: string) => void): () => void {
+        return () => {};
+    }
+}
+
+export class CoderouterTask extends ProviderTask {
+    get id(): string {
+        return 'unimplemented';
+    }
+
+    get name(): string {
+        return 'unimplemented';
+    }
+
+    get command(): string {
+        return 'unimplemented';
+    }
+
+    open(): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    run(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    restart(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    stop(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    onOutput(callback: (data: string) => void): () => void {
+        return () => {};
+    }
+}
+
+export class CoderouterCommand extends ProviderBackgroundCommand {
+    get name(): string {
+        return 'unimplemented';
+    }
+
+    get command(): string {
+        return 'unimplemented';
+    }
+
+    open(): Promise<string> {
+        return Promise.resolve('');
+    }
+
+    restart(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    kill(): Promise<void> {
+        return Promise.resolve();
+    }
+
+    onOutput(callback: (data: string) => void): () => void {
+        return () => {};
+    }
+}

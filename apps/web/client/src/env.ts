@@ -47,6 +47,11 @@ export const env = createEnv({
         // Exa
         EXA_API_KEY: z.string().optional(),
 
+        // E2B
+        E2B_DEFAULT_TEMPLATE_ID: z.string().optional(),
+        CODEROUTER_API_KEY: z.string().optional(),
+        CODEROUTER_HOST_URL: z.string().optional(),
+
         // Langfuse
         LANGFUSE_SECRET_KEY: z.string().optional(),
         LANGFUSE_PUBLIC_KEY: z.string().optional(),
@@ -124,6 +129,11 @@ export const env = createEnv({
 
         // Exa
         EXA_API_KEY: process.env.EXA_API_KEY,
+
+        // E2B
+        E2B_DEFAULT_TEMPLATE_ID: process.env.E2B_DEFAULT_TEMPLATE_ID,
+        CODEROUTER_API_KEY: process.env.CODEROUTER_API_KEY,
+        CODEROUTER_HOST_URL: process.env.CODEROUTER_HOST_URL,
 
         // Langfuse
         LANGFUSE_SECRET_KEY: process.env.LANGFUSE_SECRET_KEY,

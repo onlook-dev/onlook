@@ -10,6 +10,8 @@ max_rows = 100
 [auth]
 site_url = "https://onlook.com"
 additional_redirect_urls = [
+    "https://onlook.internal",
+    "https://onlook.internal/auth/callback",
     "http://localhost:3000",
     "http://localhost:3000/auth/callback",
 ]

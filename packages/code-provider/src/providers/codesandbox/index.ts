@@ -27,6 +27,8 @@ import {
     type DeleteFilesOutput,
     type DownloadFilesInput,
     type DownloadFilesOutput,
+    type GetProjectUrlInput,
+    type GetProjectUrlOutput,
     type GetTaskInput,
     type GetTaskOutput,
     type GitStatusInput,
@@ -194,7 +196,7 @@ export class CodesandboxProvider extends Provider {
             return {
                 projects: projects.sandboxes.map((project) => ({
                     id: project.id,
-                    name: project.title,
+                    title: project.title,
                     description: project.description,
                     createdAt: project.createdAt,
                     updatedAt: project.updatedAt,
@@ -202,6 +204,12 @@ export class CodesandboxProvider extends Provider {
             };
         }
         return { projects: [] };
+    }
+
+    async getProjectUrl(input: GetProjectUrlInput): Promise<GetProjectUrlOutput> {
+        return {
+            url: '',
+        };
     }
 
     async writeFile(input: WriteFileInput): Promise<WriteFileOutput> {

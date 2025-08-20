@@ -1,0 +1,25 @@
+# Meant for local development only.
+# Secret keys used here are not used in production and are only set for convenience.
+name: onlook-web
+services:
+    coderouter:
+        container_name: coderouter
+        build:
+            context: ./coderouter
+            dockerfile: Dockerfile.dev
+        ports:
+            - '4444:4444'
+        volumes:
+            - ./coderouter:/app
+        command: [/usr/local/bin/bun/bin/bun, dev]
+    nginx:
+        container_name: nginx
+        restart: always
+        image: nginx:1.27.4-alpine
+        ports:
+            - '443:443'
+        volumes:
+            - ./nginx/conf.d/server.conf:/etc/nginx/conf.d/server.conf:ro
+            - ./nginx/ssl/onlook-internal.crt:/etc/nginx/ssl/onlook-internal.crt:ro
+            - ./nginx/ssl/onlook-internal.key:/etc/nginx/ssl/onlook-internal.key:ro
+        command: [nginx, '-g', 'daemon off;']

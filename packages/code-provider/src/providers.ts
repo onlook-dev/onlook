@@ -5,4 +5,5 @@ export enum CodeProvider {
     VercelSandbox = 'vercel_sandbox',
     Modal = 'modal',
     NodeFs = 'node_fs',
+    Coderouter = 'coderouter',
 }

@@ -131,20 +131,30 @@ export const ProjectCreationProvider = ({
                 },
             });
 
-            const provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
+            const provider = await createCodeProviderClient(CodeProvider.Coderouter, {
                 providerOptions: {
-                    codesandbox: {
+                    coderouter: {
                         sandboxId: forkedSandbox.sandboxId,
                         userId: user.id,
-                        initClient: true,
-                        keepActiveWhileConnected: false,
-                        getSession: async (sandboxId, userId) => {
+                        getSession: async (_, sandboxId, userId) => {
                             return startSandbox({
                                 sandboxId,
                                 userId,
                             });
                         },
-                    },
+                    }
+                    // codesandbox: {
+                    //     sandboxId: forkedSandbox.sandboxId,
+                    //     userId: user.id,
+                    //     initClient: true,
+                    //     keepActiveWhileConnected: false,
+                    //     getSession: async (sandboxId, userId) => {
+                    //         return startSandbox({
+                    //             sandboxId,
+                    //             userId,
+                    //         });
+                    //     },
+                    // },
                 },
             });
 

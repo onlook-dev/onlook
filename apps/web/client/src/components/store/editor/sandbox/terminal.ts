@@ -59,7 +59,7 @@ export class CLISessionImpl implements CLISession {
             try {
                 const [fitAddonModule, xtermModule] = await Promise.all([
                     import('@xterm/addon-fit'),
-                    import('@xterm/xterm')
+                    import('@xterm/xterm'),
                 ]);
                 FitAddon = fitAddonModule.FitAddon;
                 XTerm = xtermModule.Terminal;
@@ -73,7 +73,7 @@ export class CLISessionImpl implements CLISession {
     async initTerminal() {
         try {
             await this.ensureXTermLibraries();
-            
+
             // Initialize xterm and fitAddon
             this.fitAddon = new FitAddon();
             this.xterm = this.createXTerm();
@@ -104,10 +104,14 @@ export class CLISessionImpl implements CLISession {
             await terminal.open();
 
             // Set initial terminal size and environment
-            if (this.xterm.cols && this.xterm.rows && 'resize' in terminal && typeof terminal.resize === 'function') {
+            if (
+                this.xterm.cols &&
+                this.xterm.rows &&
+                'resize' in terminal &&
+                typeof terminal.resize === 'function'
+            ) {
                 terminal.resize(this.xterm.cols, this.xterm.rows);
             }
-
         } catch (error) {
             console.error('Failed to initialize terminal:', error);
             this.terminal = null;
@@ -117,7 +121,7 @@ export class CLISessionImpl implements CLISession {
     async initTask() {
         try {
             await this.ensureXTermLibraries();
-            
+
             // Initialize xterm and fitAddon
             this.fitAddon = new FitAddon();
             this.xterm = this.createXTerm();
