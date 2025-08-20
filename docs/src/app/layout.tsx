@@ -1,5 +1,3 @@
-// Global styles
-import '@onlook/ui/globals.css';
 import './global.css';
 
 import { baseOptions } from '@/app/layout.config';

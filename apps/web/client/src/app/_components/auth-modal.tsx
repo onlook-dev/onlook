@@ -15,6 +15,7 @@ import { GithubLoginButton, GoogleLoginButton } from './login-button';
 export function AuthModal() {
     const { setIsAuthModalOpen, isAuthModalOpen } = useAuthContext();
     const t = useTranslations();
+
     return (
         <AlertDialog open={isAuthModalOpen} onOpenChange={setIsAuthModalOpen}>
             <AlertDialogContent className="!max-w-sm bg-black">
@@ -22,7 +23,7 @@ export function AuthModal() {
                     <AlertDialogTitle className="text-center text-xl font-normal">
                         {t(transKeys.welcome.login.loginToEdit)}
                     </AlertDialogTitle>
-                    <AlertDialogDescription className="text-center">
+                    <AlertDialogDescription className="text-center text-balance">
                         {t(transKeys.welcome.login.shareProjects)}
                     </AlertDialogDescription>
                 </AlertDialogHeader>

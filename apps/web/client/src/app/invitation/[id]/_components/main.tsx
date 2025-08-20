@@ -2,23 +2,41 @@
 
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
+import { createClient } from '@/utils/supabase/client';
+import { getReturnUrlQueryParam } from '@/utils/url';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Skeleton } from '@onlook/ui/skeleton';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 export function Main({ invitationId }: { invitationId: string }) {
     const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
     const token = useSearchParams().get('token');
-    const { data: invitation, isLoading: loadingInvitation } = api.invitation.get.useQuery({
+    const { data: invitation, isLoading: loadingInvitation, error: getInvitationError } = api.invitation.getWithoutToken.useQuery({
         id: invitationId,
     });
-    const acceptInvitationMutation = api.invitation.accept.useMutation({
+
+    const { mutate: acceptInvitation, isPending: isAcceptingInvitation, error: acceptInvitationError } = api.invitation.accept.useMutation({
         onSuccess: () => {
-            router.push(Routes.PROJECTS);
+            if (invitation?.projectId) {
+                router.push(`${Routes.PROJECT}/${invitation.projectId}`);
+            } else {
+                router.push(Routes.PROJECTS);
+            }
         },
     });
+
+    const handleLogin = async () => {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+        const currentUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(currentUrl)}`);
+    }
+
+    const error = getInvitationError || acceptInvitationError;
 
     if (loadingInvitation) {
         return (
@@ -34,12 +52,49 @@ export function Main({ invitationId }: { invitationId: string }) {
         );
     }
 
+    if (error) {
+        return (
+            <div className="flex flex-row w-full">
+                <div className="w-full h-full flex flex-col items-center justify-center gap-4">
+                    <div className="flex items-center gap-4">
+                        <Icons.ExclamationTriangle className="h-6 w-6" />
+                        <div className="text-2xl">Error accepting invitation</div>
+                    </div>
+                    <div className="text-md">
+                        {error.message}
+                    </div>
+                    <div className="flex justify-center gap-4">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                router.push(Routes.PROJECTS);
+                            }}
+                        >
+                            <Icons.ArrowLeft className="h-4 w-4" />
+                            Back to home
+                        </Button>
+                        <Button
+                            type="button"
+                            onClick={handleLogin}
+                        >
+                            Log in with different account
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (!invitation || !token) {
         return (
             <div className="flex flex-row w-full">
                 <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-                    <div className="text-xl text-foreground-secondary">Invitation not found</div>
-                    <div className="text-md text-foreground-tertiary">
+                    <div className="flex items-center gap-4">
+                        <Icons.ExclamationTriangle className="h-6 w-6" />
+                        <div className="text-xl">Invitation not found</div>
+                    </div>
+                    <div className="text-md">
                         The invitation you are looking for does not exist or has expired.
                     </div>
                     <div className="flex justify-center">
@@ -69,14 +124,14 @@ export function Main({ invitationId }: { invitationId: string }) {
                     <Button
                         type="button"
                         onClick={() => {
-                            acceptInvitationMutation.mutate({
+                            acceptInvitation({
                                 id: invitationId,
-                                token: invitation.token,
+                                token: token,
                             });
                         }}
-                        disabled={acceptInvitationMutation.isPending}
+                        disabled={!token || isAcceptingInvitation}
                     >
-                        Join Project
+                        Accept Invitation
                     </Button>
                 </div>
             </div>

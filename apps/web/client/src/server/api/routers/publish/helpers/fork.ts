@@ -11,7 +11,7 @@ export async function forkBuildSandbox(
     const provider = await createCodeProviderClient(CodeProvider.Coderouter, {
         providerOptions: {
             coderouter: {
-                url: env.SUPAROUTA_HOST_URL,
+                url: env.CODEROUTER_HOST_URL,
                 sandboxId: newSandboxId,
                 userId: userId,
             },

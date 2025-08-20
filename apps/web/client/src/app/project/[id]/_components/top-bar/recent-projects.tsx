@@ -25,7 +25,7 @@ export const RecentProjectsMenu = observer(() => {
     const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
 
     const { data: projects, isLoading: isLoadingProjects } = api.project.list.useQuery({
-        limit: 3,
+        limit: 5,
         excludeProjectId: currentProjectId,
     });
 

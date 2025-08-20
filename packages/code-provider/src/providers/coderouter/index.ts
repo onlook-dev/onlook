@@ -309,7 +309,7 @@ export class CoderouterProvider extends Provider {
             {
                 headers: {
                     'content-type': 'application/json',
-                    authorization: `Bearer ${process?.env?.SUPAROUTA_API_KEY}`,
+                    authorization: `Bearer ${process?.env?.CODEROUTER_API_KEY}`,
                 },
             },
         );

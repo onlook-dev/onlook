@@ -1,5 +1,8 @@
 'use client';
 
+import { LocalForageKeys } from '@/utils/constants';
+import { sanitizeReturnUrl } from '@/utils/url';
+import localforage from 'localforage';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -7,9 +10,13 @@ export default function AuthRedirect() {
     const router = useRouter();
 
     useEffect(() => {
-        const returnUrl = localStorage.getItem('returnUrl') || '/';
-        localStorage.removeItem('returnUrl');
-        router.push(returnUrl);
+        const getReturnUrl = async () => {
+            const returnUrl = await localforage.getItem<string>(LocalForageKeys.RETURN_URL);
+            await localforage.removeItem(LocalForageKeys.RETURN_URL);
+            const sanitizedUrl = sanitizeReturnUrl(returnUrl);
+            router.replace(sanitizedUrl);
+        };
+        getReturnUrl();
     }, [router]);
 
     return (

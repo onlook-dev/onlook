@@ -6,6 +6,7 @@ export interface Project {
         updatedAt: string;
         previewImg: PreviewImg | null;
         description: string | null;
+        updatedPreviewImgAt: Date | null;
     };
     sandbox: {
         id: string;

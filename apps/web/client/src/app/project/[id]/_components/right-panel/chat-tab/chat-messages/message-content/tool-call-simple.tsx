@@ -1,38 +1,38 @@
 import {
     BASH_EDIT_TOOL_NAME,
-    BASH_EDIT_TOOL_PARAMETERS,
+    type BASH_EDIT_TOOL_PARAMETERS,
     BASH_READ_TOOL_NAME,
-    BASH_READ_TOOL_PARAMETERS,
+    type BASH_READ_TOOL_PARAMETERS,
     EXIT_PLAN_MODE_TOOL_NAME,
     FUZZY_EDIT_FILE_TOOL_NAME,
-    FUZZY_EDIT_FILE_TOOL_PARAMETERS,
+    type FUZZY_EDIT_FILE_TOOL_PARAMETERS,
     GREP_TOOL_NAME,
-    GREP_TOOL_PARAMETERS,
+    type GREP_TOOL_PARAMETERS,
     LIST_FILES_TOOL_NAME,
-    LIST_FILES_TOOL_PARAMETERS,
+    type LIST_FILES_TOOL_PARAMETERS,
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
     READ_FILE_TOOL_NAME,
-    READ_FILE_TOOL_PARAMETERS,
+    type READ_FILE_TOOL_PARAMETERS,
     READ_STYLE_GUIDE_TOOL_NAME,
     SANDBOX_TOOL_NAME,
     SCRAPE_URL_TOOL_NAME,
-    SCRAPE_URL_TOOL_PARAMETERS,
+    type SCRAPE_URL_TOOL_PARAMETERS,
     SEARCH_REPLACE_EDIT_FILE_TOOL_NAME,
-    SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
+    type SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
     SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME,
-    SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
+    type SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_NAME,
     TODO_WRITE_TOOL_NAME,
-    TODO_WRITE_TOOL_PARAMETERS,
+    type TODO_WRITE_TOOL_PARAMETERS,
     WEB_SEARCH_TOOL_NAME,
-    WEB_SEARCH_TOOL_PARAMETERS,
+    type WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
-    WRITE_FILE_TOOL_PARAMETERS
+    type WRITE_FILE_TOOL_PARAMETERS
 } from '@onlook/ai';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import type { ToolInvocation } from 'ai';
-import { z } from 'zod';
+import { type z } from 'zod';
 
 // Map tool names to specific icon components
 const TOOL_ICONS: Record<string, any> = {
@@ -69,54 +69,54 @@ export function ToolCallSimple({
 
     const getLabel = () => {
         try {
-            switch (toolName as keyof typeof TOOL_ICONS) {
+            switch (toolName) {
                 case TERMINAL_COMMAND_TOOL_NAME:
                     return 'Terminal';
                 case SEARCH_REPLACE_EDIT_FILE_TOOL_NAME:
                     const params = toolInvocation.args as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>;
-                    if (params.file_path) {
+                    if (params?.file_path) {
                         return 'Editing ' + (params.file_path.split('/').pop() || '');
                     } else {
                         return 'Editing file';
                     }
                 case SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME:
                     const params1 = toolInvocation.args as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>;
-                    if (params1.edits) {
+                    if (params1?.edits) {
                         return 'Editing ' + (params1.edits.map((edit: { old_string: string; new_string: string; replace_all: boolean; }) => edit.old_string).join(', ') || '');
                     } else {
                         return 'Editing files';
                     }
                 case FUZZY_EDIT_FILE_TOOL_NAME:
                     const params2 = toolInvocation.args as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>;
-                    if (params2.file_path) {
+                    if (params2?.file_path) {
                         return 'Editing ' + (params2.file_path.split('/').pop() || '');
                     } else {
                         return 'Editing file';
                     }
                 case WRITE_FILE_TOOL_NAME:
                     const params3 = toolInvocation.args as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>;
-                    if (params3.file_path) {
+                    if (params3?.file_path) {
                         return 'Writing file ' + (params3.file_path.split('/').pop() || '');
                     } else {
                         return 'Writing file';
                     }
                 case LIST_FILES_TOOL_NAME:
                     const params4 = toolInvocation.args as z.infer<typeof LIST_FILES_TOOL_PARAMETERS>;
-                    if (params4.path) {
+                    if (params4?.path) {
                         return 'Reading directory ' + (params4.path.split('/').pop() || '');
                     } else {
                         return 'Reading directory';
                     }
                 case READ_FILE_TOOL_NAME:
                     const params5 = toolInvocation.args as z.infer<typeof READ_FILE_TOOL_PARAMETERS>;
-                    if (params5.file_path) {
+                    if (params5?.file_path) {
                         return 'Reading file ' + (params5.file_path.split('/').pop() || '');
                     } else {
                         return 'Reading files';
                     }
                 case SCRAPE_URL_TOOL_NAME:
                     const params6 = toolInvocation.args as z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>;
-                    if (params6.url) {
+                    if (params6?.url) {
                         return 'Visiting ' + (new URL(params6.url).hostname || 'URL');
                     } else {
                         return 'Visiting URL';
@@ -131,7 +131,7 @@ export function ToolCallSimple({
                     }
                 case SANDBOX_TOOL_NAME:
                     if (toolInvocation.args && 'command' in toolInvocation.args) {
-                        return 'Sandbox: ' + toolInvocation.args.command;
+                        return 'Sandbox: ' + toolInvocation.args?.command;
                     } else {
                         return 'Sandbox';
                     }
@@ -145,22 +145,22 @@ export function ToolCallSimple({
                     }
                 case BASH_EDIT_TOOL_NAME:
                     const params7 = toolInvocation.args as z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>;
-                    if (params7.command) {
+                    if (params7?.command) {
                         return 'Running command ' + (params7.command.split('/').pop() || '');
                     } else {
                         return 'Running command';
                     }
                 case BASH_READ_TOOL_NAME:
                     const params8 = toolInvocation.args as z.infer<typeof BASH_READ_TOOL_PARAMETERS>;
-                    if (params8.command) {
+                    if (params8?.command) {
                         return 'Reading file ' + (params8.command.split('/').pop() || '');
                     } else {
                         return 'Reading file';
                     }
                 case TODO_WRITE_TOOL_NAME:
                     const params9 = toolInvocation.args as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>;
-                    if (params9.todos) {
-                        return 'Writing todos ' + (params9.todos.map((todo: { content: string; status: string; priority: string; }) => todo.content).join(', ') || '');
+                    if (params9?.todos) {
+                        return 'Writing todos ' + (params9?.todos.map((todo: { content: string; status: string; priority: string; }) => todo.content).join(', ') || '');
                     } else {
                         return 'Writing todos';
                     }

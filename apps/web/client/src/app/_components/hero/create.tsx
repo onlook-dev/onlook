@@ -3,6 +3,7 @@
 import { useAuthContext } from '@/app/auth/auth-context';
 import { DraftImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/draft-image-pill';
 import { useCreateManager } from '@/components/store/create';
+import { Routes } from '@/utils/constants';
 import { MessageContextType, type ImageMessageContext, type User } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardHeader } from '@onlook/ui/card';
@@ -12,11 +13,20 @@ import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { compressImageInBrowser } from '@onlook/utility';
+import localforage from 'localforage';
+import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
-export function Create({
+const SAVED_INPUT_KEY = 'create-input';
+interface CreateInputContext {
+    prompt: string;
+    images: ImageMessageContext[];
+    timestamp: number;
+}
+
+export const Create = observer(({
     cardKey,
     isCreatingProject,
     setIsCreatingProject,
@@ -26,14 +36,14 @@ export function Create({
     isCreatingProject: boolean,
     setIsCreatingProject: (isCreatingProject: boolean) => void,
     user: User | null,
-}) {
+}) => {
     const createManager = useCreateManager();
     const router = useRouter();
     const imageRef = useRef<HTMLInputElement>(null);
 
     const { setIsAuthModalOpen } = useAuthContext();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const [inputValue, setInputValue] = useState('');
+    const [inputValue, setInputValue] = useState<string>('');
     const [isDragging, setIsDragging] = useState(false);
     const [selectedImages, setSelectedImages] = useState<ImageMessageContext[]>([]);
     const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
@@ -43,26 +53,24 @@ export function Create({
 
     // Restore draft from localStorage if exists
     useEffect(() => {
-        const draft = localStorage.getItem('createProjectDraft');
-        if (draft && !!user?.id) {
-            try {
-                const { prompt, images, timestamp } = JSON.parse(draft);
-                // Only restore if draft is less than 1 hour old
-                if (Date.now() - timestamp < 3600000) {
+        const getDraft = async () => {
+            const draft = await localforage.getItem<CreateInputContext>(SAVED_INPUT_KEY);
+            if (draft) {
+                try {
+                    const { prompt, images } = draft;
+                    // Only restore if draft is less than 1 hour old
                     setInputValue(prompt);
                     setSelectedImages(images);
-                }
-                // Clear the draft after restoring
-                localStorage.removeItem('createProjectDraft');
-                // Run the submit function
-                createProject(prompt, images);
-            } catch (error) {
-                console.error('Error restoring draft:', error);
-                localStorage.removeItem('createProjectDraft');
-            }
-        }
-    }, []);
 
+                    // Clear the draft after restoring
+                    await localforage.removeItem(SAVED_INPUT_KEY);
+                } catch (error) {
+                    console.error('Error restoring draft:', error);
+                }
+            }
+        };
+        getDraft();
+    }, []);
 
     const handleSubmit = async () => {
         if (isInputInvalid) {
@@ -76,14 +84,12 @@ export function Create({
         if (!user?.id) {
             console.error('No user ID found');
 
-            // Store the current input and images in localStorage
-            localStorage.setItem('createProjectDraft', JSON.stringify({
+            const createInputContext: CreateInputContext = {
                 prompt,
                 images,
                 timestamp: Date.now()
-            }));
-            // Store the return URL
-            localStorage.setItem('returnUrl', window.location.pathname);
+            };
+            localforage.setItem(SAVED_INPUT_KEY, createInputContext);
             // Open the auth modal
             setIsAuthModalOpen(true);
             return;
@@ -95,7 +101,8 @@ export function Create({
             if (!project) {
                 throw new Error('Failed to create project: No project returned');
             }
-            router.push(`/project/${project.id}`);
+            router.push(`${Routes.PROJECT}/${project.id}`);
+            await localforage.removeItem(SAVED_INPUT_KEY);
         } catch (error) {
             console.error('Error creating project:', error);
             toast.error('Failed to create project', {
@@ -402,4 +409,4 @@ export function Create({
             </CardContent>
         </Card>
     );
-}
+});

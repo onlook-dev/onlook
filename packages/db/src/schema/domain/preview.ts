@@ -7,7 +7,7 @@ export const PREVIEW_DOMAIN_PROJECT_RELATION_NAME = 'preview_domain_project';
 export const previewDomains = pgTable('preview_domains', {
     id: uuid('id').primaryKey().defaultRandom(),
     fullDomain: text('full_domain').notNull().unique(),
-    projectId: uuid('project_id').references(() => projects.id),
+    projectId: uuid('project_id').references(() => projects.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }).enableRLS();

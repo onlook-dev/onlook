@@ -2,6 +2,7 @@ import { prepareCommitMessage, sanitizeCommitMessage } from '@/utils/git';
 import { type GitCommit } from '@onlook/git';
 import stripAnsi from 'strip-ansi';
 import type { EditorEngine } from '../engine';
+import { SUPPORT_EMAIL } from '@onlook/constants';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 
@@ -16,7 +17,7 @@ export interface GitCommandResult {
 }
 
 export class GitManager {
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(private editorEngine: EditorEngine) { }
 
     /**
      * Check if git repository is initialized
@@ -63,7 +64,7 @@ export class GitManager {
             // Set user.email if not configured
             if (!hasEmail) {
                 const emailConfigResult = await this.runCommand(
-                    'git config user.email "support@onlook.com"',
+                    `git config user.email "${SUPPORT_EMAIL}"`,
                 );
                 if (!emailConfigResult.success) {
                     console.error('Failed to set git user.email:', emailConfigResult.error);

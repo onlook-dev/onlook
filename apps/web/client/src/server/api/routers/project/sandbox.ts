@@ -11,7 +11,7 @@ function getProvider(sandboxId: string, userId?: string) {
     return createCodeProviderClient(CodeProvider.Coderouter, {
         providerOptions: {
             coderouter: {
-                url: env.SUPAROUTA_HOST_URL,
+                url: env.CODEROUTER_HOST_URL,
                 sandboxId: sandboxId,
                 userId: userId,
                 getSession: async (provider, sandboxId, userId) => {

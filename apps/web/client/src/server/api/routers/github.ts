@@ -1,3 +1,4 @@
+import { Routes } from '@/utils/constants';
 import { TRPCError } from '@trpc/server';
 import { Octokit } from 'octokit';
 import { z } from 'zod';
@@ -147,7 +148,7 @@ export const githubRouter = createTRPCRouter({
             const { data, error } = await ctx.supabase.auth.signInWithOAuth({
                 provider: 'github',
                 options: {
-                    redirectTo: `${origin}/auth/callback`,
+                    redirectTo: `${origin}${Routes.AUTH_CALLBACK}`,
                     skipBrowserRedirect: true,
                 },
             });

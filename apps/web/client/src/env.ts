@@ -49,8 +49,13 @@ export const env = createEnv({
 
         // E2B
         E2B_DEFAULT_TEMPLATE_ID: z.string().optional(),
-        SUPAROUTA_API_KEY: z.string().optional(),
-        SUPAROUTA_HOST_URL: z.string().optional(),
+        CODEROUTER_API_KEY: z.string().optional(),
+        CODEROUTER_HOST_URL: z.string().optional(),
+
+        // Langfuse
+        LANGFUSE_SECRET_KEY: z.string().optional(),
+        LANGFUSE_PUBLIC_KEY: z.string().optional(),
+        LANGFUSE_BASEURL: z.string().url().optional(),
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -127,8 +132,13 @@ export const env = createEnv({
 
         // E2B
         E2B_DEFAULT_TEMPLATE_ID: process.env.E2B_DEFAULT_TEMPLATE_ID,
-        SUPAROUTA_API_KEY: process.env.SUPAROUTA_API_KEY,
-        SUPAROUTA_HOST_URL: process.env.SUPAROUTA_HOST_URL,
+        CODEROUTER_API_KEY: process.env.CODEROUTER_API_KEY,
+        CODEROUTER_HOST_URL: process.env.CODEROUTER_HOST_URL,
+
+        // Langfuse
+        LANGFUSE_SECRET_KEY: process.env.LANGFUSE_SECRET_KEY,
+        LANGFUSE_PUBLIC_KEY: process.env.LANGFUSE_PUBLIC_KEY,
+        LANGFUSE_BASEURL: process.env.LANGFUSE_BASEURL,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

@@ -1,10 +1,11 @@
 'use client';
 
 import type { Provider, ProviderTask, ProviderTerminal } from '@onlook/code-provider';
-// import { FitAddon } from '@xterm/addon-fit';
-import { Terminal as XTerm } from '@xterm/xterm';
 import { v4 as uuidv4 } from 'uuid';
 import type { ErrorManager } from '../error';
+// Dynamic imports to avoid SSR issues
+let FitAddon: any;
+let XTerm: any;
 
 export enum CLISessionType {
     TERMINAL = 'terminal',
@@ -18,8 +19,8 @@ export interface CLISession {
     terminal: ProviderTerminal | null;
     // Task is readonly
     task: ProviderTask | null;
-    xterm: XTerm;
-    // fitAddon: FitAddon;
+    xterm: any;
+    fitAddon: any;
 }
 
 export interface TaskSession extends CLISession {
@@ -36,8 +37,8 @@ export class CLISessionImpl implements CLISession {
     id: string;
     terminal: ProviderTerminal | null;
     task: ProviderTask | null;
-    xterm: XTerm;
-    // fitAddon: FitAddon;
+    xterm: any;
+    fitAddon: any;
 
     constructor(
         public readonly name: string,
@@ -46,21 +47,38 @@ export class CLISessionImpl implements CLISession {
         private readonly errorManager: ErrorManager,
     ) {
         this.id = uuidv4();
-        // this.fitAddon = new FitAddon();
-        this.xterm = this.createXTerm();
-        // this.xterm.loadAddon(this.fitAddon);
         this.terminal = null;
         this.task = null;
+        // Initialize xterm and fitAddon lazily
+        this.xterm = null;
+        this.fitAddon = null;
+    }
 
-        if (type === CLISessionType.TERMINAL) {
-            this.initTerminal();
-        } else if (type === CLISessionType.TASK) {
-            this.initTask();
+    private async ensureXTermLibraries() {
+        if (!FitAddon || !XTerm) {
+            try {
+                const [fitAddonModule, xtermModule] = await Promise.all([
+                    import('@xterm/addon-fit'),
+                    import('@xterm/xterm'),
+                ]);
+                FitAddon = fitAddonModule.FitAddon;
+                XTerm = xtermModule.Terminal;
+            } catch (error) {
+                console.error('Failed to load xterm libraries:', error);
+                throw new Error('Failed to load terminal libraries');
+            }
         }
     }
 
     async initTerminal() {
         try {
+            await this.ensureXTermLibraries();
+
+            // Initialize xterm and fitAddon
+            this.fitAddon = new FitAddon();
+            this.xterm = this.createXTerm();
+            this.xterm.loadAddon(this.fitAddon);
+
             const { terminal } = await this.provider.createTerminal({});
             if (!terminal) {
                 console.error('Failed to create terminal');
@@ -76,7 +94,7 @@ export class CLISessionImpl implements CLISession {
             });
 
             // Handle terminal resize
-            this.xterm.onResize(({ cols, rows }) => {
+            this.xterm.onResize(({ cols, rows }: { cols: number; rows: number }) => {
                 // Check if terminal has resize method
                 if ('resize' in terminal && typeof terminal.resize === 'function') {
                     terminal.resize(cols, rows);
@@ -101,19 +119,30 @@ export class CLISessionImpl implements CLISession {
     }
 
     async initTask() {
-        const task = await this.createDevTaskTerminal();
-        if (!task) {
-            console.error('Failed to create task');
-            return;
+        try {
+            await this.ensureXTermLibraries();
+
+            // Initialize xterm and fitAddon
+            this.fitAddon = new FitAddon();
+            this.xterm = this.createXTerm();
+            this.xterm.loadAddon(this.fitAddon);
+
+            const task = await this.createDevTaskTerminal();
+            if (!task) {
+                console.error('Failed to create task');
+                return;
+            }
+            this.task = task;
+            const output = await task.open();
+            this.xterm.write(output);
+            this.errorManager.processMessage(output);
+            task.onOutput((data: string) => {
+                this.xterm.write(data);
+                this.errorManager.processMessage(data);
+            });
+        } catch (error) {
+            console.error('Failed to initialize task:', error);
         }
-        this.task = task;
-        const output = await task.open();
-        this.xterm.write(output);
-        this.errorManager.processMessage(output);
-        task.onOutput((data: string) => {
-            this.xterm.write(data);
-            this.errorManager.processMessage(data);
-        });
     }
 
     createXTerm() {
@@ -152,8 +181,8 @@ export class CLISessionImpl implements CLISession {
                     terminal.write('\x1b[G'); // Go to beginning of line
 
                     // Extract just the content after the clearing commands
-                    const contentMatch = data.match(/\x1b\[G(.+)$/s);
-                    if (contentMatch && contentMatch[1]) {
+                    const contentMatch = /\x1b\[G(.+)$/s.exec(data);
+                    if (contentMatch?.[1]) {
                         return originalWrite(contentMatch[1], callback);
                     }
                 }
@@ -178,7 +207,9 @@ export class CLISessionImpl implements CLISession {
     }
 
     dispose() {
-        this.xterm.dispose();
+        if (this.xterm) {
+            this.xterm.dispose();
+        }
         if (this.terminal) {
             try {
                 this.terminal.kill();

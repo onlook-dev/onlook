@@ -194,7 +194,7 @@ export class SandboxManager {
     private async writeRemoteFile(
         filePath: string,
         content: string | Uint8Array,
-        overwrite: boolean = true,
+        overwrite = true,
     ): Promise<boolean> {
         if (!this.session.provider) {
             console.error('No provider found for remote write');
@@ -251,7 +251,19 @@ export class SandboxManager {
                 console.error(`Error processing file ${normalizedPath}:`, error);
             }
         }
-        return this.fileSync.write(normalizedPath, writeContent, this.writeRemoteFile.bind(this));
+        const success = await this.fileSync.write(
+            normalizedPath,
+            writeContent,
+            this.writeRemoteFile.bind(this),
+        );
+
+        if (!success) {
+            return false;
+        }
+
+        this.editorEngine.screenshot.captureScreenshot();
+
+        return true;
     }
 
     isJsxFile(filePath: string): boolean {

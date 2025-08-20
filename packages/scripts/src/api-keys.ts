@@ -16,8 +16,8 @@ const API_KEYS: Record<string, ApiKeyConfig> = {
         required: false,
         description: 'Codesandbox',
     },
-    SUPAROUTA_API_KEY: {
-        name: 'SUPAROUTA_API_KEY',
+    CODEROUTER_API_KEY: {
+        name: 'CODEROUTER_API_KEY',
         message: 'Enter your Coderouter API key:',
         required: true,
         description: 'Coderouter',
