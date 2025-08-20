@@ -14,7 +14,7 @@ ENV PORT=3000
 COPY . .
 
 # Install dependencies and build
-RUN bun install
+RUN bun install --frozen-lockfile
 RUN cd apps/web/client && bun run build:standalone
 
 # Expose the application port
