@@ -47,7 +47,9 @@ h6:hover [data-hash-link] {
 /* Make prose headers not bold */
 .prose h1,
 .prose h2,
-.prose h3,
+.prose h3 {
+    font-weight: 500;
+}
 .prose h4,
 .prose h5,
 .prose h6 {
