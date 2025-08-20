@@ -7,7 +7,8 @@ services:
       dockerfile: Dockerfile
     env_file:
       - apps/web/client/.env
-    network_mode: "host"
+    ports:
+      - "3000:3000"
     restart: unless-stopped
     healthcheck:
       test: [ "CMD-SHELL", "curl -f http://localhost:3000 || exit 1" ]

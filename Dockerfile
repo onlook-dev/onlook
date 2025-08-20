@@ -1,19 +1,32 @@
-FROM oven/bun:slim AS base
+# Build locally first with: bun run build
+# Then copy the built artifacts
+
+FROM oven/bun:slim AS runner
 WORKDIR /app
 
-# Copy everything
-COPY . .
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install all dependencies
+# Install curl for health checks
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+# Copy monorepo root files for workspace dependencies
+COPY package.json bun.lock ./
+
+# Copy all workspace packages
+COPY packages ./packages
+COPY tooling ./tooling
+COPY docs ./docs
+
+# Copy all apps (needed for workspace dependencies)
+COPY apps ./apps
+
+# Install all dependencies (needed for monorepo workspaces)
 RUN bun install
 
-# Build the application
+# Set working directory to the client app
 WORKDIR /app/apps/web/client
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
-ENV NODE_OPTIONS="--max_old_space_size=4096"
 
-RUN bun run build
+EXPOSE 3000
 
-# Start the production server
 CMD ["bun", "run", "start"]
