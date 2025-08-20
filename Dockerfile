@@ -6,9 +6,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
-
-# Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+ENV DOCKER_BUILD=true
+ENV HOSTNAME=0.0.0.0
+ENV PORT=3000
 
 # Copy monorepo root files for workspace dependencies
 COPY package.json bun.lock ./
@@ -27,6 +27,11 @@ RUN bun install
 # Set working directory to the client app
 WORKDIR /app/apps/web/client
 
+# Copy public and .next directories to where the server.js expects them
+# The server.js changes directory to its own location and expects public/.next there
+RUN cp -r public .next/standalone/apps/web/client/ 2>/dev/null || true
+RUN cp -r .next/static .next/standalone/apps/web/client/.next/ 2>/dev/null || true
+
 EXPOSE 3000
 
-CMD ["bun", "run", "start"]
+CMD ["bun", ".next/standalone/apps/web/client/server.js"]
