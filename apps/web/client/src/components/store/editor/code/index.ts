@@ -74,7 +74,10 @@ export class CodeManager {
             toast.error('Error writing requests', {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
-            this.editorEngine.error.addCodeApplicationError(error instanceof Error ? error.message : 'Unknown error', action);
+            this.editorEngine.error.addCodeApplicationError(
+                error instanceof Error ? error.message : 'Unknown error',
+                action,
+            );
         }
     }
 
@@ -137,5 +140,5 @@ export class CodeManager {
         return requestByFile;
     }
 
-    clear() { }
+    clear() {}
 }

@@ -1,0 +1,5 @@
+{
+	"entryPoints": ["src"],
+	"out": "site/typedoc",
+	"tsconfig": "tsconfig.json"
+}

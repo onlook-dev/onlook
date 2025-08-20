@@ -1,0 +1,38 @@
+{
+	"name": "coderouter",
+	"version": "0.0.1",
+	"private": false,
+	"type": "module",
+	"scripts": {
+		"dev": "bun run --hot src/server.ts",
+		"start": "bun run src/server.ts",
+		"test": "bun test --coverage",
+		"lint": "biome check .",
+		"fmt": "biome format --write .",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "bun run scripts/migrate.ts"
+	},
+	"dependencies": {
+		"@e2b/code-interpreter": "1.5.1",
+		"@hono/zod-openapi": "^1.1.0",
+		"@hono/zod-validator": "^0.2.1",
+		"@types/jsonwebtoken": "^9.0.10",
+		"better-sqlite3": "^9.4.3",
+		"dotenv": "^16.4.5",
+		"drizzle-kit": "^0.27.0",
+		"drizzle-orm": "^0.33.0",
+		"hono": "^4.9.2",
+		"jsonwebtoken": "^9.0.2",
+		"mysql2": "^3.9.7",
+		"pg": "^8.11.5",
+		"zod": "^4.0.17"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.1.4",
+		"@types/node": "^22.5.0",
+		"bun-types": "^1.2.20",
+		"supertest": "^7.0.0",
+		"typedoc": "^0.26.6",
+		"undici": "^6.19.8"
+	}
+}

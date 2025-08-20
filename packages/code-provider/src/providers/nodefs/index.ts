@@ -16,6 +16,8 @@ import {
     type DeleteFilesOutput,
     type DownloadFilesInput,
     type DownloadFilesOutput,
+    type GetProjectUrlInput,
+    type GetProjectUrlOutput,
     type GetTaskInput,
     type GetTaskOutput,
     type GitStatusInput,
@@ -186,7 +188,13 @@ export class NodeFsProvider extends Provider {
     }
 
     async listProjects(input: ListProjectsInput): Promise<ListProjectsOutput> {
-        return {};
+        return { projects: [] };
+    }
+
+    async getProjectUrl(input: GetProjectUrlInput): Promise<GetProjectUrlOutput> {
+        return {
+            url: '',
+        };
     }
 
     async destroy(): Promise<void> {

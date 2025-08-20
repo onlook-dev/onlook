@@ -15,7 +15,8 @@
         "clean": "rm -rf node_modules",
         "lint": "eslint --fix .",
         "format": "prettier --write .",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "generate-coderouter": "openapi-generator-cli generate -i http://localhost:4444/openapi.json -g typescript-fetch -o ./src/providers/coderouter/codegen --skip-validate-spec"
     },
     "keywords": [
         "onlook",
@@ -28,7 +29,8 @@
     "license": "Apache-2.0",
     "homepage": "https://onlook.com",
     "devDependencies": {
-        "@onlook/typescript": "*"
+        "@onlook/typescript": "*",
+        "@openapitools/openapi-generator-cli": "^2.22.0"
     },
     "dependencies": {
         "@codesandbox/sdk": "^1.1.6",

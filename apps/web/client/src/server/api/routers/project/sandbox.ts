@@ -5,14 +5,38 @@ import { TRPCError } from '@trpc/server';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { env } from '@/env';
 
 function getProvider(sandboxId: string, userId?: string) {
-    return createCodeProviderClient(CodeProvider.CodeSandbox, {
+    return createCodeProviderClient(CodeProvider.Coderouter, {
         providerOptions: {
-            codesandbox: {
-                sandboxId,
-                userId,
+            coderouter: {
+                url: env.SUPAROUTA_HOST_URL,
+                sandboxId: sandboxId,
+                userId: userId,
+                getSession: async (provider, sandboxId, userId) => {
+                    const res = await provider.createSession({
+                        args: {
+                            id: shortenUuid(userId ?? uuidv4(), 20),
+                        },
+                    });
+                    return {
+                        jwt: res.jwt,
+                    };
+                },
             },
+            // codesandbox: {
+            //     sandboxId: forkedSandbox.sandboxId,
+            //     userId: user.id,
+            //     initClient: true,
+            //     keepActiveWhileConnected: false,
+            //     getSession: async (sandboxId, userId) => {
+            //         return startSandbox({
+            //             sandboxId,
+            //             userId,
+            //         });
+            //     },
+            // },
         },
     });
 }
@@ -27,13 +51,17 @@ export const sandboxRouter = createTRPCRouter({
         )
         .mutation(async ({ input }) => {
             const provider = await getProvider(input.sandboxId, input.userId);
-            const session = await provider.createSession({
-                args: {
-                    id: shortenUuid(input.userId ?? uuidv4(), 20),
-                },
-            });
-            await provider.destroy();
-            return session;
+            try {
+                const session = await provider.createSession({
+                    args: {
+                        id: shortenUuid(input.userId ?? uuidv4(), 20),
+                    },
+                });
+                await provider.destroy();
+                return session;
+            } catch (error) {
+                throw error;
+            }
         }),
     hibernate: protectedProcedure
         .input(
@@ -58,6 +86,7 @@ export const sandboxRouter = createTRPCRouter({
     fork: protectedProcedure
         .input(
             z.object({
+                userId: z.string().optional(),
                 sandbox: z.object({
                     id: z.string(),
                     port: z.number(),
@@ -80,14 +109,18 @@ export const sandboxRouter = createTRPCRouter({
                     const sandbox = await provider.createProject({
                         source: 'template',
                         id: input.sandbox.id,
-
+                        userId: input.userId,
+                        templateId: env.E2B_DEFAULT_TEMPLATE_ID,
                         // Metadata
                         title: input.config?.title,
                         tags: input.config?.tags,
                     });
-                    await provider.destroy();
 
-                    const previewUrl = getSandboxPreviewUrl(sandbox.id, input.sandbox.port);
+                    const previewUrl = await provider
+                        .getProjectUrl({ args: {} })
+                        .then((res) => res.url);
+
+                    await provider.destroy();
 
                     return {
                         sandboxId: sandbox.id,
@@ -98,7 +131,9 @@ export const sandboxRouter = createTRPCRouter({
                     console.error(`Sandbox creation attempt ${attempt} failed:`, lastError);
 
                     if (attempt < maxRetries) {
-                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, Math.pow(2, attempt) * 1000),
+                        );
                     }
                 }
             }

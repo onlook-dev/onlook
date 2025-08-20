@@ -23,3 +23,8 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in Onlook to see the result.
+
+## Running the template on E2B
+
+1. Follow the instructions here: https://e2b.dev/docs/sandbox-template#how-to-create-custom-sandbox
+2. On the build step, run the following: `e2b template build -c "(cd code && bun dev)"`

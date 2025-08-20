@@ -69,31 +69,32 @@ builders.
 ## What you can do with Onlook:
 
 - [x] Create Next.js app in seconds
-  - [x] Start from text or image
-  - [ ] Use prebuilt templates
-  - [ ] Import from Figma
-  - [ ] Start from GitHub repo
+    - [x] Start from text or image
+    - [ ] Use prebuilt templates
+    - [ ] Import from Figma
+    - [ ] Start from GitHub repo
 - [x] Visually edit your app
-  - [x] Use Figma-like UI
-  - [x] Preview your app in real-time
-  - [x] Manage brand assets and tokens
-  - [x] Create and navigate to Pages
-  - [x] Browse layers
-  - [x] Manage project Images
-  - [ ] Detect and use Components – _Previously in
-        [Onlook Desktop](https://github.com/onlook-dev/desktop)_
+    - [x] Use Figma-like UI
+    - [x] Preview your app in real-time
+    - [x] Manage brand assets and tokens
+    - [x] Create and navigate to Pages
+    - [x] Browse layers
+    - [x] Manage project Images
+    - [ ] Detect and use Components – _Previously in
+          [Onlook Desktop](https://github.com/onlook-dev/desktop)_
 - [x] Development Tools
-  - [x] Real-time code editor
-  - [x] Save and restore from checkpoints
-  - [x] Run commands via CLI
-  - [x] Connect with app marketplace
+
+    - [x] Real-time code editor
+    - [x] Save and restore from checkpoints
+    - [x] Run commands via CLI
+    - [x] Connect with app marketplace
 
 - [x] Deploy your app in seconds
-  - [x] Generate sharable links
-  - [x] Link your custom domain
+    - [x] Generate sharable links
+    - [x] Link your custom domain
 - [ ] Collaborate with your team
-  - [ ] Real-time editing
-  - [ ] Leave comments
+    - [ ] Real-time editing
+    - [ ] Leave comments
 
 ![Onlook-GitHub-Example](https://github.com/user-attachments/assets/642de37a-72cc-4056-8eb7-8eb42714cdc4)
 
@@ -183,6 +184,7 @@ For a full walkthrough, check out our
 #### Sandbox and hosting
 
 - [CodeSandboxSDK](https://codesandbox.io/docs/sdk) - Dev sandbox
+- [E2B](https://e2b.dev/docs) - Dev sandbox
 - [Freestyle](https://www.freestyle.sh/) - Hosting
 
 #### Runtime

@@ -12,9 +12,15 @@ interface ApiKeyConfig {
 const API_KEYS: Record<string, ApiKeyConfig> = {
     CSB_API_KEY: {
         name: 'CSB_API_KEY',
-        message: 'Enter your Codesandbox API key:',
-        required: true,
+        message: 'Enter your Codesandbox API key (optional, leave blank if you are using E2B):',
+        required: false,
         description: 'Codesandbox',
+    },
+    SUPAROUTA_API_KEY: {
+        name: 'SUPAROUTA_API_KEY',
+        message: 'Enter your Coderouter API key:',
+        required: true,
+        description: 'Coderouter',
     },
     ANTHROPIC_API_KEY: {
         name: 'ANTHROPIC_API_KEY',

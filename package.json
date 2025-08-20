@@ -22,7 +22,7 @@
         "dev": "bun --elide-lines 0 --filter @onlook/web dev",
         "test": "bun --elide-lines 0 --filter '*' test",
         "docs": "bun --filter @onlook/docs dev",
-        "backend:start": "bun --filter @onlook/backend start",
+        "backend:start": "bun --filter @onlook/backend start && (cd apps && docker-compose up -d)",
         "db:gen": "bun --filter @onlook/db db:gen",
         "db:push": "bun --filter @onlook/db db:push",
         "db:seed": "bun --filter @onlook/db db:seed",

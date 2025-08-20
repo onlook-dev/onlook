@@ -19,18 +19,29 @@ export class SessionManager {
             return;
         }
         this.isConnecting = true;
-        
+
         try {
-            this.provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
+            this.provider = await createCodeProviderClient(CodeProvider.Coderouter, {
                 providerOptions: {
-                    codesandbox: {
-                        sandboxId,
-                        userId,
-                        initClient: true,
-                        getSession: async (sandboxId, userId) => {
+                    coderouter: {
+                        sandboxId: sandboxId,
+                        userId: userId,
+                        getSession: async (_, sandboxId, userId) => {
                             return api.sandbox.start.mutate({ sandboxId, userId });
                         },
                     },
+                    // codesandbox: {
+                    //     sandboxId: forkedSandbox.sandboxId,
+                    //     userId: user.id,
+                    //     initClient: true,
+                    //     keepActiveWhileConnected: false,
+                    //     getSession: async (sandboxId, userId) => {
+                    //         return startSandbox({
+                    //             sandboxId,
+                    //             userId,
+                    //         });
+                    //     },
+                    // },
                 },
             });
             await this.createTerminalSessions(this.provider);

@@ -1,7 +1,7 @@
 'use client';
 
 import type { Provider, ProviderTask, ProviderTerminal } from '@onlook/code-provider';
-import { FitAddon } from '@xterm/addon-fit';
+// import { FitAddon } from '@xterm/addon-fit';
 import { Terminal as XTerm } from '@xterm/xterm';
 import { v4 as uuidv4 } from 'uuid';
 import type { ErrorManager } from '../error';
@@ -19,7 +19,7 @@ export interface CLISession {
     // Task is readonly
     task: ProviderTask | null;
     xterm: XTerm;
-    fitAddon: FitAddon;
+    // fitAddon: FitAddon;
 }
 
 export interface TaskSession extends CLISession {
@@ -37,7 +37,7 @@ export class CLISessionImpl implements CLISession {
     terminal: ProviderTerminal | null;
     task: ProviderTask | null;
     xterm: XTerm;
-    fitAddon: FitAddon;
+    // fitAddon: FitAddon;
 
     constructor(
         public readonly name: string,
@@ -46,9 +46,9 @@ export class CLISessionImpl implements CLISession {
         private readonly errorManager: ErrorManager,
     ) {
         this.id = uuidv4();
-        this.fitAddon = new FitAddon();
+        // this.fitAddon = new FitAddon();
         this.xterm = this.createXTerm();
-        this.xterm.loadAddon(this.fitAddon);
+        // this.xterm.loadAddon(this.fitAddon);
         this.terminal = null;
         this.task = null;
 
@@ -86,10 +86,14 @@ export class CLISessionImpl implements CLISession {
             await terminal.open();
 
             // Set initial terminal size and environment
-            if (this.xterm.cols && this.xterm.rows && 'resize' in terminal && typeof terminal.resize === 'function') {
+            if (
+                this.xterm.cols &&
+                this.xterm.rows &&
+                'resize' in terminal &&
+                typeof terminal.resize === 'function'
+            ) {
                 terminal.resize(this.xterm.cols, this.xterm.rows);
             }
-
         } catch (error) {
             console.error('Failed to initialize terminal:', error);
             this.terminal = null;

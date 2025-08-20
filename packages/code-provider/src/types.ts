@@ -48,6 +48,7 @@ export interface ListFilesInput {
 }
 export interface ListFilesOutputFile {
     name: string;
+    path: string;
     type: 'file' | 'directory';
     isSymlink: boolean;
 }
@@ -62,7 +63,7 @@ export interface ReadFileInput {
 }
 export type ReadFileOutputFile = SandboxFile & { toString: () => string };
 export interface ReadFileOutput {
-    file: ReadFileOutputFile;
+    file: ReadFileOutputFile | null;
 }
 
 export interface DeleteFilesInput {
@@ -130,6 +131,7 @@ export interface TerminalCommandInput {
 }
 export interface TerminalCommandOutput {
     output: string;
+    error?: string;
 }
 
 export interface TerminalBackgroundCommandInput {
@@ -156,6 +158,8 @@ export interface SetupOutput {}
 export interface CreateProjectInput {
     source: string;
     id: string;
+    userId?: string;
+    templateId?: string;
     title?: string;
     description?: string;
     tags?: string[];
@@ -171,14 +175,31 @@ export interface StopProjectInput {}
 export interface StopProjectOutput {}
 
 export interface ListProjectsInput {}
-export interface ListProjectsOutput {}
+export interface ListProjectsOutput {
+    projects: Array<{
+        id: string;
+        title?: string;
+        description?: string;
+        createdAt?: Date;
+        updatedAt?: Date;
+    }>;
+}
+
+export interface GetProjectUrlInput {
+    args: {};
+}
+export interface GetProjectUrlOutput {
+    url: string;
+}
 
 export interface CreateSessionInput {
     args: {
         id: string;
     };
 }
-export interface CreateSessionOutput {}
+export interface CreateSessionOutput {
+    jwt?: string;
+}
 
 export abstract class Provider {
     abstract writeFile(input: WriteFileInput): Promise<WriteFileOutput>;
@@ -221,6 +242,7 @@ export abstract class Provider {
     abstract pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput>;
     abstract stopProject(input: StopProjectInput): Promise<StopProjectOutput>;
     abstract listProjects(input: ListProjectsInput): Promise<ListProjectsOutput>;
+    abstract getProjectUrl(input: GetProjectUrlInput): Promise<GetProjectUrlOutput>;
 
     // this is called when the provider instance is no longer needed
     abstract destroy(): Promise<void>;

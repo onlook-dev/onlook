@@ -1,0 +1,14 @@
+FROM alpine:3.21.3
+
+WORKDIR /app
+
+COPY . .
+
+# ENV CARGO_HOME=/project/etc/cargo
+# ENV RUSTUP_HOME=/project/etc/rustup
+ENV BUN_INSTALL=/usr/local/bin/bun
+
+RUN apk add curl bash build-base
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v1.2.5"
+
+CMD ["/usr/local/bin/bun/bin/bun", "dev"]
