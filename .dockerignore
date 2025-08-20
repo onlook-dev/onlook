@@ -22,5 +22,4 @@ build
 
 # Parts of the app that does not need to be deployed
 apps/web/backend
-docs
 assets

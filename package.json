@@ -44,7 +44,6 @@
         "url": "https://github.com/onlook-dev/onlook/issues"
     },
     "devDependencies": {
-        "extract-zip": "^2.0.1",
         "husky": "^9.1.6"
     },
     "packageManager": "bun@1.2.13"
