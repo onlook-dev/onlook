@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export const toMessage = (message: DbMessage): ChatMessage => {
     const content = {
-        format: 2 as const,
+        format: 3 as const,
         parts: message.parts ?? [],
         metadata: {
             vercelId: message.id,
@@ -42,9 +42,9 @@ export const fromMessage = (message: ChatMessage): DbMessage => {
         id: message.id,
         createdAt: message.createdAt,
         conversationId: message.threadId,
-        context: message.content.metadata?.context ?? [],
+        context: message.content?.metadata?.context ?? [],
         parts: message.content.parts,
-        content: message.content.parts.map((part) => {
+        content: message.content?.parts.map((part) => {
             if (part.type === 'text') {
                 return part.text;
             }
@@ -66,13 +66,13 @@ export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId
     }
     const content = {
         parts: message.parts ?? [],
-        format: 2 as const,
+        format: 3 as const,
         metadata,
     }
     const baseMessage = {
         ...message,
         id: uuidv4(),
-        createdAt: message.createdAt ?? new Date(),
+        createdAt: (message as any).createdAt ?? new Date(),
         threadId: conversationId,
         content,
     }

@@ -11,7 +11,7 @@ import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useRef } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & { sendMessageToChat: (type: ChatType) => Promise<string | null | undefined> };
+type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & { sendMessageToChat: (type: ChatType) => Promise<void> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
@@ -30,7 +30,10 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 projectId: editorEngine.projectId,
             },
         }),
-        onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
+        onToolCall: (toolCall) => {
+            const result = handleToolCall(toolCall.toolCall, editorEngine);
+            chat.addToolResult(toolCall.toolCall.id, result);
+        },
         onFinish: ({message}) => {
             const finishReason = message.metadata.finishReason;
             console.log('finishReason', finishReason);
@@ -72,8 +75,16 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         editorEngine.chat.error.clear();
 
         const messages = editorEngine.chat.conversation.current?.messages ?? [];
+        const uiMessages = messages.map((message, index) => 
+            toVercelMessageFromOnlook(message, {
+                totalMessages: messages.length, 
+                currentMessageIndex: index,
+                lastUserMessageIndex: messages.findLastIndex(m => m.role === 'user'),
+                lastAssistantMessageIndex: messages.findLastIndex(m => m.role === 'assistant'),
+            })
+        );
 
-        chat.setMessages(messages.map(m => toVercelMessageFromOnlook(m, conversationId)));
+        chat.setMessages(uiMessages);
         try {
             posthog.capture('user_send_message', {
                 type,

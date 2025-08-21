@@ -26,6 +26,7 @@ export function convertToStreamMessages(messages: ChatMessage[]): ModelMessage[]
         };
         return toVercelMessageFromOnlook(message, opt);
     });
+
     return convertToModelMessages(uiMessages);
 }
 
@@ -33,7 +34,8 @@ export const toVercelMessageFromOnlook = (
     message: ChatMessage,
     opt: HydrateMessageOptions,
 ): VercelMessage => {
-    const messageContent = extractTextFromParts(message.content.parts);
+    // const messageContent = extractTextFromParts(message.content.parts);
+
     if (message.role === ChatMessageRole.ASSISTANT) {
         return {
             ...message,
@@ -43,8 +45,8 @@ export const toVercelMessageFromOnlook = (
     } else if (message.role === ChatMessageRole.USER) {
         const hydratedMessage = getHydratedUserMessage(
             message.id,
-            messageContent,
-            message.content.metadata?.context ?? [],
+            message.content.parts,
+            message.content?.metadata?.context ?? [],
             opt,
         );
         return hydratedMessage;

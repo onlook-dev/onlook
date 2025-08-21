@@ -34,7 +34,6 @@ import {
     WRITE_FILE_TOOL_NAME,
     WRITE_FILE_TOOL_PARAMETERS
 } from '@onlook/ai';
-import type { ToolCall } from 'ai';
 import { type z } from 'zod';
 import {
     handleBashEditTool,
@@ -55,6 +54,7 @@ import {
     handleWriteFileTool
 } from './handlers';
 import { EMPTY_TOOL_PARAMETERS } from './helpers';
+import type { ToolCallPart } from 'ai';
 
 interface ClientToolMap extends Record<string, {
     name: string;
@@ -167,7 +167,7 @@ const TOOL_HANDLERS: ClientToolMap = {
     },
 };
 
-export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
+export async function handleToolCall(toolCall: ToolCallPart, editorEngine: EditorEngine) {
     try {
         const toolName = toolCall.toolName;
         const clientTool = TOOL_HANDLERS[toolName];
@@ -176,7 +176,7 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
             throw new Error(`Unknown tool call: ${toolName}`);
         }
 
-        return await clientTool.handler(toolCall.args, editorEngine);
+        return await clientTool.handler(toolCall.input, editorEngine);
     } catch (error) {
         console.error('Error handling tool call', error);
         return 'error handling tool call ' + error;

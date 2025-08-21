@@ -12,7 +12,7 @@ export const getUserChatMessageFromString = (
         role: ChatMessageRole.USER,
         content: {
             parts: [{ type: 'text', text: content }],
-            format: 2,
+            format: 3,
             metadata: {
                 context,
                 checkpoints: [],

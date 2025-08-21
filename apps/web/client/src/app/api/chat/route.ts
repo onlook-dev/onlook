@@ -1,7 +1,6 @@
 import { trackEvent } from '@/utils/analytics/server';
-import { convertToStreamMessages } from '@onlook/ai';
-import { ChatType, type ChatMessage } from '@onlook/models';
-import { stepCountIs, streamText } from 'ai';
+import { ChatType } from '@onlook/models';
+import { stepCountIs, streamText, convertToModelMessages, type UIMessage } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
@@ -10,7 +9,7 @@ const MAX_STEPS = 20;
 export async function POST(req: NextRequest) {
     try {
         const user = await getSupabaseUser(req);
-        if (!user) {
+                if (!user) {
             return new Response(JSON.stringify({
                 error: 'Unauthorized, no user found. Please login again.',
                 code: 401
@@ -52,13 +51,13 @@ export async function POST(req: NextRequest) {
 }
 
 export const streamResponse = async (req: NextRequest, userId: string) => {
-    const { messages, chatType, conversationId, projectId } = await req.json() as {
-        messages: ChatMessage[],
+    const body = await req.json();
+    const { messages, chatType, conversationId, projectId } = body as {
+        messages: UIMessage[],
         chatType: ChatType,
         conversationId: string,
         projectId: string,
     };
-
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
     // If the call below fails, the user will not be penalized.
@@ -73,8 +72,9 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     const systemPrompt = await getSystemPromptFromType(chatType);
     const tools = await getToolSetFromType(chatType);
 
-    const lastUserMessage = messages.findLast((message) => message.role === 'user');
+    const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
     const traceId = lastUserMessage?.id ?? uuidv4();
+
     const result = streamText({
         model,
         headers,
@@ -86,7 +86,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
                 content: systemPrompt,
                 providerOptions,
             },
-            ...convertToStreamMessages(messages),
+            ...convertToModelMessages(messages),
         ],
         experimental_telemetry: {
             isEnabled: true,
@@ -102,15 +102,15 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         },
         experimental_repairToolCall: repairToolCall,
         onError: async (error) => {
-            console.error('Error in chat', error);
+            console.error('Error in chat stream call', error);
             // if there was an error with the API, do not penalize the user
             await decrementUsage(req, usageRecord);
         }
     })
 
-    return result.toDataStreamResponse(
+    return result.toUIMessageStreamResponse(
         {
-            getErrorMessage: errorHandler,
+            onError: errorHandler,
         }
     );
 }
