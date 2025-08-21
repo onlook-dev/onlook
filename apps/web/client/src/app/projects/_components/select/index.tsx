@@ -24,7 +24,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const utils = api.useUtils();
     const { data: user } = api.user.get.useQuery();
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
-    const { data: templateProjects = [] } = api.project.listTemplates.useQuery({ limit: 8 });
     const { mutateAsync: removeTag } = api.project.removeTag.useMutation();
 
     // Search and filters
@@ -43,7 +42,8 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [spacing] = useState<number>(24);
 
     // Templates
-    const shouldShowTemplate = true; // templateProjects.length > 0;
+    const templateProjects = fetchedProjects?.filter(project => project.tags?.includes(Tags.TEMPLATE)) ?? [];
+    const shouldShowTemplate = templateProjects.length > 0;
     const [selectedTemplate, setSelectedTemplate] = useState<Project | null>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
@@ -113,7 +113,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
             await Promise.all([
                 utils.project.list.invalidate(),
-                utils.project.listTemplates.invalidate(),
             ]);
 
             refetch();
@@ -202,7 +201,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                 ),
             );
         }
-        return [...filtered].sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
+        return [...filtered].sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime()).filter(project => !project.tags?.includes(Tags.TEMPLATE));
     }, [projects, debouncedSearchQuery]);
 
 
@@ -353,6 +352,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
                 {shouldShowTemplate && (
                     <Templates
+                        templateProjects={templateProjects}
                         searchQuery={debouncedSearchQuery}
                         onTemplateClick={handleTemplateClick}
                         onToggleStar={handleToggleStar}

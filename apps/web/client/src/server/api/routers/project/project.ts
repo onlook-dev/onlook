@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
 import { trackEvent } from '@/utils/analytics/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { initModel } from '@onlook/ai';
-import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
+import { STORAGE_BUCKETS } from '@onlook/constants';
 import {
     canvases,
     createDefaultCanvas,
@@ -178,25 +178,6 @@ export const projectRouter = createTRPCRouter({
                 limit: input?.limit,
             });
             return fetchedUserProjects.map((userProject) => toProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
-        }),
-    listTemplates: protectedProcedure
-        .input(z.object({
-            limit: z.number().optional(),
-        }).optional())
-        .query(async ({ ctx, input }) => {
-            const fetchedUserProjects = await ctx.db.query.userProjects.findMany({
-                where: eq(userProjects.userId, ctx.user.id),
-                with: {
-                    project: true,
-                },
-                limit: input?.limit,
-            });
-            const allProjects = fetchedUserProjects.map((userProject) => toProject(userProject.project));
-            // Filter projects that have "template" in their tags
-            const templateProjects = allProjects.filter((project) =>
-                project.tags && project.tags.includes(Tags.TEMPLATE)
-            );
-            return templateProjects.sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
         }),
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))

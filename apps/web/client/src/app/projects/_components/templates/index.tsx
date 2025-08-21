@@ -1,6 +1,5 @@
 'use client';
 
-import { api } from '@/trpc/react';
 import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { Project } from '@onlook/models';
@@ -15,16 +14,11 @@ interface TemplatesProps {
     onTemplateClick: (template: Project) => void;
     onToggleStar: (templateId: string) => void;
     starredTemplates?: Set<string>;
+    templateProjects: Project[];
 }
 
-export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredTemplates = new Set() }: TemplatesProps) {
-    const { data: templateProjects = [], isLoading } = api.project.listTemplates.useQuery({
-        limit: 8
-    });
-
+export function Templates({ templateProjects, searchQuery, onTemplateClick, onToggleStar, starredTemplates = new Set() }: TemplatesProps) {
     const filteredTemplatesData = useMemo(() => {
-        if (isLoading) return [];
-
         const filtered = templateProjects.filter(
             (project) =>
                 project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -40,7 +34,7 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
         });
 
         return sorted.slice(0, 8);
-    }, [searchQuery, starredTemplates, templateProjects, isLoading]);
+    }, [searchQuery, starredTemplates, templateProjects]);
 
 
     return (
