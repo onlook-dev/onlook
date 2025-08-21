@@ -3,7 +3,7 @@
 import { useAuthContext } from '@/app/auth/auth-context';
 import { api } from '@/trpc/react';
 import { LocalForageKeys, Routes } from '@/utils/constants';
-import { SandboxTemplates, Templates, getSandboxPreviewUrl } from '@onlook/constants';
+import { getSandboxPreviewUrl } from '@onlook/constants';
 import type { Project, User } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
@@ -21,7 +21,6 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { LazyImage } from "./lazy-image";
-
 interface TemplateModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -31,10 +30,9 @@ interface TemplateModalProps {
     isNew?: boolean;
     isStarred?: boolean;
     onToggleStar?: () => void;
-    projectId?: string;
+    templateProject?: Project;
     onUnmarkTemplate?: () => void;
     user?: User | null;
-    templateProject?: Project;
 }
 
 export function TemplateModal({
@@ -46,16 +44,14 @@ export function TemplateModal({
     isNew = false,
     isStarred = false,
     onToggleStar,
-    projectId,
+    templateProject,
     onUnmarkTemplate,
     user,
-    templateProject
 }: TemplateModalProps) {
-    const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
-    const { mutateAsync: createProject } = api.project.create.useMutation();
+    const { mutateAsync: forkTemplate } = api.project.forkTemplate.useMutation();
     const { setIsAuthModalOpen } = useAuthContext();
-    const router = useRouter();
     const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const router = useRouter();
 
     const handleUseTemplate = async () => {
         if (!user?.id) {
@@ -71,24 +67,8 @@ export function TemplateModal({
 
         setIsCreatingProject(true);
         try {
-            const sandboxTemplate = SandboxTemplates[Templates.EMPTY_NEXTJS];
-            const { sandboxId, previewUrl } = await forkSandbox({
-                sandbox: sandboxTemplate,
-                config: {
-                    title: `${title} - ${user.id}`,
-                    tags: ['template', title.toLowerCase().replace(/\s+/g, '-'), user.id],
-                },
-            });
-
-            const newProject = await createProject({
-                project: {
-                    name: `${title} (Copy)`,
-                    sandboxId,
-                    sandboxUrl: previewUrl,
-                    description: description || `Your new ${title.toLowerCase()} project`,
-                    tags: [],
-                },
-                userId: user.id,
+            const newProject = await forkTemplate({
+                projectId: templateProject.id,
             });
 
             if (newProject) {

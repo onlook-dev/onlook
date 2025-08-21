@@ -66,7 +66,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             }
             return newStarred;
         });
-        
+
         if (selectedTemplate && selectedTemplate.id === templateId) {
             setSelectedTemplate((prev: any) => ({
                 ...prev,
@@ -77,23 +77,23 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
     const handleUnmarkTemplate = async () => {
         if (!selectedTemplate?.id) return;
-        
+
         try {
             await removeTagMutation.mutateAsync({
                 projectId: selectedTemplate.id,
                 tag: 'template'
             });
-            
+
             toast.success('Removed from templates');
-            
+
             setIsTemplateModalOpen(false);
             setSelectedTemplate(null);
-            
+
             await Promise.all([
                 utils.project.list.invalidate(),
                 utils.project.listTemplates.invalidate(),
             ]);
-            
+
             refetch();
         } catch (error) {
             toast.error('Failed to update template tag');
@@ -141,10 +141,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         };
     }, []);
 
-
-
-
-
     const projects: Project[] = useMemo(() => {
         return baseProjects.map((p) => {
             const o = localOverrides[p.id] ?? {};
@@ -177,7 +173,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
     const filesProjects = useMemo(() => {
         let list = filteredAndSortedProjects.filter(project => !project.tags?.includes('template'));
-        
+
         const sorted = [...list].sort((a, b) => {
             switch (filesSortBy) {
                 case 'Alphabetical':
@@ -450,7 +446,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                         description={selectedTemplate.metadata?.description || 'No description available'}
                         image={
                             selectedTemplate.metadata?.previewImg?.url ||
-                            (selectedTemplate.metadata?.previewImg?.storagePath 
+                            (selectedTemplate.metadata?.previewImg?.storagePath
                                 ? getFileUrlFromStorage(
                                     selectedTemplate.metadata.previewImg.storagePath.bucket || STORAGE_BUCKETS.PREVIEW_IMAGES,
                                     selectedTemplate.metadata.previewImg.storagePath.path
@@ -460,10 +456,9 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                         isNew={false}
                         isStarred={selectedTemplate.isStarred}
                         onToggleStar={() => handleToggleStar(selectedTemplate.id)}
-                        projectId={selectedTemplate.id}
+                        templateProject={selectedTemplate}
                         onUnmarkTemplate={handleUnmarkTemplate}
                         user={user}
-                        templateProject={selectedTemplate}
                     />
                 )
             }
