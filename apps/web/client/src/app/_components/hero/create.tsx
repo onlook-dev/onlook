@@ -147,7 +147,6 @@ export const Create = observer(({
     const handleNewImageFiles = async (files: File[]) => {
         const imageFiles = files.filter((file) => file.type.startsWith('image/'));
 
-        // Check image limit before processing
         const { success, errorMessage } = validateImageLimit(selectedImages, imageFiles.length);
         if (!success) {
             toast.error(errorMessage);

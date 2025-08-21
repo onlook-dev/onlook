@@ -186,11 +186,9 @@ export const ChatInput = observer(({
     };
 
     const handleImageEvent = async (file: File, displayName?: string) => {
-        // Check image limit before processing
         const currentImages = editorEngine.chat.context.context.filter(
             ctx => ctx.type === MessageContextType.IMAGE
         );
-
         const { success, errorMessage } = validateImageLimit(currentImages, 1);
         if (!success) {
             toast.error(errorMessage);
@@ -214,12 +212,13 @@ export const ChatInput = observer(({
 
     const handleScreenshot = async () => {
         try {
-            // Check image limit before processing
             const currentImages = editorEngine.chat.context.context.filter(
                 ctx => ctx.type === MessageContextType.IMAGE
             );
 
-            if (!validateImageLimit(currentImages, (message) => toast.error(message), 1)) {
+            const { success, errorMessage } = validateImageLimit(currentImages, 1);
+            if (!success) {
+                toast.error(errorMessage);
                 return;
             }
 
