@@ -53,7 +53,8 @@ export class ActionManager {
                 await this.updateStyle(action);
                 break;
             case 'insert-element':
-                await this.insertElement(action);
+                // Disabling real-time insert since this is buggy. Will still work but not as fast.
+                // await this.insertElement(action);
                 break;
             case 'remove-element':
                 await this.removeElement(action);
