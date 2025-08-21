@@ -24,7 +24,7 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
 
     const filteredTemplatesData = useMemo(() => {
         if (isLoading) return [];
-        
+
         const filtered = templateProjects.filter(
             (project) =>
                 project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -85,7 +85,7 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
                                         description={project.metadata.description || 'No description available'}
                                         image={
                                             project.metadata.previewImg?.url ||
-                                            (project.metadata.previewImg?.storagePath 
+                                            (project.metadata.previewImg?.storagePath
                                                 ? getFileUrlFromStorage(
                                                     project.metadata.previewImg.storagePath.bucket || STORAGE_BUCKETS.PREVIEW_IMAGES,
                                                     project.metadata.previewImg.storagePath.path
@@ -99,42 +99,9 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
                                     />
                                 </motion.div>
                             )),
-                            
+
                             ...(!searchQuery ? [(
-                                <motion.div
-                                    key="add-template"
-                                    className="flex-shrink-0"
-                                    initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                                    animate={{
-                                        opacity: 1,
-                                        y: 0,
-                                        filter: "blur(0px)",
-                                        transition: {
-                                            duration: 0.4,
-                                            delay: filteredTemplatesData.length * 0.1,
-                                            ease: [0.25, 0.46, 0.45, 0.94],
-                                        },
-                                    }}
-                                    exit={{
-                                        opacity: 0,
-                                        y: -20,
-                                        filter: "blur(10px)",
-                                        transition: { duration: 0.2 },
-                                    }}
-                                    layout
-                                >
-                                    <Link href="/">
-                                        <div className="w-80 h-24 bg-background border border-border rounded-xl hover:border-border/80 hover:bg-secondary transition-all duration-200 flex items-center justify-center group relative overflow-hidden">
-                                            <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/80 opacity-50" />
-                                            <div className="relative z-10 flex flex-col items-center">
-                                                <Icons.Plus className="w-6 h-6 text-foreground-tertiary group-hover:text-foreground-secondary transition-colors" />
-                                                <span className="text-xs text-foreground-tertiary group-hover:text-foreground-secondary mt-1">
-                                                    Add Template
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </Link>
-                                </motion.div>
+                                <AddTemplateButton />
                             )] : [])
                         ]
                     ) : searchQuery ? (
@@ -153,41 +120,49 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
                             </div>
                         </motion.div>
                     ) : (
-                        <motion.div
-                            className="flex-shrink-0"
-                            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                            animate={{
-                                opacity: 1,
-                                y: 0,
-                                filter: "blur(0px)",
-                                transition: {
-                                    duration: 0.4,
-                                    ease: [0.25, 0.46, 0.45, 0.94],
-                                },
-                            }}
-                            exit={{
-                                opacity: 0,
-                                y: -20,
-                                filter: "blur(10px)",
-                                transition: { duration: 0.2 },
-                            }}
-                            layout
-                        >
-                            <Link href="/">
-                                <div className="w-80 h-24 bg-background border border-border rounded-xl hover:border-border/80 hover:bg-secondary transition-all duration-200 flex items-center justify-center group relative overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/80 opacity-50" />
-                                    <div className="relative z-10 flex flex-col items-center">
-                                        <Icons.Plus className="w-6 h-6 text-foreground-tertiary group-hover:text-foreground-secondary transition-colors" />
-                                        <span className="text-xs text-foreground-tertiary group-hover:text-foreground-secondary mt-1">
-                                            Add Template
-                                        </span>
-                                    </div>
-                                </div>
-                            </Link>
-                        </motion.div>
+                        <AddTemplateButton />
                     )}
                 </AnimatePresence>
             </div>
         </div>
     );
 }
+
+const AddTemplateButton = () => {
+    // Hide for now since it doesn't do anything yet
+    return null;
+    return (
+        <motion.div
+            className="flex-shrink-0"
+            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+            animate={{
+                opacity: 1,
+                y: 0,
+                filter: "blur(0px)",
+                transition: {
+                    duration: 0.4,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                },
+            }}
+            exit={{
+                opacity: 0,
+                y: -20,
+                filter: "blur(10px)",
+                transition: { duration: 0.2 },
+            }}
+            layout
+        >
+            <Link href="/">
+                <div className="w-80 h-24 bg-background border border-border rounded-xl hover:border-border/80 hover:bg-secondary transition-all duration-200 flex items-center justify-center group relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-secondary to-secondary/80 opacity-50" />
+                    <div className="relative z-10 flex flex-col items-center">
+                        <Icons.Plus className="w-6 h-6 text-foreground-tertiary group-hover:text-foreground-secondary transition-colors" />
+                        <span className="text-xs text-foreground-tertiary group-hover:text-foreground-secondary mt-1">
+                            Add Template
+                        </span>
+                    </div>
+                </div>
+            </Link>
+        </motion.div>
+    );
+};

@@ -81,7 +81,7 @@ export const forkTemplate = protectedProcedure
             updatedPreviewImgAt: null,
         };
 
-        await ctx.db.transaction(async (tx) => {
+        return await ctx.db.transaction(async (tx) => {
             const [newProject] = await tx.insert(projects).values(newProjectData).returning();
             if (!newProject) {
                 throw new Error('Failed to create project in database');
