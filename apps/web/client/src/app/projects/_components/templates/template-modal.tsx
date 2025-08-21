@@ -96,7 +96,7 @@ export function TemplateModal({
     };
 
     const handlePreviewTemplate = () => {
-        const sandboxId = templateProject?.sandbox?.id;
+        const sandboxId = templateProject.sandbox.id;
         if (sandboxId) {
             const sandboxUrl = getSandboxPreviewUrl(sandboxId, 3000);
             window.open(sandboxUrl, '_blank');
@@ -106,7 +106,7 @@ export function TemplateModal({
     };
 
     const handleEditTemplate = () => {
-        router.push(`${Routes.PROJECT}/${templateProject?.id}/edit`);
+        router.push(`${Routes.PROJECT}/${templateProject.id}`);
     };
 
     return (
