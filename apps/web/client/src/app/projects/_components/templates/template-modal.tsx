@@ -234,16 +234,23 @@ export function TemplateModal({
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>
-
-                            <div className="mt-6 pt-6 border-t border-border">
-                                <div className="text-sm text-foreground-tertiary">
-                                    Used 24 times • Created 24 days ago
-                                </div>
-                            </div>
+                            <TemplateStats />
                         </div>
                     </motion.div>
                 </motion.div>
             )}
         </AnimatePresence>
+    );
+}
+
+export function TemplateStats() {
+    // TODO: Add stats
+    return null;
+    return (
+        <div className="mt-6 pt-6 border-t border-border hidden">
+            <div className="text-sm text-foreground-tertiary">
+                Used 24 times • Created 24 days ago
+            </div>
+        </div>
     );
 }
