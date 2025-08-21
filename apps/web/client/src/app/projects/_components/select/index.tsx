@@ -5,17 +5,19 @@ import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
+import localforage from 'localforage';
 import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import localforage from 'localforage';
 import { toast } from 'sonner';
+import { Templates } from '../templates';
 import { TemplateModal } from '../templates/template-modal';
-import { Templates } from '../templates/templates-section';
 import { HighlightText } from './highlight-text';
 import { MasonryLayout } from './masonry-layout';
 import { ProjectCard } from './project-card';
 import { SquareProjectCard } from './square-project-card';
+
+const STARRED_TEMPLATES_KEY = 'onlook_starred_templates';
 
 export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: string } = {}) => {
     // Hooks
@@ -41,16 +43,12 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [spacing] = useState<number>(24);
 
     // Templates
-    const shouldShowTemplate = templateProjects.length > 0;
+    const shouldShowTemplate = true; // templateProjects.length > 0;
     const [selectedTemplate, setSelectedTemplate] = useState<Project | null>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
         new Set()
     );
-    const [isStarredTemplatesLoaded, setIsStarredTemplatesLoaded] = useState(false);
-
-    // Storage key for starred templates
-    const STARRED_TEMPLATES_KEY = 'onlook_starred_templates';
 
     // Load starred templates from storage
     const loadStarredTemplates = async () => {
@@ -61,8 +59,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             }
         } catch (error) {
             console.error('Failed to load starred templates:', error);
-        } finally {
-            setIsStarredTemplatesLoaded(true);
         }
     };
 
@@ -158,7 +154,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             const detail = custom?.detail ?? {};
             const id = detail.id ?? detail.projectId;
             if (!id) return;
-            
+
             const { id: detailId, projectId, ...updateData } = detail;
             setLocalOverrides((prev) => ({
                 ...prev,
@@ -491,11 +487,11 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                     selectedTemplate.metadata.previewImg.storagePath.path
                                 )
                                 : selectedTemplate.metadata?.previewImg?.storagePath?.path
-                                ? getFileUrlFromStorage(
-                                    STORAGE_BUCKETS.PREVIEW_IMAGES,
-                                    selectedTemplate.metadata.previewImg.storagePath.path
-                                )
-                                : null)
+                                    ? getFileUrlFromStorage(
+                                        STORAGE_BUCKETS.PREVIEW_IMAGES,
+                                        selectedTemplate.metadata.previewImg.storagePath.path
+                                    )
+                                    : null)
                         }
                         isNew={false}
                         isStarred={selectedTemplate ? starredTemplates.has(selectedTemplate.id) : false}
