@@ -52,12 +52,9 @@ export function validateImageLimit(
     errorMessage?: string;
 } {
     const totalCount = currentImages.length + additionalCount;
-    if (totalCount > DefaultSettings.CHAT_SETTINGS.maxImages) {
-        const remaining = DefaultSettings.CHAT_SETTINGS.maxImages - currentImages.length;
-        const errorMessage = remaining > 0
-            ? `You can only add ${remaining} more image(s). Maximum ${DefaultSettings.CHAT_SETTINGS.maxImages} images allowed.`
-            : `Maximum ${DefaultSettings.CHAT_SETTINGS.maxImages} images allowed. Please remove an image before adding a new one.`;
-        return { success: false, errorMessage };
+    const maxImages = DefaultSettings.CHAT_SETTINGS.maxImages;
+    if (totalCount > maxImages) {
+        return { success: false, errorMessage: `You can only add up to ${maxImages} images.` };
     }
     return { success: true, errorMessage: undefined };
 }
