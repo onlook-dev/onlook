@@ -226,12 +226,10 @@ export function TemplateModal({
                                                 onClick={onUnmarkTemplate}
                                                 className="text-foreground-secondary focus:text-foreground"
                                             >
+                                                <Icons.CrossL className="w-4 h-4 mr-3" />
                                                 Remove Template
                                             </DropdownMenuItem>
                                         )}
-                                        <DropdownMenuItem className="text-red-400 focus:text-red-300">
-                                            Report
-                                        </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>

@@ -31,7 +31,7 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
     const { mutateAsync: updateProject } = api.project.update.useMutation();
     const { mutateAsync: addTag } = api.project.addTag.useMutation();
     const { mutateAsync: removeTag } = api.project.removeTag.useMutation();
-    
+
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
@@ -89,13 +89,13 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                 await addTag({ projectId: project.id, tag: 'template' });
                 toast.success('Added to templates');
             }
-            
+
             // Invalidate and refetch both project lists and template lists
             await Promise.all([
                 utils.project.list.invalidate(),
                 utils.project.listTemplates.invalidate(),
             ]);
-            
+
             refetch();
         } catch (error) {
             toast.error('Failed to update template tag');
@@ -134,11 +134,11 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                         className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
                     >
                         {isTemplate ? (
-                            <Icons.BookmarkFilled className="w-4 h-4 text-purple-600" />
+                            <Icons.CrossL className="w-4 h-4 text-purple-600" />
                         ) : (
-                            <Icons.Bookmark className="w-4 h-4" />
+                            <Icons.FilePlus className="w-4 h-4" />
                         )}
-                        {isTemplate ? 'Unmark as template' : 'Mark as template'}
+                        {isTemplate ? 'Unmark as template' : 'Create template'}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}
