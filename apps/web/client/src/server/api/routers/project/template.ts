@@ -35,9 +35,12 @@ export const forkTemplate = protectedProcedure
         projectId: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
-        return await ctx.db.transaction(async (tx) => {
-            // 1. Get the source project with canvas and frames
-            const sourceProject = await tx.query.projects.findFirst({
+        let provider: ReturnType<typeof getProvider> | null = null;
+        let newSandbox: { id: string } | null = null;
+
+        try {
+            // 1. Get the source project with canvas and frames (outside transaction)
+            const sourceProject = await ctx.db.query.projects.findFirst({
                 where: eq(projects.id, input.projectId),
                 with: {
                     canvas: {
@@ -57,19 +60,20 @@ export const forkTemplate = protectedProcedure
                 throw new Error('Source project has no sandbox ID');
             }
 
-            // 2. Fork the sandbox
-            const provider = await getProvider(sourceProject.sandboxId);
-            const newSandbox = await provider.createProject({
+            // 2. Fork the sandbox BEFORE starting the transaction
+            provider = await getProvider(sourceProject.sandboxId);
+            newSandbox = await provider.createProject({
                 source: 'template',
                 id: sourceProject.sandboxId,
                 title: `${sourceProject.name} (Fork)`,
                 tags: ['template-fork'],
             });
-            await provider.destroy();
 
             const newSandboxUrl = getSandboxPreviewUrl(newSandbox.id, 3000);
 
-            // 3. Create the new project with forked data
+            // 3. Now start the database transaction
+            const newProject = await ctx.db.transaction(async (tx) => {
+                // 4. Create the new project with forked data
             const newProjectData = {
                 name: `${sourceProject.name} (Copy)`,
                 description: sourceProject.description,
@@ -88,14 +92,14 @@ export const forkTemplate = protectedProcedure
                 throw new Error('Failed to create project in database');
             }
 
-            // 4. Create the association in the junction table
+            // 5. Create the association in the junction table
             await tx.insert(userProjects).values({
                 userId: ctx.user.id,
                 projectId: newProject.id,
                 role: ProjectRole.OWNER,
             });
 
-            // 5. Clone the canvas
+            // 6. Clone the canvas
             const sourceCanvas = sourceProject.canvas;
             if (sourceCanvas) {
                 const newCanvas: Canvas = {
@@ -112,7 +116,7 @@ export const forkTemplate = protectedProcedure
                 });
                 await tx.insert(userCanvases).values(newUserCanvas);
 
-                // 6. Clone the frames
+                // 7. Clone the frames
                 if (sourceCanvas.frames && sourceCanvas.frames.length > 0) {
                     const newFrames: Frame[] = sourceCanvas.frames.map(frame => ({
                         ...frame,
@@ -178,6 +182,40 @@ export const forkTemplate = protectedProcedure
                 },
             });
 
+                return newProject;
+            });
+
+            // 8. Track successful template fork
+            trackEvent({
+                distinctId: ctx.user.id,
+                event: 'user_fork_template',
+                properties: {
+                    sourceProjectId: input.projectId,
+                    newProjectId: newProject.id,
+                    sandboxId: newSandbox.id,
+                },
+            });
+
             return newProject;
-        });
+        } catch (error) {
+            // Compensation: attempt to cleanup the sandbox if DB operations failed
+            if (newSandbox?.id && provider) {
+                try {
+                    await provider.stopProject({});
+                    console.log(`Cleaned up orphaned sandbox: ${newSandbox.id}`);
+                } catch (cleanupError) {
+                    console.error(`Failed to cleanup sandbox ${newSandbox.id}:`, cleanupError);
+                }
+            }
+            throw error;
+        } finally {
+            // Always destroy the provider
+            if (provider) {
+                try {
+                    await provider.destroy();
+                } catch (destroyError) {
+                    console.error('Failed to destroy provider:', destroyError);
+                }
+            }
+        }
     });
