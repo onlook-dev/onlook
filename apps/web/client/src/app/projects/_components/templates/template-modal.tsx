@@ -31,7 +31,7 @@ interface TemplateModalProps {
     isNew?: boolean;
     isStarred?: boolean;
     onToggleStar?: () => void;
-    templateProject?: Project;
+    templateProject: Project;
     onUnmarkTemplate?: () => void;
     user?: User | null;
 }
@@ -103,6 +103,10 @@ export function TemplateModal({
         } else {
             console.error('No sandbox ID found:', sandboxId);
         }
+    };
+
+    const handleEditTemplate = () => {
+        router.push(`${Routes.PROJECT}/${templateProject?.id}/edit`);
     };
 
     return (
@@ -213,13 +217,17 @@ export function TemplateModal({
                                             <Icons.EyeOpen className="w-4 h-4 mr-3" />
                                             Preview
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem>
+                                        {/* <DropdownMenuItem>
                                             <Icons.Share className="w-4 h-4 mr-3" />
                                             Share
                                         </DropdownMenuItem>
                                         <DropdownMenuItem>
                                             <Icons.Download className="w-4 h-4 mr-3" />
-                                            Download
+                                            Download Code
+                                        </DropdownMenuItem> */}
+                                        <DropdownMenuItem onClick={handleEditTemplate}>
+                                            <Icons.Edit className="w-4 h-4 mr-3" />
+                                            Edit Template
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         {onUnmarkTemplate && (
