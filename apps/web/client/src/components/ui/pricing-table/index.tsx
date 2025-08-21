@@ -4,6 +4,7 @@ import { useAuthContext } from '@/app/auth/auth-context';
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
 import { useTranslations } from 'next-intl';
+import { EnterpriseCard } from '../pricing-modal/enterprise-card';
 import { FreeCard } from '../pricing-modal/free-card';
 import { ProCard } from '../pricing-modal/pro-card';
 
@@ -22,7 +23,7 @@ export const PricingTable = () => {
                     {t(transKeys.pricing.footer.unusedMessages)}
                 </p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-col md:flex-row gap-4 items-center md:items-stretch">
                 <FreeCard 
                     delay={0.1} 
                     isUnauthenticated={!user}
@@ -32,6 +33,9 @@ export const PricingTable = () => {
                     delay={0.2} 
                     isUnauthenticated={!user}
                     onSignupClick={() => setIsAuthModalOpen(true)}
+                />
+                <EnterpriseCard 
+                    delay={0.3}
                 />
             </div>
         </div>
