@@ -14,6 +14,7 @@ import {
     DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import localforage from 'localforage';
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from 'next/navigation';
@@ -191,22 +192,29 @@ export function TemplateModal({
                                 </Button>
 
                                 {onToggleStar && (
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        onClick={onToggleStar}
-                                        aria-label={isStarred ? "Remove from favorites" : "Add to favorites"}
-                                    >
-                                        {isStarred ? (
-                                            <Icons.BookmarkFilled
-                                                className="w-5 h-5 text-white"
-                                            />
-                                        ) : (
-                                            <Icons.Bookmark
-                                                className="w-5 h-5 text-foreground-tertiary"
-                                            />
-                                        )}
-                                    </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="lg"
+                                                onClick={onToggleStar}
+                                                aria-label={isStarred ? "Remove from favorites" : "Add to favorites"}
+                                            >
+                                                {isStarred ? (
+                                                    <Icons.BookmarkFilled
+                                                        className="w-5 h-5 text-white"
+                                                    />
+                                                ) : (
+                                                    <Icons.Bookmark
+                                                        className="w-5 h-5 text-foreground-tertiary"
+                                                    />
+                                                )}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Mark as favorite</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 )}
 
                                 <DropdownMenu>

@@ -1,6 +1,7 @@
 'use client';
 
 import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 
 interface TemplateCardProps {
     title?: string;
@@ -67,24 +68,31 @@ export function TemplateCard({
                         </h3>
 
                         {onToggleStar && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onToggleStar();
-                                }}
-                                className="p-1 rounded-full hover:bg-secondary transition-colors flex-shrink-0 mt-[-2px]"
-                                aria-label={isStarred ? "Remove from favorites" : "Add to favorites"}
-                            >
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onToggleStar();
+                                        }}
+                                        className="p-1 rounded-full hover:bg-secondary transition-colors flex-shrink-0 mt-[-2px]"
+                                        aria-label={isStarred ? "Remove from favorites" : "Add to favorites"}
+                                    >
 {isStarred ? (
-                                    <Icons.BookmarkFilled
-                                        className="w-3.5 h-3.5 text-white"
-                                    />
-                                ) : (
-                                    <Icons.Bookmark
-                                        className="w-3.5 h-3.5 text-foreground-tertiary hover:text-foreground"
-                                    />
-                                )}
-                            </button>
+                                            <Icons.BookmarkFilled
+                                                className="w-3.5 h-3.5 text-white"
+                                            />
+                                        ) : (
+                                            <Icons.Bookmark
+                                                className="w-3.5 h-3.5 text-foreground-tertiary hover:text-foreground"
+                                            />
+                                        )}
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Mark as favorite</p>
+                                </TooltipContent>
+                            </Tooltip>
                         )}
                     </div>
 
