@@ -14,6 +14,7 @@ import Script from 'next/script';
 import { ThemeProvider } from './_components/theme';
 import { AuthProvider } from './auth/auth-context';
 import { faqSchema, organizationSchema } from './seo';
+import RB2BLoader from '@/components/rb2b-loader';
 
 const isProduction = env.NODE_ENV === 'production';
 
@@ -74,13 +75,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 {isProduction && (
                     <>
                         <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="lazyOnload" />
-                        <Script
-                            id="rb2b-script"
-                            strategy="lazyOnload"
-                            dangerouslySetInnerHTML={{
-                                __html: `!function(key) {if (window.reb2b) return;window.reb2b = {loaded: true};var s = document.createElement("script");s.async = true;s.src = "https://b2bjsstore.s3.us-west-2.amazonaws.com/b/" + key + "/" + key + ".js.gz";document.getElementsByTagName("script")[0].parentNode.insertBefore(s, document.getElementsByTagName("script")[0]);}("QOQRJHYRKZ62");`
-                            }}
-                        />
+                        <RB2BLoader />
                     </>
                 )}
                 <TRPCReactProvider>
