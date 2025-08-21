@@ -53,7 +53,8 @@ export class ActionManager {
                 await this.updateStyle(action);
                 break;
             case 'insert-element':
-                await this.insertElement(action);
+                // This is currently buggy
+                // await this.insertElement(action);
                 break;
             case 'remove-element':
                 await this.removeElement(action);
