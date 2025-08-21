@@ -42,6 +42,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [spacing] = useState<number>(24);
 
     // Templates
+    const projects = fetchedProjects?.filter(project => !project.tags?.includes(Tags.TEMPLATE)) ?? [];
     const templateProjects = fetchedProjects?.filter(project => project.tags?.includes(Tags.TEMPLATE)) ?? [];
     const shouldShowTemplate = templateProjects.length > 0;
     const [selectedTemplate, setSelectedTemplate] = useState<Project | null>(null);
@@ -134,63 +135,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const baseProjects: Project[] = fetchedProjects ?? [];
-    const [localOverrides, setLocalOverrides] = useState<Record<string, Partial<Project>>>({});
-
-    useEffect(() => {
-        interface ProjectUpdateDetail {
-            id?: string;
-            projectId?: string;
-            name?: string;
-            description?: string;
-            tags?: string[];
-            sandbox?: Partial<Project['sandbox']>;
-            metadata?: Partial<Project['metadata']>;
-        }
-
-        const handler = (ev: Event) => {
-            const custom = ev as CustomEvent<ProjectUpdateDetail>;
-            const detail = custom?.detail ?? {};
-            const id = detail.id ?? detail.projectId;
-            if (!id) return;
-
-            const { id: detailId, projectId, ...updateData } = detail;
-            setLocalOverrides((prev) => ({
-                ...prev,
-                [id]: {
-                    ...prev[id],
-                    ...updateData,
-                    metadata: {
-                        ...prev[id]?.metadata,
-                        ...detail.metadata,
-                    },
-                } as Partial<Project>,
-            }));
-        };
-        window.addEventListener('onlook_project_updated', handler as EventListener);
-        window.addEventListener('onlook_project_modified', handler as EventListener);
-        return () => {
-            window.removeEventListener('onlook_project_updated', handler as EventListener);
-            window.removeEventListener('onlook_project_modified', handler as EventListener);
-        };
-    }, []);
-
-    const projects: Project[] = useMemo(() => {
-        return baseProjects.map((p) => {
-            const o = localOverrides[p.id] ?? {};
-            const merged: Project = {
-                ...p,
-                ...o,
-                metadata: {
-                    ...p.metadata,
-                    ...o.metadata,
-                },
-            };
-            return merged;
-        });
-    }, [baseProjects, localOverrides]);
-
-
     const filteredAndSortedProjects = useMemo(() => {
         let filtered = projects;
         if (debouncedSearchQuery) {
@@ -201,14 +145,11 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                 ),
             );
         }
-        return [...filtered].sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime()).filter(project => !project.tags?.includes(Tags.TEMPLATE));
+        return [...filtered].sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
     }, [projects, debouncedSearchQuery]);
 
-
     const filesProjects = useMemo(() => {
-        let list = filteredAndSortedProjects.filter(project => !project.tags?.includes(Tags.TEMPLATE));
-
-        const sorted = [...list].sort((a, b) => {
+        const sorted = [...filteredAndSortedProjects].sort((a, b) => {
             switch (filesSortBy) {
                 case 'Alphabetical':
                     return a.name.localeCompare(b.name);
