@@ -10,7 +10,8 @@ import {
     frames,
     projects,
     userCanvases,
-    userProjects
+    userProjects,
+    type Canvas
 } from '@onlook/db';
 import { ProjectRole } from '@onlook/models';
 import { eq } from 'drizzle-orm';
@@ -96,12 +97,9 @@ export const forkTemplate = protectedProcedure
             // 5. Clone the canvas
             const sourceCanvas = sourceProject.canvas;
             if (sourceCanvas) {
-                const newCanvas = {
-                    ...sourceCanvas,
+                const newCanvas: Canvas = {
                     id: uuidv4(),
-                    projectId: newProject.id,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
+                    projectId: newProject.id
                 };
                 await tx.insert(canvases).values(newCanvas);
 
