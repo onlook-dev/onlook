@@ -46,7 +46,7 @@ export function SquareProjectCard({
 
     return (
         <div
-            className="cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20 group"
+            className="cursor-pointer transition-all duration-300 hover:shadow-xl hover:shadow-black/20 group"
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
@@ -56,11 +56,14 @@ export function SquareProjectCard({
                 }
             }}
         >
-            <div className="w-full aspect-[4/2.8] rounded-lg overflow-hidden relative shadow-sm transition-all duration-300">
+            <div className={`w-full aspect-[4/2.8] rounded-lg overflow-hidden relative shadow-sm transition-all duration-300`}>
                 {img ? (
                     <img src={img} alt={project.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                 ) : (
-                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20" />
+                    <>
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40" />
+                        <div className="absolute inset-0 rounded-lg border-[0.5px] border-gray-500/70" style={{ maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' }} />
+                    </>
                 )}
 
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

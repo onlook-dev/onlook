@@ -16,11 +16,11 @@ const API_KEYS: Record<string, ApiKeyConfig> = {
         required: true,
         description: 'Codesandbox',
     },
-    ANTHROPIC_API_KEY: {
-        name: 'ANTHROPIC_API_KEY',
-        message: 'Enter your Anthropic API key:',
+    OPENROUTER_API_KEY: {
+        name: 'OPENROUTER_API_KEY',
+        message: 'Enter your OpenRouter API key:',
         required: true,
-        description: 'Anthropic',
+        description: 'OpenRouter',
     },
     MORPH_API_KEY: {
         name: 'MORPH_API_KEY',

@@ -34,7 +34,12 @@
         "prepare": "husky",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
-        "setup:env": "bun --filter @onlook/scripts build && bun packages/scripts/dist/index.js"
+        "setup:env": "bun --filter @onlook/scripts build && bun packages/scripts/dist/index.js",
+        "docker:build": "docker compose build",
+        "docker:up": "docker compose up -d",
+        "docker:down": "docker compose down",
+        "docker:logs": "docker compose logs -f",
+        "docker:restart": "docker compose down && docker compose up -d --build"
     },
     "repository": {
         "type": "git",
@@ -44,7 +49,6 @@
         "url": "https://github.com/onlook-dev/onlook/issues"
     },
     "devDependencies": {
-        "extract-zip": "^2.0.1",
         "husky": "^9.1.6"
     },
     "packageManager": "bun@1.2.13"

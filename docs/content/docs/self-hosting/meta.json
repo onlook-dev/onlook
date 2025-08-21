@@ -1,0 +1,9 @@
+{
+    "title": "Self-Hosting",
+    "pages": [
+        "single-machine",
+        "docker-compose",
+        "cloud-deployment",
+        "external-services"
+    ]
+}

@@ -1,3 +1,4 @@
+
 import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { FOCUS_CHAT_INPUT_EVENT } from '@/components/store/editor/chat';
@@ -14,6 +15,7 @@ import { compressImageInBrowser } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
+import { validateImageLimit } from '../context-pills/helpers';
 import { InputContextPills } from '../context-pills/input-context-pills';
 import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
@@ -184,6 +186,15 @@ export const ChatInput = observer(({
     };
 
     const handleImageEvent = async (file: File, displayName?: string) => {
+        const currentImages = editorEngine.chat.context.context.filter(
+            ctx => ctx.type === MessageContextType.IMAGE
+        );
+        const { success, errorMessage } = validateImageLimit(currentImages, 1);
+        if (!success) {
+            toast.error(errorMessage);
+            return;
+        }
+
         const reader = new FileReader();
         reader.onload = async (event) => {
             const compressedImage = await compressImageInBrowser(file);
@@ -201,6 +212,16 @@ export const ChatInput = observer(({
 
     const handleScreenshot = async () => {
         try {
+            const currentImages = editorEngine.chat.context.context.filter(
+                ctx => ctx.type === MessageContextType.IMAGE
+            );
+
+            const { success, errorMessage } = validateImageLimit(currentImages, 1);
+            if (!success) {
+                toast.error(errorMessage);
+                return;
+            }
+
             const framesWithViews = editorEngine.frames.getAll().filter(f => !!f.view);
 
             if (framesWithViews.length === 0) {
