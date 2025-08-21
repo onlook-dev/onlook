@@ -30,8 +30,12 @@ const FREE_TIER = {
 
 export const FreeCard = ({
     delay,
+    isUnauthenticated = false,
+    onSignupClick,
 }: {
     delay: number;
+    isUnauthenticated?: boolean;
+    onSignupClick?: () => void;
 }) => {
     const t = useTranslations();
     const { subscription, isPro, setIsCheckingSubscription } = useSubscription();
@@ -71,6 +75,10 @@ export const FreeCard = ({
             )
         }
 
+        if (isUnauthenticated) {
+            return "Get Started Free";
+        }
+
         if (isScheduledCancellation) {
             return `Pro plan ends on ${subscription?.scheduledChange?.scheduledChangeAt.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
         }
@@ -81,6 +89,14 @@ export const FreeCard = ({
 
         return "Downgrade to Free Plan";
     }
+
+    const handleButtonClick = () => {
+        if (isUnauthenticated && onSignupClick) {
+            onSignupClick();
+        } else {
+            handleDowngradeToFree();
+        }
+    };
 
     return (
         <MotionCard
@@ -118,8 +134,8 @@ export const FreeCard = ({
                     <Button
                         className="w-full"
                         variant="outline"
-                        onClick={handleDowngradeToFree}
-                        disabled={isCheckingOut || isFree || isScheduledCancellation}
+                        onClick={handleButtonClick}
+                        disabled={isCheckingOut || (!isUnauthenticated && (isFree || isScheduledCancellation))}
                     >
                         {buttonContent()}
                     </Button>
