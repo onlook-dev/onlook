@@ -11,7 +11,8 @@ import {
     projects,
     userCanvases,
     userProjects,
-    type Canvas
+    type Canvas,
+    type Frame
 } from '@onlook/db';
 import { ProjectRole } from '@onlook/models';
 import { eq } from 'drizzle-orm';
@@ -113,7 +114,7 @@ export const forkTemplate = protectedProcedure
 
                 // 6. Clone the frames
                 if (sourceCanvas.frames && sourceCanvas.frames.length > 0) {
-                    const newFrames = sourceCanvas.frames.map(frame => ({
+                    const newFrames: Frame[] = sourceCanvas.frames.map(frame => ({
                         ...frame,
                         id: uuidv4(),
                         canvasId: newCanvas.id,
