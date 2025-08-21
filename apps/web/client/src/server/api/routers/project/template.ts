@@ -1,7 +1,7 @@
 import { protectedProcedure } from '@/server/api/trpc';
 import { trackEvent } from '@/utils/analytics/server';
 import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
-import { getSandboxPreviewUrl } from '@onlook/constants';
+import { getSandboxPreviewUrl, Tags } from '@onlook/constants';
 import {
     canvases,
     createDefaultCanvas,
@@ -71,9 +71,13 @@ export const forkTemplate = protectedProcedure
             const newProjectData = {
                 name: `${sourceProject.name} (Copy)`,
                 description: sourceProject.description,
-                tags: sourceProject.tags?.filter(tag => tag !== 'template') ?? [],
+                tags: sourceProject.tags?.filter(tag => tag !== Tags.TEMPLATE) ?? [],
                 sandboxId: newSandbox.id,
                 sandboxUrl: newSandboxUrl,
+                previewImgUrl: sourceProject.previewImgUrl,
+                previewImgPath: sourceProject.previewImgPath,
+                previewImgBucket: sourceProject.previewImgBucket,
+                // Allows for the preview image to be updated
                 updatedPreviewImgAt: null,
             };
 

@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
 import { trackEvent } from '@/utils/analytics/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { initModel } from '@onlook/ai';
-import { STORAGE_BUCKETS } from '@onlook/constants';
+import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
 import {
     canvases,
     createDefaultCanvas,
@@ -194,7 +194,7 @@ export const projectRouter = createTRPCRouter({
             const allProjects = fetchedUserProjects.map((userProject) => toProject(userProject.project));
             // Filter projects that have "template" in their tags
             const templateProjects = allProjects.filter((project) =>
-                project.tags && project.tags.includes('template')
+                project.tags && project.tags.includes(Tags.TEMPLATE)
             );
             return templateProjects.sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
         }),

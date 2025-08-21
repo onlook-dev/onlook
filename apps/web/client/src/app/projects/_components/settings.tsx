@@ -1,5 +1,6 @@
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
+import { Tags } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import {
     AlertDialog,
@@ -36,7 +37,7 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
-    const isTemplate = project.tags?.includes('template') || false;
+    const isTemplate = project.tags?.includes(Tags.TEMPLATE) || false;
 
     useEffect(() => {
         setProjectName(project.name);
@@ -83,10 +84,10 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
     const handleTemplateToggle = async () => {
         try {
             if (isTemplate) {
-                await removeTag({ projectId: project.id, tag: 'template' });
+                await removeTag({ projectId: project.id, tag: Tags.TEMPLATE });
                 toast.success('Removed from templates');
             } else {
-                await addTag({ projectId: project.id, tag: 'template' });
+                await addTag({ projectId: project.id, tag: Tags.TEMPLATE });
                 toast.success('Added to templates');
             }
 

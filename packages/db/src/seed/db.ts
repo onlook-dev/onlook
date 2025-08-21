@@ -1,3 +1,4 @@
+import { Tags } from '@onlook/constants';
 import {
     canvases,
     conversations,
@@ -69,7 +70,7 @@ const project1 = {
     name: 'Mock Template (This doesn\'t work)',
     sandboxId: '1234567',
     sandboxUrl: 'http://localhost:8084',
-    tags: ['template'],
+    tags: [Tags.TEMPLATE],
     previewImgUrl: null,
     previewImgPath: null,
     previewImgBucket: null,

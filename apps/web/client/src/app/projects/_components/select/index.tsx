@@ -2,7 +2,7 @@
 
 import { api } from '@/trpc/react';
 import { getFileUrlFromStorage } from '@/utils/supabase/client';
-import { STORAGE_BUCKETS } from '@onlook/constants';
+import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { AnimatePresence, motion } from 'motion/react';
@@ -81,7 +81,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         try {
             await removeTagMutation.mutateAsync({
                 projectId: selectedTemplate.id,
-                tag: 'template'
+                tag: Tags.TEMPLATE
             });
 
             toast.success('Removed from templates');
@@ -172,7 +172,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
 
     const filesProjects = useMemo(() => {
-        let list = filteredAndSortedProjects.filter(project => !project.tags?.includes('template'));
+        let list = filteredAndSortedProjects.filter(project => !project.tags?.includes(Tags.TEMPLATE));
 
         const sorted = [...list].sort((a, b) => {
             switch (filesSortBy) {
