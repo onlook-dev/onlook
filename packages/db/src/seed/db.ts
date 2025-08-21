@@ -34,7 +34,6 @@ import {
     type MessageContext,
 } from '@onlook/models';
 import { PriceKey, ProductType, SubscriptionStatus } from '@onlook/stripe';
-import { SandboxTemplates, Templates } from '@onlook/constants';
 import { v4 as uuidv4 } from 'uuid';
 import { SEED_USER } from './constants';
 
@@ -53,7 +52,7 @@ const user0 = {
 const project0 = {
     id: uuidv4(),
     name: 'Preload Script Test',
-    sandboxId: '3f5rf6',
+    sandboxId: '123456',
     sandboxUrl: 'http://localhost:8084',
     tags: [],
     previewImgUrl: null,
@@ -65,12 +64,11 @@ const project0 = {
     description: 'Test Project Description',
 } satisfies Project;
 
-
-const saasTemplate = {
+const project1 = {
     id: uuidv4(),
-    name: 'SaaS Platform',
-    sandboxId: SandboxTemplates[Templates.SAAS_PLATFORM].id,
-    sandboxUrl: `http://localhost:${SandboxTemplates[Templates.SAAS_PLATFORM].port}`,
+    name: 'Mock Template (This doesn\'t work)',
+    sandboxId: '1234567',
+    sandboxUrl: 'http://localhost:8084',
     tags: ['template'],
     previewImgUrl: null,
     previewImgPath: null,
@@ -78,28 +76,16 @@ const saasTemplate = {
     updatedPreviewImgAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
-    description: 'Clean SaaS landing page template with modern UI components, pricing sections, testimonials, and FAQ. Built with Next.js and Chakra UI for easy customization.',
+    description: 'Test Project Description',
 } satisfies Project;
 
 const canvas0 = createDefaultCanvas(project0.id);
 const frame0 = createDefaultFrame(canvas0.id, project0.sandboxUrl);
 const userCanvas0 = createDefaultUserCanvas(user0.id, canvas0.id);
 
-const saasCanvas = createDefaultCanvas(saasTemplate.id);
-const saasFrameDesktop = createDefaultFrame(saasCanvas.id, saasTemplate.sandboxUrl, {
-    x: '5',
-    y: '0',
-    width: '1536',
-    height: '960',
-});
-const saasFrameMobile = createDefaultFrame(saasCanvas.id, saasTemplate.sandboxUrl, {
-    x: '1600',
-    y: '0',
-    width: '440',
-    height: '956',
-});
-const saasUserCanvas = createDefaultUserCanvas(user0.id, saasCanvas.id);
-
+const canvas1 = createDefaultCanvas(project1.id);
+const frame1 = createDefaultFrame(canvas1.id, project1.sandboxUrl);
+const userCanvas1 = createDefaultUserCanvas(user0.id, canvas1.id);
 
 const conversation0 = {
     id: uuidv4(),
@@ -269,7 +255,7 @@ export const seedDb = async () => {
         await tx.insert(prices).values([price0]);
         await tx.insert(subscriptions).values([subscription0]);
         await tx.insert(rateLimits).values([rateLimit0]);
-        await tx.insert(projects).values([project0, saasTemplate]);
+        await tx.insert(projects).values([project0, project1]);
         await tx.insert(userProjects).values([
             {
                 userId: user0.id,
@@ -278,13 +264,13 @@ export const seedDb = async () => {
             },
             {
                 userId: user0.id,
-                projectId: saasTemplate.id,
+                projectId: project1.id,
                 role: ProjectRole.OWNER,
             },
         ]);
-        await tx.insert(canvases).values([canvas0, saasCanvas]);
-        await tx.insert(userCanvases).values([userCanvas0, saasUserCanvas]);
-        await tx.insert(frames).values([frame0, saasFrameDesktop, saasFrameMobile]);
+        await tx.insert(canvases).values([canvas0, canvas1]);
+        await tx.insert(userCanvases).values([userCanvas0, userCanvas1]);
+        await tx.insert(frames).values([frame0, frame1]);
         await tx.insert(conversations).values([conversation0]);
         await tx.insert(messages).values([message0, message1, message2, message3, message4]);
     });

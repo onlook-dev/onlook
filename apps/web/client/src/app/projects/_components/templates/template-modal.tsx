@@ -14,8 +14,8 @@ import {
     DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
-import { AnimatePresence, motion } from "motion/react";
 import localforage from 'localforage';
+import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
@@ -70,15 +70,7 @@ export function TemplateModal({
 
         setIsCreatingProject(true);
         try {
-            let sandboxTemplate;
-            const templateName = title.toLowerCase();
-            
-            if (templateName.includes('saas') || templateName.includes('platform')) {
-                sandboxTemplate = SandboxTemplates[Templates.SAAS_PLATFORM];
-            } else {
-                sandboxTemplate = SandboxTemplates[Templates.EMPTY_NEXTJS];
-            }
-
+            const sandboxTemplate = SandboxTemplates[Templates.EMPTY_NEXTJS];
             const { sandboxId, previewUrl } = await forkSandbox({
                 sandbox: sandboxTemplate,
                 config: {
@@ -183,8 +175,8 @@ export function TemplateModal({
                             </p>
 
                             <div className="flex items-center gap-3 overflow-visible">
-                                <Button 
-                                    className="flex-1" 
+                                <Button
+                                    className="flex-1"
                                     size="lg"
                                     onClick={handleUseTemplate}
                                     disabled={isCreatingProject}
@@ -206,7 +198,7 @@ export function TemplateModal({
                                         onClick={onToggleStar}
                                         aria-label={isStarred ? "Remove from favorites" : "Add to favorites"}
                                     >
-{isStarred ? (
+                                        {isStarred ? (
                                             <Icons.BookmarkFilled
                                                 className="w-5 h-5 text-white"
                                             />
@@ -243,7 +235,7 @@ export function TemplateModal({
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         {onUnmarkTemplate && (
-                                            <DropdownMenuItem 
+                                            <DropdownMenuItem
                                                 onClick={onUnmarkTemplate}
                                                 className="text-foreground-secondary focus:text-foreground"
                                             >
