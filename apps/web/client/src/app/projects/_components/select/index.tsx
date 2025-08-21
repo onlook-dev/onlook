@@ -5,24 +5,25 @@ import { getFileUrlFromStorage } from '@/utils/supabase/client';
 import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
+import localforage from 'localforage';
 import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import localforage from 'localforage';
 import { toast } from 'sonner';
+import { Templates } from '../templates';
 import { TemplateModal } from '../templates/template-modal';
-import { Templates } from '../templates/templates-section';
 import { HighlightText } from './highlight-text';
 import { MasonryLayout } from './masonry-layout';
 import { ProjectCard } from './project-card';
 import { SquareProjectCard } from './square-project-card';
+
+const STARRED_TEMPLATES_KEY = 'onlook_starred_templates';
 
 export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: string } = {}) => {
     // Hooks
     const utils = api.useUtils();
     const { data: user } = api.user.get.useQuery();
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
-    const { data: templateProjects = [] } = api.project.listTemplates.useQuery({ limit: 8 });
     const { mutateAsync: removeTag } = api.project.removeTag.useMutation();
 
     // Search and filters
@@ -41,16 +42,14 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [spacing] = useState<number>(24);
 
     // Templates
+    const projects = fetchedProjects?.filter(project => !project.tags?.includes(Tags.TEMPLATE)) ?? [];
+    const templateProjects = fetchedProjects?.filter(project => project.tags?.includes(Tags.TEMPLATE)) ?? [];
     const shouldShowTemplate = templateProjects.length > 0;
     const [selectedTemplate, setSelectedTemplate] = useState<Project | null>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
         new Set()
     );
-    const [isStarredTemplatesLoaded, setIsStarredTemplatesLoaded] = useState(false);
-
-    // Storage key for starred templates
-    const STARRED_TEMPLATES_KEY = 'onlook_starred_templates';
 
     // Load starred templates from storage
     const loadStarredTemplates = async () => {
@@ -61,8 +60,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             }
         } catch (error) {
             console.error('Failed to load starred templates:', error);
-        } finally {
-            setIsStarredTemplatesLoaded(true);
         }
     };
 
@@ -117,7 +114,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
             await Promise.all([
                 utils.project.list.invalidate(),
-                utils.project.listTemplates.invalidate(),
             ]);
 
             refetch();
@@ -139,63 +135,6 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const baseProjects: Project[] = fetchedProjects ?? [];
-    const [localOverrides, setLocalOverrides] = useState<Record<string, Partial<Project>>>({});
-
-    useEffect(() => {
-        interface ProjectUpdateDetail {
-            id?: string;
-            projectId?: string;
-            name?: string;
-            description?: string;
-            tags?: string[];
-            sandbox?: Partial<Project['sandbox']>;
-            metadata?: Partial<Project['metadata']>;
-        }
-
-        const handler = (ev: Event) => {
-            const custom = ev as CustomEvent<ProjectUpdateDetail>;
-            const detail = custom?.detail ?? {};
-            const id = detail.id ?? detail.projectId;
-            if (!id) return;
-            
-            const { id: detailId, projectId, ...updateData } = detail;
-            setLocalOverrides((prev) => ({
-                ...prev,
-                [id]: {
-                    ...prev[id],
-                    ...updateData,
-                    metadata: {
-                        ...prev[id]?.metadata,
-                        ...detail.metadata,
-                    },
-                } as Partial<Project>,
-            }));
-        };
-        window.addEventListener('onlook_project_updated', handler as EventListener);
-        window.addEventListener('onlook_project_modified', handler as EventListener);
-        return () => {
-            window.removeEventListener('onlook_project_updated', handler as EventListener);
-            window.removeEventListener('onlook_project_modified', handler as EventListener);
-        };
-    }, []);
-
-    const projects: Project[] = useMemo(() => {
-        return baseProjects.map((p) => {
-            const o = localOverrides[p.id] ?? {};
-            const merged: Project = {
-                ...p,
-                ...o,
-                metadata: {
-                    ...p.metadata,
-                    ...o.metadata,
-                },
-            };
-            return merged;
-        });
-    }, [baseProjects, localOverrides]);
-
-
     const filteredAndSortedProjects = useMemo(() => {
         let filtered = projects;
         if (debouncedSearchQuery) {
@@ -209,11 +148,8 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         return [...filtered].sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
     }, [projects, debouncedSearchQuery]);
 
-
     const filesProjects = useMemo(() => {
-        let list = filteredAndSortedProjects.filter(project => !project.tags?.includes(Tags.TEMPLATE));
-
-        const sorted = [...list].sort((a, b) => {
+        const sorted = [...filteredAndSortedProjects].sort((a, b) => {
             switch (filesSortBy) {
                 case 'Alphabetical':
                     return a.name.localeCompare(b.name);
@@ -357,6 +293,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
                 {shouldShowTemplate && (
                     <Templates
+                        templateProjects={templateProjects}
                         searchQuery={debouncedSearchQuery}
                         onTemplateClick={handleTemplateClick}
                         onToggleStar={handleToggleStar}
@@ -491,11 +428,11 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                     selectedTemplate.metadata.previewImg.storagePath.path
                                 )
                                 : selectedTemplate.metadata?.previewImg?.storagePath?.path
-                                ? getFileUrlFromStorage(
-                                    STORAGE_BUCKETS.PREVIEW_IMAGES,
-                                    selectedTemplate.metadata.previewImg.storagePath.path
-                                )
-                                : null)
+                                    ? getFileUrlFromStorage(
+                                        STORAGE_BUCKETS.PREVIEW_IMAGES,
+                                        selectedTemplate.metadata.previewImg.storagePath.path
+                                    )
+                                    : null)
                         }
                         isNew={false}
                         isStarred={selectedTemplate ? starredTemplates.has(selectedTemplate.id) : false}

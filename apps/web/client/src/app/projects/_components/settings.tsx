@@ -94,7 +94,6 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
             // Invalidate and refetch both project lists and template lists
             await Promise.all([
                 utils.project.list.invalidate(),
-                utils.project.listTemplates.invalidate(),
             ]);
 
             refetch();
