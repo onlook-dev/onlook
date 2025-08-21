@@ -41,18 +41,14 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
     // Templates
     const shouldShowTemplate = templateProjects.length > 0;
-    const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+    const [selectedTemplate, setSelectedTemplate] = useState<Project | null>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
         new Set()
     );
 
     const handleTemplateClick = (project: Project) => {
-        const updatedTemplate = {
-            ...project,
-            isStarred: starredTemplates.has(project.id)
-        };
-        setSelectedTemplate(updatedTemplate);
+        setSelectedTemplate(project);
         setIsTemplateModalOpen(true);
     };
 
@@ -72,12 +68,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             return newStarred;
         });
 
-        if (selectedTemplate && selectedTemplate.id === templateId) {
-            setSelectedTemplate((prev: any) => ({
-                ...prev,
-                isStarred: !prev.isStarred
-            }));
-        }
+        // Note: Selected template star state is handled by the starredTemplates Set
     };
 
     const handleUnmarkTemplate = async () => {
@@ -117,43 +108,54 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [localOverrides, setLocalOverrides] = useState<Record<string, Partial<Project>>>({});
 
     useEffect(() => {
+        interface ProjectUpdateDetail {
+            id?: string;
+            projectId?: string;
+            name?: string;
+            description?: string;
+            tags?: string[];
+            sandbox?: Partial<Project['sandbox']>;
+            metadata?: Partial<Project['metadata']>;
+        }
+
         const handler = (ev: Event) => {
-            const custom = ev as CustomEvent;
-            const detail = (custom?.detail ?? {}) as Partial<Project> & { id?: string };
-            const id = (detail as any).id ?? (detail as any).projectId;
+            const custom = ev as CustomEvent<ProjectUpdateDetail>;
+            const detail = custom?.detail ?? {};
+            const id = detail.id ?? detail.projectId;
             if (!id) return;
+            
+            const { id: detailId, projectId, ...updateData } = detail;
             setLocalOverrides((prev) => ({
                 ...prev,
                 [id]: {
                     ...prev[id],
-                    ...(detail as any),
-
+                    ...updateData,
                     metadata: {
-                        ...(prev[id]?.metadata as any),
-                        ...(detail as any).metadata,
+                        ...prev[id]?.metadata,
+                        ...detail.metadata,
                     },
-                },
+                } as Partial<Project>,
             }));
         };
-        window.addEventListener('onlook_project_updated' as any, handler as EventListener);
-        window.addEventListener('onlook_project_modified' as any, handler as EventListener);
+        window.addEventListener('onlook_project_updated', handler as EventListener);
+        window.addEventListener('onlook_project_modified', handler as EventListener);
         return () => {
-            window.removeEventListener('onlook_project_updated' as any, handler as EventListener);
-            window.removeEventListener('onlook_project_modified' as any, handler as EventListener);
+            window.removeEventListener('onlook_project_updated', handler as EventListener);
+            window.removeEventListener('onlook_project_modified', handler as EventListener);
         };
     }, []);
 
     const projects: Project[] = useMemo(() => {
         return baseProjects.map((p) => {
             const o = localOverrides[p.id] ?? {};
-            const merged = {
+            const merged: Project = {
                 ...p,
                 ...o,
                 metadata: {
                     ...p.metadata,
-                    ...(o as any).metadata,
+                    ...o.metadata,
                 },
-            } as Project;
+            };
             return merged;
         });
     }, [baseProjects, localOverrides]);
@@ -448,16 +450,21 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                         description={selectedTemplate.metadata?.description || 'No description available'}
                         image={
                             selectedTemplate.metadata?.previewImg?.url ||
-                            (selectedTemplate.metadata?.previewImg?.storagePath
+                            (selectedTemplate.metadata?.previewImg?.storagePath?.bucket && selectedTemplate.metadata.previewImg.storagePath.path
                                 ? getFileUrlFromStorage(
-                                    selectedTemplate.metadata.previewImg.storagePath.bucket || STORAGE_BUCKETS.PREVIEW_IMAGES,
+                                    selectedTemplate.metadata.previewImg.storagePath.bucket,
                                     selectedTemplate.metadata.previewImg.storagePath.path
                                 )
-                                : undefined)
+                                : selectedTemplate.metadata?.previewImg?.storagePath?.path
+                                ? getFileUrlFromStorage(
+                                    STORAGE_BUCKETS.PREVIEW_IMAGES,
+                                    selectedTemplate.metadata.previewImg.storagePath.path
+                                )
+                                : null)
                         }
                         isNew={false}
-                        isStarred={selectedTemplate.isStarred}
-                        onToggleStar={() => handleToggleStar(selectedTemplate.id)}
+                        isStarred={selectedTemplate ? starredTemplates.has(selectedTemplate.id) : false}
+                        onToggleStar={() => selectedTemplate && handleToggleStar(selectedTemplate.id)}
                         templateProject={selectedTemplate}
                         onUnmarkTemplate={handleUnmarkTemplate}
                         user={user}

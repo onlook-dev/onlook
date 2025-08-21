@@ -21,12 +21,13 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { LazyImage } from "./lazy-image";
+
 interface TemplateModalProps {
     isOpen: boolean;
     onClose: () => void;
     title: string;
     description: string;
-    image: string;
+    image: string | null;
     isNew?: boolean;
     isStarred?: boolean;
     onToggleStar?: () => void;
