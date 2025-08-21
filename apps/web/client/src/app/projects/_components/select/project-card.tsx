@@ -55,7 +55,7 @@ export function ProjectCard({
         <motion.div
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{ scale: 1.02, y: -4 }}
+            whileHover={{ y: -4 }}
             transition={{ type: 'spring', stiffness: 300, damping: 24 }}
             className="w-full break-inside-avoid cursor-pointer"
         >
@@ -63,7 +63,10 @@ export function ProjectCard({
                 {img ? (
                     <img src={img} alt={project.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                 ) : (
-                    <div className="absolute inset-0 w-full h-full bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20" />
+                    <>
+                        <div className="absolute inset-0 w-full h-full bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40" />
+                        <div className="absolute inset-0 rounded-lg border-[0.5px] border-gray-500/70" style={{ maskImage: 'linear-gradient(to bottom, black 60%, transparent 100%)' }} />
+                    </>
                 )}
 
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

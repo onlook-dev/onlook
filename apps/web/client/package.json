@@ -16,15 +16,18 @@
     },
     "type": "module",
     "scripts": {
-        "build": "next build",
-        "check": "next lint && tsc --noEmit",
         "dev": "next dev --turbo",
+        "check": "next lint && tsc --noEmit",
         "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
         "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
         "lint": "next lint",
         "lint:fix": "next lint --fix",
-        "preview": "next build && next start",
+        "build": "next build",
         "start": "next start",
+        "preview": "bun run build && bun run start",
+        "build:standalone": "STANDALONE_BUILD=true next build && { cp -r public .next/standalone/apps/web/client/ && cp -r .next/static .next/standalone/apps/web/client/.next/; } 2>/dev/null",
+        "start:standalone": "bun .next/standalone/apps/web/client/server.js",
+        "preview:standalone": "bun run build:standalone && bun run start:standalone",
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {

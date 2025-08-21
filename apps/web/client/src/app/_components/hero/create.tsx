@@ -2,6 +2,7 @@
 
 import { useAuthContext } from '@/app/auth/auth-context';
 import { DraftImagePill } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/draft-image-pill';
+import { validateImageLimit } from '@/app/project/[id]/_components/right-panel/chat-tab/context-pills/helpers';
 import { useCreateManager } from '@/components/store/create';
 import { Routes } from '@/utils/constants';
 import { MessageContextType, type ImageMessageContext, type User } from '@onlook/models';
@@ -145,6 +146,13 @@ export const Create = observer(({
 
     const handleNewImageFiles = async (files: File[]) => {
         const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+
+        const { success, errorMessage } = validateImageLimit(selectedImages, imageFiles.length);
+        if (!success) {
+            toast.error(errorMessage);
+            setIsHandlingFile(false);
+            return;
+        }
 
         const imageContexts: ImageMessageContext[] = [];
         if (imageFiles.length > 0) {
