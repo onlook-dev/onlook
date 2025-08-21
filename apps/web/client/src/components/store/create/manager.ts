@@ -78,6 +78,7 @@ export class CreateManager {
             name,
             sandboxId,
             sandboxUrl: previewUrl,
+            tags: [],
             createdAt: new Date(),
             updatedAt: new Date(),
             previewImgUrl: null,

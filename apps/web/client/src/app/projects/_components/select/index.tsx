@@ -1,11 +1,15 @@
 'use client';
 
 import { api } from '@/trpc/react';
+import { getFileUrlFromStorage } from '@/utils/supabase/client';
+import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import localforage from 'localforage';
+import { toast } from 'sonner';
 import { TemplateModal } from '../templates/template-modal';
 import { Templates } from '../templates/templates-section';
 import { HighlightText } from './highlight-text';
@@ -14,29 +18,65 @@ import { ProjectCard } from './project-card';
 import { SquareProjectCard } from './square-project-card';
 
 export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: string } = {}) => {
-    const SHOW_TEMPLATE = false;
+    // Hooks
+    const utils = api.useUtils();
+    const { data: user } = api.user.get.useQuery();
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
+    const { data: templateProjects = [] } = api.project.listTemplates.useQuery({ limit: 8 });
+    const { mutateAsync: removeTag } = api.project.removeTag.useMutation();
+
+    // Search and filters
     const [internalQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const searchQuery = externalSearchQuery ?? internalQuery;
-    const [spacing] = useState<number>(24);
-    const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
-
+    const [filesOrderBy, setFilesOrderBy] = useState<'Newest first' | 'Oldest first'>('Newest first');
     const [filesSortBy, setFilesSortBy] = useState<'Alphabetical' | 'Date created' | 'Last viewed'>(
         'Last viewed',
     );
-    const [filesOrderBy, setFilesOrderBy] = useState<'Newest first' | 'Oldest first'>('Newest first');
+
+    // Settings
     const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] = useState(false);
     const settingsDropdownRef = useRef<HTMLDivElement>(null);
     const [layoutMode, setLayoutMode] = useState<'masonry' | 'grid'>('masonry');
+    const [spacing] = useState<number>(24);
 
-    // Template-related state
-    const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+    // Templates
+    const shouldShowTemplate = templateProjects.length > 0;
+    const [selectedTemplate, setSelectedTemplate] = useState<Project | null>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
+    const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
+        new Set()
+    );
+    const [isStarredTemplatesLoaded, setIsStarredTemplatesLoaded] = useState(false);
 
-    // Template handlers
-    const handleTemplateClick = (template: any) => {
-        setSelectedTemplate(template);
+    // Storage key for starred templates
+    const STARRED_TEMPLATES_KEY = 'onlook_starred_templates';
+
+    // Load starred templates from storage
+    const loadStarredTemplates = async () => {
+        try {
+            const saved = await localforage.getItem<string[]>(STARRED_TEMPLATES_KEY);
+            if (saved && Array.isArray(saved)) {
+                setStarredTemplates(new Set(saved));
+            }
+        } catch (error) {
+            console.error('Failed to load starred templates:', error);
+        } finally {
+            setIsStarredTemplatesLoaded(true);
+        }
+    };
+
+    // Save starred templates to storage
+    const saveStarredTemplates = async (templateIds: Set<string>) => {
+        try {
+            await localforage.setItem(STARRED_TEMPLATES_KEY, Array.from(templateIds));
+        } catch (error) {
+            console.error('Failed to save starred templates:', error);
+        }
+    };
+
+    const handleTemplateClick = (project: Project) => {
+        setSelectedTemplate(project);
         setIsTemplateModalOpen(true);
     };
 
@@ -46,8 +86,50 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     };
 
     const handleToggleStar = (templateId: string) => {
-        // This will be handled by the Templates component internally
+        setStarredTemplates((prev) => {
+            const newStarred = new Set(prev);
+            if (newStarred.has(templateId)) {
+                newStarred.delete(templateId);
+            } else {
+                newStarred.add(templateId);
+            }
+            // Save to storage asynchronously
+            saveStarredTemplates(newStarred);
+            return newStarred;
+        });
+
+        // Note: Selected template star state is handled by the starredTemplates Set
     };
+
+    const handleUnmarkTemplate = async () => {
+        if (!selectedTemplate?.id) return;
+
+        try {
+            await removeTag({
+                projectId: selectedTemplate.id,
+                tag: Tags.TEMPLATE
+            });
+
+            toast.success('Removed from templates');
+
+            setIsTemplateModalOpen(false);
+            setSelectedTemplate(null);
+
+            await Promise.all([
+                utils.project.list.invalidate(),
+                utils.project.listTemplates.invalidate(),
+            ]);
+
+            refetch();
+        } catch (error) {
+            toast.error('Failed to update template tag');
+        }
+    };
+
+    // Initialize starred templates from storage
+    useEffect(() => {
+        loadStarredTemplates();
+    }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -57,105 +139,62 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-
-    useEffect(() => {
-        const readFavs = () => {
-            try {
-                const raw = localStorage.getItem('onlook_fav_projects') || '[]';
-                const ids: string[] = JSON.parse(raw);
-                if (Array.isArray(ids)) setFavoriteIds(ids);
-            } catch { }
-        };
-        readFavs();
-        const onChange = () => readFavs();
-        window.addEventListener('storage', onChange);
-        window.addEventListener('onlook_fav_projects_changed', onChange as EventListener);
-        return () => {
-            window.removeEventListener('storage', onChange);
-            window.removeEventListener('onlook_fav_projects_changed', onChange as EventListener);
-        };
-    }, []);
-
     const baseProjects: Project[] = fetchedProjects ?? [];
-
     const [localOverrides, setLocalOverrides] = useState<Record<string, Partial<Project>>>({});
 
     useEffect(() => {
+        interface ProjectUpdateDetail {
+            id?: string;
+            projectId?: string;
+            name?: string;
+            description?: string;
+            tags?: string[];
+            sandbox?: Partial<Project['sandbox']>;
+            metadata?: Partial<Project['metadata']>;
+        }
+
         const handler = (ev: Event) => {
-            const custom = ev as CustomEvent;
-            const detail = (custom?.detail ?? {}) as Partial<Project> & { id?: string };
-            const id = (detail as any).id ?? (detail as any).projectId;
+            const custom = ev as CustomEvent<ProjectUpdateDetail>;
+            const detail = custom?.detail ?? {};
+            const id = detail.id ?? detail.projectId;
             if (!id) return;
+            
+            const { id: detailId, projectId, ...updateData } = detail;
             setLocalOverrides((prev) => ({
                 ...prev,
                 [id]: {
                     ...prev[id],
-                    ...(detail as any),
-
+                    ...updateData,
                     metadata: {
-                        ...(prev[id]?.metadata as any),
-                        ...(detail as any).metadata,
+                        ...prev[id]?.metadata,
+                        ...detail.metadata,
                     },
-                },
+                } as Partial<Project>,
             }));
         };
-        window.addEventListener('onlook_project_updated' as any, handler as EventListener);
-        window.addEventListener('onlook_project_modified' as any, handler as EventListener);
+        window.addEventListener('onlook_project_updated', handler as EventListener);
+        window.addEventListener('onlook_project_modified', handler as EventListener);
         return () => {
-            window.removeEventListener('onlook_project_updated' as any, handler as EventListener);
-            window.removeEventListener('onlook_project_modified' as any, handler as EventListener);
+            window.removeEventListener('onlook_project_updated', handler as EventListener);
+            window.removeEventListener('onlook_project_modified', handler as EventListener);
         };
     }, []);
-
-
-    const updateFunctionalDescription = (projectId: string, newDescription?: string) => {
-        setLocalOverrides((prev) => ({
-            ...prev,
-            [projectId]: {
-                ...prev[projectId],
-                metadata: {
-                    ...((prev[projectId]?.metadata as any) ?? {}),
-                    description: newDescription ?? 'Edited just now',
-                },
-            },
-        }));
-    };
-
-    const reorderRailSequence = (projectId: string) => {
-        setLocalOverrides((prev) => ({
-            ...prev,
-            [projectId]: {
-                ...prev[projectId],
-                metadata: {
-                    ...((prev[projectId]?.metadata as any) ?? {}),
-                    updatedAt: new Date().toISOString(),
-                },
-            },
-        }));
-    };
-
-    const onProjectModified = (projectId: string, newDescription?: string) => {
-        updateFunctionalDescription(projectId, newDescription);
-        reorderRailSequence(projectId);
-    };
-
 
     const projects: Project[] = useMemo(() => {
         return baseProjects.map((p) => {
             const o = localOverrides[p.id] ?? {};
-            const merged = {
+            const merged: Project = {
                 ...p,
                 ...o,
                 metadata: {
                     ...p.metadata,
-                    ...(o as any).metadata,
+                    ...o.metadata,
                 },
-            } as Project;
+            };
             return merged;
         });
     }, [baseProjects, localOverrides]);
 
-    const favoriteProjects = useMemo(() => projects.filter(p => favoriteIds.includes(p.id)), [projects, favoriteIds]);
 
     const filteredAndSortedProjects = useMemo(() => {
         let filtered = projects;
@@ -172,7 +211,8 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
 
 
     const filesProjects = useMemo(() => {
-        let list = filteredAndSortedProjects;
+        let list = filteredAndSortedProjects.filter(project => !project.tags?.includes(Tags.TEMPLATE));
+
         const sorted = [...list].sort((a, b) => {
             switch (filesSortBy) {
                 case 'Alphabetical':
@@ -315,11 +355,12 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                     </div>
                 </div>
 
-                {SHOW_TEMPLATE && (
+                {shouldShowTemplate && (
                     <Templates
                         searchQuery={debouncedSearchQuery}
                         onTemplateClick={handleTemplateClick}
                         onToggleStar={handleToggleStar}
+                        starredTemplates={starredTemplates}
                     />
                 )}
 
@@ -332,12 +373,11 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                                 onClick={() => setLayoutMode((m) => (m === 'masonry' ? 'grid' : 'masonry'))}
                                 className="p-2 rounded transition-colors hover:bg-secondary text-foreground-tertiary hover:text-foreground"
                                 aria-label="Toggle layout"
-                                title={layoutMode === 'masonry' ? 'Switch to grid' : 'Switch to masonry'}
                             >
                                 {layoutMode === 'masonry' ? (
-                                    <Icons.ViewGrid className="w-4 h-4" />
+                                    <Icons.LayoutWindow className="w-5 h-5" />
                                 ) : (
-                                    <Icons.ListBullet className="w-4 h-4" />
+                                    <Icons.LayoutMasonry className="w-5 h-5" />
                                 )}
                             </button>
 
@@ -437,16 +477,32 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             </div>
 
             {
-                selectedTemplate && SHOW_TEMPLATE && (
+                selectedTemplate && shouldShowTemplate && (
                     <TemplateModal
                         isOpen={isTemplateModalOpen}
                         onClose={handleCloseTemplateModal}
-                        title={selectedTemplate.title}
-                        description={selectedTemplate.description}
-                        image={selectedTemplate.image}
-                        isNew={selectedTemplate.isNew}
-                        isStarred={selectedTemplate.isStarred}
-                        onToggleStar={() => handleToggleStar(selectedTemplate.id)}
+                        title={selectedTemplate.name}
+                        description={selectedTemplate.metadata?.description || 'No description available'}
+                        image={
+                            selectedTemplate.metadata?.previewImg?.url ||
+                            (selectedTemplate.metadata?.previewImg?.storagePath?.bucket && selectedTemplate.metadata.previewImg.storagePath.path
+                                ? getFileUrlFromStorage(
+                                    selectedTemplate.metadata.previewImg.storagePath.bucket,
+                                    selectedTemplate.metadata.previewImg.storagePath.path
+                                )
+                                : selectedTemplate.metadata?.previewImg?.storagePath?.path
+                                ? getFileUrlFromStorage(
+                                    STORAGE_BUCKETS.PREVIEW_IMAGES,
+                                    selectedTemplate.metadata.previewImg.storagePath.path
+                                )
+                                : null)
+                        }
+                        isNew={false}
+                        isStarred={selectedTemplate ? starredTemplates.has(selectedTemplate.id) : false}
+                        onToggleStar={() => selectedTemplate && handleToggleStar(selectedTemplate.id)}
+                        templateProject={selectedTemplate}
+                        onUnmarkTemplate={handleUnmarkTemplate}
+                        user={user}
                     />
                 )
             }

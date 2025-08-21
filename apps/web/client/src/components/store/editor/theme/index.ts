@@ -1141,7 +1141,7 @@ export class ThemeManager {
 
     async updateClassReferences(replacements: ClassReplacement[]): Promise<void> {
         const sourceFiles = this.editorEngine.sandbox.listAllFiles();
-        const filesToUpdate = sourceFiles.filter((file) => file.endsWith('.tsx')) as string[];
+        const filesToUpdate = sourceFiles.filter((file) => file.endsWith('.tsx'))
 
         await Promise.all(
             filesToUpdate.map(async (file) => {

@@ -1,8 +1,9 @@
 import { env } from '@/env';
+import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
 import { trackEvent } from '@/utils/analytics/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { initModel } from '@onlook/ai';
-import { STORAGE_BUCKETS } from '@onlook/constants';
+import { STORAGE_BUCKETS, Tags } from '@onlook/constants';
 import {
     canvases,
     createDefaultCanvas,
@@ -29,8 +30,8 @@ import { getScreenshotPath } from '@onlook/utility';
 import { generateText } from 'ai';
 import { and, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
-import { createTRPCRouter, protectedProcedure } from '../../trpc';
 import { projectCreateRequestRouter } from './createRequest';
+import { forkTemplate } from './template';
 
 export const projectRouter = createTRPCRouter({
     hasAccess: protectedProcedure
@@ -178,6 +179,25 @@ export const projectRouter = createTRPCRouter({
             });
             return fetchedUserProjects.map((userProject) => toProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
         }),
+    listTemplates: protectedProcedure
+        .input(z.object({
+            limit: z.number().optional(),
+        }).optional())
+        .query(async ({ ctx, input }) => {
+            const fetchedUserProjects = await ctx.db.query.userProjects.findMany({
+                where: eq(userProjects.userId, ctx.user.id),
+                with: {
+                    project: true,
+                },
+                limit: input?.limit,
+            });
+            const allProjects = fetchedUserProjects.map((userProject) => toProject(userProject.project));
+            // Filter projects that have "template" in their tags
+            const templateProjects = allProjects.filter((project) =>
+                project.tags && project.tags.includes(Tags.TEMPLATE)
+            );
+            return templateProjects.sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
+        }),
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
         .query(async ({ ctx, input }) => {
@@ -290,6 +310,7 @@ export const projectRouter = createTRPCRouter({
                 return newProject;
             });
         }),
+    forkTemplate,
     generateName: protectedProcedure
         .input(z.object({
             prompt: z.string(),
@@ -354,5 +375,51 @@ export const projectRouter = createTRPCRouter({
             ...input.project,
             updatedAt: new Date(),
         }).where(eq(projects.id, input.id));
+    }),
+    addTag: protectedProcedure.input(z.object({
+        projectId: z.string(),
+        tag: z.string(),
+    })).mutation(async ({ ctx, input }) => {
+        const project = await ctx.db.query.projects.findFirst({
+            where: eq(projects.id, input.projectId),
+        });
+
+        if (!project) {
+            throw new Error('Project not found');
+        }
+
+        const currentTags = project.tags ?? [];
+        const newTags = currentTags.includes(input.tag)
+            ? currentTags
+            : [...currentTags, input.tag];
+
+        await ctx.db.update(projects).set({
+            tags: newTags,
+            updatedAt: new Date(),
+        }).where(eq(projects.id, input.projectId));
+
+        return { success: true, tags: newTags };
+    }),
+    removeTag: protectedProcedure.input(z.object({
+        projectId: z.string(),
+        tag: z.string(),
+    })).mutation(async ({ ctx, input }) => {
+        const project = await ctx.db.query.projects.findFirst({
+            where: eq(projects.id, input.projectId),
+        });
+
+        if (!project) {
+            throw new Error('Project not found');
+        }
+
+        const currentTags = project.tags ?? [];
+        const newTags = currentTags.filter(tag => tag !== input.tag);
+
+        await ctx.db.update(projects).set({
+            tags: newTags,
+            updatedAt: new Date(),
+        }).where(eq(projects.id, input.projectId));
+
+        return { success: true, tags: newTags };
     }),
 });

@@ -5,7 +5,6 @@ import { STORAGE_BUCKETS } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import { timeAgo } from '@onlook/utility';
 import { motion } from 'motion/react';
-import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { EditAppButton } from '../edit-app';
 import { Settings } from '../settings';
@@ -24,12 +23,7 @@ export function ProjectCard({
     HighlightText?: React.ComponentType<{ text: string; searchQuery: string }>;
 }) {
     const [img, setImg] = useState<string | null>(null);
-    const router = useRouter();
     const SHOW_DESCRIPTION = false;
-
-    const handleCardClick = () => {
-        router.push(`/project/${project.id}`);
-    };
 
     useEffect(() => {
         let isMounted = true;

@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { VARIANTS } from '@onlook/fonts';
+import { Icons } from '@onlook/ui/icons/index';
 import { observer } from 'mobx-react-lite';
 import { FontFamily } from './font-family';
-import { Icons } from '@onlook/ui/icons/index';
 
 const SystemFont = observer(() => {
     const editorEngine = useEditorEngine();
@@ -30,7 +30,7 @@ const SystemFont = observer(() => {
                                 variants={
                                     font.weight?.map(
                                         (weight) => VARIANTS.find((v) => v.value === weight)?.name,
-                                    ) as string[]
+                                    ).filter((v) => v !== undefined) ?? []
                                 }
                                 showDropdown={true}
                                 showAddButton={false}

@@ -1,3 +1,4 @@
+import { Tags } from '@onlook/constants';
 import {
     canvases,
     conversations,
@@ -52,11 +53,28 @@ const user0 = {
 const project0 = {
     id: uuidv4(),
     name: 'Preload Script Test',
-    sandboxId: '3f5rf6',
+    sandboxId: '123456',
     sandboxUrl: 'http://localhost:8084',
+    tags: [],
     previewImgUrl: null,
     previewImgPath: null,
     previewImgBucket: null,
+    updatedPreviewImgAt: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    description: 'Test Project Description',
+} satisfies Project;
+
+const project1 = {
+    id: uuidv4(),
+    name: 'Mock Template (This doesn\'t work)',
+    sandboxId: '1234567',
+    sandboxUrl: 'http://localhost:8084',
+    tags: [Tags.TEMPLATE],
+    previewImgUrl: null,
+    previewImgPath: null,
+    previewImgBucket: null,
+    updatedPreviewImgAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),
     description: 'Test Project Description',
@@ -65,6 +83,10 @@ const project0 = {
 const canvas0 = createDefaultCanvas(project0.id);
 const frame0 = createDefaultFrame(canvas0.id, project0.sandboxUrl);
 const userCanvas0 = createDefaultUserCanvas(user0.id, canvas0.id);
+
+const canvas1 = createDefaultCanvas(project1.id);
+const frame1 = createDefaultFrame(canvas1.id, project1.sandboxUrl);
+const userCanvas1 = createDefaultUserCanvas(user0.id, canvas1.id);
 
 const conversation0 = {
     id: uuidv4(),
@@ -234,17 +256,22 @@ export const seedDb = async () => {
         await tx.insert(prices).values([price0]);
         await tx.insert(subscriptions).values([subscription0]);
         await tx.insert(rateLimits).values([rateLimit0]);
-        await tx.insert(projects).values([project0]);
+        await tx.insert(projects).values([project0, project1]);
         await tx.insert(userProjects).values([
             {
                 userId: user0.id,
                 projectId: project0.id,
                 role: ProjectRole.OWNER,
             },
+            {
+                userId: user0.id,
+                projectId: project1.id,
+                role: ProjectRole.OWNER,
+            },
         ]);
-        await tx.insert(canvases).values([canvas0]);
-        await tx.insert(userCanvases).values([userCanvas0]);
-        await tx.insert(frames).values([frame0]);
+        await tx.insert(canvases).values([canvas0, canvas1]);
+        await tx.insert(userCanvases).values([userCanvas0, userCanvas1]);
+        await tx.insert(frames).values([frame0, frame1]);
         await tx.insert(conversations).values([conversation0]);
         await tx.insert(messages).values([message0, message1, message2, message3, message4]);
     });

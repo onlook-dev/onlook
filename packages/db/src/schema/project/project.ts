@@ -15,6 +15,7 @@ export const projects = pgTable('projects', {
     // metadata
     name: varchar('name').notNull(),
     description: text('description'),
+    tags: varchar('tags').array().default([]),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 

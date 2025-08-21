@@ -1,5 +1,10 @@
 "use client";
 
+import { useAuthContext } from '@/app/auth/auth-context';
+import { api } from '@/trpc/react';
+import { LocalForageKeys, Routes } from '@/utils/constants';
+import { getSandboxPreviewUrl } from '@onlook/constants';
+import type { Project, User } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -9,7 +14,12 @@ import {
     DropdownMenuTrigger
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import localforage from 'localforage';
 import { AnimatePresence, motion } from "motion/react";
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { LazyImage } from "./lazy-image";
 
 interface TemplateModalProps {
@@ -17,10 +27,13 @@ interface TemplateModalProps {
     onClose: () => void;
     title: string;
     description: string;
-    image: string;
+    image: string | null;
     isNew?: boolean;
     isStarred?: boolean;
     onToggleStar?: () => void;
+    templateProject?: Project;
+    onUnmarkTemplate?: () => void;
+    user?: User | null;
 }
 
 export function TemplateModal({
@@ -31,8 +44,67 @@ export function TemplateModal({
     image,
     isNew = false,
     isStarred = false,
-    onToggleStar
+    onToggleStar,
+    templateProject,
+    onUnmarkTemplate,
+    user,
 }: TemplateModalProps) {
+    const { mutateAsync: forkTemplate } = api.project.forkTemplate.useMutation();
+    const { setIsAuthModalOpen } = useAuthContext();
+    const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const router = useRouter();
+
+    const handleUseTemplate = async () => {
+        if (!user?.id) {
+            localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        if (!templateProject) {
+            toast.error('Template data not available');
+            return;
+        }
+
+        setIsCreatingProject(true);
+        try {
+            const newProject = await forkTemplate({
+                projectId: templateProject.id,
+            });
+
+            if (newProject) {
+                toast.success(`Created new project from ${title} template!`);
+                onClose();
+                router.push(`${Routes.PROJECT}/${newProject.id}`);
+            }
+        } catch (error) {
+            console.error('Error creating project from template:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
+                toast.error('Sandbox service temporarily unavailable', {
+                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                });
+            } else {
+                toast.error('Failed to create project from template', {
+                    description: errorMessage,
+                });
+            }
+        } finally {
+            setIsCreatingProject(false);
+        }
+    };
+
+    const handlePreviewTemplate = () => {
+        const sandboxId = templateProject?.sandbox?.id;
+        if (sandboxId) {
+            const sandboxUrl = getSandboxPreviewUrl(sandboxId, 3000);
+            window.open(sandboxUrl, '_blank');
+        } else {
+            console.error('No sandbox ID found:', sandboxId);
+        }
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -84,21 +156,46 @@ export function TemplateModal({
                             </p>
 
                             <div className="flex items-center gap-3 overflow-visible">
-                                <Button className="flex-1" size="lg">
-                                    Use Template
+                                <Button
+                                    className="flex-1"
+                                    size="lg"
+                                    onClick={handleUseTemplate}
+                                    disabled={isCreatingProject}
+                                >
+                                    {isCreatingProject ? (
+                                        <div className="flex items-center gap-2">
+                                            <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                                            Creating...
+                                        </div>
+                                    ) : (
+                                        'Use Template'
+                                    )}
                                 </Button>
 
                                 {onToggleStar && (
-                                    <Button
-                                        variant="outline"
-                                        size="lg"
-                                        onClick={onToggleStar}
-                                        aria-label={isStarred ? "Remove from favorites" : "Add to favorites"}
-                                    >
-                                        <Icons.BookmarkFilled
-                                            className={`w-5 h-5 ${isStarred ? "text-yellow-400" : "text-foreground-tertiary"}`}
-                                        />
-                                    </Button>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="lg"
+                                                onClick={onToggleStar}
+                                                aria-label={isStarred ? "Remove from favorites" : "Add to favorites"}
+                                            >
+                                                {isStarred ? (
+                                                    <Icons.BookmarkFilled
+                                                        className="w-5 h-5 text-white"
+                                                    />
+                                                ) : (
+                                                    <Icons.Bookmark
+                                                        className="w-5 h-5 text-foreground-tertiary"
+                                                    />
+                                                )}
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Mark as favorite</p>
+                                        </TooltipContent>
+                                    </Tooltip>
                                 )}
 
                                 <DropdownMenu>
@@ -112,22 +209,28 @@ export function TemplateModal({
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-48">
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem onClick={handlePreviewTemplate}>
                                             <Icons.EyeOpen className="w-4 h-4 mr-3" />
-                                            Preview Template
+                                            Preview
                                         </DropdownMenuItem>
                                         <DropdownMenuItem>
                                             <Icons.Share className="w-4 h-4 mr-3" />
-                                            Share Template
+                                            Share
                                         </DropdownMenuItem>
                                         <DropdownMenuItem>
                                             <Icons.Download className="w-4 h-4 mr-3" />
                                             Download
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
-                                        <DropdownMenuItem className="text-red-400 focus:text-red-300">
-                                            Report Template
-                                        </DropdownMenuItem>
+                                        {onUnmarkTemplate && (
+                                            <DropdownMenuItem
+                                                onClick={onUnmarkTemplate}
+                                                className="text-foreground-secondary focus:text-foreground"
+                                            >
+                                                <Icons.CrossL className="w-4 h-4 mr-3" />
+                                                Remove Template
+                                            </DropdownMenuItem>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
                             </div>

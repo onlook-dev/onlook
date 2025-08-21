@@ -1,5 +1,6 @@
 import { transKeys } from '@/i18n/keys';
 import { api } from '@/trpc/react';
+import { Tags } from '@onlook/constants';
 import type { Project } from '@onlook/models';
 import {
     AlertDialog,
@@ -22,16 +23,21 @@ import { Label } from '@onlook/ui/label';
 import { cn } from '@onlook/ui/utils';
 import { useTranslations } from 'next-intl';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 export function Settings({ project, refetch }: { project: Project; refetch: () => void }) {
     const t = useTranslations();
     const utils = api.useUtils();
     const { mutateAsync: deleteProject } = api.project.delete.useMutation();
     const { mutateAsync: updateProject } = api.project.update.useMutation();
+    const { mutateAsync: addTag } = api.project.addTag.useMutation();
+    const { mutateAsync: removeTag } = api.project.removeTag.useMutation();
+
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
+    const isTemplate = project.tags?.includes(Tags.TEMPLATE) || false;
 
     useEffect(() => {
         setProjectName(project.name);
@@ -75,6 +81,28 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
         refetch();
     };
 
+    const handleTemplateToggle = async () => {
+        try {
+            if (isTemplate) {
+                await removeTag({ projectId: project.id, tag: Tags.TEMPLATE });
+                toast.success('Removed from templates');
+            } else {
+                await addTag({ projectId: project.id, tag: Tags.TEMPLATE });
+                toast.success('Added to templates');
+            }
+
+            // Invalidate and refetch both project lists and template lists
+            await Promise.all([
+                utils.project.list.invalidate(),
+                utils.project.listTemplates.invalidate(),
+            ]);
+
+            refetch();
+        } catch (error) {
+            toast.error('Failed to update template tag');
+        }
+    };
+
     return (
         <>
             <DropdownMenu>
@@ -101,6 +129,17 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
                     >
                         <Icons.Pencil className="w-4 h-4" />
                         {t(transKeys.projects.actions.renameProject)}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onSelect={handleTemplateToggle}
+                        className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
+                    >
+                        {isTemplate ? (
+                            <Icons.CrossL className="w-4 h-4 text-purple-600" />
+                        ) : (
+                            <Icons.FilePlus className="w-4 h-4" />
+                        )}
+                        {isTemplate ? 'Unmark as template' : 'Create template'}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}

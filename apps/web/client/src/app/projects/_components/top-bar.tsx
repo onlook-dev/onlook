@@ -1,3 +1,5 @@
+'use client';
+
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { transKeys } from '@/i18n/keys';
 import { Routes } from '@/utils/constants';
@@ -11,11 +13,15 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
+import localforage from 'localforage';
 import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+
+const RECENT_SEARCHES_KEY = 'onlook_recent_searches';
+const RECENT_COLORS_KEY = 'onlook_recent_colors';
 
 interface TopBarProps {
     searchQuery?: string;
@@ -44,36 +50,37 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Load suggestions from localStorage
+    // Load suggestions from localforage
     useEffect(() => {
-        try {
-            const rs = JSON.parse(localStorage.getItem('onlook_recent_searches') || '[]');
-            if (Array.isArray(rs)) setRecentSearches(rs.slice(0, 6));
-        } catch { }
-        try {
-            const rc = JSON.parse(
-                localStorage.getItem('onlook_recent_colors') ||
-                localStorage.getItem('usedColors') ||
-                '[]',
-            );
-            if (Array.isArray(rc)) setRecentColors(rc.slice(0, 10));
-        } catch { }
+        const loadRecentSearches = async () => {
+            try {
+                const rs = await localforage.getItem<string[]>(RECENT_SEARCHES_KEY) ?? []
+                if (Array.isArray(rs)) setRecentSearches(rs.slice(0, 6));
+            } catch { }
+        };
+        loadRecentSearches();
+        const loadRecentColors = async () => {
+            try {
+                const rc = await localforage.getItem<string[]>(RECENT_COLORS_KEY) ?? []
+                if (Array.isArray(rc)) setRecentColors(rc.slice(0, 10));
+            } catch { }
+        };
+        loadRecentColors();
     }, []);
 
     // Persist non-empty search queries to recent
     useEffect(() => {
         const q = (searchQuery ?? '').trim();
         if (!q) return;
-        const timer = setTimeout(() => {
+        const timer = setTimeout(async () => {
             try {
+                const recentSearches = (await localforage.getItem<string[]>(RECENT_SEARCHES_KEY)) ?? []
                 const rs = new Set<string>([
                     q,
-                    ...((JSON.parse(
-                        localStorage.getItem('onlook_recent_searches') || '[]',
-                    ) as string[]) || []),
+                    ...recentSearches,
                 ]);
                 const arr = Array.from(rs).slice(0, 8);
-                localStorage.setItem('onlook_recent_searches', JSON.stringify(arr));
+                localforage.setItem(RECENT_SEARCHES_KEY, arr);
                 setRecentSearches(arr);
             } catch { }
         }, 600);
@@ -83,8 +90,8 @@ export const TopBar = ({ searchQuery, onSearchChange }: TopBarProps) => {
     useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
-            setIsSearchFocused(false);
-            searchInputRef.current?.blur();
+                setIsSearchFocused(false);
+                searchInputRef.current?.blur();
             }
         };
 

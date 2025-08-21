@@ -10,3 +10,4 @@ export * from './language';
 export * from './links';
 export * from './storage';
 export * from './style';
+export * from './tags';
