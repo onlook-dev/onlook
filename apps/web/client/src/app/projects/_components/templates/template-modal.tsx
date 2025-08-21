@@ -4,7 +4,7 @@ import { useAuthContext } from '@/app/auth/auth-context';
 import { api } from '@/trpc/react';
 import { LocalForageKeys, Routes } from '@/utils/constants';
 import { SandboxTemplates, Templates, getSandboxPreviewUrl } from '@onlook/constants';
-import type { User } from '@onlook/models';
+import type { Project, User } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -33,7 +33,7 @@ interface TemplateModalProps {
     projectId?: string;
     onUnmarkTemplate?: () => void;
     user?: User | null;
-    templateProject?: any;
+    templateProject?: Project;
 }
 
 export function TemplateModal({
@@ -114,13 +114,12 @@ export function TemplateModal({
     };
 
     const handlePreviewTemplate = () => {
-        console.log('Preview Template clicked', templateProject);
-        if (templateProject?.sandboxId) {
-            const sandboxUrl = getSandboxPreviewUrl(templateProject.sandboxId, 3000);
-            console.log('Opening URL:', sandboxUrl);
+        const sandboxId = templateProject?.sandbox?.id;
+        if (sandboxId) {
+            const sandboxUrl = getSandboxPreviewUrl(sandboxId, 3000);
             window.open(sandboxUrl, '_blank');
         } else {
-            console.log('No sandbox ID found:', templateProject?.sandboxId);
+            console.error('No sandbox ID found:', sandboxId);
         }
     };
 
@@ -223,11 +222,11 @@ export function TemplateModal({
                                     <DropdownMenuContent align="end" className="w-48">
                                         <DropdownMenuItem onClick={handlePreviewTemplate}>
                                             <Icons.EyeOpen className="w-4 h-4 mr-3" />
-                                            Preview Template
+                                            Preview
                                         </DropdownMenuItem>
                                         <DropdownMenuItem>
                                             <Icons.Share className="w-4 h-4 mr-3" />
-                                            Share Template
+                                            Share
                                         </DropdownMenuItem>
                                         <DropdownMenuItem>
                                             <Icons.Download className="w-4 h-4 mr-3" />
@@ -239,12 +238,11 @@ export function TemplateModal({
                                                 onClick={onUnmarkTemplate}
                                                 className="text-foreground-secondary focus:text-foreground"
                                             >
-                                                <Icons.BookmarkFilled className="w-4 h-4 mr-3" />
                                                 Remove Template
                                             </DropdownMenuItem>
                                         )}
                                         <DropdownMenuItem className="text-red-400 focus:text-red-300">
-                                            Report Template
+                                            Report
                                         </DropdownMenuItem>
                                     </DropdownMenuContent>
                                 </DropdownMenu>

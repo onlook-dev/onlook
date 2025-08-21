@@ -42,12 +42,16 @@ export function TemplateCard({
             aria-label={`Template: ${title} - ${description}`}
         >
             <div className="w-80 h-24 rounded-xl overflow-hidden hover:bg-secondary transition-colors duration-300 bg-background border border-border hover:border-border/80 flex relative">
-                <div className="w-1/3 h-full bg-secondary flex-shrink-0 relative">
-                    <img
-                        src={image}
-                        alt={`${title} template preview`}
-                        className="w-full h-full object-cover"
-                    />
+                <div className="w-1/3 h-full flex-shrink-0 relative">
+                    {image && image !== "/assets/site-version-1.png" ? (
+                        <img
+                            src={image}
+                            alt={`${title} template preview`}
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-full h-full bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40" />
+                    )}
 
                     {isNew && (
                         <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs px-2 py-1 rounded-full font-medium z-10">
