@@ -3,6 +3,7 @@ import type { SandboxTemplate } from '@onlook/models';
 export enum Templates {
     BLANK = 'BLANK',
     EMPTY_NEXTJS = 'EMPTY_NEXTJS',
+    SAAS_PLATFORM = 'SAAS_PLATFORM',
 }
 
 export const SandboxTemplates: Record<Templates, SandboxTemplate> = {
@@ -12,6 +13,10 @@ export const SandboxTemplates: Record<Templates, SandboxTemplate> = {
     },
     EMPTY_NEXTJS: {
         id: 'vgfzfw',
+        port: 3000,
+    },
+    SAAS_PLATFORM: {
+        id: 'o5p7zi',
         port: 3000,
     },
 };

@@ -22,7 +22,6 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
         limit: 8
     });
 
-    // Filter templates based on search query
     const filteredTemplatesData = useMemo(() => {
         if (isLoading) return [];
         
@@ -32,7 +31,6 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
                 (project.metadata.description && project.metadata.description.toLowerCase().includes(searchQuery.toLowerCase()))
         );
 
-        // Sort starred templates first
         const sorted = filtered.sort((a, b) => {
             const aIsStarred = starredTemplates.has(a.id);
             const bIsStarred = starredTemplates.has(b.id);
@@ -41,7 +39,7 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
             return 0;
         });
 
-        return sorted.slice(0, 8); // Limit to 8 templates
+        return sorted.slice(0, 8);
     }, [searchQuery, starredTemplates, templateProjects, isLoading]);
 
 
@@ -58,8 +56,8 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
             >
                 <AnimatePresence mode="popLayout">
                     {filteredTemplatesData.length > 0 ? (
-                        <>
-                            {filteredTemplatesData.map((project, index) => (
+                        [
+                            ...filteredTemplatesData.map((project, index) => (
                                 <motion.div
                                     key={project.id}
                                     className="flex-shrink-0"
@@ -100,10 +98,11 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
                                         onClick={() => onTemplateClick(project)}
                                     />
                                 </motion.div>
-                            ))}
-
-                            {!searchQuery && (
+                            )),
+                            
+                            ...(!searchQuery ? [(
                                 <motion.div
+                                    key="add-template"
                                     className="flex-shrink-0"
                                     initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
                                     animate={{
@@ -136,8 +135,8 @@ export function Templates({ searchQuery, onTemplateClick, onToggleStar, starredT
                                         </div>
                                     </Link>
                                 </motion.div>
-                            )}
-                        </>
+                            )] : [])
+                        ]
                     ) : searchQuery ? (
                         <motion.div
                             className="flex flex-col items-center justify-center w-full py-12 text-center"

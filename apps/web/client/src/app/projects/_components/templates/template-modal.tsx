@@ -1,5 +1,10 @@
 "use client";
 
+import { useAuthContext } from '@/app/auth/auth-context';
+import { api } from '@/trpc/react';
+import { LocalForageKeys, Routes } from '@/utils/constants';
+import { SandboxTemplates, Templates, getSandboxPreviewUrl } from '@onlook/constants';
+import type { User } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -10,6 +15,10 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { AnimatePresence, motion } from "motion/react";
+import localforage from 'localforage';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import { toast } from 'sonner';
 import { LazyImage } from "./lazy-image";
 
 interface TemplateModalProps {
@@ -23,6 +32,8 @@ interface TemplateModalProps {
     onToggleStar?: () => void;
     projectId?: string;
     onUnmarkTemplate?: () => void;
+    user?: User | null;
+    templateProject?: any;
 }
 
 export function TemplateModal({
@@ -35,8 +46,92 @@ export function TemplateModal({
     isStarred = false,
     onToggleStar,
     projectId,
-    onUnmarkTemplate
+    onUnmarkTemplate,
+    user,
+    templateProject
 }: TemplateModalProps) {
+    const { mutateAsync: forkSandbox } = api.sandbox.fork.useMutation();
+    const { mutateAsync: createProject } = api.project.create.useMutation();
+    const { setIsAuthModalOpen } = useAuthContext();
+    const router = useRouter();
+    const [isCreatingProject, setIsCreatingProject] = useState(false);
+
+    const handleUseTemplate = async () => {
+        if (!user?.id) {
+            localforage.setItem(LocalForageKeys.RETURN_URL, window.location.pathname);
+            setIsAuthModalOpen(true);
+            return;
+        }
+
+        if (!templateProject) {
+            toast.error('Template data not available');
+            return;
+        }
+
+        setIsCreatingProject(true);
+        try {
+            let sandboxTemplate;
+            const templateName = title.toLowerCase();
+            
+            if (templateName.includes('saas') || templateName.includes('platform')) {
+                sandboxTemplate = SandboxTemplates[Templates.SAAS_PLATFORM];
+            } else {
+                sandboxTemplate = SandboxTemplates[Templates.EMPTY_NEXTJS];
+            }
+
+            const { sandboxId, previewUrl } = await forkSandbox({
+                sandbox: sandboxTemplate,
+                config: {
+                    title: `${title} - ${user.id}`,
+                    tags: ['template', title.toLowerCase().replace(/\s+/g, '-'), user.id],
+                },
+            });
+
+            const newProject = await createProject({
+                project: {
+                    name: `${title} (Copy)`,
+                    sandboxId,
+                    sandboxUrl: previewUrl,
+                    description: description || `Your new ${title.toLowerCase()} project`,
+                    tags: [],
+                },
+                userId: user.id,
+            });
+
+            if (newProject) {
+                toast.success(`Created new project from ${title} template!`);
+                onClose();
+                router.push(`${Routes.PROJECT}/${newProject.id}`);
+            }
+        } catch (error) {
+            console.error('Error creating project from template:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+
+            if (errorMessage.includes('502') || errorMessage.includes('sandbox')) {
+                toast.error('Sandbox service temporarily unavailable', {
+                    description: 'Please try again in a few moments. Our servers may be experiencing high load.',
+                });
+            } else {
+                toast.error('Failed to create project from template', {
+                    description: errorMessage,
+                });
+            }
+        } finally {
+            setIsCreatingProject(false);
+        }
+    };
+
+    const handlePreviewTemplate = () => {
+        console.log('Preview Template clicked', templateProject);
+        if (templateProject?.sandboxId) {
+            const sandboxUrl = getSandboxPreviewUrl(templateProject.sandboxId, 3000);
+            console.log('Opening URL:', sandboxUrl);
+            window.open(sandboxUrl, '_blank');
+        } else {
+            console.log('No sandbox ID found:', templateProject?.sandboxId);
+        }
+    };
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -88,8 +183,20 @@ export function TemplateModal({
                             </p>
 
                             <div className="flex items-center gap-3 overflow-visible">
-                                <Button className="flex-1" size="lg">
-                                    Use Template
+                                <Button 
+                                    className="flex-1" 
+                                    size="lg"
+                                    onClick={handleUseTemplate}
+                                    disabled={isCreatingProject}
+                                >
+                                    {isCreatingProject ? (
+                                        <div className="flex items-center gap-2">
+                                            <Icons.LoadingSpinner className="w-4 h-4 animate-spin" />
+                                            Creating...
+                                        </div>
+                                    ) : (
+                                        'Use Template'
+                                    )}
                                 </Button>
 
                                 {onToggleStar && (
@@ -122,7 +229,7 @@ export function TemplateModal({
                                         </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="w-48">
-                                        <DropdownMenuItem>
+                                        <DropdownMenuItem onClick={handlePreviewTemplate}>
                                             <Icons.EyeOpen className="w-4 h-4 mr-3" />
                                             Preview Template
                                         </DropdownMenuItem>

@@ -17,6 +17,7 @@ import { ProjectCard } from './project-card';
 import { SquareProjectCard } from './square-project-card';
 
 export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: string } = {}) => {
+    const { data: user } = api.user.get.useQuery();
     const utils = api.useUtils();
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
     const { data: templateProjects = [] } = api.project.listTemplates.useQuery({ limit: 8 });
@@ -461,6 +462,8 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                         onToggleStar={() => handleToggleStar(selectedTemplate.id)}
                         projectId={selectedTemplate.id}
                         onUnmarkTemplate={handleUnmarkTemplate}
+                        user={user}
+                        templateProject={selectedTemplate}
                     />
                 )
             }
