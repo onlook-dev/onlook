@@ -8,6 +8,7 @@ import { Icons } from '@onlook/ui/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import Link from 'next/link';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import localforage from 'localforage';
 import { toast } from 'sonner';
 import { TemplateModal } from '../templates/template-modal';
 import { Templates } from '../templates/templates-section';
@@ -46,6 +47,33 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
         new Set()
     );
+    const [isStarredTemplatesLoaded, setIsStarredTemplatesLoaded] = useState(false);
+
+    // Storage key for starred templates
+    const STARRED_TEMPLATES_KEY = 'onlook_starred_templates';
+
+    // Load starred templates from storage
+    const loadStarredTemplates = async () => {
+        try {
+            const saved = await localforage.getItem<string[]>(STARRED_TEMPLATES_KEY);
+            if (saved && Array.isArray(saved)) {
+                setStarredTemplates(new Set(saved));
+            }
+        } catch (error) {
+            console.error('Failed to load starred templates:', error);
+        } finally {
+            setIsStarredTemplatesLoaded(true);
+        }
+    };
+
+    // Save starred templates to storage
+    const saveStarredTemplates = async (templateIds: Set<string>) => {
+        try {
+            await localforage.setItem(STARRED_TEMPLATES_KEY, Array.from(templateIds));
+        } catch (error) {
+            console.error('Failed to save starred templates:', error);
+        }
+    };
 
     const handleTemplateClick = (project: Project) => {
         setSelectedTemplate(project);
@@ -65,6 +93,8 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             } else {
                 newStarred.add(templateId);
             }
+            // Save to storage asynchronously
+            saveStarredTemplates(newStarred);
             return newStarred;
         });
 
@@ -95,6 +125,11 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             toast.error('Failed to update template tag');
         }
     };
+
+    // Initialize starred templates from storage
+    useEffect(() => {
+        loadStarredTemplates();
+    }, []);
 
     useEffect(() => {
         const timer = setTimeout(() => {
