@@ -227,7 +227,7 @@ export function TemplateModal({
                                         </DropdownMenuItem> */}
                                         <DropdownMenuItem onClick={handleEditTemplate}>
                                             <Icons.Edit className="w-4 h-4 mr-3" />
-                                            Edit Template
+                                            Edit
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         {onUnmarkTemplate && (
