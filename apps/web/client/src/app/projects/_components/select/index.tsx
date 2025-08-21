@@ -17,25 +17,30 @@ import { ProjectCard } from './project-card';
 import { SquareProjectCard } from './square-project-card';
 
 export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: string } = {}) => {
-    const { data: user } = api.user.get.useQuery();
+    // Hooks
     const utils = api.useUtils();
+    const { data: user } = api.user.get.useQuery();
     const { data: fetchedProjects, isLoading, refetch } = api.project.list.useQuery();
     const { data: templateProjects = [] } = api.project.listTemplates.useQuery({ limit: 8 });
-    const removeTagMutation = api.project.removeTag.useMutation();
-    const SHOW_TEMPLATE = templateProjects.length > 0;
+    const { mutateAsync: removeTag } = api.project.removeTag.useMutation();
+
+    // Search and filters
     const [internalQuery] = useState("");
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
     const searchQuery = externalSearchQuery ?? internalQuery;
-    const [spacing] = useState<number>(24);
-
+    const [filesOrderBy, setFilesOrderBy] = useState<'Newest first' | 'Oldest first'>('Newest first');
     const [filesSortBy, setFilesSortBy] = useState<'Alphabetical' | 'Date created' | 'Last viewed'>(
         'Last viewed',
     );
-    const [filesOrderBy, setFilesOrderBy] = useState<'Newest first' | 'Oldest first'>('Newest first');
+
+    // Settings
     const [isSettingsDropdownOpen, setIsSettingsDropdownOpen] = useState(false);
     const settingsDropdownRef = useRef<HTMLDivElement>(null);
     const [layoutMode, setLayoutMode] = useState<'masonry' | 'grid'>('masonry');
+    const [spacing] = useState<number>(24);
 
+    // Templates
+    const shouldShowTemplate = templateProjects.length > 0;
     const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
     const [starredTemplates, setStarredTemplates] = useState<Set<string>>(
@@ -79,7 +84,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         if (!selectedTemplate?.id) return;
 
         try {
-            await removeTagMutation.mutateAsync({
+            await removeTag({
                 projectId: selectedTemplate.id,
                 tag: Tags.TEMPLATE
             });
@@ -108,10 +113,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-
-
     const baseProjects: Project[] = fetchedProjects ?? [];
-
     const [localOverrides, setLocalOverrides] = useState<Record<string, Partial<Project>>>({});
 
     useEffect(() => {
@@ -316,7 +318,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
                     </div>
                 </div>
 
-                {SHOW_TEMPLATE && (
+                {shouldShowTemplate && (
                     <Templates
                         searchQuery={debouncedSearchQuery}
                         onTemplateClick={handleTemplateClick}
@@ -438,7 +440,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
             </div>
 
             {
-                selectedTemplate && SHOW_TEMPLATE && (
+                selectedTemplate && shouldShowTemplate && (
                     <TemplateModal
                         isOpen={isTemplateModalOpen}
                         onClose={handleCloseTemplateModal}
