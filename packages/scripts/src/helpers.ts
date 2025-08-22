@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import ora from 'ora';
 import prompts from 'prompts';
 import chalk from 'chalk';
@@ -140,19 +141,33 @@ export const writeEnvFile = async (filePath: string, content: string, label: str
             const finalContent = buildEnvFileContent(resolvedVars);
 
             const writeSpinner = ora(`Writing updated ${label} .env to ${filePath}`).start();
-            fs.writeFileSync(filePath, finalContent);
-            writeSpinner.succeed(`${label} .env updated at ${filePath}`);
+            try {
+                // Ensure directory exists using cross-platform path handling
+                const dir = path.dirname(filePath);
+                await fs.promises.mkdir(dir, { recursive: true });
+
+                // Write file with restrictive permissions (readable/writable only by owner)
+                await fs.promises.writeFile(filePath, finalContent, { mode: 0o600 });
+                writeSpinner.succeed(`${label} .env updated at ${filePath}`);
+            } catch (error) {
+                writeSpinner.fail(`Failed to update ${label} .env at ${filePath}`);
+                throw error;
+            }
         } else {
             const writeSpinner = ora(`Writing new ${label} .env to ${filePath}`).start();
 
-            // Ensure directory exists
-            const dir = filePath.substring(0, filePath.lastIndexOf('/'));
-            if (!fs.existsSync(dir)) {
-                fs.mkdirSync(dir, { recursive: true });
-            }
+            try {
+                // Ensure directory exists using cross-platform path handling
+                const dir = path.dirname(filePath);
+                await fs.promises.mkdir(dir, { recursive: true });
 
-            fs.writeFileSync(filePath, content);
-            writeSpinner.succeed(`${label} .env written to ${filePath}`);
+                // Write file with restrictive permissions (readable/writable only by owner)
+                await fs.promises.writeFile(filePath, content, { mode: 0o600 });
+                writeSpinner.succeed(`${label} .env written to ${filePath}`);
+            } catch (error) {
+                writeSpinner.fail(`Failed to write ${label} .env to ${filePath}`);
+                throw error;
+            }
         }
     } catch (err) {
         spinner.fail(`Failed processing ${label} .env`);
