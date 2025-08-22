@@ -1,25 +1,25 @@
-import type {
-    MastraMessageContentV2,
-    MastraMessageContentV3,
-    MastraMessageV3,
-} from '@mastra/core/agent';
-import type { MastraMessageV2 } from '@mastra/core/memory';
 import type { CodeDiff } from '../../code/index.ts';
 import type { MessageCheckpoints } from './checkpoint.ts';
 import type { MessageContext } from './context.ts';
+import type { UIMessage } from 'ai';
 
 export enum ChatMessageRole {
     USER = 'user',
     ASSISTANT = 'assistant',
 }
-export interface ChatMessageContent extends MastraMessageContentV3 {
+export interface ChatMessageContent {
+    format: 3;
+    parts: UIMessage['parts'];
     metadata: {
         vercelId?: string;
         context: MessageContext[];
         checkpoints: MessageCheckpoints[];
     };
 }
-interface BaseChatMessage extends MastraMessageV3 {
+
+interface BaseChatMessage {
+    id: string;
+    createdAt: Date;
     role: ChatMessageRole;
     threadId: string;
     content: ChatMessageContent;
