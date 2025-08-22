@@ -97,10 +97,9 @@ export function Hero() {
                         Onlook isn't designed for Mobile
                     </div>
                     <Button 
-                        variant="outline" 
                         size="sm"
                         onClick={() => setIsEmailModalOpen(true)}
-                        className="text-foreground-secondary border-foreground-secondary/30 hover:bg-foreground-secondary/20"
+                        className="bg-foreground-primary text-white hover:bg-foreground-hover"
                     >
                         Email me a link for later
                     </Button>

@@ -9,7 +9,7 @@ import {
     DialogTitle,
 } from '@onlook/ui/dialog';
 import { Input } from '@onlook/ui/input';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface EmailCaptureModalProps {
     isOpen: boolean;
@@ -19,13 +19,40 @@ interface EmailCaptureModalProps {
 interface FormData {
     name: string;
     email: string;
+    utm_source: string;
+    utm_medium: string;
+    utm_campaign: string;
+    utm_term: string;
+    utm_content: string;
 }
 
 export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
-    const [formData, setFormData] = useState<FormData>({ name: '', email: '' });
+    const [formData, setFormData] = useState<FormData>({ 
+        name: '', 
+        email: '', 
+        utm_source: '',
+        utm_medium: '',
+        utm_campaign: '',
+        utm_term: '',
+        utm_content: ''
+    });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const urlParams = new URLSearchParams(window.location.search);
+            setFormData(prev => ({
+                ...prev,
+                utm_source: urlParams.get('utm_source') || '',
+                utm_medium: urlParams.get('utm_medium') || '',
+                utm_campaign: urlParams.get('utm_campaign') || '',
+                utm_term: urlParams.get('utm_term') || '',
+                utm_content: urlParams.get('utm_content') || ''
+            }));
+        }
+    }, []);
 
     const handleInputChange = (field: keyof FormData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -52,6 +79,12 @@ export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
             const url = new URL('https://n8n.process.onlook.com/webhook/website-landing-form');
             url.searchParams.append('name', formData.name.trim());
             url.searchParams.append('email', formData.email.trim());
+            
+            if (formData.utm_source) url.searchParams.append('utm_source', formData.utm_source);
+            if (formData.utm_medium) url.searchParams.append('utm_medium', formData.utm_medium);
+            if (formData.utm_campaign) url.searchParams.append('utm_campaign', formData.utm_campaign);
+            if (formData.utm_term) url.searchParams.append('utm_term', formData.utm_term);
+            if (formData.utm_content) url.searchParams.append('utm_content', formData.utm_content);
 
             const credentials = btoa('alex:Onlook01!');
             
@@ -69,7 +102,15 @@ export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
             setShowSuccess(true);
             setTimeout(() => {
                 setShowSuccess(false);
-                setFormData({ name: '', email: '' });
+                setFormData({ 
+                    name: '', 
+                    email: '', 
+                    utm_source: '',
+                    utm_medium: '',
+                    utm_campaign: '',
+                    utm_term: '',
+                    utm_content: ''
+                });
                 onClose();
             }, 2000);
 
@@ -83,7 +124,15 @@ export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
 
     const handleClose = () => {
         if (!isSubmitting) {
-            setFormData({ name: '', email: '' });
+            setFormData({ 
+                name: '', 
+                email: '', 
+                utm_source: '',
+                utm_medium: '',
+                utm_campaign: '',
+                utm_term: '',
+                utm_content: ''
+            });
             setError(null);
             setShowSuccess(false);
             onClose();
@@ -138,26 +187,24 @@ export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
                             />
                         </div>
 
+                        {/* Hidden UTM parameter fields */}
+                        <input type="hidden" name="utm_source" value={formData.utm_source} />
+                        <input type="hidden" name="utm_medium" value={formData.utm_medium} />
+                        <input type="hidden" name="utm_campaign" value={formData.utm_campaign} />
+                        <input type="hidden" name="utm_term" value={formData.utm_term} />
+                        <input type="hidden" name="utm_content" value={formData.utm_content} />
+
                         {error && (
                             <div className="text-sm text-red-500 text-center">
                                 {error}
                             </div>
                         )}
 
-                        <div className="flex gap-3 pt-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={handleClose}
-                                disabled={isSubmitting}
-                                className="flex-1"
-                            >
-                                Cancel
-                            </Button>
+                        <div className="pt-2">
                             <Button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="flex-1"
+                                className="w-full bg-foreground-primary text-white hover:bg-foreground-hover"
                             >
                                 {isSubmitting ? 'Submitting...' : 'Submit'}
                             </Button>
