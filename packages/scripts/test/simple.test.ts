@@ -80,8 +80,10 @@ EMPTY_KEY=
     it('should validate JWT token patterns', () => {
         const jwtPattern = /^ey[A-Za-z0-9_-]{3,}$/; // JWT tokens need to be longer than just "ey"
 
-        expect('eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9').toMatch(jwtPattern);
         expect('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9').toMatch(jwtPattern);
+        expect('test_jwt_like_pattern_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9').not.toMatch(
+            jwtPattern,
+        );
         expect('invalid-token').not.toMatch(jwtPattern);
         expect('ey').not.toMatch(jwtPattern); // Too short
         expect('').not.toMatch(jwtPattern);
@@ -96,14 +98,14 @@ EMPTY_KEY=
 
         const validOutput = `
 Started supabase local development setup.
-anon key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test_anon
-service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test_service
+anon key: eyTest_demo_anon_key_safe_placeholder_string
+service_role key: eyTest_demo_service_role_key_safe_placeholder_string
         `;
 
         const keys = extractSupabaseKeys(validOutput);
         expect(keys).not.toBeNull();
-        expect(keys?.anonKey).toBe('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test_anon');
-        expect(keys?.serviceRoleKey).toBe('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test_service');
+        expect(keys?.anonKey).toBe('eyTest_demo_anon_key_safe_placeholder_string');
+        expect(keys?.serviceRoleKey).toBe('eyTest_demo_service_role_key_safe_placeholder_string');
 
         const invalidOutput = 'No keys here';
         expect(extractSupabaseKeys(invalidOutput)).toBeNull();

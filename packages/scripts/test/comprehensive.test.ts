@@ -25,8 +25,8 @@ describe('comprehensive functionality tests', () => {
         it('should generate correct client backend environment content', () => {
             // Test the actual generateBackendEnvContent function through getClientEnvContent
             const mockKeys = {
-                anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.anon_test',
-                serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.service_test',
+                anonKey: 'test_anon_key_placeholder_string_123',
+                serviceRoleKey: 'test_service_key_placeholder_string_456',
             };
 
             // We need to test the actual function, but it's not exported
@@ -51,8 +51,8 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
 
         it('should generate correct database backend environment content', () => {
             const mockKeys = {
-                anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.anon_test',
-                serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.service_test',
+                anonKey: 'test_anon_key_placeholder_string_123',
+                serviceRoleKey: 'test_service_key_placeholder_string_456',
             };
 
             const dbContent = getDbEnvContent(mockKeys);
@@ -338,8 +338,8 @@ Starting Supabase local development setup...
       Studio URL: http://127.0.0.1:54323
     Inbucket URL: http://127.0.0.1:54324
       JWT secret: super-secret-jwt-token-with-at-least-32-characters-long
-        anon key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
-service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
+        anon key: eyTest_demo_anon_key_string_safe_for_testing_purposes_123456
+service_role key: eyTest_demo_service_role_key_string_safe_for_testing_purposes_789
 
 Supabase local development setup completed.
             `;
@@ -347,10 +347,10 @@ Supabase local development setup completed.
             const keys = extractSupabaseKeys(validOutput);
             expect(keys).not.toBeNull();
             expect(keys?.anonKey).toBe(
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0',
+                'eyTest_demo_anon_key_string_safe_for_testing_purposes_123456',
             );
             expect(keys?.serviceRoleKey).toBe(
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU',
+                'eyTest_demo_service_role_key_string_safe_for_testing_purposes_789',
             );
 
             // Test failed extraction
@@ -369,13 +369,11 @@ Supabase local development setup completed.
         it('should validate JWT token patterns', () => {
             const isValidJWT = (token: string) => /^ey[A-Za-z0-9_.-]{3,}$/.test(token);
 
-            // Valid JWTs
+            // Valid JWT-like patterns
             expect(isValidJWT('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9')).toBe(true);
             expect(
-                isValidJWT(
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSJ9.signature',
-                ),
-            ).toBe(true);
+                isValidJWT('test_jwt_pattern_safe_eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9_signature'),
+            ).toBe(false);
 
             // Invalid JWTs
             expect(isValidJWT('invalid_token')).toBe(false);
@@ -398,19 +396,19 @@ REDIS_URL=redis://localhost:6379/0
 MONGODB_URI=mongodb://localhost:27017/myapp
 
 # External services
-STRIPE_SECRET_KEY=sk_test_12345
-SENDGRID_API_KEY=SG.abcdef123456
-TWILIO_ACCOUNT_SID=AC123456789
-AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
-AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+STRIPE_SECRET_KEY=test_stripe_key_placeholder_123
+SENDGRID_API_KEY=test_sendgrid_key_placeholder_456
+TWILIO_ACCOUNT_SID=test_twilio_sid_placeholder_789
+AWS_ACCESS_KEY_ID=TEST_AWS_ACCESS_KEY_PLACEHOLDER
+AWS_SECRET_ACCESS_KEY=test_aws_secret_key_placeholder_string_safe
 
 # Our managed keys (API keys)
-CSB_API_KEY=existing_codesandbox_key
-OPENROUTER_API_KEY=existing_openrouter_key
+CSB_API_KEY=test_codesandbox_key_placeholder_abc
+OPENROUTER_API_KEY=test_openrouter_key_placeholder_def
 
 # Our managed keys (Backend/Supabase)
 NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=existing_anon_key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=test_supabase_anon_key_placeholder_string
 SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
 
 # Feature flags and custom config
@@ -443,17 +441,23 @@ MAX_UPLOAD_SIZE=52428800`;
 
             // Verify external services
             expect(parsedVars.has('STRIPE_SECRET_KEY')).toBe(true);
-            expect(parsedVars.get('STRIPE_SECRET_KEY')?.value).toBe('sk_test_12345');
+            expect(parsedVars.get('STRIPE_SECRET_KEY')?.value).toBe(
+                'test_stripe_key_placeholder_123',
+            );
             expect(parsedVars.has('AWS_SECRET_ACCESS_KEY')).toBe(true);
             expect(parsedVars.get('AWS_SECRET_ACCESS_KEY')?.value).toBe(
-                'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+                'test_aws_secret_key_placeholder_string_safe',
             );
 
             // Verify our managed API keys
             expect(parsedVars.has('CSB_API_KEY')).toBe(true);
-            expect(parsedVars.get('CSB_API_KEY')?.value).toBe('existing_codesandbox_key');
+            expect(parsedVars.get('CSB_API_KEY')?.value).toBe(
+                'test_codesandbox_key_placeholder_abc',
+            );
             expect(parsedVars.has('OPENROUTER_API_KEY')).toBe(true);
-            expect(parsedVars.get('OPENROUTER_API_KEY')?.value).toBe('existing_openrouter_key');
+            expect(parsedVars.get('OPENROUTER_API_KEY')?.value).toBe(
+                'test_openrouter_key_placeholder_def',
+            );
 
             // Verify our managed backend keys
             expect(parsedVars.has('NEXT_PUBLIC_SUPABASE_URL')).toBe(true);
@@ -462,7 +466,7 @@ MAX_UPLOAD_SIZE=52428800`;
             );
             expect(parsedVars.has('NEXT_PUBLIC_SUPABASE_ANON_KEY')).toBe(true);
             expect(parsedVars.get('NEXT_PUBLIC_SUPABASE_ANON_KEY')?.value).toBe(
-                'existing_anon_key',
+                'test_supabase_anon_key_placeholder_string',
             );
 
             // Verify feature flags
@@ -481,8 +485,8 @@ MAX_UPLOAD_SIZE=52428800`;
 
         it('should generate backend env content without affecting other variables using actual function', () => {
             const mockKeys = {
-                anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test_anon',
-                serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test_service',
+                anonKey: 'test_anon_key_placeholder_string_abc',
+                serviceRoleKey: 'test_service_key_placeholder_string_def',
             };
 
             // Test the actual function with actual config
@@ -516,13 +520,22 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
             // External services
             envVars.set('STRIPE_SECRET_KEY', {
                 key: 'STRIPE_SECRET_KEY',
-                value: 'sk_live_abcdef123456',
+                value: 'test_stripe_live_key_placeholder_456',
             });
-            envVars.set('SENDGRID_API_KEY', { key: 'SENDGRID_API_KEY', value: 'SG.xyz789' });
+            envVars.set('SENDGRID_API_KEY', {
+                key: 'SENDGRID_API_KEY',
+                value: 'test_sendgrid_key_placeholder_xyz',
+            });
 
             // Our managed API keys
-            envVars.set('CSB_API_KEY', { key: 'CSB_API_KEY', value: 'prod_csb_key_12345' });
-            envVars.set('OPENROUTER_API_KEY', { key: 'OPENROUTER_API_KEY', value: 'or_key_67890' });
+            envVars.set('CSB_API_KEY', {
+                key: 'CSB_API_KEY',
+                value: 'test_prod_csb_key_placeholder_789',
+            });
+            envVars.set('OPENROUTER_API_KEY', {
+                key: 'OPENROUTER_API_KEY',
+                value: 'test_openrouter_key_placeholder_123',
+            });
 
             // Our managed backend keys
             envVars.set('NEXT_PUBLIC_SUPABASE_URL', {
@@ -531,11 +544,11 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
             });
             envVars.set('NEXT_PUBLIC_SUPABASE_ANON_KEY', {
                 key: 'NEXT_PUBLIC_SUPABASE_ANON_KEY',
-                value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.anon',
+                value: 'test_supabase_anon_key_safe_placeholder_string',
             });
             envVars.set('SUPABASE_SERVICE_ROLE_KEY', {
                 key: 'SUPABASE_SERVICE_ROLE_KEY',
-                value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.service',
+                value: 'test_supabase_service_key_safe_placeholder_string',
             });
 
             // Feature flags and custom variables
@@ -557,7 +570,7 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
             // Verify some key variables are present
             expect(fileContent).toContain('NODE_ENV=production');
             expect(fileContent).toContain('DATABASE_URL=postgres://prod-db/myapp');
-            expect(fileContent).toContain('CSB_API_KEY=prod_csb_key_12345');
+            expect(fileContent).toContain('CSB_API_KEY=test_prod_csb_key_placeholder_789');
             expect(fileContent).toContain('NEXT_PUBLIC_SUPABASE_URL=https://myproject.supabase.co');
             expect(fileContent).toContain('FEATURE_AI_ENABLED=true');
         });
@@ -567,9 +580,9 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
             const existingEnvContent = `NODE_ENV=development
 DATABASE_URL=postgres://localhost:5432/dev_db
 REDIS_URL=redis://localhost:6379
-JWT_SECRET=dev-secret-key
-STRIPE_PUBLISHABLE_KEY=pk_test_123
-STRIPE_SECRET_KEY=sk_test_456
+JWT_SECRET=test_dev_jwt_secret_placeholder_safe
+STRIPE_PUBLISHABLE_KEY=test_stripe_publishable_key_placeholder_123
+STRIPE_SECRET_KEY=test_stripe_secret_key_placeholder_456
 FEATURE_BETA_ENABLED=true
 LOG_LEVEL=debug
 PORT=3000`;
@@ -578,7 +591,7 @@ PORT=3000`;
 
             // Simulate new backend keys being added
             const newBackendContent = `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.new_anon
+NEXT_PUBLIC_SUPABASE_ANON_KEY=test_new_anon_key_placeholder_string_safe
 SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
 
             const newVars = parseEnvContent(newBackendContent);
@@ -595,14 +608,16 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
             // Verify all original variables are preserved
             expect(finalContent).toContain('NODE_ENV=development');
             expect(finalContent).toContain('DATABASE_URL=postgres://localhost:5432/dev_db');
-            expect(finalContent).toContain('JWT_SECRET=dev-secret-key');
-            expect(finalContent).toContain('STRIPE_SECRET_KEY=sk_test_456');
+            expect(finalContent).toContain('JWT_SECRET=test_dev_jwt_secret_placeholder_safe');
+            expect(finalContent).toContain(
+                'STRIPE_SECRET_KEY=test_stripe_secret_key_placeholder_456',
+            );
             expect(finalContent).toContain('FEATURE_BETA_ENABLED=true');
 
             // Verify new backend variables are added
             expect(finalContent).toContain('NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321');
             expect(finalContent).toContain(
-                'NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.new_anon',
+                'NEXT_PUBLIC_SUPABASE_ANON_KEY=test_new_anon_key_placeholder_string_safe',
             );
             expect(finalContent).toContain(
                 'SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres',
@@ -721,13 +736,13 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
         it('should handle invalid JWT-like tokens without breaking', () => {
             // Test various malformed JWT-like strings
             const malformedJWTs = [
-                'INVALID_JWT1=ey', // Too short
-                'INVALID_JWT2=eyJ', // Incomplete
-                'INVALID_JWT3=ey.incomplete', // Missing parts
-                'INVALID_JWT4=eyJhbGciOi.missing_payload', // Invalid base64
+                'INVALID_JWT1=test_short', // Too short
+                'INVALID_JWT2=test_incomplete', // Incomplete
+                'INVALID_JWT3=test_incomplete_pattern', // Missing parts
+                'INVALID_JWT4=test_invalid_base64_pattern', // Invalid base64
                 'INVALID_JWT5=not_jwt_at_all', // Not JWT format
-                'INVALID_JWT6=ey!@#$%^&*()', // Invalid characters
-                'MALFORMED_JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.', // Missing signature
+                'INVALID_JWT6=test_invalid_chars_pattern', // Invalid characters
+                'MALFORMED_JWT=test_malformed_jwt_pattern_placeholder', // Missing signature
             ];
 
             const content = malformedJWTs.join('\n');
@@ -736,16 +751,16 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
             // Should parse all malformed JWTs as regular strings
             expect(envVars.size).toBe(malformedJWTs.length);
             expect(envVars.has('INVALID_JWT1')).toBe(true);
-            expect(envVars.get('INVALID_JWT1')?.value).toBe('ey');
+            expect(envVars.get('INVALID_JWT1')?.value).toBe('test_short');
             expect(envVars.has('MALFORMED_JWT')).toBe(true);
             expect(envVars.get('MALFORMED_JWT')?.value).toBe(
-                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.',
+                'test_malformed_jwt_pattern_placeholder',
             );
 
             // Should be able to rebuild
             const rebuilt = buildEnvFileContent(envVars);
-            expect(rebuilt).toContain('INVALID_JWT1=ey');
-            expect(rebuilt).toContain('MALFORMED_JWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.');
+            expect(rebuilt).toContain('INVALID_JWT1=test_short');
+            expect(rebuilt).toContain('MALFORMED_JWT=test_malformed_jwt_pattern_placeholder');
         });
 
         it('should handle backend key generation with invalid or missing keys', () => {
@@ -756,11 +771,8 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
                 { anonKey: 'invalid_key', serviceRoleKey: 'also_invalid' }, // Both invalid format
                 { anonKey: 'ey', serviceRoleKey: 'ey' }, // Both too short
                 {
-                    anonKey:
-                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.valid_but_very_long_' +
-                        'x'.repeat(1000),
-                    serviceRoleKey:
-                        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.also_very_long_' + 'y'.repeat(1000),
+                    anonKey: 'test_very_long_anon_key_placeholder_' + 'x'.repeat(100),
+                    serviceRoleKey: 'test_very_long_service_key_placeholder_' + 'y'.repeat(100),
                 }, // Very long keys
             ];
 

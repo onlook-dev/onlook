@@ -27,11 +27,11 @@ DB_HOST=localhost
 DB_PORT=5432
 
 # API Keys
-API_KEY=secret123
+API_KEY=test_api_key_placeholder_safe_123
 OPTIONAL_KEY=
 
 # URLs with special characters
-WEBHOOK_URL=https://example.com/webhook?token=abc123&user=test
+WEBHOOK_URL=https://example.com/webhook?token=test_token_placeholder&user=test
 `;
 
         fs.writeFileSync(testEnvPath, existingContent);
@@ -59,9 +59,11 @@ WEBHOOK_URL=https://example.com/webhook?token=abc123&user=test
 
         expect(envVars.DB_HOST).toBe('localhost');
         expect(envVars.DB_PORT).toBe('5432');
-        expect(envVars.API_KEY).toBe('secret123');
+        expect(envVars.API_KEY).toBe('test_api_key_placeholder_safe_123');
         expect(envVars.OPTIONAL_KEY).toBe('');
-        expect(envVars.WEBHOOK_URL).toBe('https://example.com/webhook?token=abc123&user=test');
+        expect(envVars.WEBHOOK_URL).toBe(
+            'https://example.com/webhook?token=test_token_placeholder&user=test',
+        );
     });
 
     it('should handle merging new and existing environment variables', () => {
