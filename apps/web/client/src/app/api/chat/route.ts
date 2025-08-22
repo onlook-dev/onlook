@@ -1,6 +1,6 @@
 import { trackEvent } from '@/utils/analytics/server';
 import { ChatType } from '@onlook/models';
-import { stepCountIs, streamText, convertToModelMessages, type UIMessage } from 'ai';
+import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
@@ -57,7 +57,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         chatType: ChatType,
         conversationId: string,
         projectId: string,
-    };
+    };    
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
     // If the call below fails, the user will not be penalized.

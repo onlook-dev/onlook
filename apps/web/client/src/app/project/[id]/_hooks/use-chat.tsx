@@ -30,21 +30,25 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 projectId: editorEngine.projectId,
             },
         }),
-        onToolCall: (toolCall) => {
-            const result = handleToolCall(toolCall.toolCall, editorEngine);
-            chat.addToolResult(toolCall.toolCall.id, result);
+        onToolCall: async (toolCall) => {
+            const result = await handleToolCall(toolCall.toolCall, editorEngine);
+
+            chat.addToolResult({
+                tool: toolCall.toolCall.toolName,
+                toolCallId: toolCall.toolCall.toolCallId,
+                output: result,
+            });
         },
         onFinish: ({message}) => {
-            const finishReason = message.metadata.finishReason;
-            console.log('finishReason', finishReason);
-            console.log('message', message.metadata);
+            const finishReason = message.metadata?.finishReason;
             lastMessageRef.current = message;
             if (finishReason !== 'error') {
                 editorEngine.chat.error.clear();
             }
 
             if (finishReason !== 'tool-calls') {
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message, conversationId ?? ''));
+                const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
+                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(message, currentConversationId ?? ''));
                 editorEngine.chat.suggestions.generateSuggestions();
                 lastMessageRef.current = null;
             }
@@ -61,7 +65,8 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             editorEngine.chat.error.handleChatError(error);
 
             if (lastMessageRef.current) {
-                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, conversationId ?? ''));
+                const currentConversationId = editorEngine.chat.conversation.current?.conversation.id;
+                editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, currentConversationId ?? ''));
                 lastMessageRef.current = null;
             }
         }
