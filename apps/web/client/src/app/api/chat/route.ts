@@ -68,7 +68,8 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     if (chatType === ChatType.EDIT) {
         usageRecord = await incrementUsage(req);
     }
-    const { model, providerOptions, headers } = await getModelFromType(chatType);
+    const modelConfig = await getModelFromType(chatType);
+    const { model, providerOptions, headers } = modelConfig;
     const systemPrompt = await getSystemPromptFromType(chatType);
     const tools = await getToolSetFromType(chatType);
 
@@ -105,11 +106,29 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
             console.error('Error in chat stream call', error);
             // if there was an error with the API, do not penalize the user
             await decrementUsage(req, usageRecord);
+            
+            // Ensure the stream stops on error by re-throwing
+            if (error instanceof Error) {
+                throw error;
+            } else {
+                const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
+                throw new Error(errorMessage);
+            }
         }
     })
 
     return result.toUIMessageStreamResponse(
         {
+            originalMessages: messages,
+            messageMetadata: ({
+                part
+            }) => {
+                if (part.type === 'finish-step') {
+                    return {
+                        finishReason: part.finishReason,
+                    }
+                }
+            },
             onError: errorHandler,
         }
     );

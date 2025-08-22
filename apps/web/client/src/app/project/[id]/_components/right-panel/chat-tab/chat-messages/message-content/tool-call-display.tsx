@@ -37,8 +37,6 @@ export const ToolCallDisplay = ({
     applied: boolean
 }) => {
     // Ensure the toolInvocation has a result property
-    // const toolInvocation = ensureToolInvocationResult(toolInvocationData);
-
     if (!isStream || toolInvocation.state === 'output-available') {
         const toolName = toolInvocation.type.split('-')[1];
 

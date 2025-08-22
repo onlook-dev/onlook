@@ -2,6 +2,7 @@ import type { ToolUIPart, UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { MarkdownRenderer } from '../markdown-renderer';
 import { ToolCallDisplay } from './tool-call-display';
+import { useMemo } from 'react';
 
 export const MessageContent = observer(
     ({
@@ -19,12 +20,13 @@ export const MessageContent = observer(
             return null;
         }
         // Find the index of the last tool-*** part
-        const lastToolInvocationIdx = parts
-            .map((part, index) => ({ type: part.type, index }))
-            .filter(item => item.type.startsWith('tool-'))
-            .pop()?.index ?? -1;
-        console.log('lastToolInvocationIdx', lastToolInvocationIdx);
-        console.log('parts', parts);
+        const lastToolInvocationIdx = useMemo(() => 
+            parts?.map((part, index) => ({ type: part.type, index }))
+                .filter(item => item.type.startsWith('tool-'))
+                .pop()?.index ?? -1,
+            [parts]
+        );
+
         return parts.map((part, idx) => {
             if (part.type === 'text') {
                 return (
