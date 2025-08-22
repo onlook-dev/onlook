@@ -41,7 +41,7 @@ export function WindowActionsGroup({ frameData }: { frameData: FrameData }) {
         <>
             <HoverOnlyTooltip content="Duplicate Window" side="bottom" sideOffset={10}>
                 <ToolbarButton
-                    className="flex items-center w-10"
+                    className="flex items-center w-9"
                     onClick={duplicateWindow}
                     disabled={isDuplicating}
                 >
@@ -55,7 +55,7 @@ export function WindowActionsGroup({ frameData }: { frameData: FrameData }) {
             {editorEngine.frames.canDelete() && (
                 <HoverOnlyTooltip content="Delete Window" side="bottom" sideOffset={10}>
                     <ToolbarButton
-                        className="flex items-center w-10"
+                        className="flex items-center w-9"
                         disabled={!editorEngine.frames.canDelete() || isDeleting}
                         onClick={deleteWindow}
                     >

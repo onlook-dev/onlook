@@ -60,9 +60,18 @@ export const VerticalAlignInput = () => {
         setValue(editorEngine.style.selectedStyle?.styles.computed.alignItems ?? 'flex-start');
     }, [editorEngine.style.selectedStyle?.styles.computed.alignItems]);
 
+    // Check if flexbox is active
+    const displayValue = editorEngine.style.selectedStyle?.styles.computed.display;
+    const isFlexboxActive = displayValue === 'flex' || displayValue === 'inline-flex';
+
+    // Don't render if flexbox is not active
+    if (!isFlexboxActive) {
+        return null;
+    }
+
     return (
-        <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground w-24">Vertical</span>
+        <div className="flex items-center gap-0">
+            <span className="text-sm text-muted-foreground w-20">Vertical</span>
             <InputRadio
                 options={Object.values(verticalAlignOptions)}
                 value={value}
@@ -86,9 +95,18 @@ export const HorizontalAlignInput = () => {
         setValue(editorEngine.style.selectedStyle?.styles.computed.justifyContent ?? 'flex-start');
     }, [editorEngine.style.selectedStyle?.styles.computed.justifyContent]);
 
+    // Check if flexbox is active
+    const displayValue = editorEngine.style.selectedStyle?.styles.computed.display;
+    const isFlexboxActive = displayValue === 'flex' || displayValue === 'inline-flex';
+
+    // Don't render if flexbox is not active
+    if (!isFlexboxActive) {
+        return null;
+    }
+
     return (
-        <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground w-24">Horizontal</span>
+        <div className="flex items-center gap-0">
+            <span className="text-sm text-muted-foreground w-20">Horizontal</span>
             <InputRadio
                 options={Object.values(horizontalAlignOptions)}
                 value={value}

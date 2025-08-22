@@ -256,12 +256,12 @@ export const Create = observer(({
         <Card
             key={cardKey}
             className={cn(
-                'w-[600px] overflow-hidden gap-4 backdrop-blur-md bg-background/20',
+                'w-[600px] overflow-hidden gap-1.5 backdrop-blur-md bg-background/20 p-4',
                 isDragging && 'bg-background/40',
             )}
         >
-            <CardHeader className="text-start">{`Let's design a...`}</CardHeader>
-            <CardContent>
+            <CardHeader className="text-start p-0 text-foreground-primary/80">{`Let's design a...`}</CardHeader>
+            <CardContent className="p-0">
                 <div
                     className={cn(
                         'flex flex-col gap-3 rounded p-0 transition-colors duration-200 cursor-text',

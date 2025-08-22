@@ -46,7 +46,7 @@ export const Display = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="flex items-center gap-1 min-w-10"
+                        className="flex items-center gap-1 min-w-9"
                     >
                         <Icons.Layout className="h-4 w-4 min-h-4 min-w-4" />
                         {(layoutType === 'flex' || layoutType === 'grid') && (
@@ -55,8 +55,8 @@ export const Display = observer(() => {
                     </ToolbarButton>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
-            <DropdownMenuContent align="start" className="min-w-[200px] mt-2 p-1.5 rounded-lg">
-                <div className="p-2 space-y-2.5">
+            <DropdownMenuContent align="start" className="min-w-[250px] mt-2 p-1.5 rounded-lg">
+                <div className="p-1 space-y-2">
                     <TypeInput />
                     <DirectionInput />
                     <VerticalAlignInput />
