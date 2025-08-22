@@ -143,7 +143,7 @@ export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
         <Dialog open={isOpen} onOpenChange={handleClose}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>Get Onlook for Desktop</DialogTitle>
+                    <DialogTitle>Send a link for later</DialogTitle>
                     <DialogDescription>
                         We'll send you a link to use Onlook on your computer
                     </DialogDescription>
