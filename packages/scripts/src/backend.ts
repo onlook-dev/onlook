@@ -164,14 +164,13 @@ const checkDockerRunning = async (): Promise<void> => {
     const spinner = ora('Checking if Docker is running...').start();
     try {
         const proc = spawn('docker', ['info'], { stdio: 'ignore' });
-        const isRunning = await new Promise<boolean>((resolve) =>
-            proc.on('close', (code) => resolve(code === 0)),
-        );
-
+        const isRunning = await new Promise<boolean>((resolve) => {
+            proc.once('close', (code) => resolve(code === 0));
+            proc.once('error', () => resolve(false)); // e.g., ENOENT
+        });
         if (!isRunning) {
             throw new Error('Docker is not running');
         }
-
         spinner.succeed('Docker is running.');
     } catch (err) {
         spinner.fail((err as Error).message);

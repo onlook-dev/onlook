@@ -103,21 +103,11 @@ const writeApiKeysToFile = async (filePath: string, newContent: string): Promise
 const removeOldApiKeyEntries = (content: string): string => {
     const lines = content.split('\n');
     const filteredLines: string[] = [];
-    const apiKeyDescriptions = new Set<string>();
     const apiKeyNames = new Set(Object.keys(API_KEYS));
     let skipNextLine = false;
 
     for (const line of lines) {
         const trimmedLine = line.trim();
-
-        // Skip API key comments (no longer used)
-        if (
-            trimmedLine.startsWith('#') &&
-            apiKeyDescriptions.has(extractDescription(trimmedLine))
-        ) {
-            skipNextLine = true;
-            continue;
-        }
 
         // Skip API key variable lines
         const keyName = extractKeyName(trimmedLine);
