@@ -7,6 +7,7 @@
         "build": "bun build src/index.ts --outdir=dist --target=node",
         "dev": "tsc --watch",
         "start": "bun run build && node dist/index.js",
+        "test": "bun test",
         "typecheck": "tsc --noEmit",
         "lint": "eslint . --ext .ts",
         "format": "prettier --write ."
@@ -22,8 +23,10 @@
     },
     "devDependencies": {
         "@onlook/typescript": "*",
+        "@types/jest": "^30.0.0",
         "@types/node": "^20.10.5",
         "@types/prompts": "^2.4.9",
+        "jest": "^30.0.5",
         "typescript": "^5.3.3"
     }
 }

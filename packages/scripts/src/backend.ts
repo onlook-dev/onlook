@@ -1,8 +1,13 @@
 import chalk from 'chalk';
 import { spawn } from 'node:child_process';
+import path from 'node:path';
 import ora, { type Ora } from 'ora';
-import { rootDir } from '.';
 import { writeEnvFile } from './helpers';
+
+// Determine root directory
+const cwd = process.cwd();
+const isInPackagesScripts = cwd.includes('packages/scripts');
+const rootDir = path.resolve(cwd, isInPackagesScripts ? '../..' : '.');
 
 interface BackendKeys {
     anonKey: string;
@@ -12,8 +17,8 @@ interface BackendKeys {
 export const promptAndWriteBackendKeys = async (clientEnvPath: string, dbEnvPath: string) => {
     await checkDockerRunning();
     const backendKeys = await startBackendAndExtractKeys();
-    writeEnvFile(clientEnvPath, getClientEnvContent(backendKeys), 'web client');
-    writeEnvFile(dbEnvPath, getDbEnvContent(backendKeys), 'db package');
+    await writeEnvFile(clientEnvPath, getClientEnvContent(backendKeys), 'web client');
+    await writeEnvFile(dbEnvPath, getDbEnvContent(backendKeys), 'db package');
 };
 
 const getClientEnvContent = (keys: BackendKeys) => {
