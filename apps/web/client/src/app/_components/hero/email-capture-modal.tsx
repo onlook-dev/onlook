@@ -112,7 +112,7 @@ export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
                     utm_content: ''
                 });
                 onClose();
-            }, 2000);
+            }, 7000);
 
         } catch (error) {
             console.error('Failed to submit email capture form:', error);
