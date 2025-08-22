@@ -9,6 +9,7 @@ import { CTASection } from '../_components/landing-page/cta-section';
 import { FeaturesFAQSection } from '../_components/landing-page/features-faq-section';
 import { FeaturesGridSection } from '../_components/landing-page/features-grid-section';
 import { FeaturesIntroSection } from '../_components/landing-page/features-intro-section';
+import { ResponsiveMockupSection } from '../_components/landing-page/responsive-mockup-section';
 import { WebsiteLayout } from '../_components/website-layout';
 
 export default function FeaturesPage() {
@@ -18,6 +19,7 @@ export default function FeaturesPage() {
                 <div className="w-screen h-screen flex items-center justify-center" id="hero">
                     <FeaturesHero />
                 </div>
+                <ResponsiveMockupSection />
                 <BenefitsSection />
                 <FeaturesIntroSection />
                 <FeaturesGridSection />
