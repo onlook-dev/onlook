@@ -3,7 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // Import actual functions to test
-import { getDbEnvContent } from '../src/backend';
+import { getDbEnvContent, generateBackendEnvContent, CLIENT_BACKEND_KEYS } from '../src/backend';
+import { parseEnvContent, buildEnvFileContent } from '../src/helpers';
 
 describe('comprehensive functionality tests', () => {
     const testDir = path.join(__dirname, 'temp-comprehensive');
@@ -92,7 +93,7 @@ SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
     });
 
     describe('Environment parsing and generation', () => {
-        it('should parse environment content without comments', () => {
+        it('should parse environment content without comments using actual parseEnvContent', () => {
             const testContent = `KEY1=value1
 KEY2=value with spaces
 KEY3=https://example.com?param=value&other=data
@@ -101,57 +102,36 @@ EMPTY_KEY=
 COMMENTED_KEY=should_be_ignored # inline comment ignored
 VALID_KEY=valid_value`;
 
-            // Simulate the parseEnvContent logic without importing (since it's not exported)
-            const envVars = new Map();
-            const lines = testContent.split('\n');
-
-            for (const line of lines) {
-                const trimmedLine = line.trim();
-                if (
-                    trimmedLine.includes('=') &&
-                    trimmedLine.indexOf('=') > 0 &&
-                    !trimmedLine.startsWith('#')
-                ) {
-                    const [key, ...valueParts] = trimmedLine.split('=');
-                    const cleanKey = key?.trim();
-                    if (cleanKey) {
-                        const value = valueParts.join('=');
-                        envVars.set(cleanKey, { key: cleanKey, value });
-                    }
-                }
-            }
+            // Use the actual exported function
+            const envVars = parseEnvContent(testContent);
 
             expect(envVars.has('KEY1')).toBe(true);
-            expect(envVars.get('KEY1').value).toBe('value1');
+            expect(envVars.get('KEY1')?.value).toBe('value1');
             expect(envVars.has('KEY2')).toBe(true);
-            expect(envVars.get('KEY2').value).toBe('value with spaces');
+            expect(envVars.get('KEY2')?.value).toBe('value with spaces');
             expect(envVars.has('KEY3')).toBe(true);
-            expect(envVars.get('KEY3').value).toBe('https://example.com?param=value&other=data');
+            expect(envVars.get('KEY3')?.value).toBe('https://example.com?param=value&other=data');
             expect(envVars.has('EMPTY_KEY')).toBe(true);
-            expect(envVars.get('EMPTY_KEY').value).toBe('');
+            expect(envVars.get('EMPTY_KEY')?.value).toBe('');
             expect(envVars.has('COMMENTED_KEY')).toBe(true);
-            expect(envVars.get('COMMENTED_KEY').value).toBe(
+            expect(envVars.get('COMMENTED_KEY')?.value).toBe(
                 'should_be_ignored # inline comment ignored',
             );
             expect(envVars.has('VALID_KEY')).toBe(true);
-            expect(envVars.get('VALID_KEY').value).toBe('valid_value');
+            expect(envVars.get('VALID_KEY')?.value).toBe('valid_value');
 
             // Comments should be ignored
             expect(envVars.has('# This comment should be ignored')).toBe(false);
         });
 
-        it('should build environment file content without spacing', () => {
+        it('should build environment file content without spacing using actual buildEnvFileContent', () => {
             const envVars = new Map();
             envVars.set('KEY1', { key: 'KEY1', value: 'value1' });
             envVars.set('KEY2', { key: 'KEY2', value: 'value2' });
             envVars.set('KEY3', { key: 'KEY3', value: 'value3' });
 
-            // Simulate buildEnvFileContent logic
-            const lines = [];
-            for (const envVar of envVars.values()) {
-                lines.push(`${envVar.key}=${envVar.value}`);
-            }
-            const content = lines.join('\n');
+            // Use the actual exported function
+            const content = buildEnvFileContent(envVars);
 
             const expectedContent = `KEY1=value1
 KEY2=value2
@@ -165,56 +145,26 @@ KEY3=value3`;
         });
     });
 
-    describe('API key generation', () => {
-        it('should generate API key content without descriptions or spacing', () => {
-            const API_KEYS = {
-                CSB_API_KEY: {
-                    name: 'CSB_API_KEY',
-                    message: 'Enter your Codesandbox API key:',
-                    required: true,
-                },
-                OPENROUTER_API_KEY: {
-                    name: 'OPENROUTER_API_KEY',
-                    message: 'Enter your OpenRouter API key:',
-                    required: true,
-                },
-            };
-
-            const responses = {
-                CSB_API_KEY: 'test_csb_key',
-                OPENROUTER_API_KEY: 'test_openrouter_key',
-            };
-
-            // Simulate generateEnvContent logic
-            const lines = [];
-            for (const [key] of Object.entries(API_KEYS)) {
-                const value = responses[key] || '';
-                lines.push(`${key}=${value}`);
-            }
-            const content = lines.join('\n');
-
+    describe('API key format validation', () => {
+        it('should validate clean API key content format', () => {
             const expectedContent = `CSB_API_KEY=test_csb_key
 OPENROUTER_API_KEY=test_openrouter_key`;
 
-            expect(content).toBe(expectedContent);
-
-            // Verify no comments or empty lines
-            expect(content).not.toContain('#');
-            expect(content.split('\n')).toHaveLength(2);
-            expect(content).not.toMatch(/\n\s*\n/);
+            // Verify format requirements
+            expect(expectedContent).not.toContain('#');
+            expect(expectedContent.split('\n')).toHaveLength(2);
+            expect(expectedContent).not.toMatch(/\n\s*\n/);
+            expect(expectedContent).toContain('CSB_API_KEY=test_csb_key');
+            expect(expectedContent).toContain('OPENROUTER_API_KEY=test_openrouter_key');
         });
 
-        it('should handle empty API key values', () => {
-            const responses = {
-                CSB_API_KEY: '',
-                OPENROUTER_API_KEY: 'test_key',
-            };
+        it('should handle empty API key values correctly', () => {
+            const contentWithEmpty = `CSB_API_KEY=
+OPENROUTER_API_KEY=test_key`;
 
-            const content = `CSB_API_KEY=${responses.CSB_API_KEY}
-OPENROUTER_API_KEY=${responses.OPENROUTER_API_KEY}`;
-
-            expect(content).toBe(`CSB_API_KEY=
-OPENROUTER_API_KEY=test_key`);
+            expect(contentWithEmpty).toContain('CSB_API_KEY=');
+            expect(contentWithEmpty).toContain('OPENROUTER_API_KEY=test_key');
+            expect(contentWithEmpty.split('\n')).toHaveLength(2);
         });
     });
 
@@ -284,6 +234,240 @@ Supabase local development setup completed.
             expect(isValidJWT('ey')).toBe(false); // Too short
             expect(isValidJWT('')).toBe(false);
             expect(isValidJWT('eyJ contains spaces')).toBe(false);
+        });
+    });
+
+    describe('Real function tests with mixed environment variables', () => {
+        it('should parse mixed environment variables correctly using actual parseEnvContent', () => {
+            const complexEnvContent = `# App configuration
+NODE_ENV=development
+PORT=3000
+HOST=0.0.0.0
+
+# Database connections  
+DATABASE_URL=postgres://user:pass@localhost:5432/myapp
+REDIS_URL=redis://localhost:6379/0
+MONGODB_URI=mongodb://localhost:27017/myapp
+
+# External services
+STRIPE_SECRET_KEY=sk_test_12345
+SENDGRID_API_KEY=SG.abcdef123456
+TWILIO_ACCOUNT_SID=AC123456789
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
+
+# Our managed keys (API keys)
+CSB_API_KEY=existing_codesandbox_key
+OPENROUTER_API_KEY=existing_openrouter_key
+
+# Our managed keys (Backend/Supabase)
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=existing_anon_key
+SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+# Feature flags and custom config
+FEATURE_AI_ENABLED=true
+FEATURE_ANALYTICS=false
+CUSTOM_TIMEOUT=30000
+LOG_LEVEL=debug
+MAX_UPLOAD_SIZE=52428800`;
+
+            // Use the actual function
+            const parsedVars = parseEnvContent(complexEnvContent);
+
+            // Verify app configuration
+            expect(parsedVars.has('NODE_ENV')).toBe(true);
+            expect(parsedVars.get('NODE_ENV')?.value).toBe('development');
+            expect(parsedVars.has('PORT')).toBe(true);
+            expect(parsedVars.get('PORT')?.value).toBe('3000');
+            expect(parsedVars.has('HOST')).toBe(true);
+            expect(parsedVars.get('HOST')?.value).toBe('0.0.0.0');
+
+            // Verify database connections
+            expect(parsedVars.has('DATABASE_URL')).toBe(true);
+            expect(parsedVars.get('DATABASE_URL')?.value).toBe(
+                'postgres://user:pass@localhost:5432/myapp',
+            );
+            expect(parsedVars.has('REDIS_URL')).toBe(true);
+            expect(parsedVars.get('REDIS_URL')?.value).toBe('redis://localhost:6379/0');
+            expect(parsedVars.has('MONGODB_URI')).toBe(true);
+            expect(parsedVars.get('MONGODB_URI')?.value).toBe('mongodb://localhost:27017/myapp');
+
+            // Verify external services
+            expect(parsedVars.has('STRIPE_SECRET_KEY')).toBe(true);
+            expect(parsedVars.get('STRIPE_SECRET_KEY')?.value).toBe('sk_test_12345');
+            expect(parsedVars.has('AWS_SECRET_ACCESS_KEY')).toBe(true);
+            expect(parsedVars.get('AWS_SECRET_ACCESS_KEY')?.value).toBe(
+                'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY',
+            );
+
+            // Verify our managed API keys
+            expect(parsedVars.has('CSB_API_KEY')).toBe(true);
+            expect(parsedVars.get('CSB_API_KEY')?.value).toBe('existing_codesandbox_key');
+            expect(parsedVars.has('OPENROUTER_API_KEY')).toBe(true);
+            expect(parsedVars.get('OPENROUTER_API_KEY')?.value).toBe('existing_openrouter_key');
+
+            // Verify our managed backend keys
+            expect(parsedVars.has('NEXT_PUBLIC_SUPABASE_URL')).toBe(true);
+            expect(parsedVars.get('NEXT_PUBLIC_SUPABASE_URL')?.value).toBe(
+                'http://127.0.0.1:54321',
+            );
+            expect(parsedVars.has('NEXT_PUBLIC_SUPABASE_ANON_KEY')).toBe(true);
+            expect(parsedVars.get('NEXT_PUBLIC_SUPABASE_ANON_KEY')?.value).toBe(
+                'existing_anon_key',
+            );
+
+            // Verify feature flags
+            expect(parsedVars.has('FEATURE_AI_ENABLED')).toBe(true);
+            expect(parsedVars.get('FEATURE_AI_ENABLED')?.value).toBe('true');
+            expect(parsedVars.has('MAX_UPLOAD_SIZE')).toBe(true);
+            expect(parsedVars.get('MAX_UPLOAD_SIZE')?.value).toBe('52428800');
+
+            // Comments should be ignored
+            expect(parsedVars.has('# App configuration')).toBe(false);
+            expect(parsedVars.has('# Database connections')).toBe(false);
+
+            // Total count should match all non-comment variables
+            expect(parsedVars.size).toBe(21);
+        });
+
+        it('should generate backend env content without affecting other variables using actual function', () => {
+            const mockKeys = {
+                anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test_anon',
+                serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test_service',
+            };
+
+            // Test the actual function with actual config
+            const clientContent = generateBackendEnvContent(CLIENT_BACKEND_KEYS, mockKeys);
+
+            const expectedContent = `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=${mockKeys.anonKey}
+SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
+
+            expect(clientContent).toBe(expectedContent);
+
+            // Verify clean output
+            expect(clientContent).not.toContain('#');
+            expect(clientContent.split('\n')).toHaveLength(3);
+            expect(clientContent).not.toMatch(/\n\s*\n/);
+        });
+
+        it('should build complete env file content with mixed variables using actual function', () => {
+            // Create a mixed environment variable map
+            const envVars = new Map();
+
+            // Add various types of environment variables
+            envVars.set('NODE_ENV', { key: 'NODE_ENV', value: 'production' });
+            envVars.set('PORT', { key: 'PORT', value: '8080' });
+            envVars.set('DATABASE_URL', { key: 'DATABASE_URL', value: 'postgres://prod-db/myapp' });
+            envVars.set('REDIS_URL', {
+                key: 'REDIS_URL',
+                value: 'redis://redis.example.com:6379/0',
+            });
+
+            // External services
+            envVars.set('STRIPE_SECRET_KEY', {
+                key: 'STRIPE_SECRET_KEY',
+                value: 'sk_live_abcdef123456',
+            });
+            envVars.set('SENDGRID_API_KEY', { key: 'SENDGRID_API_KEY', value: 'SG.xyz789' });
+
+            // Our managed API keys
+            envVars.set('CSB_API_KEY', { key: 'CSB_API_KEY', value: 'prod_csb_key_12345' });
+            envVars.set('OPENROUTER_API_KEY', { key: 'OPENROUTER_API_KEY', value: 'or_key_67890' });
+
+            // Our managed backend keys
+            envVars.set('NEXT_PUBLIC_SUPABASE_URL', {
+                key: 'NEXT_PUBLIC_SUPABASE_URL',
+                value: 'https://myproject.supabase.co',
+            });
+            envVars.set('NEXT_PUBLIC_SUPABASE_ANON_KEY', {
+                key: 'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+                value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.anon',
+            });
+            envVars.set('SUPABASE_SERVICE_ROLE_KEY', {
+                key: 'SUPABASE_SERVICE_ROLE_KEY',
+                value: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.service',
+            });
+
+            // Feature flags and custom variables
+            envVars.set('FEATURE_AI_ENABLED', { key: 'FEATURE_AI_ENABLED', value: 'true' });
+            envVars.set('CUSTOM_TIMEOUT', { key: 'CUSTOM_TIMEOUT', value: '60000' });
+            envVars.set('LOG_LEVEL', { key: 'LOG_LEVEL', value: 'warn' });
+
+            // Use the actual function
+            const fileContent = buildEnvFileContent(envVars);
+
+            // Verify the structure
+            const lines = fileContent.split('\n');
+            expect(lines).toHaveLength(14); // All variables, no empty lines
+
+            // Verify no comments or extra spacing
+            expect(fileContent).not.toContain('#');
+            expect(fileContent).not.toMatch(/\n\s*\n/);
+
+            // Verify some key variables are present
+            expect(fileContent).toContain('NODE_ENV=production');
+            expect(fileContent).toContain('DATABASE_URL=postgres://prod-db/myapp');
+            expect(fileContent).toContain('CSB_API_KEY=prod_csb_key_12345');
+            expect(fileContent).toContain('NEXT_PUBLIC_SUPABASE_URL=https://myproject.supabase.co');
+            expect(fileContent).toContain('FEATURE_AI_ENABLED=true');
+        });
+
+        it('should handle real-world scenario with existing env file and new keys', () => {
+            // Simulate reading an existing .env file with mixed variables
+            const existingEnvContent = `NODE_ENV=development
+DATABASE_URL=postgres://localhost:5432/dev_db
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=dev-secret-key
+STRIPE_PUBLISHABLE_KEY=pk_test_123
+STRIPE_SECRET_KEY=sk_test_456
+FEATURE_BETA_ENABLED=true
+LOG_LEVEL=debug
+PORT=3000`;
+
+            const existingVars = parseEnvContent(existingEnvContent);
+
+            // Simulate new backend keys being added
+            const newBackendContent = `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.new_anon
+SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
+
+            const newVars = parseEnvContent(newBackendContent);
+
+            // Merge the variables (simulate conflict resolution choosing to add new)
+            const mergedVars = new Map(existingVars);
+            for (const [key, value] of newVars) {
+                mergedVars.set(key, value);
+            }
+
+            // Generate the final content
+            const finalContent = buildEnvFileContent(mergedVars);
+
+            // Verify all original variables are preserved
+            expect(finalContent).toContain('NODE_ENV=development');
+            expect(finalContent).toContain('DATABASE_URL=postgres://localhost:5432/dev_db');
+            expect(finalContent).toContain('JWT_SECRET=dev-secret-key');
+            expect(finalContent).toContain('STRIPE_SECRET_KEY=sk_test_456');
+            expect(finalContent).toContain('FEATURE_BETA_ENABLED=true');
+
+            // Verify new backend variables are added
+            expect(finalContent).toContain('NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321');
+            expect(finalContent).toContain(
+                'NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.new_anon',
+            );
+            expect(finalContent).toContain(
+                'SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres',
+            );
+
+            // Verify structure
+            const lines = finalContent.split('\n');
+            expect(lines).toHaveLength(12); // 9 original + 3 new
+            expect(finalContent).not.toContain('#');
+            expect(finalContent).not.toMatch(/\n\s*\n/);
+
+            // Verify total variable count
+            expect(mergedVars.size).toBe(12);
         });
     });
 

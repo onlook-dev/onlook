@@ -13,7 +13,7 @@ interface EnvVariable {
  * @param content - The raw .env file content
  * @returns Map of environment variables with their metadata
  */
-const parseEnvContent = (content: string): Map<string, EnvVariable> => {
+export const parseEnvContent = (content: string): Map<string, EnvVariable> => {
     const envVars = new Map<string, EnvVariable>();
     const lines = content.split('\n');
 
@@ -101,7 +101,7 @@ const promptForVariableAction = async (key: string): Promise<'replace' | 'skip'>
  * @param envVars - Map of environment variables
  * @returns Formatted .env file content
  */
-const buildEnvFileContent = (envVars: Map<string, EnvVariable>): string => {
+export const buildEnvFileContent = (envVars: Map<string, EnvVariable>): string => {
     const lines: string[] = [];
     const envArray = Array.from(envVars.values());
 

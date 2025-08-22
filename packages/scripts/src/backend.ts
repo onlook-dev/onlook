@@ -26,7 +26,7 @@ interface BackendEnvConfig {
     value: string;
 }
 
-const CLIENT_BACKEND_KEYS: BackendEnvConfig[] = [
+export const CLIENT_BACKEND_KEYS: BackendEnvConfig[] = [
     {
         key: 'NEXT_PUBLIC_SUPABASE_URL',
         value: 'http://127.0.0.1:54321',
@@ -62,7 +62,10 @@ const DB_BACKEND_KEYS: BackendEnvConfig[] = [
  * @param keys - Backend keys to substitute
  * @returns Formatted environment content
  */
-const generateBackendEnvContent = (config: BackendEnvConfig[], keys: BackendKeys): string => {
+export const generateBackendEnvContent = (
+    config: BackendEnvConfig[],
+    keys: BackendKeys,
+): string => {
     const lines: string[] = [];
 
     for (const item of config) {
