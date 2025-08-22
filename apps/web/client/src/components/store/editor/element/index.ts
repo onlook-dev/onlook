@@ -66,14 +66,18 @@ export class ElementsManager {
         for (const domEl of domEls) {
             const frameData = this.editorEngine.frames.get(domEl.frameId);
             if (!frameData) {
-                console.error('Frame data not found');
+                console.error('Frame data not found for frameId:', domEl.frameId);
                 continue;
             }
             const { view } = frameData;
             if (!view) {
-                console.error('No frame view found');
+                console.error('No frame view found for frameId:', domEl.frameId);
                 continue;
             }
+            
+            // Track frame interaction when element is clicked
+            this.editorEngine.frames.updateLastInteraction(domEl.frameId);
+            
             const adjustedRect = adaptRectToCanvas(domEl.rect, view);
             const isComponent = !!domEl.instanceId;
             this.editorEngine.overlay.state.addClickRect(

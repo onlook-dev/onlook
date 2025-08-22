@@ -31,7 +31,7 @@ export const InputContextPills = observer(() => {
                         if (context.type === MessageContextType.IMAGE) {
                             return (
                                 <DraftImagePill
-                                    key={`image-${context.content}`}
+                                    key={`image-${index}`}
                                     context={context}
                                     onRemove={() => handleRemoveContext(context)}
                                 />
