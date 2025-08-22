@@ -1,13 +1,68 @@
 import chalk from 'chalk';
 import { spawn } from 'node:child_process';
+import fs from 'node:fs';
 import path from 'node:path';
 import ora, { type Ora } from 'ora';
 import { writeEnvFile } from './helpers';
 
+/**
+ * Finds the repository root directory by walking up from the current module's directory
+ * looking for .git directory (preferred) or package.json with .git somewhere above it
+ * @returns The absolute path to the repository root
+ */
+const findRepositoryRoot = (): string => {
+    let currentDir = path.resolve(__dirname);
+    const fsRoot = path.parse(currentDir).root;
+    let firstPackageJsonDir: string | null = null;
+
+    while (currentDir !== fsRoot) {
+        const packageJsonPath = path.join(currentDir, 'package.json');
+        const gitDirPath = path.join(currentDir, '.git');
+
+        // Prioritize .git directory as the definitive repository root
+        if (fs.existsSync(gitDirPath)) {
+            return currentDir;
+        }
+
+        // Remember first package.json found as fallback
+        if (fs.existsSync(packageJsonPath) && !firstPackageJsonDir) {
+            firstPackageJsonDir = currentDir;
+        }
+
+        // Move up one directory
+        const parentDir = path.dirname(currentDir);
+        if (parentDir === currentDir) {
+            // Reached filesystem root without finding markers
+            break;
+        }
+        currentDir = parentDir;
+    }
+
+    // If we found a .git directory, it would have been returned above
+    // If we found a package.json, use that as repository root
+    if (firstPackageJsonDir) {
+        return firstPackageJsonDir;
+    }
+
+    // Final fallback: assume we're in packages/scripts and go up two levels
+    const fallbackDir = path.resolve(__dirname, '..', '..');
+
+    // Verify fallback has expected markers
+    if (
+        fs.existsSync(path.join(fallbackDir, 'package.json')) ||
+        fs.existsSync(path.join(fallbackDir, '.git'))
+    ) {
+        return fallbackDir;
+    }
+
+    throw new Error(
+        `Unable to find repository root. Searched from ${__dirname} up to ${fsRoot}. ` +
+            `Expected to find .git directory or package.json file.`,
+    );
+};
+
 // Determine root directory
-const cwd = process.cwd();
-const isInPackagesScripts = cwd.includes('packages/scripts');
-const rootDir = path.resolve(cwd, isInPackagesScripts ? '../..' : '.');
+const rootDir = findRepositoryRoot();
 
 interface BackendKeys {
     anonKey: string;
