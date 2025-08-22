@@ -2,11 +2,13 @@
 
 import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons';
+import { Button } from '@onlook/ui/button';
 import { motion } from 'framer-motion';
 import { useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { Create } from './create';
 import { CreateError } from './create-error';
+import { EmailCaptureModal } from './email-capture-modal';
 import { HighDemand } from './high-demand';
 import { Import } from './import';
 import { StartBlank } from './start-blank';
@@ -15,6 +17,7 @@ import { UnicornBackground } from './unicorn-background';
 export function Hero() {
     const [cardKey, setCardKey] = useState(0);
     const [isCreatingProject, setIsCreatingProject] = useState(false);
+    const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
     const { data: user } = api.user.get.useQuery();
 
     return (
@@ -90,8 +93,22 @@ export function Hero() {
                     transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    Onlook isn't designed for Mobile – Please open on a larger screen
+                    <div className="text-center">
+                        Onlook isn't designed for Mobile
+                    </div>
+                    <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => setIsEmailModalOpen(true)}
+                        className="text-foreground-secondary border-foreground-secondary/30 hover:bg-foreground-secondary/20"
+                    >
+                        Email me a link for later
+                    </Button>
                 </motion.div>
+                <EmailCaptureModal 
+                    isOpen={isEmailModalOpen} 
+                    onClose={() => setIsEmailModalOpen(false)} 
+                />
             </div>
         </div>
     );
