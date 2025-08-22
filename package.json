@@ -34,7 +34,7 @@
         "prepare": "husky",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
-        "setup:env": "bun --filter @onlook/scripts build && node packages/scripts/dist/index.js",
+        "setup:env": "cd packages/scripts && bun run start",
         "docker:build": "docker compose build",
         "docker:up": "docker compose up -d",
         "docker:down": "docker compose down",
