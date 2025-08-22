@@ -19,9 +19,7 @@ export default function FeaturesPage() {
                 <div className="w-screen h-screen flex items-center justify-center" id="hero">
                     <FeaturesHero />
                 </div>
-                <div className="pb-14">
-                    <ResponsiveMockupSection />
-                </div>
+                <ResponsiveMockupSection />
                 <BenefitsSection />
                 <FeaturesIntroSection />
                 <FeaturesGridSection />
