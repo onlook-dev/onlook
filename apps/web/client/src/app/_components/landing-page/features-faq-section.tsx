@@ -36,7 +36,7 @@ export function FeaturesFAQSection() {
         <div className="w-full py-48 px-8 bg-background-onlook/80" id="faq">
             <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start gap-24 md:gap-12">
                 <div className="flex-1 flex flex-col items-start">
-                    <h2 className="text-foreground-primary text-6xl leading-[1.1] font-light mb-12 mt-4 max-w-3xl">
+                    <h2 className="text-foreground-primary text-2xl md:text-4xl leading-[1.1] font-light mb-12 mt-4 max-w-3xl">
                         Frequently<br />asked questions
                     </h2>
                     <ButtonLink href={Routes.FAQ} rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>Read our FAQs</ButtonLink>

@@ -29,7 +29,7 @@ export function FeaturesHero() {
                     Visual Editor for React &amp; TailwindCSS Apps
                 </motion.h3>
                 <motion.h1
-                    className="text-6xl font-light leading-tight text-center !leading-[0.9] text-balance"
+                    className="text-4xl md:text-6xl font-light leading-tight text-center !leading-[0.9] text-balance"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
