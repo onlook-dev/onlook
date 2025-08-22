@@ -29,7 +29,7 @@ export const DraftImagePill = React.forwardRef<
     };
 
     if (context.type !== MessageContextType.IMAGE) {
-        console.warn('DraftingImagePill received non-image context');
+        console.warn('DraftImagePill received non-image context');
         return null;
     }
 

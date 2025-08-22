@@ -62,6 +62,7 @@ async function captureScreenshotImpl(): Promise<{
             context.fillStyle = '#ff0000';
             context.font = '14px Arial, sans-serif';
             context.textAlign = 'center';
+            context.textBaseline = 'middle';
             context.fillText('Screenshot unavailable', FALLBACK_CANVAS_WIDTH / 2, FALLBACK_CANVAS_HEIGHT / 2);
 
             return {
@@ -200,11 +201,12 @@ async function renderElement(
             let line = '';
             let y = top + TEXT_PADDING;
             const lineHeight = fontSize * LINE_HEIGHT_MULTIPLIER;
+            const wrapWidth = Math.max(0, width - (TEXT_PADDING * 2) - TEXT_WRAP_MARGIN);
 
             for (const word of words) {
                 const testLine = line + word + ' ';
                 const metrics = context.measureText(testLine);
-                if (metrics.width > width - TEXT_WRAP_MARGIN && line !== '') {
+                if (metrics.width > wrapWidth && line !== '') {
                     context.fillText(line, left + TEXT_PADDING, y);
                     line = word + ' ';
                     y += lineHeight;
