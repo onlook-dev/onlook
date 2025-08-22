@@ -99,7 +99,7 @@ export function Hero() {
                     <Button 
                         size="sm"
                         onClick={() => setIsEmailModalOpen(true)}
-                        className="bg-foreground-primary text-white hover:bg-foreground-hover"
+                        className="bg-foreground-primary text-background-primary hover:bg-foreground-hover hover:text-background-primary"
                     >
                         Email me a link for later
                     </Button>

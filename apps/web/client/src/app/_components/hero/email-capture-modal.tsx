@@ -204,7 +204,7 @@ export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
                             <Button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="w-full bg-foreground-primary text-white hover:bg-foreground-hover"
+                                className="w-full bg-foreground-primary text-background-primary hover:bg-foreground-hover hover:text-background-primary"
                             >
                                 {isSubmitting ? 'Submitting...' : 'Submit'}
                             </Button>
