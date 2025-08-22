@@ -17,7 +17,7 @@ interface UserMessageProps {
 }
 
 export const getUserMessageContent = (message: UserChatMessage) => {
-    return message.content.parts.map((part) => {
+    return message.parts.map((part) => {
         if (part.type === 'text') {
             return part.text;
         }
@@ -35,7 +35,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
     const [isRestoring, setIsRestoring] = useState(false);
 
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const commitOid = message.content.metadata.checkpoints.find((s) => s.type === MessageCheckpointType.GIT)?.oid;
+    const commitOid = message.metadata?.checkpoints?.find((s) => s.type === MessageCheckpointType.GIT)?.oid;
 
     useEffect(() => {
         if (isEditing && textareaRef.current) {
@@ -210,7 +210,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                 <div className="h-6 relative">
                     <div className="absolute top-1 left-0 right-0 flex flex-row justify-start items-center w-full overflow-auto pr-16">
                         <div className="flex flex-row gap-3 text-micro text-foreground-secondary">
-                            {message.content.metadata.context.map((context) => (
+                            {message.metadata?.context?.map((context) => (
                                 <SentContextPill key={nanoid()} context={context} />
                             ))}
                         </div>
@@ -220,7 +220,7 @@ export const UserMessage = ({ message }: UserMessageProps) => {
                     {isEditing ? renderEditingInput() : (
                         <MessageContent
                             messageId={message.id}
-                            parts={message.content.parts}
+                            parts={message.parts}
                             applied={false}
                             isStream={false}
                         />

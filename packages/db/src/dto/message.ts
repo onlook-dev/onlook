@@ -5,27 +5,23 @@ import type { UIMessage as VercelMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
 export const toMessage = (message: DbMessage): ChatMessage => {
-    const content = {
-        format: 3 as const,
-        parts: message.parts ?? [],
+
+    const baseMessage = {
+        ...message,
+        threadId: message.conversationId,
         metadata: {
             vercelId: message.id,
             context: message.context ?? [],
             checkpoints: message.checkpoints ?? [],
-        }
-    }
+        },
+        parts: message.parts ?? [],
 
-    const baseMessage = {
-        ...message,
-        content,
-        threadId: message.conversationId,
     }
     switch (message.role) {
         case ChatMessageRole.ASSISTANT:
             return {
                 ...baseMessage,
                 role: message.role as ChatMessageRole.ASSISTANT,
-                content,
             } satisfies AssistantChatMessage;
         case ChatMessageRole.USER:
             return {
@@ -38,20 +34,22 @@ export const toMessage = (message: DbMessage): ChatMessage => {
 }
 
 export const fromMessage = (message: ChatMessage): DbMessage => {
+    console.log('message', message);
+    
     return {
         id: message.id,
         createdAt: message.createdAt,
         conversationId: message.threadId,
-        context: message.content?.metadata?.context ?? [],
-        parts: message.content.parts,
-        content: message.content?.parts.map((part) => {
+        context: message?.metadata?.context ?? [],
+        parts: message.parts,
+        content: message.parts.map((part) => {
             if (part.type === 'text') {
                 return part.text;
             }
             return '';
         }).join(''),
         role: message.role as DbMessage['role'],
-        checkpoints: message.content.metadata?.checkpoints ?? [],
+        checkpoints: message.metadata?.checkpoints ?? [],
         applied: null,
         commitOid: null,
         snapshots: null,
@@ -64,17 +62,19 @@ export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId
         context: [],
         checkpoints: [],
     }
-    const content = {
-        parts: message.parts ?? [],
-        format: 3 as const,
-        metadata,
-    }
     const baseMessage = {
         ...message,
         id: uuidv4(),
         createdAt: (message as any).createdAt ?? new Date(),
         threadId: conversationId,
-        content,
+        metadata,
+        parts: message.parts ?? [],
+        content: message.parts.map((part) => {
+            if (part.type === 'text') {
+                return part.text;
+            }
+            return '';
+        }).join(''),
     }
 
     switch (message.role) {
@@ -94,5 +94,6 @@ export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId
 }
 
 export const toDbMessageFromVercel = (message: VercelMessage, conversationId: string): DbMessage => {
+    console.log('toDbMessageFromVercel', message);
     return fromMessage(toOnlookMessageFromVercel(message, conversationId));
 }

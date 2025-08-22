@@ -7,7 +7,7 @@ export async function countTokensWithRoles(messages: ChatMessage[]): Promise<num
     const perReplyExtra = 2; // for assistant reply priming
     let total = 0;
     for (const m of messages) {
-        const content = m.content.parts
+        const content = m.parts
             .map((p) => {
                 if (p.type === 'text') {
                     return (p as TextUIPart).text;

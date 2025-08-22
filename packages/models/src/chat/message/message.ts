@@ -7,22 +7,18 @@ export enum ChatMessageRole {
     USER = 'user',
     ASSISTANT = 'assistant',
 }
-export interface ChatMessageContent {
-    format: 3;
-    parts: UIMessage['parts'];
-    metadata: {
-        vercelId?: string;
-        context: MessageContext[];
-        checkpoints: MessageCheckpoints[];
-    };
-}
 
 interface BaseChatMessage {
     id: string;
     createdAt: Date;
     role: ChatMessageRole;
     threadId: string;
-    content: ChatMessageContent;
+    parts: UIMessage['parts'];
+    metadata: {
+        vercelId?: string;
+        context: MessageContext[];
+        checkpoints: MessageCheckpoints[];
+    };
 }
 
 export interface UserChatMessage extends BaseChatMessage {

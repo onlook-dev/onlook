@@ -121,6 +121,8 @@ export class ConversationManager {
             throw new Error('No conversation found');
         }
         const message = getUserChatMessageFromString(content, context, this.current.conversation.id);
+
+        console.log('addUserMessage', message);
         await this.addOrReplaceMessage(message);
         if (!this.current.conversation.title) {
             this.addConversationTitle(this.current.conversation.id, content);
@@ -154,27 +156,29 @@ export class ConversationManager {
         }
         const userMessage = message as UserChatMessage;
         const newCheckpoints = [
-            ...userMessage.content.metadata.checkpoints,
+            ...userMessage.metadata.checkpoints,
             {
                 type: MessageCheckpointType.GIT,
                 oid: commit.oid,
                 createdAt: new Date(),
             },
         ];
-        userMessage.content.metadata.checkpoints = newCheckpoints;
+        userMessage.metadata.checkpoints = newCheckpoints;
         await api.chat.message.updateCheckpoints.mutate({
             messageId: message.id,
             checkpoints: newCheckpoints,
         });
+        console.log('attachCommitToUserMessage', userMessage);
         await this.addOrReplaceMessage(userMessage);
     }
 
     async addOrReplaceMessage(message: ChatMessage) {
+        console.log('addOrReplaceMessage', message);
         if (!this.current) {
             console.error('No conversation found');
             return;
         }
-        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.content.metadata.vercelId && m.content.metadata.vercelId === message.content.metadata.vercelId));
+        const index = this.current.messages.findIndex((m) => m.id === message.id || (m.metadata?.vercelId && m.metadata?.vercelId === message.metadata?.vercelId));
         if (index === -1) {
             this.current.messages.push(message);
         } else {
@@ -212,6 +216,7 @@ export class ConversationManager {
     }
 
     async upsertMessageInStorage(message: ChatMessage) {
+        console.log('upsertMessageInStorage', message);
         await api.chat.message.upsert.mutate({ message: fromMessage(message) });
     }
 

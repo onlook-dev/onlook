@@ -1,4 +1,4 @@
-import type { UIMessage } from 'ai';
+import type { ToolUIPart, UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { MarkdownRenderer } from '../markdown-renderer';
 import { ToolCallDisplay } from './tool-call-display';
@@ -18,8 +18,13 @@ export const MessageContent = observer(
         if (!parts) {
             return null;
         }
-        // Find the index of the last tool-invocation part
-        const lastToolInvocationIdx = parts.map(p => p.type).lastIndexOf('tool-invocation');
+        // Find the index of the last tool-*** part
+        const lastToolInvocationIdx = parts
+            .map((part, index) => ({ type: part.type, index }))
+            .filter(item => item.type.startsWith('tool-'))
+            .pop()?.index ?? -1;
+        console.log('lastToolInvocationIdx', lastToolInvocationIdx);
+        console.log('parts', parts);
         return parts.map((part, idx) => {
             if (part.type === 'text') {
                 return (
@@ -32,14 +37,14 @@ export const MessageContent = observer(
                         isStream={isStream}
                     />
                 );
-            } else if (part.type === 'tool-invocation') {
+            } else if (part.type.startsWith('tool-')) {
                 return (
                     <ToolCallDisplay
                         messageId={messageId}
                         index={idx}
                         lastToolInvocationIdx={lastToolInvocationIdx}
-                        toolInvocationData={part.toolInvocation}
-                        key={part.toolInvocation.toolCallId}
+                        toolInvocation={part as ToolUIPart}
+                        key={part.toolCallId}
                         isStream={isStream}
                         applied={applied}
                     />
@@ -49,7 +54,7 @@ export const MessageContent = observer(
                     return null;
                 }
                 return (
-                    <p>Introspecting...</p>
+                    <p key={`${part.type}-${messageId}`}>Introspecting...</p>
                 );
             }
         });
