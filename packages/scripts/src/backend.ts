@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { spawn } from 'node:child_process';
-import ora from 'ora';
+import ora, { type Ora } from 'ora';
 import { rootDir } from '.';
 import { writeEnvFile } from './helpers';
 
@@ -61,7 +61,7 @@ interface ProcessHandlers {
 
 const createProcessHandlers = (
     proc: ReturnType<typeof spawn>,
-    spinner: ora.Ora,
+    spinner: Ora,
     timeout: NodeJS.Timeout,
     resolve: (value: BackendKeys) => void,
     reject: (reason: Error) => void,
