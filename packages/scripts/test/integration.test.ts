@@ -111,45 +111,51 @@ NEW_KEY=new_value
         expect(finalVars.NEW_KEY).toBe('new_value'); // Added new
     });
 
-    it('should generate correct backend environment content', () => {
+    it('should generate correct backend environment content without comments', () => {
         const mockKeys = {
             anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.anon_token',
             serviceRoleKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.service_token',
         };
 
-        // Test client env generation
-        const clientEnvContent = `# Supabase
-NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+        // Test client env generation (expected format without comments)
+        const expectedClientEnvContent = `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 NEXT_PUBLIC_SUPABASE_ANON_KEY=${mockKeys.anonKey}
+SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
 
-# Drizzle
-SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-
-`;
-
-        // Test db env generation
-        const dbEnvContent = `SUPABASE_URL=http://127.0.0.1:54321
+        // Test db env generation (expected format without comments)
+        const expectedDbEnvContent = `SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_SERVICE_ROLE_KEY=${mockKeys.serviceRoleKey}
-SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres
-`;
+SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres`;
 
-        expect(clientEnvContent).toContain('NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321');
-        expect(clientEnvContent).toContain(`NEXT_PUBLIC_SUPABASE_ANON_KEY=${mockKeys.anonKey}`);
-        expect(clientEnvContent).toContain(
+        // Verify client content structure
+        expect(expectedClientEnvContent).toContain(
+            'NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321',
+        );
+        expect(expectedClientEnvContent).toContain(
+            `NEXT_PUBLIC_SUPABASE_ANON_KEY=${mockKeys.anonKey}`,
+        );
+        expect(expectedClientEnvContent).toContain(
             'SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres',
         );
+        expect(expectedClientEnvContent).not.toContain('#'); // No comments
+        expect(expectedClientEnvContent.split('\n')).toHaveLength(3); // No extra lines
 
-        expect(dbEnvContent).toContain('SUPABASE_URL=http://127.0.0.1:54321');
-        expect(dbEnvContent).toContain(`SUPABASE_SERVICE_ROLE_KEY=${mockKeys.serviceRoleKey}`);
-        expect(dbEnvContent).toContain(
+        // Verify db content structure
+        expect(expectedDbEnvContent).toContain('SUPABASE_URL=http://127.0.0.1:54321');
+        expect(expectedDbEnvContent).toContain(
+            `SUPABASE_SERVICE_ROLE_KEY=${mockKeys.serviceRoleKey}`,
+        );
+        expect(expectedDbEnvContent).toContain(
             'SUPABASE_DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:54322/postgres',
         );
+        expect(expectedDbEnvContent).not.toContain('#'); // No comments
+        expect(expectedDbEnvContent.split('\n')).toHaveLength(3); // No extra lines
     });
 
     it('should handle API key configuration validation', () => {
         const API_KEYS = {
-            REQUIRED_KEY: { required: true, description: 'Required Service' },
-            OPTIONAL_KEY: { required: false, description: 'Optional Service' },
+            REQUIRED_KEY: { required: true },
+            OPTIONAL_KEY: { required: false },
         };
 
         // Test required key validation

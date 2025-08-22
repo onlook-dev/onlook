@@ -14,36 +14,48 @@ const API_KEYS: Record<string, ApiKeyConfig> = {
         name: 'CSB_API_KEY',
         message: 'Enter your Codesandbox API key:',
         required: true,
-        description: 'Codesandbox',
     },
     OPENROUTER_API_KEY: {
         name: 'OPENROUTER_API_KEY',
         message: 'Enter your OpenRouter API key:',
         required: true,
-        description: 'OpenRouter',
     },
 };
 
+/**
+ * Reads existing API keys from the environment file
+ * @param clientEnvPath - Path to the client .env file
+ * @returns Object containing existing API key values
+ */
 const readExistingApiKeys = (clientEnvPath: string): Record<string, string> => {
     const existingKeys: Record<string, string> = {};
 
-    if (fs.existsSync(clientEnvPath)) {
-        try {
-            const content = fs.readFileSync(clientEnvPath, 'utf-8');
-            const lines = content.split('\n');
+    if (!fs.existsSync(clientEnvPath)) {
+        return existingKeys;
+    }
 
-            for (const line of lines) {
-                const trimmedLine = line.trim();
-                if (trimmedLine.includes('=') && !trimmedLine.startsWith('#')) {
-                    const [key, ...valueParts] = trimmedLine.split('=');
-                    if (key && Object.keys(API_KEYS).includes(key)) {
-                        existingKeys[key] = valueParts.join('=');
-                    }
+    try {
+        const content = fs.readFileSync(clientEnvPath, 'utf-8');
+        const lines = content.split('\n');
+        const validApiKeys = new Set(Object.keys(API_KEYS));
+
+        for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (
+                trimmedLine.includes('=') &&
+                !trimmedLine.startsWith('#') &&
+                trimmedLine.indexOf('=') > 0
+            ) {
+                const [key, ...valueParts] = trimmedLine.split('=');
+                const cleanKey = key?.trim();
+
+                if (cleanKey && validApiKeys.has(cleanKey)) {
+                    existingKeys[cleanKey] = valueParts.join('=');
                 }
             }
-        } catch (err) {
-            console.warn(chalk.yellow(`Warning: Could not read existing .env file: ${err}`));
         }
+    } catch (err) {
+        console.warn(chalk.yellow(`Warning: Could not read existing .env file: ${err}`));
     }
 
     return existingKeys;
@@ -59,59 +71,21 @@ export const promptAndWriteApiKeys = async (clientEnvPath: string) => {
     await writeApiKeysToFile(clientEnvPath, envContent);
 };
 
-const writeApiKeysToFile = async (filePath: string, newContent: string) => {
+/**
+ * Writes API keys to file, removing old API key sections
+ * @param filePath - Path to the .env file
+ * @param newContent - New API key content to write
+ */
+const writeApiKeysToFile = async (filePath: string, newContent: string): Promise<void> => {
     try {
-        let existingContent = '';
-        if (fs.existsSync(filePath)) {
-            existingContent = fs.readFileSync(filePath, 'utf-8');
-        }
+        const existingContent = fs.existsSync(filePath) ? fs.readFileSync(filePath, 'utf-8') : '';
+        const filteredContent = removeOldApiKeyEntries(existingContent);
 
-        // Parse existing content to remove old API keys
-        const lines = existingContent.split('\n');
-        const filteredLines: string[] = [];
-        let skipNextLine = false;
+        ensureDirectoryExists(filePath);
 
-        for (const line of lines) {
-            const trimmedLine = line.trim();
-
-            // Skip API key comments and their associated keys
-            if (
-                trimmedLine.startsWith('#') &&
-                Object.values(API_KEYS).some(
-                    (key) => key.description && trimmedLine.includes(key.description),
-                )
-            ) {
-                skipNextLine = true;
-                continue;
-            }
-
-            // Skip API key lines
-            if (
-                trimmedLine.includes('=') &&
-                Object.keys(API_KEYS).some((key) => trimmedLine.startsWith(`${key}=`))
-            ) {
-                skipNextLine = false;
-                continue;
-            }
-
-            // Skip empty lines after API key comments
-            if (skipNextLine && trimmedLine === '') {
-                skipNextLine = false;
-                continue;
-            }
-
-            filteredLines.push(line);
-            skipNextLine = false;
-        }
-
-        // Ensure directory exists
-        const dir = filePath.substring(0, filePath.lastIndexOf('/'));
-        if (!fs.existsSync(dir)) {
-            fs.mkdirSync(dir, { recursive: true });
-        }
-
-        // Write the combined content
-        const finalContent = filteredLines.join('\n') + '\n' + newContent;
+        // Only add newline separator if filtered content exists and doesn't end with newline
+        const separator = filteredContent && !filteredContent.endsWith('\n') ? '\n' : '';
+        const finalContent = filteredContent + separator + newContent;
         fs.writeFileSync(filePath, finalContent);
 
         console.log(chalk.green('✅ API keys updated successfully!'));
@@ -121,15 +95,99 @@ const writeApiKeysToFile = async (filePath: string, newContent: string) => {
     }
 };
 
+/**
+ * Removes old API key entries from existing content
+ * @param content - Existing file content
+ * @returns Filtered content without old API keys
+ */
+const removeOldApiKeyEntries = (content: string): string => {
+    const lines = content.split('\n');
+    const filteredLines: string[] = [];
+    const apiKeyDescriptions = new Set<string>();
+    const apiKeyNames = new Set(Object.keys(API_KEYS));
+    let skipNextLine = false;
+
+    for (const line of lines) {
+        const trimmedLine = line.trim();
+
+        // Skip API key comments (no longer used)
+        if (
+            trimmedLine.startsWith('#') &&
+            apiKeyDescriptions.has(extractDescription(trimmedLine))
+        ) {
+            skipNextLine = true;
+            continue;
+        }
+
+        // Skip API key variable lines
+        const keyName = extractKeyName(trimmedLine);
+        if (trimmedLine.includes('=') && keyName && apiKeyNames.has(keyName)) {
+            skipNextLine = false;
+            continue;
+        }
+
+        // Skip empty lines after API key comments
+        if (skipNextLine && trimmedLine === '') {
+            skipNextLine = false;
+            continue;
+        }
+
+        filteredLines.push(line);
+        skipNextLine = false;
+    }
+
+    return filteredLines.join('\n').trim();
+};
+
+/**
+ * Extracts description from a comment line
+ * @param commentLine - Comment line starting with #
+ * @returns Description text or undefined
+ */
+const extractDescription = (commentLine: string): string | undefined => {
+    const match = commentLine.match(/^#\s*(.+)/);
+    return match?.[1]?.trim();
+};
+
+/**
+ * Extracts key name from a variable line
+ * @param variableLine - Variable line with key=value format
+ * @returns Key name or undefined
+ */
+const extractKeyName = (variableLine: string): string | undefined => {
+    const equalIndex = variableLine.indexOf('=');
+    if (equalIndex > 0) {
+        return variableLine.substring(0, equalIndex).trim();
+    }
+    return undefined;
+};
+
+/**
+ * Ensures the directory for a file path exists
+ * @param filePath - Full path to the file
+ */
+const ensureDirectoryExists = (filePath: string): void => {
+    const dir = filePath.substring(0, filePath.lastIndexOf('/'));
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+};
+
+/**
+ * Generates environment content for API keys
+ * @param responses - User responses for API keys
+ * @returns Formatted environment content
+ */
 const generateEnvContent = (responses: Record<string, string>): string => {
-    return Object.entries(API_KEYS)
-        .map(([key, config]) => {
-            const value = responses[key] || '';
-            return config.description
-                ? `# ${config.description}\n${key}=${value}\n`
-                : `${key}=${value}\n`;
-        })
-        .join('\n');
+    const lines: string[] = [];
+    const entries = Object.entries(API_KEYS);
+
+    for (const [key] of entries) {
+        const value = responses[key] || '';
+        lines.push(`${key}=${value}`);
+    }
+
+    return lines.join('\n');
 };
 
 const promptForApiKeys = async (existingKeys: Record<string, string>) => {
@@ -142,14 +200,12 @@ const promptForApiKeys = async (existingKeys: Record<string, string>) => {
         const hasExisting = existingKeys[keyName];
 
         if (hasExisting) {
-            console.log(
-                chalk.yellow(`\n⚠️  ${config.description || keyName} API key already exists`),
-            );
+            console.log(chalk.yellow(`\n⚠️  ${keyName} API key already exists`));
 
             const action = await prompts({
                 type: 'select',
                 name: 'choice',
-                message: `What would you like to do with ${config.description || keyName}?`,
+                message: `What would you like to do with ${keyName}?`,
                 choices: [
                     { title: 'Keep existing key', value: 'keep' },
                     { title: 'Replace with new key', value: 'replace' },
@@ -160,11 +216,11 @@ const promptForApiKeys = async (existingKeys: Record<string, string>) => {
 
             if (action.choice === 'keep') {
                 responses[keyName] = hasExisting;
-                console.log(chalk.green(`✓ Keeping existing ${config.description || keyName} key`));
+                console.log(chalk.green(`✓ Keeping existing ${keyName} key`));
                 continue;
             } else if (action.choice === 'remove') {
                 responses[keyName] = '';
-                console.log(chalk.blue(`✓ Removed ${config.description || keyName} key`));
+                console.log(chalk.blue(`✓ Removed ${keyName} key`));
                 continue;
             }
             // If 'replace' is selected, continue to prompt for new key
@@ -173,9 +229,7 @@ const promptForApiKeys = async (existingKeys: Record<string, string>) => {
         const response = await prompts({
             type: 'password',
             name: 'value',
-            message: hasExisting
-                ? `Enter new ${config.description || keyName} API key:`
-                : config.message,
+            message: hasExisting ? `Enter new ${keyName} API key:` : config.message,
             validate: config.required
                 ? (value: string) => value.length > 0 || `${keyName} is required`
                 : undefined,
@@ -184,11 +238,7 @@ const promptForApiKeys = async (existingKeys: Record<string, string>) => {
         if (response.value !== undefined) {
             responses[keyName] = response.value;
             if (response.value) {
-                console.log(
-                    chalk.green(
-                        `✓ ${hasExisting ? 'Updated' : 'Set'} ${config.description || keyName} key`,
-                    ),
-                );
+                console.log(chalk.green(`✓ ${hasExisting ? 'Updated' : 'Set'} ${keyName} key`));
             }
         } else {
             // User cancelled, keep existing if available

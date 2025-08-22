@@ -52,10 +52,10 @@ EMPTY_KEY=
         expect(parsedVars['# Comment']).toBeUndefined();
     });
 
-    it('should generate proper env content format', () => {
+    it('should generate proper env content format without descriptions', () => {
         const API_KEYS = {
-            TEST_KEY1: { description: 'Test Service' },
-            TEST_KEY2: { description: undefined },
+            TEST_KEY1: { required: true },
+            TEST_KEY2: { required: false },
         };
 
         const responses = {
@@ -64,18 +64,17 @@ EMPTY_KEY=
         };
 
         const envContent = Object.entries(API_KEYS)
-            .map(([key, config]) => {
+            .map(([key]) => {
                 const value = responses[key] || '';
-                return config.description
-                    ? `# ${config.description}\n${key}=${value}\n`
-                    : `${key}=${value}\n`;
+                return `${key}=${value}`;
             })
             .join('\n');
 
-        expect(envContent).toContain('# Test Service');
+        expect(envContent).not.toContain('#'); // No comments
         expect(envContent).toContain('TEST_KEY1=value1');
         expect(envContent).toContain('TEST_KEY2=value2');
-        expect(envContent.split('\n')).toHaveLength(5); // Including empty lines
+        expect(envContent.split('\n')).toHaveLength(2); // No extra lines
+        expect(envContent).toBe('TEST_KEY1=value1\nTEST_KEY2=value2');
     });
 
     it('should validate JWT token patterns', () => {
