@@ -40,12 +40,7 @@ export class ScreenshotManager {
                 }
             }
 
-            const projectId = this.editorEngine.projectId;
-            if (!projectId) {
-                console.warn('Screenshot skipped: no projectId available');
-                return;
-            }
-            const result = await api.project.captureScreenshot.mutate({ projectId });
+            const result = await api.project.captureScreenshot.mutate({ projectId: this.editorEngine.projectId });
             if (!result || !result.success) {
                 throw new Error('Failed to capture screenshot');
             }

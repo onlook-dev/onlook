@@ -75,6 +75,13 @@ export const projectRouter = createTRPCRouter({
                     formats: ['screenshot'],
                     onlyMainContent: true,
                     timeout: 10000,
+                    // Optional: Add actions to click the button for CSB free tier
+                    // actions: [
+                    //     {
+                    //         type: 'click',
+                    //         selector: '#btn-answer-yes',
+                    //     },
+                    // ],
                 });
 
                 if (!result.success) {
