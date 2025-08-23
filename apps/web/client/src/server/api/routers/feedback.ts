@@ -1,8 +1,7 @@
 import { env } from '@/env';
 import { trackEvent } from '@/utils/analytics/server';
-import { callUserWebhook } from '@/utils/n8n/webhook';
 import { feedbacks, feedbackSubmitSchema, type NewFeedback } from '@onlook/db';
-import { createClient, sendFeedbackNotificationEmail } from '@onlook/email';
+import { getResendClient, sendFeedbackNotificationEmail } from '@onlook/email';
 import { TRPCError } from '@trpc/server';
 import { and, count, desc, eq, gte } from 'drizzle-orm';
 import { createTRPCRouter, publicProcedure } from '../trpc';
@@ -16,11 +15,11 @@ export const feedbackRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.user?.id;
             const userEmail = input.email || ctx.user?.email;
-            
+
             // Rate limiting check for authenticated users
             if (userId) {
                 const oneHourAgo = new Date(Date.now() - RATE_LIMIT_WINDOW_HOURS * 60 * 60 * 1000);
-                
+
                 const recentSubmissions = await ctx.db
                     .select({ count: count() })
                     .from(feedbacks)
@@ -30,9 +29,9 @@ export const feedbackRouter = createTRPCRouter({
                             gte(feedbacks.createdAt, oneHourAgo)
                         )
                     );
-                    
+
                 const submissionCount = recentSubmissions[0]?.count || 0;
-                
+
                 if (submissionCount >= RATE_LIMIT_MAX_SUBMISSIONS) {
                     throw new TRPCError({
                         code: 'TOO_MANY_REQUESTS',
@@ -40,7 +39,7 @@ export const feedbackRouter = createTRPCRouter({
                     });
                 }
             }
-            
+
             // Validate required fields
             if (!input.message?.trim()) {
                 throw new TRPCError({
@@ -72,10 +71,17 @@ export const feedbackRouter = createTRPCRouter({
                 .values(newFeedback)
                 .returning();
 
+            if (!feedback) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Failed to create feedback record',
+                });
+            }
+
             // Send email notification
             try {
                 if (env.RESEND_API_KEY) {
-                    const resendClient = createClient(env.RESEND_API_KEY);
+                    const resendClient = getResendClient({ apiKey: env.RESEND_API_KEY });
                     await sendFeedbackNotificationEmail(resendClient, {
                         message: feedback.message,
                         userEmail: feedback.email,
@@ -132,7 +138,7 @@ export const feedbackRouter = createTRPCRouter({
             } catch (error) {
                 console.error('Failed to track feedback event:', error);
             }
-            
+
             return {
                 success: true,
                 id: feedback.id,
