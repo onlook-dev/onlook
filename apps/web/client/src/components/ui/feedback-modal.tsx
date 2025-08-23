@@ -2,6 +2,7 @@
 
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
+import { LocalForageKeys } from '@/utils/constants';
 import {
     formatFileSize,
     uploadFeedbackAttachments,
@@ -9,6 +10,7 @@ import {
     type AttachmentFile
 } from '@/utils/upload/feedback-attachments';
 import type { FeedbackSubmitInput } from '@onlook/db';
+import localforage from 'localforage';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -17,8 +19,15 @@ import { Textarea } from '@onlook/ui/textarea';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+
+interface FeedbackFormState {
+    message: string;
+    email: string;
+    attachments: AttachmentFile[];
+    timestamp: number;
+}
 
 export const FeedbackModal = observer(() => {
     const stateManager = useStateManager();
@@ -38,6 +47,64 @@ export const FeedbackModal = observer(() => {
     const [pageUrl, setPageUrl] = useState('');
     const [userAgent, setUserAgent] = useState('');
 
+    // Form persistence functions
+    const saveFormState = useCallback(async () => {
+        if (!message.trim() && !email.trim() && attachments.length === 0) {
+            // Don't save empty forms
+            return;
+        }
+
+        const formState: FeedbackFormState = {
+            message,
+            email,
+            attachments,
+            timestamp: Date.now(),
+        };
+
+        try {
+            await localforage.setItem(LocalForageKeys.FEEDBACK_DRAFT, formState);
+        } catch (error) {
+            console.error('Failed to save feedback draft:', error);
+        }
+    }, [message, email, attachments]);
+
+    const restoreFormState = useCallback(async () => {
+        try {
+            const savedState = await localforage.getItem<FeedbackFormState>(LocalForageKeys.FEEDBACK_DRAFT);
+            
+            if (savedState) {
+                // Only restore if the draft is less than 24 hours old
+                const dayInMs = 24 * 60 * 60 * 1000;
+                const isExpired = Date.now() - savedState.timestamp > dayInMs;
+                
+                if (!isExpired) {
+                    setMessage(savedState.message);
+                    setEmail(savedState.email || user?.email || '');
+                    setAttachments(savedState.attachments);
+                    
+                    if (savedState.message || savedState.attachments.length > 0) {
+                        toast.info('Draft restored', {
+                            description: 'Your previous feedback draft has been restored.',
+                        });
+                    }
+                } else {
+                    // Clean up expired draft
+                    await localforage.removeItem(LocalForageKeys.FEEDBACK_DRAFT);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to restore feedback draft:', error);
+        }
+    }, [user?.email]);
+
+    const clearFormState = useCallback(async () => {
+        try {
+            await localforage.removeItem(LocalForageKeys.FEEDBACK_DRAFT);
+        } catch (error) {
+            console.error('Failed to clear feedback draft:', error);
+        }
+    }, []);
+
     useEffect(() => {
         if (typeof window !== 'undefined') {
             setPageUrl(window.location.href);
@@ -45,20 +112,36 @@ export const FeedbackModal = observer(() => {
         }
     }, []);
 
-    // Reset form when modal opens/closes
+    // Handle modal open/close and form restoration
     useEffect(() => {
         if (stateManager.isFeedbackModalOpen) {
+            // Reset form state first
             setMessage('');
             setEmail(user?.email || '');
             setAttachments([]);
             setIsUploading(false);
             setUploadProgress(0);
+            
             if (typeof window !== 'undefined') {
                 setPageUrl(window.location.href);
                 setUserAgent(navigator.userAgent);
             }
+            
+            // Then try to restore draft
+            restoreFormState();
         }
-    }, [stateManager.isFeedbackModalOpen, user?.email]);
+    }, [stateManager.isFeedbackModalOpen, user?.email, restoreFormState]);
+
+    // Auto-save form state when form changes (debounced)
+    useEffect(() => {
+        if (!stateManager.isFeedbackModalOpen) return;
+        
+        const timeoutId = setTimeout(() => {
+            saveFormState();
+        }, 1000); // Save after 1 second of inactivity
+
+        return () => clearTimeout(timeoutId);
+    }, [message, email, attachments, stateManager.isFeedbackModalOpen, saveFormState]);
 
     const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
@@ -137,6 +220,9 @@ export const FeedbackModal = observer(() => {
             };
 
             await submitFeedback(feedbackData);
+
+            // Clear saved draft on successful submission
+            await clearFormState();
 
             toast.success('Thank you for your feedback!', {
                 description: 'We\'ll review it and get back to you if needed.',

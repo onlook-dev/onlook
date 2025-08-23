@@ -41,4 +41,5 @@ export const Git = {
 
 export const LocalForageKeys = {
     RETURN_URL: 'returnUrl',
+    FEEDBACK_DRAFT: 'feedbackDraft',
 } as const;
