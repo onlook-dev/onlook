@@ -120,13 +120,6 @@
       "when": 1755044168112,
       "tag": "0016_pretty_dust",
       "breakpoints": true
-    },
-    {
-      "idx": 17,
-      "version": "7",
-      "when": 1755973575997,
-      "tag": "0017_unusual_black_panther",
-      "breakpoints": true
     }
   ]
 }
