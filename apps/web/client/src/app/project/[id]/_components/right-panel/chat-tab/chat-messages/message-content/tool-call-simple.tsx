@@ -64,8 +64,12 @@ export function ToolCallSimple({
     className?: string;
     loading?: boolean;
 }) {
-    const toolName = toolInvocation.type.split('-')[1];
+    const toolName = toolInvocation.type.split('-')[1] ?? '';
     const Icon = TOOL_ICONS[toolName] ?? Icons.QuestionMarkCircled;
+
+    if(toolInvocation.state === 'output-available') {
+        return null;
+    }
 
     const getLabel = () => {
         try {
