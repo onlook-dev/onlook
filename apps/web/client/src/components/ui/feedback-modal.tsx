@@ -1,5 +1,6 @@
 "use client";
 
+import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
 import type { FeedbackSubmitInput } from '@onlook/db';
 import { Button } from '@onlook/ui/button';
@@ -7,20 +8,17 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { Textarea } from '@onlook/ui/textarea';
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion } from 'framer-motion';
+import { observer } from 'mobx-react-lite';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-interface FeedbackModalProps {
-    isOpen: boolean;
-    onClose: () => void;
-    userEmail?: string | null;
-}
-
-export function FeedbackModal({ isOpen, onClose, userEmail }: FeedbackModalProps) {
+export const FeedbackModal = observer(() => {
+    const stateManager = useStateManager();
+    const { data: user } = api.user.get.useQuery();
     const [message, setMessage] = useState('');
-    const [email, setEmail] = useState(userEmail || '');
+    const [email, setEmail] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const pathname = usePathname();
 
@@ -39,23 +37,25 @@ export function FeedbackModal({ isOpen, onClose, userEmail }: FeedbackModalProps
 
     // Reset form when modal opens/closes
     useEffect(() => {
-        if (isOpen) {
+        if (stateManager.isFeedbackModalOpen) {
             setMessage('');
-            setEmail(userEmail || '');
-            setPageUrl(window.location.href);
-            setUserAgent(navigator.userAgent);
+            setEmail(user?.email || '');
+            if (typeof window !== 'undefined') {
+                setPageUrl(window.location.href);
+                setUserAgent(navigator.userAgent);
+            }
         }
-    }, [isOpen, userEmail]);
+    }, [stateManager.isFeedbackModalOpen, user?.email]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+        
         if (!message.trim()) {
             toast.error('Please enter your feedback message');
             return;
         }
 
-        if (!userEmail && !email.trim()) {
+        if (!user?.email && !email.trim()) {
             toast.error('Please enter your email address');
             return;
         }
@@ -77,16 +77,16 @@ export function FeedbackModal({ isOpen, onClose, userEmail }: FeedbackModalProps
             };
 
             await submitFeedback(feedbackData);
-
+            
             toast.success('Thank you for your feedback!', {
                 description: 'We\'ll review it and get back to you if needed.',
             });
-
-            onClose();
+            
+            stateManager.isFeedbackModalOpen = false;
         } catch (error) {
             console.error('Error submitting feedback:', error);
             const errorMessage = error instanceof Error ? error.message : 'Something went wrong';
-
+            
             if (errorMessage.includes('TOO_MANY_REQUESTS')) {
                 toast.error('Too many feedback submissions', {
                     description: 'Please wait before submitting again.',
@@ -103,7 +103,7 @@ export function FeedbackModal({ isOpen, onClose, userEmail }: FeedbackModalProps
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
-            onClose();
+            stateManager.isFeedbackModalOpen = false;
         }
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
             handleSubmit(e);
@@ -112,20 +112,23 @@ export function FeedbackModal({ isOpen, onClose, userEmail }: FeedbackModalProps
 
     return (
         <AnimatePresence>
-            {isOpen && (
+            {stateManager.isFeedbackModalOpen && (
                 <motion.div
-                    className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                    className="fixed inset-0 z-99 flex items-center justify-center p-4"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    onClick={onClose}
+                    transition={{ duration: 0.2 }}
+                    onClick={() => stateManager.isFeedbackModalOpen = false}
                     onKeyDown={handleKeyDown}
                 >
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+                    
                     <motion.div
-                        className="bg-background border border-border rounded-2xl max-w-md w-full shadow-2xl"
-                        initial={{ scale: 0.95 }}
-                        animate={{ scale: 1 }}
-                        exit={{ scale: 0.95 }}
+                        className="relative bg-background border border-border rounded-2xl max-w-md w-full shadow-2xl"
+                        initial={{ scale: 0.95, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0.95, opacity: 0 }}
                         transition={{ duration: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
                         onClick={(e) => e.stopPropagation()}
                     >
@@ -136,7 +139,7 @@ export function FeedbackModal({ isOpen, onClose, userEmail }: FeedbackModalProps
                                     Send Feedback
                                 </h2>
                                 <Button
-                                    onClick={onClose}
+                                    onClick={() => stateManager.isFeedbackModalOpen = false}
                                     variant="ghost"
                                     size="sm"
                                     className="p-2 rounded-full hover:bg-secondary transition-colors"
@@ -165,7 +168,7 @@ export function FeedbackModal({ isOpen, onClose, userEmail }: FeedbackModalProps
                                     </div>
                                 </div>
 
-                                {!userEmail && (
+                                {!user?.email && (
                                     <div>
                                         <Label htmlFor="email" className="text-sm font-medium text-foreground mb-2 block">
                                             Email Address *
@@ -205,7 +208,7 @@ export function FeedbackModal({ isOpen, onClose, userEmail }: FeedbackModalProps
                                     <Button
                                         type="button"
                                         variant="outline"
-                                        onClick={onClose}
+                                        onClick={() => stateManager.isFeedbackModalOpen = false}
                                         disabled={isSubmitting}
                                     >
                                         Cancel
@@ -228,4 +231,4 @@ export function FeedbackModal({ isOpen, onClose, userEmail }: FeedbackModalProps
             )}
         </AnimatePresence>
     );
-}
+});

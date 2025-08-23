@@ -1,4 +1,3 @@
-import { FeedbackModal } from '@/components/feedback';
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
 import { Links, SUPPORT_EMAIL } from '@onlook/constants';
@@ -19,7 +18,6 @@ import { useState } from 'react';
 export const HelpDropdown = observer(() => {
     const stateManager = useStateManager();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
     const t = useTranslations();
 
     return (
@@ -109,7 +107,7 @@ export const HelpDropdown = observer(() => {
                     className="text-sm"
                     onClick={() => {
                         setIsDropdownOpen(false);
-                        setIsFeedbackModalOpen(true);
+                        stateManager.isFeedbackModalOpen = true;
                     }}
                 >
                     <Icons.MessageSquare className="w-4 h-4 mr-2" />
@@ -155,10 +153,6 @@ export const HelpDropdown = observer(() => {
                     {t(transKeys.help.menu.reportIssue)}
                 </DropdownMenuItem>
             </DropdownMenuContent>
-            <FeedbackModal
-                isOpen={isFeedbackModalOpen}
-                onClose={() => setIsFeedbackModalOpen(false)}
-            />
         </DropdownMenu>
     );
 });

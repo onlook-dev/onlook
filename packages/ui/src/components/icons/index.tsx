@@ -117,6 +117,7 @@ import {
     CreditCardIcon,
     ListCheckIcon,
     MailXIcon,
+    MessageSquareIcon,
     SquareCheckIcon,
     SquareXIcon,
 } from 'lucide-react';
@@ -1652,6 +1653,7 @@ export const Icons = {
     Moon: MoonIcon,
     MixerHorizontal: MixerHorizontalIcon,
     MixerVertical: MixerVerticalIcon,
+    MessageSquare: MessageSquareIcon,
 
     Pencil: Pencil1Icon,
     PencilPaper: Pencil2Icon,

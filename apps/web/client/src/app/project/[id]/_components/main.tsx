@@ -1,6 +1,7 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
+import { FeedbackModal } from '@/components/ui/feedback-modal';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
 import { EditorAttributes } from '@onlook/constants';
@@ -133,6 +134,7 @@ export const Main = observer(() => {
             </div>
             <SettingsModalWithProjects />
             <SubscriptionModal />
+            <FeedbackModal />
         </TooltipProvider>
     );
 });
