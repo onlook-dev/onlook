@@ -63,6 +63,7 @@ export const feedbackRouter = createTRPCRouter({
                 message: input.message.trim(),
                 pageUrl: input.pageUrl || null,
                 userAgent: input.userAgent || null,
+                attachments: input.attachments || [],
                 metadata: input.metadata || {},
             };
 
@@ -88,6 +89,13 @@ export const feedbackRouter = createTRPCRouter({
                         userName: userId ? ctx.user?.user_metadata?.name || ctx.user?.user_metadata?.display_name : null,
                         pageUrl: feedback.pageUrl,
                         userAgent: feedback.userAgent,
+                        attachments: feedback.attachments as Array<{
+                            name: string;
+                            size: number;
+                            type: string;
+                            url: string;
+                            uploadedAt: string;
+                        }>,
                         metadata: feedback.metadata as Record<string, any>,
                         submittedAt: feedback.createdAt,
                     });

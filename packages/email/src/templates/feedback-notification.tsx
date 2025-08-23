@@ -18,6 +18,13 @@ export interface FeedbackNotificationEmailProps {
     userName?: string | null;
     pageUrl?: string | null;
     userAgent?: string | null;
+    attachments?: Array<{
+        name: string;
+        size: number;
+        type: string;
+        url: string;
+        uploadedAt: string;
+    }>;
     metadata?: Record<string, any>;
     submittedAt: Date;
 }
@@ -28,6 +35,7 @@ export const FeedbackNotificationEmail = ({
     userName,
     pageUrl,
     userAgent,
+    attachments,
     metadata,
     submittedAt,
 }: FeedbackNotificationEmailProps) => {
@@ -103,6 +111,38 @@ export const FeedbackNotificationEmail = ({
                                 <Text className="text-[12px] text-[#666666] leading-[18px] font-mono bg-[#f5f5f5] p-2 rounded">
                                     {JSON.stringify(metadata, null, 2)}
                                 </Text>
+                            </Section>
+                        )}
+
+                        {attachments && attachments.length > 0 && (
+                            <Section className="mt-4">
+                                <Text className="text-[14px] text-black leading-[20px] font-semibold mb-2">
+                                    Attachments ({attachments.length}):
+                                </Text>
+                                <div className="space-y-2">
+                                    {attachments.map((attachment, index) => (
+                                        <div
+                                            key={index}
+                                            className="flex items-center gap-3 p-2 bg-[#f5f5f5] rounded"
+                                        >
+                                            <div className="flex-1">
+                                                <Text className="text-[13px] text-black font-medium leading-[18px] mb-1">
+                                                    {attachment.name}
+                                                </Text>
+                                                <Text className="text-[11px] text-[#666666] leading-[14px]">
+                                                    {attachment.type} •{' '}
+                                                    {Math.round(attachment.size / 1024)} KB
+                                                </Text>
+                                            </div>
+                                            <Link
+                                                href={attachment.url}
+                                                className="text-[12px] text-blue-600 font-medium no-underline px-2 py-1 bg-white rounded border border-[#e0e0e0]"
+                                            >
+                                                Download
+                                            </Link>
+                                        </div>
+                                    ))}
+                                </div>
                             </Section>
                         )}
 
