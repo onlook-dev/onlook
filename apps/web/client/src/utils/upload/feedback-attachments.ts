@@ -217,11 +217,12 @@ export async function uploadFeedbackAttachment(
     const randomId = Math.random().toString(36).substring(2, 15);
     const fileExtension = file.name.split('.').pop() || '';
     const fileName = `feedback_${timestamp}_${randomId}${fileExtension ? '.' + fileExtension : ''}`;
+    const filePath = `feedback/${fileName}`;
     
     // Upload to Supabase storage
     const { data, error } = await supabase.storage
         .from('file_transfer')
-        .upload(fileName, file, {
+        .upload(filePath, file, {
             cacheControl: '3600',
             upsert: false,
             metadata: {
