@@ -46,7 +46,7 @@ export function CTASection({ href, onClick, ctaText = "Craft a website\nfor free
     return (
         <div className="w-full max-w-6xl mx-auto py-32 px-8 flex flex-col items-right gap-24">
             <div className="flex-1 flex flex-col items-end justify-center text-right">
-                <h2 className="text-foreground-primary text-2xl md:text-4xl leading-[1.05] font-light mb-8 max-w-4xl text-balance">
+                <h2 className="text-foreground-primary text-4xl md:text-4xl leading-[1.05] font-light mb-8 max-w-4xl text-balance">
                     {ctaText.split('\n').map((line, index) => (
                         <span key={index}>
                             {line}
