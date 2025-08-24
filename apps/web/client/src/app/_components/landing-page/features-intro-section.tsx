@@ -7,7 +7,7 @@ export function FeaturesIntroSection() {
                 <h3 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-6">
                     Complete React Visual Builder
                 </h3>
-                <h2 className="text-foreground-primary text-6xl leading-[1.1] font-light mb-8">
+                <h2 className="text-foreground-primary text-2xl md:text-5xl leading-[1.1] font-light mb-8 text-balance">
                     All the Features you need to Build and Scale
                 </h2>
                 <p className="text-foreground-secondary text-lg max-w-xl mx-auto text-balance">
