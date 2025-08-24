@@ -4,15 +4,30 @@ import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import type { HeroContent } from '@/content/types';
 import { useGitHubStats } from '../top-bar/github';
 import { UnicornBackground } from './unicorn-background';
 
-export function FeaturesHero() {
+interface FeaturesHeroProps {
+    content?: HeroContent;
+}
+
+export function FeaturesHero({ content }: FeaturesHeroProps) {
     const router = useRouter();
     const { formatted: starCount } = useGitHubStats();
 
+    const defaultContent: HeroContent = {
+        subtitle: "Visual Editor for React & TailwindCSS Apps",
+        title: "The React Editor You've Been Waiting For",
+        description: "Code as you design. Build React applications visually while Onlook writes reliable code you can trust, exactly where it needs to go.",
+        buttonText: "START BUILDING",
+        buttonRoute: Routes.HOME
+    };
+
+    const heroContent = content || defaultContent;
+
     const handleStartBuilding = () => {
-        router.push(Routes.HOME);
+        router.push(heroContent.buttonRoute);
     };
 
     return (
@@ -26,7 +41,7 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    Visual Editor for React &amp; TailwindCSS Apps
+                    {heroContent.subtitle}
                 </motion.h3>
                 <motion.h1
                     className="text-4xl md:text-6xl font-light leading-tight text-center !leading-[1] text-balance"
@@ -35,7 +50,7 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    The React Editor You've Been Waiting For
+                    {heroContent.title}
                 </motion.h1>
                 <motion.p
                     className="text-lg text-foreground-secondary mx-auto max-w-xl text-center"
@@ -44,7 +59,7 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    Code as you design. Build React applications visually while Onlook writes reliable code you can trust, exactly where it needs to go.
+                    {heroContent.description}
                 </motion.p>
                 <motion.div
                     className="mt-8"
@@ -59,7 +74,7 @@ export function FeaturesHero() {
                         className="p-6 cursor-pointer hover:bg-foreground-primary hover:text-background-primary transition-all duration-300"
                         onClick={handleStartBuilding}
                     >
-                        START BUILDING
+                        {heroContent.buttonText}
                     </Button>
                 </motion.div>
                 <motion.div
