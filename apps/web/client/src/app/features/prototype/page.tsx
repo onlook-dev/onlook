@@ -7,7 +7,6 @@ import { Routes } from '@/utils/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'framer-motion';
-import { type Metadata } from 'next';
 import { useRouter } from 'next/navigation';
 import React from 'react';
 import { ButtonLink } from '../../_components/button-link';
@@ -21,11 +20,6 @@ import { useGitHubStats } from '../../_components/top-bar/github';
 import { AiChatInteractive } from '../../_components/shared/mockups/ai-chat-interactive';
 import { DirectEditingInteractive } from '../../_components/shared/mockups/direct-editing-interactive';
 import { TailwindColorEditorMockup } from '../../_components/shared/mockups/tailwind-color-editor';
-
-export const metadata: Metadata = {
-    title: 'Onlook - AI Prototype Generator for React Apps',
-    description: 'Generate functional React prototypes with AI in minutes. Onlook\'s rapid prototyping tool creates production-ready code from designs, not just mockups. Perfect for product managers and designers.',
-};
 
 function PrototypeFeaturesHero() {
     const router = useRouter();
