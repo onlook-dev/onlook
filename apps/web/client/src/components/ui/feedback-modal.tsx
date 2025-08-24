@@ -9,6 +9,12 @@ import {
     validateFiles,
     type AttachmentFile
 } from '@/utils/upload/feedback-attachments';
+import {
+    canCompressFile,
+    compressMultipleImages,
+    getCompressionOptions,
+    type CompressionResult
+} from '@/utils/upload/image-compression';
 import type { FeedbackSubmitInput } from '@onlook/db';
 import localforage from 'localforage';
 import { Button } from '@onlook/ui/button';
@@ -38,6 +44,8 @@ export const FeedbackModal = observer(() => {
     const [attachments, setAttachments] = useState<AttachmentFile[]>([]);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
+    const [isCompressing, setIsCompressing] = useState(false);
+    const [compressionProgress, setCompressionProgress] = useState(0);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const pathname = usePathname();
 
@@ -121,6 +129,8 @@ export const FeedbackModal = observer(() => {
             setAttachments([]);
             setIsUploading(false);
             setUploadProgress(0);
+            setIsCompressing(false);
+            setCompressionProgress(0);
             
             if (typeof window !== 'undefined') {
                 setPageUrl(window.location.href);
@@ -158,12 +168,81 @@ export const FeedbackModal = observer(() => {
             return;
         }
 
+        // Show warnings if any
+        if (validation.warnings.length > 0) {
+            validation.warnings.forEach(warning => {
+                toast.info('File optimization', {
+                    description: warning,
+                });
+            });
+        }
+
+        let processedFiles = fileArray;
+
+        // Compress images if needed
+        if (validation.needsCompression) {
+            setIsCompressing(true);
+            setCompressionProgress(0);
+
+            try {
+                // Compress each image with smart options based on file size
+                const compressionResults: CompressionResult[] = [];
+                for (let i = 0; i < fileArray.length; i++) {
+                    const file = fileArray[i];
+                    if (!file) continue;
+                    
+                    if (canCompressFile(file)) {
+                        const options = getCompressionOptions(file);
+                        const result = await compressMultipleImages(
+                            [file],
+                            options,
+                            (fileIndex, fileProgress, totalProgress) => {
+                                const overallProgress = ((i + totalProgress / 100) / fileArray.length) * 100;
+                                setCompressionProgress(overallProgress);
+                            }
+                        );
+                        compressionResults.push(...result);
+                    } else {
+                        // Non-compressible files pass through unchanged
+                        compressionResults.push({
+                            file,
+                            originalSize: file.size,
+                            compressedSize: file.size,
+                            compressionRatio: 0,
+                        });
+                        setCompressionProgress(((i + 1) / fileArray.length) * 100);
+                    }
+                }
+
+                // Replace original files with compressed versions
+                processedFiles = compressionResults.map(result => result.file);
+
+                // Show compression summary
+                const compressedImages = compressionResults.filter(r => r.compressionRatio > 0);
+                if (compressedImages.length > 0) {
+                    const avgCompression = compressedImages.reduce((sum, r) => sum + r.compressionRatio, 0) / compressedImages.length;
+                    toast.success('Images optimized', {
+                        description: `${compressedImages.length} image(s) compressed by ${Math.round(avgCompression)}% on average`,
+                    });
+                }
+            } catch (error) {
+                console.error('Compression error:', error);
+                toast.error('Compression failed', {
+                    description: 'Using original files instead'
+                });
+                // Continue with original files if compression fails
+            } finally {
+                setIsCompressing(false);
+                setCompressionProgress(0);
+            }
+        }
+
         setIsUploading(true);
         setUploadProgress(0);
 
         try {
             const uploadedFiles = await uploadFeedbackAttachments(
-                fileArray,
+                processedFiles,
                 user?.id,
                 (progress) => setUploadProgress(progress)
             );
@@ -355,10 +434,15 @@ export const FeedbackModal = observer(() => {
                                             type="button"
                                             variant="ghost"
                                             onClick={() => fileInputRef.current?.click()}
-                                            disabled={isUploading || isSubmitting}
+                                            disabled={isUploading || isSubmitting || isCompressing}
                                             className="w-full h-auto py-3 flex-col gap-2"
                                         >
-                                            {isUploading ? (
+                                            {isCompressing ? (
+                                                <>
+                                                    <Icons.LoadingSpinner className="w-5 h-5 animate-spin" />
+                                                    <span className="text-sm">Optimizing images... {Math.round(compressionProgress)}%</span>
+                                                </>
+                                            ) : isUploading ? (
                                                 <>
                                                     <Icons.LoadingSpinner className="w-5 h-5 animate-spin" />
                                                     <span className="text-sm">Uploading... {Math.round(uploadProgress)}%</span>
@@ -368,7 +452,7 @@ export const FeedbackModal = observer(() => {
                                                     <Icons.Upload className="w-5 h-5" />
                                                     <span className="text-sm">Click to upload files</span>
                                                     <span className="text-xs text-foreground-tertiary">
-                                                        Images, PDFs, videos (max 10MB each, 5 files total)
+                                                        Images, PDFs, videos (max 50MB each, 100MB total)
                                                     </span>
                                                 </>
                                             )}
@@ -411,7 +495,7 @@ export const FeedbackModal = observer(() => {
                                     <Button
                                         type="submit"
                                         className="flex-1"
-                                        disabled={isSubmitting || !message.trim() || isUploading}
+                                        disabled={isSubmitting || !message.trim() || isUploading || isCompressing}
                                     >
                                         {isSubmitting ? (
                                             <div className="flex items-center gap-2">
