@@ -135,11 +135,7 @@ export const feedbackRouter = createTRPCRouter({
             // Track feedback submission event
             try {
                 await trackEvent({
-<<<<<<< HEAD
                     distinctId: userId ?? 'unknown',
-=======
-                    distinctId: userId || `anonymous-${feedback.email}`,
->>>>>>> main
                     event: 'feedback_submitted',
                     properties: {
                         feedbackId: feedback.id,
