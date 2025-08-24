@@ -17,7 +17,9 @@ export const formatPrice = (cents: number) => `$${Math.round(cents / 100)}/month
 
 const PRO_FEATURES = [
     'Unlimited projects',
-    'Custom domain',
+    'Deploy to a custom domain',
+    'Collaborate with your team',
+    'Turn projects into templates',
 ];
 
 export const ProCard = ({

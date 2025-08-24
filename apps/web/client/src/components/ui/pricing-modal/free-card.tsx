@@ -19,7 +19,8 @@ const FREE_TIER = {
         'Visual code editor access',
         '5 projects',
         '5 AI chat messages a day',
-        '50 AI messages a month',
+        '15 AI messages a month',
+        'Unlimited styling and code editing',
         'Limited to 1 screenshot per chat'
     ],
     defaultSelectValue: 'daily',

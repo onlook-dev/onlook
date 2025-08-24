@@ -14,16 +14,8 @@ export const PricingTable = () => {
     const { setIsAuthModalOpen } = useAuthContext();
 
     return (
-        <div className="flex flex-col items-center gap-8 w-full max-w-6xl mx-auto">
-            <div className="text-center">
-                <h1 className="text-title2 text-foreground-primary mb-4">
-                    {t(transKeys.pricing.titles.choosePlan)}
-                </h1>
-                <p className="text-foreground-secondary/60 text-small text-balance">
-                    {t(transKeys.pricing.footer.unusedMessages)}
-                </p>
-            </div>
-            <div className="flex flex-col md:flex-row gap-4 items-center md:items-stretch">
+        <div className="flex flex-col items-center gap-6 sm:gap-8 w-full max-w-6xl mx-auto">
+            <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 items-center lg:items-stretch w-full">
                 <FreeCard 
                     delay={0.1} 
                     isUnauthenticated={!user}
@@ -37,6 +29,11 @@ export const PricingTable = () => {
                 <EnterpriseCard 
                     delay={0.3}
                 />
+            </div>
+            <div className="text-center">
+                <p className="text-foreground-secondary/60 text-small text-balance">
+                    {t(transKeys.pricing.footer.unusedMessages)}
+                </p>
             </div>
         </div>
     );

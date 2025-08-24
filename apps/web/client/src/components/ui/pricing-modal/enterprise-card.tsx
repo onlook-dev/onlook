@@ -8,15 +8,14 @@ import { useTranslations } from 'next-intl';
 const ENTERPRISE_TIER = {
     name: 'Enterprise',
     price: 'Custom pricing',
-    description: 'Tailored solutions for large organizations with advanced needs.',
+    description: 'Supercharge your team with the power of AI',
     features: [
-        'Everything in Pro',
-        'Dedicated account manager',
         'Custom integrations',
-        'Advanced analytics',
+        'On-premise deployment options',
+        'Usage analytics',
+        'Branching',
         '24/7 premium support',
         'Custom SLA',
-        'On-premise deployment options'
     ],
 };
 
@@ -28,7 +27,17 @@ export const EnterpriseCard = ({
     const t = useTranslations();
 
     const handleContactUs = () => {
-        window.location.href = 'mailto:daniel@onlook.com';
+        const subject = encodeURIComponent('[Enterprise]: Onlook Enterprise Inquiry');
+        const body = encodeURIComponent(`Hi Daniel,
+
+I'm interested in learning more about Onlook's enterprise offering for our organization.
+
+Looking forward to hearing from you.
+
+Best regards,
+[Your name]`);
+        
+        window.location.href = `mailto:daniel@onlook.com?subject=${subject}&body=${body}`;
     };
 
     return (
