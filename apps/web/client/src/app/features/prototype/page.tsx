@@ -151,48 +151,48 @@ function PrototypeFeaturesGridSection() {
         <div className="w-full max-w-6xl mx-auto py-32 px-8">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-20">
                 <div>
-                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Natural language to functional prototypes</h2>
-                    <p className="text-foreground-secondary text-small uppercase tracking-wider mb-4">AI Prototype Generation</p>
+                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">AI Prototype Generation</h2>
+                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Natural language to functional prototypes</p>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Describe your product idea in natural language and watch AI generate a fully functional prototype with proper React architecture, state management, and responsive design.
                     </p>
                 </div>
                 
                 <div>
-                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Working features, not static mockups</h2>
-                    <p className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Interactive Components</p>
+                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Interactive Components</h2>
+                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Working features, not static mockups</p>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Create prototypes with working forms, navigation, data visualization, and user interactions—not just static screens linked together.
                     </p>
                 </div>
                 
                 <div>
-                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Team feedback and iteration</h2>
-                    <p className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Real-Time Collaboration (planned)</p>
+                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Real-Time Collaboration (planned)</h2>
+                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Team feedback and iteration</p>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Share prototypes instantly with your team for feedback, comments, and collaborative editing in real-time.
                     </p>
                 </div>
                 
                 <div>
-                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Design to production-ready code</h2>
-                    <p className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Figma to React Conversion</p>
+                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Figma to React Conversion</h2>
+                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Design to production-ready code</p>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Import Figma designs and convert them to clean, production-ready React code with proper component structure and Tailwind styling.
                     </p>
                 </div>
                 
                 <div>
-                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Instant live prototypes</h2>
-                    <p className="text-foreground-secondary text-small uppercase tracking-wider mb-4">One-Click Deployment</p>
+                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">One-Click Deployment</h2>
+                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Instant live prototypes</p>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Deploy your prototypes to live URLs instantly for user testing, stakeholder reviews, and product validation without any setup.
                     </p>
                 </div>
                 
                 <div>
-                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Complete prototype evolution tracking</h2>
-                    <p className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Version History</p>
+                    <h2 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Version History</h2>
+                    <p className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Complete prototype evolution tracking</p>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Track prototype iterations with automatic versioning, rollback to previous versions, and maintain a complete history of your product evolution.
                     </p>
@@ -258,10 +258,10 @@ export default function PrototypeFeaturesPage() {
                 <PrototypeBenefitsSection />
                 <div className="w-full max-w-6xl mx-auto py-32 px-8 text-center">
                     <div className="max-w-3xl mx-auto">
-                        <h2 className="text-foreground-primary text-2xl md:text-5xl leading-[1.1] font-light mb-8 text-balance">
+                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-6">
                             Complete Rapid Prototyping Solution
                         </h2>
-                        <p className="text-foreground-secondary text-lg max-w-xl mx-auto text-balance mb-4">
+                        <p className="text-foreground-primary text-2xl md:text-5xl leading-[1.1] font-light mb-8 text-balance">
                             All the Features you need to Build and Scale
                         </p>
                         <p className="text-foreground-secondary text-lg max-w-xl mx-auto text-balance">
