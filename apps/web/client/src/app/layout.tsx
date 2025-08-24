@@ -14,6 +14,7 @@ import Script from 'next/script';
 import { ThemeProvider } from './_components/theme';
 import { AuthProvider } from './auth/auth-context';
 import { faqSchema, organizationSchema } from './seo';
+import RB2BLoader from '@/components/rb2b-loader';
 
 const isProduction = env.NODE_ENV === 'production';
 
@@ -72,7 +73,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </head>
             <body>
                 {isProduction && (
-                    <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="lazyOnload" />
+                    <>
+                        <Script src="https://z.onlook.com/cdn-cgi/zaraz/i.js" strategy="lazyOnload" />
+                        <RB2BLoader />
+                    </>
                 )}
                 <TRPCReactProvider>
                     <FeatureFlagsProvider>
