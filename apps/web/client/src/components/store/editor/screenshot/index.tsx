@@ -39,6 +39,7 @@ export class ScreenshotManager {
                     return;
                 }
             }
+
             const result = await api.project.captureScreenshot.mutate({ projectId: this.editorEngine.projectId });
             if (!result || !result.success) {
                 throw new Error('Failed to capture screenshot');

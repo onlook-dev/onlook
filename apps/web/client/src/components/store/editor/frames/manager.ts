@@ -12,6 +12,7 @@ export interface FrameData {
     frame: Frame;
     view: WebFrameView | null;
     selected: boolean;
+    lastInteractionTime: Date | null;
 }
 
 function roundDimensions(frame: WebFrame): WebFrame {
@@ -47,7 +48,7 @@ export class FramesManager {
 
     applyFrames(frames: Frame[]) {
         for (const frame of frames) {
-            this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
+            this._frameIdToData.set(frame.id, { frame, view: null, selected: false, lastInteractionTime: null });
         }
     }
 
@@ -69,7 +70,9 @@ export class FramesManager {
 
     registerView(frame: Frame, view: WebFrameView) {
         const isSelected = this.isSelected(frame.id);
-        this._frameIdToData.set(frame.id, { frame, view, selected: isSelected });
+        const existingData = this._frameIdToData.get(frame.id);
+        const lastInteractionTime = existingData?.lastInteractionTime || null;
+        this._frameIdToData.set(frame.id, { frame, view, selected: isSelected, lastInteractionTime });
         const framePathname = new URL(view.src).pathname;
         this._navigation.registerFrame(frame.id, framePathname);
     }
@@ -92,6 +95,8 @@ export class FramesManager {
         }
         for (const frame of frames) {
             this.updateFrameSelection(frame.id, !this.isSelected(frame.id));
+            // Track frame interaction when frame is selected
+            this.updateLastInteraction(frame.id);
         }
         this.notify();
     }
@@ -163,6 +168,9 @@ export class FramesManager {
         }
 
         try {
+            // Track frame interaction when navigating
+            this.updateLastInteraction(frameId);
+            
             const currentUrl = frameData.view.src;
             const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
 
@@ -215,7 +223,7 @@ export class FramesManager {
         const success = await api.frame.create.mutate(fromFrame(roundDimensions(frame)));
 
         if (success) {
-            this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
+            this._frameIdToData.set(frame.id, { frame, view: null, selected: false, lastInteractionTime: null });
         } else {
             console.error('Failed to create frame');
         }
@@ -255,6 +263,7 @@ export class FramesManager {
                 ...existingFrame,
                 frame: newFrame,
                 selected: existingFrame.selected,
+                lastInteractionTime: existingFrame.lastInteractionTime,
             });
         }
         await this.saveToStorage(frameId, frame);
@@ -284,6 +293,31 @@ export class FramesManager {
 
     canDuplicate() {
         return this.selected.length > 0;
+    }
+
+    updateLastInteraction(frameId: string) {
+        const frameData = this.get(frameId);
+        if (frameData) {
+            frameData.lastInteractionTime = new Date();
+            this._frameIdToData.set(frameId, frameData);
+            this.notify();
+        }
+    }
+
+    getMostRecentlyInteractedFrame(): FrameData | null {
+        const frames = this.getAll();
+        if (frames.length === 0) {
+            return null;
+        }
+
+        // Find frames with interaction times and sort by most recent
+        const framesWithInteractions = frames
+            .filter(f => f.lastInteractionTime)
+            .sort((a, b) => b.lastInteractionTime!.getTime() - a.lastInteractionTime!.getTime());
+
+        // Return most recently interacted frame, or first frame if none have interactions
+        const mostRecent = framesWithInteractions.length > 0 ? framesWithInteractions[0] : frames[0];
+        return mostRecent ?? null;
     }
 
     async duplicateSelected() {

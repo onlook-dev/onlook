@@ -219,6 +219,16 @@ export class ChatContext {
         }
     }
 
+    addImageContext(imageData: string) {
+        const imageContext: ImageMessageContext = {
+            type: MessageContextType.IMAGE,
+            content: imageData,
+            displayName: `Screenshot ${new Date().toLocaleTimeString()}`,
+            mimeType: 'image/jpeg',
+        };
+        this.context = [...this.context.filter(c => c.type !== MessageContextType.IMAGE), imageContext];
+    }
+
     clearAttachments() {
         this.context = this.context.filter((context) => context.type !== MessageContextType.IMAGE);
     }

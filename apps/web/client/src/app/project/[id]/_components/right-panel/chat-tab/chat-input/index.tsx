@@ -222,9 +222,10 @@ export const ChatInput = observer(({
                 return;
             }
 
-            const framesWithViews = editorEngine.frames.getAll().filter(f => !!f.view);
-
-            if (framesWithViews.length === 0) {
+            // Get the most recently interacted frame
+            const targetFrame = editorEngine.frames.getMostRecentlyInteractedFrame();
+            
+            if (!targetFrame?.view) {
                 toast.error('No active frame available for screenshot');
                 return;
             }
@@ -232,21 +233,18 @@ export const ChatInput = observer(({
             let screenshotData = null;
             let mimeType = 'image/jpeg';
 
-            for (const frame of framesWithViews) {
-                try {
-                    if (!frame.view?.captureScreenshot) {
-                        continue;
-                    }
-
-                    const result = await frame.view.captureScreenshot();
-                    if (result && result.data) {
-                        screenshotData = result.data;
-                        mimeType = result.mimeType || 'image/jpeg';
-                        break;
-                    }
-                } catch (frameError) {
-                    // Continue to next frame on error
+            try {
+                const result = await targetFrame.view.captureScreenshot();
+                if (result && result.data) {
+                    screenshotData = result.data;
+                    mimeType = result.mimeType || 'image/jpeg';
+                } else {
+                    throw new Error('No screenshot data returned');
                 }
+            } catch (frameError) {
+                console.error('Failed to capture screenshot from selected frame:', frameError);
+                toast.error('Failed to capture screenshot from selected frame');
+                return;
             }
 
             if (!screenshotData) {
