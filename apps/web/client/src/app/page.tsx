@@ -12,7 +12,6 @@ import { TestimonialsSection } from './_components/landing-page/testimonials-sec
 import { WhatCanOnlookDoSection } from './_components/landing-page/what-can-onlook-do-section';
 import { WebsiteLayout } from './_components/website-layout';
 import { ResponsiveMockupSection } from './_components/landing-page/responsive-mockup-section';
-import { FeaturesSection } from './_components/landing-page/features-section';
 
 export default function Main() {
     return (
@@ -22,18 +21,14 @@ export default function Main() {
                     <Hero />
                 </div>
                 <ResponsiveMockupSection />
-                <div className="hidden md:flex w-screen h-fit items-center justify-center" id="features-text">
-                    <FeaturesSection />
-                </div>
-                {/* <CodeOneToOneSection /> */}
-                <ContributorSection />
+                {/* <CodeOneToOneSection /> */}                
                 <WhatCanOnlookDoSection />
                 {/* <ObsessForHoursSection /> */}
-                <TestimonialsSection />
+                <ContributorSection />
+                <TestimonialsSection />                
                 <FAQSection />
                 <CTASection />
                 <AuthModal />
-
                 <NonProjectSettingsModal />
                 <SubscriptionModal />
             </WebsiteLayout >
