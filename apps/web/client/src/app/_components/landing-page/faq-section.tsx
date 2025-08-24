@@ -10,7 +10,7 @@ interface FAQ {
 }
 
 interface FAQSectionProps {
-    faqs: FAQ[];
+    faqs?: FAQ[];
     title?: string;
     buttonText?: string;
     buttonHref?: string;
