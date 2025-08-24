@@ -19,7 +19,7 @@ export function FeaturesHero() {
         <div className="w-full h-full flex flex-col items-center justify-center gap-12 p-8 text-lg text-center relative">
             <UnicornBackground />
             <div className="flex flex-col gap-6 items-center relative z-20 pt-4 pb-2 max-w-3xl">
-                <motion.h3
+                <motion.h1
                     className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
@@ -27,8 +27,8 @@ export function FeaturesHero() {
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
                     Visual Editor for React &amp; TailwindCSS Apps
-                </motion.h3>
-                <motion.h1
+                </motion.h1>
+                <motion.p
                     className="text-4xl md:text-6xl font-light leading-tight text-center !leading-[1] text-balance"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
@@ -36,7 +36,7 @@ export function FeaturesHero() {
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
                     The React Editor You've Been Waiting For
-                </motion.h1>
+                </motion.p>
                 <motion.p
                     className="text-lg text-foreground-secondary mx-auto max-w-xl text-center"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
