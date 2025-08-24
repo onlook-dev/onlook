@@ -3,7 +3,6 @@
 import { CreateManagerProvider } from '@/components/store/create';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
-import { type Metadata } from 'next';
 import { AiFeaturesHero } from '../../_components/hero/ai-features-hero';
 import { AiBenefitsSection } from '../../_components/landing-page/ai-benefits-section';
 import { CTASection } from '../../_components/landing-page/cta-section';
@@ -12,11 +11,6 @@ import { AiFeaturesGridSection } from '../../_components/landing-page/ai-feature
 import { AiFeaturesIntroSection } from '../../_components/landing-page/ai-features-intro-section';
 import { ResponsiveMockupSection } from '../../_components/landing-page/responsive-mockup-section';
 import { WebsiteLayout } from '../../_components/website-layout';
-
-export const metadata: Metadata = {
-    title: 'Onlook - AI Tools for Designers',
-    description: 'Discover Onlook\'s AI features for designers: Build React apps with natural language, visual collaboration, and design system consistency.',
-};
 
 const aiFaqs = [
     {
