@@ -26,7 +26,7 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    React Visual Builder
+                    Design System Tools for React
                 </motion.h1>
                 <motion.p
                     className="text-4xl md:text-6xl font-light leading-tight text-center !leading-[1] text-balance"
@@ -35,7 +35,7 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, delay: 0.1, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    Build and Edit Apps Visually
+                    Manage and Scale Your Design System
                 </motion.p>
                 <motion.p
                     className="text-lg text-foreground-secondary mx-auto max-w-xl text-center"
@@ -44,7 +44,7 @@ export function FeaturesHero() {
                     transition={{ duration: 0.6, delay: 0.15, ease: "easeOut" }}
                     style={{ willChange: "opacity, filter", transform: "translateZ(0)" }}
                 >
-                    Onlook's visual builder lets you drag, drop, and edit webapps directly in your browser while maintaining full code access. Perfect for builders who want visual speed without no-code limitations.
+                    Onlook's design system tools let you create, edit, and maintain consistent branding across your React apps with visual editors for Tailwind, Shadcn, typography, colors, and template imports for seamless scaling.
                 </motion.p>
                 <motion.div
                     className="mt-8"
@@ -59,7 +59,7 @@ export function FeaturesHero() {
                         className="p-6 cursor-pointer hover:bg-foreground-primary hover:text-background-primary transition-all duration-300"
                         onClick={handleStartBuilding}
                     >
-                        Start Building React Apps
+                        Start Managing Your Design System
                     </Button>
                 </motion.div>
                 <motion.div
