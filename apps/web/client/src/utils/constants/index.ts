@@ -6,6 +6,7 @@ export const Routes = {
     ABOUT: '/about',
     CAREERS: '/careers',
     FEATURES: '/features',
+    FEATURES_BUILDER: '/features/builder',
     // Auth
     LOGIN: '/login',
     AUTH_CALLBACK: '/auth/callback',
