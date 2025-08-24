@@ -1,0 +1,511 @@
+// server.js (Бекенд + Фронтенд в одному файлі для демонстрації)
+
+// --- Бекенд: Node.js + Express ---
+const express = require('express');
+const mongoose = require('mongoose');
+const AWS = require('aws-sdk');
+const axios = require('axios');
+const path = require('path');
+const cors = require('cors');
+const app = express();
+
+// Налаштування middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'build'))); // Для React
+
+// Підключення до MongoDB
+mongoose.connect('mongodb://localhost/minecraft-ai', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+// Схема користувача
+const userSchema = new mongoose.Schema({
+  userId: String,
+  email: String,
+  language: { type: String, default: 'uk' },
+  plan: { type: String, default: 'free' },
+  history: [
+    {
+      type: String,
+      fileUrl: String,
+      createdAt: Date,
+      parameters: Object,
+    },
+  ],
+});
+const User = mongoose.model('User', userSchema);
+
+// Налаштування AWS S3
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY || 'your_aws_access_key',
+  secretAccessKey: process.env.AWS_SECRET_KEY || 'your_aws_secret_key',
+});
+
+// API для генерації текстури
+app.post('/api/generate-texture', async (req, res) => {
+  const { resolution, style, userId } = req.body;
+
+  try {
+    // Перевірка тарифного плану
+    const user = await User.findOne({ userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    
+    if (user.plan !== 'pro' && resolution === '256x256') {
+      return res.status(403).json({ error: 'Upgrade to Pro plan for 256x256 textures' });
+    }
+
+    // Імітація виклику ШІ API (наприклад, Stable Diffusion)
+    const textureResponse = await axios.post('https://api.huggingface.co/generate', {
+      prompt: `Minecraft texture ${style} ${resolution}`,
+    }, {
+      headers: { Authorization: `Bearer your_huggingface_api_key` },
+    });
+    const fileBuffer = textureResponse.data; // Припускаємо, що це бінарний файл
+
+    // Завантаження в S3
+    const fileKey = `textures/${userId}/${Date.now()}.mcpack`;
+    const params = {
+      Bucket: 'minecraft-ai-bucket',
+      Key: fileKey,
+      Body: fileBuffer,
+      ContentType: 'application/zip',
+    };
+    const upload = await s3.upload(params).promise();
+
+    // Збереження в історії
+    await User.updateOne(
+      { userId },
+      {
+        $push: {
+          history: {
+            type: 'texture',
+            fileUrl: upload.Location,
+            createdAt: new Date(),
+            parameters: { resolution, style },
+          },
+        },
+      }
+    );
+
+    res.json({ downloadUrl: upload.Location });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to generate texture', details: error.message });
+  }
+});
+
+// API для встановлення тарифного плану
+app.post('/api/set-plan', async (req, res) => {
+  const { userId, plan } = req.body;
+  try {
+    const user = await User.findOne({ userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // Автоматичний "Про" план для вашого email
+    if (user.email === 'your_email@example.com') {
+      user.plan = 'pro';
+    } else {
+      user.plan = plan;
+    }
+    await user.save();
+    res.json({ plan: user.plan });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to set plan', details: error.message });
+  }
+});
+
+// API для отримання історії
+app.get('/api/history/:userId', async (req, res) => {
+  try {
+    const user = await User.findOne({ userId: req.params.userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json(user.history);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch history', details: error.message });
+  }
+});
+
+// API для зміни мови
+app.post('/api/set-language', async (req, res) => {
+  const { userId, language } = req.body;
+  try {
+    const user = await User.findOne({ userId });
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    user.language = language;
+    await user.save();
+    res.json({ language });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to set language', details: error.message });
+  }
+});
+
+// Статичний маршрут для React
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+
+// Запуск сервера
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// --- Фронтенд: React.js ---
+
+// src/index.js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import App from './App';
+import './index.css';
+
+ReactDOM.render(<App />, document.getElementById('root'));
+
+// src/App.js
+import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import axios from 'axios';
+import './i18n';
+
+// Налаштування Firebase
+const firebaseConfig = {
+  apiKey: 'your_firebase_api_key',
+  authDomain: 'your_firebase_auth_domain',
+  projectId: 'your_firebase_project_id',
+};
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+function App() {
+  const { t, i18n } = useTranslation();
+  const [user, setUser] = useState(null);
+  const [resolution, setResolution] = useState('16x16');
+  const [style, setStyle] = useState('realistic');
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Автентифікація
+  useEffect(() => {
+    firebase.auth().onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        setUser(firebaseUser);
+        // Встановлення плану "Про" для вашого email
+        await axios.post('http://localhost:3000/api/set-plan', {
+          userId: firebaseUser.uid,
+          plan: 'pro',
+        });
+        // Отримання історії
+        const response = await axios.get(`http://localhost:3000/api/history/${firebaseUser.uid}`);
+        setHistory(response.data);
+      }
+    });
+  }, []);
+
+  const handleLogin = async () => {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await firebase.auth().signInWithPopup(provider);
+      setUser(result.user);
+
+      // Створення користувача в базі даних
+      await axios.post('http://localhost:3000/api/set-plan', {
+        userId: result.user.uid,
+        email: result.user.email,
+        plan: result.user.email === 'your_email@example.com' ? 'pro' : 'free',
+      });
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
+  const handleCreateTexture = async () => {
+    if (!user) {
+      alert(t('please_login'));
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await axios.post('http://localhost:3000/api/generate-texture', {
+        resolution,
+        style,
+        userId: user.uid,
+      });
+      window.location.href = response.data.downloadUrl; // Завантаження файлу
+      // Оновлення історії
+      const historyResponse = await axios.get(`http://localhost:3000/api/history/${user.uid}`);
+      setHistory(historyResponse.data);
+    } catch (error) {
+      console.error('Texture creation failed:', error);
+      alert(t('creation_failed'));
+    }
+    setLoading(false);
+  };
+
+  const handleLanguageChange = async (language) => {
+    i18n.changeLanguage(language);
+    if (user) {
+      await axios.post('http://localhost:3000/api/set-language', {
+        userId: user.uid,
+        language,
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-4">
+      <div className="container mx-auto">
+        {/* Вибір мови */}
+        <div className="mb-4">
+          <select
+            onChange={(e) => handleLanguageChange(e.target.value)}
+            className="p-2 border rounded"
+            defaultValue="uk"
+          >
+            <option value="uk">Українська</option>
+            <option value="en">English</option>
+            <option value="ru">Русский</option>
+          </select>
+        </div>
+
+        {/* Автентифікація */}
+        <div className="mb-4">
+          {user ? (
+            <div>
+              <p>{t('welcome', { name: user.displayName })}</p>
+              <button
+                onClick={() => firebase.auth().signOut()}
+                className="bg-red-500 text-white p-2 rounded"
+              >
+                {t('logout')}
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleLogin}
+              className="bg-blue-500 text-white p-2 rounded"
+            >
+              {t('login_button')}
+            </button>
+          )}
+        </div>
+
+        {/* Форма створення текстури */}
+        <div className="mb-4">
+          <h2 className="text-xl font-bold">{t('create_texture')}</h2>
+          <div className="flex flex-col gap-2">
+            <select
+              value={resolution}
+              onChange={(e) => setResolution(e.target.value)}
+              className="p-2 border rounded"
+            >
+              <option value="16x16">16x16</option>
+              <option value="32x32">32x32</option>
+              <option value="64x64">64x64</option>
+              <option value="256x256">256x256 (Pro)</option>
+            </select>
+            <input
+              type="text"
+              value={style}
+              onChange={(e) => setStyle(e.target.value)}
+              placeholder={t('style_placeholder')}
+              className="p-2 border rounded"
+            />
+            <button
+              onClick={handleCreateTexture}
+              disabled={loading}
+              className="bg-green-500 text-white p-2 rounded disabled:bg-gray-500"
+            >
+              {loading ? t('creating') : t('create_button')}
+            </button>
+          </div>
+        </div>
+
+        {/* Історія */}
+        <div>
+          <h2 className="text-xl font-bold">{t('history')}</h2>
+          {history.length > 0 ? (
+            <ul className="list-disc pl-5">
+              {history.map((item, index) => (
+                <li key={index}>
+                  <a href={item.fileUrl} className="text-blue-500">
+                    {item.type} ({item.parameters.resolution}, {item.parameters.style}) -{' '}
+                    {new Date(item.createdAt).toLocaleDateString()}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>{t('no_history')}</p>
+          )}
+        </div>
+
+        {/* Тарифні плани */}
+        <div className="mt-4">
+          <h2 className="text-xl font-bold">{t('plans')}</h2>
+          <p>{t('your_plan')}: {user?.email === 'your_email@example.com' ? 'Pro (Free)' : 'Free'}</p>
+          <p>{t('plan_description')}</p>
+        </div>
+
+        {/* Інструкція для імпорту */}
+        <div className="mt-4">
+          <h2 className="text-xl font-bold">{t('import_instructions')}</h2>
+          <ol className="list-decimal pl-5">
+            <li>{t('instruction_1')}</li>
+            <li>{t('instruction_2')}</li>
+            <li>{t('instruction_3')}</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;
+
+// src/i18n.js (Локалізація)
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+const resources = {
+  uk: {
+    translation: {
+      login_button: 'Увійти через Google',
+      logout: 'Вийти',
+      welcome: 'Вітаємо, {{name}}!',
+      please_login: 'Будь ласка, увійдіть, щоб створювати контент',
+      create_texture: 'Створити текстуру',
+      style_placeholder: 'Стиль (наприклад, реалістичний)',
+      create_button: 'Створити',
+      creating: 'Створюється...',
+      creation_failed: 'Не вдалося створити текстуру',
+      history: 'Історія',
+      no_history: 'Історія порожня',
+      plans: 'Тарифні плани',
+      your_plan: 'Ваш план',
+      plan_description: 'Pro план дає доступ до текстур 256x256 та пріоритетної обробки',
+      import_instructions: 'Як імпортувати в Minecraft PE',
+      instruction_1: 'Завантажте .mcpack файл із сайту',
+      instruction_2: 'Відкрийте файл на вашому пристрої',
+      instruction_3: 'Minecraft PE автоматично імпортує та активує контент',
+    },
+  },
+  en: {
+    translation: {
+      login_button: 'Sign in with Google',
+      logout: 'Sign out',
+      welcome: 'Welcome, {{name}}!',
+      please_login: 'Please sign in to create content',
+      create_texture: 'Create Texture',
+      style_placeholder: 'Style (e.g., realistic)',
+      create_button: 'Create',
+      creating: 'Creating...',
+      creation_failed: 'Failed to create texture',
+      history: 'History',
+      no_history: 'No history available',
+      plans: 'Plans',
+      your_plan: 'Your plan',
+      plan_description: 'Pro plan unlocks 256x256 textures and priority processing',
+      import_instructions: 'How to import into Minecraft PE',
+      instruction_1: 'Download the .mcpack file from the site',
+      instruction_2: 'Open the file on your device',
+      instruction_3: 'Minecraft PE will automatically import and activate the content',
+    },
+  },
+  ru: {
+    translation: {
+      login_button: 'Войти через Google',
+      logout: 'Выйти',
+      welcome: 'Добро пожаловать, {{name}}!',
+      please_login: 'Пожалуйста, войдите, чтобы создавать контент',
+      create_texture: 'Создать текстуру',
+      style_placeholder: 'Стиль (например, реалистичный)',
+      create_button: 'Создать',
+      creating: 'Создается...',
+      creation_failed: 'Не удалось создать текстуру',
+      history: 'История',
+      no_history: 'История пуста',
+      plans: 'Тарифные планы',
+      your_plan: 'Ваш план',
+      plan_description: 'План Pro открывает текстуры 256x256 и приоритетную обработку',
+      import_instructions: 'Как импортировать в Minecraft PE',
+      instruction_1: 'Скачайте файл .mcpack с сайта',
+      instruction_2: 'Откройте файл на вашем устройстве',
+      instruction_3: 'Minecraft PE автоматически импортирует и активирует контент',
+    },
+  },
+};
+
+i18n.use(initReactI18next).init({
+  resources,
+  lng: 'uk',
+  interpolation: {
+    escapeValue: false,
+  },
+});
+
+export default i18n;
+
+// src/index.css (Стилі)
+body {
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 800px;
+}
+
+// cypress/integration/app.spec.js (Тестування)
+describe('Minecraft AI Creator', () => {
+  it('should login with Google', () => {
+    cy.visit('http://localhost:3000');
+    cy.get('button').contains('Увійти через Google').click();
+    cy.url().should('include', 'accounts.google.com');
+  });
+
+  it('should change language', () => {
+    cy.visit('http://localhost:3000');
+    cy.get('select').select('en');
+    cy.get('button').contains('Sign in with Google').should('exist');
+  });
+
+  it('should create texture', () => {
+    cy.visit('http://localhost:3000');
+    cy.get('select').select('16x16');
+    cy.get('input').type('realistic');
+    cy.get('button').contains('Створити').click();
+    cy.get('button').contains('Creating...').should('exist');
+  });
+
+  it('should display history', () => {
+    cy.visit('http://localhost:3000');
+    cy.get('h2').contains('Історія').should('exist');
+  });
+});
+
+// package.json (Залежності)
+{
+  "name": "minecraft-ai-creator",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js",
+    "build": "react-scripts build",
+    "test": "cypress run"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^6.0.12",
+    "aws-sdk": "^2.1000.0",
+    "axios": "^0.21.4",
+    "cors": "^2.8.5",
+    "firebase": "^9.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-i18next": "^11.11.4",
+    "i18next": "^21.0.0",
+    "react-scripts": "^4.0.3"
+  },
+  "devDependencies": {
+    "cypress": "^8.3.0"
+  }
+}
