@@ -8,10 +8,10 @@ export function FeaturesIntroSection() {
                     Complete React Visual Builder
                 </h2>
                 <p className="text-foreground-primary text-2xl md:text-5xl leading-[1.1] font-light mb-8 text-balance">
-                    All the Features you need to Build and Scale
+                    All the Tools to Build and Scale Your Apps
                 </p>
                 <p className="text-foreground-secondary text-lg max-w-xl mx-auto text-balance">
-                    Get the best of visual design with developer-grade features. Build complex React applications visually while maintaining full control over your code, components, and architecture – No refactoring required.
+                    Everything You Need for Fast Product Validation. Generate, test, and iterate on product ideas with AI-powered prototyping tools. Create functional React prototypes that help you validate concepts, gather feedback, and make data-driven product decisions faster than ever.
                 </p>
             </div>
         </div>

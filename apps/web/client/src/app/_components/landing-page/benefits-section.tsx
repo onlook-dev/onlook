@@ -13,10 +13,10 @@ export function BenefitsSection() {
             <div className="space-y-24">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="flex flex-col order-2 lg:order-1">
-                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">AI-Powered Visual Builder</h2>
-                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">AI for UI design</p>
+                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Visual React Editing for Developers</h2>
+                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Edit React Apps Visually with Code Sync</p>
                         <p className="text-foreground-secondary text-regular mb-8 text-balance max-w-xl">
-                            Prompt Onlook's AI to build, design, and experiment with your ideas. Go beyond pretty pixels and make your frontend interactive. The AI understands your React components and Tailwind patterns, generating code that fits your project's architecture.
+                            Manipulate your React codebase visually while seeing real-time code changes. No more switching between editor and browser. Build, style, and refactor your react app with pixel-perfect control and automatic code generation.
                         </p>
                         {/* Removed hidden CTA to avoid unused icon JSX in this client file */}
                     </div>
@@ -27,11 +27,10 @@ export function BenefitsSection() {
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="flex flex-col order-2 lg:order-1">
-                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">React Visual Editor</h2>
-                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Build Your App Visually</p>
+                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">No-Code React Builder with Developer Tools</h2>
+                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Create Complex React UIs Without Writing Every Line</p>
                         <p className="text-foreground-secondary text-regular mb-8 text-balance max-w-xl">
-                            Edit React components directly in the browser. Drag, drop, and style elements visually while Onlook updates your actual code files in real-time.
-                            Your existing build process stays intact. Onlook works with your setup, not against it.
+                            Use drag-and-drop for layouts, components, and state management while Onlook generates production-ready React code.
                         </p>
                         {/* Removed hidden CTA to avoid unused icon JSX in this client file */}
                     </div>
@@ -42,10 +41,10 @@ export function BenefitsSection() {
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="flex flex-col order-2 lg:order-1">
-                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Tailwind CSS Visual Editor</h2>
-                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Style Without Writing CSS</p>
+                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">AI-Assisted React Development</h2>
+                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Generate and Refine React Code with AI</p>
                         <p className="text-foreground-secondary text-regular mb-6 text-balance max-w-xl">
-                            Adjust layouts, change colors, modify text, and more. Onlook generates clean Tailwind classes that match your design decisions.
+                            Combine visual building with AI prompts to create custom React components, hooks, and patterns that match your project's architecture, ensuring everything is typed, optimized, and ready for production.
                         </p>
                         <div className="grid grid-cols-2 gap-8 mb-8 text-foreground-secondary text-regular">
                             <div className="flex flex-col gap-4">
