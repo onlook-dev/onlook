@@ -119,31 +119,35 @@ export const FeedbackNotificationEmail = ({
                                 <Text className="text-[14px] text-black leading-[20px] font-semibold mb-2">
                                     Attachments ({attachments.length}):
                                 </Text>
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     {attachments.map((attachment, index) => (
                                         <div
                                             key={index}
-                                            className="flex items-center gap-3 p-2 bg-[#f5f5f5] rounded"
+                                            className="border border-[#e0e0e0] rounded-lg p-4 bg-white"
                                         >
-                                            <div className="flex-1">
-                                                <Text className="text-[13px] text-black font-medium leading-[18px] mb-1">
-                                                    {attachment.name}
-                                                </Text>
-                                                <Text className="text-[11px] text-[#666666] leading-[14px]">
-                                                    {attachment.type} •{' '}
-                                                    {Math.round(attachment.size / 1024)} KB
-                                                </Text>
-                                                <Text className="text-[10px] text-[#888888] leading-[14px] mt-1 font-mono break-all">
-                                                    {attachment.url}
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <Text className="text-[14px] text-black font-semibold leading-[20px] mb-1">
+                                                        {attachment.name}
+                                                    </Text>
+                                                    <Text className="text-[12px] text-[#666666] leading-[16px] mb-2">
+                                                        {attachment.type} •{' '}
+                                                        {Math.round(attachment.size / 1024)} KB
+                                                    </Text>
+                                                </div>
+                                                <Link
+                                                    href={attachment.url}
+                                                    download={attachment.name}
+                                                    className="flex items-center justify-center text-[13px] text-blue-600 font-medium no-underline px-4 py-2 bg-blue-50 rounded-md border border-blue-200 hover:bg-blue-100"
+                                                >
+                                                    Download
+                                                </Link>
+                                            </div>
+                                            <div className="mt-3 pt-3 border-t border-[#f0f0f0]">
+                                                <Text className="text-[10px] text-[#999999] font-mono leading-[14px] break-all">
+                                                    Direct link: {attachment.url}
                                                 </Text>
                                             </div>
-                                            <Link
-                                                href={attachment.url}
-                                                download={attachment.name}
-                                                className="text-[12px] text-blue-600 font-medium no-underline px-2 py-1 bg-white rounded border border-[#e0e0e0]"
-                                            >
-                                                Download
-                                            </Link>
                                         </div>
                                     ))}
                                 </div>

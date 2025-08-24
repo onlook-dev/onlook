@@ -1,4 +1,5 @@
 import { render } from '@react-email/components';
+import { CONTACT_EMAIL, SUPPORT_EMAIL } from '../../constants/src/contact';
 import { type FeedbackNotificationEmailProps, FeedbackNotificationEmail } from './templates';
 import type { SendEmailParams } from './types/send-email';
 
@@ -14,8 +15,8 @@ export const sendFeedbackNotificationEmail = async (
         return;
     }
 
-    const fromEmail = process.env.FEEDBACK_FROM_EMAIL || 'feedback@onlook.com';
-    const toEmail = process.env.FEEDBACK_TO_EMAIL || 'contact@onlook.com';
+    const fromEmail = CONTACT_EMAIL;
+    const toEmail = SUPPORT_EMAIL;
 
     return await client.emails.send({
         from: `Onlook Feedback <${fromEmail}>`,

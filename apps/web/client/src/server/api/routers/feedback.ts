@@ -98,6 +98,8 @@ export const feedbackRouter = createTRPCRouter({
                         }>,
                         metadata: feedback.metadata as Record<string, any>,
                         submittedAt: feedback.createdAt,
+                    }, {
+                        dryRun: env.NODE_ENV !== 'production',
                     });
                 }
             } catch (error) {
