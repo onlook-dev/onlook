@@ -67,7 +67,8 @@ export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
             return;
         }
 
-        if (!formData.email.includes('@')) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email.trim())) {
             setError('Please enter a valid email address');
             return;
         }
@@ -76,27 +77,26 @@ export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
         setError(null);
 
         try {
-            const url = new URL('https://n8n.process.onlook.com/webhook/website-landing-form');
-            url.searchParams.append('name', formData.name.trim());
-            url.searchParams.append('email', formData.email.trim());
-            
-            if (formData.utm_source) url.searchParams.append('utm_source', formData.utm_source);
-            if (formData.utm_medium) url.searchParams.append('utm_medium', formData.utm_medium);
-            if (formData.utm_campaign) url.searchParams.append('utm_campaign', formData.utm_campaign);
-            if (formData.utm_term) url.searchParams.append('utm_term', formData.utm_term);
-            if (formData.utm_content) url.searchParams.append('utm_content', formData.utm_content);
-
-            const credentials = btoa('alex:Onlook01!');
-            
-            const response = await fetch(url.toString(), {
-                method: 'GET',
+            const response = await fetch('/api/email-capture', {
+                method: 'POST',
                 headers: {
-                    'Authorization': `Basic ${credentials}`,
+                    'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({
+                    name: formData.name.trim(),
+                    email: formData.email.trim(),
+                    utm_source: formData.utm_source,
+                    utm_medium: formData.utm_medium,
+                    utm_campaign: formData.utm_campaign,
+                    utm_term: formData.utm_term,
+                    utm_content: formData.utm_content,
+                }),
             });
 
+            const result = await response.json();
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(result.error || `HTTP error! status: ${response.status}`);
             }
 
             setShowSuccess(true);
@@ -152,7 +152,7 @@ export function EmailCaptureModal({ isOpen, onClose }: EmailCaptureModalProps) {
                 {showSuccess ? (
                     <div className="flex flex-col items-center gap-4 py-6">
                         <div className="text-center text-foreground">
-                            Thanks, an email to use onlook has been sent to you
+                            Thanks, an email to use Onlook has been sent to you
                         </div>
                     </div>
                 ) : (
