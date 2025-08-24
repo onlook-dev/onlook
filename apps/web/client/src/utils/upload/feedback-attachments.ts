@@ -235,16 +235,22 @@ export async function uploadFeedbackAttachment(
         throw new Error(`Upload failed: ${error.message}`);
     }
     
-    // Get the public URL
-    const { data: urlData } = supabase.storage
+    // Create a signed URL for download (valid for 7 days)
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
         .from('file_transfer')
-        .getPublicUrl(data.path);
+        .createSignedUrl(data.path, 7 * 24 * 60 * 60, {
+            download: true
+        });
+        
+    if (signedUrlError || !signedUrlData) {
+        throw new Error(`Failed to create signed URL: ${signedUrlError?.message || 'Unknown error'}`);
+    }
         
     return {
         name: file.name,
         size: file.size,
         type: file.type,
-        url: urlData.publicUrl,
+        url: signedUrlData.signedUrl,
         uploadedAt: new Date().toISOString(),
     };
 }
@@ -281,6 +287,7 @@ export async function uploadFeedbackAttachments(
     
     return uploadedFiles;
 }
+
 
 async function cleanupFailedUploads(uploadedFiles: AttachmentFile[]): Promise<void> {
     const supabase = createClient();

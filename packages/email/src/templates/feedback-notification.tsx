@@ -133,9 +133,13 @@ export const FeedbackNotificationEmail = ({
                                                     {attachment.type} •{' '}
                                                     {Math.round(attachment.size / 1024)} KB
                                                 </Text>
+                                                <Text className="text-[10px] text-[#888888] leading-[14px] mt-1 font-mono break-all">
+                                                    {attachment.url}
+                                                </Text>
                                             </div>
                                             <Link
                                                 href={attachment.url}
+                                                download={attachment.name}
                                                 className="text-[12px] text-blue-600 font-medium no-underline px-2 py-1 bg-white rounded border border-[#e0e0e0]"
                                             >
                                                 Download
