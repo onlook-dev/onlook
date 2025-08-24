@@ -159,6 +159,7 @@ function PrototypeFeaturesGridSection() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-x-16 gap-y-20">
                 <div>
                     <h3 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">AI Prototype Generation</h3>
+                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Natural language to functional prototypes</h2>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Describe your product idea in natural language and watch AI generate a fully functional prototype with proper React architecture, state management, and responsive design.
                     </p>
@@ -166,6 +167,7 @@ function PrototypeFeaturesGridSection() {
                 
                 <div>
                     <h3 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Interactive Components</h3>
+                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Working features, not static mockups</h2>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Create prototypes with working forms, navigation, data visualization, and user interactions—not just static screens linked together.
                     </p>
@@ -173,6 +175,7 @@ function PrototypeFeaturesGridSection() {
                 
                 <div>
                     <h3 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Real-Time Collaboration (planned)</h3>
+                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Team feedback and iteration</h2>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Share prototypes instantly with your team for feedback, comments, and collaborative editing in real-time.
                     </p>
@@ -180,6 +183,7 @@ function PrototypeFeaturesGridSection() {
                 
                 <div>
                     <h3 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Figma to React Conversion</h3>
+                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Design to production-ready code</h2>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Import Figma designs and convert them to clean, production-ready React code with proper component structure and Tailwind styling.
                     </p>
@@ -187,6 +191,7 @@ function PrototypeFeaturesGridSection() {
                 
                 <div>
                     <h3 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">One-Click Deployment</h3>
+                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Instant live prototypes</h2>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Deploy your prototypes to live URLs instantly for user testing, stakeholder reviews, and product validation without any setup.
                     </p>
@@ -194,6 +199,7 @@ function PrototypeFeaturesGridSection() {
                 
                 <div>
                     <h3 className="text-foreground-secondary text-small uppercase tracking-wider mb-4">Version History</h3>
+                    <h2 className="text-foreground-primary text-lg md:text-xl font-light mb-6 text-balance">Complete prototype evolution tracking</h2>
                     <p className="text-foreground-secondary text-regular text-balance leading-relaxed">
                         Track prototype iterations with automatic versioning, rollback to previous versions, and maintain a complete history of your product evolution.
                     </p>
