@@ -1,3 +1,5 @@
+import { env } from '@/env';
+
 export async function POST(request: Request) {
     try {
         const { name, email, utm_source, utm_medium, utm_campaign, utm_term, utm_content } = await request.json();
@@ -17,6 +19,17 @@ export async function POST(request: Request) {
             });
         }
 
+        const webhookUsername = process.env.N8N_LANDING_FORM_USERNAME;
+        const webhookPassword = process.env.N8N_LANDING_FORM_PASSWORD;
+        
+        if (!webhookUsername || !webhookPassword) {
+            console.error('N8N_LANDING_FORM_USERNAME or N8N_LANDING_FORM_PASSWORD environment variables are not set');
+            return new Response(JSON.stringify({ error: 'Server configuration error' }), {
+                status: 500,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
+
         const url = new URL('https://n8n.process.onlook.com/webhook/website-landing-form');
         url.searchParams.append('name', name.trim());
         url.searchParams.append('email', email.trim());
@@ -27,7 +40,7 @@ export async function POST(request: Request) {
         if (utm_term) url.searchParams.append('utm_term', utm_term);
         if (utm_content) url.searchParams.append('utm_content', utm_content);
 
-        const credentials = btoa('alex:Onlook01!');
+        const credentials = btoa(`${webhookUsername}:${webhookPassword}`);
         
         const response = await fetch(url.toString(), {
             method: 'GET',
