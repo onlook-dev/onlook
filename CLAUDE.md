@@ -1,4 +1,4 @@
 - This is a Bun workspace, only use bun, not npm
-- Unit tests can be ran with `bun test`
+- Unit tests can be run with `bun test`
 - Run type checking with `bun run typecheck`
-- Database updates can be applied to local dev with `bun run db:push`
+- Apply database updates to local dev with `bun run db:push`
