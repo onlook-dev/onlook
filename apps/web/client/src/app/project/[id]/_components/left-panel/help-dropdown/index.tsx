@@ -103,17 +103,6 @@ export const HelpDropdown = observer(() => {
                     {t(transKeys.help.menu.openSettings)}
                 </DropdownMenuItem>
 
-                <DropdownMenuItem
-                    className="text-sm"
-                    onClick={() => {
-                        setIsDropdownOpen(false);
-                        stateManager.isFeedbackModalOpen = true;
-                    }}
-                >
-                    <Icons.MessageSquare className="w-4 h-4 mr-2" />
-                    Send Feedback
-                </DropdownMenuItem>
-
                 <DropdownMenuSub>
                     <DropdownMenuSubTrigger className="text-sm gap-2">
                         <Icons.EnvelopeClosed className="w-4 h-4 mr-2" />
@@ -147,10 +136,14 @@ export const HelpDropdown = observer(() => {
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuItem
-                    onClick={() => window.open(Links.OPEN_ISSUE, '_blank')}
+                    className="text-sm"
+                    onClick={() => {
+                        setIsDropdownOpen(false);
+                        stateManager.isFeedbackModalOpen = true;
+                    }}
                 >
-                    <Icons.ExclamationTriangle className="w-4 h-4 mr-2" />
-                    {t(transKeys.help.menu.reportIssue)}
+                    <Icons.MessageSquare className="w-4 h-4 mr-2" />
+                    Send Feedback
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

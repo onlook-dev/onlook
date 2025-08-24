@@ -2,7 +2,6 @@
 
 import { useStateManager } from '@/components/store/state';
 import { api } from '@/trpc/react';
-import { LocalForageKeys } from '@/utils/constants';
 import {
     formatFileSize,
     uploadFeedbackAttachments,
@@ -16,17 +15,20 @@ import {
     type CompressionResult
 } from '@/utils/upload/image-compression';
 import type { FeedbackSubmitInput } from '@onlook/db';
-import localforage from 'localforage';
+import { Links } from '@onlook/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { Textarea } from '@onlook/ui/textarea';
 import { AnimatePresence, motion } from 'framer-motion';
+import localforage from 'localforage';
 import { observer } from 'mobx-react-lite';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+
+const FEEDBACK_DRAFT_KEY = 'feedbackDraft';
 
 interface FeedbackFormState {
     message: string;
@@ -70,7 +72,7 @@ export const FeedbackModal = observer(() => {
         };
 
         try {
-            await localforage.setItem(LocalForageKeys.FEEDBACK_DRAFT, formState);
+            await localforage.setItem(FEEDBACK_DRAFT_KEY, formState);
         } catch (error) {
             console.error('Failed to save feedback draft:', error);
         }
@@ -78,18 +80,18 @@ export const FeedbackModal = observer(() => {
 
     const restoreFormState = useCallback(async () => {
         try {
-            const savedState = await localforage.getItem<FeedbackFormState>(LocalForageKeys.FEEDBACK_DRAFT);
-            
+            const savedState = await localforage.getItem<FeedbackFormState>(FEEDBACK_DRAFT_KEY);
+
             if (savedState) {
                 // Only restore if the draft is less than 24 hours old
                 const dayInMs = 24 * 60 * 60 * 1000;
                 const isExpired = Date.now() - savedState.timestamp > dayInMs;
-                
+
                 if (!isExpired) {
                     setMessage(savedState.message);
                     setEmail(savedState.email || user?.email || '');
                     setAttachments(savedState.attachments);
-                    
+
                     if (savedState.message || savedState.attachments.length > 0) {
                         toast.info('Draft restored', {
                             description: 'Your previous feedback draft has been restored.',
@@ -97,7 +99,7 @@ export const FeedbackModal = observer(() => {
                     }
                 } else {
                     // Clean up expired draft
-                    await localforage.removeItem(LocalForageKeys.FEEDBACK_DRAFT);
+                    await localforage.removeItem(FEEDBACK_DRAFT_KEY);
                 }
             }
         } catch (error) {
@@ -107,7 +109,7 @@ export const FeedbackModal = observer(() => {
 
     const clearFormState = useCallback(async () => {
         try {
-            await localforage.removeItem(LocalForageKeys.FEEDBACK_DRAFT);
+            await localforage.removeItem(FEEDBACK_DRAFT_KEY);
         } catch (error) {
             console.error('Failed to clear feedback draft:', error);
         }
@@ -131,12 +133,12 @@ export const FeedbackModal = observer(() => {
             setUploadProgress(0);
             setIsCompressing(false);
             setCompressionProgress(0);
-            
+
             if (typeof window !== 'undefined') {
                 setPageUrl(window.location.href);
                 setUserAgent(navigator.userAgent);
             }
-            
+
             // Then try to restore draft
             restoreFormState();
         }
@@ -145,7 +147,7 @@ export const FeedbackModal = observer(() => {
     // Auto-save form state when form changes (debounced)
     useEffect(() => {
         if (!stateManager.isFeedbackModalOpen) return;
-        
+
         const timeoutId = setTimeout(() => {
             saveFormState();
         }, 1000); // Save after 1 second of inactivity
@@ -190,7 +192,7 @@ export const FeedbackModal = observer(() => {
                 for (let i = 0; i < fileArray.length; i++) {
                     const file = fileArray[i];
                     if (!file) continue;
-                    
+
                     if (canCompressFile(file)) {
                         const options = getCompressionOptions(file);
                         const result = await compressMultipleImages(
@@ -520,9 +522,20 @@ export const FeedbackModal = observer(() => {
                                 </div>
 
                                 <div className="text-xs text-foreground-tertiary pt-2 border-t border-border">
-                                    <div className="flex items-center gap-1">
-                                        <Icons.InfoCircled className="w-3 h-3" />
-                                        Your feedback helps us improve Onlook
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-1">
+                                            <Icons.InfoCircled className="w-3 h-3" />
+                                            Your feedback helps us improve Onlook
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="sm"
+                                            className="text-xs h-auto p-1 text-foreground-tertiary hover:text-foreground-secondary"
+                                            onClick={() => window.open(Links.OPEN_ISSUE, '_blank')}
+                                        >
+                                            Report through GitHub
+                                        </Button>
                                     </div>
                                 </div>
                             </form>

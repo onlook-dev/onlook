@@ -1,6 +1,7 @@
 'use client';
 
 import { CreateManagerProvider } from '@/components/store/create';
+import { FeedbackModal } from '@/components/ui/feedback-modal';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
 import { AiFeaturesHero } from '../../_components/hero/ai-features-hero';
@@ -57,6 +58,7 @@ export default function AiFeaturesPage() {
                 <FAQSection faqs={aiFaqs} />
                 <NonProjectSettingsModal />
                 <SubscriptionModal />
+                <FeedbackModal />
             </WebsiteLayout>
         </CreateManagerProvider>
     );
