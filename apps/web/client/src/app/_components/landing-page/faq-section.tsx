@@ -67,4 +67,4 @@ export function FAQSection({
             </div>
         </div>
     );
-} 
+}       

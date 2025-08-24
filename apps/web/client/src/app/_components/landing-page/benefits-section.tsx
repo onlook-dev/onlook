@@ -13,10 +13,10 @@ export function BenefitsSection() {
             <div className="space-y-24">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="flex flex-col order-2 lg:order-1">
-                        <h3 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">AI-Powered Visual Builder</h3>
-                        <h2 className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">AI for UI design</h2>
+                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Tailwind CSS and Shadcn Visual Editor</h2>
+                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Style Tailwind and Shadcn Components Visually</p>
                         <p className="text-foreground-secondary text-regular mb-8 text-balance max-w-xl">
-                            Prompt Onlook's AI to build, design, and experiment with your ideas. Go beyond pretty pixels and make your frontend interactive. The AI understands your React components and Tailwind patterns, generating code that fits your project's architecture.
+                            Visually customize Tailwind classes and Shadcn UI components with auto-completion, real-time previews, and drag-and-drop editing, ensuring your design system stays consistent while accelerating UI development.
                         </p>
                         {/* Removed hidden CTA to avoid unused icon JSX in this client file */}
                     </div>
@@ -27,11 +27,10 @@ export function BenefitsSection() {
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="flex flex-col order-2 lg:order-1">
-                        <h3 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">React Visual Editor</h3>
-                        <h2 className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Build Your App Visually</h2>
+                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Centralized Globals for Color and Typography</h2>
+                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Manage Brand Styles from One Place</p>
                         <p className="text-foreground-secondary text-regular mb-8 text-balance max-w-xl">
-                            Edit React components directly in the browser. Drag, drop, and style elements visually while Onlook updates your actual code files in real-time.
-                            Your existing build process stays intact. Onlook works with your setup, not against it.
+                            Define and edit global colors, typography, and design tokens in a centralized panel—Onlook automatically applies changes across your entire React app, eliminating inconsistencies and saving hours of manual updates.
                         </p>
                         {/* Removed hidden CTA to avoid unused icon JSX in this client file */}
                     </div>
@@ -42,10 +41,10 @@ export function BenefitsSection() {
                 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div className="flex flex-col order-2 lg:order-1">
-                        <h3 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Tailwind CSS Visual Editor</h3>
-                        <h2 className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Style Without Writing CSS</h2>
+                        <h2 className="text-foreground-secondary text-sm font-medium uppercase tracking-wider mb-4">Template Import and Customization</h2>
+                        <p className="text-foreground-primary text-2xl md:text-4xl font-light mb-6">Import and Adapt Any Next.js/Tailwind Project</p>
                         <p className="text-foreground-secondary text-regular mb-6 text-balance max-w-xl">
-                            Adjust layouts, change colors, modify text, and more. Onlook generates clean Tailwind classes that match your design decisions.
+                            Easily import your own or third-party Next.js/Tailwind templates, then customize them visually—Onlook preserves the original structure while allowing drag-and-drop modifications and AI-assisted refinements for rapid prototyping and scaling.
                         </p>
                         <div className="grid grid-cols-2 gap-8 mb-8 text-foreground-secondary text-regular">
                             <div className="flex flex-col gap-4">
