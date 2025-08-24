@@ -1,8 +1,8 @@
 import { Routes } from '@/utils/constants';
 import { Icons } from '@onlook/ui/icons';
+import React from 'react';
 import { ButtonLink } from '../button-link';
 import { FAQDropdown } from './faq-dropdown';
-import React from 'react';
 
 interface FAQ {
     question: string;
@@ -40,8 +40,8 @@ const defaultFaqs = [
     },
 ];
 
-export function FAQSection({ 
-    faqs = defaultFaqs, 
+export function FAQSection({
+    faqs = defaultFaqs,
     title = "Frequently\nasked questions",
     buttonText = "Read our FAQs",
     buttonHref = Routes.FAQ,
