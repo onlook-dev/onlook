@@ -5,7 +5,6 @@ import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
 import { getReturnUrlQueryParam } from '@/utils/url';
-import { Links } from '@onlook/constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -59,9 +58,12 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
             onClick: handleOpenSettings,
         },
         {
-            label: 'Report Issue',
-            icon: Icons.ExclamationTriangle,
-            onClick: () => window.open(Links.OPEN_ISSUE, '_blank'),
+            label: 'Send Feedback',
+            icon: Icons.MessageSquare,
+            onClick: () => {
+                stateManager.isFeedbackModalOpen = true;
+                setOpen(false);
+            },
         },
         {
             label: 'Sign Out',
