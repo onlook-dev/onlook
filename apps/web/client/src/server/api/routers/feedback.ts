@@ -14,7 +14,7 @@ export const feedbackRouter = createTRPCRouter({
         .input(feedbackSubmitSchema)
         .mutation(async ({ ctx, input }) => {
             const userId = ctx.user?.id;
-            const userEmail = input.email || ctx.user?.email;
+            const userEmail = ctx.user?.email ?? input.email;
 
             // Rate limiting check for authenticated users
             if (userId) {
@@ -135,7 +135,7 @@ export const feedbackRouter = createTRPCRouter({
             // Track feedback submission event
             try {
                 await trackEvent({
-                    distinctId: userId || `anonymous-${feedback.email}`,
+                    distinctId: userId ?? 'unknown',
                     event: 'feedback_submitted',
                     properties: {
                         feedbackId: feedback.id,
