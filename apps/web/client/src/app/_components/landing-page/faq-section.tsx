@@ -58,7 +58,7 @@ export function FAQSection({
                                 {index < title.split('\n').length - 1 && <br />}
                             </React.Fragment>
                         ))}
-                    </h2>
+                    </h3>
                     <ButtonLink href={buttonHref} rightIcon={<Icons.ArrowRight className="w-5 h-5" />}>{buttonText}</ButtonLink>
                 </div>
                 <div className="flex-1 flex flex-col gap-6">
@@ -67,4 +67,4 @@ export function FAQSection({
             </div>
         </div>
     );
-}  
+}    
