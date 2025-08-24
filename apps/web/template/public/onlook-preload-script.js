@@ -158,17 +158,17 @@ var Mr = hl((k5, Lf) => {
             m = !0;
         if (typeof l != 'function') throw new TypeError(jc);
         if (((i = Gf(i) || 0), Wc(t)))
-            ((h = !!t.leading),
+            (h = !!t.leading),
                 (c = 'maxWait' in t),
                 (o = c ? sc(Gf(t.maxWait) || 0, i) : o),
-                (m = 'trailing' in t ? !!t.trailing : m));
+                (m = 'trailing' in t ? !!t.trailing : m);
         function u(L) {
             var y = r,
                 T = n;
-            return ((r = n = void 0), (f = L), (b = l.apply(T, y)), b);
+            return (r = n = void 0), (f = L), (b = l.apply(T, y)), b;
         }
         function X(L) {
-            return ((f = L), (g = setTimeout(q, i)), h ? u(L) : b);
+            return (f = L), (g = setTimeout(q, i)), h ? u(L) : b;
         }
         function I(L) {
             var y = L - e,
@@ -188,11 +188,11 @@ var Mr = hl((k5, Lf) => {
         }
         function V(L) {
             if (((g = void 0), m && r)) return u(L);
-            return ((r = n = void 0), b);
+            return (r = n = void 0), b;
         }
         function fl() {
             if (g !== void 0) clearTimeout(g);
-            ((f = 0), (r = e = n = g = void 0));
+            (f = 0), (r = e = n = g = void 0);
         }
         function K() {
             return g === void 0 ? b : V(Hr());
@@ -202,12 +202,12 @@ var Mr = hl((k5, Lf) => {
                 y = F(L);
             if (((r = arguments), (n = this), (e = L), y)) {
                 if (g === void 0) return X(e);
-                if (c) return (clearTimeout(g), (g = setTimeout(q, i)), u(e));
+                if (c) return clearTimeout(g), (g = setTimeout(q, i)), u(e);
             }
             if (g === void 0) g = setTimeout(q, i);
             return b;
         }
-        return ((G.cancel = fl), (G.flush = K), G);
+        return (G.cancel = fl), (G.flush = K), G;
     }
     Lf.exports = Qc;
 });
@@ -270,9 +270,9 @@ var H0 = hl((Qm) => {
             if (t >= n) throw new Error('Expected more digits in base 64 VLQ value.');
             if (((e = R0.decode(i.charCodeAt(t++))), e === -1))
                 throw new Error('Invalid base64 digit: ' + i.charAt(t - 1));
-            ((g = !!(e & K0)), (e &= V0), (o = o + (e << b)), (b += rn));
+            (g = !!(e & K0)), (e &= V0), (o = o + (e << b)), (b += rn);
         } while (g);
-        ((r.value = Ym(o)), (r.rest = t));
+        (r.value = Ym(o)), (r.rest = t);
     };
 });
 var fr = hl((Cm) => {
@@ -307,7 +307,7 @@ var fr = hl((Cm) => {
             for (var r = 0; r < i.length; r++)
                 if (i[r].input === t) {
                     var n = i[0];
-                    return ((i[0] = i[r]), (i[r] = n), i[0].result);
+                    return (i[0] = i[r]), (i[r] = n), i[0].result;
                 }
             var o = l(t);
             if ((i.unshift({ input: t, result: o }), i.length > Rm)) i.pop();
@@ -337,10 +337,10 @@ var fr = hl((Cm) => {
             if (((e = o[g]), e === '.')) o.splice(g, 1);
             else if (e === '..') f++;
             else if (f > 0)
-                if (e === '') (o.splice(g + 1, f), (f = 0));
-                else (o.splice(g, 2), f--);
+                if (e === '') o.splice(g + 1, f), (f = 0);
+                else o.splice(g, 2), f--;
         if (((t = o.join('/')), t === '')) t = n ? '/' : '.';
-        if (r) return ((r.path = t), Vi(r));
+        if (r) return (r.path = t), Vi(r);
         return t;
     });
     Cm.normalize = nn;
@@ -355,9 +355,9 @@ var fr = hl((Cm) => {
             return Vi(t);
         }
         if (t || i.match(Bm)) return i;
-        if (r && !r.host && !r.path) return ((r.host = i), Vi(r));
+        if (r && !r.host && !r.path) return (r.host = i), Vi(r);
         var n = i.charAt(0) === '/' ? i : nn(l.replace(/\/+$/, '') + '/' + i);
-        if (r) return ((r.path = n), Vi(r));
+        if (r) return (r.path = n), Vi(r);
         return n;
     }
     Cm.join = y0;
@@ -495,7 +495,7 @@ var S0 = hl((cw) => {
         bn = Object.prototype.hasOwnProperty,
         vi = typeof Map !== 'undefined';
     function dl() {
-        ((this._array = []), (this._set = vi ? new Map() : Object.create(null)));
+        (this._array = []), (this._set = vi ? new Map() : Object.create(null));
     }
     dl.fromArray = function l(i, t) {
         var r = new dl();
@@ -550,20 +550,20 @@ var C0 = hl((pw) => {
         return r > t || (r == t && o >= n) || N0.compareByGeneratedPositionsInflated(l, i) <= 0;
     }
     function gr() {
-        ((this._array = []),
+        (this._array = []),
             (this._sorted = !0),
-            (this._last = { generatedLine: -1, generatedColumn: 0 }));
+            (this._last = { generatedLine: -1, generatedColumn: 0 });
     }
     gr.prototype.unsortedForEach = function l(i, t) {
         this._array.forEach(i, t);
     };
     gr.prototype.add = function l(i) {
-        if (ww(this._last, i)) ((this._last = i), this._array.push(i));
-        else ((this._sorted = !1), this._array.push(i));
+        if (ww(this._last, i)) (this._last = i), this._array.push(i);
+        else (this._sorted = !1), this._array.push(i);
     };
     gr.prototype.toArray = function l() {
         if (!this._sorted)
-            (this._array.sort(N0.compareByGeneratedPositionsInflated), (this._sorted = !0));
+            this._array.sort(N0.compareByGeneratedPositionsInflated), (this._sorted = !0);
         return this._array;
     };
     pw.MappingList = gr;
@@ -574,7 +574,7 @@ var Ec = class extends Error {
         code;
         constructor(l, i) {
             super(i);
-            ((this.name = 'PenpalError'), (this.code = l));
+            (this.name = 'PenpalError'), (this.code = l);
         }
     },
     _l = Ec,
@@ -586,7 +586,7 @@ var Ec = class extends Error {
     }),
     Lc = ({ name: l, message: i, stack: t, penpalCode: r }) => {
         let n = r ? new _l(r, i) : new Error(i);
-        return ((n.name = l), (n.stack = t), n);
+        return (n.name = l), (n.stack = t), n;
     },
     Bc = Symbol('Reply'),
     Rc = class {
@@ -594,7 +594,7 @@ var Ec = class extends Error {
         transferables;
         #l = Bc;
         constructor(l, i) {
-            ((this.value = l), (this.transferables = i?.transferables));
+            (this.value = l), (this.transferables = i?.transferables);
         }
     },
     Fc = Rc,
@@ -665,24 +665,24 @@ var Ec = class extends Error {
                     let m = Hc(g, i);
                     if (!m) throw new _l('METHOD_NOT_FOUND', `Method \`${oi(g)}\` is not found.`);
                     let u = await m(...e);
-                    if (u instanceof Fc) ((c = u.transferables), (u = await u.value));
+                    if (u instanceof Fc) (c = u.transferables), (u = await u.value);
                     h = { namespace: ql, channel: t, type: 'REPLY', callId: f, value: u };
                 } catch (m) {
                     h = Bf(t, f, m);
                 }
                 if (n) return;
                 try {
-                    (r?.(`Sending ${oi(g)}() reply`, h), l.sendMessage(h, c));
+                    r?.(`Sending ${oi(g)}() reply`, h), l.sendMessage(h, c);
                 } catch (m) {
                     if (m.name === 'DataCloneError')
-                        ((h = Bf(t, f, m)), r?.(`Sending ${oi(g)}() reply`, h), l.sendMessage(h));
+                        (h = Bf(t, f, m)), r?.(`Sending ${oi(g)}() reply`, h), l.sendMessage(h);
                     throw m;
                 }
             };
         return (
             l.addMessageHandler(o),
             () => {
-                ((n = !0), l.removeMessageHandler(o));
+                (n = !0), l.removeMessageHandler(o);
             }
         );
     },
@@ -700,7 +700,7 @@ var Ec = class extends Error {
         timeout;
         #l = Ac;
         constructor(l) {
-            ((this.transferables = l?.transferables), (this.timeout = l?.timeout));
+            (this.transferables = l?.transferables), (this.timeout = l?.timeout);
         }
     },
     kc = Uc,
@@ -749,13 +749,13 @@ var Ec = class extends Error {
                         let V =
                             u !== void 0
                                 ? window.setTimeout(() => {
-                                      (n.delete(h),
+                                      n.delete(h),
                                           q(
                                               new _l(
                                                   'METHOD_CALL_TIMEOUT',
                                                   `Method call ${oi(e)}() timed out after ${u}ms`,
                                               ),
-                                          ));
+                                          );
                                   }, u)
                                 : void 0;
                         n.set(h, { methodPath: e, resolve: F, reject: q, timeoutId: V });
@@ -768,16 +768,16 @@ var Ec = class extends Error {
                                 methodPath: e,
                                 args: I,
                             };
-                            (t?.(`Sending ${oi(e)}() call`, fl), l.sendMessage(fl, X));
+                            t?.(`Sending ${oi(e)}() call`, fl), l.sendMessage(fl, X);
                         } catch (fl) {
                             q(new _l('TRANSMISSION_FAILED', fl.message));
                         }
                     });
                 }, t),
                 destroy: () => {
-                    ((r = !0), l.removeMessageHandler(o));
+                    (r = !0), l.removeMessageHandler(o);
                     for (let { methodPath: e, reject: f, timeoutId: h } of n.values())
-                        (clearTimeout(h), f(Rf(e)));
+                        clearTimeout(h), f(Rf(e));
                     n.clear();
                 },
             }
@@ -788,7 +788,7 @@ var Ec = class extends Error {
         let l, i;
         return {
             promise: new Promise((r, n) => {
-                ((l = r), (i = n));
+                (l = r), (i = n);
             }),
             resolve: l,
             reject: i,
@@ -889,7 +889,7 @@ var Ec = class extends Error {
                 if (e) return;
                 g.push(yc(l, i, r, n));
                 let { remoteProxy: G, destroy: L } = Cc(l, r, n);
-                (g.push(L), clearTimeout(u), (e = !0), c({ remoteProxy: G, destroy: X }));
+                g.push(L), clearTimeout(u), (e = !0), c({ remoteProxy: G, destroy: X });
             },
             F = () => {
                 let G = { namespace: ql, type: 'SYN', channel: r, participantId: o };
@@ -925,21 +925,21 @@ var Ec = class extends Error {
                 I();
             },
             fl = (G) => {
-                (n?.('Received handshake ACK2', G), I());
+                n?.('Received handshake ACK2', G), I();
             },
             K = (G) => {
                 if (si(G)) q(G);
                 if (kt(G)) V(G);
                 if (ct(G)) fl(G);
             };
-        return (l.addMessageHandler(K), g.push(() => l.removeMessageHandler(K)), F(), h);
+        return l.addMessageHandler(K), g.push(() => l.removeMessageHandler(K)), F(), h;
     },
     rm = tm,
     nm = (l) => {
         let i = !1,
             t;
         return (...r) => {
-            if (!i) ((i = !0), (t = l(...r)));
+            if (!i) (i = !0), (t = l(...r));
             return t;
         };
     },
@@ -970,10 +970,10 @@ var Ec = class extends Error {
         return {
             promise: (async () => {
                 try {
-                    (l.initialize({ log: n, validateReceivedMessage: g }),
+                    l.initialize({ log: n, validateReceivedMessage: g }),
                         l.addMessageHandler((c) => {
                             if (Kc(c)) b(!1);
-                        }));
+                        });
                     let { remoteProxy: f, destroy: h } = await rm({
                         messenger: l,
                         methods: i,
@@ -981,7 +981,7 @@ var Ec = class extends Error {
                         channel: r,
                         log: n,
                     });
-                    return (o.push(h), f);
+                    return o.push(h), f;
                 } catch (f) {
                     throw (b(!0), f);
                 }
@@ -1003,10 +1003,10 @@ var Ec = class extends Error {
         #f = !1;
         constructor({ remoteWindow: l, allowedOrigins: i }) {
             if (!l) throw new _l('INVALID_ARGUMENT', 'remoteWindow must be defined');
-            ((this.#l = l), (this.#n = i?.length ? i : [window.origin]));
+            (this.#l = l), (this.#n = i?.length ? i : [window.origin]);
         }
         initialize = ({ log: l, validateReceivedMessage: i }) => {
-            ((this.#t = l), (this.#i = i), window.addEventListener('message', this.#c));
+            (this.#t = l), (this.#i = i), window.addEventListener('message', this.#c);
         };
         sendMessage = (l, i) => {
             if (si(l)) {
@@ -1022,7 +1022,7 @@ var Ec = class extends Error {
             }
             if (ct(l)) {
                 let { port1: t, port2: r } = new MessageChannel();
-                ((this.#o = t), t.addEventListener('message', this.#e), t.start());
+                (this.#o = t), t.addEventListener('message', this.#e), t.start();
                 let n = [r, ...(i || [])],
                     o = this.#g(l);
                 this.#l.postMessage(l, { targetOrigin: o, transfer: n });
@@ -1041,7 +1041,7 @@ var Ec = class extends Error {
             this.#r.delete(l);
         };
         destroy = () => {
-            (window.removeEventListener('message', this.#c), this.#h(), this.#r.clear());
+            window.removeEventListener('message', this.#c), this.#h(), this.#r.clear();
         };
         #m = (l) => {
             return this.#n.some((i) => (i instanceof RegExp ? i.test(l) : i === l || i === '*'));
@@ -1052,16 +1052,14 @@ var Ec = class extends Error {
             return this.#b === 'null' && this.#n.includes('*') ? '*' : this.#b;
         };
         #h = () => {
-            (this.#o?.removeEventListener('message', this.#e),
-                this.#o?.close(),
-                (this.#o = void 0));
+            this.#o?.removeEventListener('message', this.#e), this.#o?.close(), (this.#o = void 0);
         };
         #c = ({ source: l, origin: i, ports: t, data: r }) => {
             if (l !== this.#l) return;
             if (Zc(r))
-                (this.#t?.('Please upgrade the child window to the latest version of Penpal.'),
+                this.#t?.('Please upgrade the child window to the latest version of Penpal.'),
                     (this.#f = !0),
-                    (r = lm(r)));
+                    (r = lm(r));
             if (!this.#i?.(r)) return;
             if (!this.#m(i)) {
                 this.#t?.(
@@ -1069,10 +1067,10 @@ var Ec = class extends Error {
                 );
                 return;
             }
-            if (si(r)) (this.#h(), (this.#b = i));
+            if (si(r)) this.#h(), (this.#b = i);
             if (ct(r) && !this.#f) {
                 if (((this.#o = t[0]), !this.#o)) throw new Yi('No port received on ACK2');
-                (this.#o.addEventListener('message', this.#e), this.#o.start());
+                this.#o.addEventListener('message', this.#e), this.#o.start();
             }
             for (let n of this.#r) n(r);
         };
@@ -1092,7 +1090,7 @@ var Ec = class extends Error {
             this.#l = l;
         }
         initialize = ({ validateReceivedMessage: l }) => {
-            ((this.#n = l), this.#l.addEventListener('message', this.#r));
+            (this.#n = l), this.#l.addEventListener('message', this.#r);
         };
         sendMessage = (l, i) => {
             if (si(l) || kt(l)) {
@@ -1101,10 +1099,10 @@ var Ec = class extends Error {
             }
             if (ct(l)) {
                 let { port1: t, port2: r } = new MessageChannel();
-                ((this.#i = t),
+                (this.#i = t),
                     t.addEventListener('message', this.#r),
                     t.start(),
-                    this.#l.postMessage(l, { transfer: [r, ...(i || [])] }));
+                    this.#l.postMessage(l, { transfer: [r, ...(i || [])] });
                 return;
             }
             if (this.#i) {
@@ -1120,19 +1118,17 @@ var Ec = class extends Error {
             this.#t.delete(l);
         };
         destroy = () => {
-            (this.#l.removeEventListener('message', this.#r), this.#b(), this.#t.clear());
+            this.#l.removeEventListener('message', this.#r), this.#b(), this.#t.clear();
         };
         #b = () => {
-            (this.#i?.removeEventListener('message', this.#r),
-                this.#i?.close(),
-                (this.#i = void 0));
+            this.#i?.removeEventListener('message', this.#r), this.#i?.close(), (this.#i = void 0);
         };
         #r = ({ ports: l, data: i }) => {
             if (!this.#n?.(i)) return;
             if (si(i)) this.#b();
             if (ct(i)) {
                 if (((this.#i = l[0]), !this.#i)) throw new Yi('No port received on ACK2');
-                (this.#i.addEventListener('message', this.#r), this.#i.start());
+                this.#i.addEventListener('message', this.#r), this.#i.start();
             }
             for (let t of this.#t) t(i);
         };
@@ -1146,7 +1142,7 @@ var N5 = class {
         this.#l = l;
     }
     initialize = ({ validateReceivedMessage: l }) => {
-        ((this.#n = l), this.#l.addEventListener('message', this.#i), this.#l.start());
+        (this.#n = l), this.#l.addEventListener('message', this.#i), this.#l.start();
     };
     sendMessage = (l, i) => {
         this.#l?.postMessage(l, { transfer: i });
@@ -1158,7 +1154,7 @@ var N5 = class {
         this.#t.delete(l);
     };
     destroy = () => {
-        (this.#l.removeEventListener('message', this.#i), this.#l.close(), this.#t.clear());
+        this.#l.removeEventListener('message', this.#i), this.#l.close(), this.#t.clear();
     };
     #i = ({ data: l }) => {
         if (!this.#n?.(l)) return;
@@ -1291,7 +1287,7 @@ var If = (l = 21) => {
 };
 function Jl(l) {
     let i = l.getAttribute('data-odid');
-    if (!i) ((i = `odid-${If()}`), l.setAttribute('data-odid', i));
+    if (!i) (i = `odid-${If()}`), l.setAttribute('data-odid', i);
     return i;
 }
 function Vl(l) {
@@ -1322,14 +1318,14 @@ function Qi() {
     return l;
 }
 function hm(l = document.body) {
-    if (!Qi()) return (console.warn('frameView id not found, skipping dom processing'), null);
+    if (!Qi()) return console.warn('frameView id not found, skipping dom processing'), null;
     let t = zl(l);
-    if (!t) return (console.warn('Error building layer tree, root element is null'), null);
+    if (!t) return console.warn('Error building layer tree, root element is null'), null;
     let r = l.getAttribute('data-odid');
-    if (!r) return (console.warn('Root dom id not found'), null);
+    if (!r) return console.warn('Root dom id not found'), null;
     let n = t.get(r);
-    if (!n) return (console.warn('Root node not found'), null);
-    return (Tf(t, n), { rootDomId: r, layerMap: Array.from(t.entries()) });
+    if (!n) return console.warn('Root node not found'), null;
+    return Tf(t, n), { rootDomId: r, layerMap: Array.from(t.entries()) };
 }
 var St = df.default(hm, 500),
     cm = [
@@ -1355,7 +1351,7 @@ function zl(l) {
             },
         }),
         r = Zf(l);
-    ((r.children = []), i.set(r.domId, r));
+    (r.children = []), i.set(r.domId, r);
     let n = t.nextNode();
     while (n) {
         let o = Zf(n);
@@ -1369,7 +1365,7 @@ function zl(l) {
                 if (e && e.children) e.children.push(o.domId);
             }
         }
-        (i.set(o.domId, o), (n = t.nextNode()));
+        i.set(o.domId, o), (n = t.nextNode());
     }
     return i;
 }
@@ -1560,7 +1556,7 @@ var Ct = (l, i) => {
             console.warn('Failed to updateElementInstanceId: Element not found');
             return;
         }
-        (r.setAttribute('data-oiid', i), r.setAttribute('data-ocname', t));
+        r.setAttribute('data-oiid', i), r.setAttribute('data-ocname', t);
     },
     h0 = (l) => {
         let i = H(l);
@@ -1579,33 +1575,33 @@ var Ct = (l, i) => {
     };
 function w0(l, i, t) {
     let r = H(l.domId);
-    if (!r) return (console.warn('Failed to find parent element', l.domId), null);
+    if (!r) return console.warn('Failed to find parent element', l.domId), null;
     let n = um(i),
         o = new Set(t.map((f) => f.domId)),
         b = Array.from(r.children)
             .map((f, h) => ({ element: f, index: h, domId: Jl(f) }))
             .filter(({ domId: f }) => o.has(f));
-    if (b.length === 0) return (console.warn('No valid children found to group'), null);
+    if (b.length === 0) return console.warn('No valid children found to group'), null;
     let g = Math.min(...b.map((f) => f.index));
     return (
         r.insertBefore(n, r.children[g] ?? null),
         b.forEach(({ element: f }) => {
             let h = f.cloneNode(!0);
-            (h.setAttribute('data-onlook-inserted', 'true'),
+            h.setAttribute('data-onlook-inserted', 'true'),
                 n.appendChild(h),
                 (f.style.display = 'none'),
-                u0(f));
+                u0(f);
         }),
         { domEl: nl(n, !0), newMap: zl(n) }
     );
 }
 function p0(l, i) {
     let t = H(l.domId);
-    if (!t) return (console.warn(`Parent element not found: ${l.domId}`), null);
+    if (!t) return console.warn(`Parent element not found: ${l.domId}`), null;
     let r;
     if (i.domId) r = H(i.domId);
-    else return (console.warn('Container domId is required for ungrouping'), null);
-    if (!r) return (console.warn('Container element not found for ungrouping'), null);
+    else return console.warn('Container domId is required for ungrouping'), null;
+    if (!r) return console.warn('Container element not found for ungrouping'), null;
     return (
         Array.from(r.children).forEach((b) => {
             t.appendChild(b);
@@ -1627,9 +1623,9 @@ function um(l) {
     );
 }
 function u0(l) {
-    (l.removeAttribute('data-odid'),
+    l.removeAttribute('data-odid'),
         l.removeAttribute('data-oid'),
-        l.removeAttribute('data-onlook-inserted'));
+        l.removeAttribute('data-onlook-inserted');
     let i = Array.from(l.children);
     if (i.length === 0) return;
     i.forEach((t) => {
@@ -1638,15 +1634,15 @@ function u0(l) {
 }
 function Pt(l) {
     let i = H(l);
-    if (!i) return (console.warn('Element not found for domId:', l), null);
+    if (!i) return console.warn('Element not found for domId:', l), null;
     return z0(i);
 }
 function z0(l) {
     let i = Array.from(l.attributes).reduce((r, n) => {
-            return ((r[n.name] = n.value), r);
+            return (r[n.name] = n.value), r;
         }, {}),
         t = Kl(l) || Vl(l) || null;
-    if (!t) return (console.warn('Element has no oid'), null);
+    if (!t) return console.warn('Element has no oid'), null;
     return {
         oid: t,
         domId: Jl(l),
@@ -1665,7 +1661,7 @@ function x0(l) {
     let t = i.parentElement;
     if (!t) throw new Error('Inserted element has no parent');
     let r = Kl(t) || Vl(t);
-    if (!r) return (console.warn('Parent element has no oid'), null);
+    if (!r) return console.warn('Parent element has no oid'), null;
     let n = Jl(t),
         o = Array.from(t.children).indexOf(i);
     if (o === -1) return { type: 'append', targetDomId: n, targetOid: r };
@@ -1675,8 +1671,7 @@ function a0(l) {
     let i = document.querySelector(`[${'data-odid'}="${l}"]`);
     if (!i)
         return (
-            console.warn('No element found', { domId: l }),
-            { dynamicType: null, coreType: null }
+            console.warn('No element found', { domId: l }), { dynamicType: null, coreType: null }
         );
     let t = i.getAttribute('data-onlook-dynamic-type') || null,
         r = i.getAttribute('data-onlook-core-element-type') || null;
@@ -1847,11 +1842,11 @@ function zt(l, i) {
 function xi(l, i) {
     let t = l.charCodeAt(i);
     if (t === 43 || t === 45) t = l.charCodeAt((i += 1));
-    if (ol(t)) ((i = Tr(l, i + 1)), (t = l.charCodeAt(i)));
-    if (t === 46 && ol(l.charCodeAt(i + 1))) ((i += 2), (i = Tr(l, i)));
+    if (ol(t)) (i = Tr(l, i + 1)), (t = l.charCodeAt(i));
+    if (t === 46 && ol(l.charCodeAt(i + 1))) (i += 2), (i = Tr(l, i));
     if (Il(l, i, 101)) {
         let r = 0;
-        if (((t = l.charCodeAt(i + 1)), t === 45 || t === 43)) ((r = 1), (t = l.charCodeAt(i + 2)));
+        if (((t = l.charCodeAt(i + 1)), t === 45 || t === 43)) (r = 1), (t = l.charCodeAt(i + 2));
         if (ol(t)) i = Tr(l, i + 1 + r + 1);
     }
     return i;
@@ -1919,22 +1914,22 @@ function q0(l) {
     for (let e = r; e < t; e++) {
         let f = i.charCodeAt(e);
         if (((n[e] = b), (o[e] = g++), f === D0 || f === $0 || f === Om)) {
-            if (f === $0 && e + 1 < t && i.charCodeAt(e + 1) === D0) (e++, (n[e] = b), (o[e] = g));
-            (b++, (g = 1));
+            if (f === $0 && e + 1 < t && i.charCodeAt(e + 1) === D0) e++, (n[e] = b), (o[e] = g);
+            b++, (g = 1);
         }
     }
-    ((n[t] = b), (o[t] = g), (l.lines = n), (l.columns = o), (l.computed = !0));
+    (n[t] = b), (o[t] = g), (l.lines = n), (l.columns = o), (l.computed = !0);
 }
 class or {
     constructor(l, i, t, r) {
-        (this.setSource(l, i, t, r), (this.lines = null), (this.columns = null));
+        this.setSource(l, i, t, r), (this.lines = null), (this.columns = null);
     }
     setSource(l = '', i = 0, t = 1, r = 1) {
-        ((this.source = l),
+        (this.source = l),
             (this.startOffset = i),
             (this.startLine = t),
             (this.startColumn = r),
-            (this.computed = !1));
+            (this.computed = !1);
     }
     getLocation(l, i) {
         if (!this.computed) q0(this);
@@ -1969,11 +1964,11 @@ class br {
         this.setSource(l, i);
     }
     reset() {
-        ((this.eof = !1),
+        (this.eof = !1),
             (this.tokenIndex = -1),
             (this.tokenType = 0),
             (this.tokenStart = this.firstCharOffset),
-            (this.tokenEnd = this.firstCharOffset));
+            (this.tokenEnd = this.firstCharOffset);
     }
     setSource(l = '', i = () => {}) {
         l = String(l || '');
@@ -1984,7 +1979,7 @@ class br {
             b = -1,
             g = 0,
             e = l.length;
-        ((this.offsetAndType = null),
+        (this.offsetAndType = null),
             (this.balance = null),
             n.fill(0),
             i(l, (f, h, c) => {
@@ -1992,11 +1987,11 @@ class br {
                 if (((r[m] = (f << Al) | c), b === -1)) b = h;
                 if (((n[m] = e), f === g)) {
                     let u = n[e];
-                    ((n[e] = m), (e = u), (g = ai[r[u] >> Al]));
-                } else if (J0(f)) ((e = m), (g = ai[f]));
+                    (n[e] = m), (e = u), (g = ai[r[u] >> Al]);
+                } else if (J0(f)) (e = m), (g = ai[f]);
             }),
             (r[o] = (Yl << Al) | t),
-            (n[o] = o));
+            (n[o] = o);
         for (let f = 0; f < o; f++) {
             let h = n[f];
             if (h <= f) {
@@ -2004,13 +1999,13 @@ class br {
                 if (c !== f) n[f] = c;
             } else if (h > o) n[f] = o;
         }
-        ((this.source = l),
+        (this.source = l),
             (this.firstCharOffset = b === -1 ? 0 : b),
             (this.tokenCount = o),
             (this.offsetAndType = r),
             (this.balance = n),
             this.reset(),
-            this.next());
+            this.next();
     }
     lookupType(l) {
         if (((l += this.tokenIndex), l < this.tokenCount)) return this.offsetAndType[l] >> Al;
@@ -2065,26 +2060,26 @@ class br {
     skip(l) {
         let i = this.tokenIndex + l;
         if (i < this.tokenCount)
-            ((this.tokenIndex = i),
+            (this.tokenIndex = i),
                 (this.tokenStart = this.offsetAndType[i - 1] & yl),
                 (i = this.offsetAndType[i]),
                 (this.tokenType = i >> Al),
-                (this.tokenEnd = i & yl));
-        else ((this.tokenIndex = this.tokenCount), this.next());
+                (this.tokenEnd = i & yl);
+        else (this.tokenIndex = this.tokenCount), this.next();
     }
     next() {
         let l = this.tokenIndex + 1;
         if (l < this.tokenCount)
-            ((this.tokenIndex = l),
+            (this.tokenIndex = l),
                 (this.tokenStart = this.tokenEnd),
                 (l = this.offsetAndType[l]),
                 (this.tokenType = l >> Al),
-                (this.tokenEnd = l & yl));
+                (this.tokenEnd = l & yl);
         else
-            ((this.eof = !0),
+            (this.eof = !0),
                 (this.tokenIndex = this.tokenCount),
                 (this.tokenType = Yl),
-                (this.tokenStart = this.tokenEnd = this.source.length));
+                (this.tokenStart = this.tokenEnd = this.source.length);
     }
     skipSC() {
         while (this.tokenType === Y || this.tokenType === U) this.next();
@@ -2116,7 +2111,7 @@ class br {
                 n = this.offsetAndType[i],
                 o = n & yl,
                 b = n >> Al;
-            ((t = o), l(b, r, o, i));
+            (t = o), l(b, r, o, i);
         }
     }
     dump() {
@@ -2140,11 +2135,11 @@ function bi(l, i) {
     }
     function r() {
         if (((f = xi(l, f)), Gi(t(f), t(f + 1), t(f + 2)))) {
-            ((h = j), (f = zt(l, f)));
+            (h = j), (f = zt(l, f));
             return;
         }
         if (t(f) === 37) {
-            ((h = A), f++);
+            (h = A), f++;
             return;
         }
         h = v;
@@ -2153,14 +2148,14 @@ function bi(l, i) {
         let c = f;
         if (((f = zt(l, f)), Tl(l, c, f, 'url') && t(f) === 40)) {
             if (((f = ut(l, f + 1)), t(f) === 34 || t(f) === 39)) {
-                ((h = _), (f = c + 4));
+                (h = _), (f = c + 4);
                 return;
             }
             b();
             return;
         }
         if (t(f) === 40) {
-            ((h = _), f++);
+            (h = _), f++;
             return;
         }
         h = w;
@@ -2176,7 +2171,7 @@ function bi(l, i) {
                     return;
                 case pt:
                     if (wt(m)) {
-                        ((f += rr(l, f, m)), (h = Ei));
+                        (f += rr(l, f, m)), (h = Ei);
                         return;
                     }
                     break;
@@ -2190,7 +2185,7 @@ function bi(l, i) {
         }
     }
     function b() {
-        ((h = il), (f = ut(l, f)));
+        (h = il), (f = ut(l, f));
         for (; f < l.length; f++) {
             let c = l.charCodeAt(f);
             switch (tr(c)) {
@@ -2202,20 +2197,20 @@ function bi(l, i) {
                         if (f < l.length) f++;
                         return;
                     }
-                    ((f = nr(l, f)), (h = wl));
+                    (f = nr(l, f)), (h = wl);
                     return;
                 case 34:
                 case 39:
                 case 40:
                 case Ir:
-                    ((f = nr(l, f)), (h = wl));
+                    (f = nr(l, f)), (h = wl);
                     return;
                 case 92:
                     if (Ol(c, t(f + 1))) {
                         f = Ml(l, f) - 1;
                         break;
                     }
-                    ((f = nr(l, f)), (h = wl));
+                    (f = nr(l, f)), (h = wl);
                     return;
             }
         }
@@ -2229,75 +2224,75 @@ function bi(l, i) {
         let c = l.charCodeAt(f);
         switch (tr(c)) {
             case pt:
-                ((h = Y), (f = ut(l, f + 1)));
+                (h = Y), (f = ut(l, f + 1));
                 break;
             case 34:
                 o();
                 break;
             case 35:
-                if (mt(t(f + 1)) || Ol(t(f + 1), t(f + 2))) ((h = R), (f = zt(l, f + 1)));
-                else ((h = $), f++);
+                if (mt(t(f + 1)) || Ol(t(f + 1), t(f + 2))) (h = R), (f = zt(l, f + 1));
+                else (h = $), f++;
                 break;
             case 39:
                 o();
                 break;
             case 40:
-                ((h = s), f++);
+                (h = s), f++;
                 break;
             case 41:
-                ((h = a), f++);
+                (h = a), f++;
                 break;
             case 43:
                 if (dt(c, t(f + 1), t(f + 2))) r();
-                else ((h = $), f++);
+                else (h = $), f++;
                 break;
             case 44:
-                ((h = d), f++);
+                (h = d), f++;
                 break;
             case 45:
                 if (dt(c, t(f + 1), t(f + 2))) r();
-                else if (t(f + 1) === 45 && t(f + 2) === 62) ((h = cl), (f = f + 3));
+                else if (t(f + 1) === 45 && t(f + 2) === 62) (h = cl), (f = f + 3);
                 else if (Gi(c, t(f + 1), t(f + 2))) n();
-                else ((h = $), f++);
+                else (h = $), f++;
                 break;
             case 46:
                 if (dt(c, t(f + 1), t(f + 2))) r();
-                else ((h = $), f++);
+                else (h = $), f++;
                 break;
             case 47:
                 if (t(f + 1) === 42)
-                    ((h = U), (f = l.indexOf('*/', f + 2)), (f = f === -1 ? l.length : f + 2));
-                else ((h = $), f++);
+                    (h = U), (f = l.indexOf('*/', f + 2)), (f = f === -1 ? l.length : f + 2);
+                else (h = $), f++;
                 break;
             case 58:
-                ((h = P), f++);
+                (h = P), f++;
                 break;
             case 59:
-                ((h = Z), f++);
+                (h = Z), f++;
                 break;
             case 60:
-                if (t(f + 1) === 33 && t(f + 2) === 45 && t(f + 3) === 45) ((h = Pl), (f = f + 4));
-                else ((h = $), f++);
+                if (t(f + 1) === 33 && t(f + 2) === 45 && t(f + 3) === 45) (h = Pl), (f = f + 4);
+                else (h = $), f++;
                 break;
             case 64:
-                if (Gi(t(f + 1), t(f + 2), t(f + 3))) ((h = S), (f = zt(l, f + 1)));
-                else ((h = $), f++);
+                if (Gi(t(f + 1), t(f + 2), t(f + 3))) (h = S), (f = zt(l, f + 1));
+                else (h = $), f++;
                 break;
             case 91:
-                ((h = el), f++);
+                (h = el), f++;
                 break;
             case 92:
                 if (Ol(c, t(f + 1))) n();
-                else ((h = $), f++);
+                else (h = $), f++;
                 break;
             case 93:
-                ((h = pl), f++);
+                (h = pl), f++;
                 break;
             case 123:
-                ((h = N), f++);
+                (h = N), f++;
                 break;
             case 125:
-                ((h = ml), f++);
+                (h = ml), f++;
                 break;
             case Pr:
                 r();
@@ -2306,7 +2301,7 @@ function bi(l, i) {
                 n();
                 break;
             default:
-                ((h = $), f++);
+                (h = $), f++;
         }
         i(h, e, (e = f));
     }
@@ -2317,7 +2312,7 @@ class ll {
         return { prev: null, next: null, data: l };
     }
     constructor() {
-        ((this.head = null), (this.tail = null), (this.cursor = null));
+        (this.head = null), (this.tail = null), (this.cursor = null);
     }
     createItem(l) {
         return ll.createItem(l);
@@ -2325,13 +2320,13 @@ class ll {
     allocateCursor(l, i) {
         let t;
         if (Fi !== null)
-            ((t = Fi), (Fi = Fi.cursor), (t.prev = l), (t.next = i), (t.cursor = this.cursor));
+            (t = Fi), (Fi = Fi.cursor), (t.prev = l), (t.next = i), (t.cursor = this.cursor);
         else t = { prev: l, next: i, cursor: this.cursor };
-        return ((this.cursor = t), t);
+        return (this.cursor = t), t;
     }
     releaseCursor() {
         let { cursor: l } = this;
-        ((this.cursor = l.cursor), (l.prev = null), (l.next = null), (l.cursor = Fi), (Fi = l));
+        (this.cursor = l.cursor), (l.prev = null), (l.next = null), (l.cursor = Fi), (Fi = l);
     }
     updateCursors(l, i, t, r) {
         let { cursor: n } = this;
@@ -2365,9 +2360,9 @@ class ll {
             let r = ll.createItem(t);
             if (i !== null) i.next = r;
             else this.head = r;
-            ((r.prev = i), (i = r));
+            (r.prev = i), (i = r);
         }
-        return ((this.tail = i), this);
+        return (this.tail = i), this;
     }
     toArray() {
         return [...this];
@@ -2379,7 +2374,7 @@ class ll {
         let t = this.allocateCursor(null, this.head);
         while (t.next !== null) {
             let r = t.next;
-            ((t.next = r.next), l.call(i, r.data, r, this));
+            (t.next = r.next), l.call(i, r.data, r, this);
         }
         this.releaseCursor();
     }
@@ -2387,7 +2382,7 @@ class ll {
         let t = this.allocateCursor(this.tail, null);
         while (t.prev !== null) {
             let r = t.prev;
-            ((t.prev = r.prev), l.call(i, r.data, r, this));
+            (t.prev = r.prev), l.call(i, r.data, r, this);
         }
         this.releaseCursor();
     }
@@ -2396,16 +2391,16 @@ class ll {
             n = i,
             o;
         while (r.next !== null)
-            ((o = r.next), (r.next = o.next), (n = l.call(t, n, o.data, o, this)));
-        return (this.releaseCursor(), n);
+            (o = r.next), (r.next = o.next), (n = l.call(t, n, o.data, o, this));
+        return this.releaseCursor(), n;
     }
     reduceRight(l, i, t = this) {
         let r = this.allocateCursor(this.tail, null),
             n = i,
             o;
         while (r.prev !== null)
-            ((o = r.prev), (r.prev = o.prev), (n = l.call(t, n, o.data, o, this)));
-        return (this.releaseCursor(), n);
+            (o = r.prev), (r.prev = o.prev), (n = l.call(t, n, o.data, o, this));
+        return this.releaseCursor(), n;
     }
     some(l, i = this) {
         for (let t = this.head; t !== null; t = t.next) if (l.call(i, t.data, t, this)) return !0;
@@ -2441,7 +2436,7 @@ class ll {
         this.releaseCursor();
     }
     clear() {
-        ((this.head = null), (this.tail = null));
+        (this.head = null), (this.tail = null);
     }
     copy() {
         let l = new ll();
@@ -2450,9 +2445,9 @@ class ll {
     }
     prepend(l) {
         if ((this.updateCursors(null, l, this.head, l), this.head !== null))
-            ((this.head.prev = l), (l.next = this.head));
+            (this.head.prev = l), (l.next = this.head);
         else this.tail = l;
-        return ((this.head = l), this);
+        return (this.head = l), this;
     }
     prependData(l) {
         return this.prepend(ll.createItem(l));
@@ -2467,11 +2462,11 @@ class ll {
         if (i !== null)
             if ((this.updateCursors(i.prev, l, i, l), i.prev === null)) {
                 if (this.head !== i) throw new Error("before doesn't belong to list");
-                ((this.head = l), (i.prev = l), (l.next = i), this.updateCursors(null, l));
-            } else ((i.prev.next = l), (l.prev = i.prev), (i.prev = l), (l.next = i));
+                (this.head = l), (i.prev = l), (l.next = i), this.updateCursors(null, l);
+            } else (i.prev.next = l), (l.prev = i.prev), (i.prev = l), (l.next = i);
         else {
             if ((this.updateCursors(this.tail, l, null, l), this.tail !== null))
-                ((this.tail.next = l), (l.prev = this.tail));
+                (this.tail.next = l), (l.prev = this.tail);
             else this.head = l;
             this.tail = l;
         }
@@ -2491,7 +2486,7 @@ class ll {
             if (this.tail !== l) throw new Error("item doesn't belong to list");
             this.tail = l.prev;
         }
-        return ((l.prev = null), (l.next = null), l);
+        return (l.prev = null), (l.next = null), l;
     }
     push(l) {
         this.insert(ll.createItem(l));
@@ -2515,16 +2510,16 @@ class ll {
         if (l.head === null) return this;
         if (i !== void 0 && i !== null) {
             if ((this.updateCursors(i.prev, l.tail, i, l.head), i.prev !== null))
-                ((i.prev.next = l.head), (l.head.prev = i.prev));
+                (i.prev.next = l.head), (l.head.prev = i.prev);
             else this.head = l.head;
-            ((i.prev = l.tail), (l.tail.next = i));
+            (i.prev = l.tail), (l.tail.next = i);
         } else {
             if ((this.updateCursors(this.tail, l.tail, null, l.head), this.tail !== null))
-                ((this.tail.next = l.head), (l.head.prev = this.tail));
+                (this.tail.next = l.head), (l.head.prev = this.tail);
             else this.head = l.head;
             this.tail = l.tail;
         }
-        return ((l.head = null), (l.tail = null), this);
+        return (l.head = null), (l.tail = null), this;
     }
     replace(l, i) {
         if ('head' in i) this.insertList(i, l);
@@ -2564,14 +2559,14 @@ function j0({ source: l, line: i, column: t, baseLine: r, baseColumn: n }, o) {
         m = Math.max(4, String(c).length) + 1,
         u = 0;
     if (((t += (W0.length - 1) * (f[i - 1].substr(0, t - 1).match(/\t/g) || []).length), t > Zr))
-        ((u = t - X0 + 3), (t = X0 - 2));
+        (u = t - X0 + 3), (t = X0 - 2);
     for (let X = h; X <= c; X++)
         if (X >= 0 && X < f.length)
-            ((f[X] = f[X].replace(/\t/g, W0)),
+            (f[X] = f[X].replace(/\t/g, W0)),
                 (f[X] =
                     (u > 0 && f[X].length > u ? '…' : '') +
                     f[X].substr(u, Zr - 2) +
-                    (f[X].length > u + Zr - 1 ? '…' : '')));
+                    (f[X].length > u + Zr - 1 ? '…' : ''));
     return [b(h, i), new Array(t + m + 2).join('-') + '^', b(i, c)]
         .filter(Boolean)
         .join(
@@ -2611,7 +2606,7 @@ function s0(l) {
                 this.next();
                 continue;
             case Y:
-                ((t = !0), this.next());
+                (t = !0), this.next();
                 continue;
         }
         let n = l.getNode.call(this, r);
@@ -2711,7 +2706,7 @@ function G0(l) {
                     if (o) throw m;
                     this.skip(c - this.tokenIndex);
                     let u = h.call(this);
-                    return ((o = !0), n(m, u), (o = !1), u);
+                    return (o = !0), n(m, u), (o = !1), u;
                 }
             },
             lookupNonWSType(f) {
@@ -2737,15 +2732,15 @@ function G0(l) {
             },
             consume(f) {
                 let h = this.tokenStart;
-                return (this.eat(f), this.substrToCursor(h));
+                return this.eat(f), this.substrToCursor(h);
             },
             consumeFunctionName() {
                 let f = i.substring(this.tokenStart, this.tokenEnd - 1);
-                return (this.eat(_), f);
+                return this.eat(_), f;
             },
             consumeNumber(f) {
                 let h = i.substring(this.tokenStart, xi(i, this.tokenStart));
-                return (this.eat(f), h);
+                return this.eat(f), h;
             },
             eat(f) {
                 if (this.tokenType !== f) {
@@ -2758,16 +2753,16 @@ function G0(l) {
                     switch (f) {
                         case w:
                             if (this.tokenType === _ || this.tokenType === il)
-                                ((m = this.tokenEnd - 1),
-                                    (c = 'Identifier is expected but function found'));
+                                (m = this.tokenEnd - 1),
+                                    (c = 'Identifier is expected but function found');
                             else c = 'Identifier is expected';
                             break;
                         case R:
-                            if (this.isDelim($m)) (this.next(), m++, (c = 'Name is expected'));
+                            if (this.isDelim($m)) this.next(), m++, (c = 'Name is expected');
                             break;
                         case A:
                             if (this.tokenType === v)
-                                ((m = this.tokenEnd), (c = 'Percent sign is expected'));
+                                (m = this.tokenEnd), (c = 'Percent sign is expected');
                             break;
                     }
                     this.error(c, m);
@@ -2819,7 +2814,7 @@ function G0(l) {
         });
     return Object.assign(
         function (f, h) {
-            ((i = f),
+            (i = f),
                 (h = h || {}),
                 g.setSource(i, bi),
                 b.setSource(i, h.offset, h.line, h.column),
@@ -2832,7 +2827,7 @@ function G0(l) {
                 (g.parseRulePrelude = 'parseRulePrelude' in h ? Boolean(h.parseRulePrelude) : !0),
                 (g.parseValue = 'parseValue' in h ? Boolean(h.parseValue) : !0),
                 (g.parseCustomProperty =
-                    'parseCustomProperty' in h ? Boolean(h.parseCustomProperty) : !1));
+                    'parseCustomProperty' in h ? Boolean(h.parseCustomProperty) : !1);
             let { context: c = 'default', onComment: m } = h;
             if (c in g.context === !1) throw new Error('Unknown context `' + c + '`');
             if (typeof m === 'function')
@@ -2856,14 +2851,14 @@ var _t = H0(),
     zw = C0().MappingList;
 function jl(l) {
     if (!l) l = {};
-    ((this._file = bl.getArg(l, 'file', null)),
+    (this._file = bl.getArg(l, 'file', null)),
         (this._sourceRoot = bl.getArg(l, 'sourceRoot', null)),
         (this._skipValidation = bl.getArg(l, 'skipValidation', !1)),
         (this._ignoreInvalidMapping = bl.getArg(l, 'ignoreInvalidMapping', !1)),
         (this._sources = new er()),
         (this._names = new er()),
         (this._mappings = new zw()),
-        (this._sourcesContents = null));
+        (this._sourcesContents = null);
 }
 jl.prototype._version = 3;
 jl.fromSourceMap = function l(i, t) {
@@ -2942,7 +2937,7 @@ jl.prototype.applySourceMap = function l(i, t, r) {
     if (o != null) n = bl.relative(o, n);
     var b = new er(),
         g = new er();
-    (this._mappings.unsortedForEach(function (e) {
+    this._mappings.unsortedForEach(function (e) {
         if (e.source === n && e.originalLine != null) {
             var f = i.originalPositionFor({ line: e.originalLine, column: e.originalColumn });
             if (f.source != null) {
@@ -2966,7 +2961,7 @@ jl.prototype.applySourceMap = function l(i, t, r) {
                 if (o != null) e = bl.relative(o, e);
                 this.setSourceContent(e, f);
             }
-        }, this));
+        }, this);
 };
 jl.prototype._validateMapping = function l(i, t, r, n) {
     if (t && typeof t.line !== 'number' && typeof t.column !== 'number') {
@@ -3017,7 +3012,7 @@ jl.prototype._serializeMappings = function l() {
     for (var u = 0, X = m.length; u < X; u++) {
         if (((f = m[u]), (e = ''), f.generatedLine !== t)) {
             i = 0;
-            while (f.generatedLine !== t) ((e += ';'), t++);
+            while (f.generatedLine !== t) (e += ';'), t++;
         } else if (u > 0) {
             if (!bl.compareByGeneratedPositionsInflated(f, m[u - 1])) continue;
             e += ',';
@@ -3033,7 +3028,7 @@ jl.prototype._serializeMappings = function l() {
                 (r = f.originalColumn),
                 f.name != null)
             )
-                ((h = this._names.indexOf(f.name)), (e += _t.encode(h - o)), (o = h));
+                (h = this._names.indexOf(f.name)), (e += _t.encode(h - o)), (o = h);
         }
         g += e;
     }
@@ -3085,15 +3080,15 @@ function I0(l) {
                 if (((r.line = u), (r.column = X), (t.line = b), (t.column = g), e)) {
                     if (((e = !1), t.line !== n.line || t.column !== n.column)) i.addMapping(o);
                 }
-                ((e = !0), i.addMapping({ source: m.loc.source, original: r, generated: t }));
+                (e = !0), i.addMapping({ source: m.loc.source, original: r, generated: t });
             }
         }
-        if ((f.call(this, m), e && P0.has(m.type))) ((n.line = b), (n.column = g));
+        if ((f.call(this, m), e && P0.has(m.type))) (n.line = b), (n.column = g);
     };
     let h = l.emit;
     l.emit = function (m, u, X) {
         for (let I = 0; I < m.length; I++)
-            if (m.charCodeAt(I) === 10) (b++, (g = 0));
+            if (m.charCodeAt(I) === 10) b++, (g = 0);
             else g++;
         h(m, u, X);
     };
@@ -3237,7 +3232,7 @@ function Dw(l, i) {
         let t = null;
         l.children.forEach((r) => {
             if (t !== null) i.call(this, t);
-            (this.node(r), (t = r));
+            this.node(r), (t = r);
         });
         return;
     }
@@ -3292,7 +3287,7 @@ function d0(l) {
             token: (e, f) => b.token(e, f),
             tokenize: $w,
         };
-        return (b.node(t), b.result());
+        return b.node(t), b.result();
     };
 }
 function lg(l) {
@@ -3366,7 +3361,7 @@ function rg(l, i) {
     if (i) t.reverse();
     return function (o, b, g, e) {
         let f;
-        if (n) ((f = b[r]), (b[r] = o));
+        if (n) (f = b[r]), (b[r] = o);
         for (let h of t) {
             let c = o[h.name];
             if (!h.nullable || c) {
@@ -3392,7 +3387,7 @@ function og(l) {
         n = Symbol('break-walk'),
         o = Symbol('skip-node');
     for (let f in i)
-        if (hn.call(i, f) && i[f] !== null) ((t[f] = rg(i[f], !1)), (r[f] = rg(i[f], !0)));
+        if (hn.call(i, f) && i[f] !== null) (t[f] = rg(i[f], !1)), (r[f] = rg(i[f], !0));
     let b = ng(t),
         g = ng(r),
         e = function (f, h) {
@@ -3436,7 +3431,7 @@ function og(l) {
                                 Object.keys(i).sort().join(', ') +
                                 ')',
                         );
-                    ((m = tg(m, h.visit)), (u = tg(u, h.visit)));
+                    (m = tg(m, h.visit)), (u = tg(u, h.visit));
                 }
             }
             if (m === vt && u === vt)
@@ -3452,7 +3447,7 @@ function og(l) {
             let c = null;
             return (
                 e(f, function (m, u, X) {
-                    if (h.call(this, m, u, X)) return ((c = m), n);
+                    if (h.call(this, m, u, X)) return (c = m), n;
                 }),
                 c
             );
@@ -3463,7 +3458,7 @@ function og(l) {
                 e(f, {
                     reverse: !0,
                     enter(m, u, X) {
-                        if (h.call(this, m, u, X)) return ((c = m), n);
+                        if (h.call(this, m, u, X)) return (c = m), n;
                     },
                 }),
                 c
@@ -3574,16 +3569,16 @@ function Yw(l, i) {
         c;
     for (let m = 0; m < t.length; m++) {
         let u = t[m].value;
-        if (m === r) ((g = u.length), (b = f.length));
+        if (m === r) (g = u.length), (b = f.length);
         if (o !== null && t[m].node === o)
             if (m <= r) e++;
             else e = 0;
         f += u;
     }
-    if (r === t.length || e > 1) ((h = mr(o || i, 'end') || Ot(bg, f)), (c = Ot(h)));
+    if (r === t.length || e > 1) (h = mr(o || i, 'end') || Ot(bg, f)), (c = Ot(h));
     else
-        ((h = mr(o, 'start') || Ot(mr(i, 'start') || bg, f.slice(0, b))),
-            (c = mr(o, 'end') || Ot(h, f.substr(b, g))));
+        (h = mr(o, 'start') || Ot(mr(i, 'start') || bg, f.slice(0, b))),
+            (c = mr(o, 'end') || Ot(h, f.substr(b, g)));
     return { css: f, mismatchOffset: b, mismatchLength: g, start: h, end: c };
 }
 function mr(l, i) {
@@ -3595,15 +3590,15 @@ function Ot({ offset: l, line: i, column: t }, r) {
     let n = { offset: l, line: i, column: t };
     if (r) {
         let o = r.split(/\n|\r\n?|\f/);
-        ((n.offset += r.length),
+        (n.offset += r.length),
             (n.line += o.length - 1),
-            (n.column = o.length === 1 ? n.column + r.length : o.pop().length + 1));
+            (n.column = o.length === 1 ? n.column + r.length : o.pop().length + 1);
     }
     return n;
 }
 var Hi = function (l, i) {
         let t = _i('SyntaxReferenceError', l + (i ? ' `' + i + '`' : ''));
-        return ((t.reference = i), t);
+        return (t.reference = i), t;
     },
     fg = function (l, i, t, r) {
         let n = _i('SyntaxMatchError', l),
@@ -3636,10 +3631,7 @@ var wr = new Map(),
 var pr = Qw,
     cn = Ew;
 function ur(l, i) {
-    return (
-        (i = i || 0),
-        l.length - i >= 2 && l.charCodeAt(i) === 45 && l.charCodeAt(i + 1) === 45
-    );
+    return (i = i || 0), l.length - i >= 2 && l.charCodeAt(i) === 45 && l.charCodeAt(i + 1) === 45;
 }
 function gg(l, i) {
     if (((i = i || 0), l.length - i >= 3)) {
@@ -3665,7 +3657,7 @@ function Qw(l) {
             custom: r,
         });
     }
-    return (wr.set(l, t), t);
+    return wr.set(l, t), t;
 }
 function Ew(l) {
     if (Mi.has(l)) return Mi.get(l);
@@ -3677,7 +3669,7 @@ function Ew(l) {
     if (!r) {
         if (((i = i.toLowerCase()), Mi.has(i))) {
             let g = Mi.get(i);
-            return (Mi.set(l, g), g);
+            return Mi.set(l, g), g;
         }
     }
     let n = !r ? gg(i, t.length) : '',
@@ -3690,7 +3682,7 @@ function Ew(l) {
             prefix: o,
             custom: r,
         });
-    return (Mi.set(l, b), b);
+    return Mi.set(l, b), b;
 }
 var yi = ['initial', 'inherit', 'unset', 'revert', 'revert-layer'];
 var $t = 43,
@@ -3741,7 +3733,7 @@ function un(l, i) {
                 return wn(i(++t), t, i);
             case 3:
                 if (l.value.charCodeAt(2) !== Ul) return 0;
-                return ((t = Dt(i(++t), t, i)), (l = i(t)), fi(l, 0, Ai, t));
+                return (t = Dt(i(++t), t, i)), (l = i(t)), fi(l, 0, Ai, t);
             default:
                 if (l.value.charCodeAt(2) !== Ul) return 0;
                 return fi(l, 3, Ai, t);
@@ -3754,7 +3746,7 @@ function un(l, i) {
                 return wn(i(++t), t, i);
             case 2:
                 if (l.value.charCodeAt(1) !== Ul) return 0;
-                return ((t = Dt(i(++t), t, i)), (l = i(t)), fi(l, 0, Ai, t));
+                return (t = Dt(i(++t), t, i)), (l = i(t)), fi(l, 0, Ai, t);
             default:
                 if (l.value.charCodeAt(1) !== Ul) return 0;
                 return fi(l, 2, Ai, t);
@@ -3770,7 +3762,7 @@ function un(l, i) {
         else {
             if (l.value.charCodeAt(o + 1) !== Ul) return 0;
             if (o + 2 === l.value.length)
-                return ((t = Dt(i(++t), t, i)), (l = i(t)), fi(l, 0, Ai, t));
+                return (t = Dt(i(++t), t, i)), (l = i(t)), fi(l, 0, Ai, t);
             else return fi(l, o + 2, Ai, t);
         }
     }
@@ -3790,7 +3782,7 @@ function qt(l, i, t) {
     let r = 0;
     for (let n = i; n < l.value.length; n++) {
         let o = l.value.charCodeAt(n);
-        if (o === eg && t && r !== 0) return (qt(l, i + r + 1, !1), 6);
+        if (o === eg && t && r !== 0) return qt(l, i + r + 1, !1), 6;
         if (!Dl(o)) return 0;
         if (++r > 6) return 0;
     }
@@ -3876,7 +3868,7 @@ function Kw(l, i) {
             case s:
             case el:
             case N:
-                (r.push(t), (t = an.get(l.type)));
+                r.push(t), (t = an.get(l.type));
                 break;
         }
         n++;
@@ -3951,7 +3943,7 @@ function Uw(l, i) {
             case s:
             case el:
             case N:
-                (r.push(t), (t = an.get(l.type)));
+                r.push(t), (t = an.get(l.type));
                 break;
         }
         n++;
@@ -3978,7 +3970,7 @@ function kw(l, i) {
             case s:
             case el:
             case N:
-                (r.push(t), (t = an.get(l.type)));
+                r.push(t), (t = an.get(l.type));
                 break;
         }
         n++;
@@ -4192,7 +4184,7 @@ var bp = 9,
     xg = new Uint8Array(128).map((l, i) => (/[a-zA-Z0-9\-]/.test(String.fromCharCode(i)) ? 1 : 0));
 class vn {
     constructor(l) {
-        ((this.str = l), (this.pos = 0));
+        (this.str = l), (this.pos = 0);
     }
     charCodeAt(l) {
         return l < this.str.length ? this.str.charCodeAt(l) : 0;
@@ -4255,7 +4247,7 @@ class vn {
     }
     scanString() {
         let l = this.str.indexOf("'", this.pos + 1);
-        if (l === -1) ((this.pos = this.str.length), this.error('Expect an apostrophe'));
+        if (l === -1) (this.pos = this.str.length), this.error('Expect an apostrophe');
         return this.substringToPos(l + 1);
     }
 }
@@ -4289,26 +4281,26 @@ function qg(l) {
     let i = null,
         t = null;
     if ((l.eat(vr), l.skipWs(), (i = l.scanNumber(l)), l.skipWs(), l.charCode() === Xn)) {
-        if ((l.pos++, l.skipWs(), l.charCode() !== Og)) ((t = l.scanNumber(l)), l.skipWs());
+        if ((l.pos++, l.skipWs(), l.charCode() !== Og)) (t = l.scanNumber(l)), l.skipWs();
     } else t = i;
-    return (l.eat(Og), { min: Number(i), max: t ? Number(t) : 0 });
+    return l.eat(Og), { min: Number(i), max: t ? Number(t) : 0 };
 }
 function ap(l) {
     let i = null,
         t = !1;
     switch (l.charCode()) {
         case Wg:
-            (l.pos++, (i = { min: 0, max: 0 }));
+            l.pos++, (i = { min: 0, max: 0 });
             break;
         case Jn:
-            (l.pos++, (i = { min: 1, max: 0 }));
+            l.pos++, (i = { min: 1, max: 0 });
             break;
         case $n:
-            (l.pos++, (i = { min: 0, max: 1 }));
+            l.pos++, (i = { min: 0, max: 1 });
             break;
         case qn:
             if ((l.pos++, (t = !0), l.charCode() === vr)) i = qg(l);
-            else if (l.charCode() === $n) (l.pos++, (i = { min: 0, max: 0 }));
+            else if (l.charCode() === $n) l.pos++, (i = { min: 0, max: 0 });
             else i = { min: 1, max: 0 };
             break;
         case vr:
@@ -4347,15 +4339,15 @@ function vp(l) {
     let i = null,
         t = null,
         r = 1;
-    if ((l.eat(Jt), l.charCode() === _g)) (l.peek(), (r = -1));
+    if ((l.eat(Jt), l.charCode() === _g)) l.peek(), (r = -1);
     if (r == -1 && l.charCode() === Dg) l.peek();
     else if (((i = r * Number(l.scanNumber(l))), l.isNameCharCode())) i += l.scanWord();
     if ((l.skipWs(), l.eat(Xn), l.skipWs(), l.charCode() === Dg)) l.peek();
     else {
-        if (((r = 1), l.charCode() === _g)) (l.peek(), (r = -1));
+        if (((r = 1), l.charCode() === _g)) l.peek(), (r = -1);
         if (((t = r * Number(l.scanNumber(l))), l.isNameCharCode())) t += l.scanWord();
     }
-    return (l.eat(Xt), { type: 'Range', min: i, max: t });
+    return l.eat(Xt), { type: 'Range', min: i, max: t };
 }
 function Op(l) {
     let i,
@@ -4369,13 +4361,13 @@ function Op(l) {
             gi(l, { type: 'Boolean', term: r.terms.length === 1 ? r.terms[0] : r })
         );
     }
-    if (l.charCode() === Xg && l.nextCharCode() === zp) ((l.pos += 2), (i += '()'));
-    if (l.charCodeAt(l.findWsEnd(l.pos)) === Jt) (l.skipWs(), (t = vp(l)));
-    return (l.eat(Dn), gi(l, { type: 'Type', name: i, opts: t }));
+    if (l.charCode() === Xg && l.nextCharCode() === zp) (l.pos += 2), (i += '()');
+    if (l.charCodeAt(l.findWsEnd(l.pos)) === Jt) l.skipWs(), (t = vp(l));
+    return l.eat(Dn), gi(l, { type: 'Type', name: i, opts: t });
 }
 function Dp(l) {
     let i = l.scanWord();
-    if (l.charCode() === Xg) return (l.pos++, { type: 'Function', name: i });
+    if (l.charCode() === Xg) return l.pos++, { type: 'Function', name: i };
     return gi(l, { type: 'Keyword', name: i });
 }
 function $p(l, i) {
@@ -4393,10 +4385,9 @@ function $p(l, i) {
             if (b.type === 'Combinator')
                 if (b.value === r) {
                     if (o === -1) o = n - 1;
-                    (l.splice(n, 1), n--);
+                    l.splice(n, 1), n--;
                 } else {
-                    if (o !== -1 && n - o > 1)
-                        (l.splice(o, n - o, t(l.slice(o, n), r)), (n = o + 1));
+                    if (o !== -1 && n - o > 1) l.splice(o, n - o, t(l.slice(o, n), r)), (n = o + 1);
                     o = -1;
                 }
         }
@@ -4414,13 +4405,13 @@ function jn(l, i) {
         if (n.type !== 'Spaces') {
             if (n.type === 'Combinator') {
                 if (o === null || o.type === 'Combinator')
-                    ((l.pos = b), l.error('Unexpected combinator'));
+                    (l.pos = b), l.error('Unexpected combinator');
                 t[n.value] = !0;
             } else if (o !== null && o.type !== 'Combinator')
-                ((t[' '] = !0), r.push({ type: 'Combinator', value: ' ' }));
-            (r.push(n), (o = n), (b = l.pos));
+                (t[' '] = !0), r.push({ type: 'Combinator', value: ' ' });
+            r.push(n), (o = n), (b = l.pos);
         }
-    if (o !== null && o.type === 'Combinator') ((l.pos -= b), l.error('Unexpected combinator'));
+    if (o !== null && o.type === 'Combinator') (l.pos -= b), l.error('Unexpected combinator');
     return {
         type: 'Group',
         terms: r,
@@ -4432,7 +4423,7 @@ function jn(l, i) {
 function qp(l, i) {
     let t;
     if ((l.eat(Jt), (t = jn(l, i)), l.eat(Xt), (t.explicit = !0), l.charCode() === Jg))
-        (l.pos++, (t.disallowEmpty = !0));
+        l.pos++, (t.disallowEmpty = !0);
     return t;
 }
 function Jp(l, i) {
@@ -4450,9 +4441,9 @@ function Jp(l, i) {
                 value: l.substringToPos(l.pos + (l.nextCharCode() === vg ? 2 : 1)),
             };
         case ag:
-            return (l.pos++, l.eat(ag), { type: 'Combinator', value: '&&' });
+            return l.pos++, l.eat(ag), { type: 'Combinator', value: '&&' };
         case Xn:
-            return (l.pos++, { type: 'Comma' });
+            return l.pos++, { type: 'Comma' };
         case _r:
             return gi(l, { type: 'String', value: l.scanString() });
         case up:
@@ -4463,7 +4454,7 @@ function Jp(l, i) {
             return { type: 'Spaces', value: l.scanSpaces() };
         case xp:
             if (((t = l.nextCharCode()), l.isNameCharCode(t)))
-                return (l.pos++, { type: 'AtKeyword', name: l.scanWord() });
+                return l.pos++, { type: 'AtKeyword', name: l.scanWord() };
             return On(l);
         case Wg:
         case Jn:
@@ -4517,7 +4508,7 @@ function sn(l, i, t) {
     let n = jt,
         o = jt;
     if (typeof i === 'function') n = i;
-    else if (i) ((n = jg(i.enter)), (o = jg(i.leave)));
+    else if (i) (n = jg(i.enter)), (o = jg(i.leave));
     if (n === jt && o === jt)
         throw new Error(
             "Neither `enter` nor `leave` walker handler is set or both aren't a function",
@@ -4532,7 +4523,7 @@ var Wp = {
             ...l,
             node(r) {
                 let n = t;
-                ((t = r), l.node.call(this, r), (t = n));
+                (t = r), l.node.call(this, r), (t = n);
             },
             emit(r, n, o) {
                 i.push({ type: n, value: r, node: o ? null : t });
@@ -4545,7 +4536,7 @@ var Wp = {
 };
 function jp(l) {
     let i = [];
-    return (bi(l, (t, r, n) => i.push({ type: t, value: l.slice(r, n), node: null })), i);
+    return bi(l, (t, r, n) => i.push({ type: t, value: l.slice(r, n), node: null })), i;
 }
 function Yn(l, i) {
     if (typeof l === 'string') return jp(l);
@@ -4559,7 +4550,7 @@ var M = { type: 'Match' },
 function xl(l, i, t) {
     if (i === M && t === k) return l;
     if (l === M && i === M && t === M) return l;
-    if (l.type === 'If' && l.else === k && i === M) ((i = l.then), (l = l.match));
+    if (l.type === 'If' && l.else === k && i === M) (i = l.then), (l = l.match);
     return { type: 'If', match: l, then: i, else: t };
 }
 function Yg(l) {
@@ -4580,9 +4571,9 @@ function st(l, i, t = new Set()) {
     if (!t.has(l))
         switch ((t.add(l), l.type)) {
             case 'If':
-                ((l.match = st(l.match, i, t)),
+                (l.match = st(l.match, i, t)),
                     (l.then = st(l.then, i, t)),
-                    (l.else = st(l.else, i, t)));
+                    (l.else = st(l.else, i, t));
                 break;
             case 'Type':
                 return i[l.name] || l;
@@ -4606,7 +4597,7 @@ function Qn(l, i, t) {
                 let b = i[o];
                 if (sg(b)) {
                     if (n === null && o > 0 && sg(i[o - 1]))
-                        ((n = Object.create(null)), (r = xl({ type: 'Enum', map: n }, M, r)));
+                        (n = Object.create(null)), (r = xl({ type: 'Enum', map: n }, M, r));
                     if (n !== null) {
                         let g = (Yg(b.name) ? b.name.slice(0, -1) : b.name).toLowerCase();
                         if (g in n === !1) {
@@ -4615,7 +4606,7 @@ function Qn(l, i, t) {
                         }
                     }
                 }
-                ((n = null), (r = xl(b, M, r)));
+                (n = null), (r = xl(b, M, r));
             }
             return r;
         }
@@ -4743,7 +4734,7 @@ function Ui(l) {
                         '|',
                     ),
                 );
-            return (st(r, { '!term': i, '!self': t }), st(t, { '!boolean-group': r }), t);
+            return st(r, { '!term': i, '!self': t }), st(t, { '!boolean-group': r }), t;
         }
         case 'Type':
         case 'Property':
@@ -4788,7 +4779,7 @@ function Fp(l) {
     let i = null,
         t = null,
         r = l;
-    while (r !== null) ((t = r.prev), (r.prev = i), (i = r), (r = t));
+    while (r !== null) (t = r.prev), (r.prev = i), (i = r), (r = t);
     return i;
 }
 function En(l, i) {
@@ -4815,7 +4806,7 @@ function Bg(l) {
 }
 function Kp(l, i, t) {
     function r() {
-        do (V++, (q = V < l.length ? l[V] : null));
+        do V++, (q = V < l.length ? l[V] : null);
         while (q !== null && (q.type === Y || q.type === U));
     }
     function n(G) {
@@ -4843,8 +4834,8 @@ function Kp(l, i, t) {
             fl = V;
     }
     function f() {
-        ((c = { syntax: i.syntax, opts: i.syntax.opts || (c !== null && c.opts) || null, prev: c }),
-            (K = { type: Gn, syntax: i.syntax, token: K.token, prev: K }));
+        (c = { syntax: i.syntax, opts: i.syntax.opts || (c !== null && c.opts) || null, prev: c }),
+            (K = { type: Gn, syntax: i.syntax, token: K.token, prev: K });
     }
     function h() {
         if (K.type === Gn) K = K.prev;
@@ -4885,18 +4876,18 @@ function Kp(l, i, t) {
                 break;
             case 'Mismatch':
                 if (X !== null && X !== !1) {
-                    if (u === null || V > u.tokenIndex) ((u = X), (X = !1));
+                    if (u === null || V > u.tokenIndex) (u = X), (X = !1);
                 } else if (u === null) {
                     F = Lp;
                     break;
                 }
-                ((i = u.nextState),
+                (i = u.nextState),
                     (m = u.thenStack),
                     (c = u.syntaxStack),
                     (K = u.matchStack),
                     (V = u.tokenIndex),
                     (q = V < l.length ? l[V] : null),
-                    (u = u.prev));
+                    (u = u.prev);
                 break;
             case 'MatchGraph':
                 i = i.match;
@@ -4926,9 +4917,9 @@ function Kp(l, i, t) {
                 for (; i.index < y.length; i.index++) {
                     let T = 1 << i.index;
                     if ((i.mask & T) === 0) {
-                        (g(i),
+                        g(i),
                             b({ type: 'AddMatchOnce', syntax: i.syntax, mask: i.mask | T }),
-                            (i = y[i.index++]));
+                            (i = y[i.index++]);
                         break;
                     }
                 }
@@ -4976,7 +4967,7 @@ function Kp(l, i, t) {
                         break;
                     }
                 }
-                (f(), (i = T.matchRef || T.match));
+                f(), (i = T.matchRef || T.match);
                 break;
             }
             case 'Keyword': {
@@ -4985,7 +4976,7 @@ function Kp(l, i, t) {
                     let T = q.value;
                     if (T.indexOf('\\') !== -1) T = T.replace(/\\[09].*$/, '');
                     if (En(T, y)) {
-                        (e(), (i = M));
+                        e(), (i = M);
                         break;
                     }
                 }
@@ -4995,14 +4986,14 @@ function Kp(l, i, t) {
             case 'AtKeyword':
             case 'Function':
                 if (q !== null && En(q.value, i.name)) {
-                    (e(), (i = M));
+                    e(), (i = M);
                     break;
                 }
                 i = k;
                 break;
             case 'Token':
                 if (q !== null && q.value === i.value) {
-                    (e(), (i = M));
+                    e(), (i = M);
                     break;
                 }
                 i = k;
@@ -5010,7 +5001,7 @@ function Kp(l, i, t) {
             case 'Comma':
                 if (q !== null && q.type === d)
                     if (Lg(K.token)) i = k;
-                    else (e(), (i = Bg(q) ? k : M));
+                    else e(), (i = Bg(q) ? k : M);
                 else i = Lg(K.token) || Bg(q) ? M : k;
                 break;
             case 'String':
@@ -5027,9 +5018,7 @@ function Kp(l, i, t) {
         }
     switch (((Rp += I), F)) {
         case null:
-            (console.warn('[csstree-match] BREAK after ' + Gg + ' iterations'),
-                (F = Bp),
-                (K = null));
+            console.warn('[csstree-match] BREAK after ' + Gg + ' iterations'), (F = Bp), (K = null);
             break;
         case Eg:
             while (c !== null) h();
@@ -5049,10 +5038,10 @@ function Ln(l, i, t) {
     while (n !== null) {
         switch (n.type) {
             case Gn:
-                (o.match.push((o = { syntax: n.syntax, match: [] })), b.push(o));
+                o.match.push((o = { syntax: n.syntax, match: [] })), b.push(o);
                 break;
             case Rg:
-                (b.pop(), (o = b[b.length - 1]));
+                b.pop(), (o = b[b.length - 1]);
                 break;
             default:
                 o.match.push({
@@ -5079,7 +5068,7 @@ function Fg(l) {
                     if (i(n.syntax)) r.unshift(n.syntax);
                     return !0;
                 }
-        } else if (n.node === l) return ((r = i(n.syntax) ? [n.syntax] : []), !0);
+        } else if (n.node === l) return (r = i(n.syntax) ? [n.syntax] : []), !0;
         return !1;
     }
     let r = null;
@@ -5311,7 +5300,7 @@ class Et {
             if (typeof l === 'string')
                 Object.defineProperty(o, 'syntax', {
                     get() {
-                        return (Object.defineProperty(o, 'syntax', { value: Wt(l) }), o.syntax);
+                        return Object.defineProperty(o, 'syntax', { value: Wt(l) }), o.syntax;
                     },
                 });
             else o.syntax = l;
@@ -5319,8 +5308,7 @@ class Et {
                 (Object.defineProperty(o, 'match', {
                     get() {
                         return (
-                            Object.defineProperty(o, 'match', { value: Yt(o.syntax, n) }),
-                            o.match
+                            Object.defineProperty(o, 'match', { value: Yt(o.syntax, n) }), o.match
                         );
                     },
                 }),
@@ -5330,7 +5318,7 @@ class Et {
                     get() {
                         let b = o.syntax,
                             g = Np(b) ? Yt({ ...b, terms: [b.terms[0].term] }, n) : null;
-                        return (Object.defineProperty(o, 'matchRef', { value: g }), g);
+                        return Object.defineProperty(o, 'matchRef', { value: g }), g;
                     },
                 });
         }
@@ -5486,15 +5474,15 @@ class Et {
                         let m = c.type === 'Type' ? g.types : g.properties,
                             u = c.type === 'Type' ? r : n;
                         if (!hasOwnProperty.call(m, c.name))
-                            (t.push(
+                            t.push(
                                 `${l(e, f === r)} used missed syntax definition ${l(c.name, c.type === 'Type')}`,
                             ),
-                                f.set(e, !0));
+                                f.set(e, !0);
                         else if (i(g, c.name, u, m[c.name]))
-                            (t.push(
+                            t.push(
                                 `${l(e, f === r)} used broken syntax definition ${l(c.name, c.type === 'Type')}`,
                             ),
-                                f.set(e, !0));
+                                f.set(e, !0);
                     },
                     this,
                 );
@@ -7116,14 +7104,14 @@ function yn() {
             i = this.isDelim(kl, l) ? kl : Xl;
             do t = this.lookupType(++l);
             while (t === Y || t === U);
-            if (t !== v) (this.skip(l), Si.call(this, Oi));
+            if (t !== v) this.skip(l), Si.call(this, Oi);
         } else return null;
     if (l > 0) this.skip(l);
     if (i === 0) {
         if (((t = this.charCodeAt(this.tokenStart)), t !== kl && t !== Xl))
             this.error('Number sign is expected');
     }
-    return (Si.call(this, i !== 0), i === Xl ? '-' + this.consume(v) : this.consume(v));
+    return Si.call(this, i !== 0), i === Xl ? '-' + this.consume(v) : this.consume(v);
 }
 var Pp = 'AnPlusB',
     Ip = { a: [String, null], b: [String, null] };
@@ -7131,44 +7119,44 @@ function An() {
     let l = this.tokenStart,
         i = null,
         t = null;
-    if (this.tokenType === v) (Si.call(this, Cp), (t = this.consume(v)));
+    if (this.tokenType === v) Si.call(this, Cp), (t = this.consume(v));
     else if (this.tokenType === w && this.cmpChar(this.tokenStart, Xl))
         switch (((i = '-1'), hi.call(this, 1, Dr), this.tokenEnd - this.tokenStart)) {
             case 2:
-                (this.next(), (t = yn.call(this)));
+                this.next(), (t = yn.call(this));
                 break;
             case 3:
-                (hi.call(this, 2, Xl),
+                hi.call(this, 2, Xl),
                     this.next(),
                     this.skipSC(),
                     Si.call(this, Oi),
-                    (t = '-' + this.consume(v)));
+                    (t = '-' + this.consume(v));
                 break;
             default:
-                (hi.call(this, 2, Xl),
+                hi.call(this, 2, Xl),
                     $r.call(this, 3, Oi),
                     this.next(),
-                    (t = this.substrToCursor(l + 2)));
+                    (t = this.substrToCursor(l + 2));
         }
     else if (this.tokenType === w || (this.isDelim(kl) && this.lookupType(1) === w)) {
         let r = 0;
-        if (((i = '1'), this.isDelim(kl))) ((r = 1), this.next());
+        if (((i = '1'), this.isDelim(kl))) (r = 1), this.next();
         switch ((hi.call(this, 0, Dr), this.tokenEnd - this.tokenStart)) {
             case 1:
-                (this.next(), (t = yn.call(this)));
+                this.next(), (t = yn.call(this));
                 break;
             case 2:
-                (hi.call(this, 1, Xl),
+                hi.call(this, 1, Xl),
                     this.next(),
                     this.skipSC(),
                     Si.call(this, Oi),
-                    (t = '-' + this.consume(v)));
+                    (t = '-' + this.consume(v));
                 break;
             default:
-                (hi.call(this, 1, Xl),
+                hi.call(this, 1, Xl),
                     $r.call(this, 2, Oi),
                     this.next(),
-                    (t = this.substrToCursor(l + r + 1)));
+                    (t = this.substrToCursor(l + r + 1));
         }
     } else if (this.tokenType === j) {
         let r = this.charCodeAt(this.tokenStart),
@@ -7181,13 +7169,13 @@ function An() {
             (i = this.substring(l, o)),
             o + 1 === this.tokenEnd)
         )
-            (this.next(), (t = yn.call(this)));
+            this.next(), (t = yn.call(this));
         else if ((hi.call(this, o - this.tokenStart + 1, Xl), o + 2 === this.tokenEnd))
-            (this.next(), this.skipSC(), Si.call(this, Oi), (t = '-' + this.consume(v)));
+            this.next(), this.skipSC(), Si.call(this, Oi), (t = '-' + this.consume(v));
         else
-            ($r.call(this, o - this.tokenStart + 2, Oi),
+            $r.call(this, o - this.tokenStart + 2, Oi),
                 this.next(),
-                (t = this.substrToCursor(o + 1)));
+                (t = this.substrToCursor(o + 1));
     } else this.error();
     if (i !== null && i.charCodeAt(0) === kl) i = i.substr(1);
     if (t !== null && t.charCodeAt(0) === kl) t = t.substr(1);
@@ -7304,10 +7292,10 @@ function hu() {
     if (this.eof) this.error('Unexpected end of input');
     let l = this.tokenStart,
         i = !1;
-    if (this.isDelim(Ng)) ((i = !0), this.next());
+    if (this.isDelim(Ng)) (i = !0), this.next();
     else if (!this.isDelim(Pn)) this.eat(w);
     if (this.isDelim(Pn)) {
-        if (this.charCodeAt(this.tokenStart + 1) !== qr) (this.next(), this.eat(w));
+        if (this.charCodeAt(this.tokenStart + 1) !== qr) this.next(), this.eat(w);
         else if (i) this.error('Identifier is expected', this.tokenEnd);
     } else if (i) this.error('Vertical line is expected');
     return {
@@ -7342,11 +7330,11 @@ function In() {
         n = null;
     if ((this.eat(el), this.skipSC(), (i = hu.call(this)), this.skipSC(), this.tokenType !== pl)) {
         if (this.tokenType !== w)
-            ((t = cu.call(this)),
+            (t = cu.call(this)),
                 this.skipSC(),
                 (r = this.tokenType === gl ? this.String() : this.Identifier()),
-                this.skipSC());
-        if (this.tokenType === w) ((n = this.consume(w)), this.skipSC());
+                this.skipSC();
+        if (this.tokenType === w) (n = this.consume(w)), this.skipSC();
     }
     return (
         this.eat(pl),
@@ -7362,7 +7350,7 @@ function In() {
 }
 function pu(l) {
     if ((this.token($, '['), this.node(l.name), l.matcher !== null))
-        (this.tokenize(l.matcher), this.node(l.value));
+        this.tokenize(l.matcher), this.node(l.value);
     if (l.flags !== null) this.token(w, l.flags);
     this.token($, ']');
 }
@@ -7417,11 +7405,11 @@ function Zn(l) {
     return { type: 'Block', loc: this.getLocation(t, this.tokenStart), children: r };
 }
 function vu(l) {
-    (this.token(N, '{'),
+    this.token(N, '{'),
         this.children(l, (i) => {
             if (i.type === 'Declaration') this.token(Z, ';');
         }),
-        this.token(ml, '}'));
+        this.token(ml, '}');
 }
 var io = {};
 D(io, { structure: () => Du, parse: () => lo, name: () => Ou, generate: () => $u });
@@ -7434,7 +7422,7 @@ function lo(l, i) {
     return { type: 'Brackets', loc: this.getLocation(t, this.tokenStart), children: r };
 }
 function $u(l) {
-    (this.token($, '['), this.children(l), this.token($, ']'));
+    this.token($, '['), this.children(l), this.token($, ']');
 }
 var ro = {};
 D(ro, { structure: () => Ju, parse: () => to, name: () => qu, generate: () => Xu });
@@ -7442,7 +7430,7 @@ var qu = 'CDC',
     Ju = [];
 function to() {
     let l = this.tokenStart;
-    return (this.eat(cl), { type: 'CDC', loc: this.getLocation(l, this.tokenStart) });
+    return this.eat(cl), { type: 'CDC', loc: this.getLocation(l, this.tokenStart) };
 }
 function Xu() {
     this.token(cl, '-->');
@@ -7453,7 +7441,7 @@ var Wu = 'CDO',
     ju = [];
 function no() {
     let l = this.tokenStart;
-    return (this.eat(Pl), { type: 'CDO', loc: this.getLocation(l, this.tokenStart) });
+    return this.eat(Pl), { type: 'CDO', loc: this.getLocation(l, this.tokenStart) };
 }
 function su() {
     this.token(Pl, '<!--');
@@ -7474,7 +7462,7 @@ function bo() {
     );
 }
 function Gu(l) {
-    (this.token($, '.'), this.token(w, l.name));
+    this.token($, '.'), this.token(w, l.name);
 }
 var eo = {};
 D(eo, { structure: () => Vu, parse: () => go, name: () => Fu, generate: () => Ku });
@@ -7499,7 +7487,7 @@ function go() {
                     this.next();
                     break;
                 case Tg:
-                    (this.next(), this.eatIdent('deep'), this.eatDelim(Tg));
+                    this.next(), this.eatIdent('deep'), this.eatDelim(Tg);
                     break;
                 default:
                     this.error('Combinator is expected');
@@ -7577,7 +7565,7 @@ function mo(l = 'media') {
                         () => {
                             this.eat(s);
                             let r = this.Condition(l);
-                            return (this.eat(a), r);
+                            return this.eat(a), r;
                         },
                         () => {
                             return this.GeneralEnclosed(l);
@@ -7603,7 +7591,7 @@ function mo(l = 'media') {
 }
 function Pu(l) {
     l.children.forEach((i) => {
-        if (i.type === 'Condition') (this.token(s, '('), this.node(i), this.token(a, ')'));
+        if (i.type === 'Condition') this.token(s, '('), this.node(i), this.token(a, ')');
         else this.node(i);
     });
 }
@@ -7653,7 +7641,7 @@ function po() {
         o = r ? t1 : i1,
         b = !1,
         g;
-    (this.skipSC(), this.eat(P));
+    this.skipSC(), this.eat(P);
     let e = this.tokenIndex;
     if (!r) this.skipSC();
     if (n) g = this.parseWithFallback(r1, o);
@@ -7665,7 +7653,7 @@ function po() {
                 break;
             }
     }
-    if (this.isDelim(le)) ((b = e1.call(this)), this.skipSC());
+    if (this.isDelim(le)) (b = e1.call(this)), this.skipSC();
     if (this.eof === !1 && this.tokenType !== Z && this.isBalanceEdge(i) === !1) this.error();
     return {
         type: 'Declaration',
@@ -7677,7 +7665,7 @@ function po() {
 }
 function f1(l) {
     if ((this.token(w, l.property), this.token(P, ':'), this.node(l.value), l.important))
-        (this.token($, '!'), this.token(w, l.important === !0 ? 'important' : l.important));
+        this.token($, '!'), this.token(w, l.important === !0 ? 'important' : l.important);
 }
 function g1() {
     let l = this.tokenStart;
@@ -7699,7 +7687,7 @@ function g1() {
     return this.substrToCursor(l);
 }
 function e1() {
-    (this.eat($), this.skipSC());
+    this.eat($), this.skipSC();
     let l = this.consume(w);
     return l === 'important' ? !0 : l;
 }
@@ -7804,7 +7792,7 @@ function Oo(l) {
 }
 function v1(l) {
     if ((this.token(s, '('), this.token(w, l.name), l.value !== null))
-        (this.token(P, ':'), this.node(l.value));
+        this.token(P, ':'), this.node(l.value);
     this.token(a, ')');
 }
 var qo = {};
@@ -7840,7 +7828,7 @@ function $o(l = 'unknown') {
     };
 }
 function q1(l) {
-    (this.token(_, l.feature + '('), this.node(l.value), this.token(a, ')'));
+    this.token(_, l.feature + '('), this.node(l.value), this.token(a, ')');
 }
 var Wo = {};
 D(Wo, { structure: () => j1, parse: () => Xo, name: () => W1, generate: () => s1 });
@@ -7884,7 +7872,7 @@ function Jo() {
 function re(l) {
     if ((this.skipSC(), this.isDelim(J1) || this.isDelim(X1))) {
         let i = this.source[this.tokenStart];
-        if ((this.next(), this.isDelim(te))) return (this.next(), i + '=');
+        if ((this.next(), this.isDelim(te))) return this.next(), i + '=';
         return i;
     }
     if (this.isDelim(te)) return '=';
@@ -7892,13 +7880,13 @@ function re(l) {
 }
 function Xo(l = 'unknown') {
     let i = this.tokenStart;
-    (this.skipSC(), this.eat(s));
+    this.skipSC(), this.eat(s);
     let t = Jo.call(this),
         r = re.call(this, t.type === 'Identifier'),
         n = Jo.call(this),
         o = null,
         b = null;
-    if (this.lookupNonWSType(0) !== a) ((o = re.call(this)), (b = Jo.call(this)));
+    if (this.lookupNonWSType(0) !== a) (o = re.call(this)), (b = Jo.call(this));
     return (
         this.skipSC(),
         this.eat(a),
@@ -7922,7 +7910,7 @@ function s1(l) {
         this.node(l.middle),
         l.right)
     )
-        (this.tokenize(l.rightComparison), this.node(l.right));
+        this.tokenize(l.rightComparison), this.node(l.right);
     this.token(a, ')');
 }
 var so = {};
@@ -7945,7 +7933,7 @@ function jo(l, i) {
     return { type: 'Function', loc: this.getLocation(t, this.tokenStart), name: r, children: o };
 }
 function G1(l) {
-    (this.token(_, l.name + '('), this.children(l), this.token(a, ')'));
+    this.token(_, l.name + '('), this.children(l), this.token(a, ')');
 }
 var Qo = {};
 D(Qo, { structure: () => B1, parse: () => Yo, name: () => L1, generate: () => R1 });
@@ -7977,7 +7965,7 @@ function Yo(l) {
 function R1(l) {
     if (l.function) this.token(_, l.function + '(');
     else this.token(s, '(');
-    (this.children(l), this.token(a, ')'));
+    this.children(l), this.token(a, ')');
 }
 var Go = {};
 D(Go, { xxx: () => F1, structure: () => K1, parse: () => Eo, name: () => V1, generate: () => H1 });
@@ -8038,7 +8026,7 @@ var N1 = 46,
 function Vo() {
     let l = this.tokenStart,
         i = this.consume(w);
-    while (this.isDelim(N1)) (this.eat($), (i += '.' + this.consume(w)));
+    while (this.isDelim(N1)) this.eat($), (i += '.' + this.consume(w));
     return { type: 'Layer', loc: this.getLocation(l, this.tokenStart), name: i };
 }
 function I1(l) {
@@ -8053,7 +8041,7 @@ function Ho() {
     this.skipSC();
     while (!this.eof) {
         if ((l.push(this.Layer()), this.lookupTypeNonSC(0) !== d)) break;
-        (this.skipSC(), this.next(), this.skipSC());
+        this.skipSC(), this.next(), this.skipSC();
     }
     return { type: 'LayerList', loc: this.getLocationFromList(l), children: l };
 }
@@ -8072,11 +8060,11 @@ function yo() {
     if ((this.skipSC(), this.tokenType === w && this.lookupTypeNonSC(1) !== s)) {
         let n = this.consume(w),
             o = n.toLowerCase();
-        if (o === 'not' || o === 'only') (this.skipSC(), (i = o), (t = this.consume(w)));
+        if (o === 'not' || o === 'only') this.skipSC(), (i = o), (t = this.consume(w));
         else t = n;
         switch (this.lookupTypeNonSC(0)) {
             case w: {
-                (this.skipSC(), this.eatIdent('and'), (r = this.Condition('media')));
+                this.skipSC(), this.eatIdent('and'), (r = this.Condition('media'));
                 break;
             }
             case N:
@@ -8113,8 +8101,7 @@ function yo() {
 function t2(l) {
     if (l.mediaType) {
         if (l.modifier) this.token(w, l.modifier);
-        if ((this.token(w, l.mediaType), l.condition))
-            (this.token(w, 'and'), this.node(l.condition));
+        if ((this.token(w, l.mediaType), l.condition)) this.token(w, 'and'), this.node(l.condition);
     } else if (l.condition) this.node(l.condition);
 }
 var ko = {};
@@ -8141,8 +8128,7 @@ var b2 = 38,
 function So() {
     let l = this.tokenStart;
     return (
-        this.eatDelim(b2),
-        { type: 'NestingSelector', loc: this.getLocation(l, this.tokenStart) }
+        this.eatDelim(b2), { type: 'NestingSelector', loc: this.getLocation(l, this.tokenStart) }
     );
 }
 function e2() {
@@ -8161,11 +8147,11 @@ function Co() {
     if (this.lookupValue(0, 'odd') || this.lookupValue(0, 'even')) r = this.Identifier();
     else r = this.AnPlusB();
     if (((i = this.tokenStart), this.skipSC(), this.lookupValue(0, 'of')))
-        (this.next(), (t = this.SelectorList()), (i = this.tokenStart));
+        this.next(), (t = this.SelectorList()), (i = this.tokenStart);
     return { type: 'Nth', loc: this.getLocation(l, i), nth: r, selector: t };
 }
 function m2(l) {
-    if ((this.node(l.nth), l.selector !== null)) (this.token(w, 'of'), this.node(l.selector));
+    if ((this.node(l.nth), l.selector !== null)) this.token(w, 'of'), this.node(l.selector);
 }
 var To = {};
 D(To, { structure: () => p2, parse: () => Io, name: () => w2, generate: () => u2 });
@@ -8210,7 +8196,7 @@ function ib(l, i) {
     return { type: 'Parentheses', loc: this.getLocation(t, this.tokenStart), children: r };
 }
 function O2(l) {
-    (this.token(s, '('), this.children(l), this.token(a, ')'));
+    this.token(s, '('), this.children(l), this.token(a, ')');
 }
 var nb = {};
 D(nb, { structure: () => $2, parse: () => rb, name: () => D2, generate: () => q2 });
@@ -8246,8 +8232,8 @@ function ob() {
         if (((t = this.consumeFunctionName()), (r = t.toLowerCase()), this.lookupNonWSType(0) == a))
             i = this.createList();
         else if (hasOwnProperty.call(this.pseudo, r))
-            (this.skipSC(), (i = this.pseudo[r].call(this)), this.skipSC());
-        else ((i = this.createList()), i.push(this.Raw(null, !1)));
+            this.skipSC(), (i = this.pseudo[r].call(this)), this.skipSC();
+        else (i = this.createList()), i.push(this.Raw(null, !1));
         this.eat(a);
     } else t = this.consume(w);
     return {
@@ -8259,7 +8245,7 @@ function ob() {
 }
 function j2(l) {
     if ((this.token(P, ':'), l.children === null)) this.token(w, l.name);
-    else (this.token(_, l.name + '('), this.children(l), this.token(a, ')'));
+    else this.token(_, l.name + '('), this.children(l), this.token(a, ')');
 }
 var gb = {};
 D(gb, {
@@ -8281,8 +8267,8 @@ function fb() {
         if (((t = this.consumeFunctionName()), (r = t.toLowerCase()), this.lookupNonWSType(0) == a))
             i = this.createList();
         else if (hasOwnProperty.call(this.pseudo, r))
-            (this.skipSC(), (i = this.pseudo[r].call(this)), this.skipSC());
-        else ((i = this.createList()), i.push(this.Raw(null, !1)));
+            this.skipSC(), (i = this.pseudo[r].call(this)), this.skipSC();
+        else (i = this.createList()), i.push(this.Raw(null, !1));
         this.eat(a);
     } else t = this.consume(w);
     return {
@@ -8294,7 +8280,7 @@ function fb() {
 }
 function E2(l) {
     if ((this.token(P, ':'), this.token(P, ':'), l.children === null)) this.token(w, l.name);
-    else (this.token(_, l.name + '('), this.children(l), this.token(a, ')'));
+    else this.token(_, l.name + '('), this.children(l), this.token(a, ')');
 }
 var hb = {};
 D(hb, { structure: () => L2, parse: () => eb, name: () => G2, generate: () => B2 });
@@ -8315,7 +8301,7 @@ function eb() {
     let l = this.tokenStart,
         i = oe.call(this),
         t = null;
-    if ((this.skipSC(), this.isDelim(ne))) (this.eatDelim(ne), (t = oe.call(this)));
+    if ((this.skipSC(), this.isDelim(ne))) this.eatDelim(ne), (t = oe.call(this));
     return { type: 'Ratio', loc: this.getLocation(l, this.tokenStart), left: i, right: t };
 }
 function B2(l) {
@@ -8381,7 +8367,7 @@ function wb() {
     );
 }
 function U2(l) {
-    (this.node(l.prelude), this.node(l.block));
+    this.node(l.prelude), this.node(l.block);
 }
 var zb = {};
 D(zb, { structure: () => S2, parse: () => ub, name: () => k2, generate: () => N2 });
@@ -8393,25 +8379,25 @@ function ub() {
     this.skipSC();
     let t = this.tokenStart;
     if (this.tokenType === s)
-        (this.next(),
+        this.next(),
             this.skipSC(),
             (l = this.parseWithFallback(this.SelectorList, () => this.Raw(!1, !0))),
             this.skipSC(),
-            this.eat(a));
+            this.eat(a);
     if (this.lookupNonWSType(0) === w)
-        (this.skipSC(),
+        this.skipSC(),
             this.eatIdent('to'),
             this.skipSC(),
             this.eat(s),
             this.skipSC(),
             (i = this.parseWithFallback(this.SelectorList, () => this.Raw(!1, !0))),
             this.skipSC(),
-            this.eat(a));
+            this.eat(a);
     return { type: 'Scope', loc: this.getLocation(t, this.tokenStart), root: l, limit: i };
 }
 function N2(l) {
-    if (l.root) (this.token(s, '('), this.node(l.root), this.token(a, ')'));
-    if (l.limit) (this.token(w, 'to'), this.token(s, '('), this.node(l.limit), this.token(a, ')'));
+    if (l.root) this.token(s, '('), this.node(l.root), this.token(a, ')');
+    if (l.limit) this.token(w, 'to'), this.token(s, '('), this.node(l.limit), this.token(a, ')');
 }
 var ab = {};
 D(ab, { structure: () => P2, parse: () => xb, name: () => C2, generate: () => I2 });
@@ -8483,7 +8469,7 @@ function Jr(l) {
             if (((g = l.charCodeAt(++b)), Ol(Ob, g))) {
                 let e = b - 1,
                     f = Ml(l, e);
-                ((b = f - 1), (o += xt(l.substring(e + 1, f))));
+                (b = f - 1), (o += xt(l.substring(e + 1, f)));
             } else if (g === 13 && l.charCodeAt(b + 1) === 10) b++;
         } else o += l[b];
     }
@@ -8501,13 +8487,13 @@ function ee(l, i) {
             continue;
         }
         if (g <= 31 || g === 127) {
-            ((n += '\\' + g.toString(16)), (o = !0));
+            (n += '\\' + g.toString(16)), (o = !0);
             continue;
         }
-        if (g === r || g === Ob) ((n += '\\' + l.charAt(b)), (o = !1));
+        if (g === r || g === Ob) (n += '\\' + l.charAt(b)), (o = !1);
         else {
             if (o && (Dl(g) || Hl(g))) n += ' ';
-            ((n += l.charAt(b)), (o = !1));
+            (n += l.charAt(b)), (o = !1);
         }
     }
     return t + n + t;
@@ -8580,7 +8566,7 @@ var ez = 'SupportsDeclaration',
     hz = { declaration: 'Declaration' };
 function Xb() {
     let l = this.tokenStart;
-    (this.eat(s), this.skipSC());
+    this.eat(s), this.skipSC();
     let i = this.Declaration();
     if (!this.eof) this.eat(a);
     return {
@@ -8590,7 +8576,7 @@ function Xb() {
     };
 }
 function cz(l) {
-    (this.token(s, '('), this.node(l.declaration), this.token(a, ')'));
+    this.token(s, '('), this.node(l.declaration), this.token(a, ')');
 }
 var Yb = {};
 D(Yb, { structure: () => pz, parse: () => sb, name: () => wz, generate: () => uz });
@@ -8605,8 +8591,8 @@ var wz = 'TypeSelector',
     pz = { name: String };
 function sb() {
     let l = this.tokenStart;
-    if (this.isDelim(me)) (this.next(), jb.call(this));
-    else if ((jb.call(this), this.isDelim(me))) (this.next(), jb.call(this));
+    if (this.isDelim(me)) this.next(), jb.call(this);
+    else if ((jb.call(this), this.isDelim(me))) this.next(), jb.call(this);
     return {
         type: 'TypeSelector',
         loc: this.getLocation(l, this.tokenStart),
@@ -8625,7 +8611,7 @@ function Lt(l, i) {
     let t = 0;
     for (let r = this.tokenStart + l; r < this.tokenEnd; r++) {
         let n = this.charCodeAt(r);
-        if (n === pe && i && t !== 0) return (Lt.call(this, l + t + 1, !1), -1);
+        if (n === pe && i && t !== 0) return Lt.call(this, l + t + 1, !1), -1;
         if (!Dl(n))
             this.error(
                 i && t !== 0
@@ -8637,7 +8623,7 @@ function Lt(l, i) {
             );
         if (++t > 6) this.error('Too many hex digits', r);
     }
-    return (this.next(), t);
+    return this.next(), t;
 }
 function Xr(l) {
     let i = 0;
@@ -8659,7 +8645,7 @@ function xz() {
                 break;
             }
             if (this.tokenType === j || this.tokenType === v) {
-                (zz.call(this, pe), Lt.call(this, 1, !1));
+                zz.call(this, pe), Lt.call(this, 1, !1);
                 break;
             }
             break;
@@ -8672,7 +8658,7 @@ function xz() {
                 break;
             }
             if (this.isDelim(Qb)) {
-                (this.next(), Xr.call(this, 5));
+                this.next(), Xr.call(this, 5);
                 break;
             }
             this.error('Hex digit or question mark is expected');
@@ -8720,7 +8706,7 @@ function ze(l) {
             if (((b = l.charCodeAt(++o)), Ol(Lb, b))) {
                 let g = o - 1,
                     e = Ml(l, g);
-                ((o = e - 1), (n += xt(l.substring(g + 1, e))));
+                (o = e - 1), (n += xt(l.substring(g + 1, e)));
             } else if (b === 13 && l.charCodeAt(o + 1) === 10) o++;
         } else n += l[o];
     }
@@ -8736,14 +8722,14 @@ function xe(l) {
             continue;
         }
         if (n <= 31 || n === 127) {
-            ((i += '\\' + n.toString(16)), (t = !0));
+            (i += '\\' + n.toString(16)), (t = !0);
             continue;
         }
         if (n === Oz || n === Lb || n === Dz || n === $z || n === qz || n === ue)
-            ((i += '\\' + l.charAt(r)), (t = !1));
+            (i += '\\' + l.charAt(r)), (t = !1);
         else {
             if (t && Dl(n)) i += ' ';
-            ((i += l.charAt(r)), (t = !1));
+            (i += l.charAt(r)), (t = !1);
         }
     }
     return 'url(' + i + ')';
@@ -8789,7 +8775,7 @@ var Qz = Object.freeze({ type: 'WhiteSpace', loc: null, value: ' ' }),
     Ez = 'WhiteSpace',
     Gz = { value: String };
 function Kb() {
-    return (this.eat(Y), Qz);
+    return this.eat(Y), Qz;
 }
 function Lz(l) {
     this.token(Y, l.value);
@@ -8940,7 +8926,7 @@ var Iz = new Set(['none', 'and', 'not', 'or']),
                     let i = this.substring(this.tokenStart, this.tokenEnd);
                     if (!Iz.has(i.toLowerCase())) l.push(this.Identifier());
                 }
-                return (l.push(this.Condition('container')), l);
+                return l.push(this.Condition('container')), l;
             },
             block(l = !1) {
                 return this.Block(l);
@@ -9279,13 +9265,13 @@ class Ni {
     injectDefaultStyles() {
         try {
             let l = document.createElement('style');
-            ((l.id = 'onlook-stylesheet'),
+            (l.id = 'onlook-stylesheet'),
                 (l.textContent = `
             [${'data-onlook-editing-text'}="true"] {
                 opacity: 0;
             }
         `),
-                document.head.appendChild(l));
+                document.head.appendChild(l);
         } catch (l) {
             console.warn('Error injecting default styles', l);
         }
@@ -9296,7 +9282,7 @@ class Ni {
     }
     get stylesheet() {
         let l = document.getElementById('onlook-stylesheet') || this.createStylesheet();
-        return ((l.textContent = l.textContent || ''), Nb(l.textContent));
+        return (l.textContent = l.textContent || ''), Nb(l.textContent);
     }
     set stylesheet(l) {
         let i = document.getElementById('onlook-stylesheet') || this.createStylesheet();
@@ -9304,7 +9290,7 @@ class Ni {
     }
     createStylesheet() {
         let l = document.createElement('style');
-        return ((l.id = 'onlook-stylesheet'), document.head.appendChild(l), l);
+        return (l.id = 'onlook-stylesheet'), document.head.appendChild(l), l;
     }
     find(l, i) {
         let t = [];
@@ -9405,13 +9391,13 @@ class Ni {
     removeStyles(l, i) {
         let t = kr(l, !1),
             r = this.stylesheet;
-        (this.find(r, t).forEach((o) => {
+        this.find(r, t).forEach((o) => {
             if (o.type === 'Rule') {
                 let b = i.map((g) => this.jsToCssProperty(g));
                 o.block.children = o.block.children.filter((g) => !b.includes(g.property));
             }
         }),
-            (this.stylesheet = r));
+            (this.stylesheet = r);
     }
     clear() {
         this.stylesheet = Nb('');
@@ -9419,7 +9405,7 @@ class Ni {
 }
 var ii = Ni.getInstance();
 function Ae(l, i) {
-    return (ii.updateStyle(l, i.updated), Ct(l, !0));
+    return ii.updateStyle(l, i.updated), Ct(l, !0);
 }
 function Ue(l, i) {
     ii.updateStyle(l, { backgroundImage: { value: `url(${i})`, type: 'value' } });
@@ -9436,7 +9422,7 @@ function l4(l, i) {
         let f = g.getBoundingClientRect(),
             h = f.top + f.height / 2,
             c = Math.abs(i - h);
-        if (c < n) ((n = c), (r = e));
+        if (c < n) (n = c), (r = e);
     });
     let o = t[r]?.getBoundingClientRect();
     if (!o) return 0;
@@ -9489,7 +9475,7 @@ function Ne(l, i) {
             else t.insertBefore(r, t.children.item(i.index));
             break;
         default:
-            (console.warn(`Invalid position: ${i}`), Nr(i));
+            console.warn(`Invalid position: ${i}`), Nr(i);
     }
     let n = nl(r, !0),
         o = zl(r);
@@ -9509,7 +9495,7 @@ function Ce(l) {
 }
 function Pe(l) {
     let i = H(l.targetDomId);
-    if (!i) return (console.warn(`Target element not found: ${l.targetDomId}`), null);
+    if (!i) return console.warn(`Target element not found: ${l.targetDomId}`), null;
     let t = null;
     switch (l.type) {
         case 'append':
@@ -9520,25 +9506,25 @@ function Pe(l) {
             break;
         case 'index':
             if (l.index !== -1) t = i.children.item(l.index);
-            else return (console.warn(`Invalid index: ${l.index}`), null);
+            else return console.warn(`Invalid index: ${l.index}`), null;
             break;
         default:
-            (console.warn(`Invalid position: ${l}`), Nr(l));
+            console.warn(`Invalid position: ${l}`), Nr(l);
     }
     if (t) {
         let r = nl(t, !0);
         t.style.display = 'none';
         let n = i.parentElement ? zl(i.parentElement) : null;
         return { domEl: r, newMap: n };
-    } else return (console.warn('No element found to remove at the specified location'), null);
+    } else return console.warn('No element found to remove at the specified location'), null;
 }
 function Ie(l, i) {
     let t = H(l);
-    if (!t) return (console.warn('Element not found for domId:', l), null);
+    if (!t) return console.warn('Element not found for domId:', l), null;
     let r = b0(t);
-    if (!r) return (console.warn('Failed to get location for element:', t), null);
+    if (!r) return console.warn('Failed to get location for element:', t), null;
     let n = Pt(l);
-    if (!n) return (console.warn('Failed to get action element for element:', t), null);
+    if (!n) return console.warn('Failed to get action element for element:', t), null;
     return {
         type: 'remove-element',
         targets: [{ frameId: i, domId: n.domId, oid: n.oid }],
@@ -9551,16 +9537,16 @@ function Ie(l, i) {
 }
 function Te(l, i) {
     let t = H(l);
-    if (!t) return (console.warn(`Move element not found: ${l}`), null);
+    if (!t) return console.warn(`Move element not found: ${l}`), null;
     let r = t4(t, i);
-    if (!r) return (console.warn(`Failed to move element: ${l}`), null);
+    if (!r) return console.warn(`Failed to move element: ${l}`), null;
     let n = nl(r, !0),
         o = r.parentElement ? zl(r.parentElement) : null;
     return { domEl: n, newMap: o };
 }
 function Ze(l) {
     let i = H(l);
-    if (!i) return (console.warn(`Element not found: ${l}`), -1);
+    if (!i) return console.warn(`Element not found: ${l}`), -1;
     return Array.from(i.parentElement?.children || [])
         .filter(zi)
         .indexOf(i);
@@ -9571,9 +9557,9 @@ function t4(l, i) {
         console.warn('Parent not found');
         return;
     }
-    if ((t.removeChild(l), i >= t.children.length)) return (t.appendChild(l), l);
+    if ((t.removeChild(l), i >= t.children.length)) return t.appendChild(l), l;
     let r = t.children[i];
-    return (t.insertBefore(l, r ?? null), l);
+    return t.insertBefore(l, r ?? null), l;
 }
 function sr(l) {
     if (!l || !l.children || l.children.length < 2) return 'vertical';
@@ -9618,7 +9604,7 @@ function ih(l) {
     let i = document.createElement('div'),
         t = window.getComputedStyle(l),
         r = l.className;
-    ((i.id = 'onlook-drag-stub'),
+    (i.id = 'onlook-drag-stub'),
         (i.style.width = t.width),
         (i.style.height = t.height),
         (i.style.margin = t.margin),
@@ -9627,7 +9613,7 @@ function ih(l) {
         (i.style.backgroundColor = 'rgba(0, 0, 0, 0.2)'),
         (i.style.display = 'none'),
         (i.className = r),
-        document.body.appendChild(i));
+        document.body.appendChild(i);
 }
 function th(l, i, t) {
     let r = document.getElementById('onlook-drag-stub');
@@ -9662,9 +9648,9 @@ function rh(l, i) {
 }
 function nh(l) {
     let i = H(l);
-    if (!i) return (console.warn(`Start drag element not found: ${l}`), null);
+    if (!i) return console.warn(`Start drag element not found: ${l}`), null;
     let t = i.parentElement;
-    if (!t) return (console.warn('Start drag parent not found'), null);
+    if (!t) return console.warn('Start drag parent not found'), null;
     let n = Array.from(t.children).filter(zi).indexOf(i),
         o = window.getComputedStyle(i);
     if ((r4(i), o.position !== 'absolute')) ih(i);
@@ -9675,8 +9661,7 @@ function nh(l) {
                 ? { x: b.left, y: b.top }
                 : { x: b.left - g.left, y: b.top - g.top };
     return (
-        i.setAttribute('data-onlook-drag-start-position', JSON.stringify({ ...b, offset: e })),
-        n
+        i.setAttribute('data-onlook-drag-start-position', JSON.stringify({ ...b, offset: e })), n
     );
 }
 function oh(l, i, t, r) {
@@ -9691,7 +9676,7 @@ function oh(l, i, t, r) {
             g = o.getBoundingClientRect(),
             e = i - g.left - (r.x - b.offset.x),
             f = t - g.top - (r.y - b.offset.y);
-        ((n.style.left = `${e}px`), (n.style.top = `${f}px`));
+        (n.style.left = `${e}px`), (n.style.top = `${f}px`);
     }
     n.style.transform = 'none';
 }
@@ -9705,25 +9690,25 @@ function bh(l, i, t, r, n) {
     let b = JSON.parse(o.getAttribute('data-onlook-drag-start-position') || '{}');
     if (o.style.position !== 'fixed') {
         let e = window.getComputedStyle(o);
-        ((o.style.position = 'fixed'),
+        (o.style.position = 'fixed'),
             (o.style.width = e.width),
             (o.style.height = e.height),
             (o.style.left = `${b.left}px`),
-            (o.style.top = `${b.top}px`));
+            (o.style.top = `${b.top}px`);
     }
     if (((o.style.transform = `translate(${i}px, ${t}px)`), o.parentElement)) th(o, r, n);
 }
 function fh(l) {
     let i = H(l);
-    if (!i) return (console.warn('End drag element not found'), null);
+    if (!i) return console.warn('End drag element not found'), null;
     let t = window.getComputedStyle(i);
-    return (eh(i), Jl(i), { left: t.left, top: t.top });
+    return eh(i), Jl(i), { left: t.left, top: t.top };
 }
 function gh(l) {
     let i = H(l);
-    if (!i) return (console.warn('End drag element not found'), Tb(), null);
+    if (!i) return console.warn('End drag element not found'), Tb(), null;
     let t = i.parentElement;
-    if (!t) return (console.warn('End drag parent not found'), Ib(i), null);
+    if (!t) return console.warn('End drag parent not found'), Ib(i), null;
     let r = rh(t, i);
     if ((Ib(i), Pb(), r === -1)) return null;
     let n = Array.from(t.children).indexOf(i);
@@ -9754,13 +9739,13 @@ function r4(l) {
     }
 }
 function Ib(l) {
-    (Nt(l), eh(l), Jl(l));
+    Nt(l), eh(l), Jl(l);
 }
 function eh(l) {
-    (l.removeAttribute('data-onlook-drag-saved-style'),
+    l.removeAttribute('data-onlook-drag-saved-style'),
         l.removeAttribute('data-onlook-dragging'),
         l.removeAttribute('data-onlook-drag-direction'),
-        l.removeAttribute('data-onlook-drag-start-position'));
+        l.removeAttribute('data-onlook-drag-start-position');
 }
 function n4(l) {
     let i = l.getBoundingClientRect();
@@ -9773,7 +9758,7 @@ function Tb() {
 }
 function hh(l) {
     let i = H(l);
-    if (!i) return (console.warn('Start editing text failed. No element for selector:', l), null);
+    if (!i) return console.warn('Start editing text failed. No element for selector:', l), null;
     let t = Array.from(i.childNodes).filter((b) => b.nodeType !== Node.COMMENT_NODE),
         r = null,
         n = t.every(
@@ -9790,23 +9775,23 @@ function hh(l) {
             null
         );
     let o = ph(i);
-    return (wh(r), { originalContent: o });
+    return wh(r), { originalContent: o };
 }
 function ch(l, i) {
     let t = H(l);
-    if (!t) return (console.warn('Edit text failed. No element for selector:', l), null);
-    return (wh(t), f4(t, i), { domEl: nl(t, !0), newMap: zl(t) });
+    if (!t) return console.warn('Edit text failed. No element for selector:', l), null;
+    return wh(t), f4(t, i), { domEl: nl(t, !0), newMap: zl(t) };
 }
 function mh(l) {
     let i = H(l);
-    if (!i) return (console.warn('Stop editing text failed. No element for selector:', l), null);
-    return (o4(i), { newContent: ph(i), domEl: nl(i, !0) });
+    if (!i) return console.warn('Stop editing text failed. No element for selector:', l), null;
+    return o4(i), { newContent: ph(i), domEl: nl(i, !0) };
 }
 function wh(l) {
     l.setAttribute('data-onlook-editing-text', 'true');
 }
 function o4(l) {
-    (Nt(l), b4(l));
+    Nt(l), b4(l);
 }
 function b4(l) {
     l.removeAttribute('data-onlook-editing-text');
@@ -9817,14 +9802,14 @@ function f4(l, i) {
 }
 function ph(l) {
     let i = l.innerHTML;
-    ((i = i.replace(
+    (i = i.replace(
         /<br\s*\/?>/gi,
         `
 `,
     )),
-        (i = i.replace(/<[^>]*>/g, '')));
+        (i = i.replace(/<[^>]*>/g, ''));
     let t = document.createElement('textarea');
-    return ((t.innerHTML = i), t.value);
+    return (t.innerHTML = i), t.value;
 }
 function uh(l) {
     return !0;
@@ -9838,7 +9823,7 @@ function xh() {
         for (let b of r)
             if (b.type === 'childList') {
                 let g = b.target;
-                (b.addedNodes.forEach((e) => {
+                b.addedNodes.forEach((e) => {
                     let f = e;
                     if (e.nodeType === Node.ELEMENT_NODE && f.hasAttribute('data-odid') && !zh(f)) {
                         if ((g4(f), g)) {
@@ -9859,7 +9844,7 @@ function xh() {
                                 if (h) o = new Map([...o, ...h]);
                             }
                         }
-                    }));
+                    });
             }
         if (n.size > 0 || o.size > 0) {
             if (vl)
@@ -9890,7 +9875,7 @@ function g4(l) {
     let i = l.getAttribute('data-oid');
     if (!i) return;
     document.querySelectorAll(`[${'data-oid'}="${i}"][${'data-onlook-inserted'}]`).forEach((t) => {
-        ([
+        [
             'data-odid',
             'data-onlook-drag-saved-style',
             'data-onlook-editing-text',
@@ -9899,23 +9884,23 @@ function g4(l) {
             let o = t.getAttribute(n);
             if (o) l.setAttribute(n, o);
         }),
-            t.remove());
+            t.remove();
     });
 }
 function _h() {
-    (xh(), ah());
+    xh(), ah();
 }
 function Zb() {
-    (_h(), e4(), ii.injectDefaultStyles());
+    _h(), e4(), ii.injectDefaultStyles();
 }
 var Ci = null;
 function e4() {
-    if (Ci !== null) (clearInterval(Ci), (Ci = null));
+    if (Ci !== null) clearInterval(Ci), (Ci = null);
     let l = setInterval(() => {
         try {
-            if (St() !== null) (clearInterval(l), (Ci = null));
+            if (St() !== null) clearInterval(l), (Ci = null);
         } catch (i) {
-            (clearInterval(l), (Ci = null), console.warn('Error in keepDomUpdated:', i));
+            clearInterval(l), (Ci = null), console.warn('Error in keepDomUpdated:', i);
         }
     }, 5000);
     Ci = l;
@@ -9951,19 +9936,19 @@ async function Oh() {
                         video: { width: l, height: i },
                     }),
                     b = document.createElement('video');
-                ((b.srcObject = o),
+                (b.srcObject = o),
                     (b.autoplay = !0),
                     (b.muted = !0),
                     await new Promise((e) => {
                         b.onloadedmetadata = () => {
-                            (b.play(),
+                            b.play(),
                                 (b.oncanplay = () => {
-                                    (r.drawImage(b, 0, 0, l, i),
+                                    r.drawImage(b, 0, 0, l, i),
                                         o.getTracks().forEach((f) => f.stop()),
-                                        e());
-                                }));
+                                        e();
+                                });
                         };
-                    }));
+                    });
                 let g = await vh(t);
                 return (
                     console.log(
@@ -10010,9 +9995,9 @@ async function vh(l) {
             e = document.createElement('canvas');
             let f = e.getContext('2d');
             if (!f) continue;
-            ((e.width = l.width * g),
+            (e.width = l.width * g),
                 (e.height = l.height * g),
-                f.drawImage(l, 0, 0, e.width, e.height));
+                f.drawImage(l, 0, 0, e.width, e.height);
         }
         for (let f of r) {
             let h = e.toDataURL('image/jpeg', f);
@@ -10031,7 +10016,7 @@ async function vh(l) {
     return l.toDataURL('image/jpeg', 0.1);
 }
 async function c4(l, i, t) {
-    ((l.fillStyle = '#ffffff'), l.fillRect(0, 0, i, t));
+    (l.fillStyle = '#ffffff'), l.fillRect(0, 0, i, t);
     let r = document.querySelectorAll('*'),
         n = [];
     for (let o of r)
@@ -10068,21 +10053,21 @@ async function m4(l, i, t, r) {
     if (b < 1 || g < 1 || n > window.innerWidth || o > window.innerHeight) return;
     let e = r.backgroundColor;
     if (e && e !== 'rgba(0, 0, 0, 0)' && e !== 'transparent')
-        ((l.fillStyle = e), l.fillRect(n, o, b, g));
+        (l.fillStyle = e), l.fillRect(n, o, b, g);
     let f = parseFloat(r.borderWidth) || 0,
         h = r.borderColor;
     if (f > 0 && h && h !== 'transparent')
-        ((l.strokeStyle = h), (l.lineWidth = f), l.strokeRect(n, o, b, g));
+        (l.strokeStyle = h), (l.lineWidth = f), l.strokeRect(n, o, b, g);
     if (i.textContent && i.children.length === 0) {
         let c = i.textContent.trim();
         if (c) {
             let m = parseFloat(r.fontSize) || 16,
                 u = r.fontFamily || 'Arial, sans-serif',
                 X = r.color || '#000000';
-            ((l.fillStyle = X),
+            (l.fillStyle = X),
                 (l.font = `${m}px ${u}`),
                 (l.textAlign = 'left'),
-                (l.textBaseline = 'top'));
+                (l.textBaseline = 'top');
             let I = c.split(' '),
                 F = '',
                 q = o + 2,
@@ -10100,12 +10085,12 @@ async function m4(l, i, t, r) {
         try {
             l.drawImage(i, n, o, b, g);
         } catch (c) {
-            ((l.fillStyle = '#f0f0f0'),
+            (l.fillStyle = '#f0f0f0'),
                 l.fillRect(n, o, b, g),
                 (l.fillStyle = '#999999'),
                 (l.font = '12px Arial, sans-serif'),
                 (l.textAlign = 'center'),
-                l.fillText('Image', n + b / 2, o + g / 2));
+                l.fillText('Image', n + b / 2, o + g / 2);
         }
 }
 var rl = {};
@@ -10226,7 +10211,7 @@ var B;
     function t(n) {
         throw new Error();
     }
-    ((l.assertNever = t),
+    (l.assertNever = t),
         (l.arrayToEnum = (n) => {
             let o = {};
             for (let b of n) o[b] = b;
@@ -10258,15 +10243,15 @@ var B;
         (l.isInteger =
             typeof Number.isInteger === 'function'
                 ? (n) => Number.isInteger(n)
-                : (n) => typeof n === 'number' && Number.isFinite(n) && Math.floor(n) === n));
+                : (n) => typeof n === 'number' && Number.isFinite(n) && Math.floor(n) === n);
     function r(n, o = ' | ') {
         return n.map((b) => (typeof b === 'string' ? `'${b}'` : b)).join(o);
     }
-    ((l.joinValues = r),
+    (l.joinValues = r),
         (l.jsonStringifyReplacer = (n, o) => {
             if (typeof o === 'bigint') return o.toString();
             return o;
-        }));
+        });
 })(B || (B = {}));
 var db;
 (function (l) {
@@ -10357,17 +10342,17 @@ class $l extends Error {
     }
     constructor(l) {
         super();
-        ((this.issues = []),
+        (this.issues = []),
             (this.addIssue = (t) => {
                 this.issues = [...this.issues, t];
             }),
             (this.addIssues = (t = []) => {
                 this.issues = [...this.issues, ...t];
-            }));
+            });
         let i = new.target.prototype;
         if (Object.setPrototypeOf) Object.setPrototypeOf(this, i);
         else this.__proto__ = i;
-        ((this.name = 'ZodError'), (this.issues = l));
+        (this.name = 'ZodError'), (this.issues = l);
     }
     format(l) {
         let i =
@@ -10388,12 +10373,12 @@ class $l extends Error {
                         while (g < o.path.length) {
                             let e = o.path[g];
                             if (g !== o.path.length - 1) b[e] = b[e] || { _errors: [] };
-                            else ((b[e] = b[e] || { _errors: [] }), b[e]._errors.push(i(o)));
-                            ((b = b[e]), g++);
+                            else (b[e] = b[e] || { _errors: [] }), b[e]._errors.push(i(o));
+                            (b = b[e]), g++;
                         }
                     }
             };
-        return (r(this), t);
+        return r(this), t;
     }
     static assert(l) {
         if (!(l instanceof $l)) throw new Error(`Not a ZodError: ${l}`);
@@ -10411,7 +10396,7 @@ class $l extends Error {
         let i = {},
             t = [];
         for (let r of this.issues)
-            if (r.path.length > 0) ((i[r.path[0]] = i[r.path[0]] || []), i[r.path[0]].push(l(r)));
+            if (r.path.length > 0) (i[r.path[0]] = i[r.path[0]] || []), i[r.path[0]].push(l(r));
             else t.push(l(r));
         return { formErrors: t, fieldErrors: i };
     }
@@ -10506,7 +10491,7 @@ var p4 = (l, i) => {
                 t = 'Number must be finite';
                 break;
             default:
-                ((t = i.defaultError), B.assertNever(l));
+                (t = i.defaultError), B.assertNever(l);
         }
         return { message: t };
     },
@@ -10598,16 +10583,16 @@ var J = Object.freeze({ status: 'aborted' }),
     Ii = (l) => typeof Promise !== 'undefined' && l instanceof Promise;
 var O;
 (function (l) {
-    ((l.errToObj = (i) => (typeof i === 'string' ? { message: i } : i || {})),
-        (l.toString = (i) => (typeof i === 'string' ? i : i?.message)));
+    (l.errToObj = (i) => (typeof i === 'string' ? { message: i } : i || {})),
+        (l.toString = (i) => (typeof i === 'string' ? i : i?.message));
 })(O || (O = {}));
 class Rl {
     constructor(l, i, t, r) {
-        ((this._cachedPath = []),
+        (this._cachedPath = []),
             (this.parent = l),
             (this.data = i),
             (this._path = t),
-            (this._key = r));
+            (this._key = r);
     }
     get path() {
         if (!this._cachedPath.length)
@@ -10625,7 +10610,7 @@ var $h = (l, i) => {
             get error() {
                 if (this._error) return this._error;
                 let t = new $l(l.common.issues);
-                return ((this._error = t), this._error);
+                return (this._error = t), this._error;
             },
         };
     }
@@ -10758,16 +10743,16 @@ class E {
                 b = () => n.addIssue({ code: p.custom, ...t(r) });
             if (typeof Promise !== 'undefined' && o instanceof Promise)
                 return o.then((g) => {
-                    if (!g) return (b(), !1);
+                    if (!g) return b(), !1;
                     else return !0;
                 });
-            if (!o) return (b(), !1);
+            if (!o) return b(), !1;
             else return !0;
         });
     }
     refinement(l, i) {
         return this._refinement((t, r) => {
-            if (!l(t)) return (r.addIssue(typeof i === 'function' ? i(t, r) : i), !1);
+            if (!l(t)) return r.addIssue(typeof i === 'function' ? i(t, r) : i), !1;
             else return !0;
         });
     }
@@ -10782,7 +10767,7 @@ class E {
         return this._refinement(l);
     }
     constructor(l) {
-        ((this.spa = this.safeParseAsync),
+        (this.spa = this.safeParseAsync),
             (this._def = l),
             (this.parse = this.parse.bind(this)),
             (this.safeParse = this.safeParse.bind(this)),
@@ -10812,7 +10797,7 @@ class E {
                 version: 1,
                 vendor: 'zod',
                 validate: (i) => this['~validate'](i),
-            }));
+            });
     }
     optional() {
         return Bl.create(this, this._def);
@@ -10913,7 +10898,7 @@ function Wh(l) {
     let i = `${Jh}T${Xh(l)}`,
         t = [];
     if ((t.push(l.local ? 'Z?' : 'Z'), l.offset)) t.push('([+-]\\d{2}:?\\d{2})');
-    return ((i = `${i}(${t.join('|')})`), new RegExp(`^${i}$`));
+    return (i = `${i}(${t.join('|')})`), new RegExp(`^${i}$`);
 }
 function L4(l, i) {
     if ((i === 'v4' || !i) && X4.test(l)) return !0;
@@ -10948,14 +10933,14 @@ class Gl extends E {
         if (this._def.coerce) l.data = String(l.data);
         if (this._getType(l) !== z.string) {
             let n = this._getOrReturnCtx(l);
-            return (x(n, { code: p.invalid_type, expected: z.string, received: n.parsedType }), J);
+            return x(n, { code: p.invalid_type, expected: z.string, received: n.parsedType }), J;
         }
         let t = new ul(),
             r = void 0;
         for (let n of this._def.checks)
             if (n.kind === 'min') {
                 if (l.data.length < n.value)
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, {
                             code: p.too_small,
                             minimum: n.value,
@@ -10964,10 +10949,10 @@ class Gl extends E {
                             exact: !1,
                             message: n.message,
                         }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'max') {
                 if (l.data.length > n.value)
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, {
                             code: p.too_big,
                             maximum: n.value,
@@ -10976,7 +10961,7 @@ class Gl extends E {
                             exact: !1,
                             message: n.message,
                         }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'length') {
                 let o = l.data.length > n.value,
                     b = l.data.length < n.value;
@@ -11003,140 +10988,140 @@ class Gl extends E {
                 }
             } else if (n.kind === 'email') {
                 if (!q4.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'email', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'emoji') {
                 if (!lf) lf = new RegExp(J4, 'u');
                 if (!lf.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'emoji', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'uuid') {
                 if (!v4.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'uuid', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'nanoid') {
                 if (!O4.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'nanoid', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'cuid') {
                 if (!x4.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'cuid', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'cuid2') {
                 if (!a4.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'cuid2', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'ulid') {
                 if (!_4.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'ulid', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'url')
                 try {
                     new URL(l.data);
                 } catch {
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'url', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
                 }
             else if (n.kind === 'regex') {
                 if (((n.regex.lastIndex = 0), !n.regex.test(l.data)))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'regex', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'trim') l.data = l.data.trim();
             else if (n.kind === 'includes') {
                 if (!l.data.includes(n.value, n.position))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, {
                             code: p.invalid_string,
                             validation: { includes: n.value, position: n.position },
                             message: n.message,
                         }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'toLowerCase') l.data = l.data.toLowerCase();
             else if (n.kind === 'toUpperCase') l.data = l.data.toUpperCase();
             else if (n.kind === 'startsWith') {
                 if (!l.data.startsWith(n.value))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, {
                             code: p.invalid_string,
                             validation: { startsWith: n.value },
                             message: n.message,
                         }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'endsWith') {
                 if (!l.data.endsWith(n.value))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, {
                             code: p.invalid_string,
                             validation: { endsWith: n.value },
                             message: n.message,
                         }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'datetime') {
                 if (!Wh(n).test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, {
                             code: p.invalid_string,
                             validation: 'datetime',
                             message: n.message,
                         }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'date') {
                 if (!E4.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { code: p.invalid_string, validation: 'date', message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'time') {
                 if (!G4(n).test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { code: p.invalid_string, validation: 'time', message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'duration') {
                 if (!$4.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, {
                             validation: 'duration',
                             code: p.invalid_string,
                             message: n.message,
                         }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'ip') {
                 if (!L4(l.data, n.version))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'ip', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'jwt') {
                 if (!B4(l.data, n.alg))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'jwt', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'cidr') {
                 if (!R4(l.data, n.version))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'cidr', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'base64') {
                 if (!Y4.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, { validation: 'base64', code: p.invalid_string, message: n.message }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'base64url') {
                 if (!Q4.test(l.data))
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, {
                             validation: 'base64url',
                             code: p.invalid_string,
                             message: n.message,
                         }),
-                        t.dirty());
+                        t.dirty();
             } else B.assertNever(n);
         return { status: t.value, value: l.data };
     }
@@ -11338,30 +11323,30 @@ function F4(l, i) {
 class wi extends E {
     constructor() {
         super(...arguments);
-        ((this.min = this.gte), (this.max = this.lte), (this.step = this.multipleOf));
+        (this.min = this.gte), (this.max = this.lte), (this.step = this.multipleOf);
     }
     _parse(l) {
         if (this._def.coerce) l.data = Number(l.data);
         if (this._getType(l) !== z.number) {
             let n = this._getOrReturnCtx(l);
-            return (x(n, { code: p.invalid_type, expected: z.number, received: n.parsedType }), J);
+            return x(n, { code: p.invalid_type, expected: z.number, received: n.parsedType }), J;
         }
         let t = void 0,
             r = new ul();
         for (let n of this._def.checks)
             if (n.kind === 'int') {
                 if (!B.isInteger(l.data))
-                    ((t = this._getOrReturnCtx(l, t)),
+                    (t = this._getOrReturnCtx(l, t)),
                         x(t, {
                             code: p.invalid_type,
                             expected: 'integer',
                             received: 'float',
                             message: n.message,
                         }),
-                        r.dirty());
+                        r.dirty();
             } else if (n.kind === 'min') {
                 if (n.inclusive ? l.data < n.value : l.data <= n.value)
-                    ((t = this._getOrReturnCtx(l, t)),
+                    (t = this._getOrReturnCtx(l, t)),
                         x(t, {
                             code: p.too_small,
                             minimum: n.value,
@@ -11370,10 +11355,10 @@ class wi extends E {
                             exact: !1,
                             message: n.message,
                         }),
-                        r.dirty());
+                        r.dirty();
             } else if (n.kind === 'max') {
                 if (n.inclusive ? l.data > n.value : l.data >= n.value)
-                    ((t = this._getOrReturnCtx(l, t)),
+                    (t = this._getOrReturnCtx(l, t)),
                         x(t, {
                             code: p.too_big,
                             maximum: n.value,
@@ -11382,17 +11367,17 @@ class wi extends E {
                             exact: !1,
                             message: n.message,
                         }),
-                        r.dirty());
+                        r.dirty();
             } else if (n.kind === 'multipleOf') {
                 if (F4(l.data, n.value) !== 0)
-                    ((t = this._getOrReturnCtx(l, t)),
+                    (t = this._getOrReturnCtx(l, t)),
                         x(t, { code: p.not_multiple_of, multipleOf: n.value, message: n.message }),
-                        r.dirty());
+                        r.dirty();
             } else if (n.kind === 'finite') {
                 if (!Number.isFinite(l.data))
-                    ((t = this._getOrReturnCtx(l, t)),
+                    (t = this._getOrReturnCtx(l, t)),
                         x(t, { code: p.not_finite, message: n.message }),
-                        r.dirty());
+                        r.dirty();
             } else B.assertNever(n);
         return { status: r.value, value: l.data };
     }
@@ -11494,7 +11479,7 @@ wi.create = (l) => {
 class pi extends E {
     constructor() {
         super(...arguments);
-        ((this.min = this.gte), (this.max = this.lte));
+        (this.min = this.gte), (this.max = this.lte);
     }
     _parse(l) {
         if (this._def.coerce)
@@ -11509,7 +11494,7 @@ class pi extends E {
         for (let n of this._def.checks)
             if (n.kind === 'min') {
                 if (n.inclusive ? l.data < n.value : l.data <= n.value)
-                    ((t = this._getOrReturnCtx(l, t)),
+                    (t = this._getOrReturnCtx(l, t)),
                         x(t, {
                             code: p.too_small,
                             type: 'bigint',
@@ -11517,10 +11502,10 @@ class pi extends E {
                             inclusive: n.inclusive,
                             message: n.message,
                         }),
-                        r.dirty());
+                        r.dirty();
             } else if (n.kind === 'max') {
                 if (n.inclusive ? l.data > n.value : l.data >= n.value)
-                    ((t = this._getOrReturnCtx(l, t)),
+                    (t = this._getOrReturnCtx(l, t)),
                         x(t, {
                             code: p.too_big,
                             type: 'bigint',
@@ -11528,18 +11513,18 @@ class pi extends E {
                             inclusive: n.inclusive,
                             message: n.message,
                         }),
-                        r.dirty());
+                        r.dirty();
             } else if (n.kind === 'multipleOf') {
                 if (l.data % n.value !== BigInt(0))
-                    ((t = this._getOrReturnCtx(l, t)),
+                    (t = this._getOrReturnCtx(l, t)),
                         x(t, { code: p.not_multiple_of, multipleOf: n.value, message: n.message }),
-                        r.dirty());
+                        r.dirty();
             } else B.assertNever(n);
         return { status: r.value, value: l.data };
     }
     _getInvalidInput(l) {
         let i = this._getOrReturnCtx(l);
-        return (x(i, { code: p.invalid_type, expected: z.bigint, received: i.parsedType }), J);
+        return x(i, { code: p.invalid_type, expected: z.bigint, received: i.parsedType }), J;
     }
     gte(l, i) {
         return this.setLimit('min', l, !0, O.toString(i));
@@ -11625,7 +11610,7 @@ class di extends E {
         if (this._def.coerce) l.data = Boolean(l.data);
         if (this._getType(l) !== z.boolean) {
             let t = this._getOrReturnCtx(l);
-            return (x(t, { code: p.invalid_type, expected: z.boolean, received: t.parsedType }), J);
+            return x(t, { code: p.invalid_type, expected: z.boolean, received: t.parsedType }), J;
         }
         return al(l.data);
     }
@@ -11638,18 +11623,18 @@ class qi extends E {
         if (this._def.coerce) l.data = new Date(l.data);
         if (this._getType(l) !== z.date) {
             let n = this._getOrReturnCtx(l);
-            return (x(n, { code: p.invalid_type, expected: z.date, received: n.parsedType }), J);
+            return x(n, { code: p.invalid_type, expected: z.date, received: n.parsedType }), J;
         }
         if (Number.isNaN(l.data.getTime())) {
             let n = this._getOrReturnCtx(l);
-            return (x(n, { code: p.invalid_date }), J);
+            return x(n, { code: p.invalid_date }), J;
         }
         let t = new ul(),
             r = void 0;
         for (let n of this._def.checks)
             if (n.kind === 'min') {
                 if (l.data.getTime() < n.value)
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, {
                             code: p.too_small,
                             message: n.message,
@@ -11658,10 +11643,10 @@ class qi extends E {
                             minimum: n.value,
                             type: 'date',
                         }),
-                        t.dirty());
+                        t.dirty();
             } else if (n.kind === 'max') {
                 if (l.data.getTime() > n.value)
-                    ((r = this._getOrReturnCtx(l, r)),
+                    (r = this._getOrReturnCtx(l, r)),
                         x(r, {
                             code: p.too_big,
                             message: n.message,
@@ -11670,7 +11655,7 @@ class qi extends E {
                             maximum: n.value,
                             type: 'date',
                         }),
-                        t.dirty());
+                        t.dirty();
             } else B.assertNever(n);
         return { status: t.value, value: new Date(l.data.getTime()) };
     }
@@ -11707,7 +11692,7 @@ class Vt extends E {
     _parse(l) {
         if (this._getType(l) !== z.symbol) {
             let t = this._getOrReturnCtx(l);
-            return (x(t, { code: p.invalid_type, expected: z.symbol, received: t.parsedType }), J);
+            return x(t, { code: p.invalid_type, expected: z.symbol, received: t.parsedType }), J;
         }
         return al(l.data);
     }
@@ -11719,10 +11704,7 @@ class lt extends E {
     _parse(l) {
         if (this._getType(l) !== z.undefined) {
             let t = this._getOrReturnCtx(l);
-            return (
-                x(t, { code: p.invalid_type, expected: z.undefined, received: t.parsedType }),
-                J
-            );
+            return x(t, { code: p.invalid_type, expected: z.undefined, received: t.parsedType }), J;
         }
         return al(l.data);
     }
@@ -11734,7 +11716,7 @@ class it extends E {
     _parse(l) {
         if (this._getType(l) !== z.null) {
             let t = this._getOrReturnCtx(l);
-            return (x(t, { code: p.invalid_type, expected: z.null, received: t.parsedType }), J);
+            return x(t, { code: p.invalid_type, expected: z.null, received: t.parsedType }), J;
         }
         return al(l.data);
     }
@@ -11769,7 +11751,7 @@ mi.create = (l) => {
 class Nl extends E {
     _parse(l) {
         let i = this._getOrReturnCtx(l);
-        return (x(i, { code: p.invalid_type, expected: z.never, received: i.parsedType }), J);
+        return x(i, { code: p.invalid_type, expected: z.never, received: i.parsedType }), J;
     }
 }
 Nl.create = (l) => {
@@ -11779,7 +11761,7 @@ class Kt extends E {
     _parse(l) {
         if (this._getType(l) !== z.undefined) {
             let t = this._getOrReturnCtx(l);
-            return (x(t, { code: p.invalid_type, expected: z.void, received: t.parsedType }), J);
+            return x(t, { code: p.invalid_type, expected: z.void, received: t.parsedType }), J;
         }
         return al(l.data);
     }
@@ -11792,12 +11774,12 @@ class Ll extends E {
         let { ctx: i, status: t } = this._processInputParams(l),
             r = this._def;
         if (i.parsedType !== z.array)
-            return (x(i, { code: p.invalid_type, expected: z.array, received: i.parsedType }), J);
+            return x(i, { code: p.invalid_type, expected: z.array, received: i.parsedType }), J;
         if (r.exactLength !== null) {
             let o = i.data.length > r.exactLength.value,
                 b = i.data.length < r.exactLength.value;
             if (o || b)
-                (x(i, {
+                x(i, {
                     code: o ? p.too_big : p.too_small,
                     minimum: b ? r.exactLength.value : void 0,
                     maximum: o ? r.exactLength.value : void 0,
@@ -11806,11 +11788,11 @@ class Ll extends E {
                     exact: !0,
                     message: r.exactLength.message,
                 }),
-                    t.dirty());
+                    t.dirty();
         }
         if (r.minLength !== null) {
             if (i.data.length < r.minLength.value)
-                (x(i, {
+                x(i, {
                     code: p.too_small,
                     minimum: r.minLength.value,
                     type: 'array',
@@ -11818,11 +11800,11 @@ class Ll extends E {
                     exact: !1,
                     message: r.minLength.message,
                 }),
-                    t.dirty());
+                    t.dirty();
         }
         if (r.maxLength !== null) {
             if (i.data.length > r.maxLength.value)
-                (x(i, {
+                x(i, {
                     code: p.too_big,
                     maximum: r.maxLength.value,
                     type: 'array',
@@ -11830,7 +11812,7 @@ class Ll extends E {
                     exact: !1,
                     message: r.maxLength.message,
                 }),
-                    t.dirty());
+                    t.dirty();
         }
         if (i.common.async)
             return Promise.all(
@@ -11888,18 +11870,18 @@ function Ti(l) {
 class tl extends E {
     constructor() {
         super(...arguments);
-        ((this._cached = null), (this.nonstrict = this.passthrough), (this.augment = this.extend));
+        (this._cached = null), (this.nonstrict = this.passthrough), (this.augment = this.extend);
     }
     _getCached() {
         if (this._cached !== null) return this._cached;
         let l = this._def.shape(),
             i = B.objectKeys(l);
-        return ((this._cached = { shape: l, keys: i }), this._cached);
+        return (this._cached = { shape: l, keys: i }), this._cached;
     }
     _parse(l) {
         if (this._getType(l) !== z.object) {
             let e = this._getOrReturnCtx(l);
-            return (x(e, { code: p.invalid_type, expected: z.object, received: e.parsedType }), J);
+            return x(e, { code: p.invalid_type, expected: z.object, received: e.parsedType }), J;
         }
         let { status: t, ctx: r } = this._processInputParams(l),
             { shape: n, keys: o } = this._getCached(),
@@ -11926,7 +11908,7 @@ class tl extends E {
                         value: { status: 'valid', value: r.data[f] },
                     });
             else if (e === 'strict') {
-                if (b.length > 0) (x(r, { code: p.unrecognized_keys, keys: b }), t.dirty());
+                if (b.length > 0) x(r, { code: p.unrecognized_keys, keys: b }), t.dirty();
             } else if (e === 'strip');
             else throw new Error('Internal ZodObject error: invalid unknownKeys value.');
         } else {
@@ -12073,9 +12055,9 @@ class tt extends E {
             for (let b of n) if (b.result.status === 'valid') return b.result;
             for (let b of n)
                 if (b.result.status === 'dirty')
-                    return (i.common.issues.push(...b.ctx.common.issues), b.result);
+                    return i.common.issues.push(...b.ctx.common.issues), b.result;
             let o = n.map((b) => new $l(b.ctx.common.issues));
-            return (x(i, { code: p.invalid_union, unionErrors: o }), J);
+            return x(i, { code: p.invalid_union, unionErrors: o }), J;
         }
         if (i.common.async)
             return Promise.all(
@@ -12097,9 +12079,9 @@ class tt extends E {
                 else if (f.status === 'dirty' && !n) n = { result: f, ctx: e };
                 if (e.common.issues.length) o.push(e.common.issues);
             }
-            if (n) return (i.common.issues.push(...n.ctx.common.issues), n.result);
+            if (n) return i.common.issues.push(...n.ctx.common.issues), n.result;
             let b = o.map((g) => new $l(g));
-            return (x(i, { code: p.invalid_union, unionErrors: b }), J);
+            return x(i, { code: p.invalid_union, unionErrors: b }), J;
         }
     }
     get options() {
@@ -12129,7 +12111,7 @@ class Er extends E {
     _parse(l) {
         let { ctx: i } = this._processInputParams(l);
         if (i.parsedType !== z.object)
-            return (x(i, { code: p.invalid_type, expected: z.object, received: i.parsedType }), J);
+            return x(i, { code: p.invalid_type, expected: z.object, received: i.parsedType }), J;
         let t = this.discriminator,
             r = i.data[t],
             n = this.optionsMap.get(r);
@@ -12213,7 +12195,7 @@ class rt extends E {
             r = (n, o) => {
                 if (Yr(n) || Yr(o)) return J;
                 let b = tf(n.value, o.value);
-                if (!b.valid) return (x(t, { code: p.invalid_intersection_types }), J);
+                if (!b.valid) return x(t, { code: p.invalid_intersection_types }), J;
                 if (Qr(n) || Qr(o)) i.dirty();
                 return { status: i.value, value: b.data };
             };
@@ -12236,7 +12218,7 @@ class Cl extends E {
     _parse(l) {
         let { status: i, ctx: t } = this._processInputParams(l);
         if (t.parsedType !== z.array)
-            return (x(t, { code: p.invalid_type, expected: z.array, received: t.parsedType }), J);
+            return x(t, { code: p.invalid_type, expected: z.array, received: t.parsedType }), J;
         if (t.data.length < this._def.items.length)
             return (
                 x(t, {
@@ -12249,14 +12231,14 @@ class Cl extends E {
                 J
             );
         if (!this._def.rest && t.data.length > this._def.items.length)
-            (x(t, {
+            x(t, {
                 code: p.too_big,
                 maximum: this._def.items.length,
                 inclusive: !0,
                 exact: !1,
                 type: 'array',
             }),
-                i.dirty());
+                i.dirty();
         let n = [...t.data]
             .map((o, b) => {
                 let g = this._def.items[b] || this._def.rest;
@@ -12291,7 +12273,7 @@ class Ht extends E {
     _parse(l) {
         let { status: i, ctx: t } = this._processInputParams(l);
         if (t.parsedType !== z.object)
-            return (x(t, { code: p.invalid_type, expected: z.object, received: t.parsedType }), J);
+            return x(t, { code: p.invalid_type, expected: z.object, received: t.parsedType }), J;
         let r = [],
             n = this._def.keyType,
             o = this._def.valueType;
@@ -12323,7 +12305,7 @@ class Mt extends E {
     _parse(l) {
         let { status: i, ctx: t } = this._processInputParams(l);
         if (t.parsedType !== z.map)
-            return (x(t, { code: p.invalid_type, expected: z.map, received: t.parsedType }), J);
+            return x(t, { code: p.invalid_type, expected: z.map, received: t.parsedType }), J;
         let r = this._def.keyType,
             n = this._def.valueType,
             o = [...t.data.entries()].map(([b, g], e) => {
@@ -12363,11 +12345,11 @@ class Xi extends E {
     _parse(l) {
         let { status: i, ctx: t } = this._processInputParams(l);
         if (t.parsedType !== z.set)
-            return (x(t, { code: p.invalid_type, expected: z.set, received: t.parsedType }), J);
+            return x(t, { code: p.invalid_type, expected: z.set, received: t.parsedType }), J;
         let r = this._def;
         if (r.minSize !== null) {
             if (t.data.size < r.minSize.value)
-                (x(t, {
+                x(t, {
                     code: p.too_small,
                     minimum: r.minSize.value,
                     type: 'set',
@@ -12375,11 +12357,11 @@ class Xi extends E {
                     exact: !1,
                     message: r.minSize.message,
                 }),
-                    i.dirty());
+                    i.dirty();
         }
         if (r.maxSize !== null) {
             if (t.data.size > r.maxSize.value)
-                (x(t, {
+                x(t, {
                     code: p.too_big,
                     maximum: r.maxSize.value,
                     type: 'set',
@@ -12387,7 +12369,7 @@ class Xi extends E {
                     exact: !1,
                     message: r.maxSize.message,
                 }),
-                    i.dirty());
+                    i.dirty();
         }
         let n = this._def.valueType;
         function o(g) {
@@ -12427,10 +12409,7 @@ class Zi extends E {
     _parse(l) {
         let { ctx: i } = this._processInputParams(l);
         if (i.parsedType !== z.function)
-            return (
-                x(i, { code: p.invalid_type, expected: z.function, received: i.parsedType }),
-                J
-            );
+            return x(i, { code: p.invalid_type, expected: z.function, received: i.parsedType }), J;
         function t(b, g) {
             return Ft({
                 data: b,
@@ -12521,8 +12500,7 @@ class ot extends E {
         if (l.data !== this._def.value) {
             let i = this._getOrReturnCtx(l);
             return (
-                x(i, { received: i.data, code: p.invalid_literal, expected: this._def.value }),
-                J
+                x(i, { received: i.data, code: p.invalid_literal, expected: this._def.value }), J
             );
         }
         return { status: 'valid', value: l.data };
@@ -12543,15 +12521,14 @@ class ui extends E {
             let i = this._getOrReturnCtx(l),
                 t = this._def.values;
             return (
-                x(i, { expected: B.joinValues(t), received: i.parsedType, code: p.invalid_type }),
-                J
+                x(i, { expected: B.joinValues(t), received: i.parsedType, code: p.invalid_type }), J
             );
         }
         if (!this._cache) this._cache = new Set(this._def.values);
         if (!this._cache.has(l.data)) {
             let i = this._getOrReturnCtx(l),
                 t = this._def.values;
-            return (x(i, { received: i.data, code: p.invalid_enum_value, options: t }), J);
+            return x(i, { received: i.data, code: p.invalid_enum_value, options: t }), J;
         }
         return al(l.data);
     }
@@ -12591,14 +12568,13 @@ class bt extends E {
         if (t.parsedType !== z.string && t.parsedType !== z.number) {
             let r = B.objectValues(i);
             return (
-                x(t, { expected: B.joinValues(r), received: t.parsedType, code: p.invalid_type }),
-                J
+                x(t, { expected: B.joinValues(r), received: t.parsedType, code: p.invalid_type }), J
             );
         }
         if (!this._cache) this._cache = new Set(B.getValidEnumValues(this._def.values));
         if (!this._cache.has(l.data)) {
             let r = B.objectValues(i);
-            return (x(t, { received: t.data, code: p.invalid_enum_value, options: r }), J);
+            return x(t, { received: t.data, code: p.invalid_enum_value, options: r }), J;
         }
         return al(l.data);
     }
@@ -12616,7 +12592,7 @@ class Wi extends E {
     _parse(l) {
         let { ctx: i } = this._processInputParams(l);
         if (i.parsedType !== z.promise && i.common.async === !1)
-            return (x(i, { code: p.invalid_type, expected: z.promise, received: i.parsedType }), J);
+            return x(i, { code: p.invalid_type, expected: z.promise, received: i.parsedType }), J;
         let t = i.parsedType === z.promise ? i.data : Promise.resolve(i.data);
         return al(
             t.then((r) => {
@@ -12690,7 +12666,7 @@ class Fl extends E {
                 let b = this._def.schema._parseSync({ data: t.data, path: t.path, parent: t });
                 if (b.status === 'aborted') return J;
                 if (b.status === 'dirty') i.dirty();
-                return (o(b.value), { status: i.value, value: b.value });
+                return o(b.value), { status: i.value, value: b.value };
             } else
                 return this._def.schema
                     ._parseAsync({ data: t.data, path: t.path, parent: t })
@@ -12829,7 +12805,7 @@ class yt extends E {
     _parse(l) {
         if (this._getType(l) !== z.nan) {
             let t = this._getOrReturnCtx(l);
-            return (x(t, { code: p.invalid_type, expected: z.nan, received: t.parsedType }), J);
+            return x(t, { code: p.invalid_type, expected: z.nan, received: t.parsedType }), J;
         }
         return { status: 'valid', value: l.data };
     }
@@ -12855,13 +12831,13 @@ class At extends E {
             return (async () => {
                 let n = await this._def.in._parseAsync({ data: t.data, path: t.path, parent: t });
                 if (n.status === 'aborted') return J;
-                if (n.status === 'dirty') return (i.dirty(), $i(n.value));
+                if (n.status === 'dirty') return i.dirty(), $i(n.value);
                 else return this._def.out._parseAsync({ data: n.value, path: t.path, parent: t });
             })();
         else {
             let r = this._def.in._parseSync({ data: t.data, path: t.path, parent: t });
             if (r.status === 'aborted') return J;
-            if (r.status === 'dirty') return (i.dirty(), { status: 'dirty', value: r.value });
+            if (r.status === 'dirty') return i.dirty(), { status: 'dirty', value: r.value };
             else return this._def.out._parseSync({ data: r.value, path: t.path, parent: t });
         }
     }
@@ -12913,7 +12889,7 @@ function sh(l, i = {}, t) {
 var K4 = { object: tl.lazycreate },
     W;
 (function (l) {
-    ((l.ZodString = 'ZodString'),
+    (l.ZodString = 'ZodString'),
         (l.ZodNumber = 'ZodNumber'),
         (l.ZodNaN = 'ZodNaN'),
         (l.ZodBigInt = 'ZodBigInt'),
@@ -12948,7 +12924,7 @@ var K4 = { object: tl.lazycreate },
         (l.ZodPromise = 'ZodPromise'),
         (l.ZodBranded = 'ZodBranded'),
         (l.ZodPipeline = 'ZodPipeline'),
-        (l.ZodReadonly = 'ZodReadonly'));
+        (l.ZodReadonly = 'ZodReadonly');
 })(W || (W = {}));
 var H4 = (l, i = { message: `Input not instance of ${l.name}` }) => sh((t) => t instanceof l, i),
     Yh = Gl.create,
@@ -13044,20 +13020,20 @@ function Lh() {
     try {
         return window?.localStorage.getItem('theme') || 'light';
     } catch (l) {
-        return (console.warn('Failed to get theme', l), 'light');
+        return console.warn('Failed to get theme', l), 'light';
     }
 }
 function Bh(l) {
     try {
         if (l === 'dark')
-            (document.documentElement.classList.add('dark'),
-                window?.localStorage.setItem('theme', 'dark'));
+            document.documentElement.classList.add('dark'),
+                window?.localStorage.setItem('theme', 'dark');
         else
-            (document.documentElement.classList.remove('dark'),
-                window?.localStorage.setItem('theme', 'light'));
+            document.documentElement.classList.remove('dark'),
+                window?.localStorage.setItem('theme', 'light');
         return !0;
     } catch (i) {
-        return (console.warn('Failed to set theme', i), !1);
+        return console.warn('Failed to set theme', i), !1;
     }
 }
 function q5(l) {
@@ -13065,7 +13041,7 @@ function q5(l) {
         try {
             return l(...i);
         } catch (t) {
-            return (console.error(`Error in ${l.name}:`, t), null);
+            return console.error(`Error in ${l.name}:`, t), null;
         }
     };
 }
@@ -13116,31 +13092,31 @@ var vl = null,
     Lr = !1,
     Kh = async () => {
         if (Lr || vl) return vl;
-        ((Lr = !0), console.log(`${ji} - Creating penpal connection`));
+        (Lr = !0), console.log(`${ji} - Creating penpal connection`);
         let l = new Nf({ remoteWindow: window.parent, allowedOrigins: ['*'] }),
             i = Sf({ messenger: l, methods: Rh });
         return (
             i.promise
                 .then((t) => {
                     if (!t) {
-                        (console.error(`${ji} - Failed to setup penpal connection: child is null`),
-                            Fh());
+                        console.error(`${ji} - Failed to setup penpal connection: child is null`),
+                            Fh();
                         return;
                     }
-                    ((vl = t), console.log(`${ji} - Penpal connection set`));
+                    (vl = t), console.log(`${ji} - Penpal connection set`);
                 })
                 .finally(() => {
                     Lr = !1;
                 }),
             i.promise.catch((t) => {
-                (console.error(`${ji} - Failed to setup penpal connection:`, t), Fh());
+                console.error(`${ji} - Failed to setup penpal connection:`, t), Fh();
             }),
             vl
         );
     },
     Fh = Vh.default(() => {
         if (Lr) return;
-        (console.log(`${ji} - Reconnecting to penpal parent`), (vl = null), Kh());
+        console.log(`${ji} - Reconnecting to penpal parent`), (vl = null), Kh();
     }, 1000);
 Kh();
 export { vl as penpalParent };
