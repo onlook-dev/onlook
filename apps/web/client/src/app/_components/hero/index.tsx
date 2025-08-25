@@ -42,7 +42,10 @@ export function Hero() {
                             transition={{ duration: 0.6, delay: 1.2, ease: "easeOut" }}
                         >
                             <a
-                                href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack" target="_blank"
+                            <a
+                                href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack"
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 px-3 py-1.5 hover:bg-foreground-secondary/20 backdrop-blur-sm border border-foreground-secondary/20 rounded-full text-xs text-foreground-secondary transition-all duration-200 hover:scale-102"
                             >
                                 We're hiring engineers
