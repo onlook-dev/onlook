@@ -8,13 +8,6 @@ import { SignInMethod } from '@onlook/models/auth';
 import { useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
 
-const FAKE_ORGANIZATIONS = [
-    {
-        login: 'onlook-dev',
-        id: 157326433,
-        avatar_url: 'https://avatars.githubusercontent.com/u/157326433?v=4',
-    },
-];
 
 interface GitHubOrganization {
     id: number;
@@ -150,14 +143,17 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     const reconnectGitHub = api.github.reconnectGitHub.useMutation();
 
     const nextStep = async () => {
-        if (currentStep < totalSteps - 1) {
-            if (!isGitHubConnected) {
-                await login(SignInMethod.GITHUB);
-            }
-            setCurrentStep((prev) => prev + 1);
-        } else {
-            setCurrentStep((prev) => prev + 1);
+        if (currentStep === 0 && !isGitHubConnected) {
+            await login(SignInMethod.GITHUB);
+            return;
+        }
+        
+        if (currentStep === 1) {
+            // Going from SetupGithub to FinalizingGithubProject - trigger import
+            setCurrentStep(2);
             await importRepo();
+        } else if (currentStep < totalSteps - 1) {
+            setCurrentStep((prev) => prev + 1);
         }
     };
 
@@ -175,8 +171,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
 
         try {
             const organizationsData = await clientApi.github.getOrganizations.query();
-            // TODO: remove this
-            setOrganizations(FAKE_ORGANIZATIONS as GitHubOrganization[]);
+            setOrganizations(organizationsData as GitHubOrganization[]);
         } catch (error) {
             const errorMessage =
                 error instanceof Error ? error.message : 'Failed to fetch organizations';
@@ -215,45 +210,55 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     };
 
     const importRepo = async () => {
-        // setIsFinalizing(true);
-        // setIsLoadingFiles(true);
-        // setFilesError(null);
+        setIsFinalizing(true);
+        setIsLoadingFiles(true);
+        setFilesError(null);
 
-        // try {
-        //     if (!user?.id) {
-        //         console.error('No user found');
-        //         return;
-        //     }
+        try {
+            if (!user?.id) {
+                console.error('No user found');
+                return;
+            }
 
-        //     const { sandboxId, previewUrl } = await createManager.createSandboxFromGithub(
-        //         selectedRepo?.clone_url || '',
-        //         selectedRepo?.default_branch || '',
-        //     );
+            if (!selectedRepo) {
+                console.error('No repository selected');
+                return;
+            }
 
-        //     const project = await clientApi.project.create.mutate({
-        //         project: {
-        //             name: selectedRepo?.name ?? 'New project',
-        //             sandboxId,
-        //             sandboxUrl: previewUrl,
-        //             description: 'Your new project',
-        //         },
-        //         userId: user.id,
-        //     });
-        //     if (!project) {
-        //         console.error('Failed to create project');
-        //         return;
-        //     }
-        //     // Open the project
-        //     router.push(`${Routes.PROJECT}/${project.id}`);
-        // } catch (error) {
-        //     const errorMessage =
-        //         error instanceof Error ? error.message : 'Failed to fetch repository files';
-        //     setFilesError(errorMessage);
-        //     console.error('Error fetching repository files:', error);
-        // } finally {
-        //     setIsLoadingFiles(false);
-        //     setIsFinalizing(false);
-        // }
+
+            const { sandboxId, previewUrl } = await clientApi.sandbox.createFromGitHub.mutate({
+                repoUrl: selectedRepo.clone_url,
+                branch: selectedRepo.default_branch,
+            });
+
+
+            const project = await clientApi.project.create.mutate({
+                project: {
+                    name: selectedRepo.name ?? 'New project',
+                    sandboxId,
+                    sandboxUrl: previewUrl,
+                    description: selectedRepo.description || 'Imported from GitHub',
+                },
+                userId: user.id,
+            });
+
+            
+            if (!project) {
+                console.error('Failed to create project');
+                return;
+            }
+
+            // Open the project
+            router.push(`${Routes.PROJECT}/${project.id}`);
+        } catch (error) {
+            const errorMessage =
+                error instanceof Error ? error.message : 'Failed to import repository';
+            setFilesError(errorMessage);
+            console.error('Error importing repository:', error);
+        } finally {
+            setIsLoadingFiles(false);
+            setIsFinalizing(false);
+        }
     };
 
     const validateRepository = async (owner: string, repo: string) => {

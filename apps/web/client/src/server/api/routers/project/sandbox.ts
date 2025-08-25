@@ -128,25 +128,43 @@ export const sandboxRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input }) => {
-            // const fileOps = new FileOperations(session);
-            // const sandbox = await sdk.sandboxes.create({
-            //     source: 'git',
-            //     url: input.repoUrl,
-            //     branch: input.branch,
-            //     async setup(session) {
-            //         await addSetupTask(session);
-            //         await updatePackageJson(session);
-            //         await injectPreloadScript(session);
-            //         await session.setup.run();
-            //     },
-            // });
-            // return {
-            //     sandboxId: sandbox.id,
-            //     previewUrl: getSandboxPreviewUrl(sandbox.id, 3000),
-            // };
-            return {
-                sandboxId: '123',
-                previewUrl: 'https://sandbox.com',
-            };
+            const MAX_RETRY_ATTEMPTS = 3;
+            const DEFAULT_PORT = 3000;
+            let lastError: Error | null = null;
+
+            for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
+                try {
+                    const { CodeSandbox } = await import('@codesandbox/sdk');
+                    const sdk = new CodeSandbox();
+                    
+                    const sandbox = await sdk.sandboxes.create({
+                        source: 'git',
+                        url: input.repoUrl,
+                        branch: input.branch,
+                        async setup(session) {
+                            await session.setup.run();
+                        },
+                    });
+
+                    const previewUrl = getSandboxPreviewUrl(sandbox.id, DEFAULT_PORT);
+
+                    return {
+                        sandboxId: sandbox.id,
+                        previewUrl,
+                    };
+                } catch (error) {
+                    lastError = error instanceof Error ? error : new Error(String(error));
+
+                    if (attempt < MAX_RETRY_ATTEMPTS) {
+                        await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+                    }
+                }
+            }
+
+            throw new TRPCError({
+                code: 'INTERNAL_SERVER_ERROR',
+                message: `Failed to create GitHub sandbox after ${MAX_RETRY_ATTEMPTS} attempts: ${lastError?.message}`,
+                cause: lastError,
+            });
         }),
 });
