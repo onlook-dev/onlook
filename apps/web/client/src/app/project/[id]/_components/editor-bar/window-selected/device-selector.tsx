@@ -3,6 +3,7 @@ import { DEVICE_OPTIONS, Orientation } from '@onlook/constants';
 import type { WindowMetadata } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger } from '@onlook/ui/select';
+import { cn } from '@onlook/ui/utils';
 import { computeWindowMetadata, getDeviceType } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
@@ -85,20 +86,12 @@ export const DeviceSelector = observer(() => {
 
     return (
         <Select value={device} onValueChange={handleDeviceChange} onOpenChange={setIsOpen}>
-            {!isOpen && (
-                <HoverOnlyTooltip content="Device" side="bottom" sideOffset={10}>
-                    <SelectTrigger className="flex items-center gap-2 text-muted-foreground dark:bg-transparent border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none">
-                        <DeviceIcon deviceType={deviceType} orientation={metadata.orientation} />
-                        <span className="text-smallPlus">{deviceType}</span>
-                    </SelectTrigger>
-                </HoverOnlyTooltip>
-            )}
-            {isOpen && (
+            <HoverOnlyTooltip content="Device" side="bottom" sideOffset={10} disabled={isOpen}>
                 <SelectTrigger className="flex items-center gap-2 text-muted-foreground dark:bg-transparent border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none">
                     <DeviceIcon deviceType={deviceType} orientation={metadata.orientation} />
                     <span className="text-smallPlus">{deviceType}</span>
                 </SelectTrigger>
-            )}
+            </HoverOnlyTooltip>
             <SelectContent>
                 {Object.entries(DEVICE_OPTIONS).map(([category, devices]) => (
                     <SelectGroup key={category}>
@@ -107,13 +100,12 @@ export const DeviceSelector = observer(() => {
                             <SelectItem
                                 key={`${category}:${name}`}
                                 value={`${category}:${name}`}
-                                className={`text-xs flex items-center cursor-pointer ${
-                                    device === `${category}:${name}` 
-                                        ? 'bg-background-tertiary/50 text-foreground-primary' 
-                                        : ''
-                                }`}
+                                className={cn(
+                                    'text-xs flex items-center cursor-pointer',
+                                    device === `${category}:${name}` && 'bg-background-tertiary/50 text-foreground-primary'
+                                )}
                             >
-                                <DeviceIcon deviceType={category} orientation={metadata.orientation} className={`${device === `${category}:${name}` ? 'text-foreground-primary' : 'text-foreground-onlook'}`}/>
+                                <DeviceIcon deviceType={category} orientation={metadata.orientation} className={`${device === `${category}:${name}` ? 'text-foreground-primary' : 'text-foreground-onlook'}`} />
                                 {name} <span className={`text-micro ${device === `${category}:${name}` ? 'text-foreground-primary' : 'text-foreground-tertiary'}`}>{dimensions.replace('x', '×')}</span>
                             </SelectItem>
                         ))}
