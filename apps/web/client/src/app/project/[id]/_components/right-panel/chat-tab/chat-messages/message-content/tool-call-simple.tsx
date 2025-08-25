@@ -126,7 +126,7 @@ export function ToolCallSimple({
                         return 'Visiting URL';
                     }
                 case WEB_SEARCH_TOOL_NAME:
-                    if (toolInvocation.input && 'query' in toolInvocation.input) {
+                    if (toolInvocation.input && typeof toolInvocation.input === 'object' && 'query' in toolInvocation.input) {
                         const params10 = toolInvocation.input as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
                         const query = params10.query;
                         return "Searching \"" + (query.length > 30 ? query.substring(0, 30) + "..." : query) + "\"";
@@ -134,13 +134,13 @@ export function ToolCallSimple({
                         return 'Searching web';
                     }
                 case SANDBOX_TOOL_NAME:
-                    if (toolInvocation.input && 'command' in toolInvocation.input) {
+                    if (toolInvocation.input && typeof toolInvocation.input === 'object' && 'command' in toolInvocation.input) {
                         return 'Sandbox: ' + toolInvocation.input?.command;
                     } else {
                         return 'Sandbox';
                     }
                 case GREP_TOOL_NAME:
-                    if (toolInvocation.input && 'pattern' in toolInvocation.input) {
+                    if (toolInvocation.input && typeof toolInvocation.input === 'object' && 'pattern' in toolInvocation.input) {
                         const params11 = toolInvocation.input as z.infer<typeof GREP_TOOL_PARAMETERS>;
                         const pattern = params11.pattern;
                         return 'Searching for ' + pattern;

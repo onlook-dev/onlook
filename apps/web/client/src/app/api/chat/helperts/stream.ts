@@ -1,6 +1,7 @@
 import { ASK_TOOL_SET, BUILD_TOOL_SET, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
-import { generateObject, NoSuchToolError, type ToolCallPart, type ToolSet } from 'ai';
+import { generateObject, NoSuchToolError, type ToolSet } from 'ai';
+import type { ToolCall } from '@ai-sdk/provider-utils';
 
 export async function getModelFromType(chatType: ChatType) {
     let model: ModelConfig;
@@ -47,7 +48,7 @@ export async function getSystemPromptFromType(chatType: ChatType) {
 }
 
 
-export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: ToolCallPart, tools: ToolSet, error: Error }) => {
+export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: ToolCall<string, unknown>, tools: ToolSet, error: Error }) => {
     if (NoSuchToolError.isInstance(error)) {
         throw new Error(
             `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
@@ -82,9 +83,10 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
     });
 
     return {
-        ...toolCall,
-        args: JSON.stringify(repairedArgs),
-        toolCallType: 'function' as const
+        type: 'tool-call' as const,
+        toolCallId: toolCall.toolCallId,
+        toolName: toolCall.toolName,
+        input: JSON.stringify(repairedArgs),
     };
 }
 

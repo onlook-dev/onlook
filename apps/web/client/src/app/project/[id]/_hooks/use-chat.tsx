@@ -40,7 +40,10 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             });
         },
         onFinish: ({message}) => {
-            const finishReason = message.metadata?.finishReason;
+            if(!message.metadata) {
+                return;
+            }
+            const finishReason = (message.metadata as { finishReason?: string }).finishReason;
             lastMessageRef.current = message;
             if (finishReason !== 'error') {
                 editorEngine.chat.error.clear();

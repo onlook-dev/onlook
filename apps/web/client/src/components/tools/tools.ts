@@ -54,7 +54,7 @@ import {
     handleWriteFileTool
 } from './handlers';
 import { EMPTY_TOOL_PARAMETERS } from './helpers';
-import type { ToolCallPart } from 'ai';
+import type { ToolCall } from '@ai-sdk/provider-utils';
 
 interface ClientToolMap extends Record<string, {
     name: string;
@@ -167,8 +167,9 @@ const TOOL_HANDLERS: ClientToolMap = {
     },
 };
 
-export async function handleToolCall(toolCall: ToolCallPart, editorEngine: EditorEngine) {
+export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
     try {
+        console.log('toolCall', toolCall);
         const toolName = toolCall.toolName;
         const clientTool = TOOL_HANDLERS[toolName];
 

@@ -3,7 +3,6 @@ import {
     convertToModelMessages,
     type ModelMessage,
     type TextPart,
-    type ToolInvocation,
     type UIMessage as VercelMessage,
 } from 'ai';
 import { getHydratedUserMessage, type HydrateMessageOptions } from '../prompt';
@@ -62,38 +61,4 @@ export const extractTextFromParts = (parts: ChatMessage['parts']): string => {
             return '';
         })
         .join('');
-};
-
-export const getAssistantParts = (
-    parts: ChatMessage['parts'] | undefined,
-    toolCallSignatures: Map<string, string>,
-    opt: HydrateMessageOptions,
-): VercelMessage['parts'] => {
-    return parts?.map((part) => {
-        if (part.type === 'tool-invocation') {
-            const toolInvocation = part.toolInvocation;
-            const toolSignature = getToolSignature(toolInvocation);
-            const isLastAssistantMessage =
-                opt.currentMessageIndex === opt.lastAssistantMessageIndex;
-            if (toolCallSignatures.get(toolSignature) && !isLastAssistantMessage) {
-                return getTruncatedToolInvocation(toolInvocation);
-            }
-            toolCallSignatures.set(toolSignature, part.toolInvocation.toolCallId);
-        }
-        return part;
-    });
-};
-
-const getToolSignature = (toolInvocation: ToolInvocation): string => {
-    const toolName = toolInvocation.toolName;
-    const args = toolInvocation.args;
-    const result = toolInvocation.state === 'result' ? toolInvocation.result : '';
-    return `${toolName}-${JSON.stringify(args)}-${JSON.stringify(result)}`;
-};
-
-const getTruncatedToolInvocation = (toolInvocation: ToolInvocation): TextPart => {
-    return {
-        type: 'text',
-        text: `Truncated tool invocation. Exact same tool invocation as tool name ${toolInvocation.toolName} and ID: ${toolInvocation.toolCallId}`,
-    };
 };

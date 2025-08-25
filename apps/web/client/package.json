@@ -31,13 +31,13 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@ai-sdk/provider-utils": "^3.0.5",
         "@ai-sdk/react": "2.0.0",
         "@codemirror/lang-css": "^6.2.0",
         "@codemirror/lang-html": "^6.4.7",
         "@codemirror/lang-javascript": "^6.2.3",
         "@codemirror/lang-json": "^6.0.1",
         "@codemirror/lang-markdown": "^6.1.7",
-
         "@onlook/code-provider": "*",
         "@onlook/constants": "*",
         "@onlook/db": "*",
@@ -78,7 +78,6 @@
         "langfuse-vercel": "^3.38.4",
         "localforage": "^1.10.0",
         "lucide-react": "^0.486.0",
-
         "mobx-react-lite": "^4.1.0",
         "motion": "^12.6.3",
         "next": "^15.2.3",
