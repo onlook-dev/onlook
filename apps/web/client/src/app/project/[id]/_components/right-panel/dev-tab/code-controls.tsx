@@ -12,6 +12,7 @@ import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { FileModal } from './file-modal';
 import { FolderModal } from './folder-modal';
 import { UploadModal } from './upload-modal';
@@ -21,6 +22,7 @@ export const CodeControls = observer(() => {
     const [fileModalOpen, setFileModalOpen] = useState(false);
     const [folderModalOpen, setFolderModalOpen] = useState(false);
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
+    const [isRestarting, setIsRestarting] = useState(false);
     const isDirty = editorEngine.ide.activeFile?.isDirty ?? false;
 
     const saveFile = () => {
@@ -36,9 +38,25 @@ export const CodeControls = observer(() => {
     })();
     const files = editorEngine.ide.files;
 
+    const handleRestartDevServer = async () => {
+        try {
+            setIsRestarting(true);
+            const reStartResponse = await editorEngine.sandbox.session.restartDevServer();
+            if (reStartResponse) {
+                toast.success('Dev server restarting');
+            } else {
+                toast.error('Failed to restart dev server');
+            }
+        } catch (err) {
+            toast.error('Error restarting dev server');
+        } finally {
+            setIsRestarting(false);
+        }
+    }
+
     return (
         <>
-            <div className="flex flex-row opacity-50 transition-opacity duration-200 group-hover/panel:opacity-100">
+            <div className="flex flex-row items-center gap-1 opacity-50 transition-opacity duration-200 group-hover/panel:opacity-100">
                 <Tooltip>
                     <DropdownMenu>
                         <TooltipTrigger asChild>
@@ -71,6 +89,24 @@ export const CodeControls = observer(() => {
                     </DropdownMenu>
                     <TooltipContent side="bottom" hideArrow>
                         <p>Create or Upload File</p>
+                        <TooltipArrow className="fill-foreground" />
+                    </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            disabled={isRestarting}
+                            onClick={() => handleRestartDevServer()}
+                            className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
+                            aria-label="Restart dev server"
+                        >
+                            <Icons.Reload className={cn("h-4 w-4", isRestarting && "animate-spin")}/>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" hideArrow>
+                        <p>Restart dev server</p>
                         <TooltipArrow className="fill-foreground" />
                     </TooltipContent>
                 </Tooltip>
