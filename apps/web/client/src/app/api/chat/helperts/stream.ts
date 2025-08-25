@@ -55,6 +55,10 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
     }
     const tool = tools[toolCall.toolName];
 
+    if (!tool?.inputSchema) {
+        throw new Error(`Tool "${toolCall.toolName}" has no input schema`);
+    }
+
     console.warn(
         `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.input)}, attempting to fix`,
     );
@@ -66,7 +70,7 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
 
     const { object: repairedArgs } = await generateObject({
         model,
-        schema: tool?.inputSchema,
+        schema: tool.inputSchema,
         prompt: [
             `The model tried to call the tool "${toolCall.toolName}"` +
             ` with the following arguments:`,
