@@ -37,10 +37,10 @@ export const BrandTab = observer(() => {
         const loadBrandColors = async () => {
             await editorEngine.theme.scanConfig();
             const { colorGroups, colorDefaults } = editorEngine.theme;
-            
+
             // Extract color-500 variants from project colors
             const projectColors: string[] = [];
-            
+
             // Add colors from custom color groups (user-defined in Tailwind config)
             Object.values(colorGroups).forEach(group => {
                 group.forEach(color => {
@@ -50,7 +50,7 @@ export const BrandTab = observer(() => {
                     }
                 });
             });
-            
+
             // Add colors from default color groups (standard Tailwind colors)
             Object.values(colorDefaults).forEach(group => {
                 group.forEach(color => {
@@ -60,10 +60,10 @@ export const BrandTab = observer(() => {
                     }
                 });
             });
-            
+
             setBrandColors(projectColors);
         };
-        
+
         loadBrandColors();
     }, [editorEngine.theme]);
 
@@ -76,12 +76,12 @@ export const BrandTab = observer(() => {
                 setTimeout(async () => {
                     try {
                         await editorEngine.theme.scanConfig();
-                        
+
                         const { colorGroups, colorDefaults } = editorEngine.theme;
-                        
+
                         // Extract color-500 variants from project colors
                         const projectColors: string[] = [];
-                        
+
                         // Add colors from custom color groups (user-defined in Tailwind config)
                         Object.values(colorGroups).forEach(group => {
                             group.forEach(color => {
@@ -91,7 +91,7 @@ export const BrandTab = observer(() => {
                                 }
                             });
                         });
-                        
+
                         // Add colors from default color groups (standard Tailwind colors)
                         Object.values(colorDefaults).forEach(group => {
                             group.forEach(color => {
@@ -101,7 +101,7 @@ export const BrandTab = observer(() => {
                                 }
                             });
                         });
-                        
+
                         setBrandColors(projectColors);
                     } catch (error) {
                         console.warn('Theme scanning failed:', error);
@@ -113,15 +113,15 @@ export const BrandTab = observer(() => {
         // Listen for file changes in the sandbox
         const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', (event) => {
             // Check if any of the changed files are Tailwind config files
-            const isTailwindConfigChange = event.paths.some(path => 
+            const isTailwindConfigChange = event.paths.some(path =>
                 path.includes('tailwind.config') || path.includes('globals.css')
             );
-            
+
             if (isTailwindConfigChange && event.paths[0]) {
                 handleFileChange(event.paths[0]);
             }
         });
-        
+
         return () => {
             unsubscribe();
         };
@@ -146,7 +146,7 @@ export const BrandTab = observer(() => {
                         <span className="text-sm">Brand Colors</span>
                     </div>
 
-                    <div 
+                    <div
                         className="grid grid-cols-12 gap-0 rounded-lg overflow-hidden h-[40px] max-h-[40px] bg-background-onlook border-[0.5px] border-white/50 hover:border-[0.5px] hover:border-white cursor-pointer hover:border-transparent transition-all duration-200"
                         onClick={() => (editorEngine.state.brandTab = BrandTabValue.COLORS)}
                     >

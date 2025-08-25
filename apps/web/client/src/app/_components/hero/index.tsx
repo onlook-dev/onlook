@@ -3,7 +3,7 @@
 import { api } from '@/trpc/react';
 import { Icons } from '@onlook/ui/icons';
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { vujahdayScript } from '../../fonts';
 import { Create } from './create';
 import { CreateError } from './create-error';
@@ -22,10 +22,10 @@ export function Hero() {
         const checkScreenHeight = () => {
             setIsShortScreen(window.innerHeight < 700);
         };
-        
+
         checkScreenHeight();
         window.addEventListener('resize', checkScreenHeight);
-        
+
         return () => window.removeEventListener('resize', checkScreenHeight);
     }, []);
 
@@ -41,7 +41,6 @@ export function Hero() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6, delay: 1.2, ease: "easeOut" }}
                         >
-                            <a
                             <a
                                 href="https://www.ycombinator.com/companies/onlook/jobs/e4gHv1n-founding-engineer-fullstack"
                                 target="_blank"

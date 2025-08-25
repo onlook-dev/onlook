@@ -21,22 +21,7 @@ export const TypeInput = memo(() => {
                 value={value}
                 onChange={(newValue) => {
                     setValue(newValue);
-                    if (newValue === 'flex') {
-                        // When switching to flex, set default flex properties
-                        editorEngine.style.updateMultiple({
-                            display: 'flex',
-                            'flex-direction': 'row',
-                            'align-items': 'flex-start',
-                            'justify-content': 'flex-start',
-                        });
-                    } else {
-                        // When switching away from flex, clear flex properties
-                        editorEngine.style.update('display', newValue);
-                        // Clear flex-specific properties by setting them to initial values
-                        editorEngine.style.update('flex-direction', 'initial');
-                        editorEngine.style.update('align-items', 'initial');
-                        editorEngine.style.update('justify-content', 'initial');
-                    }
+                    editorEngine.style.update('display', newValue);
                 }}
                 className="flex-1"
             />
