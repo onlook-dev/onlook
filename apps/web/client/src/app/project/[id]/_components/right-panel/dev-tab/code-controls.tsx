@@ -12,7 +12,7 @@ import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@onlook/ui/sonner';
 import { FileModal } from './file-modal';
 import { FolderModal } from './folder-modal';
 import { UploadModal } from './upload-modal';
@@ -40,9 +40,10 @@ export const CodeControls = observer(() => {
 
     const handleRestartDevServer = async () => {
         try {
+            if (isRestarting) return;
             setIsRestarting(true);
-            const reStartResponse = await editorEngine.sandbox.session.restartDevServer();
-            if (reStartResponse) {
+            const restartResponse = await editorEngine.sandbox.session.restartDevServer();
+            if (restartResponse) {
                 toast.success('Dev server restarting');
             } else {
                 toast.error('Failed to restart dev server');
