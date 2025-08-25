@@ -84,7 +84,7 @@ export function Hero() {
                     </motion.div>
 
                 </div>
-                <motion.div className="hidden text-balance flex flex-col gap-4 items-center relative z-20 mx-10 text-foreground-secondary bg-foreground-secondary/10 backdrop-blur-lg rounded-lg border-[0.5px] border-foreground-secondary/20 p-4"
+                <motion.div className="hidden text-balance flex-col gap-4 items-center relative z-20 mx-10 text-foreground-secondary bg-foreground-secondary/10 backdrop-blur-lg rounded-lg border-[0.5px] border-foreground-secondary/20 p-4"
                     initial={{ opacity: 0, filter: "blur(4px)" }}
                     animate={{ opacity: 1, filter: "blur(0px)" }}
                     transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
