@@ -71,10 +71,10 @@ export const sandboxRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input }) => {
-            const maxRetries = 3;
+            const MAX_RETRY_ATTEMPTS = 3;
             let lastError: Error | null = null;
 
-            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
                 try {
                     const provider = await getProvider(input.sandbox.id);
                     const sandbox = await provider.createProject({
@@ -95,9 +95,8 @@ export const sandboxRouter = createTRPCRouter({
                     };
                 } catch (error) {
                     lastError = error instanceof Error ? error : new Error(String(error));
-                    console.error(`Sandbox creation attempt ${attempt} failed:`, lastError);
 
-                    if (attempt < maxRetries) {
+                    if (attempt < MAX_RETRY_ATTEMPTS) {
                         await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
                     }
                 }
@@ -105,7 +104,7 @@ export const sandboxRouter = createTRPCRouter({
 
             throw new TRPCError({
                 code: 'INTERNAL_SERVER_ERROR',
-                message: `Failed to create sandbox after ${maxRetries} attempts: ${lastError?.message}`,
+                message: `Failed to create sandbox after ${MAX_RETRY_ATTEMPTS} attempts: ${lastError?.message}`,
                 cause: lastError,
             });
         }),
