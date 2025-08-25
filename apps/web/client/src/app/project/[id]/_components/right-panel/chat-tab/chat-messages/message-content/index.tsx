@@ -27,7 +27,7 @@ export const MessageContent = observer(
             [parts]
         );
 
-        return parts.map((part, idx) => {
+        const renderedParts = parts.map((part, idx) => {
             if (part.type === 'text') {
                 return (
                     <MarkdownRenderer
@@ -40,25 +40,27 @@ export const MessageContent = observer(
                     />
                 );
             } else if (part.type.startsWith('tool-')) {
+                const toolPart = part as ToolUIPart;
                 return (
                     <ToolCallDisplay
                         messageId={messageId}
                         index={idx}
                         lastToolInvocationIdx={lastToolInvocationIdx}
-                        toolInvocation={part as ToolUIPart}
-                        key={part.toolCallId}
+                        toolInvocation={toolPart}
+                        key={toolPart.toolCallId}
                         isStream={isStream}
                         applied={applied}
                     />
                 );
             } else if (part.type === 'reasoning') {
-                if (!isStream) {
-                    return null;
-                }
-                return (
-                    <p key={`${part.type}-${messageId}`}>Introspecting...</p>
-                );
+                return null;
             }
-        });
+        }).filter(Boolean);
+
+        return (
+            <>
+                {renderedParts}
+            </>
+        );
     },
 );

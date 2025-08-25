@@ -11,6 +11,10 @@ export const StreamMessage = () => {
         streamMessage?.role === ChatMessageRole.ASSISTANT, 
         [streamMessage?.role]
     );
+
+    const hasReasoningParts = streamMessage?.parts?.some(part => part.type === 'reasoning') ?? false;
+    const shouldShowIntrospecting = isWaiting && hasReasoningParts;
+
     return (
         <>
             {streamMessage && isAssistantStreamMessage && streamMessage.parts && isWaiting && (
@@ -23,10 +27,16 @@ export const StreamMessage = () => {
                     />
                 </div>
             )}
-            {isWaiting && (
+            {isWaiting && !shouldShowIntrospecting && (
                 <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
                     <Icons.LoadingSpinner className="animate-spin" />
                     <p>Thinking ...</p>
+                </div>
+            )}
+            {shouldShowIntrospecting && (
+                <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
+                    <Icons.LoadingSpinner className="animate-spin" />
+                    <p>Introspecting...</p>
                 </div>
             )}
         </>

@@ -5,7 +5,7 @@ import type {
     MessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
-import type { UIDataTypes, UIMessage, UITools, UIMessagePart, TextUIPart } from 'ai';
+import type { UIDataTypes, UIMessage, UITools, UIMessagePart, TextUIPart, FileUIPart } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
@@ -67,6 +67,7 @@ export function getHydratedUserMessage(
     context: MessageContext[],
     opt: HydrateMessageOptions,
 ): UIMessage {
+    let userParts: UIMessagePart<UIDataTypes, UITools>[] = [];
     const files = context.filter((c) => c.type === 'file').map((c) => c);
     const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
     const errors = context.filter((c) => c.type === 'error').map((c) => c);
@@ -106,17 +107,21 @@ export function getHydratedUserMessage(
     const textContent = parts.map((p) => p.text).join('\n');
     prompt += wrapXml('instruction', textContent);
 
-    const attachments = images.map((i) => ({
-        type: 'file',
-        mimeType: i.mimeType,
-        data: i.content,
-    }));
+    userParts.push({ type: 'text', text: prompt });
+
+    if (images.length > 0) {
+        const attachments: FileUIPart[] = images.map((i) => ({
+            type: 'file',
+            mediaType: i.mimeType,
+            url: i.content,
+        }));
+        userParts = userParts.concat(attachments);
+    }
 
     return {
         id,
         role: 'user',
-        parts: [{ type: 'text', text: prompt }],
-        // attachments,
+        parts: userParts,
     };
 }
 

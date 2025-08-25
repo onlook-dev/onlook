@@ -122,7 +122,6 @@ export class ConversationManager {
         }
         const message = getUserChatMessageFromString(content, context, this.current.conversation.id);
 
-        console.log('addUserMessage', message);
         await this.addOrReplaceMessage(message);
         if (!this.current.conversation.title) {
             this.addConversationTitle(this.current.conversation.id, content);
