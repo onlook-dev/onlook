@@ -32,7 +32,7 @@ export type ModelConfig = {
     model: LanguageModel;
     providerOptions?: Record<string, any>;
     headers?: Record<string, string>;
-    maxTokens: number;
+    maxOutputTokens: number;
 };
 
 export const MODEL_MAX_TOKENS = {

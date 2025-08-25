@@ -18,7 +18,7 @@ export async function initModel({
     let model: LanguageModel;
     let providerOptions: Record<string, any> | undefined;
     let headers: Record<string, string> | undefined;
-    let maxTokens: number = MODEL_MAX_TOKENS[requestedModel];
+    let maxOutputTokens: number = MODEL_MAX_TOKENS[requestedModel];
 
     switch (requestedProvider) {
         case LLMProvider.ANTHROPIC:
@@ -46,7 +46,7 @@ export async function initModel({
         model,
         providerOptions,
         headers,
-        maxTokens,
+        maxOutputTokens,
     };
 }
 

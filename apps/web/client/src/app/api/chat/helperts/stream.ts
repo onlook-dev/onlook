@@ -1,6 +1,6 @@
 import { ASK_TOOL_SET, BUILD_TOOL_SET, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
-import { generateObject, NoSuchToolError, type ToolCall, type ToolSet } from 'ai';
+import { generateObject, NoSuchToolError, type ToolCallPart, type ToolSet } from 'ai';
 
 export async function getModelFromType(chatType: ChatType) {
     let model: ModelConfig;
@@ -47,16 +47,16 @@ export async function getSystemPromptFromType(chatType: ChatType) {
 }
 
 
-export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: ToolCall<string, any>, tools: ToolSet, error: Error }) => {
+export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: ToolCallPart, tools: ToolSet, error: Error }) => {
     if (NoSuchToolError.isInstance(error)) {
         throw new Error(
             `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
         );
     }
-    const tool = tools[toolCall.toolName as keyof typeof tools];
+    const tool = tools[toolCall.toolName];
 
     console.warn(
-        `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}, attempting to fix`,
+        `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.input)}, attempting to fix`,
     );
 
     const { model } = await initModel({
@@ -70,7 +70,7 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
         prompt: [
             `The model tried to call the tool "${toolCall.toolName}"` +
             ` with the following arguments:`,
-            JSON.stringify(toolCall.args),
+            JSON.stringify(toolCall.input),
             `The tool accepts the following schema:`,
             JSON.stringify(tool?.inputSchema),
             'Please fix the arguments.',
