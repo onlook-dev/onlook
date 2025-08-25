@@ -1,5 +1,6 @@
 'use client';
 
+import { FeedbackModal } from '@/components/ui/feedback-modal';
 import { useEditorEngine } from '@/components/store/editor';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
@@ -133,6 +134,7 @@ export const Main = observer(() => {
             </div>
             <SettingsModalWithProjects />
             <SubscriptionModal />
+            <FeedbackModal />
         </TooltipProvider>
     );
 });

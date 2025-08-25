@@ -35,6 +35,7 @@ export function Footer() {
                             <li><a href={Routes.PROJECTS} className="hover:underline" title="View your projects">My Projects</a></li>
                             <li><a href={ExternalRoutes.GITHUB} target="_blank" className="hover:underline" title="View Onlook on GitHub">GitHub Repo</a></li>
                             <li><a href="/features" className="hover:underline" title="View Onlook features">Features</a></li>
+                            <li><a href="/pricing" className="hover:underline" title="View Onlook pricing">Pricing</a></li>
                         </ul>
                     </div>
                     <div>
