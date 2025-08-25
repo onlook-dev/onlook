@@ -28,7 +28,7 @@ export const ChatInput = observer(({
     inputValue: string;
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-    const { sendMessage: sendMessageToChat, stop, isWaiting } = useChatContext();
+    const { sendMessageToChat, stop, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -239,7 +239,7 @@ export const ChatInput = observer(({
                     }
 
                     const result = await frame.view.captureScreenshot();
-                    if (result && result.data) {
+                    if (result?.data) {
                         screenshotData = result.data;
                         mimeType = result.mimeType || 'image/jpeg';
                         break;

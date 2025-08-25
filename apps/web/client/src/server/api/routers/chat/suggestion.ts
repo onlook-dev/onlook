@@ -3,7 +3,7 @@ import { SUGGESTION_SYSTEM_PROMPT } from '@onlook/ai/src/prompt/suggest';
 import { conversations } from '@onlook/db';
 import type { ChatSuggestion } from '@onlook/models';
 import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
-import { ChatMessageRole, ChatSuggestionsSchema } from '@onlook/models/chat';
+import { type ChatMessageRole, ChatSuggestionsSchema } from '@onlook/models/chat';
 import { generateObject } from 'ai';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -41,7 +41,7 @@ export const suggestionsRouter = createTRPCRouter({
                         content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.',
                     },
                 ],
-                maxTokens: 10000,
+                maxOutputTokens: 10000,
             });
             const suggestions = object.suggestions satisfies ChatSuggestion[];
             try {

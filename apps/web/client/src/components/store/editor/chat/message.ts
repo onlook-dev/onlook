@@ -10,13 +10,10 @@ export const getUserChatMessageFromString = (
     return {
         id: uuidv4(),
         role: ChatMessageRole.USER,
-        content: {
-            parts: [{ type: 'text', text: content }],
-            format: 2,
-            metadata: {
-                context,
-                checkpoints: [],
-            }
+        parts: [{ type: 'text', text: content }],
+        metadata: {
+            context,
+            checkpoints: [],
         },
         createdAt: new Date(),
         threadId: conversationId,

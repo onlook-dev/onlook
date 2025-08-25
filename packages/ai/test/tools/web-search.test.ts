@@ -7,7 +7,7 @@ import {
 import { ASK_TOOL_SET, BUILD_TOOL_SET } from '../../src/tools/toolset';
 
 describe('Web Search Tool', () => {
-    it('should have the correct tool name and parameters', () => {
+    it('should have the correct tool name and inputSchema', () => {
         expect(WEB_SEARCH_TOOL_NAME).toBe('web_search');
         expect(WEB_SEARCH_TOOL_PARAMETERS).toBeDefined();
         expect(webSearchTool).toBeDefined();
@@ -30,7 +30,7 @@ describe('Web Search Tool', () => {
             expect(parsed.query).toBe('test search query');
         });
 
-        it('should validate all optional parameters', () => {
+        it('should validate all optional inputSchema', () => {
             const fullValid = {
                 query: 'comprehensive search',
                 allowed_domains: ['example.com'],
@@ -64,8 +64,8 @@ describe('Web Search Tool', () => {
             expect(webSearchTool.description).toContain('up-to-date information');
         });
 
-        it('should use the correct parameters schema', () => {
-            expect(webSearchTool.parameters).toBe(WEB_SEARCH_TOOL_PARAMETERS);
+        it('should use the correct inputSchema schema', () => {
+            expect(webSearchTool.inputSchema).toBe(WEB_SEARCH_TOOL_PARAMETERS);
         });
     });
 

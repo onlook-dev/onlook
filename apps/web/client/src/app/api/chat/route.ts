@@ -1,15 +1,15 @@
 import { trackEvent } from '@/utils/analytics/server';
-import { convertToStreamMessages } from '@onlook/ai';
-import { ChatType, type ChatMessage } from '@onlook/models';
-import { streamText } from 'ai';
+import { ChatType } from '@onlook/models';
+import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
+const MAX_STEPS = 20;
 
 export async function POST(req: NextRequest) {
     try {
         const user = await getSupabaseUser(req);
-        if (!user) {
+                if (!user) {
             return new Response(JSON.stringify({
                 error: 'Unauthorized, no user found. Please login again.',
                 code: 401
@@ -51,14 +51,13 @@ export async function POST(req: NextRequest) {
 }
 
 export const streamResponse = async (req: NextRequest, userId: string) => {
-    const { messages, maxSteps, chatType, conversationId, projectId } = await req.json() as {
-        messages: ChatMessage[],
-        maxSteps: number,
+    const body = await req.json();
+    const { messages, chatType, conversationId, projectId } = body as {
+        messages: UIMessage[],
         chatType: ChatType,
         conversationId: string,
         projectId: string,
-    };
-
+    };    
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
     // If the call below fails, the user will not be penalized.
@@ -69,25 +68,26 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     if (chatType === ChatType.EDIT) {
         usageRecord = await incrementUsage(req);
     }
-    const { model, providerOptions, headers } = await getModelFromType(chatType);
+    const modelConfig = await getModelFromType(chatType);
+    const { model, providerOptions, headers } = modelConfig;
     const systemPrompt = await getSystemPromptFromType(chatType);
     const tools = await getToolSetFromType(chatType);
 
-    const lastUserMessage = messages.findLast((message) => message.role === 'user');
+    const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
     const traceId = lastUserMessage?.id ?? uuidv4();
+
     const result = streamText({
         model,
         headers,
         tools,
-        maxSteps,
-        toolCallStreaming: true,
+        stopWhen: stepCountIs(MAX_STEPS),
         messages: [
             {
                 role: 'system',
                 content: systemPrompt,
                 providerOptions,
             },
-            ...convertToStreamMessages(messages),
+            ...convertToModelMessages(messages),
         ],
         experimental_telemetry: {
             isEnabled: true,
@@ -103,15 +103,33 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         },
         experimental_repairToolCall: repairToolCall,
         onError: async (error) => {
-            console.error('Error in chat', error);
+            console.error('Error in chat stream call', error);
             // if there was an error with the API, do not penalize the user
             await decrementUsage(req, usageRecord);
+            
+            // Ensure the stream stops on error by re-throwing
+            if (error instanceof Error) {
+                throw error;
+            } else {
+                const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
+                throw new Error(errorMessage);
+            }
         }
     })
 
-    return result.toDataStreamResponse(
+    return result.toUIMessageStreamResponse(
         {
-            getErrorMessage: errorHandler,
+            originalMessages: messages,
+            messageMetadata: ({
+                part
+            }) => {
+                if (part.type === 'finish-step') {
+                    return {
+                        finishReason: part.finishReason,
+                    }
+                }
+            },
+            onError: errorHandler,
         }
     );
 }

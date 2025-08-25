@@ -32,7 +32,7 @@ export class SuggestionManager {
 
         const coreMessages = messages.map(msg => ({
             role: msg.role,
-            content: msg.content.parts.map((p) => {
+            content: msg.parts.map((p) => {
                 if (p.type === 'text') {
                     return p.text;
                 }

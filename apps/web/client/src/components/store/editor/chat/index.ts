@@ -75,9 +75,9 @@ export class ChatManager {
         const oldMessage = this.conversation.current?.messages[oldMessageIndex] as UserChatMessage;
 
         // Update the old message with the new content
-        const newContext = await this.context.getRefreshedContext(oldMessage.content.metadata.context);
-        oldMessage.content.metadata.context = newContext;
-        oldMessage.content.parts = [{ type: 'text', text: newMessageContent }];
+        const newContext = await this.context.getRefreshedContext(oldMessage.metadata.context);
+        oldMessage.metadata.context = newContext;
+        oldMessage.parts = [{ type: 'text', text: newMessageContent }];
 
         // Remove all messages after the old message
         const messagesToRemove = this.conversation.current?.messages.filter((m) => m.createdAt > oldMessage.createdAt);

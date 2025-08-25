@@ -30,7 +30,7 @@ export const useStartProject = () => {
     const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
     const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
-    const { sendMessage } = useChatContext();
+    const { sendMessageToChat } = useChatContext();
     const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation({
         onSettled: async () => {
             await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
@@ -95,7 +95,7 @@ export const useStartProject = () => {
                 prompt,
                 context,
             );
-            sendMessage(ChatType.CREATE);
+            sendMessageToChat(ChatType.CREATE);
 
             try {
                 await updateCreateRequest({
