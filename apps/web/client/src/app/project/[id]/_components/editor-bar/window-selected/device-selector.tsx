@@ -3,37 +3,41 @@ import { DEVICE_OPTIONS, Orientation } from '@onlook/constants';
 import type { WindowMetadata } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectSeparator, SelectTrigger } from '@onlook/ui/select';
+import { cn } from '@onlook/ui/utils';
 import { computeWindowMetadata, getDeviceType } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 
-const DeviceIcon = ({ deviceType, orientation }: { deviceType: string, orientation: Orientation }) => {
+const DeviceIcon = ({ deviceType, orientation, className }: { deviceType: string, orientation: Orientation, className?: string }) => {
+    const iconClassName = `h-3.5 w-3.5 min-h-3.5 min-w-3.5 ${className || ''}`;
     switch (deviceType) {
         case 'Phone':
-            return <Icons.Mobile className="h-3.5 w-3.5 min-h-3.5 min-w-3.5" />;
+            return <Icons.Mobile className={iconClassName} />;
         case 'Desktop':
-            return <Icons.Desktop className="h-3.5 w-3.5 min-h-3.5 min-w-3.5" />;
+            return <Icons.Desktop className={iconClassName} />;
         case 'Laptop':
-            return <Icons.Laptop className="h-3.5 w-3.5 min-h-3.5 min-w-3.5" />;
+            return <Icons.Laptop className={iconClassName} />;
         case 'Tablet':
-            return <Icons.Tablet className="h-3.5 w-3.5 min-h-3.5 min-w-3.5" />;
+            return <Icons.Tablet className={iconClassName} />;
         default:
-            return <CustomIcon orientation={orientation} />;
+            return <CustomIcon orientation={orientation} className={className} />;
     }
 };
 
-const CustomIcon = ({ orientation }: { orientation: Orientation }) => {
+const CustomIcon = ({ orientation, className }: { orientation: Orientation, className?: string }) => {
+    const iconClassName = `h-3.5 w-3.5 min-h-3.5 min-w-3.5 ${className || ''}`;
     return orientation === Orientation.Landscape ? (
-        <Icons.Landscape className="h-3.5 w-3.5 min-h-3.5 min-w-3.5" />
+        <Icons.Landscape className={iconClassName} />
     ) : (
-        <Icons.Portrait className="h-3.5 w-3.5 min-h-3.5 min-w-3.5" />
+        <Icons.Portrait className={iconClassName} />
     );
 };
 
 export const DeviceSelector = observer(() => {
     const editorEngine = useEditorEngine();
     const frameData = editorEngine.frames.selected[0];
+    const [isOpen, setIsOpen] = useState(false);
     const [metadata, setMetadata] = useState<WindowMetadata>(() =>
         computeWindowMetadata(
             frameData?.frame.dimension.width.toString() ?? '0',
@@ -81,11 +85,11 @@ export const DeviceSelector = observer(() => {
     };
 
     return (
-        <Select value={device} onValueChange={handleDeviceChange}>
-            <HoverOnlyTooltip content="Device" side="bottom" sideOffset={10}>
+        <Select value={device} onValueChange={handleDeviceChange} onOpenChange={setIsOpen}>
+            <HoverOnlyTooltip content="Device" side="bottom" sideOffset={10} disabled={isOpen}>
                 <SelectTrigger className="flex items-center gap-2 text-muted-foreground dark:bg-transparent border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none">
                     <DeviceIcon deviceType={deviceType} orientation={metadata.orientation} />
-                    <span className="font-medium">{deviceType}</span>
+                    <span className="text-smallPlus">{deviceType}</span>
                 </SelectTrigger>
             </HoverOnlyTooltip>
             <SelectContent>
@@ -96,10 +100,13 @@ export const DeviceSelector = observer(() => {
                             <SelectItem
                                 key={`${category}:${name}`}
                                 value={`${category}:${name}`}
-                                className="text-xs flex items-center"
+                                className={cn(
+                                    'text-xs flex items-center cursor-pointer',
+                                    device === `${category}:${name}` && 'bg-background-tertiary/50 text-foreground-primary'
+                                )}
                             >
-                                <DeviceIcon deviceType={category} orientation={metadata.orientation} />
-                                {name} ({dimensions})
+                                <DeviceIcon deviceType={category} orientation={metadata.orientation} className={`${device === `${category}:${name}` ? 'text-foreground-primary' : 'text-foreground-onlook'}`} />
+                                {name} <span className={`text-micro ${device === `${category}:${name}` ? 'text-foreground-primary' : 'text-foreground-tertiary'}`}>{dimensions.replace('x', '×')}</span>
                             </SelectItem>
                         ))}
                         <SelectSeparator />
