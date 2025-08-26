@@ -12,16 +12,16 @@ export const branchRouter = createTRPCRouter({
             }),
         )
         .query(async ({ ctx, input }) => {
-            const dbBranch = await ctx.db.query.branches.findFirst({
+            const dbBranches = await ctx.db.query.branches.findMany({
                 where: eq(branches.projectId, input.projectId),
             });
-            if (!dbBranch) {
+            if (!dbBranches) {
                 throw new TRPCError({
                     code: 'NOT_FOUND',
                     message: 'Branch not found',
                 });
             }
-            return fromDbBranch(dbBranch);
+            return dbBranches.map(fromDbBranch);
         }),
     create: protectedProcedure
         .input(branchInsertSchema)

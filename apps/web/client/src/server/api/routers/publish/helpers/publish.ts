@@ -23,7 +23,8 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
         const deploymentUrls = await getProjectUrls(db, projectId, type);
         const sandboxId = await getSandboxId(db, projectId);
 
-        const updateDeploymentResult1 = await updateDeployment(db, deploymentId, {
+        const updateDeploymentResult1 = await updateDeployment(db, {
+            id: deploymentId,
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Creating build environment...',
             progress: 10,
@@ -42,7 +43,8 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
         );
 
         try {
-            const updateDeploymentResult2 = await updateDeployment(db, deploymentId, {
+            const updateDeploymentResult2 = await updateDeployment(db, {
+                id: deploymentId,
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Creating optimized build...',
                 progress: 20,
@@ -60,10 +62,11 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
                 skipBadge: type === DeploymentType.CUSTOM,
                 buildScript: buildScript ?? DefaultSettings.COMMANDS.build,
                 buildFlags: buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
-                updateDeployment: (deployment) => updateDeployment(db, deploymentId, deployment),
+                updateDeployment: (deployment) => updateDeployment(db, deployment),
             });
 
-            const updateDeploymentResult3 = await updateDeployment(db, deploymentId, {
+            const updateDeploymentResult3 = await updateDeployment(db, {
+                id: deploymentId,
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Deploying build...',
                 progress: 80,
@@ -89,7 +92,8 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
         }
     } catch (error) {
         console.error(error);
-        await updateDeployment(db, deploymentId, {
+        await updateDeployment(db, {
+            id: deploymentId,
             status: DeploymentStatus.FAILED,
             error: error instanceof Error ? error.message : 'Unknown error',
             progress: 100,

@@ -27,7 +27,7 @@ export const useStartProject = () => {
     const apiUtils = api.useUtils();
     const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
     const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: branch, isLoading: isBranchLoading, error: branchError } = api.branch.get.useQuery({ projectId: editorEngine.projectId });
+    const { data: branch, isLoading: isBranchLoading, error: branchError } = api.branch.getByProjectId.useQuery({ projectId: editorEngine.projectId });
     const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
     const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
@@ -44,6 +44,12 @@ export const useStartProject = () => {
             editorEngine.screenshot.lastScreenshotAt = project.metadata.previewImg?.updatedAt ?? null;
         }
     }, [project]);
+
+    useEffect(() => {
+        if (branch) {
+            editorEngine.branches.switchToBranch(branch.id);
+        }
+    }, [branch]);
 
     const startSandbox = async (project: Project) => {
         try {
