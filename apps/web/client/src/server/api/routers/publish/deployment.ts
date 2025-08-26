@@ -25,12 +25,8 @@ export const deploymentRouter = createTRPCRouter({
         });
         return deployment ?? null;
     }),
-    update: protectedProcedure.input(z.object({
-        deploymentId: z.string(),
-        deployment: deploymentUpdateSchema
-    })).mutation(async ({ ctx, input }) => {
-        const { deploymentId, deployment } = input;
-        return await updateDeployment(ctx.db, deploymentId, deployment);
+    update: protectedProcedure.input(deploymentUpdateSchema).mutation(async ({ ctx, input }) => {
+        return await updateDeployment(ctx.db, input);
     }),
     create: protectedProcedure.input(z.object({
         projectId: z.string(),
@@ -108,13 +104,15 @@ export const deploymentRouter = createTRPCRouter({
                 db: ctx.db,
                 deployment: existingDeployment,
             });
-            await updateDeployment(ctx.db, deploymentId, {
+            await updateDeployment(ctx.db, {
+                id: deploymentId,
                 status: DeploymentStatus.COMPLETED,
                 message: 'Deployment Success!',
             });
         } catch (error) {
             console.error(error);
-            await updateDeployment(ctx.db, deploymentId, {
+            await updateDeployment(ctx.db, {
+                id: deploymentId,
                 status: DeploymentStatus.FAILED,
                 message: 'Failed to publish deployment',
             });
@@ -125,7 +123,8 @@ export const deploymentRouter = createTRPCRouter({
         deploymentId: z.string(),
     })).mutation(async ({ ctx, input }) => {
         const { deploymentId } = input;
-        await updateDeployment(ctx.db, deploymentId, {
+        await updateDeployment(ctx.db, {
+            id: deploymentId,
             status: DeploymentStatus.CANCELLED,
             message: 'Cancelled by user',
         });

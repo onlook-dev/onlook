@@ -17,6 +17,7 @@ import {
     userCanvasRouter,
     userRouter,
 } from './routers';
+import { branchRouter } from './routers/project/branch';
 
 /**
  * This is the primary router for your server.

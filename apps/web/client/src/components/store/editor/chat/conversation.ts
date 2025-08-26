@@ -196,10 +196,7 @@ export class ConversationManager {
     }
 
     async updateConversationInStorage(conversation: Partial<ChatConversation> & { id: string }) {
-        await api.chat.conversation.update.mutate({
-            conversationId: conversation.id,
-            conversation,
-        });
+        await api.chat.conversation.update.mutate(conversation);
     }
 
     async deleteConversationInStorage(id: string) {

@@ -9,14 +9,16 @@ export const fromDbCanvas = (dbUserCanvas: DbUserCanvas): Canvas => {
             x: Number(dbUserCanvas.x),
             y: Number(dbUserCanvas.y),
         },
+        userId: dbUserCanvas.userId,
     };
 };
 
-export const toDbCanvas = (canvas: Canvas): Omit<DbUserCanvas, 'userId'> => {
+export const toDbCanvas = (canvas: Canvas): DbUserCanvas => {
     return {
         scale: canvas.scale.toString(),
         x: canvas.position.x.toString(),
         y: canvas.position.y.toString(),
         canvasId: canvas.id,
+        userId: canvas.userId,
     };
 };

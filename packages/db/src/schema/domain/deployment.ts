@@ -2,6 +2,7 @@ import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { relations } from 'drizzle-orm';
 import { integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
+import { z } from 'zod';
 import { projects } from '../project';
 import { users } from '../user/user';
 
@@ -45,7 +46,9 @@ export const deploymentRelations = relations(deployments, ({ one }) => ({
 
 
 export const deploymentInsertSchema = createInsertSchema(deployments);
-export const deploymentUpdateSchema = createUpdateSchema(deployments);
+export const deploymentUpdateSchema = createUpdateSchema(deployments, {
+    id: z.string().uuid(),
+});
 
 export type Deployment = typeof deployments.$inferSelect;
 export type NewDeployment = typeof deployments.$inferInsert;

@@ -52,7 +52,7 @@ export async function getSandboxId(db: DrizzleDb, projectId: string): Promise<st
     return project.sandboxId;
 }
 
-export async function updateDeployment(db: DrizzleDb, deploymentId: string, deployment: z.infer<typeof deploymentUpdateSchema>): Promise<Deployment | null> {
+export async function updateDeployment(db: DrizzleDb, deployment: z.infer<typeof deploymentUpdateSchema>): Promise<Deployment | null> {
     try {
         const [result] = await db.update(deployments).set({
             ...deployment,
@@ -60,13 +60,13 @@ export async function updateDeployment(db: DrizzleDb, deploymentId: string, depl
             status: deployment.status as DeploymentStatus
         }).where(
             and(
-                eq(deployments.id, deploymentId),
+                eq(deployments.id, deployment.id),
                 ne(deployments.status, DeploymentStatus.CANCELLED)
             )
         ).returning();
         return result ?? null;
     } catch (error) {
-        console.error(`Failed to update deployment ${deploymentId}:`, error);
+        console.error(`Failed to update deployment ${deployment.id}:`, error);
         return null;
     }
 }

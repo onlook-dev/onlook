@@ -41,16 +41,13 @@ export const frameRouter = createTRPCRouter({
             return false;
         }
     }),
-    update: protectedProcedure.input(z.object({
-        frameId: z.string(),
-        frame: frameUpdateSchema,
-    })).mutation(async ({ ctx, input }) => {
+    update: protectedProcedure.input(frameUpdateSchema).mutation(async ({ ctx, input }) => {
         try {
             await ctx.db
                 .update(frames)
-                .set(input.frame)
+                .set(input)
                 .where(
-                    eq(frames.id, input.frameId)
+                    eq(frames.id, input.id)
                 );
             return true;
         } catch (error) {

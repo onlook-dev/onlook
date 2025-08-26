@@ -60,7 +60,7 @@ export const ProjectTab = observer(() => {
             if (formData.name !== name) {
                 await updateProject({
                     id: editorEngine.projectId,
-                    project: { name: formData.name }
+                    name: formData.name,
                 });
                 // Invalidate queries to refresh UI
                 await Promise.all([

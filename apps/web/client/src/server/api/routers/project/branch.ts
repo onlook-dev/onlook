@@ -1,10 +1,10 @@
-import { branches, branchInsertSchema, branchUpdateSchema, frames, fromDbBranch } from '@onlook/db';
+import { branches, branchInsertSchema, branchUpdateSchema, fromDbBranch } from '@onlook/db';
+import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const branchRouter = createTRPCRouter({
-
     getByProjectId: protectedProcedure
         .input(
             z.object({
@@ -15,6 +15,12 @@ export const branchRouter = createTRPCRouter({
             const dbBranch = await ctx.db.query.branches.findFirst({
                 where: eq(branches.projectId, input.projectId),
             });
+            if (!dbBranch) {
+                throw new TRPCError({
+                    code: 'NOT_FOUND',
+                    message: 'Branch not found',
+                });
+            }
             return fromDbBranch(dbBranch);
         }),
     create: protectedProcedure
@@ -45,12 +51,12 @@ export const branchRouter = createTRPCRouter({
     delete: protectedProcedure
         .input(
             z.object({
-                frameId: z.string(),
+                branchId: z.string().uuid(),
             }),
         )
         .mutation(async ({ ctx, input }) => {
             try {
-                await ctx.db.delete(frames).where(eq(frames.id, input.frameId));
+                await ctx.db.delete(branches).where(eq(branches.id, input.branchId));
                 return true;
             } catch (error) {
                 console.error('Error deleting frame', error);

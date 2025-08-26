@@ -43,16 +43,13 @@ export const conversationRouter = createTRPCRouter({
             return fromDbConversation(conversation);
         }),
     update: protectedProcedure
-        .input(z.object({
-            conversationId: z.string(),
-            conversation: conversationUpdateSchema,
-        }))
+        .input(conversationUpdateSchema)
         .mutation(async ({ ctx, input }) => {
             const [conversation] = await ctx.db.update({
                 ...conversations,
                 updatedAt: new Date(),
-            }).set(input.conversation)
-                .where(eq(conversations.id, input.conversationId)).returning();
+            }).set(input)
+                .where(eq(conversations.id, input.id)).returning();
             if (!conversation) {
                 throw new Error('Conversation not updated');
             }

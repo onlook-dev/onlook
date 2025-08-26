@@ -2,6 +2,7 @@ import type { ChatSuggestion } from "@onlook/models";
 import { relations } from "drizzle-orm";
 import { jsonb, pgTable, timestamp, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
+import { z } from "zod";
 import { projects } from "../project";
 import { CONVERSATION_MESSAGe_RELATION_NAME, messages } from "./message";
 
@@ -19,7 +20,9 @@ export const conversations = pgTable("conversations", {
 }).enableRLS();
 
 export const conversationInsertSchema = createInsertSchema(conversations);
-export const conversationUpdateSchema = createUpdateSchema(conversations);
+export const conversationUpdateSchema = createUpdateSchema(conversations, {
+    id: z.string().uuid(),
+});
 
 export const conversationRelations = relations(conversations, ({ one, many }) => ({
     project: one(projects, {

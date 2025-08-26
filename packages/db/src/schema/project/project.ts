@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
+import { z } from 'zod';
 import { canvases } from '../canvas';
 import { conversations, PROJECT_CONVERSATION_RELATION_NAME } from '../chat';
 import { PREVIEW_DOMAIN_PROJECT_RELATION_NAME, previewDomains, PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME, projectCustomDomains } from '../domain';
@@ -26,7 +27,9 @@ export const projects = pgTable('projects', {
 }).enableRLS();
 
 export const projectInsertSchema = createInsertSchema(projects);
-export const projectUpdateSchema = createUpdateSchema(projects);
+export const projectUpdateSchema = createUpdateSchema(projects, {
+    id: z.string().uuid(),
+});
 
 export const projectRelations = relations(projects, ({ one, many }) => ({
     canvas: one(canvases, {

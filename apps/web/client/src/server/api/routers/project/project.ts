@@ -10,15 +10,15 @@ import {
     createDefaultFrame,
     createDefaultUserCanvas,
     frames,
-    toDbPreviewImg,
+    fromDbCanvas,
+    fromDbFrame,
+    fromDbProject,
     projectCreateRequestInsertSchema,
     projectCreateRequests,
     projectInsertSchema,
     projects,
     projectUpdateSchema,
-    fromDbCanvas,
-    fromDbFrame,
-    fromDbProject,
+    toDbPreviewImg,
     userCanvases,
     userProjects,
     type Canvas,
@@ -349,14 +349,17 @@ export const projectRouter = createTRPCRouter({
             });
             return projects.map((project) => fromDbProject(project.project));
         }),
-    update: protectedProcedure.input(z.object({
-        id: z.string(),
-        project: projectUpdateSchema,
-    })).mutation(async ({ ctx, input }) => {
-        await ctx.db.update(projects).set({
-            ...input.project,
+    update: protectedProcedure.input(projectUpdateSchema).mutation(async ({ ctx, input }) => {
+        const [updatedProject] = await ctx.db.update(projects).set({
+            ...input,
             updatedAt: new Date(),
-        }).where(eq(projects.id, input.id));
+        }).where(
+            eq(projects.id, input.id)
+        ).returning();
+        if (!updatedProject) {
+            throw new Error('Project not found');
+        }
+        return fromDbProject(updatedProject);
     }),
     addTag: protectedProcedure.input(z.object({
         projectId: z.string(),
