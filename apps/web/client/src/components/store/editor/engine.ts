@@ -66,7 +66,7 @@ export class EditorEngine {
 
     readonly branches: BranchManager = new BranchManager(this);
     // Sandbox getter - returns branch-specific sandbox
-    get sandbox(): SandboxManager | null {
+    get sandbox(): SandboxManager {
         return this.branches.getCurrentSandbox();
     }
 

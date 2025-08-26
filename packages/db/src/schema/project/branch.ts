@@ -1,6 +1,7 @@
 import { eq, relations } from 'drizzle-orm';
 import { boolean, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
+import { z } from 'zod';
 import { frames } from '../canvas/frame';
 import { projects } from './project';
 
@@ -31,7 +32,9 @@ export const branches = pgTable('branches', {
 ).enableRLS();
 
 export const branchInsertSchema = createInsertSchema(branches);
-export const branchUpdateSchema = createUpdateSchema(branches);
+export const branchUpdateSchema = createUpdateSchema(branches, {
+    id: z.string().uuid(),
+});
 
 export const branchRelations = relations(branches, ({ one, many }) => ({
     project: one(projects, {

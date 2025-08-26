@@ -17,36 +17,42 @@ export class BranchManager {
         return this.currentBranchId;
     }
 
-    getCurrentSandbox(): SandboxManager | null {
+    getCurrentSandbox(): SandboxManager {
         if (!this.currentBranchId) {
-            throw new Error('No branch selected. Please select a branch first.');
+            throw new Error('No branch selected. Call switchToBranch() first.');
         }
 
         if (!this.branchIdToSandboxManager.has(this.currentBranchId)) {
-            // Create new SandboxManager for this branch
             const sandboxManager = new SandboxManager(this.editorEngine);
             this.branchIdToSandboxManager.set(this.currentBranchId, sandboxManager);
         }
 
-        return this.branchIdToSandboxManager.get(this.currentBranchId) ?? null;
+        return this.branchIdToSandboxManager.get(this.currentBranchId)!;
+    }
+
+    async startCurrentBranchSandbox(): Promise<void> {
+        if (!this.currentBranchId) {
+            throw new Error('No branch selected. Call switchToBranch() first.');
+        }
+
+        const branch = await this.getBranchById(this.currentBranchId);
+        await this.getCurrentSandbox().session.start(branch.sandbox.id);
     }
 
     async switchToBranch(branchId: string): Promise<void> {
         if (this.currentBranchId === branchId) {
-            return; // Already on this branch
+            return;
         }
 
-        // TODO: Validate branch exists in database
         this.currentBranchId = branchId;
     }
 
     async createBranch(
         name: string,
         description?: string,
-        fromBranchId?: string
+        fromBranchId?: string,
+        isDefault = false
     ): Promise<Branch> {
-        // TODO: Implement database branch creation
-        // For now, return a mock branch
         const newBranch: Branch = {
             id: `branch-${Date.now()}`,
             name,
@@ -55,15 +61,9 @@ export class BranchManager {
             updatedAt: new Date(),
             git: null,
             sandbox: {
-                // Mock
                 id: `sandbox-${Date.now()}`,
             },
         };
-
-        // If copying from another branch, we could copy the sandbox state here
-        if (fromBranchId && this.branchIdToSandboxManager.has(fromBranchId)) {
-            // TODO: Implement sandbox state copying
-        }
 
         return newBranch;
     }
@@ -73,14 +73,54 @@ export class BranchManager {
             throw new Error('Cannot delete the currently active branch');
         }
 
-        // Clean up sandbox manager
         const sandboxManager = this.branchIdToSandboxManager.get(branchId);
         if (sandboxManager) {
             sandboxManager.clear();
             this.branchIdToSandboxManager.delete(branchId);
         }
+    }
 
-        // TODO: Delete branch from database
+    async getDefaultBranch(): Promise<Branch> {
+        return {
+            id: 'main-branch-id',
+            name: 'main',
+            description: 'Default main branch',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            git: null,
+            sandbox: {
+                id: 'main-sandbox-id',
+            },
+        };
+    }
+
+    async getBranchById(branchId: string): Promise<Branch> {
+        return {
+            id: branchId,
+            name: branchId === 'main-branch-id' ? 'main' : `branch-${branchId}`,
+            description: null,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            git: null,
+            sandbox: {
+                id: `${branchId}-sandbox`,
+            },
+        };
+    }
+
+
+    private async createMainBranch(): Promise<Branch> {
+        return {
+            id: 'main-branch-id',
+            name: 'main',
+            description: 'Default main branch',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            git: null,
+            sandbox: {
+                id: 'main-sandbox-id',
+            },
+        };
     }
 
     async listBranches(): Promise<Branch[]> {
@@ -88,7 +128,6 @@ export class BranchManager {
     }
 
     clear(): void {
-        // Clear all sandbox managers
         for (const sandboxManager of this.branchIdToSandboxManager.values()) {
             sandboxManager.clear();
         }

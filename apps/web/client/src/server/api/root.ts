@@ -28,6 +28,7 @@ export const appRouter = createTRPCRouter({
     user: userRouter,
     invitation: invitationRouter,
     project: projectRouter,
+    branch: branchRouter,
     settings: settingsRouter,
     chat: chatRouter,
     frame: frameRouter,
