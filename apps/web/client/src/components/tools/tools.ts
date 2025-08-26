@@ -186,6 +186,10 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
         }
 
         const clientTool = TOOL_HANDLERS[toolName];
+        
+        if (!clientTool) {
+            throw new Error(`Unknown tool call: ${toolName}`);
+        }
 
         return await clientTool.handler(toolCall.input, editorEngine);
     } catch (error) {
