@@ -1,5 +1,4 @@
 import { frameInsertSchema, frames, frameUpdateSchema, toFrame } from '@onlook/db';
-import { FrameType } from '@onlook/models';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -35,11 +34,7 @@ export const frameRouter = createTRPCRouter({
         }),
     create: protectedProcedure.input(frameInsertSchema).mutation(async ({ ctx, input }) => {
         try {
-            const normalizedInput = {
-                ...input,
-                type: input.type as FrameType,
-            };
-            await ctx.db.insert(frames).values(normalizedInput);
+            await ctx.db.insert(frames).values(input);
             return true;
         } catch (error) {
             console.error('Error creating frame', error);
@@ -51,10 +46,12 @@ export const frameRouter = createTRPCRouter({
         frame: frameUpdateSchema,
     })).mutation(async ({ ctx, input }) => {
         try {
-            await ctx.db.update(frames).set({
-                ...input.frame,
-                type: input.frame.type as FrameType,
-            }).where(eq(frames.id, input.frameId));
+            await ctx.db
+                .update(frames)
+                .set(input.frame)
+                .where(
+                    eq(frames.id, input.frameId)
+                );
             return true;
         } catch (error) {
             console.error('Error updating frame', error);

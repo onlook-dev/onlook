@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import type { FrameData } from '@/components/store/editor/frames';
 import { getRelativeMousePositionToFrameView } from '@/components/store/editor/overlay/utils';
-import type { DomElement, ElementPosition, WebFrame } from '@onlook/models';
+import type { DomElement, ElementPosition, Frame } from '@onlook/models';
 import { EditorMode, MouseAction } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
@@ -10,7 +10,7 @@ import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo } from 'react';
 import { RightClickMenu } from './right-click';
 
-export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame, isResizing: boolean }) => {
+export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, isResizing: boolean }) => {
     const editorEngine = useEditorEngine();
 
     const getFrameData: () => FrameData | undefined = useCallback(() => {
@@ -94,19 +94,19 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame,
         () =>
             throttle(async (e: React.MouseEvent<HTMLDivElement>) => {
 
-            if (editorEngine.move.shouldDrag) {
-                await editorEngine.move.drag(e, getRelativeMousePosition);
-            } else if (
-                editorEngine.state.editorMode === EditorMode.DESIGN ||
-                ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
-                    editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
-                    editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
-                    !editorEngine.insert.isDrawing)
-            ) {
-                await handleMouseEvent(e, MouseAction.MOVE);
-            } else if (editorEngine.insert.isDrawing) {
-                editorEngine.insert.draw(e);
-            }
+                if (editorEngine.move.shouldDrag) {
+                    await editorEngine.move.drag(e, getRelativeMousePosition);
+                } else if (
+                    editorEngine.state.editorMode === EditorMode.DESIGN ||
+                    ((editorEngine.state.editorMode === EditorMode.INSERT_DIV ||
+                        editorEngine.state.editorMode === EditorMode.INSERT_TEXT ||
+                        editorEngine.state.editorMode === EditorMode.INSERT_IMAGE) &&
+                        !editorEngine.insert.isDrawing)
+                ) {
+                    await handleMouseEvent(e, MouseAction.MOVE);
+                } else if (editorEngine.insert.isDrawing) {
+                    editorEngine.insert.draw(e);
+                }
             }, 16),
         [editorEngine, getRelativeMousePosition, handleMouseEvent],
     );
@@ -148,9 +148,9 @@ export const GestureScreen = observer(({ frame, isResizing }: { frame: WebFrame,
         if (!frameData) {
             return;
         }
-        
+
         editorEngine.move.cancelDragPreparation();
-        
+
         await editorEngine.move.end(e);
         await editorEngine.insert.end(e, frameData.view);
     }

@@ -40,7 +40,7 @@ export const useStartProject = () => {
     useEffect(() => {
         if (project) {
             startSandbox(project);
-            editorEngine.screenshot.lastScreenshotAt = project.metadata.updatedPreviewImgAt;
+            editorEngine.screenshot.lastScreenshotAt = project.metadata.previewImg?.updatedAt ?? null;
         }
     }, [project]);
 

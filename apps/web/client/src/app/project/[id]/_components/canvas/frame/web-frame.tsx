@@ -1,7 +1,7 @@
 'use client';
 
 import { useEditorEngine } from '@/components/store/editor';
-import type { WebFrame } from '@onlook/models';
+import type { Frame } from '@onlook/models';
 import {
     PENPAL_PARENT_CHANNEL,
     type PenpalChildMethods,
@@ -22,19 +22,19 @@ import {
     type IframeHTMLAttributes,
 } from 'react';
 
-export type WebFrameView = HTMLIFrameElement & {
+export type FrameView = HTMLIFrameElement & {
     setZoomLevel: (level: number) => void;
     supportsOpenDevTools: () => boolean;
     reload: () => void;
     isLoading: () => boolean;
 } & PromisifiedPendpalChildMethods;
 
-interface WebFrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
-    frame: WebFrame;
+interface FrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
+    frame: Frame;
 }
 
-export const WebFrameComponent = observer(
-    forwardRef<WebFrameView, WebFrameViewProps>(({ frame, ...props }, ref) => {
+export const FrameComponent = observer(
+    forwardRef<FrameView, FrameViewProps>(({ frame, ...props }, ref) => {
         const editorEngine = useEditorEngine();
         const iframeRef = useRef<HTMLIFrameElement>(null);
         const zoomLevel = useRef(1);
@@ -229,11 +229,11 @@ export const WebFrameComponent = observer(
             };
         }, [penpalChild]);
 
-        useImperativeHandle(ref, (): WebFrameView => {
+        useImperativeHandle(ref, (): FrameView => {
             const iframe = iframeRef.current;
             if (!iframe) {
                 console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Iframe - Not found`);
-                return {} as WebFrameView;
+                return {} as FrameView;
             }
 
             const syncMethods = {
@@ -252,11 +252,11 @@ export const WebFrameComponent = observer(
                 console.warn(
                     `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: iframeRemote is null`,
                 );
-                return Object.assign(iframe, syncMethods, remoteMethods) as WebFrameView;
+                return Object.assign(iframe, syncMethods, remoteMethods) as FrameView;
             }
 
             // Register the iframe with the editor engine
-            editorEngine.frames.registerView(frame, iframe as WebFrameView);
+            editorEngine.frames.registerView(frame, iframe as FrameView);
 
             return Object.assign(iframe, {
                 ...syncMethods,

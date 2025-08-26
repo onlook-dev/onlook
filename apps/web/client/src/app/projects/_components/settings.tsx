@@ -37,7 +37,7 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
-    const isTemplate = project.tags?.includes(Tags.TEMPLATE) || false;
+    const isTemplate = project.metadata.tags.includes(Tags.TEMPLATE) || false;
 
     useEffect(() => {
         setProjectName(project.name);

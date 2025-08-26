@@ -1,11 +1,10 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
-import { PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME, projectCustomDomains } from '../domain';
-import { PREVIEW_DOMAIN_PROJECT_RELATION_NAME, previewDomains } from '../domain/preview';
+import { canvases } from '../canvas';
+import { conversations, PROJECT_CONVERSATION_RELATION_NAME } from '../chat';
+import { PREVIEW_DOMAIN_PROJECT_RELATION_NAME, previewDomains, PROJECT_CUSTOM_DOMAIN_PROJECT_RELATION_NAME, projectCustomDomains } from '../domain';
 import { userProjects } from '../user';
-import { canvases } from './canvas';
-import { conversations, PROJECT_CONVERSATION_RELATION_NAME } from './chat/conversation';
 import { projectInvitations } from './invitation';
 import { projectSettings } from './settings';
 
@@ -24,10 +23,6 @@ export const projects = pgTable('projects', {
     previewImgPath: varchar('preview_img_path'),
     previewImgBucket: varchar('preview_img_bucket'),
     updatedPreviewImgAt: timestamp('updated_preview_img_at', { withTimezone: true }),
-
-    // sandbox
-    sandboxId: varchar('sandbox_id').notNull(),
-    sandboxUrl: varchar('sandbox_url').notNull(),
 }).enableRLS();
 
 export const projectInsertSchema = createInsertSchema(projects);

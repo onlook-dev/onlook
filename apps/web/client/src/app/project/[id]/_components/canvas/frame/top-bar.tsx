@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { WebFrame } from '@onlook/models';
+import type { Frame } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
@@ -10,7 +10,7 @@ import { HoverOnlyTooltip } from '../../editor-bar/hover-tooltip';
 import { PageSelector } from './page-selector';
 
 export const TopBar = observer(
-    ({ frame }: { frame: WebFrame }) => {
+    ({ frame }: { frame: Frame }) => {
         const editorEngine = useEditorEngine();
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const topBarRef = useRef<HTMLDivElement>(null);

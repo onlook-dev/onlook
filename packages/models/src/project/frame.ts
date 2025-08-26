@@ -1,21 +1,18 @@
 import { Orientation, Theme } from '@onlook/constants';
 import type { RectDimension, RectPosition } from './rect';
 
-export enum FrameType {
-    WEB = 'web',
-}
-
 export interface Frame {
+    // IDs
     id: string;
-    position: RectPosition;
-    type: FrameType;
-    dimension: RectDimension;
+    branchId: string;
     canvasId: string;
-}
 
-export interface WebFrame extends Frame {
+    // display data
+    position: RectPosition;
+    dimension: RectDimension;
+
+    // content
     url: string;
-    type: FrameType.WEB;
 }
 
 export interface WindowMetadata {

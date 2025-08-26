@@ -143,6 +143,7 @@ export const projectRouter = createTRPCRouter({
                         bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
                         path: data.path,
                     },
+                    updatedAt: new Date(),
                 });
 
                 await ctx.db.update(projects)

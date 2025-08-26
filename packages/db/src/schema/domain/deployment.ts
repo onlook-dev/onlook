@@ -2,8 +2,8 @@ import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { relations } from 'drizzle-orm';
 import { integer, jsonb, pgEnum, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
+import { projects } from '../project';
 import { users } from '../user/user';
-import { projects } from './project';
 
 export const deploymentStatus = pgEnum('deployment_status', DeploymentStatus);
 export const deploymentType = pgEnum('deployment_type', DeploymentType);

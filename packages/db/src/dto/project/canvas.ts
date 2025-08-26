@@ -1,5 +1,5 @@
 import type { Canvas } from '@onlook/models';
-import type { UserCanvas as DbUserCanvas } from '../schema';
+import type { UserCanvas as DbUserCanvas } from '../../schema';
 
 export const toCanvas = (dbUserCanvas: DbUserCanvas): Canvas => {
     return {

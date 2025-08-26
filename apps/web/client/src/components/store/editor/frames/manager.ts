@@ -1,7 +1,7 @@
-import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
+import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
 import { api } from '@/trpc/client';
 import { fromFrame, fromPartialFrame } from '@onlook/db';
-import { FrameType, type Frame, type WebFrame } from '@onlook/models';
+import { type Frame } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
@@ -10,11 +10,11 @@ import { FrameNavigationManager } from './navigation';
 
 export interface FrameData {
     frame: Frame;
-    view: WebFrameView | null;
+    view: FrameView | null;
     selected: boolean;
 }
 
-function roundDimensions(frame: WebFrame): WebFrame {
+function roundDimensions(frame: Frame): Frame {
     return {
         ...frame,
         position: {
@@ -67,7 +67,7 @@ export class FramesManager {
         return this._frameIdToData.get(id);
     }
 
-    registerView(frame: Frame, view: WebFrameView) {
+    registerView(frame: Frame, view: FrameView) {
         const isSelected = this.isSelected(frame.id);
         this._frameIdToData.set(frame.id, { frame, view, selected: isSelected });
         const framePathname = new URL(view.src).pathname;
@@ -211,7 +211,7 @@ export class FramesManager {
         }
     }
 
-    async create(frame: WebFrame) {
+    async create(frame: Frame) {
         const success = await api.frame.create.mutate(fromFrame(roundDimensions(frame)));
 
         if (success) {
@@ -228,14 +228,8 @@ export class FramesManager {
             return;
         }
 
-        // Force to webframe for now, later we can support other frame types
-        if (frameData.frame.type !== FrameType.WEB) {
-            console.error('No handler for this frame type', frameData.frame.type);
-            return;
-        }
-
-        const frame = frameData.frame as WebFrame;
-        const newFrame: WebFrame = {
+        const frame = frameData.frame
+        const newFrame: Frame = {
             ...frame,
             id: uuid(),
             position: {
@@ -247,7 +241,7 @@ export class FramesManager {
         await this.create(newFrame);
     }
 
-    async updateAndSaveToStorage(frameId: string, frame: Partial<WebFrame>) {
+    async updateAndSaveToStorage(frameId: string, frame: Partial<Frame>) {
         const existingFrame = this.get(frameId);
         if (existingFrame) {
             const newFrame = { ...existingFrame.frame, ...frame };
@@ -262,7 +256,7 @@ export class FramesManager {
 
     saveToStorage = debounce(this.undebouncedSaveToStorage.bind(this), 1000);
 
-    async undebouncedSaveToStorage(frameId: string, frame: Partial<WebFrame>) {
+    async undebouncedSaveToStorage(frameId: string, frame: Partial<Frame>) {
         try {
             const frameToUpdate = fromPartialFrame(frame);
             const success = await api.frame.update.mutate({

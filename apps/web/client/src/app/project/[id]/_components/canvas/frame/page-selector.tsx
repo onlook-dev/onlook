@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { LeftPanelTabValue, type PageNode, type WebFrame } from '@onlook/models';
+import { LeftPanelTabValue, type Frame, type PageNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -16,7 +16,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { PageModal } from '../../left-panel/page-tab/page-modal';
 
 interface PageSelectorProps {
-    frame: WebFrame;
+    frame: Frame;
     className?: string;
 }
 

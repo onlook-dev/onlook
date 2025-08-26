@@ -1,14 +1,13 @@
-import { FrameType, type Frame, type WebFrame } from '@onlook/models';
+import { type Frame } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { GestureScreen } from './gesture';
 import { ResizeHandles } from './resize-handles';
 import { RightClickMenu } from './right-click';
 import { TopBar } from './top-bar';
-import { WebFrameComponent, type WebFrameView } from './web-frame';
+import { FrameComponent } from './web-frame';
 
 export const FrameView = observer(({ frame }: { frame: Frame }) => {
-    const webFrameRef = useRef<WebFrameView>(null);
     const [isResizing, setIsResizing] = useState(false);
 
     return (
@@ -17,14 +16,12 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
             style={{ transform: `translate(${frame.position.x}px, ${frame.position.y}px)` }}
         >
             <RightClickMenu>
-                <TopBar frame={frame as WebFrame} />
+                <TopBar frame={frame} />
             </RightClickMenu>
             <div className="relative">
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
-                {frame.type === FrameType.WEB && (
-                    <WebFrameComponent frame={frame as WebFrame} ref={webFrameRef} />
-                )}
-                <GestureScreen frame={frame as WebFrame} isResizing={isResizing} />
+                <FrameComponent frame={frame} />
+                <GestureScreen frame={frame} isResizing={isResizing} />
             </div>
         </div>
     );

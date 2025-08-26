@@ -7,17 +7,12 @@ export const toProject = (
     return {
         id: dbProject.id,
         name: dbProject.name,
-        tags: dbProject.tags ?? [],
-        sandbox: {
-            id: dbProject.sandboxId,
-            url: dbProject.sandboxUrl,
-        },
         metadata: {
             createdAt: dbProject.createdAt.toISOString(),
             updatedAt: dbProject.updatedAt.toISOString(),
             previewImg: toPreviewImg(dbProject),
             description: dbProject.description,
-            updatedPreviewImgAt: dbProject.updatedPreviewImgAt,
+            tags: dbProject.tags ?? [],
         },
     };
 };
@@ -27,9 +22,7 @@ export const fromProject = (project: Project): DbProject => {
     return {
         id: project.id,
         name: project.name,
-        tags: project.tags ?? [],
-        sandboxId: project.sandbox.id,
-        sandboxUrl: project.sandbox.url,
+        tags: project.metadata.tags ?? [],
         createdAt: new Date(project.metadata.createdAt),
         updatedAt: new Date(project.metadata.updatedAt),
         description: project.metadata.description,
@@ -46,6 +39,7 @@ export function toPreviewImg(dbProject: DbProject): PreviewImg | null {
         previewImg = {
             type: 'url',
             url: dbProject.previewImgUrl,
+            updatedAt: dbProject.updatedPreviewImgAt,
         };
     } else if (dbProject.previewImgPath && dbProject.previewImgBucket) {
         previewImg = {
@@ -54,6 +48,7 @@ export function toPreviewImg(dbProject: DbProject): PreviewImg | null {
                 bucket: dbProject.previewImgBucket,
                 path: dbProject.previewImgPath,
             },
+            updatedAt: dbProject.updatedPreviewImgAt,
         };
     }
     return previewImg;
@@ -87,6 +82,6 @@ export function fromPreviewImg(previewImg: PreviewImg | null): {
         res.previewImgPath = previewImg.storagePath.path;
         res.previewImgBucket = previewImg.storagePath.bucket;
     }
-    res.updatedPreviewImgAt = new Date();
+    res.updatedPreviewImgAt = previewImg.updatedAt ?? new Date();
     return res;
 }

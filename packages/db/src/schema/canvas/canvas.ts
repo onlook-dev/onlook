@@ -1,9 +1,9 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, uuid } from 'drizzle-orm/pg-core';
-import { projects } from '../project';
-import { frames } from './frame';
 import { createUpdateSchema } from 'drizzle-zod';
-import { userCanvases } from '../../user';
+import { projects } from '../project';
+import { userCanvases } from '../user';
+import { frames } from './frame';
 
 export const canvases = pgTable('canvas', {
     id: uuid('id').primaryKey().defaultRandom(),

@@ -1,4 +1,4 @@
-import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
+import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
 import { EditorAttributes } from '@onlook/constants';
 import type { ElementPosition, RectDimensions } from '@onlook/models';
 
@@ -42,7 +42,7 @@ export function getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
  */
 export function adaptRectToCanvas(
     rect: RectDimensions,
-    frameView: WebFrameView,
+    frameView: FrameView,
     inverse = false,
 ): RectDimensions {
     const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
@@ -85,7 +85,7 @@ export function adaptValueToCanvas(value: number, inverse = false): number {
  */
 export function getRelativeMousePositionToFrameView(
     e: React.MouseEvent<HTMLDivElement>,
-    frameView: WebFrameView,
+    frameView: FrameView,
     inverse: boolean = false,
 ): ElementPosition {
     const rect = frameView.getBoundingClientRect();

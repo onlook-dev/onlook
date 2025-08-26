@@ -42,8 +42,8 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [spacing] = useState<number>(24);
 
     // Templates
-    const projects = fetchedProjects?.filter(project => !project.tags?.includes(Tags.TEMPLATE)) ?? [];
-    const templateProjects = fetchedProjects?.filter(project => project.tags?.includes(Tags.TEMPLATE)) ?? [];
+    const projects = fetchedProjects?.filter(project => !project.metadata.tags.includes(Tags.TEMPLATE)) ?? [];
+    const templateProjects = fetchedProjects?.filter(project => project.metadata.tags.includes(Tags.TEMPLATE)) ?? [];
     const shouldShowTemplate = templateProjects.length > 0;
     const [selectedTemplate, setSelectedTemplate] = useState<Project | null>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);

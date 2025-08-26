@@ -1,22 +1,22 @@
-import { FrameType } from "@onlook/models";
 import { relations } from "drizzle-orm";
-import { numeric, pgEnum, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
-import { canvases } from "./canvas";
+import { numeric, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
-
-export const frameType = pgEnum("frame_type", FrameType);
+import { branches } from "../project/branch";
+import { canvases } from "./canvas";
 
 export const frames = pgTable("frames", {
     id: uuid("id").primaryKey().defaultRandom(),
     canvasId: uuid("canvas_id")
         .notNull()
         .references(() => canvases.id, { onDelete: "cascade", onUpdate: "cascade" }),
-    type: frameType("type").notNull(),
+    branchId: uuid("branch_id")
+        .notNull()
+        .references(() => branches.id, { onDelete: "cascade", onUpdate: "cascade" }),
     url: varchar("url").notNull(),
 
+    // display data
     x: numeric("x").notNull(),
     y: numeric("y").notNull(),
-
     width: numeric("width").notNull(),
     height: numeric("height").notNull(),
 }).enableRLS();
@@ -31,5 +31,9 @@ export const frameRelations = relations(frames, ({ one }) => ({
     canvas: one(canvases, {
         fields: [frames.canvasId],
         references: [canvases.id],
+    }),
+    branch: one(branches, {
+        fields: [frames.branchId],
+        references: [branches.id],
     }),
 }));
