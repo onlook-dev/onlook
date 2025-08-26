@@ -10,7 +10,7 @@ import {
     createDefaultFrame,
     createDefaultUserCanvas,
     frames,
-    fromDbPreviewImg,
+    toDbPreviewImg,
     projectCreateRequestInsertSchema,
     projectCreateRequests,
     projectInsertSchema,
@@ -137,7 +137,7 @@ export const projectRouter = createTRPCRouter({
                     previewImgPath,
                     previewImgBucket,
                     updatedPreviewImgAt,
-                } = fromDbPreviewImg({
+                } = toDbPreviewImg({
                     type: 'storage',
                     storagePath: {
                         bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
