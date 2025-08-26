@@ -1,5 +1,5 @@
-import { relations } from 'drizzle-orm';
-import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { eq, relations } from 'drizzle-orm';
+import { boolean, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { frames } from '../canvas/frame';
 import { projects } from './project';
@@ -15,6 +15,7 @@ export const branches = pgTable('branches', {
     description: text('description'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+    isDefault: boolean('is_default').default(false).notNull(),
 
     // git
     gitBranch: varchar('git_branch'),
@@ -23,7 +24,11 @@ export const branches = pgTable('branches', {
 
     // sandbox 
     sandboxId: varchar('sandbox_id').notNull(),
-}).enableRLS();
+},
+    (table) => [
+        uniqueIndex('idx_project_default_branch').on(table.projectId).where(eq(table.isDefault, true)),
+    ]
+).enableRLS();
 
 export const branchInsertSchema = createInsertSchema(branches);
 export const branchUpdateSchema = createUpdateSchema(branches);

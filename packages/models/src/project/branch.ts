@@ -2,8 +2,8 @@ export interface Branch {
     id: string;
     name: string;
     description: string | null;
-    createdAt: string;
-    updatedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
     git: {
         branch: string | null;
         commitSha: string | null;
