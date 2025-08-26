@@ -34,6 +34,7 @@ import {
     WRITE_FILE_TOOL_NAME,
     WRITE_FILE_TOOL_PARAMETERS
 } from '@onlook/ai';
+import { toast } from '@onlook/ui/sonner';
 import { type z } from 'zod';
 import {
     handleBashEditTool,
@@ -55,6 +56,7 @@ import {
 } from './handlers';
 import { EMPTY_TOOL_PARAMETERS } from './helpers';
 import type { ToolCall } from '@ai-sdk/provider-utils';
+import { getToolSetFromType } from '@/app/api/chat/helperts';
 
 interface ClientToolMap extends Record<string, {
     name: string;
@@ -169,13 +171,21 @@ const TOOL_HANDLERS: ClientToolMap = {
 
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
     try {
-        console.log('toolCall', toolCall);
         const toolName = toolCall.toolName;
-        const clientTool = TOOL_HANDLERS[toolName];
 
-        if (!clientTool) {
-            throw new Error(`Unknown tool call: ${toolName}`);
+        const currentChatMode = editorEngine.state.chatMode;
+        const availableTools = await getToolSetFromType(currentChatMode);
+
+        if (!availableTools[toolName]) {            
+            toast.error(`Tool "${toolName}" not available in ask mode`, {
+                description: `Switch to build mode to use this tool.`,
+                duration: 2000,
+            });
+            
+            throw new Error(`Tool "${toolName}" is not available in ${currentChatMode} mode`);
         }
+
+        const clientTool = TOOL_HANDLERS[toolName];
 
         return await clientTool.handler(toolCall.input, editorEngine);
     } catch (error) {

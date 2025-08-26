@@ -33,9 +33,7 @@ export const toMessage = (message: DbMessage): ChatMessage => {
     }
 }
 
-export const fromMessage = (message: ChatMessage): DbMessage => {
-    console.log('message', message);
-    
+export const fromMessage = (message: ChatMessage): DbMessage => {    
     return {
         id: message.id,
         createdAt: message.createdAt,
@@ -94,6 +92,5 @@ export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId
 }
 
 export const toDbMessageFromVercel = (message: VercelMessage, conversationId: string): DbMessage => {
-    console.log('toDbMessageFromVercel', message);
     return fromMessage(toOnlookMessageFromVercel(message, conversationId));
 }

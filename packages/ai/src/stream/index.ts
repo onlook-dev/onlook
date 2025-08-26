@@ -33,8 +33,6 @@ export const toVercelMessageFromOnlook = (
     message: ChatMessage,
     opt: HydrateMessageOptions,
 ): VercelMessage => {
-    // const messageContent = extractTextFromParts(message.content.parts);
-
     if (message.role === ChatMessageRole.ASSISTANT) {
         return {
             ...message,
