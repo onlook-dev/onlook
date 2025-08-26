@@ -1,7 +1,7 @@
 import { type Frame } from '@onlook/models';
 import type { Frame as DbFrame } from '../../schema';
 
-export const toFrame = (dbFrame: DbFrame): Frame => {
+export const fromDbFrame = (dbFrame: DbFrame): Frame => {
     return {
         id: dbFrame.id,
         canvasId: dbFrame.canvasId,
@@ -18,7 +18,7 @@ export const toFrame = (dbFrame: DbFrame): Frame => {
     };
 };
 
-export const fromFrame = (frame: Frame): DbFrame => {
+export const toDbFrame = (frame: Frame): DbFrame => {
     return {
         id: frame.id,
         branchId: frame.branchId,
@@ -31,7 +31,7 @@ export const fromFrame = (frame: Frame): DbFrame => {
     };
 };
 
-export const fromPartialFrame = (frame: Partial<Frame>): Partial<DbFrame> => {
+export const toDbPartialFrame = (frame: Partial<Frame>): Partial<DbFrame> => {
     return {
         id: frame.id,
         url: frame.url,

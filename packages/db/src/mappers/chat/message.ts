@@ -4,7 +4,7 @@ import { assertNever } from '@onlook/utility';
 import type { Message as VercelMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
-export const toMessage = (message: DbMessage): ChatMessage => {
+export const fromDbMessage = (message: DbMessage): ChatMessage => {
     const content = {
         format: 2 as const,
         parts: message.parts ?? [],
@@ -37,7 +37,7 @@ export const toMessage = (message: DbMessage): ChatMessage => {
     }
 }
 
-export const fromMessage = (message: ChatMessage): DbMessage => {
+export const toDbMessage = (message: ChatMessage): DbMessage => {
     return {
         id: message.id,
         createdAt: message.createdAt,
@@ -94,5 +94,5 @@ export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId
 }
 
 export const toDbMessageFromVercel = (message: VercelMessage, conversationId: string): DbMessage => {
-    return fromMessage(toOnlookMessageFromVercel(message, conversationId));
+    return toDbMessage(toOnlookMessageFromVercel(message, conversationId));
 }

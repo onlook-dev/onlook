@@ -3,7 +3,7 @@ import {
     conversationInsertSchema,
     conversations,
     conversationUpdateSchema,
-    toConversation
+    fromDbConversation
 } from '@onlook/db';
 import { LLMProvider, OPENROUTER_MODELS } from '@onlook/models';
 import { generateText } from 'ai';
@@ -20,7 +20,7 @@ export const conversationRouter = createTRPCRouter({
                 where: eq(conversations.projectId, input.projectId),
                 orderBy: (conversations, { desc }) => [desc(conversations.updatedAt)],
             });
-            return dbConversations.map((conversation) => toConversation(conversation));
+            return dbConversations.map((conversation) => fromDbConversation(conversation));
         }),
     get: protectedProcedure
         .input(z.object({ conversationId: z.string() }))
@@ -31,7 +31,7 @@ export const conversationRouter = createTRPCRouter({
             if (!conversation) {
                 throw new Error('Conversation not found');
             }
-            return toConversation(conversation);
+            return fromDbConversation(conversation);
         }),
     upsert: protectedProcedure
         .input(conversationInsertSchema)
@@ -40,7 +40,7 @@ export const conversationRouter = createTRPCRouter({
             if (!conversation) {
                 throw new Error('Conversation not created');
             }
-            return toConversation(conversation);
+            return fromDbConversation(conversation);
         }),
     update: protectedProcedure
         .input(z.object({
@@ -56,7 +56,7 @@ export const conversationRouter = createTRPCRouter({
             if (!conversation) {
                 throw new Error('Conversation not updated');
             }
-            return toConversation(conversation);
+            return fromDbConversation(conversation);
         }),
     delete: protectedProcedure
         .input(z.object({

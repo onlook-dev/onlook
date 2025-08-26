@@ -1,6 +1,6 @@
 import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
 import { api } from '@/trpc/client';
-import { fromFrame, fromPartialFrame } from '@onlook/db';
+import { toDbFrame, toDbPartialFrame } from '@onlook/db';
 import { type Frame } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
@@ -212,7 +212,7 @@ export class FramesManager {
     }
 
     async create(frame: Frame) {
-        const success = await api.frame.create.mutate(fromFrame(roundDimensions(frame)));
+        const success = await api.frame.create.mutate(toDbFrame(roundDimensions(frame)));
 
         if (success) {
             this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
@@ -258,7 +258,7 @@ export class FramesManager {
 
     async undebouncedSaveToStorage(frameId: string, frame: Partial<Frame>) {
         try {
-            const frameToUpdate = fromPartialFrame(frame);
+            const frameToUpdate = toDbPartialFrame(frame);
             const success = await api.frame.update.mutate({
                 frameId,
                 frame: frameToUpdate,

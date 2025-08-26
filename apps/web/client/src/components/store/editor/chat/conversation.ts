@@ -1,5 +1,5 @@
 import { api } from '@/trpc/client';
-import { fromMessage } from '@onlook/db';
+import { toDbMessage } from '@onlook/db';
 import type { GitCommit } from '@onlook/git';
 import { ChatMessageRole, MessageCheckpointType, type ChatConversation, type ChatMessage, type MessageContext, type UserChatMessage } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
@@ -211,7 +211,7 @@ export class ConversationManager {
     }
 
     async upsertMessageInStorage(message: ChatMessage) {
-        await api.chat.message.upsert.mutate({ message: fromMessage(message) });
+        await api.chat.message.upsert.mutate({ message: toDbMessage(message) });
     }
 
     clear() {

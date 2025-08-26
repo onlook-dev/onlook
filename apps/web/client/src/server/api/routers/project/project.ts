@@ -10,15 +10,15 @@ import {
     createDefaultFrame,
     createDefaultUserCanvas,
     frames,
-    fromPreviewImg,
+    fromDbPreviewImg,
     projectCreateRequestInsertSchema,
     projectCreateRequests,
     projectInsertSchema,
     projects,
     projectUpdateSchema,
-    toCanvas,
-    toFrame,
-    toProject,
+    fromDbCanvas,
+    fromDbFrame,
+    fromDbProject,
     userCanvases,
     userProjects,
     type Canvas,
@@ -137,7 +137,7 @@ export const projectRouter = createTRPCRouter({
                     previewImgPath,
                     previewImgBucket,
                     updatedPreviewImgAt,
-                } = fromPreviewImg({
+                } = fromDbPreviewImg({
                     type: 'storage',
                     storagePath: {
                         bucket: STORAGE_BUCKETS.PREVIEW_IMAGES,
@@ -178,7 +178,7 @@ export const projectRouter = createTRPCRouter({
                 },
                 limit: input?.limit,
             });
-            return fetchedUserProjects.map((userProject) => toProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
+            return fetchedUserProjects.map((userProject) => fromDbProject(userProject.project)).sort((a, b) => new Date(b.metadata.updatedAt).getTime() - new Date(a.metadata.updatedAt).getTime());
         }),
     get: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -190,7 +190,7 @@ export const projectRouter = createTRPCRouter({
                 console.error('project not found');
                 return null;
             }
-            return toProject(project)
+            return fromDbProject(project)
         }),
     getProjectWithCanvas: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -216,9 +216,9 @@ export const projectRouter = createTRPCRouter({
             const userCanvas: UserCanvas = project.canvas?.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, canvas.id);
 
             return {
-                project: toProject(project),
-                userCanvas: toCanvas(userCanvas),
-                frames: project.canvas?.frames.map(toFrame) ?? [],
+                project: fromDbProject(project),
+                userCanvas: fromDbCanvas(userCanvas),
+                frames: project.canvas?.frames.map(fromDbFrame) ?? [],
             };
         }),
     create: protectedProcedure
@@ -347,7 +347,7 @@ export const projectRouter = createTRPCRouter({
                     project: true,
                 },
             });
-            return projects.map((project) => toProject(project.project));
+            return projects.map((project) => fromDbProject(project.project));
         }),
     update: protectedProcedure.input(z.object({
         id: z.string(),

@@ -1,7 +1,7 @@
 import type { Canvas } from '@onlook/models';
 import type { UserCanvas as DbUserCanvas } from '../../schema';
 
-export const toCanvas = (dbUserCanvas: DbUserCanvas): Canvas => {
+export const fromDbCanvas = (dbUserCanvas: DbUserCanvas): Canvas => {
     return {
         id: dbUserCanvas.canvasId,
         scale: Number(dbUserCanvas.scale),
@@ -12,7 +12,7 @@ export const toCanvas = (dbUserCanvas: DbUserCanvas): Canvas => {
     };
 };
 
-export const fromCanvas = (canvas: Canvas): Omit<DbUserCanvas, 'userId'> => {
+export const toDbCanvas = (canvas: Canvas): Omit<DbUserCanvas, 'userId'> => {
     return {
         scale: canvas.scale.toString(),
         x: canvas.position.x.toString(),

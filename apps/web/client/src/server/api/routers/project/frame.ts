@@ -1,4 +1,4 @@
-import { frameInsertSchema, frames, frameUpdateSchema, toFrame } from '@onlook/db';
+import { frameInsertSchema, frames, frameUpdateSchema, fromDbFrame } from '@onlook/db';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -17,7 +17,7 @@ export const frameRouter = createTRPCRouter({
             if (!dbFrame) {
                 return null;
             }
-            return toFrame(dbFrame);
+            return fromDbFrame(dbFrame);
         }),
     getByCanvas: protectedProcedure
         .input(
@@ -30,7 +30,7 @@ export const frameRouter = createTRPCRouter({
                 where: eq(frames.canvasId, input.canvasId),
                 orderBy: (frames, { asc }) => [asc(frames.x), asc(frames.y)],
             });
-            return dbFrames.map((frame) => toFrame(frame));
+            return dbFrames.map((frame) => fromDbFrame(frame));
         }),
     create: protectedProcedure.input(frameInsertSchema).mutation(async ({ ctx, input }) => {
         try {

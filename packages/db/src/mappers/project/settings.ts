@@ -1,7 +1,7 @@
 import type { ProjectSettings } from '@onlook/models';
 import type { ProjectSettings as DbProjectSettings } from '../../schema';
 
-export const toProjectSettings = (dbProjectSettings: DbProjectSettings): ProjectSettings => {
+export const fromDbProjectSettings = (dbProjectSettings: DbProjectSettings): ProjectSettings => {
     return {
         commands: {
             build: dbProjectSettings.buildCommand,
@@ -11,7 +11,7 @@ export const toProjectSettings = (dbProjectSettings: DbProjectSettings): Project
     };
 };
 
-export const fromProjectSettings = (projectId: string, projectSettings: ProjectSettings): DbProjectSettings => {
+export const toDbProjectSettings = (projectId: string, projectSettings: ProjectSettings): DbProjectSettings => {
     return {
         projectId,
         buildCommand: projectSettings.commands.build ?? '',

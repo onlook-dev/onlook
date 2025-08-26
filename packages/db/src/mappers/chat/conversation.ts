@@ -1,7 +1,7 @@
 import type { Conversation as DbConversation } from "@onlook/db";
 import { type ChatConversation } from "@onlook/models";
 
-export const toConversation = (conversation: DbConversation): ChatConversation => {
+export const fromDbConversation = (conversation: DbConversation): ChatConversation => {
     return {
         ...conversation,
         resourceId: conversation.projectId,
@@ -11,7 +11,7 @@ export const toConversation = (conversation: DbConversation): ChatConversation =
     }
 }
 
-export const fromConversationToDb = (conversation: ChatConversation): DbConversation => {
+export const toDbConversation = (conversation: ChatConversation): DbConversation => {
     return {
         ...conversation,
         projectId: conversation.resourceId,

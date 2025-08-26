@@ -2,7 +2,7 @@ import { DefaultSettings } from '@onlook/constants';
 import type { UserSettings } from '@onlook/models';
 import type { UserSettings as DbUserSettings } from '../../schema';
 
-export const toUserSettings = (settings: DbUserSettings): UserSettings => {
+export const fromDbUserSettings = (settings: DbUserSettings): UserSettings => {
     return {
         id: settings.id,
         chat: {
@@ -19,7 +19,7 @@ export const toUserSettings = (settings: DbUserSettings): UserSettings => {
     };
 };
 
-export const fromUserSettings = (userId: string, settings: UserSettings): DbUserSettings => {
+export const toDbUserSettings = (userId: string, settings: UserSettings): DbUserSettings => {
     return {
         id: settings.id,
         userId,

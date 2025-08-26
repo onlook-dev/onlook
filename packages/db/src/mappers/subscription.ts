@@ -1,7 +1,7 @@
 import type { Price, Product, ScheduledChange, ScheduledSubscriptionAction, Subscription } from '@onlook/stripe';
 import type { Price as DbPrice, Product as DbProduct, Subscription as DbSubscription } from '../schema';
 
-export function toSubscription(
+export function fromDbSubscription(
     subscription: DbSubscription & {
         product: DbProduct;
         price: DbPrice;
@@ -13,9 +13,9 @@ export function toSubscription(
         status: subscription.status,
         startedAt: subscription.startedAt,
         endedAt: subscription.endedAt,
-        product: toProduct(subscription.product),
-        price: toPrice(subscription.price),
-        scheduledChange: toScheduledChange(scheduledPrice, subscription.scheduledAction, subscription.scheduledChangeAt, subscription.stripeSubscriptionScheduleId),
+        product: fromDbProduct(subscription.product),
+        price: fromDbPrice(subscription.price),
+        scheduledChange: fromDbScheduledChange(scheduledPrice, subscription.scheduledAction, subscription.scheduledChangeAt, subscription.stripeSubscriptionScheduleId),
 
         stripeSubscriptionId: subscription.stripeSubscriptionId,
         stripeCustomerId: subscription.stripeCustomerId,
@@ -23,7 +23,7 @@ export function toSubscription(
     };
 }
 
-export function toProduct(product: DbProduct): Product {
+export function fromDbProduct(product: DbProduct): Product {
     return {
         name: product.name,
         type: product.type,
@@ -31,7 +31,7 @@ export function toProduct(product: DbProduct): Product {
     };
 }
 
-export function toPrice(price: DbPrice): Price {
+export function fromDbPrice(price: DbPrice): Price {
     return {
         id: price.id,
         productId: price.productId,
@@ -41,7 +41,7 @@ export function toPrice(price: DbPrice): Price {
     };
 }
 
-export function toScheduledChange(
+export function fromDbScheduledChange(
     price: DbPrice | null,
     scheduledAction: ScheduledSubscriptionAction | null,
     scheduledChangeAt: Date | null,
@@ -53,7 +53,7 @@ export function toScheduledChange(
     }
 
     return {
-        price: price ? toPrice(price) : null,
+        price: price ? fromDbPrice(price) : null,
         scheduledAction,
         scheduledChangeAt,
         stripeSubscriptionScheduleId,

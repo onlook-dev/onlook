@@ -1,15 +1,8 @@
 import { relations } from 'drizzle-orm';
-import { pgEnum, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { frames } from '../canvas/frame';
 import { projects } from './project';
-
-export const syncStatus = pgEnum('sync_status', [
-    'synced',
-    'local_changes',
-    'remote_changes',
-    'conflicts'
-]);
 
 export const branches = pgTable('branches', {
     id: uuid('id').primaryKey().defaultRandom(),
