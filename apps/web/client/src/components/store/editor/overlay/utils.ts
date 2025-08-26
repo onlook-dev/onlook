@@ -1,4 +1,4 @@
-import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
+import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import { EditorAttributes } from '@onlook/constants';
 import type { ElementPosition, RectDimensions } from '@onlook/models';
 
@@ -92,7 +92,7 @@ export function getRelativeMousePositionToFrameView(
     const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
     if (!canvasContainer) {
         console.error('Canvas container not found');
-        return rect;
+        return rect satisfies ElementPosition;
     }
 
     // Get canvas transform matrix to handle scaling and translation
@@ -102,5 +102,5 @@ export function getRelativeMousePositionToFrameView(
 
     const x = (e.clientX - rect.left) / scale;
     const y = (e.clientY - rect.top) / scale;
-    return { x, y };
+    return { x, y } satisfies ElementPosition;
 }

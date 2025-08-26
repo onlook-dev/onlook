@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { numeric, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
-import { branches } from "../project/branch";
+import { branches } from "../project";
 import { canvases } from "./canvas";
 
 export const frames = pgTable("frames", {
@@ -22,7 +22,10 @@ export const frames = pgTable("frames", {
 }).enableRLS();
 
 export const frameInsertSchema = createInsertSchema(frames);
-export const frameUpdateSchema = createUpdateSchema(frames);
+export const frameUpdateSchema = createUpdateSchema(frames).omit({
+    id: true,
+    canvasId: true,
+});
 
 export type Frame = typeof frames.$inferSelect;
 export type NewFrame = typeof frames.$inferInsert;

@@ -5,7 +5,7 @@ import { GestureScreen } from './gesture';
 import { ResizeHandles } from './resize-handles';
 import { RightClickMenu } from './right-click';
 import { TopBar } from './top-bar';
-import { FrameComponent } from './web-frame';
+import { FrameComponent } from './view';
 
 export const FrameView = observer(({ frame }: { frame: Frame }) => {
     const [isResizing, setIsResizing] = useState(false);

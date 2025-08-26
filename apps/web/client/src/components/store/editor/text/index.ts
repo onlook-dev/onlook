@@ -1,4 +1,4 @@
-import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
+import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';

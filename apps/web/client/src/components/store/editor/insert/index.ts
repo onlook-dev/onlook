@@ -1,4 +1,4 @@
-import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
+import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import { DefaultSettings, EditorAttributes } from '@onlook/constants';
 import type {
     DomElement,
