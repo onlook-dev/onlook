@@ -63,7 +63,7 @@ export function getExampleConversation(
 
 export function getHydratedUserMessage(
     id: string,
-    parts: TextUIPart[],
+    parts: UIMessagePart<UIDataTypes, UITools>[],
     context: MessageContext[],
     opt: HydrateMessageOptions,
 ): UIMessage {
@@ -104,7 +104,10 @@ export function getHydratedUserMessage(
         }
     }
 
-    const textContent = parts.map((p) => p.text).join('\n');
+    const textContent = parts
+        .filter((p) => p.type === 'text')
+        .map((p) => p.text)
+        .join('\n');
     prompt += wrapXml('instruction', textContent);
 
     userParts.push({ type: 'text', text: prompt });

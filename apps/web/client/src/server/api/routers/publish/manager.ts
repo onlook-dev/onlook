@@ -90,11 +90,13 @@ export class PublishManager {
         buildScript,
         buildFlags,
         skipBadge,
+        envVars,
         updateDeployment,
     }: {
         buildScript: string;
         buildFlags: string;
         skipBadge: boolean;
+        envVars: Record<string, string>;
         updateDeployment: (
             deployment: z.infer<typeof deploymentUpdateSchema>,
         ) => Promise<Deployment | null>;
@@ -104,6 +106,7 @@ export class PublishManager {
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing deployment...',
             progress: 30,
+            envVars,
         });
 
         if (!skipBadge) {
@@ -111,6 +114,7 @@ export class PublishManager {
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Adding "Built with Onlook" badge...',
                 progress: 35,
+                envVars,
             });
             await this.addBadge('./');
         }
@@ -119,6 +123,7 @@ export class PublishManager {
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Building project...',
             progress: 40,
+            envVars,
         });
 
         await this.runBuildStep(buildScript, buildFlags);
@@ -127,6 +132,7 @@ export class PublishManager {
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Postprocessing project...',
             progress: 50,
+            envVars,
         });
         const { success: postprocessSuccess, error: postprocessError } =
             await this.postprocessNextBuild();
@@ -141,6 +147,7 @@ export class PublishManager {
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing files for publish...',
             progress: 60,
+            envVars,
         });
 
         // Serialize the files for deployment

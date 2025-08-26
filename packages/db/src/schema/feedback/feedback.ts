@@ -42,7 +42,7 @@ export const feedbackInsertSchema = createInsertSchema(feedbacks, {
     email: z.string().email('Invalid email format').optional(),
     pageUrl: z.string().url('Invalid URL format').optional(),
     attachments: z.array(attachmentSchema).default([]),
-    metadata: z.record(z.any()).default({}),
+    metadata: z.record(z.string(), z.any()).default({}),
 });
 
 export const feedbackSubmitSchema = feedbackInsertSchema.pick({
