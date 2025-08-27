@@ -55,10 +55,12 @@ export class BranchManager {
     ): Promise<Branch> {
         const newBranch: Branch = {
             id: `branch-${Date.now()}`,
+            projectId: this.editorEngine.projectId,
             name,
             description: description || null,
             createdAt: new Date(),
             updatedAt: new Date(),
+            isDefault,
             git: null,
             sandbox: {
                 id: `sandbox-${Date.now()}`,
@@ -83,10 +85,12 @@ export class BranchManager {
     async getDefaultBranch(): Promise<Branch> {
         return {
             id: 'main-branch-id',
+            projectId: this.editorEngine.projectId,
             name: 'main',
             description: 'Default main branch',
             createdAt: new Date(),
             updatedAt: new Date(),
+            isDefault: true,
             git: null,
             sandbox: {
                 id: 'main-sandbox-id',
@@ -97,10 +101,12 @@ export class BranchManager {
     async getBranchById(branchId: string): Promise<Branch> {
         return {
             id: branchId,
+            projectId: this.editorEngine.projectId,
             name: branchId === 'main-branch-id' ? 'main' : `branch-${branchId}`,
             description: null,
             createdAt: new Date(),
             updatedAt: new Date(),
+            isDefault: branchId === 'main-branch-id',
             git: null,
             sandbox: {
                 id: `${branchId}-sandbox`,
@@ -112,10 +118,12 @@ export class BranchManager {
     private async createMainBranch(): Promise<Branch> {
         return {
             id: 'main-branch-id',
+            projectId: this.editorEngine.projectId,
             name: 'main',
             description: 'Default main branch',
             createdAt: new Date(),
             updatedAt: new Date(),
+            isDefault: true,
             git: null,
             sandbox: {
                 id: 'main-sandbox-id',

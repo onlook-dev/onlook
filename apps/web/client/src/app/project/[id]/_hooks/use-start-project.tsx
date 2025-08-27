@@ -9,6 +9,7 @@ import {
     CreateRequestContextType,
     MessageContextType,
     ProjectCreateRequestStatus,
+    type Branch,
     type ImageMessageContext,
     type MessageContext,
     type Project,
@@ -40,24 +41,27 @@ export const useStartProject = () => {
 
     useEffect(() => {
         if (project) {
-            startSandbox(project);
             editorEngine.screenshot.lastScreenshotAt = project.metadata.previewImg?.updatedAt ?? null;
         }
     }, [project]);
 
     useEffect(() => {
-        if (branch) {
-            editorEngine.branches.switchToBranch(branch.id);
+        if (branch && branch.length > 0) {
+            const defaultBranch = branch.find(b => b.isDefault) || branch[0];
+            if (defaultBranch) {
+                setBranch(defaultBranch);
+            }
         }
     }, [branch]);
 
-    const startSandbox = async (project: Project) => {
+    const setBranch = async (branch: Branch) => {
         try {
-            await editorEngine.sandbox.session.start(project.sandbox.id);
+            await editorEngine.branches.switchToBranch(branch.id);
+            await editorEngine.branches.startCurrentBranchSandbox();
             setIsSandboxLoading(false);
         } catch (error) {
-            console.error('Failed to start sandbox', error);
-            toast.error('Failed to start sandbox', {
+            console.error('Failed to set branch', error);
+            toast.error('Failed to set branch', {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
         }
@@ -143,8 +147,8 @@ export const useStartProject = () => {
     }, [isUserLoading, isProjectLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading, isSandboxLoading, isBranchLoading]);
 
     useEffect(() => {
-        setError(userError?.message ?? projectError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
-    }, [userError, projectError, canvasError, conversationsError, creationRequestError]);
+        setError(userError?.message ?? projectError?.message ?? branchError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
+    }, [userError, projectError, branchError, canvasError, conversationsError, creationRequestError]);
 
     return { isProjectReady, error };
 }
