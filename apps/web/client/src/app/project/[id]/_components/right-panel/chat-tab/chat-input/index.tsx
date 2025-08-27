@@ -28,14 +28,14 @@ export const ChatInput = observer(({
     inputValue: string;
     setInputValue: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-    const { sendMessage: sendMessageToChat, stop, isWaiting } = useChatContext();
+    const { sendMessageToChat, stop, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isComposing, setIsComposing] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
-    const [chatMode, setChatMode] = useState<ChatType>(ChatType.EDIT);
+    const chatMode = editorEngine.state.chatMode;
 
     const focusInput = () => {
         requestAnimationFrame(() => {
@@ -239,7 +239,7 @@ export const ChatInput = observer(({
                     }
 
                     const result = await frame.view.captureScreenshot();
-                    if (result && result.data) {
+                    if (result?.data) {
                         screenshotData = result.data;
                         mimeType = result.mimeType || 'image/jpeg';
                         break;
@@ -297,6 +297,10 @@ export const ChatInput = observer(({
                 dataTransfer: e.dataTransfer,
             }),
         );
+    };
+
+    const handleChatModeChange = (mode: ChatType) => {
+        editorEngine.state.chatMode = mode;
     };
 
     return (
@@ -378,7 +382,7 @@ export const ChatInput = observer(({
                 <div className="flex flex-row items-center gap-1.5">
                     <ChatModeToggle
                         chatMode={chatMode}
-                        onChatModeChange={setChatMode}
+                        onChatModeChange={handleChatModeChange}
                         disabled={disabled}
                     />
                 </div>

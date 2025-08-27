@@ -1,6 +1,7 @@
+import type { ToolCall } from '@ai-sdk/provider-utils';
 import { ASK_TOOL_SET, BUILD_TOOL_SET, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
-import { generateObject, NoSuchToolError, type ToolCall, type ToolSet } from 'ai';
+import { generateObject, NoSuchToolError, type ToolSet } from 'ai';
 
 export async function getModelFromType(chatType: ChatType) {
     let model: ModelConfig;
@@ -47,40 +48,45 @@ export async function getSystemPromptFromType(chatType: ChatType) {
 }
 
 
-export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: ToolCall<string, any>, tools: ToolSet, error: Error }) => {
+export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: ToolCall<string, unknown>, tools: ToolSet, error: Error }) => {
     if (NoSuchToolError.isInstance(error)) {
         throw new Error(
             `Tool "${toolCall.toolName}" not found. Available tools: ${Object.keys(tools).join(', ')}`,
         );
     }
-    const tool = tools[toolCall.toolName as keyof typeof tools];
+    const tool = tools[toolCall.toolName];
+
+    if (!tool?.inputSchema) {
+        throw new Error(`Tool "${toolCall.toolName}" has no input schema`);
+    }
 
     console.warn(
-        `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.args)}, attempting to fix`,
+        `Invalid parameter for tool ${toolCall.toolName} with args ${JSON.stringify(toolCall.input)}, attempting to fix`,
     );
 
     const { model } = await initModel({
         provider: LLMProvider.OPENROUTER,
-        model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+        model: OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO,
     });
 
     const { object: repairedArgs } = await generateObject({
         model,
-        schema: tool?.parameters,
+        schema: tool.inputSchema,
         prompt: [
             `The model tried to call the tool "${toolCall.toolName}"` +
             ` with the following arguments:`,
-            JSON.stringify(toolCall.args),
+            JSON.stringify(toolCall.input),
             `The tool accepts the following schema:`,
-            JSON.stringify(tool?.parameters),
-            'Please fix the arguments.',
+            JSON.stringify(tool?.inputSchema),
+            'Please fix the inputs. Return the fixed inputs as a JSON object, DO NOT include any other text.',
         ].join('\n'),
     });
 
     return {
-        ...toolCall,
-        args: JSON.stringify(repairedArgs),
-        toolCallType: 'function' as const
+        type: 'tool-call' as const,
+        toolCallId: toolCall.toolCallId,
+        toolName: toolCall.toolName,
+        input: JSON.stringify(repairedArgs),
     };
 }
 

@@ -1,31 +1,27 @@
 import type { Message as DbMessage } from "@onlook/db";
 import { ChatMessageRole, type AssistantChatMessage, type ChatMessage, type UserChatMessage } from "@onlook/models";
 import { assertNever } from '@onlook/utility';
-import type { Message as VercelMessage } from 'ai';
+import type { UIMessage as VercelMessage } from 'ai';
 import { v4 as uuidv4 } from 'uuid';
 
 export const toMessage = (message: DbMessage): ChatMessage => {
-    const content = {
-        format: 2 as const,
-        parts: message.parts ?? [],
+
+    const baseMessage = {
+        ...message,
+        threadId: message.conversationId,
         metadata: {
             vercelId: message.id,
             context: message.context ?? [],
             checkpoints: message.checkpoints ?? [],
-        }
-    }
+        },
+        parts: message.parts ?? [],
 
-    const baseMessage = {
-        ...message,
-        content,
-        threadId: message.conversationId,
     }
     switch (message.role) {
         case ChatMessageRole.ASSISTANT:
             return {
                 ...baseMessage,
                 role: message.role as ChatMessageRole.ASSISTANT,
-                content,
             } satisfies AssistantChatMessage;
         case ChatMessageRole.USER:
             return {
@@ -42,16 +38,16 @@ export const fromMessage = (message: ChatMessage): DbMessage => {
         id: message.id,
         createdAt: message.createdAt,
         conversationId: message.threadId,
-        context: message.content.metadata?.context ?? [],
-        parts: message.content.parts,
-        content: message.content.parts.map((part) => {
+        context: message?.metadata?.context ?? [],
+        parts: message.parts,
+        content: message.parts.map((part) => {
             if (part.type === 'text') {
                 return part.text;
             }
             return '';
         }).join(''),
         role: message.role as DbMessage['role'],
-        checkpoints: message.content.metadata?.checkpoints ?? [],
+        checkpoints: message.metadata?.checkpoints ?? [],
         applied: null,
         commitOid: null,
         snapshots: null,
@@ -64,33 +60,16 @@ export const toOnlookMessageFromVercel = (message: VercelMessage, conversationId
         context: [],
         checkpoints: [],
     }
-    const content = {
-        parts: message.parts ?? [],
-        format: 2 as const,
-        metadata,
-    }
-    const baseMessage = {
+    const baseMessage: ChatMessage = {
         ...message,
         id: uuidv4(),
-        createdAt: message.createdAt ?? new Date(),
+        createdAt: new Date(),
         threadId: conversationId,
-        content,
+        metadata,
+        parts: message.parts ?? [],
+        role: message.role as ChatMessageRole,
     }
-
-    switch (message.role) {
-        case ChatMessageRole.ASSISTANT:
-            return {
-                ...baseMessage,
-                role: message.role as ChatMessageRole.ASSISTANT,
-            } satisfies AssistantChatMessage;
-        case ChatMessageRole.USER:
-            return {
-                ...baseMessage,
-                role: message.role as ChatMessageRole.USER,
-            } satisfies UserChatMessage;
-        default:
-            throw new Error(`Unsupported message role: ${message.role}`);
-    }
+    return baseMessage;
 }
 
 export const toDbMessageFromVercel = (message: VercelMessage, conversationId: string): DbMessage => {
