@@ -6,7 +6,12 @@ export interface Project {
         updatedAt: string;
         previewImg: PreviewImg | null;
         description: string | null;
+        updatedPreviewImgAt: Date | null;
         tags: string[];
+    };
+    sandbox: {
+        id: string;
+        url: string;
     };
 }
 
@@ -17,5 +22,4 @@ export interface PreviewImg {
         path: string;
     };
     url?: string;
-    updatedAt: Date | null;
 }
