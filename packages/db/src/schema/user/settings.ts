@@ -26,6 +26,5 @@ export const userSettingsRelations = relations(userSettings, ({ one }) => ({
 
 export const userSettingsInsertSchema = createInsertSchema(userSettings);
 export const userSettingsUpdateSchema = createUpdateSchema(userSettings);
-
 export type UserSettings = typeof userSettings.$inferSelect;
 export type NewUserSettings = typeof userSettings.$inferInsert;
