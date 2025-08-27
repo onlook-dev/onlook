@@ -67,7 +67,7 @@ export function ToolCallSimple({
     const toolName = toolInvocation.type.split('-')[1] ?? '';
     const Icon = TOOL_ICONS[toolName] ?? Icons.QuestionMarkCircled;
 
-    if(toolInvocation.state === 'output-available') {
+    if (toolInvocation.state === 'output-available') {
         return null;
     }
 
@@ -183,17 +183,25 @@ export function ToolCallSimple({
         }
     }
     return (
-        <div className={cn('flex items-center gap-2 ml-2 text-foreground-tertiary/80', className)}>
-            <Icon className="w-4 h-4" />
-            <span
-                className={cn(
-                    'text-regularPlus',
-                    loading &&
-                    'bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]'
-                )}
-            >
-                {getLabel()}
-            </span>
+        <div className="flex flex-col gap-2">
+            <div className={cn('flex items-center gap-2 ml-2 text-foreground-tertiary/80', className)}>
+                <Icon className="w-4 h-4" />
+                <span
+                    className={cn(
+                        'text-regularPlus',
+                        loading &&
+                        'bg-gradient-to-l from-white/20 via-white/90 to-white/20 bg-[length:200%_100%] bg-clip-text text-transparent animate-shimmer filter drop-shadow-[0_0_10px_rgba(255,255,255,0.4)]'
+                    )}
+                >
+                    {getLabel()}
+                </span>
+            </div>
+            {(toolInvocation.state === 'output-error') && (
+                <div className="flex items-start gap-2 ml-2 text-red-500 text-small max-h-32 overflow-y-auto border-l">
+                    <Icons.ExclamationTriangle className="w-4 h-4" />
+                    <span className="text-regularPlus">{toolInvocation.errorText || 'Error calling tool'}</span>
+                </div>
+            )}
         </div>
     );
 } 
