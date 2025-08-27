@@ -66,7 +66,7 @@
         "@vercel/otel": "^1.13.0",
         "@xterm/addon-fit": "^0.10.0",
         "@xterm/xterm": "^5.5.0",
-        "ai": "5.0.25",
+        "ai": "5.0.26",
         "blob-util": "^2.0.2",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
