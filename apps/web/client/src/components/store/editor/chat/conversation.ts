@@ -55,7 +55,6 @@ export class ConversationManager {
             }
             const newConversation = await api.chat.conversation.upsert.mutate({
                 projectId: this.editorEngine.projectId,
-                suggestions: [],
             });
             this.current = {
                 conversation: newConversation,
@@ -167,12 +166,10 @@ export class ConversationManager {
             messageId: message.id,
             checkpoints: newCheckpoints,
         });
-        console.log('attachCommitToUserMessage', userMessage);
         await this.addOrReplaceMessage(userMessage);
     }
 
     async addOrReplaceMessage(message: ChatMessage) {
-        console.log('addOrReplaceMessage', message);
         if (!this.current) {
             console.error('No conversation found');
             return;

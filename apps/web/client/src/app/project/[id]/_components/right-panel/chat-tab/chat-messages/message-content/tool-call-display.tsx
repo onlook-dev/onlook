@@ -14,12 +14,12 @@ import {
 import type { WebSearchResult } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
+import type { ToolUIPart } from 'ai';
 import { type z } from 'zod';
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
 import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block';
 import { SearchSourcesDisplay } from '../../code-display/search-sources-display';
 import { ToolCallSimple } from './tool-call-simple';
-import type { ToolUIPart } from 'ai';
 
 export const ToolCallDisplay = ({
     messageId,
@@ -160,7 +160,7 @@ export const ToolCallDisplay = ({
         if (toolName === SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME) {
             const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>;
             const filePath = args?.file_path;
-            const codeContent = args?.edits.map((edit) => edit.new_string).join('\n...\n');
+            const codeContent = args?.edits?.map((edit) => edit.new_string).join('\n...\n');
             if (!filePath || !codeContent) {
                 return (
                     <ToolCallSimple

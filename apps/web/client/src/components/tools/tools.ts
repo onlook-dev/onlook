@@ -1,4 +1,6 @@
+import { getToolSetFromType } from '@/app/api/chat/helperts';
 import type { EditorEngine } from '@/components/store/editor/engine';
+import type { ToolCall } from '@ai-sdk/provider-utils';
 import {
     BASH_EDIT_TOOL_NAME,
     BASH_EDIT_TOOL_PARAMETERS,
@@ -55,8 +57,6 @@ import {
     handleWriteFileTool
 } from './handlers';
 import { EMPTY_TOOL_PARAMETERS } from './helpers';
-import type { ToolCall } from '@ai-sdk/provider-utils';
-import { getToolSetFromType } from '@/app/api/chat/helperts';
 
 interface ClientToolMap extends Record<string, {
     name: string;
@@ -81,13 +81,13 @@ const TOOL_HANDLERS: ClientToolMap = {
     [READ_STYLE_GUIDE_TOOL_NAME]: {
         name: READ_STYLE_GUIDE_TOOL_NAME,
         inputSchema: EMPTY_TOOL_PARAMETERS,
-        handler: async (editorEngine: EditorEngine) =>
+        handler: async (args: unknown, editorEngine: EditorEngine) =>
             handleReadStyleGuideTool(editorEngine),
     },
     [ONLOOK_INSTRUCTIONS_TOOL_NAME]: {
         name: ONLOOK_INSTRUCTIONS_TOOL_NAME,
         inputSchema: EMPTY_TOOL_PARAMETERS,
-        handler: async () => ONLOOK_INSTRUCTIONS,
+        handler: async (_args: unknown, _editorEngine: EditorEngine) => ONLOOK_INSTRUCTIONS,
     },
     [SEARCH_REPLACE_EDIT_FILE_TOOL_NAME]: {
         name: SEARCH_REPLACE_EDIT_FILE_TOOL_NAME,
@@ -176,17 +176,17 @@ export async function handleToolCall(toolCall: ToolCall<string, unknown>, editor
         const currentChatMode = editorEngine.state.chatMode;
         const availableTools = await getToolSetFromType(currentChatMode);
 
-        if (!availableTools[toolName]) {            
+        if (!availableTools[toolName]) {
             toast.error(`Tool "${toolName}" not available in ask mode`, {
                 description: `Switch to build mode to use this tool.`,
                 duration: 2000,
             });
-            
+
             throw new Error(`Tool "${toolName}" is not available in ${currentChatMode} mode`);
         }
 
         const clientTool = TOOL_HANDLERS[toolName];
-        
+
         if (!clientTool) {
             throw new Error(`Unknown tool call: ${toolName}`);
         }
