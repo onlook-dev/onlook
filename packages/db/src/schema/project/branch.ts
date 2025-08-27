@@ -1,5 +1,5 @@
-import { eq, relations } from 'drizzle-orm';
-import { boolean, pgTable, text, timestamp, uniqueIndex, uuid, varchar } from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+import { boolean, pgTable, text, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createUpdateSchema } from 'drizzle-zod';
 import { z } from 'zod';
 import { frames } from '../canvas/frame';
@@ -25,11 +25,7 @@ export const branches = pgTable('branches', {
 
     // sandbox 
     sandboxId: varchar('sandbox_id').notNull(),
-},
-    (table) => [
-        uniqueIndex('idx_project_default_branch').on(table.projectId).where(eq(table.isDefault, true)),
-    ]
-).enableRLS();
+}).enableRLS();
 
 export const branchInsertSchema = createInsertSchema(branches);
 export const branchUpdateSchema = createUpdateSchema(branches, {

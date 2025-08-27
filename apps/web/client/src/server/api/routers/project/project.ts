@@ -239,6 +239,10 @@ export const projectRouter = createTRPCRouter({
                     throw new Error('Failed to create project in database');
                 }
 
+                // 2. Create the default branch
+                const newBranch = createDefaultBranch(newProject.id);
+                await tx.insert(branches).values(newBranch);
+
                 // 2. Create the association in the junction table
                 await tx.insert(userProjects).values({
                     userId: input.userId,

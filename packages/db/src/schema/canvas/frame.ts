@@ -20,6 +20,9 @@ export const frames = pgTable("frames", {
     y: numeric("y").notNull(),
     width: numeric("width").notNull(),
     height: numeric("height").notNull(),
+
+    // deprecated
+    // type: text("type").notNull(),
 }).enableRLS();
 
 export const frameInsertSchema = createInsertSchema(frames);

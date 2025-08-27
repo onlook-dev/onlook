@@ -65,6 +65,7 @@ export class EditorEngine {
     readonly ast: AstManager = new AstManager(this);
 
     readonly branches: BranchManager = new BranchManager(this);
+
     // Sandbox getter - returns branch-specific sandbox
     get sandbox(): SandboxManager {
         return this.branches.getCurrentSandbox();

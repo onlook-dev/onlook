@@ -2,7 +2,16 @@ import { DefaultSettings } from '@onlook/constants';
 import type { Frame as DbFrame } from '@onlook/db';
 import { v4 as uuidv4 } from 'uuid';
 
-export const createDefaultFrame = (canvasId: string, branchId: string, url: string, overrides?: Partial<DbFrame>): DbFrame => {
+export const createDefaultFrame = (
+    {
+        canvasId,
+        branchId,
+        url,
+        overrides,
+    }: {
+        canvasId: string; branchId: string; url: string; overrides?: Partial<DbFrame>
+    },
+): DbFrame => {
     return {
         id: uuidv4(),
         canvasId,
