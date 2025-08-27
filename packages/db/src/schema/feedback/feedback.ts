@@ -40,7 +40,7 @@ const attachmentSchema = z.object({
 export const feedbackInsertSchema = createInsertSchema(feedbacks, {
     message: z.string().min(1, 'Message is required').max(5000, 'Message is too long'),
     email: z.string().email('Invalid email format').optional(),
-    pageUrl: z.string().url('Invalid URL format').optional(),
+    pageUrl: z.url('Invalid URL format').optional(),
     attachments: z.array(attachmentSchema).default([]),
     metadata: z.record(z.string(), z.any()).default({}),
 });
