@@ -2,7 +2,7 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
-import { useChat, type UseChatHelpers} from '@ai-sdk/react';
+import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { toVercelMessageFromOnlook } from '@onlook/ai';
 import { toOnlookMessageFromVercel } from '@onlook/db';
 import { ChatMessageRole, ChatType } from '@onlook/models';
@@ -39,8 +39,8 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 output: result,
             });
         },
-        onFinish: ({message}) => {
-            if(!message.metadata) {
+        onFinish: ({ message }) => {
+            if (!message.metadata) {
                 return;
             }
             const finishReason = (message.metadata as { finishReason?: string }).finishReason;
@@ -68,7 +68,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             editorEngine.chat.error.handleChatError(error);
 
             chat.stop();
-            
+
             const filteredMessages = chat.messages.filter(msg => msg.role !== 'assistant');
             chat.setMessages(filteredMessages);
 
@@ -96,9 +96,9 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         editorEngine.chat.error.clear();
 
         const messages = editorEngine.chat.conversation.current?.messages ?? [];
-        const uiMessages = messages.map((message, index) => 
+        const uiMessages = messages.map((message, index) =>
             toVercelMessageFromOnlook(message, {
-                totalMessages: messages.length, 
+                totalMessages: messages.length,
                 currentMessageIndex: index,
                 lastUserMessageIndex: messages.findLastIndex(m => m.role === ChatMessageRole.USER),
                 lastAssistantMessageIndex: messages.findLastIndex(m => m.role === ChatMessageRole.ASSISTANT),
@@ -128,6 +128,6 @@ export function useChatContext() {
     const context = useContext(ChatContext);
     if (!context) throw new Error('useChatContext must be used within a ChatProvider');
     const isWaiting = context.status === 'streaming' || context.status === 'submitted';
-       
+
     return { ...context, isWaiting };
 }
