@@ -9,7 +9,6 @@ import {
     CreateRequestContextType,
     MessageContextType,
     ProjectCreateRequestStatus,
-    type Branch,
     type ImageMessageContext,
     type MessageContext,
     type Project,
@@ -28,7 +27,6 @@ export const useStartProject = () => {
     const apiUtils = api.useUtils();
     const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
     const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: branch, isLoading: isBranchLoading, error: branchError } = api.branch.getByProjectId.useQuery({ projectId: editorEngine.projectId });
     const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
     const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
@@ -41,27 +39,18 @@ export const useStartProject = () => {
 
     useEffect(() => {
         if (project) {
-            editorEngine.screenshot.lastScreenshotAt = project.metadata.previewImg?.updatedAt ?? null;
+            startSandbox(project);
+            editorEngine.screenshot.lastScreenshotAt = project.metadata.updatedPreviewImgAt;
         }
     }, [project]);
 
-    useEffect(() => {
-        if (branch && branch.length > 0) {
-            const defaultBranch = branch.find(b => b.isDefault) || branch[0];
-            if (defaultBranch) {
-                setBranch(defaultBranch);
-            }
-        }
-    }, [branch]);
-
-    const setBranch = async (branch: Branch) => {
+    const startSandbox = async (project: Project) => {
         try {
-            await editorEngine.branches.switchToBranch(branch.id);
-            await editorEngine.branches.startCurrentBranchSandbox();
+            await editorEngine.sandbox.session.start(project.sandbox.id);
             setIsSandboxLoading(false);
         } catch (error) {
-            console.error('Failed to set branch', error);
-            toast.error('Failed to set branch', {
+            console.error('Failed to start sandbox', error);
+            toast.error('Failed to start sandbox', {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
         }
@@ -140,15 +129,14 @@ export const useStartProject = () => {
             !isCanvasLoading &&
             !isConversationsLoading &&
             !isCreationRequestLoading &&
-            !isSandboxLoading &&
-            !isBranchLoading;
+            !isSandboxLoading;
 
         setIsProjectReady(allQueriesResolved);
-    }, [isUserLoading, isProjectLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading, isSandboxLoading, isBranchLoading]);
+    }, [isUserLoading, isProjectLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading, isSandboxLoading]);
 
     useEffect(() => {
-        setError(userError?.message ?? projectError?.message ?? branchError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
-    }, [userError, projectError, branchError, canvasError, conversationsError, creationRequestError]);
+        setError(userError?.message ?? projectError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
+    }, [userError, projectError, canvasError, conversationsError, creationRequestError]);
 
     return { isProjectReady, error };
 }
