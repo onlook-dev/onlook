@@ -28,6 +28,7 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Creating build environment...',
             progress: 10,
+            envVars: deployment.envVars ?? {},
         });
         if (!updateDeploymentResult1) {
             throw new TRPCError({
@@ -49,6 +50,7 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
                 message: 'Creating optimized build...',
                 progress: 20,
                 sandboxId: forkedSandboxId,
+                envVars: deployment.envVars ?? {},
             });
             if (!updateDeploymentResult2) {
                 throw new TRPCError({
@@ -62,7 +64,8 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
                 skipBadge: type === DeploymentType.CUSTOM,
                 buildScript: buildScript ?? DefaultSettings.COMMANDS.build,
                 buildFlags: buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
-                updateDeployment: (deployment) => updateDeployment(db, deployment),
+                envVars: deployment.envVars ?? {},
+                updateDeployment: (deploymentUpdate) => updateDeployment(db, deploymentUpdate),
             });
 
             const updateDeploymentResult3 = await updateDeployment(db, {
@@ -70,6 +73,7 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Deploying build...',
                 progress: 80,
+                envVars: deployment.envVars ?? {},
             });
             if (!updateDeploymentResult3) {
                 throw new TRPCError({
@@ -97,6 +101,7 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
             status: DeploymentStatus.FAILED,
             error: error instanceof Error ? error.message : 'Unknown error',
             progress: 100,
+            envVars: deployment.envVars ?? {},
         });
         throw error;
     }

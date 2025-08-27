@@ -47,7 +47,7 @@ describe('Prompt', () => {
 
         const message = getHydratedUserMessage(
             'test',
-            'test',
+            [{ type: 'text', text: 'test' }],
             [
                 {
                     path: 'test.txt',
@@ -80,7 +80,7 @@ describe('Prompt', () => {
             options,
         );
 
-        const prompt = message.content;
+        const prompt = message.parts[0]?.type === 'text' ? message.parts[0].text : '';
 
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);
@@ -100,8 +100,8 @@ describe('Prompt', () => {
             lastAssistantMessageIndex: 0,
         };
 
-        const message = getHydratedUserMessage('test', '', [], options);
-        const prompt = message.content;
+        const message = getHydratedUserMessage('test', [], [], options);
+        const prompt = message.parts[0]?.type === 'text' ? message.parts[0].text : '';
 
         if (SHOULD_WRITE_USER_MESSAGE) {
             await Bun.write(userMessagePath, prompt);

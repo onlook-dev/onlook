@@ -108,6 +108,7 @@ export const deploymentRouter = createTRPCRouter({
                 id: deploymentId,
                 status: DeploymentStatus.COMPLETED,
                 message: 'Deployment Success!',
+                envVars: existingDeployment.envVars ?? {},
             });
         } catch (error) {
             console.error(error);
@@ -115,6 +116,7 @@ export const deploymentRouter = createTRPCRouter({
                 id: deploymentId,
                 status: DeploymentStatus.FAILED,
                 message: 'Failed to publish deployment',
+                envVars: existingDeployment.envVars ?? {},
             });
             throw error;
         }
@@ -123,10 +125,15 @@ export const deploymentRouter = createTRPCRouter({
         deploymentId: z.string(),
     })).mutation(async ({ ctx, input }) => {
         const { deploymentId } = input;
+        const deployment = await ctx.db.query.deployments.findFirst({
+            where: eq(deployments.id, deploymentId),
+        });
+
         await updateDeployment(ctx.db, {
             id: deploymentId,
             status: DeploymentStatus.CANCELLED,
             message: 'Cancelled by user',
+            envVars: deployment?.envVars ?? {},
         });
     }),
 });

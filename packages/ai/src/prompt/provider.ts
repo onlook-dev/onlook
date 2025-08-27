@@ -5,7 +5,7 @@ import type {
     MessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
-import type { Attachment, Message, UserContent } from 'ai';
+import type { UIDataTypes, UIMessage, UITools, UIMessagePart, TextUIPart, FileUIPart } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
@@ -63,10 +63,11 @@ export function getExampleConversation(
 
 export function getHydratedUserMessage(
     id: string,
-    content: UserContent,
+    parts: UIMessagePart<UIDataTypes, UITools>[],
     context: MessageContext[],
     opt: HydrateMessageOptions,
-): Message {
+): UIMessage {
+    let userParts: UIMessagePart<UIDataTypes, UITools>[] = [];
     const files = context.filter((c) => c.type === 'file').map((c) => c);
     const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
     const errors = context.filter((c) => c.type === 'error').map((c) => c);
@@ -103,26 +104,27 @@ export function getHydratedUserMessage(
         }
     }
 
-    const textContent =
-        typeof content === 'string'
-            ? content
-            : content
-                  .filter((c) => c.type === 'text')
-                  .map((c) => c.text)
-                  .join('\n');
+    const textContent = parts
+        .filter((p) => p.type === 'text')
+        .map((p) => p.text)
+        .join('\n');
     prompt += wrapXml('instruction', textContent);
 
-    const attachments: Attachment[] = images.map((i) => ({
-        type: 'image',
-        contentType: i.mimeType,
-        url: i.content,
-    }));
+    userParts.push({ type: 'text', text: prompt });
+
+    if (images.length > 0) {
+        const attachments: FileUIPart[] = images.map((i) => ({
+            type: 'file',
+            mediaType: i.mimeType,
+            url: i.content,
+        }));
+        userParts = userParts.concat(attachments);
+    }
 
     return {
         id,
         role: 'user',
-        content: prompt,
-        experimental_attachments: attachments,
+        parts: userParts,
     };
 }
 
