@@ -108,7 +108,6 @@
         "tailwindcss": "^4.1.0",
         "tailwindcss-animate": "^1.0.7",
         "use-eye-dropper": "^1.6.4",
-        "vaul": "^1.1.2",
-        "zod": "^4.1.3"
+        "vaul": "^1.1.2"
     }
 }
