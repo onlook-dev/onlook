@@ -75,7 +75,7 @@ export const Border = observer(() => {
                 <DropdownMenuTrigger asChild>
                     <ToolbarButton
                         isOpen={isOpen}
-                        className="flex items-center gap-1 min-w-10"
+                        className="flex items-center gap-1 min-w-9"
                     >
                         <Icons.BorderEdit className={`h-4 w-4 min-h-4 min-w-4 ${borderExists ? 'text-white' : ''}
 `} />

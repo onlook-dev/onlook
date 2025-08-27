@@ -35,7 +35,7 @@ export function ThemeGroup({ frameData }: { frameData: FrameData }) {
         <>
             <HoverOnlyTooltip content="System Theme" side="bottom" sideOffset={10}>
                     <ToolbarButton
-                        className={`w-10 ${theme === SystemTheme.SYSTEM ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50 text-foreground-onlook'}`}
+                        className={`w-9 ${theme === SystemTheme.SYSTEM ? 'bg-background-tertiary/50 hover:bg-background-tertiary/50 text-foreground-primary' : 'hover:bg-background-tertiary/50 text-foreground-onlook'}`}
                         onClick={() => changeTheme(SystemTheme.SYSTEM)}
                     >
                         <Icons.Laptop className="h-4 w-4" />
@@ -43,7 +43,7 @@ export function ThemeGroup({ frameData }: { frameData: FrameData }) {
             </HoverOnlyTooltip>
             <HoverOnlyTooltip content="Dark Theme" side="bottom" sideOffset={10}>
                     <ToolbarButton
-                        className={`w-10 ${theme === SystemTheme.DARK ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50 text-foreground-onlook'}`}
+                        className={`w-9 ${theme === SystemTheme.DARK ? 'bg-background-tertiary/50 hover:bg-background-tertiary/50 text-foreground-primary' : 'hover:bg-background-tertiary/50 text-foreground-onlook'}`}
                         onClick={() => changeTheme(SystemTheme.DARK)}
                     >
                         <Icons.Moon className="h-4 w-4" />
@@ -51,7 +51,7 @@ export function ThemeGroup({ frameData }: { frameData: FrameData }) {
             </HoverOnlyTooltip>
             <HoverOnlyTooltip content="Light Theme" side="bottom" sideOffset={10}>
                     <ToolbarButton
-                        className={`w-10 ${theme === SystemTheme.LIGHT ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50 text-foreground-onlook'}`}
+                        className={`w-9 ${theme === SystemTheme.LIGHT ? 'bg-background-tertiary/50 hover:bg-background-tertiary/50 text-foreground-primary' : 'hover:bg-background-tertiary/50 text-foreground-onlook'}`}
                         onClick={() => changeTheme(SystemTheme.LIGHT)}
                     >
                         <Icons.Sun className="h-4 w-4" />

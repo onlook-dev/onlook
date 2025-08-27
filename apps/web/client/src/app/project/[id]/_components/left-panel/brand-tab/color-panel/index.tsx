@@ -77,16 +77,16 @@ const ColorPanel = observer(() => {
 
     return (
         <div className="text-active flex h-full w-full flex-grow flex-col overflow-y-auto p-0 text-xs">
-            <div className="border-border bg-background fixed top-0 right-0 left-0 z-10 flex items-center justify-between border-b py-1.5 pr-2.5 pl-4">
-                <h2 className="text-foreground text-sm font-normal">Brand Colors</h2>
+            <div className="border-border bg-background fixed top-0 right-0 left-0 z-10 flex items-center justify-start border-b py-1.5 pr-2.5 pl-3 gap-2">
                 <Button
                     variant="ghost"
                     size="icon"
                     className="hover:bg-background-secondary h-7 w-7 rounded-md"
                     onClick={handleClose}
                 >
-                    <Icons.CrossS className="h-4 w-4" />
+                    <Icons.ArrowLeft className="h-4 w-4" />
                 </Button>
+                <h2 className="text-foreground text-sm font-normal">Brand Colors</h2>
             </div>
             {/* Theme Toggle */}
             <div className="border-border mt-[2.5rem] flex gap-2 border-b px-4 py-3">
