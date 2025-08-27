@@ -8,15 +8,19 @@ import { ChatType } from '@onlook/models';
 import type { Message } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
-import { createContext, useContext, useRef } from 'react';
+import { createContext, useContext, useRef, useState } from 'react';
 
-type ExtendedUseChatHelpers = UseChatHelpers & { sendMessage: (type: ChatType) => Promise<string | null | undefined> };
+type ExtendedUseChatHelpers = UseChatHelpers & { 
+    sendMessage: (type: ChatType) => Promise<string | null | undefined>;
+    isStopped: boolean;
+};
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
     const lastMessageRef = useRef<Message | null>(null);
     const posthog = usePostHog();
+    const [isStopped, setIsStopped] = useState(false);
 
     const conversationId = editorEngine.chat.conversation.current?.conversation.id;
     const chat = useChat({
@@ -30,6 +34,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         onToolCall: (toolCall) => handleToolCall(toolCall.toolCall, editorEngine),
         onFinish: (message, { finishReason }) => {
             lastMessageRef.current = message;
+            setIsStopped(false);
             if (finishReason !== 'error') {
                 editorEngine.chat.error.clear();
             }
@@ -50,6 +55,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         onError: (error) => {
             console.error('Error in chat', error);
             editorEngine.chat.error.handleChatError(error);
+            setIsStopped(false);
 
             if (lastMessageRef.current) {
                 editorEngine.chat.conversation.addOrReplaceMessage(toOnlookMessageFromVercel(lastMessageRef.current, conversationId ?? ''));
@@ -64,6 +70,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             throw new Error('No conversation id');
         }
         lastMessageRef.current = null;
+        setIsStopped(false);
         editorEngine.chat.error.clear();
         chat.setMessages(editorEngine.chat.conversation.current?.messages ?? [] as any);
         try {
@@ -81,12 +88,17 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         });
     };
 
-    return <ChatContext.Provider value={{ ...chat, sendMessage }}>{children}</ChatContext.Provider>;
+    const customStop = () => {
+        setIsStopped(true);
+        chat.stop();
+    };
+
+    return <ChatContext.Provider value={{ ...chat, sendMessage, stop: customStop, isStopped }}>{children}</ChatContext.Provider>;
 });
 
 export function useChatContext() {
     const context = useContext(ChatContext);
     if (!context) throw new Error('useChatContext must be used within a ChatProvider');
-    const isWaiting = context.status === 'streaming' || context.status === 'submitted';
+    const isWaiting = (context.status === 'streaming' || context.status === 'submitted') && !context.isStopped;
     return { ...context, isWaiting };
 }
