@@ -29,6 +29,8 @@ import type {
     CoderouterApiSandboxFileRenamePostRequest,
     CoderouterApiSandboxFileStatPost200Response,
     CoderouterApiSandboxFileStatPostRequest,
+    CoderouterApiSandboxFileWatchPost200Response,
+    CoderouterApiSandboxFileWatchPostRequest,
     CoderouterApiSandboxFileWritePostRequest,
     CoderouterApiSandboxUrlPost200Response,
 } from '../models/index';
@@ -63,6 +65,10 @@ import {
     CoderouterApiSandboxFileStatPost200ResponseToJSON,
     CoderouterApiSandboxFileStatPostRequestFromJSON,
     CoderouterApiSandboxFileStatPostRequestToJSON,
+    CoderouterApiSandboxFileWatchPost200ResponseFromJSON,
+    CoderouterApiSandboxFileWatchPost200ResponseToJSON,
+    CoderouterApiSandboxFileWatchPostRequestFromJSON,
+    CoderouterApiSandboxFileWatchPostRequestToJSON,
     CoderouterApiSandboxFileWritePostRequestFromJSON,
     CoderouterApiSandboxFileWritePostRequestToJSON,
     CoderouterApiSandboxUrlPost200ResponseFromJSON,
@@ -103,6 +109,10 @@ export interface CoderouterApiSandboxFileRenamePostOperationRequest {
 
 export interface CoderouterApiSandboxFileStatPostOperationRequest {
     coderouterApiSandboxFileStatPostRequest?: CoderouterApiSandboxFileStatPostRequest;
+}
+
+export interface CoderouterApiSandboxFileWatchPostOperationRequest {
+    coderouterApiSandboxFileWatchPostRequest?: CoderouterApiSandboxFileWatchPostRequest;
 }
 
 export interface CoderouterApiSandboxFileWritePostOperationRequest {
@@ -594,6 +604,60 @@ export class DefaultApi extends runtime.BaseAPI {
         initOverrides?: RequestInit | runtime.InitOverrideFunction,
     ): Promise<CoderouterApiSandboxFileStatPost200Response> {
         const response = await this.coderouterApiSandboxFileStatPostRaw(
+            requestParameters,
+            initOverrides,
+        );
+        return await response.value();
+    }
+
+    /**
+     */
+    async coderouterApiSandboxFileWatchPostRaw(
+        requestParameters: CoderouterApiSandboxFileWatchPostOperationRequest,
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<runtime.ApiResponse<CoderouterApiSandboxFileWatchPost200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token('jwt', []);
+
+            if (tokenString) {
+                headerParameters['Authorization'] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/coderouter/api/sandbox/file/watch`;
+
+        const response = await this.request(
+            {
+                path: urlPath,
+                method: 'POST',
+                headers: headerParameters,
+                query: queryParameters,
+                body: CoderouterApiSandboxFileWatchPostRequestToJSON(
+                    requestParameters['coderouterApiSandboxFileWatchPostRequest'],
+                ),
+            },
+            initOverrides,
+        );
+
+        return new runtime.JSONApiResponse(response, (jsonValue) =>
+            CoderouterApiSandboxFileWatchPost200ResponseFromJSON(jsonValue),
+        );
+    }
+
+    /**
+     */
+    async coderouterApiSandboxFileWatchPost(
+        requestParameters: CoderouterApiSandboxFileWatchPostOperationRequest = {},
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<CoderouterApiSandboxFileWatchPost200Response> {
+        const response = await this.coderouterApiSandboxFileWatchPostRaw(
             requestParameters,
             initOverrides,
         );

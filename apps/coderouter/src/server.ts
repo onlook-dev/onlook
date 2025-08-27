@@ -9,6 +9,7 @@ import { api_sandbox_file_list } from './api/sandbox/file/list';
 import { api_sandbox_file_read } from './api/sandbox/file/read';
 import { api_sandbox_file_rename } from './api/sandbox/file/rename';
 import { api_sandbox_file_stat } from './api/sandbox/file/stat';
+import { api_sandbox_file_watch } from './api/sandbox/file/watch';
 import { api_sandbox_file_write } from './api/sandbox/file/write';
 import { api_sandbox_pause } from './api/sandbox/pause';
 import { api_sandbox_resume } from './api/sandbox/resume';
@@ -81,6 +82,7 @@ api_sandbox_file_list(app);
 api_sandbox_file_read(app);
 api_sandbox_file_rename(app);
 api_sandbox_file_stat(app);
+api_sandbox_file_watch(app);
 api_sandbox_file_write(app);
 
 app.doc('/openapi.json', {

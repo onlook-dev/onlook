@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/DefaultApi.ts
 apis/index.ts
 index.ts
@@ -18,6 +17,9 @@ models/CoderouterApiSandboxFileReadPostRequest.ts
 models/CoderouterApiSandboxFileRenamePostRequest.ts
 models/CoderouterApiSandboxFileStatPost200Response.ts
 models/CoderouterApiSandboxFileStatPostRequest.ts
+models/CoderouterApiSandboxFileWatchPost200Response.ts
+models/CoderouterApiSandboxFileWatchPost200ResponseEventsInner.ts
+models/CoderouterApiSandboxFileWatchPostRequest.ts
 models/CoderouterApiSandboxFileWritePostRequest.ts
 models/CoderouterApiSandboxFileWritePostRequestFilesInner.ts
 models/CoderouterApiSandboxUrlPost200Response.ts

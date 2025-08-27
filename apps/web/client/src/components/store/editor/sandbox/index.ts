@@ -118,7 +118,7 @@ export class SandboxManager {
                     }
                 }
             }
-
+            console.log('----> watch files called?');
             await this.watchFiles();
             this._isIndexed = true;
             timer.log('Indexing completed successfully');

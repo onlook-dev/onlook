@@ -97,11 +97,6 @@ export class CoderouterProvider extends Provider {
                 this.options.userId,
             );
             this.jwt = res.jwt ?? null;
-
-            if (typeof window !== 'undefined') {
-                const url = await this.getProjectUrl({ args: {} });
-                console.log('----> url', url);
-            }
         }
         return {};
     }
@@ -256,8 +251,23 @@ export class CoderouterProvider extends Provider {
     }
 
     async watchFiles(input: WatchFilesInput): Promise<WatchFilesOutput> {
+        const watcher = new CoderouterFileWatcher(this.api, () => this.requestInitOverrides());
+
+        await watcher.start(input);
+
+        if (input.onFileChange) {
+            watcher.registerEventCallback(async (event) => {
+                if (input.onFileChange) {
+                    await input.onFileChange({
+                        type: event.type,
+                        paths: event.paths,
+                    });
+                }
+            });
+        }
+
         return {
-            watcher: new CoderouterFileWatcher(),
+            watcher,
         };
     }
 
@@ -381,16 +391,85 @@ export class CoderouterProvider extends Provider {
 }
 
 export class CoderouterFileWatcher extends ProviderFileWatcher {
-    start(input: WatchFilesInput): Promise<void> {
-        return Promise.resolve();
+    protected callbacks: Array<(event: WatchEvent) => Promise<void>> = [];
+    protected abortController: AbortController | null = null;
+
+    constructor(
+        private readonly api: OpenAPI.DefaultApi,
+        private readonly requestInitOverrides: () => RequestInit,
+    ) {
+        super();
     }
 
-    stop(): Promise<void> {
-        return Promise.resolve();
+    protected off = true;
+    async start(input: WatchFilesInput): Promise<void> {
+        if (!this.off) {
+            return;
+        }
+
+        this.off = false;
+
+        const tick = async () => {
+            if (this.off) {
+                return;
+            }
+
+            if (this.abortController) {
+                this.abortController.abort();
+            }
+
+            this.abortController = new AbortController();
+
+            try {
+                const body = await this.api.coderouterApiSandboxFileWatchPost(
+                    {
+                        coderouterApiSandboxFileWatchPostRequest: {
+                            path: input.args.path,
+                            recursive: input.args.recursive ?? true,
+                            excludePaths: input.args.excludes ?? [],
+                        },
+                    },
+                    {
+                        ...this.requestInitOverrides(),
+                        signal: this.abortController?.signal,
+                    },
+                );
+
+                // convert the events to a map of type to paths as the defined by the product
+                const events = body.events.reduce(
+                    (acc, event) => {
+                        acc[event.type] = [...(acc[event.type] || []), event.path];
+                        return acc;
+                    },
+                    {} as Record<string, string[]>,
+                );
+
+                for (const [type, paths] of Object.entries(events)) {
+                    this.callbacks.forEach(async (callback) => {
+                        await callback({
+                            type:
+                                type === 'create' ? 'add' : type === 'delete' ? 'remove' : 'change',
+                            paths,
+                        });
+                    });
+                }
+            } catch (err) {
+                console.error('[coderouter] poll error', err);
+            } finally {
+                // schedule next poll immediately
+                setTimeout(tick, 200);
+            }
+        };
+
+        tick();
+    }
+
+    async stop(): Promise<void> {
+        this.off = true;
     }
 
     registerEventCallback(callback: (event: WatchEvent) => Promise<void>): void {
-        // TODO: Implement
+        this.callbacks.push(callback);
     }
 }
 
