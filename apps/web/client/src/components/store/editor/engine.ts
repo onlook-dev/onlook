@@ -2,7 +2,6 @@ import { makeAutoObservable } from 'mobx';
 import type { PostHog } from 'posthog-js';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
-import { BranchManager } from './branch/manager';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
@@ -21,7 +20,7 @@ import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { PagesManager } from './pages';
 import { PreloadScriptManager } from './preload';
-import type { SandboxManager } from './sandbox';
+import { SandboxManager } from './sandbox';
 import { ScreenshotManager } from './screenshot';
 import { StateManager } from './state';
 import { StyleManager } from './style';
@@ -35,40 +34,31 @@ export class EditorEngine {
 
     readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
-    readonly chat: ChatManager = new ChatManager(this);
-    readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
-    readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
-
-    // Canvas controls
-    readonly frames: FramesManager = new FramesManager(this);
-    readonly frameEvent: FrameEventManager = new FrameEventManager(this);
     readonly canvas: CanvasManager = new CanvasManager(this);
     readonly text: TextEditingManager = new TextEditingManager(this);
+    readonly sandbox: SandboxManager = new SandboxManager(this);
     readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
     readonly overlay: OverlayManager = new OverlayManager(this);
-    readonly action: ActionManager = new ActionManager(this);
     readonly insert: InsertManager = new InsertManager(this);
     readonly move: MoveManager = new MoveManager(this);
     readonly copy: CopyManager = new CopyManager(this);
     readonly group: GroupManager = new GroupManager(this);
+    readonly ast: AstManager = new AstManager(this);
+    readonly action: ActionManager = new ActionManager(this);
     readonly style: StyleManager = new StyleManager(this);
-
-    // Per-branch managers
-    readonly font: FontManager = new FontManager(this);
+    readonly code: CodeManager = new CodeManager(this);
+    readonly ide: IDEManager = new IDEManager(this);
+    readonly versions: VersionsManager = new VersionsManager(this);
+    readonly chat: ChatManager = new ChatManager(this);
     readonly image: ImageManager = new ImageManager(this);
     readonly theme: ThemeManager = new ThemeManager(this);
+    readonly font: FontManager = new FontManager(this);
     readonly pages: PagesManager = new PagesManager(this);
-    readonly versions: VersionsManager = new VersionsManager(this);
-    readonly ide: IDEManager = new IDEManager(this);
-    readonly code: CodeManager = new CodeManager(this);
-    readonly ast: AstManager = new AstManager(this);
-
-    readonly branches: BranchManager = new BranchManager(this);
-    // Sandbox getter - returns branch-specific sandbox
-    get sandbox(): SandboxManager {
-        return this.branches.getCurrentSandbox();
-    }
+    readonly frames: FramesManager = new FramesManager(this);
+    readonly frameEvent: FrameEventManager = new FrameEventManager(this);
+    readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
+    readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
@@ -98,7 +88,7 @@ export class EditorEngine {
         this.code.clear();
         this.ide.clear();
         this.error.clear();
-        this.branches.clear();
+        this.sandbox.clear();
         this.frameEvent.clear();
         this.screenshot.clear();
     }
