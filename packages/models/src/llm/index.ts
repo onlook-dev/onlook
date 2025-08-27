@@ -11,6 +11,7 @@ export enum ANTHROPIC_MODELS {
 }
 
 export enum OPENROUTER_MODELS {
+    // Generate object does not work for sonnet 4 https://github.com/OpenRouterTeam/ai-sdk-provider/issues/165
     CLAUDE_4_SONNET = 'anthropic/claude-sonnet-4',
     OPEN_AI_GPT_5 = 'openai/gpt-5',
     OPEN_AI_GPT_5_MINI = 'openai/gpt-5-mini',
