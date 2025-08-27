@@ -12,8 +12,9 @@ export enum ANTHROPIC_MODELS {
 
 export enum OPENROUTER_MODELS {
     CLAUDE_4_SONNET = 'anthropic/claude-sonnet-4',
-    OPEN_AI_GPT_5_NANO = 'openai/gpt-5-nano',
     OPEN_AI_GPT_5 = 'openai/gpt-5',
+    OPEN_AI_GPT_5_MINI = 'openai/gpt-5-mini',
+    OPEN_AI_GPT_5_NANO = 'openai/gpt-5-nano',
 }
 
 interface ModelMapping {

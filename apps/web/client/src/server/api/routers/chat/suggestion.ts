@@ -21,7 +21,7 @@ export const suggestionsRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             const { model, headers } = await initModel({
                 provider: LLMProvider.OPENROUTER,
-                model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+                model: OPENROUTER_MODELS.OPEN_AI_GPT_5_MINI,
             });
             const { object } = await generateObject({
                 model,
@@ -38,7 +38,7 @@ export const suggestionsRouter = createTRPCRouter({
                     })),
                     {
                         role: 'user',
-                        content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions.',
+                        content: 'Based on our conversation, what should I work on next to improve this page? Provide 3 specific, actionable suggestions. These should be realistic and achievable. Return the suggestions as a JSON object. DO NOT include any other text.',
                     },
                 ],
                 maxOutputTokens: 10000,

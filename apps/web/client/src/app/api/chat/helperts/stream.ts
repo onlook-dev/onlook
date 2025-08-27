@@ -1,7 +1,7 @@
+import type { ToolCall } from '@ai-sdk/provider-utils';
 import { ASK_TOOL_SET, BUILD_TOOL_SET, getAskModeSystemPrompt, getCreatePageSystemPrompt, getSystemPrompt, initModel } from '@onlook/ai';
 import { ChatType, LLMProvider, OPENROUTER_MODELS, type ModelConfig } from '@onlook/models';
 import { generateObject, NoSuchToolError, type ToolSet } from 'ai';
-import type { ToolCall } from '@ai-sdk/provider-utils';
 
 export async function getModelFromType(chatType: ChatType) {
     let model: ModelConfig;
@@ -66,7 +66,7 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
 
     const { model } = await initModel({
         provider: LLMProvider.OPENROUTER,
-        model: OPENROUTER_MODELS.CLAUDE_4_SONNET,
+        model: OPENROUTER_MODELS.OPEN_AI_GPT_5_NANO,
     });
 
     const { object: repairedArgs } = await generateObject({
@@ -78,7 +78,7 @@ export const repairToolCall = async ({ toolCall, tools, error }: { toolCall: Too
             JSON.stringify(toolCall.input),
             `The tool accepts the following schema:`,
             JSON.stringify(tool?.inputSchema),
-            'Please fix the arguments.',
+            'Please fix the inputs. Return the fixed inputs as a JSON object, DO NOT include any other text.',
         ].join('\n'),
     });
 
