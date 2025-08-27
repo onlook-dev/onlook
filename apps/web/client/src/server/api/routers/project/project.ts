@@ -5,7 +5,9 @@ import FirecrawlApp from '@mendable/firecrawl-js';
 import { initModel } from '@onlook/ai';
 import { STORAGE_BUCKETS } from '@onlook/constants';
 import {
+    branches,
     canvases,
+    createDefaultBranch,
     createDefaultCanvas,
     createDefaultFrame,
     createDefaultUserCanvas,
@@ -225,6 +227,8 @@ export const projectRouter = createTRPCRouter({
         .input(z.object({
             project: projectInsertSchema,
             userId: z.string(),
+            sandboxId: z.string(),
+            sandboxUrl: z.string(),
             creationData: projectCreateRequestInsertSchema
                 .omit({
                     projectId: true,
@@ -240,17 +244,20 @@ export const projectRouter = createTRPCRouter({
                 }
 
                 // 2. Create the default branch
-                const newBranch = createDefaultBranch(newProject.id);
+                const newBranch = createDefaultBranch({
+                    projectId: newProject.id,
+                    sandboxId: input.sandboxUrl,
+                });
                 await tx.insert(branches).values(newBranch);
 
-                // 2. Create the association in the junction table
+                // 3. Create the association in the junction table
                 await tx.insert(userProjects).values({
                     userId: input.userId,
                     projectId: newProject.id,
                     role: ProjectRole.OWNER,
                 });
 
-                // 3. Create the default canvas
+                // 4. Create the default canvas
                 const newCanvas = createDefaultCanvas(newProject.id);
                 await tx.insert(canvases).values(newCanvas);
 
@@ -261,23 +268,33 @@ export const projectRouter = createTRPCRouter({
                 });
                 await tx.insert(userCanvases).values(newUserCanvas);
 
-                // 4. Create the default frame
-                const desktopFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl, {
-                    x: '5',
-                    y: '0',
-                    width: '1536',
-                    height: '960',
+                // 5. Create the default frame
+                const desktopFrame = createDefaultFrame({
+                    canvasId: newCanvas.id,
+                    branchId: newBranch.id,
+                    url: input.sandboxUrl,
+                    overrides: {
+                        x: '5',
+                        y: '0',
+                        width: '1536',
+                        height: '960',
+                    },
                 });
                 await tx.insert(frames).values(desktopFrame);
-                const mobileFrame = createDefaultFrame(newCanvas.id, input.project.sandboxUrl, {
-                    x: '1600',
-                    y: '0',
-                    width: '440',
-                    height: '956',
+                const mobileFrame = createDefaultFrame({
+                    canvasId: newCanvas.id,
+                    branchId: newBranch.id,
+                    url: input.sandboxUrl,
+                    overrides: {
+                        x: '1600',
+                        y: '0',
+                        width: '440',
+                        height: '956',
+                    },
                 });
                 await tx.insert(frames).values(mobileFrame);
 
-                // 5. Create the creation request
+                // 6. Create the creation request
                 if (input.creationData) {
                     await tx.insert(projectCreateRequests).values({
                         ...input.creationData,

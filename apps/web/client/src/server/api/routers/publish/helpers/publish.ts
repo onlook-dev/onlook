@@ -61,6 +61,7 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
 
             const publishManager = new PublishManager(provider);
             const files = await publishManager.publish({
+                deploymentId,
                 skipBadge: type === DeploymentType.CUSTOM,
                 buildScript: buildScript ?? DefaultSettings.COMMANDS.build,
                 buildFlags: buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
