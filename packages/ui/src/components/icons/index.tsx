@@ -115,6 +115,7 @@ import {
 } from '@radix-ui/react-icons';
 import {
     CreditCardIcon,
+    GitBranchIcon,
     ListCheckIcon,
     MailXIcon,
     MessageSquareIcon,
@@ -1528,6 +1529,7 @@ export const Icons = {
         </svg>
     ),
     BoxModel: BoxModelIcon,
+    GitBranch: GitBranchIcon,
 
     ChatBubble: ChatBubbleIcon,
     Check: CheckIcon,
