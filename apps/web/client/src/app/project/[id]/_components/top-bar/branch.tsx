@@ -11,6 +11,7 @@ import {
 import { Icons } from "@onlook/ui/icons";
 import { Input } from "@onlook/ui/input";
 import { ScrollArea } from "@onlook/ui/scroll-area";
+import { timeAgo } from "@onlook/utility";
 import { observer } from "mobx-react-lite";
 import { useMemo, useState } from "react";
 
@@ -33,18 +34,6 @@ export const BranchDisplay = observer(() => {
         ),
         [allBranches, searchQuery]
     );
-
-    const formatTimeAgo = (date: Date) => {
-        const now = new Date();
-        const diff = now.getTime() - date.getTime();
-        const minutes = Math.floor(diff / (1000 * 60));
-        const hours = Math.floor(diff / (1000 * 60 * 60));
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-        if (minutes < 60) return `${minutes} min ago`;
-        if (hours < 24) return `${hours} hrs ago`;
-        return `${days} days ago`;
-    };
 
     const handleBranchSwitch = async (branchId: string) => {
         try {
@@ -114,7 +103,7 @@ export const BranchDisplay = observer(() => {
                                     <span className="truncate font-medium">{b.name}</span>
                                 </div>
                                 <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                                    {formatTimeAgo(new Date(b.updatedAt))}
+                                    {timeAgo(b.updatedAt)}
                                 </span>
                             </DropdownMenuItem>
                         ))}

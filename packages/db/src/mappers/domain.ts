@@ -5,7 +5,7 @@ export const toDomainInfoFromPreview = (previewDomain: PreviewDomain): DomainInf
     return {
         url: previewDomain.fullDomain,
         type: DomainType.PREVIEW,
-        publishedAt: previewDomain.updatedAt.toISOString(),
+        publishedAt: previewDomain.updatedAt,
     };
 };
 
@@ -13,6 +13,6 @@ export const toDomainInfoFromPublished = (projectCustomDomain: ProjectCustomDoma
     return {
         url: projectCustomDomain.fullDomain,
         type: DomainType.CUSTOM,
-        publishedAt: projectCustomDomain.updatedAt.toISOString(),
+        publishedAt: projectCustomDomain.updatedAt,
     };
 };
