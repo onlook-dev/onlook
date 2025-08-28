@@ -27,12 +27,13 @@ export class BranchManager {
                 sandbox: sandboxManager,
             });
         }
-        // Set the current branch to the main branch
         this.currentBranchId = branches.find(b => b.isDefault)?.id ?? branches[0]?.id ?? null;
+        if (!this.currentBranchId) {
+            throw new Error('No branch selected. This should not happen after proper initialization.');
+        }
     }
 
     init(): void {
-        // Initialize all sandbox managers
         for (const branchData of this.branchMap.values()) {
             branchData.sandbox.init();
         }

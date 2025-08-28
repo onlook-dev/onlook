@@ -66,23 +66,13 @@ export class EditorEngine {
     readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
 
 
-    private _isInitialized = false;
-
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
         this.posthog = posthog;
         makeAutoObservable(this);
     }
 
-    get isInitialized() {
-        return this._isInitialized;
-    }
-
     async init() {
-        if (this._isInitialized) {
-            return;
-        }
-
         console.error('init editor engine');
 
         this.overlay.init();
@@ -91,7 +81,6 @@ export class EditorEngine {
         this.image.init();
         this.font.init();
         this.frameEvent.init();
-        this._isInitialized = true;
     }
 
     initializeBranches(branches: any[]) {
