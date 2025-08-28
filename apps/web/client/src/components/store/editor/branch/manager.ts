@@ -19,6 +19,10 @@ export class BranchManager {
     }
 
     initializeBranches(branches: Branch[]): void {
+        // Tear down existing sandboxes to avoid leaks
+        for (const { sandbox } of this.branchMap.values()) {
+            sandbox.clear();
+        }
         this.branchMap.clear();
         for (const branch of branches) {
             const sandboxManager = new SandboxManager(branch, this.editorEngine);
@@ -27,9 +31,15 @@ export class BranchManager {
                 sandbox: sandboxManager,
             });
         }
-        this.currentBranchId = branches.find(b => b.isDefault)?.id ?? branches[0]?.id ?? null;
-        if (!this.currentBranchId) {
-            throw new Error('No branch selected. This should not happen after proper initialization.');
+        // Preserve previous selection if still present; else default; else first; else null
+        const prev = this.currentBranchId;
+        if (prev && this.branchMap.has(prev)) {
+            this.currentBranchId = prev;
+        } else {
+            this.currentBranchId =
+                branches.find(b => b.isDefault)?.id
+                ?? branches[0]?.id
+                ?? null;
         }
     }
 
