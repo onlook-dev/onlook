@@ -13,13 +13,14 @@ import {
     type MessageContext
 } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
 
 export const useStartProject = () => {
     const editorEngine = useEditorEngine();
     const [isProjectReady, setIsProjectReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const processedRequestIdRef = useRef<string | null>(null);
 
     const { tabState } = useTabActive();
     const apiUtils = api.useUtils();
@@ -48,7 +49,8 @@ export const useStartProject = () => {
     }, [conversations]);
 
     useEffect(() => {
-        if (creationRequest) {
+        if (creationRequest && processedRequestIdRef.current !== creationRequest.id) {
+            processedRequestIdRef.current = creationRequest.id;
             resumeCreate(creationRequest);
         }
     }, [creationRequest]);
@@ -87,6 +89,7 @@ export const useStartProject = () => {
                 });
             }
         } catch (error) {
+            processedRequestIdRef.current = null; // Allow retry on failure
             console.error('Failed to resume create request', error);
             toast.error('Failed to resume create request', {
                 description: error instanceof Error ? error.message : 'Unknown error',
