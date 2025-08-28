@@ -26,10 +26,14 @@ export class StyleManager {
     domIdToStyle = new Map<string, SelectedStyle>();
     prevSelected = '';
     mode: StyleMode = StyleMode.Root;
+    private selectedElementsReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-        reaction(
+    }
+
+    init() {
+        this.selectedElementsReactionDisposer = reaction(
             () => this.editorEngine.elements.selected,
             (selectedElements) => this.onSelectedElementsChanged(selectedElements),
         );
@@ -188,6 +192,9 @@ export class StyleManager {
     }
 
     clear() {
+        // Clear reactions
+        this.selectedElementsReactionDisposer?.();
+        this.selectedElementsReactionDisposer = undefined;
         // Clear state
         this.selectedStyle = null;
         this.domIdToStyle = new Map();

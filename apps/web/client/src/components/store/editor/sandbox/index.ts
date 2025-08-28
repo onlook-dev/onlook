@@ -44,6 +44,7 @@ export class SandboxManager {
     private templateNodeMap: TemplateNodeMapper;
     private _isIndexed = false;
     private _isIndexing = false;
+    private providerReactionDisposer?: () => void;
 
     constructor(
         private readonly branch: Branch,
@@ -56,8 +57,10 @@ export class SandboxManager {
         this.fileSync = new FileSyncManager();
         this.templateNodeMap = new TemplateNodeMapper();
         makeAutoObservable(this);
+    }
 
-        reaction(
+    init() {
+        this.providerReactionDisposer = reaction(
             () => this.session.provider,
             (provider) => {
                 this._isIndexed = false;
@@ -794,6 +797,8 @@ export class SandboxManager {
     }
 
     clear() {
+        this.providerReactionDisposer?.();
+        this.providerReactionDisposer = undefined;
         void this.fileWatcher?.stop();
         this.fileWatcher = null;
         this.fileSync.clear();

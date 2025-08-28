@@ -27,6 +27,13 @@ export class BranchManager {
         this.currentBranchId = branches.find(b => b.isDefault)?.id ?? branches[0]?.id ?? null;
     }
 
+    init(): void {
+        // Initialize all sandbox managers
+        for (const sandboxManager of this.branchIdToSandboxManager.values()) {
+            sandboxManager.init?.();
+        }
+    }
+
     getCurrentSandbox(): SandboxManager | null {
         if (!this.currentBranchId) {
             console.error('No branch selected. Call switchToBranch() first.');

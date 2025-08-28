@@ -31,11 +31,14 @@ export class IDEManager {
     searchTerm: string = '';
     isLoading = false;
     isFilesLoading = false;
+    private filesReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+    }
 
-        reaction(
+    init() {
+        this.filesReactionDisposer = reaction(
             () => this.editorEngine.sandbox?.files,
             (files) => {
                 this.files = files;
@@ -334,6 +337,8 @@ export class IDEManager {
     }
 
     clear() {
+        this.filesReactionDisposer?.();
+        this.filesReactionDisposer = undefined;
         this.openedFiles = [];
         this.activeFile = null;
         this.files = [];

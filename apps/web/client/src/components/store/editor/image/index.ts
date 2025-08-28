@@ -10,11 +10,14 @@ export class ImageManager {
     private _isSelectingImage = false;
     private _selectedImage: ImageContentData | null = null;
     private _previewImage: ImageContentData | null = null;
+    private indexingReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+    }
 
-        reaction(
+    init() {
+        this.indexingReactionDisposer = reaction(
             () => this.editorEngine.sandbox.isIndexing,
             async (isIndexingFiles) => {
                 if (!isIndexingFiles) {
@@ -208,6 +211,8 @@ export class ImageManager {
     }
 
     clear() {
+        this.indexingReactionDisposer?.();
+        this.indexingReactionDisposer = undefined;
         this._imagePaths = [];
     }
 

@@ -14,12 +14,16 @@ import type { EditorEngine } from '../engine';
 
 export class ChatContext {
     context: MessageContext[] = this.getProjectContext();
+    private selectedReactionDisposer?: () => void;
 
     constructor(
         private editorEngine: EditorEngine,
     ) {
         makeAutoObservable(this);
-        reaction(
+    }
+
+    init() {
+        this.selectedReactionDisposer = reaction(
             () => this.editorEngine.elements.selected,
             () => this.getChatContext().then((context) => (this.context = context)),
         );
@@ -224,6 +228,8 @@ export class ChatContext {
     }
 
     clear() {
+        this.selectedReactionDisposer?.();
+        this.selectedReactionDisposer = undefined;
         this.context = [];
     }
 }

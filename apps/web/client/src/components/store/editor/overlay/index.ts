@@ -7,10 +7,14 @@ import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
     state: OverlayState = new OverlayState();
+    private canvasReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-        reaction(
+    }
+
+    init() {
+        this.canvasReactionDisposer = reaction(
             () => ({
                 position: this.editorEngine.canvas?.position,
                 scale: this.editorEngine.canvas?.scale,
@@ -95,6 +99,8 @@ export class OverlayManager {
     };
 
     clear = () => {
+        this.canvasReactionDisposer?.();
+        this.canvasReactionDisposer = undefined;
         this.removeMeasurement();
         this.state.clear();
     };

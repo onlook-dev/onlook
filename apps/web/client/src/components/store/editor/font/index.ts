@@ -30,6 +30,8 @@ export class FontManager {
     private layoutManager: LayoutManager;
     private fontUploadManager: FontUploadManager;
 
+    private sandboxReactionDisposer?: () => void;
+
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
 
@@ -38,9 +40,14 @@ export class FontManager {
         this.fontConfigManager = new FontConfigManager(editorEngine);
         this.layoutManager = new LayoutManager(editorEngine);
         this.fontUploadManager = new FontUploadManager(editorEngine);
+    }
 
+    init() {
+        // Initialize sub-managers
+        this.fontConfigManager.init?.();
+        
         // React to sandbox connection status
-        reaction(
+        this.sandboxReactionDisposer = reaction(
             () => {
                 return {
                     isIndexing: this.editorEngine.sandbox.isIndexing,
@@ -305,6 +312,8 @@ export class FontManager {
     }
 
     clear(): void {
+        this.sandboxReactionDisposer?.();
+        this.sandboxReactionDisposer = undefined;
         this._fonts = [];
         this._fontFamilies = [];
         this._defaultFont = null;
@@ -314,6 +323,7 @@ export class FontManager {
         this.fontSearchManager.clear();
         this.fontSearchManager.updateFontsList([]);
         this.fontUploadManager.clear();
+        this.fontConfigManager.clear?.();
 
         // Clean up file watcher
         this.cleanupFontConfigFileWatcher();

@@ -25,6 +25,10 @@ export class ChatManager {
         makeAutoObservable(this);
     }
 
+    init() {
+        this.context.init?.();
+    }
+
     focusChatInput() {
         window.dispatchEvent(new Event(FOCUS_CHAT_INPUT_EVENT));
     }

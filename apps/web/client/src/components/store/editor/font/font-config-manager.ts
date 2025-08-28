@@ -16,11 +16,14 @@ import { normalizePath } from '../sandbox/helpers';
 export class FontConfigManager {
     private _fontConfigPath: string | null = null;
     readonly fontImportPath = './fonts';
+    private indexedReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+    }
 
-        reaction(
+    init() {
+        this.indexedReactionDisposer = reaction(
             () => this.editorEngine.sandbox.isIndexed,
             async (isIndexedFiles) => {
                 if (isIndexedFiles) {
@@ -302,5 +305,11 @@ export class FontConfigManager {
             }
             this.setFontConfigPath(fontConfigPath);
         }
+    }
+
+    clear() {
+        this.indexedReactionDisposer?.();
+        this.indexedReactionDisposer = undefined;
+        this._fontConfigPath = null;
     }
 }
