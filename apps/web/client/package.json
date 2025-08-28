@@ -72,7 +72,6 @@
         "clsx": "^2.1.1",
         "culori": "^4.0.1",
         "date-fns": "^4.1.0",
-        "embla-carousel-react": "^8.6.0",
         "flexsearch": "^0.8.160",
         "freestyle-sandboxes": "^0.0.78",
         "langfuse-vercel": "^3.38.4",

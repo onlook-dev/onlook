@@ -3,7 +3,7 @@ import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
 import { trackEvent } from '@/utils/analytics/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { initModel } from '@onlook/ai';
-import { STORAGE_BUCKETS } from '@onlook/constants';
+import { getSandboxPreviewUrl, STORAGE_BUCKETS } from '@onlook/constants';
 import {
     branches,
     canvases,
@@ -59,31 +59,31 @@ export const projectRouter = createTRPCRouter({
                     throw new Error('FIRECRAWL_API_KEY is not configured');
                 }
 
-                const project = await ctx.db.query.projects.findFirst({
-                    where: eq(projects.id, input.projectId),
+                const branch = await ctx.db.query.branches.findFirst({
+                    where: eq(branches.projectId, input.projectId),
                 });
 
-                if (!project) {
-                    throw new Error('Project not found');
+                if (!branch) {
+                    throw new Error('Branch not found');
                 }
 
-                if (!project.sandboxUrl) {
+                if (!branch.sandboxId) {
                     throw new Error('No sandbox URL found');
                 }
 
+                // TODO: Adopt port better
+                const url = getSandboxPreviewUrl(branch.sandboxId, 3000);
                 const app = new FirecrawlApp({ apiKey: env.FIRECRAWL_API_KEY });
 
-                const result = await app.scrapeUrl(project.sandboxUrl, {
+                // Optional: Add actions to click the button for CSB free tier
+                // const _csbFreeActions = [{
+                //     type: 'click',
+                //     selector: '#btn-answer-yes',
+                // }];
+                const result = await app.scrapeUrl(url, {
                     formats: ['screenshot'],
                     onlyMainContent: true,
                     timeout: 10000,
-                    // Optional: Add actions to click the button for CSB free tier
-                    // actions: [
-                    //     {
-                    //         type: 'click',
-                    //         selector: '#btn-answer-yes',
-                    //     },
-                    // ],
                 });
 
                 if (!result.success) {
@@ -118,7 +118,7 @@ export const projectRouter = createTRPCRouter({
                 const finalMimeType = useCompressed ? 'image/jpeg' : mimeType;
                 const finalBuffer = useCompressed ? (compressedImage.buffer ?? buffer) : buffer;
 
-                const path = getScreenshotPath(project.id, finalMimeType);
+                const path = getScreenshotPath(input.projectId, finalMimeType);
 
                 const { data, error } = await ctx.supabase.storage
                     .from(STORAGE_BUCKETS.PREVIEW_IMAGES)
@@ -156,7 +156,7 @@ export const projectRouter = createTRPCRouter({
                         updatedPreviewImgAt,
                         updatedAt: new Date(),
                     })
-                    .where(eq(projects.id, project.id));
+                    .where(eq(projects.id, input.projectId));
 
                 return { success: true, path: data.path };
             } catch (error) {

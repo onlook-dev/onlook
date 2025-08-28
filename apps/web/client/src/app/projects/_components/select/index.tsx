@@ -140,7 +140,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         if (debouncedSearchQuery) {
             const q = debouncedSearchQuery.toLowerCase();
             filtered = projects.filter((p) =>
-                [p.name, p.metadata?.description ?? '', p.sandbox?.url ?? ''].some((s) =>
+                [p.name, p.metadata?.description ?? '', p.metadata.tags.join(', ')].some((s) =>
                     (s ?? '').toLowerCase().includes(q),
                 ),
             );
