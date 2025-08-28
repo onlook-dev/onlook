@@ -124,7 +124,7 @@ const userCanvas0 = createDefaultUserCanvas(user0.id, canvas0.id);
 const canvas1 = createDefaultCanvas(project1.id);
 const frame1 = createDefaultFrame({
     canvasId: canvas1.id,
-    branchId: branch0.id,
+    branchId: branch2.id,
     url: 'http://localhost:8084',
 });
 const userCanvas1 = createDefaultUserCanvas(user0.id, canvas1.id);
