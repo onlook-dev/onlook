@@ -1,8 +1,9 @@
 'use client';
 
+import type { Branch, Project } from '@onlook/models';
+import { usePostHog } from 'posthog-js/react';
 import { createContext, useContext, useEffect, useMemo } from 'react';
 import { EditorEngine } from './engine';
-import { usePostHog } from 'posthog-js/react';
 
 const EditorEngineContext = createContext<EditorEngine | null>(null);
 
@@ -12,12 +13,32 @@ export const useEditorEngine = () => {
     return ctx;
 };
 
-export const EditorEngineProvider = ({ children, projectId }: {
+export const EditorEngineProvider = ({
+    children,
+    project,
+    branches
+}: {
     children: React.ReactNode,
-    projectId: string,
+    project: Project,
+    branches: Branch[],
 }) => {
     const posthog = usePostHog();
-    const editorEngine = useMemo(() => new EditorEngine(projectId, posthog), [projectId, posthog]);
+
+    const editorEngine = useMemo(() => {
+        // Create EditorEngine and initialize it immediately with branches
+        const engine = new EditorEngine(project.id, posthog);
+
+        // Initialize branches immediately
+        engine.initializeBranches(branches);
+
+        // Initialize all managers
+        engine.init();
+
+        // Set project metadata
+        engine.screenshot.lastScreenshotAt = project.metadata.previewImg?.updatedAt ?? null;
+
+        return engine;
+    }, [posthog, branches, project]);
 
     useEffect(() => {
         return () => {

@@ -34,12 +34,15 @@ export class BranchManager {
         }
     }
 
-    getCurrentSandbox(): SandboxManager | null {
+    getCurrentSandbox(): SandboxManager {
         if (!this.currentBranchId) {
-            console.error('No branch selected. Call switchToBranch() first.');
-            return null;
+            throw new Error('No branch selected. This should not happen after proper initialization.');
         }
-        return this.branchIdToSandboxManager.get(this.currentBranchId) ?? null;
+        const sandbox = this.branchIdToSandboxManager.get(this.currentBranchId);
+        if (!sandbox) {
+            throw new Error(`Sandbox not found for branch ${this.currentBranchId}. This should not happen after proper initialization.`);
+        }
+        return sandbox;
     }
 
     async switchToBranch(branchId: string): Promise<void> {

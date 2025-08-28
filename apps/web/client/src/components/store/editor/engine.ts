@@ -34,7 +34,7 @@ export class EditorEngine {
     readonly posthog: PostHog;
     readonly branches: BranchManager = new BranchManager(this);
     // Sandbox getter - returns branch-specific sandbox
-    get sandbox(): SandboxManager | null {
+    get sandbox(): SandboxManager {
         return this.branches.getCurrentSandbox();
     }
 
@@ -83,50 +83,20 @@ export class EditorEngine {
             return;
         }
 
-        // Initialize core managers first (no dependencies)
-        this.error.init?.();
-        this.state.init?.();
-
-        // Note: branches.init() should be called after initializeBranches() 
-        // has been called with actual branch data
-        
-        // Initialize all other managers that may have reactions
-        // These will be ready when sandbox becomes available
-        this.canvas.init?.();
-        this.elements.init?.();
-        this.frames.init?.();
-        this.overlay.init?.();
-        this.ast.init?.();
-        this.action.init?.();
-        this.style.init?.();
-        this.code.init?.();
-        this.ide.init?.();
-        this.versions.init?.();
-        this.chat.init?.();
-        this.image.init?.();
-        this.theme.init?.();
-        this.font.init?.();
-        this.pages.init?.();
-        this.frameEvent.init?.();
-        this.preloadScript.init?.();
-        this.screenshot.init?.();
-
-        // UI managers last
-        this.text.init?.();
-        this.insert.init?.();
-        this.move.init?.();
-        this.copy.init?.();
-        this.group.init?.();
-        this.history.init?.();
-
+        this.overlay.init();
+        this.ide.init();
+        this.chat.init();
+        this.image.init();
+        this.font.init();
+        this.frameEvent.init();
         this._isInitialized = true;
     }
 
     initializeBranches(branches: any[]) {
         // Initialize branches with actual data
-        this.branches.initializeBranches?.(branches);
+        this.branches.initializeBranches(branches);
         // Now initialize the branch manager and its sandbox managers
-        this.branches.init?.();
+        this.branches.init();
     }
 
     clear() {
@@ -151,7 +121,7 @@ export class EditorEngine {
         this.code.clear();
         this.ide.clear();
         this.error.clear();
-        this.sandbox?.clear();
+        this.branches.clear(); // This will clear all sandbox managers
         this.frameEvent.clear();
         this.screenshot.clear();
     }

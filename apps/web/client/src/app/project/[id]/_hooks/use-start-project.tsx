@@ -19,14 +19,11 @@ import { useTabActive } from '../_hooks/use-tab-active';
 export const useStartProject = () => {
     const editorEngine = useEditorEngine();
     const [isProjectReady, setIsProjectReady] = useState(false);
-    const [isSandboxLoading, setIsSandboxLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     const { tabState } = useTabActive();
     const apiUtils = api.useUtils();
     const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
-    const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: branches, isLoading: isBranchLoading, error: branchError } = api.branch.getByProjectId.useQuery({ projectId: editorEngine.projectId });
     const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
     const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
@@ -36,19 +33,6 @@ export const useStartProject = () => {
             await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
         },
     });
-
-    useEffect(() => {
-        if (project) {
-            editorEngine.screenshot.lastScreenshotAt = project.metadata.previewImg?.updatedAt ?? null;
-        }
-    }, [project]);
-
-    useEffect(() => {
-        console.log('branch', branches);
-        if (branches && branches.length > 0) {
-            editorEngine.branches.initializeBranches(branches);
-        }
-    }, [branches]);
 
     useEffect(() => {
         if (canvasWithFrames) {
@@ -64,10 +48,10 @@ export const useStartProject = () => {
     }, [conversations]);
 
     useEffect(() => {
-        if (creationRequest && !isSandboxLoading) {
+        if (creationRequest) {
             resumeCreate(creationRequest);
         }
-    }, [creationRequest, isSandboxLoading]);
+    }, [creationRequest]);
 
     const resumeCreate = async (creationData: ProjectCreateRequest) => {
         try {
@@ -119,19 +103,16 @@ export const useStartProject = () => {
     useEffect(() => {
         const allQueriesResolved =
             !isUserLoading &&
-            !isProjectLoading &&
             !isCanvasLoading &&
             !isConversationsLoading &&
-            !isCreationRequestLoading &&
-            !isSandboxLoading &&
-            !isBranchLoading;
+            !isCreationRequestLoading;
 
         setIsProjectReady(allQueriesResolved);
-    }, [isUserLoading, isProjectLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading, isSandboxLoading, isBranchLoading]);
+    }, [isUserLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading]);
 
     useEffect(() => {
-        setError(userError?.message ?? projectError?.message ?? branchError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
-    }, [userError, projectError, branchError, canvasError, conversationsError, creationRequestError]);
+        setError(userError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
+    }, [userError, canvasError, conversationsError, creationRequestError]);
 
     return { isProjectReady, error };
 }
