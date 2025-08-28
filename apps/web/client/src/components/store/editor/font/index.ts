@@ -315,6 +315,7 @@ export class FontManager {
         this.sandboxReactionDisposer?.();
         this.sandboxReactionDisposer = undefined;
         this._fonts = [];
+        this.previousFonts = [];
         this._fontFamilies = [];
         this._defaultFont = null;
         this._isScanning = false;
@@ -323,7 +324,7 @@ export class FontManager {
         this.fontSearchManager.clear();
         this.fontSearchManager.updateFontsList([]);
         this.fontUploadManager.clear();
-        this.fontConfigManager.clear?.();
+        this.fontConfigManager.clear();
 
         // Clean up file watcher
         this.cleanupFontConfigFileWatcher();
