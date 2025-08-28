@@ -240,6 +240,11 @@ export class FontConfigManager {
             return;
         }
 
+        if (!(await sandbox.fileExists(this.fontConfigPath))) {
+            console.warn('Font config file does not exist', this.fontConfigPath);
+            return;
+        }
+
         const file = await sandbox.readFile(this.fontConfigPath);
         if (!file || file.type === 'binary') {
             console.error("Font config file is empty or doesn't exist");

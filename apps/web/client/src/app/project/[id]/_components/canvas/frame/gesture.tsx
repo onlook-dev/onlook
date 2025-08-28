@@ -13,7 +13,7 @@ import { RightClickMenu } from './right-click';
 export const GestureScreen = observer(({ frame, isResizing }: { frame: Frame, isResizing: boolean }) => {
     const editorEngine = useEditorEngine();
 
-    const getFrameData: () => FrameData | undefined = useCallback(() => {
+    const getFrameData: () => FrameData | null = useCallback(() => {
         return editorEngine.frames.get(frame.id);
     }, [editorEngine.frames, frame.id]);
 

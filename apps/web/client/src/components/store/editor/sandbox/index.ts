@@ -84,7 +84,7 @@ export class SandboxManager {
     }
 
     async index(force = false) {
-        console.error('[SandboxManager] Starting indexing, force:', force);
+        console.log('[SandboxManager] Starting indexing, force:', force);
 
         if (this._isIndexing || (this._isIndexed && !force)) {
             return;

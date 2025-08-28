@@ -256,6 +256,7 @@ export const FrameComponent = observer(
             }
 
             // Register the iframe with the editor engine
+            console.error('registerView', frame.id, iframe);
             editorEngine.frames.registerView(frame, iframe as FrameView);
 
             return Object.assign(iframe, {

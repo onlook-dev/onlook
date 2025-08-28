@@ -63,8 +63,8 @@ export class FramesManager {
         return Array.from(this._frameIdToData.values());
     }
 
-    get(id: string): FrameData | undefined {
-        return this._frameIdToData.get(id);
+    get(id: string): FrameData | null {
+        return this._frameIdToData.get(id) ?? null;
     }
 
     registerView(frame: Frame, view: FrameView) {

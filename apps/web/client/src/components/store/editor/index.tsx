@@ -38,7 +38,12 @@ export const EditorEngineProvider = ({
         engine.screenshot.lastScreenshotAt = project.metadata.previewImg?.updatedAt ?? null;
 
         return engine;
-    }, [posthog, branches, project]);
+    }, [project.id, posthog]);
+
+    // Update branches when they change without recreating the entire engine
+    useEffect(() => {
+        editorEngine.initializeBranches(branches);
+    }, [branches, editorEngine]);
 
     useEffect(() => {
         return () => {
