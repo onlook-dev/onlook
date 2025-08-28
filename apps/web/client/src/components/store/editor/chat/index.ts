@@ -26,7 +26,7 @@ export class ChatManager {
     }
 
     init() {
-        this.context.init?.();
+        this.context.init();
     }
 
     focusChatInput() {

@@ -44,8 +44,8 @@ export class FontManager {
 
     init() {
         // Initialize sub-managers
-        this.fontConfigManager.init?.();
-        
+        this.fontConfigManager.init();
+
         // React to sandbox connection status
         this.sandboxReactionDisposer = reaction(
             () => {
