@@ -1,4 +1,4 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
+
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
 import { ChatMessageRole, type ChatMessage } from '@onlook/models/chat';
@@ -7,18 +7,17 @@ import { Icons } from '@onlook/ui/icons';
 import { assertNever } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { useCallback, useMemo } from 'react';
+import { useCallback } from 'react';
 import { AssistantMessage } from './assistant-message';
 import { ErrorMessage } from './error-message';
+import { MessageRenderer } from './message-renderer';
 import { StreamMessage } from './stream-message';
 import { UserMessage } from './user-message';
 
 export const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
-    const { messages: uiMessages, isWaiting } = useChatContext();
     const conversation = editorEngine.chat.conversation.current;
-    const engineMessages = editorEngine.chat.conversation.current?.messages;
 
     const renderMessage = useCallback((message: ChatMessage) => {
         let messageNode;
@@ -32,20 +31,8 @@ export const ChatMessages = observer(() => {
             default:
                 assertNever(message);
         }
-        return <div key={`message-${message.id}`}>{messageNode}</div>;
+        return messageNode;
     }, []);
-
-    // Exclude the currently streaming assistant message (rendered by <StreamMessage />)
-    const messagesToRender = useMemo(() => {
-        if (!engineMessages || engineMessages.length === 0) return [] as ChatMessage[];
-
-        const lastUiMessage = uiMessages?.[uiMessages.length - 1];
-        const streamingAssistantId = isWaiting && lastUiMessage?.role === 'assistant' ? lastUiMessage.id : undefined;
-
-        if (!streamingAssistantId) return engineMessages;
-
-        return (engineMessages).filter((m) => m.id !== streamingAssistantId);
-    }, [engineMessages, uiMessages, isWaiting]);
 
     if (!conversation) {
         return (
@@ -56,24 +43,34 @@ export const ChatMessages = observer(() => {
         );
     }
 
-    if (!messagesToRender || messagesToRender.length === 0) {
-        return (
-            !editorEngine.elements.selected.length && (
-                <div className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80 h-full">
-                    <Icons.EmptyState className="size-32" />
-                    <p className="text-center text-regularPlus text-balance max-w-[300px]">
-                        {t(transKeys.editor.panels.edit.tabs.chat.emptyState)}
-                    </p>
-                </div>
-            )
-        );
-    }
-
     return (
-        <ChatMessageList contentKey={`${messagesToRender.map((m) => m.id).join('|')}${isWaiting ? `|${uiMessages?.[uiMessages.length - 1]?.id ?? ''}` : ''}`}>
-            {messagesToRender.map((message) => renderMessage(message))}
-            <StreamMessage />
-            <ErrorMessage />
-        </ChatMessageList>
+        <MessageRenderer>
+            {(messagesToRender: ChatMessage[], contentKey: string) => {
+                if (!messagesToRender || messagesToRender.length === 0) {
+                    return (
+                        !editorEngine.elements.selected.length && (
+                            <div className="flex-1 flex flex-col items-center justify-center text-foreground-tertiary/80 h-full">
+                                <Icons.EmptyState className="size-32" />
+                                <p className="text-center text-regularPlus text-balance max-w-[300px]">
+                                    {t(transKeys.editor.panels.edit.tabs.chat.emptyState)}
+                                </p>
+                            </div>
+                        )
+                    );
+                }
+
+                return (
+                    <ChatMessageList contentKey={contentKey}>
+                        {messagesToRender.map((message: ChatMessage) => (
+                            <div key={`message-${message.id}`}>
+                                {renderMessage(message)}
+                            </div>
+                        ))}
+                        <StreamMessage />
+                        <ErrorMessage />
+                    </ChatMessageList>
+                );
+            }}
+        </MessageRenderer>
     );
 });
