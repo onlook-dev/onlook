@@ -11,6 +11,7 @@ import {
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
+import path from 'path';
 import { useEffect, useMemo, useState } from 'react';
 import {
     createFileInSandbox,
@@ -18,7 +19,6 @@ import {
     validateFileName,
 } from './file-operations';
 import { getFileTemplate } from './file-templates';
-import path from 'path';
 
 interface FileModalProps {
     open: boolean;
@@ -87,7 +87,7 @@ export function FileModal({
             setIsLoading(true);
 
             const content = getFileTemplate(name);
-            await createFileInSandbox(editorEngine?.sandbox?.session?.provider, fullPath, content, editorEngine.sandbox);
+            await createFileInSandbox(editorEngine.sandbox.session.provider, fullPath, content, editorEngine.sandbox);
             toast(`File "${name}" created successfully!`);
 
             setName('');

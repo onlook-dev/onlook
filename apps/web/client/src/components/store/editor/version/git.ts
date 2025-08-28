@@ -1,8 +1,8 @@
 import { prepareCommitMessage, sanitizeCommitMessage } from '@/utils/git';
+import { SUPPORT_EMAIL } from '@onlook/constants';
 import { type GitCommit } from '@onlook/git';
 import stripAnsi from 'strip-ansi';
 import type { EditorEngine } from '../engine';
-import { SUPPORT_EMAIL } from '@onlook/constants';
 
 export const ONLOOK_DISPLAY_NAME_NOTE_REF = 'refs/notes/onlook-display-name';
 
@@ -36,7 +36,7 @@ export class GitManager {
      */
     async ensureGitConfig(): Promise<boolean> {
         try {
-            if (!this.editorEngine?.sandbox?.session) {
+            if (!this.editorEngine.sandbox.session) {
                 console.error('No editor engine or session available');
                 return false;
             }
@@ -89,7 +89,7 @@ export class GitManager {
                 return true;
             }
 
-            if (!this.editorEngine?.sandbox?.session) {
+            if (!this.editorEngine.sandbox.session) {
                 console.error('No editor engine or session available');
                 return false;
             }

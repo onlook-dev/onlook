@@ -120,7 +120,7 @@ export class PagesManager {
                 return;
             }
             this._isScanning = true;
-            if (this.editorEngine?.sandbox?.session?.provider) {
+            if (this.editorEngine.sandbox.session.provider) {
                 try {
                     const realPages = await scanPagesFromSandbox(this.editorEngine.sandbox);
 

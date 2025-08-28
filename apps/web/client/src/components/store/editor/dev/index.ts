@@ -39,7 +39,7 @@ export class IDEManager {
 
     init() {
         this.filesReactionDisposer = reaction(
-            () => this.editorEngine.sandbox?.files,
+            () => this.editorEngine.sandbox.files,
             (files) => {
                 this.files = files;
             },
