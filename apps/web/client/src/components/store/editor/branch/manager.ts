@@ -75,6 +75,10 @@ export class BranchManager {
         this.currentBranchId = branchId;
     }
 
+    get allBranches(): Branch[] {
+        return Array.from(this.branchMap.values()).map(({ branch }) => branch);
+    }
+
     async listBranches(): Promise<Branch[]> {
         return [];
     }
