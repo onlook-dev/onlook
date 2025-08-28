@@ -9,10 +9,8 @@ import {
     CreateRequestContextType,
     MessageContextType,
     ProjectCreateRequestStatus,
-    type Branch,
     type ImageMessageContext,
-    type MessageContext,
-    type Project,
+    type MessageContext
 } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { useEffect, useState } from 'react';
@@ -28,7 +26,7 @@ export const useStartProject = () => {
     const apiUtils = api.useUtils();
     const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
     const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.get.useQuery({ projectId: editorEngine.projectId });
-    const { data: branch, isLoading: isBranchLoading, error: branchError } = api.branch.getByProjectId.useQuery({ projectId: editorEngine.projectId });
+    const { data: branches, isLoading: isBranchLoading, error: branchError } = api.branch.getByProjectId.useQuery({ projectId: editorEngine.projectId });
     const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
     const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
@@ -46,26 +44,11 @@ export const useStartProject = () => {
     }, [project]);
 
     useEffect(() => {
-        if (branch && branch.length > 0) {
-            const defaultBranch = branch.find(b => b.isDefault) || branch[0];
-            if (defaultBranch) {
-                setBranch(defaultBranch);
-            }
+        console.log('branch', branches);
+        if (branches && branches.length > 0) {
+            editorEngine.branches.initializeBranches(branches);
         }
-    }, [branch]);
-
-    const setBranch = async (branch: Branch) => {
-        try {
-            await editorEngine.branches.switchToBranch(branch.id);
-            await editorEngine.branches.startCurrentBranchSandbox();
-            setIsSandboxLoading(false);
-        } catch (error) {
-            console.error('Failed to set branch', error);
-            toast.error('Failed to set branch', {
-                description: error instanceof Error ? error.message : 'Unknown error',
-            });
-        }
-    }
+    }, [branches]);
 
     useEffect(() => {
         if (canvasWithFrames) {
@@ -102,7 +85,7 @@ export const useStartProject = () => {
             const context: MessageContext[] = [...createContext, ...imageContexts];
             const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
 
-            const message = await editorEngine.chat.addEditMessage(
+            await editorEngine.chat.addEditMessage(
                 prompt,
                 context,
             );

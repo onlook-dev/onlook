@@ -9,7 +9,7 @@ import {
     NEXT_JS_FILE_EXTENSIONS,
     PRELOAD_SCRIPT_SRC,
 } from '@onlook/constants';
-import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
+import { RouterType, type Branch, type SandboxFile, type TemplateNode } from '@onlook/models';
 import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
 import {
     getBaseName,
@@ -45,8 +45,14 @@ export class SandboxManager {
     private _isIndexed = false;
     private _isIndexing = false;
 
-    constructor(private readonly editorEngine: EditorEngine) {
-        this.session = new SessionManager(this.editorEngine);
+    constructor(
+        private readonly branch: Branch,
+        private readonly editorEngine: EditorEngine
+    ) {
+        this.session = new SessionManager(
+            this.branch,
+            this.editorEngine
+        );
         this.fileSync = new FileSyncManager();
         this.templateNodeMap = new TemplateNodeMapper();
         makeAutoObservable(this);
@@ -75,7 +81,7 @@ export class SandboxManager {
     }
 
     async index(force = false) {
-        console.log('[SandboxManager] Starting indexing, force:', force);
+        console.error('[SandboxManager] Starting indexing, force:', force);
 
         if (this._isIndexing || (this._isIndexed && !force)) {
             return;

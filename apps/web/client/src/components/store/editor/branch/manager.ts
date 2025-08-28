@@ -17,118 +17,29 @@ export class BranchManager {
         return this.currentBranchId;
     }
 
-    getCurrentSandbox(): SandboxManager {
-        if (!this.currentBranchId) {
-            throw new Error('No branch selected. Call switchToBranch() first.');
+    initializeBranches(branches: Branch[]): void {
+        this.branchIdToSandboxManager.clear();
+        for (const branch of branches) {
+            const sandboxManager = new SandboxManager(branch, this.editorEngine);
+            this.branchIdToSandboxManager.set(branch.id, sandboxManager);
         }
-
-        if (!this.branchIdToSandboxManager.has(this.currentBranchId)) {
-            const sandboxManager = new SandboxManager(this.editorEngine);
-            this.branchIdToSandboxManager.set(this.currentBranchId, sandboxManager);
-        }
-
-        return this.branchIdToSandboxManager.get(this.currentBranchId)!;
+        // Set the current branch to the main branch
+        this.currentBranchId = branches.find(b => b.isDefault)?.id ?? branches[0]?.id ?? null;
     }
 
-    async startCurrentBranchSandbox(): Promise<void> {
+    getCurrentSandbox(): SandboxManager | null {
         if (!this.currentBranchId) {
-            throw new Error('No branch selected. Call switchToBranch() first.');
+            console.error('No branch selected. Call switchToBranch() first.');
+            return null;
         }
-
-        const branch = await this.getBranchById(this.currentBranchId);
-        await this.getCurrentSandbox().session.start(branch.sandbox.id);
+        return this.branchIdToSandboxManager.get(this.currentBranchId) ?? null;
     }
 
     async switchToBranch(branchId: string): Promise<void> {
         if (this.currentBranchId === branchId) {
             return;
         }
-
         this.currentBranchId = branchId;
-    }
-
-    async createBranch(
-        name: string,
-        description?: string,
-        fromBranchId?: string,
-        isDefault = false
-    ): Promise<Branch> {
-        const newBranch: Branch = {
-            id: `branch-${Date.now()}`,
-            projectId: this.editorEngine.projectId,
-            name,
-            description: description || null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            isDefault,
-            git: null,
-            sandbox: {
-                id: `sandbox-${Date.now()}`,
-            },
-        };
-
-        return newBranch;
-    }
-
-    async deleteBranch(branchId: string): Promise<void> {
-        if (branchId === this.currentBranchId) {
-            throw new Error('Cannot delete the currently active branch');
-        }
-
-        const sandboxManager = this.branchIdToSandboxManager.get(branchId);
-        if (sandboxManager) {
-            sandboxManager.clear();
-            this.branchIdToSandboxManager.delete(branchId);
-        }
-    }
-
-    async getDefaultBranch(): Promise<Branch> {
-        return {
-            id: 'main-branch-id',
-            projectId: this.editorEngine.projectId,
-            name: 'main',
-            description: 'Default main branch',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            isDefault: true,
-            git: null,
-            sandbox: {
-                id: 'main-sandbox-id',
-            },
-        };
-    }
-
-    async getBranchById(branchId: string): Promise<Branch> {
-        return {
-            id: branchId,
-            projectId: this.editorEngine.projectId,
-            name: branchId === 'main-branch-id' ? 'main' : `branch-${branchId}`,
-            description: null,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            isDefault: branchId === 'main-branch-id',
-            git: null,
-            sandbox: {
-                id: `${branchId}-sandbox`,
-            },
-        };
-    }
-
-
-    private async createMainBranch(): Promise<Branch> {
-        return {
-            id: 'main-branch-id',
-            projectId: this.editorEngine.projectId,
-            name: 'main',
-            description: 'Default main branch',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            isDefault: true,
-            git: null,
-            sandbox: {
-                id: 'main-sandbox-id',
-            },
-        };
     }
 
     async listBranches(): Promise<Branch[]> {

@@ -246,7 +246,7 @@ export const projectRouter = createTRPCRouter({
                 // 2. Create the default branch
                 const newBranch = createDefaultBranch({
                     projectId: newProject.id,
-                    sandboxId: input.sandboxUrl,
+                    sandboxId: input.sandboxId,
                 });
                 await tx.insert(branches).values(newBranch);
 

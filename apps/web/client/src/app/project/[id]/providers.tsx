@@ -8,7 +8,9 @@ export const ProjectProviders = ({ children, projectId }: { children: React.Reac
     return (
         <EditorEngineProvider projectId={projectId}>
             <HostingProvider>
-                <ChatProvider>{children}</ChatProvider>
+                <ChatProvider>
+                    {children}
+                </ChatProvider>
             </HostingProvider>
         </EditorEngineProvider>
     );

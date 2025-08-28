@@ -1,5 +1,6 @@
 import { api } from '@/trpc/client';
-import { CodeProvider, type Provider, createCodeProviderClient } from '@onlook/code-provider';
+import { CodeProvider, createCodeProviderClient, type Provider } from '@onlook/code-provider';
+import type { Branch } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
@@ -10,7 +11,11 @@ export class SessionManager {
     terminalSessions = new Map<string, CLISession>();
     activeTerminalSessionId = 'cli';
 
-    constructor(private readonly editorEngine: EditorEngine) {
+    constructor(
+        private readonly branch: Branch,
+        private readonly editorEngine: EditorEngine
+    ) {
+        this.start(this.branch.sandbox.id);
         makeAutoObservable(this);
     }
 
@@ -19,7 +24,7 @@ export class SessionManager {
             return;
         }
         this.isConnecting = true;
-        
+
         try {
             this.provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
                 providerOptions: {

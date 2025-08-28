@@ -35,9 +35,15 @@ export class IDEManager {
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
 
-        reaction(() => this.editorEngine.sandbox.files, (files) => {
-            this.files = files;
-        });
+        reaction(
+            () => this.editorEngine.sandbox?.files,
+            (files) => {
+                this.files = files;
+            },
+            {
+                fireImmediately: true,
+            }
+        );
     }
 
     private isSandboxReady() {
