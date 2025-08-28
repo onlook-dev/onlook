@@ -1,13 +1,14 @@
 import { type Frame } from '@onlook/models';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { GestureScreen } from './gesture';
 import { ResizeHandles } from './resize-handles';
 import { RightClickMenu } from './right-click';
 import { TopBar } from './top-bar';
-import { FrameComponent } from './view';
+import { FrameComponent, type IFrameView } from './view';
 
 export const FrameView = observer(({ frame }: { frame: Frame }) => {
+    const iFrameRef = useRef<IFrameView>(null);
     const [isResizing, setIsResizing] = useState(false);
 
     return (
@@ -20,7 +21,7 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
             </RightClickMenu>
             <div className="relative">
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
-                <FrameComponent frame={frame} />
+                <FrameComponent frame={frame} ref={iFrameRef} />
                 <GestureScreen frame={frame} isResizing={isResizing} />
             </div>
         </div>

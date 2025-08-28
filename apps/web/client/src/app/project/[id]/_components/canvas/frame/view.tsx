@@ -22,7 +22,7 @@ import {
     type IframeHTMLAttributes,
 } from 'react';
 
-export type FrameView = HTMLIFrameElement & {
+export type IFrameView = HTMLIFrameElement & {
     setZoomLevel: (level: number) => void;
     supportsOpenDevTools: () => boolean;
     reload: () => void;
@@ -34,7 +34,7 @@ interface FrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
 }
 
 export const FrameComponent = observer(
-    forwardRef<FrameView, FrameViewProps>(({ frame, ...props }, ref) => {
+    forwardRef<IFrameView, FrameViewProps>(({ frame, ...props }, ref) => {
         const editorEngine = useEditorEngine();
         const iframeRef = useRef<HTMLIFrameElement>(null);
         const zoomLevel = useRef(1);
@@ -229,11 +229,11 @@ export const FrameComponent = observer(
             };
         }, [penpalChild]);
 
-        useImperativeHandle(ref, (): FrameView => {
+        useImperativeHandle(ref, (): IFrameView => {
             const iframe = iframeRef.current;
             if (!iframe) {
                 console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Iframe - Not found`);
-                return {} as FrameView;
+                return {} as IFrameView;
             }
 
             const syncMethods = {
@@ -252,12 +252,11 @@ export const FrameComponent = observer(
                 console.warn(
                     `${PENPAL_PARENT_CHANNEL} (${frame.id}) - Failed to setup penpal connection: iframeRemote is null`,
                 );
-                return Object.assign(iframe, syncMethods, remoteMethods) as FrameView;
+                return Object.assign(iframe, syncMethods, remoteMethods) as IFrameView;
             }
 
             // Register the iframe with the editor engine
-            console.error('registerView', frame.id, iframe);
-            editorEngine.frames.registerView(frame, iframe as FrameView);
+            editorEngine.frames.registerView(frame, iframe as IFrameView);
 
             return Object.assign(iframe, {
                 ...syncMethods,

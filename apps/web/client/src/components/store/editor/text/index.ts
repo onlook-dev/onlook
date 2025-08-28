@@ -1,4 +1,4 @@
-import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/view';
+import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -17,7 +17,7 @@ export class TextEditingManager {
         return this.targetDomEl !== null;
     }
 
-    async start(el: DomElement, frameView: FrameView): Promise<void> {
+    async start(el: DomElement, frameView: IFrameView): Promise<void> {
         try {
             const isEditable = (await frameView.isChildTextEditable(el.oid ?? '')) as
                 | boolean
@@ -132,7 +132,7 @@ export class TextEditingManager {
     private async handleEditedText(
         domEl: DomElement,
         newContent: string,
-        frameView: FrameView,
+        frameView: IFrameView,
     ): Promise<void> {
         try {
             await this.editorEngine.history.push({
@@ -194,7 +194,7 @@ export class TextEditingManager {
         }
     }
 
-    async editElementAtLoc(pos: ElementPosition, frameView: FrameView): Promise<void> {
+    async editElementAtLoc(pos: ElementPosition, frameView: IFrameView): Promise<void> {
         try {
             const el = (await frameView.getElementAtLoc(pos.x, pos.y, true)) as DomElement;
             if (!el) {

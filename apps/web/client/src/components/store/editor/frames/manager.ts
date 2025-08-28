@@ -1,4 +1,4 @@
-import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/view';
+import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import { api } from '@/trpc/client';
 import { toDbFrame, toDbPartialFrame } from '@onlook/db';
 import { type Frame } from '@onlook/models';
@@ -10,7 +10,7 @@ import { FrameNavigationManager } from './navigation';
 
 export interface FrameData {
     frame: Frame;
-    view: FrameView | null;
+    view: IFrameView | null;
     selected: boolean;
 }
 
@@ -67,7 +67,7 @@ export class FramesManager {
         return this._frameIdToData.get(id) ?? null;
     }
 
-    registerView(frame: Frame, view: FrameView) {
+    registerView(frame: Frame, view: IFrameView) {
         const isSelected = this.isSelected(frame.id);
         this._frameIdToData.set(frame.id, { frame, view, selected: isSelected });
         const framePathname = new URL(view.src).pathname;

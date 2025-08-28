@@ -1,4 +1,4 @@
-import type { FrameView } from '@/app/project/[id]/_components/canvas/frame/view';
+import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import { DefaultSettings, EditorAttributes } from '@onlook/constants';
 import type {
     DomElement,
@@ -77,7 +77,7 @@ export class InsertManager {
         this.updateInsertRect(currentPos);
     }
 
-    async end(e: React.MouseEvent<HTMLDivElement>, frameView: FrameView | null) {
+    async end(e: React.MouseEvent<HTMLDivElement>, frameView: IFrameView | null) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
         }
@@ -145,7 +145,7 @@ export class InsertManager {
         };
     }
 
-    async insertElement(frameView: FrameView, newRect: RectDimensions, origin: ElementPosition) {
+    async insertElement(frameView: IFrameView, newRect: RectDimensions, origin: ElementPosition) {
         const insertAction = await this.createInsertAction(frameView, newRect, origin);
         if (!insertAction) {
             console.error('Failed to create insert action');
@@ -155,7 +155,7 @@ export class InsertManager {
     }
 
     async createInsertAction(
-        frameView: FrameView,
+        frameView: IFrameView,
         newRect: RectDimensions,
         origin: ElementPosition,
     ): Promise<InsertElementAction | undefined> {
