@@ -2,7 +2,7 @@
 
 import type { Branch, Project } from '@onlook/models';
 import { usePostHog } from 'posthog-js/react';
-import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { EditorEngine } from './engine';
 
 const EditorEngineContext = createContext<EditorEngine | null>(null);
@@ -23,44 +23,45 @@ export const EditorEngineProvider = ({
     branches: Branch[],
 }) => {
     const posthog = usePostHog();
-    const engineRef = useRef<EditorEngine | null>(null);
-    const projectIdRef = useRef<string | null>(null);
-    
-    const editorEngine = useMemo(() => {
-        // Only create new engine if project ID changed or no engine exists
-        if (!engineRef.current || projectIdRef.current !== project.id) {
-            // Clean up previous engine if it exists
-            if (engineRef.current) {
-                engineRef.current.clear();
-            }
-            
-            // Create EditorEngine and initialize everything immediately
-            const engine = new EditorEngine(project.id, posthog);
-            
-            // Initialize branches immediately
-            engine.initializeBranches(branches);
-            
-            // Initialize all managers
-            engine.init();
-            
-            // Set project metadata
-            engine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
-            
-            engineRef.current = engine;
-            projectIdRef.current = project.id;
-        } else {
-            // Update branches if they changed
-            engineRef.current.initializeBranches(branches);
-        }
-        
-        return engineRef.current;
-    }, [project.id, posthog, branches]);
+    const [editorEngine, setEditorEngine] = useState<EditorEngine | null>(null);
 
+    // Create or recreate engine when project changes
     useEffect(() => {
+        const engine = new EditorEngine(project.id, posthog);
+
+        // Initialize branches immediately
+        engine.initializeBranches(branches);
+
+        // Initialize all managers
+        engine.init();
+
+        // Set project metadata
+        engine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
+
+        setEditorEngine(prevEngine => {
+            // Clean up previous engine if it exists
+            if (prevEngine) {
+                prevEngine.clear();
+            }
+            return engine;
+        });
+
+        // Cleanup function - runs when project.id changes or component unmounts
         return () => {
-            editorEngine.clear();
+            engine.clear();
         };
-    }, [editorEngine]);
+    }, [project.id, posthog]);
+
+    // Update branches when they change (but same project)
+    useEffect(() => {
+        if (editorEngine) {
+            editorEngine.initializeBranches(branches);
+        }
+    }, [branches, editorEngine]);
+
+    if (!editorEngine) {
+        return null; // or a loading state
+    }
 
     return (
         <EditorEngineContext.Provider value={editorEngine}>

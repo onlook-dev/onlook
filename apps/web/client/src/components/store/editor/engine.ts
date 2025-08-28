@@ -73,8 +73,6 @@ export class EditorEngine {
     }
 
     async init() {
-        console.error('init editor engine');
-
         this.overlay.init();
         this.ide.init();
         this.chat.init();
