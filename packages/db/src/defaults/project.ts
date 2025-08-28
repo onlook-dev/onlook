@@ -11,7 +11,7 @@ export const createDefaultProject = (
     return {
         id: uuidv4(),
         name: 'New Project',
-        description: 'New Project Description',
+        description: 'Your new project',
         tags: [],
         createdAt: new Date(),
         updatedAt: new Date(),

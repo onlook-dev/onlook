@@ -53,10 +53,8 @@ export function Settings({ project, refetch }: { project: Project; refetch: () =
         await updateProject(
             {
                 id: project.id,
-                project: {
-                    name: projectName,
-                    updatedAt: new Date()
-                },
+                name: projectName,
+                updatedAt: new Date()
             },
         );
         // Invalidate queries to refresh UI

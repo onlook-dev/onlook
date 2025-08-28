@@ -152,11 +152,9 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
         } catch (error) {
             toast.error('Failed to publish deployment');
             await runUpdateDeployment({
-                deploymentId: deployment.deploymentId,
-                deployment: {
-                    status: DeploymentStatus.FAILED,
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                },
+                id: deployment.deploymentId,
+                status: DeploymentStatus.FAILED,
+                error: error instanceof Error ? error.message : 'Unknown error',
             });
             return {
                 success: false,

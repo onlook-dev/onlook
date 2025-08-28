@@ -155,10 +155,10 @@ export const ProjectCreationProvider = ({
             const project = await createProject({
                 project: {
                     name: projectData.name ?? 'New project',
-                    sandboxId: forkedSandbox.sandboxId,
-                    sandboxUrl: forkedSandbox.previewUrl,
                     description: 'Your new project',
                 },
+                sandboxId: forkedSandbox.sandboxId,
+                sandboxUrl: forkedSandbox.previewUrl,
                 userId: user.id,
             });
             if (!project) {
