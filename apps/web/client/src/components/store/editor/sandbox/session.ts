@@ -17,6 +17,7 @@ export class SessionManager {
     ) {
         this.start(this.branch.sandbox.id);
         makeAutoObservable(this);
+
     }
 
     async start(sandboxId: string, userId?: string) {

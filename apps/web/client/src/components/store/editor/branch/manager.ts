@@ -3,25 +3,29 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { SandboxManager } from '../sandbox';
 
+interface BranchData {
+    branch: Branch;
+    sandbox: SandboxManager;
+}
+
 export class BranchManager {
     private editorEngine: EditorEngine;
     private currentBranchId: string | null = null;
-    private branchIdToSandboxManager = new Map<string, SandboxManager>();
+    private branchMap = new Map<string, BranchData>();
 
     constructor(editorEngine: EditorEngine) {
         this.editorEngine = editorEngine;
         makeAutoObservable(this);
     }
 
-    get currentBranch(): string | null {
-        return this.currentBranchId;
-    }
-
     initializeBranches(branches: Branch[]): void {
-        this.branchIdToSandboxManager.clear();
+        this.branchMap.clear();
         for (const branch of branches) {
             const sandboxManager = new SandboxManager(branch, this.editorEngine);
-            this.branchIdToSandboxManager.set(branch.id, sandboxManager);
+            this.branchMap.set(branch.id, {
+                branch,
+                sandbox: sandboxManager,
+            });
         }
         // Set the current branch to the main branch
         this.currentBranchId = branches.find(b => b.isDefault)?.id ?? branches[0]?.id ?? null;
@@ -29,20 +33,28 @@ export class BranchManager {
 
     init(): void {
         // Initialize all sandbox managers
-        for (const sandboxManager of this.branchIdToSandboxManager.values()) {
-            sandboxManager.init?.();
+        for (const branchData of this.branchMap.values()) {
+            branchData.sandbox.init();
         }
     }
 
-    getCurrentSandbox(): SandboxManager {
+    get activeBranchData(): BranchData {
         if (!this.currentBranchId) {
             throw new Error('No branch selected. This should not happen after proper initialization.');
         }
-        const sandbox = this.branchIdToSandboxManager.get(this.currentBranchId);
-        if (!sandbox) {
-            throw new Error(`Sandbox not found for branch ${this.currentBranchId}. This should not happen after proper initialization.`);
+        const branchData = this.branchMap.get(this.currentBranchId);
+        if (!branchData) {
+            throw new Error(`Branch not found for branch ${this.currentBranchId}. This should not happen after proper initialization.`);
         }
-        return sandbox;
+        return branchData;
+    }
+
+    get activeBranch(): Branch {
+        return this.activeBranchData.branch;
+    }
+
+    get activeSandbox(): SandboxManager {
+        return this.activeBranchData.sandbox;
     }
 
     async switchToBranch(branchId: string): Promise<void> {
@@ -57,10 +69,10 @@ export class BranchManager {
     }
 
     clear(): void {
-        for (const sandboxManager of this.branchIdToSandboxManager.values()) {
-            sandboxManager.clear();
+        for (const branchData of this.branchMap.values()) {
+            branchData.sandbox.clear();
         }
-        this.branchIdToSandboxManager.clear();
+        this.branchMap.clear();
         this.currentBranchId = null;
     }
 }

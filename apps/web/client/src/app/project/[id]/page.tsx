@@ -24,7 +24,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         }
 
         return (
-            <ProjectProviders projectId={projectId} project={project} branches={branches}>
+            <ProjectProviders project={project} branches={branches}>
                 <Main />
             </ProjectProviders>
         );

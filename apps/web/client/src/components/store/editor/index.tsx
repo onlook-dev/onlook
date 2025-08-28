@@ -23,27 +23,22 @@ export const EditorEngineProvider = ({
     branches: Branch[],
 }) => {
     const posthog = usePostHog();
-
+    
     const editorEngine = useMemo(() => {
-        // Create EditorEngine and initialize it immediately with branches
+        // Create EditorEngine and initialize everything immediately
         const engine = new EditorEngine(project.id, posthog);
-
+        
         // Initialize branches immediately
         engine.initializeBranches(branches);
-
+        
         // Initialize all managers
         engine.init();
-
+        
         // Set project metadata
-        engine.screenshot.lastScreenshotAt = project.metadata.previewImg?.updatedAt ?? null;
-
+        engine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
+        
         return engine;
-    }, [project.id, posthog]);
-
-    // Update branches when they change without recreating the entire engine
-    useEffect(() => {
-        editorEngine.initializeBranches(branches);
-    }, [branches, editorEngine]);
+    }, [project.id, posthog, branches]);
 
     useEffect(() => {
         return () => {

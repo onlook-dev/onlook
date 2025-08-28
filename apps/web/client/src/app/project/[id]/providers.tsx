@@ -7,12 +7,10 @@ import { ChatProvider } from './_hooks/use-chat';
 
 export const ProjectProviders = ({
     children,
-    projectId,
     project,
     branches
 }: {
     children: React.ReactNode,
-    projectId: string,
     project: Project,
     branches: Branch[]
 }) => {

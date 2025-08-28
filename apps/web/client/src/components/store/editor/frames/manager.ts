@@ -260,8 +260,8 @@ export class FramesManager {
         try {
             const frameToUpdate = toDbPartialFrame(frame);
             const success = await api.frame.update.mutate({
-                id: frameId,
                 ...frameToUpdate,
+                id: frameId,
             });
 
             if (!success) {

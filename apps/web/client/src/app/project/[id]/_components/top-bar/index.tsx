@@ -16,6 +16,7 @@ import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useChatContext } from '../../_hooks/use-chat';
 import { Members } from '../members';
+import { BranchDisplay } from './branch';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 import { PublishButton } from './publish';
@@ -46,6 +47,7 @@ export const TopBar = observer(() => {
         <div className="bg-background-primary/20 backdrop-blur-md flex flex-row h-10 p-0 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 <ProjectBreadcrumb />
+                <BranchDisplay />
             </div>
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2 mr-2">

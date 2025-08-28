@@ -27,7 +27,7 @@ export const frames = pgTable("frames", {
 
 export const frameInsertSchema = createInsertSchema(frames);
 export const frameUpdateSchema = createUpdateSchema(frames, {
-    id: z.string().uuid(),
+    id: z.uuid(),
 });
 
 export type Frame = typeof frames.$inferSelect;

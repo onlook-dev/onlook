@@ -33,9 +33,9 @@ export class EditorEngine {
     readonly projectId: string;
     readonly posthog: PostHog;
     readonly branches: BranchManager = new BranchManager(this);
-    // Sandbox getter - returns branch-specific sandbox
+
     get sandbox(): SandboxManager {
-        return this.branches.getCurrentSandbox();
+        return this.branches.activeSandbox;
     }
 
     readonly error: ErrorManager = new ErrorManager();
@@ -83,6 +83,8 @@ export class EditorEngine {
             return;
         }
 
+        console.error('init editor engine');
+
         this.overlay.init();
         this.ide.init();
         this.chat.init();
@@ -121,7 +123,7 @@ export class EditorEngine {
         this.code.clear();
         this.ide.clear();
         this.error.clear();
-        this.branches.clear(); // This will clear all sandbox managers
+        this.branches.clear();
         this.frameEvent.clear();
         this.screenshot.clear();
     }
