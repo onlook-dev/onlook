@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { frames } from '../canvas/frame';
 import { projects } from './project';
 
+export const PROJECT_BRANCH_RELATION_NAME = 'project_branch';
+
 export const branches = pgTable('branches', {
     id: uuid('id').primaryKey().defaultRandom(),
     projectId: uuid('project_id')

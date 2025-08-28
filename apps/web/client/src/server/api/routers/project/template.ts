@@ -45,12 +45,15 @@ export const forkTemplate = protectedProcedure
                         userCanvases: true,
                     },
                 },
+                branches: true,
             },
         });
 
         if (!sourceProject) {
             throw new Error('Source project not found');
         }
+
+        // TODO: fork each branch's sandbox
 
         if (!sourceProject.sandboxId) {
             throw new Error('Source project has no sandbox ID');
