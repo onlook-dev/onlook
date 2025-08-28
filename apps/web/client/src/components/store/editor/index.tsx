@@ -2,7 +2,7 @@
 
 import type { Branch, Project } from '@onlook/models';
 import { usePostHog } from 'posthog-js/react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { EditorEngine } from './engine';
 
 const EditorEngineContext = createContext<EditorEngine | null>(null);
@@ -23,45 +23,52 @@ export const EditorEngineProvider = ({
     branches: Branch[],
 }) => {
     const posthog = usePostHog();
-    const [editorEngine, setEditorEngine] = useState<EditorEngine | null>(null);
-
-    // Create or recreate engine when project changes
-    useEffect(() => {
+    const currentProjectId = useRef(project.id);
+    const engineRef = useRef<EditorEngine | null>(null);
+    
+    // MobX best practice: useState for stable observable instances
+    const [editorEngine, setEditorEngine] = useState(() => {
         const engine = new EditorEngine(project.id, posthog);
-
-        // Initialize branches immediately
         engine.initializeBranches(branches);
-
-        // Initialize all managers
         engine.init();
-
-        // Set project metadata
         engine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
+        engineRef.current = engine;
+        return engine;
+    });
 
-        setEditorEngine(prevEngine => {
-            // Clean up previous engine if it exists
-            if (prevEngine) {
-                prevEngine.clear();
-            }
-            return engine;
-        });
-
-        // Cleanup function - runs when project.id changes or component unmounts
-        return () => {
-            engine.clear();
-        };
-    }, [project.id, posthog]);
-
-    // Update branches when they change (but same project)
+    // Handle project changes - create new engine when project.id changes
     useEffect(() => {
-        if (editorEngine) {
+        if (currentProjectId.current !== project.id) {
+            // Clean up old engine with delay to avoid race conditions
+            if (engineRef.current) {
+                setTimeout(() => engineRef.current?.clear(), 0);
+            }
+            
+            // Create new engine for new project
+            const newEngine = new EditorEngine(project.id, posthog);
+            newEngine.initializeBranches(branches);
+            newEngine.init();
+            newEngine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
+            
+            engineRef.current = newEngine;
+            setEditorEngine(newEngine);
+            currentProjectId.current = project.id;
+        }
+    }, [project.id, posthog, branches]);
+
+    // Update branches when they change (same project)
+    useEffect(() => {
+        if (currentProjectId.current === project.id) {
             editorEngine.initializeBranches(branches);
         }
-    }, [branches, editorEngine]);
+    }, [branches, editorEngine, project.id]);
 
-    if (!editorEngine) {
-        return null; // or a loading state
-    }
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            setTimeout(() => engineRef.current?.clear(), 0);
+        };
+    }, []);
 
     return (
         <EditorEngineContext.Provider value={editorEngine}>
