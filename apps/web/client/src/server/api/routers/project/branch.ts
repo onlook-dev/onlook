@@ -30,7 +30,7 @@ export const branchRouter = createTRPCRouter({
                 await ctx.db.insert(branches).values(input);
                 return true;
             } catch (error) {
-                console.error('Error creating frame', error);
+                console.error('Error creating branch', error);
                 return false;
             }
         }),
@@ -38,13 +38,13 @@ export const branchRouter = createTRPCRouter({
         try {
             await ctx.db
                 .update(branches)
-                .set(input)
+                .set({ ...input, updatedAt: new Date() })
                 .where(
                     eq(branches.id, input.id)
                 );
             return true;
         } catch (error) {
-            console.error('Error updating frame', error);
+            console.error('Error updating branch', error);
             return false;
         }
     }),
@@ -59,7 +59,7 @@ export const branchRouter = createTRPCRouter({
                 await ctx.db.delete(branches).where(eq(branches.id, input.branchId));
                 return true;
             } catch (error) {
-                console.error('Error deleting frame', error);
+                console.error('Error deleting branch', error);
                 return false;
             }
         }),
