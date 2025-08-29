@@ -1,71 +1,58 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { ChatMessageRole } from '@onlook/models/chat';
-import { memo, useMemo } from 'react';
-import type { UIMessage } from 'ai';
 import { Icons } from '@onlook/ui/icons/index';
-import { ReasoningDisplay } from './message-content/reasoning-display';
+import { useMemo } from 'react';
+import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { MessageContent } from './message-content';
+import { ReasoningDisplay } from './message-content/reasoning-display';
+import type { TextUIPart } from 'ai';
 
-const useStreamingParts = (streamingMessage: UIMessage | null) => {
-    return useMemo(() => {
-        if (!streamingMessage?.parts) {
-            return { staticParts: [], streamingPart: null };
-        }
-
-        const streamingPart = streamingMessage.parts.find(
-            (part) => part.type === 'reasoning' && part.state === 'streaming',
-        );
-
-        const staticParts = streamingMessage.parts.filter(
-            (part) => part.type !== 'reasoning' || part.state !== 'streaming',
-        );
-
-        return { staticParts, streamingPart };
-    }, [streamingMessage?.parts]);
-};
-
-export const StreamMessage = memo(() => {
-    const { messages: uiMessages, isWaiting } = useChatContext();
-
-    const lastAssistantMessage = useMemo(
-        () => uiMessages.findLast((m) => m.role === ChatMessageRole.ASSISTANT) ?? null,
-        [uiMessages],
+export const StreamMessage = () => {
+    const { messages, isWaiting } = useChatContext();
+    const streamMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+    
+    const isAssistantStreamMessage = useMemo(
+        () => streamMessage?.role === ChatMessageRole.ASSISTANT,
+        [streamMessage?.role],
     );
 
-    const { staticParts, streamingPart } = useStreamingParts(lastAssistantMessage);
+    const streamReasoningPart =
+        streamMessage?.parts?.find(
+            (part) =>
+                part.type === 'reasoning' &&
+                part.state === 'streaming' &&   
+                'text' in part
+        ) ?? null;
 
-    if (!lastAssistantMessage || !isWaiting) {
-        return null;
-    }
+    const shouldShowIntrospecting = isWaiting && streamReasoningPart;
 
     return (
-        <div className="px-4 py-2 text-small content-start flex flex-col text-wrap gap-2">
-            {staticParts.length > 0 && (
-                <MessageContent
-                    messageId={lastAssistantMessage.id}
-                    parts={staticParts}
-                    applied={false}
-                    isStream={false}
-                />
+        <>
+            {streamMessage && isAssistantStreamMessage && streamMessage.parts && isWaiting && (
+                <div className="px-4 py-2 text-small content-start flex flex-col text-wrap gap-2">
+                    <MessageContent
+                        messageId={streamMessage.id}
+                        parts={streamMessage.parts}
+                        applied={false}
+                        isStream={true}
+                    />
+                </div>
             )}
-
-            {isWaiting && !streamingPart && (
+            {isWaiting && !shouldShowIntrospecting && (
                 <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
                     <Icons.LoadingSpinner className="animate-spin" />
                     <p>Thinking ...</p>
                 </div>
             )}
-
-            {streamingPart && streamingPart.type === 'reasoning' && 'text' in streamingPart && (
-                <ReasoningDisplay
-                    messageId={lastAssistantMessage.id}
-                    reasoning={streamingPart.text}
-                    applied={false}
-                    isStream={true}
-                />
+            {shouldShowIntrospecting && streamMessage && streamReasoningPart && (
+                <div className="px-4 py-2 text-small content-start flex flex-col text-wrap gap-2">
+                    <ReasoningDisplay
+                        messageId={streamMessage.id}
+                        reasoning={(streamReasoningPart as TextUIPart).text}
+                        applied={false}
+                        isStream={true}
+                    />
+                </div>
             )}
-        </div>
+        </>
     );
-});
-
-StreamMessage.displayName = 'StreamMessage';
+};
