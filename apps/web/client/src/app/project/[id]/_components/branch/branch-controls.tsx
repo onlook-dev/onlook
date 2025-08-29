@@ -1,8 +1,10 @@
+import { useEditorEngine } from "@/components/store/editor";
 import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
+import { useState } from "react";
 
 interface BranchControlsProps {
     onClose?: () => void;
@@ -17,11 +19,22 @@ export function BranchControls({
     onCreateBlankSandbox, 
     onManageBranches 
 }: BranchControlsProps) {
-    const handleForkBranch = () => {
-        // TODO: Implement fork branch functionality
-        console.log("Fork branch functionality not yet implemented");
-        onForkBranch?.();
-        onClose?.();
+    const editorEngine = useEditorEngine();
+    const [isForking, setIsForking] = useState(false);
+
+    const handleForkBranch = async () => {
+        if (isForking) return;
+        
+        try {
+            setIsForking(true);
+            await editorEngine.branches.forkBranch();
+            onForkBranch?.();
+            onClose?.();
+        } catch (error) {
+            console.error("Failed to fork branch:", error);
+        } finally {
+            setIsForking(false);
+        }
     };
 
     const handleCreateBlankSandbox = () => {
@@ -45,9 +58,14 @@ export function BranchControls({
                 <DropdownMenuItem
                     className="flex items-center gap-2 p-2"
                     onSelect={handleForkBranch}
+                    disabled={isForking}
                 >
-                    <Icons.GitBranch className="h-4 w-4" />
-                    <span>Fork into a new Branch</span>
+                    {isForking ? (
+                        <Icons.LoadingSpinner className="h-4 w-4" />
+                    ) : (
+                        <Icons.GitBranch className="h-4 w-4" />
+                    )}
+                    <span>{isForking ? "Forking..." : "Fork into a new Branch"}</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuItem

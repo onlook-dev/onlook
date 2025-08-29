@@ -1,7 +1,10 @@
-import { branches, branchInsertSchema, branchUpdateSchema, fromDbBranch } from '@onlook/db';
+import { branches, branchInsertSchema, branchUpdateSchema, fromDbBranch, createDefaultFrame, frames, canvases } from '@onlook/db';
+import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
+import { getSandboxPreviewUrl } from '@onlook/constants';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
+import { v4 as uuidv4 } from 'uuid';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const branchRouter = createTRPCRouter({
@@ -65,6 +68,111 @@ export const branchRouter = createTRPCRouter({
             } catch (error) {
                 console.error('Error deleting branch', error);
                 return false;
+            }
+        }),
+    fork: protectedProcedure
+        .input(
+            z.object({
+                sourceBranchId: z.string().uuid(),
+                branchName: z.string().optional(),
+                framePosition: z.object({
+                    x: z.number(),
+                    y: z.number(),
+                    width: z.number(),
+                    height: z.number(),
+                }).optional(),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            try {
+                return await ctx.db.transaction(async (tx) => {
+                    // Get source branch
+                    const sourceBranch = await tx.query.branches.findFirst({
+                        where: eq(branches.id, input.sourceBranchId),
+                    });
+
+                    if (!sourceBranch) {
+                        throw new TRPCError({
+                            code: 'NOT_FOUND',
+                            message: 'Source branch not found',
+                        });
+                    }
+
+                    // Fork the sandbox using code provider
+                    const provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
+                        providerOptions: {
+                            codesandbox: {
+                                sandboxId: sourceBranch.sandboxId,
+                            },
+                        },
+                    });
+
+                    const forkedSandbox = await provider.createProject({
+                        source: 'template',
+                        id: sourceBranch.sandboxId,
+                        title: input.branchName || `Fork of ${sourceBranch.name}`,
+                        tags: ['forked'],
+                    });
+
+                    await provider.destroy();
+
+                    const sandboxId = forkedSandbox.id;
+                    const previewUrl = getSandboxPreviewUrl(sandboxId, 3000);
+
+                    // Create new branch
+                    const newBranchId = uuidv4();
+                    const newBranch = {
+                        id: newBranchId,
+                        name: input.branchName || `Fork of ${sourceBranch.name}`,
+                        description: null,
+                        projectId: sourceBranch.projectId,
+                        sandboxId,
+                        isDefault: false,
+                        gitBranch: null,
+                        gitCommitSha: null,
+                        gitRepoUrl: null,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    };
+
+                    await tx.insert(branches).values(newBranch);
+
+                    // Create new frame in the same canvas if position is provided
+                    if (input.framePosition) {
+                        // Get the canvas for the project
+                        const canvas = await tx.query.canvases.findFirst({
+                            where: eq(canvases.projectId, sourceBranch.projectId),
+                        });
+
+                        if (canvas) {
+                            const newFrame = createDefaultFrame({
+                                canvasId: canvas.id,
+                                branchId: newBranchId,
+                                url: previewUrl,
+                                overrides: {
+                                    x: (input.framePosition.x + input.framePosition.width + 100).toString(),
+                                    y: input.framePosition.y.toString(),
+                                    width: input.framePosition.width.toString(),
+                                    height: input.framePosition.height.toString(),
+                                },
+                            });
+
+                            await tx.insert(frames).values(newFrame);
+                        }
+                    }
+
+                    return {
+                        branch: fromDbBranch(newBranch),
+                        sandboxId,
+                        previewUrl,
+                    };
+                });
+            } catch (error) {
+                console.error('Error forking branch', error);
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: error instanceof Error ? error.message : 'Failed to fork branch',
+                });
             }
         }),
 });

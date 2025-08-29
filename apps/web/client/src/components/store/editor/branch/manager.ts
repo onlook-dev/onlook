@@ -1,7 +1,9 @@
+import { api } from '@/trpc/client';
 import type { Branch } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { SandboxManager } from '../sandbox';
+import { toast } from '@onlook/ui/sonner';
 
 interface BranchData {
     branch: Branch;
@@ -85,6 +87,57 @@ export class BranchManager {
 
     async listBranches(): Promise<Branch[]> {
         return [];
+    }
+
+    async forkBranch(branchName?: string): Promise<void> {
+        if (!this.currentBranchId) {
+            throw new Error('No active branch to fork');
+        }
+
+        try {
+            // Get current active frame for positioning
+            const activeFrames = this.editorEngine.frames.selected;
+            const activeFrame = activeFrames.length > 0 ? activeFrames[0] : this.editorEngine.frames.getAll()[0];
+
+            let framePosition;
+            if (activeFrame) {
+                const frame = activeFrame.frame;
+                framePosition = {
+                    x: frame.position.x,
+                    y: frame.position.y,
+                    width: frame.dimension.width,
+                    height: frame.dimension.height,
+                };
+            }
+
+            // Call the fork API
+            const result = await api.branch.fork.mutate({
+                sourceBranchId: this.currentBranchId,
+                branchName,
+                framePosition,
+            });
+
+            // Add the new branch to the local branch map
+            const sandboxManager = new SandboxManager(result.branch, this.editorEngine);
+            this.branchMap.set(result.branch.id, {
+                branch: result.branch,
+                sandbox: sandboxManager,
+            });
+
+            // Initialize the new sandbox
+            sandboxManager.init();
+
+            // Switch to the new branch
+            await this.switchToBranch(result.branch.id);
+
+            // Refresh frames to include the new frame
+            // The frame should be automatically created by the API, but we might need to refresh the frames list
+            // This will depend on how the frames are loaded - they might need to be refetched
+        } catch (error) {
+            console.error('Failed to fork branch:', error);
+            toast.error('Failed to fork branch');
+            throw error;
+        }
     }
 
     clear(): void {
