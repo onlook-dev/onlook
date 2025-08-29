@@ -403,4 +403,11 @@ export const projectRouter = createTRPCRouter({
 
         return { success: true, tags: newTags };
     }),
+    trackAccess: protectedProcedure
+        .input(z.object({ projectId: z.string() }))
+        .mutation(async ({ ctx, input }) => {
+            await ctx.db.update(projects).set({
+                updatedAt: new Date(),
+            }).where(eq(projects.id, input.projectId));
+        }),
 });
