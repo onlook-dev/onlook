@@ -15,10 +15,10 @@ export const branchRouter = createTRPCRouter({
             const dbBranches = await ctx.db.query.branches.findMany({
                 where: eq(branches.projectId, input.projectId),
             });
-            if (!dbBranches) {
+            if (!dbBranches || dbBranches.length === 0) {
                 throw new TRPCError({
                     code: 'NOT_FOUND',
-                    message: 'Branch not found',
+                    message: 'Branches not found',
                 });
             }
             return dbBranches.map(fromDbBranch);
