@@ -38,23 +38,7 @@ export const CodeControls = observer(() => {
     })();
     const files = editorEngine.ide.files;
 
-    const handleRestartDevServer = async () => {
-        try {
-            if (isRestarting) return;
-            setIsRestarting(true);
-            const restartResponse = await editorEngine.sandbox.session.restartDevServer();
-            if (restartResponse) {
-                toast.success('Dev server restarting');
-            } else {
-                toast.error('Failed to restart dev server');
-            }
-        } catch (err) {
-            toast.error('Error restarting dev server');
-        } finally {
-            setIsRestarting(false);
-        }
-    }
-
+    
     return (
         <>
             <div className="flex flex-row items-center gap-1 opacity-50 transition-opacity duration-200 group-hover/panel:opacity-100">
@@ -90,24 +74,6 @@ export const CodeControls = observer(() => {
                     </DropdownMenu>
                     <TooltipContent side="bottom" hideArrow>
                         <p>Create or Upload File</p>
-                        <TooltipArrow className="fill-foreground" />
-                    </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            disabled={isRestarting}
-                            onClick={() => handleRestartDevServer()}
-                            className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
-                            aria-label="Restart dev server"
-                        >
-                            <Icons.Reload className={cn("h-4 w-4", isRestarting && "animate-spin")}/>
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" hideArrow>
-                        <p>Restart dev server</p>
                         <TooltipArrow className="fill-foreground" />
                     </TooltipContent>
                 </Tooltip>
