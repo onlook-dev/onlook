@@ -1,5 +1,5 @@
-import type { Branch as DbBranch } from '@onlook/db';
 import { v4 as uuidv4 } from 'uuid';
+import type { Branch as DbBranch } from '../schema';
 
 export const createDefaultBranch = (
     {

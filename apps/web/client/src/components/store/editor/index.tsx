@@ -25,8 +25,7 @@ export const EditorEngineProvider = ({
     const posthog = usePostHog();
     const currentProjectId = useRef(project.id);
     const engineRef = useRef<EditorEngine | null>(null);
-    
-    // MobX best practice: useState for stable observable instances
+
     const [editorEngine, setEditorEngine] = useState(() => {
         const engine = new EditorEngine(project.id, posthog);
         engine.initializeBranches(branches);
@@ -43,13 +42,13 @@ export const EditorEngineProvider = ({
             if (engineRef.current) {
                 setTimeout(() => engineRef.current?.clear(), 0);
             }
-            
+
             // Create new engine for new project
             const newEngine = new EditorEngine(project.id, posthog);
             newEngine.initializeBranches(branches);
             newEngine.init();
             newEngine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
-            
+
             engineRef.current = newEngine;
             setEditorEngine(newEngine);
             currentProjectId.current = project.id;
