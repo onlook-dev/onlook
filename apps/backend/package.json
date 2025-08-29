@@ -2,7 +2,7 @@
     "name": "@onlook/backend",
     "private": true,
     "scripts": {
-        "start": "supabase start",
+        "start": "supabase start --exclude mailpit,logflare,vector",
         "stop": "supabase stop",
         "push": "supabase db push",
         "reset": "supabase db reset",

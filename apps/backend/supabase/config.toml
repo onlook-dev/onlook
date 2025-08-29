@@ -2,7 +2,7 @@ project_id = "onlook-web"
 
 [api]
 enabled = true
-port = 54321
+port = 55321
 schemas = ["public", "storage"]
 extra_search_path = ["public"]
 max_rows = 100
@@ -16,22 +16,22 @@ additional_redirect_urls = [
 jwt_expiry = 36000
 
 [db]
-port = 54322
+port = 55432
 
 [studio]
-port = 54323
+port = 55323
 
 [auth.external.github]
 enabled = true
 client_id = "env(GITHUB_CLIENT_ID)"
 secret = "env(GITHUB_SECRET)"
-redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
+redirect_uri = "http://127.0.0.1:55321/auth/v1/callback"
 
 [auth.external.google]
 enabled = true
 client_id = "env(GOOGLE_CLIENT_ID)"
 secret = "env(GOOGLE_SECRET)"
-redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
+redirect_uri = "http://127.0.0.1:55321/auth/v1/callback"
 
 [analytics]
 enabled = true

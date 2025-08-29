@@ -22,7 +22,7 @@ export const userRouter = createTRPCRouter({
             lastName: user.lastName ?? lastName,
             displayName: user.displayName ?? displayName,
             email: user.email ?? authUser.email,
-            avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatarUrl,
+            avatarUrl: user.avatarUrl ?? authUser.user_metadata.avatar_url,
         }) : null;
         return userData;
     }),
@@ -56,7 +56,7 @@ export const userRouter = createTRPCRouter({
                 lastName: input.lastName ?? lastName,
                 displayName: input.displayName ?? displayName,
                 email: input.email ?? authUser.email,
-                avatarUrl: input.avatarUrl ?? authUser.user_metadata.avatarUrl,
+                avatarUrl: input.avatarUrl ?? authUser.user_metadata.avatar_url,
             };
 
             const [user] = await ctx.db
