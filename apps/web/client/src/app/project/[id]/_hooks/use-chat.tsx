@@ -2,25 +2,17 @@
 
 import { useEditorEngine } from '@/components/store/editor';
 import { handleToolCall } from '@/components/tools';
-import { useChat } from '@ai-sdk/react';
+import { useChat, type UseChatHelpers } from '@ai-sdk/react';
 import { toVercelMessageFromOnlook } from '@onlook/ai';
 import { toOnlookMessageFromVercel } from '@onlook/db';
 import { ChatMessageRole, ChatType } from '@onlook/models';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
-import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
+import { createContext, useCallback, useContext, useRef } from 'react';
 
-type ChatContextType = {
-    messages: UIMessage[];
-    streamingAssistantMessage: UIMessage | null;
-    error: string | null;
-    isWaiting: boolean;
-    status: 'streaming' | 'submitted' | 'ready' | 'error';
-    sendMessageToChat: (type: ChatType) => Promise<void>;
-    stop: () => void;
-}
-const ChatContext = createContext<ChatContextType | null>(null);
+type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & { sendMessageToChat: (type: ChatType) => Promise<void> };
+const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
 
 export const ChatProvider = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
@@ -30,6 +22,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
     const conversationId = editorEngine.chat.conversation.current?.conversation.id;
     const chat = useChat({
         id: 'user-chat',
+        experimental_throttle: 50,
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
         transport: new DefaultChatTransport({
             api: '/api/chat',
@@ -95,24 +88,6 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             }
         }
     });
-
-    const assistantMessages = useMemo(() => {
-        return chat.messages.filter(message => message.role === ChatMessageRole.ASSISTANT);
-    }, [chat.messages]);
-
-
-    const streamingAssistantMessage = useMemo(() => assistantMessages.find(message => message.parts?.some(part => part.type === 'reasoning' && part.state === 'streaming')) ?? null, [assistantMessages]);
-
-    const staticMessages = useMemo(() => {
-        return chat.messages.filter(message => message.parts?.some(part => part.type === 'reasoning' && part.state === 'streaming'));
-    }, [chat.messages]);
-
-    
-    const isWaiting = useMemo(() => chat.status === 'streaming' || chat.status === 'submitted', [chat.status]);
-    const status = useMemo(() => chat.status, [chat.status]);
-    const stop = useCallback(() => chat.stop(), [chat]);
-    const error = useMemo(() => editorEngine.chat.error.message, [editorEngine.chat.error.message]);
-    
     const sendMessageToChat = useCallback(async (type: ChatType = ChatType.EDIT) => {
         if (!conversationId) {
             throw new Error('No conversation id');
@@ -147,17 +122,10 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         });
     }, [chat, conversationId]);
 
-    const contextValue = useMemo(() => ({
-        messages: staticMessages,
-        streamingAssistantMessage,
-        error,
-        isWaiting,
+    return <ChatContext.Provider value={{
+        ...chat,
         sendMessageToChat,
-        status,
-        stop,
-    }), [staticMessages, streamingAssistantMessage, isWaiting, sendMessageToChat, status, stop, error]);
-
-    return <ChatContext.Provider value={contextValue}>{children}</ChatContext.Provider>;
+    }}>{children}</ChatContext.Provider>;
 });
 
 export function useChatContext() {

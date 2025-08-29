@@ -22,7 +22,7 @@ export const StreamingPart = memo(({
     const lastUpdateTimeRef = useRef<number>(0);
     const currentMessageIdRef = useRef<string>('');
 
-    const animationStepRef = useRef<(timestamp: number) => void>();
+    const animationStepRef = useRef<((timestamp: number) => void) | undefined>(undefined);
     
     if (!animationStepRef.current) {
         animationStepRef.current = (timestamp: number) => {
@@ -59,7 +59,9 @@ export const StreamingPart = memo(({
                 animationFrameIdRef.current = null;
                 return;
             }
-            animationFrameIdRef.current = requestAnimationFrame(animationStepRef.current);
+            if (animationStepRef.current) {
+                animationFrameIdRef.current = requestAnimationFrame(animationStepRef.current);
+            }
         };
     }
 
@@ -88,7 +90,9 @@ export const StreamingPart = memo(({
             // Start animation if there's text left to reveal and no animation is running
             const needsAnimation = currentIndexRef.current < fullTextRef.current.length;
             if (needsAnimation && !animationFrameIdRef.current) {
-                animationFrameIdRef.current = requestAnimationFrame(animationStepRef.current);
+                if (animationStepRef.current) {
+                    animationFrameIdRef.current = requestAnimationFrame(animationStepRef.current);
+                }
             }
         }
     }

@@ -1,10 +1,10 @@
-import { useChatContext } from "@/app/project/[id]/_hooks/use-chat";
-import { ChatMessageRole } from "@onlook/models/chat";
-import { memo, useMemo } from "react";
-import { StaticMessageContent } from "./static-part";
-import { StreamingPart } from "./streaming-part";
-import type { UIMessage } from "ai";
-import { Icons } from "@onlook/ui/icons/index";
+import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
+import { ChatMessageRole } from '@onlook/models/chat';
+import { memo, useMemo } from 'react';
+import type { UIMessage } from 'ai';
+import { Icons } from '@onlook/ui/icons/index';
+import { ReasoningDisplay } from '../message-content/reasoning-display';
+import { MessageContent } from '../message-content';
 
 const useStreamingParts = (streamingMessage: UIMessage | null) => {
     return useMemo(() => {
@@ -13,51 +13,53 @@ const useStreamingParts = (streamingMessage: UIMessage | null) => {
         }
 
         const streamingPart = streamingMessage.parts.find(
-            (part) => part.type === 'reasoning' && part.state === 'streaming'
+            (part) => part.type === 'reasoning' && part.state === 'streaming',
         );
-        
+
         const staticParts = streamingMessage.parts.filter(
-            (part) => part.type !== 'reasoning' || part.state !== 'streaming'
+            (part) => part.type !== 'reasoning' || part.state !== 'streaming',
         );
-        console.log('streamingPart', streamingPart);
-        console.log('staticParts', staticParts);
 
         return { staticParts, streamingPart };
     }, [streamingMessage?.parts]);
 };
 
 export const StreamMessage = memo(() => {
-    const { streamingAssistantMessage, isWaiting } = useChatContext();
-    
-    const isAssistantStreamMessage = useMemo(
-        () => streamingAssistantMessage?.role === ChatMessageRole.ASSISTANT,
-        [streamingAssistantMessage?.role],
-    );
-    
-    const { staticParts, streamingPart } = useStreamingParts(streamingAssistantMessage);
+    const { messages: uiMessages, isWaiting } = useChatContext();
 
-    if (!streamingAssistantMessage || !isAssistantStreamMessage || !isWaiting) {
+    const lastAssistantMessage = useMemo(
+        () => uiMessages.findLast((m) => m.role === ChatMessageRole.ASSISTANT) ?? null,
+        [uiMessages],
+    );
+
+    const { staticParts, streamingPart } = useStreamingParts(lastAssistantMessage);
+
+    if (!lastAssistantMessage || !isWaiting) {
         return null;
     }
 
     return (
-        <>
+        <div className="px-4 py-2 text-small content-start flex flex-col text-wrap gap-2">
             {staticParts.length > 0 && (
-                <StaticMessageContent
-                    messageId={streamingAssistantMessage.id}
+                <MessageContent
+                    messageId={lastAssistantMessage.id}
                     parts={staticParts}
+                    applied={false}
+                    isStream={false}
                 />
             )}
-            
+
             {isWaiting && !streamingPart && <ThinkingIndicator />}
-            
+
             {streamingPart && (
-                <StreamingPart
-                    streamingPart={streamingPart}
-                    messageId={streamingAssistantMessage.id}
+                <ReasoningDisplay
+                    messageId={lastAssistantMessage.id}
+                    reasoning={streamingPart.text}
+                    applied={false}
+                    isStream={true}
                 />
             )}
-        </>
+        </div>
     );
 });
 
