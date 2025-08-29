@@ -6,7 +6,8 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
 import { useRef } from 'react';
-import { HoverOnlyTooltip } from '../../editor-bar/hover-tooltip';
+import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
+import { BranchDisplay } from './branch';
 import { PageSelector } from './page-selector';
 
 export const TopBar = observer(
@@ -106,6 +107,7 @@ export const TopBar = observer(
                             className={cn(
                                 'cursor-pointer rounded-lg',
                                 !editorEngine.frames.navigation.canGoBack(frame.id) && 'hidden',
+                                !isSelected && 'hidden',
                             )}
                             onClick={handleGoBack}
                             disabled={!editorEngine.frames.navigation.canGoBack(frame.id)}
@@ -120,6 +122,7 @@ export const TopBar = observer(
                             className={cn(
                                 'cursor-pointer rounded-lg',
                                 !editorEngine.frames.navigation.canGoForward(frame.id) && 'hidden',
+                                !isSelected && 'hidden',
                             )}
                             onClick={handleGoForward}
                             disabled={!editorEngine.frames.navigation.canGoForward(frame.id)}
@@ -131,17 +134,24 @@ export const TopBar = observer(
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="cursor-pointer rounded-lg"
+                            className={cn(
+                                'cursor-pointer rounded-lg',
+                                !isSelected && 'hidden',
+                            )}
                             onClick={handleReload}
                         >
                             <Icons.Reload />
                         </Button>
                     </HoverOnlyTooltip>
+                    <BranchDisplay frame={frame} />
                     <PageSelector frame={frame} />
                 </div>
                 <HoverOnlyTooltip content="Preview in new tab" side="top" hideArrow className="mb-1">
                     <Link
-                        className="absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300"
+                        className={cn(
+                            'absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300',
+                            !isSelected && 'hidden',
+                        )}
                         href={frame.url.replace(/\[([^\]]+)\]/g, 'temp-$1')} // Dynamic routes are not supported so we replace them with a temporary value
                         target="_blank"
                         style={{

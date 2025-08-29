@@ -1,39 +1,27 @@
 import { useEditorEngine } from "@/components/store/editor";
+import type { Frame } from "@onlook/models";
 import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
-import { Input } from "@onlook/ui/input";
 import { ScrollArea } from "@onlook/ui/scroll-area";
 import { timeAgo } from "@onlook/utility";
 import { observer } from "mobx-react-lite";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
-export const BranchDisplay = observer(() => {
+export const BranchDisplay = observer(({ frame }: { frame: Frame }) => {
     const editorEngine = useEditorEngine();
-    const branch = editorEngine.branches.activeBranch;
-    const [searchQuery, setSearchQuery] = useState("");
+    const branch = editorEngine.branches.getBranchById(frame.branchId);
+    if (!branch) {
+        return null;
+    }
+    const allBranches = editorEngine.branches.allBranches;
     const [isOpen, setIsOpen] = useState(false);
-
-    // Get all branches from branch manager
-    const allBranches = useMemo(() => {
-        const branches = editorEngine.branches.allBranches;
-        // Sort by updatedAt descending
-        return branches.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
-    }, [editorEngine.branches.allBranches]);
-
-    const filteredBranches = useMemo(() =>
-        allBranches.filter(b =>
-            b.name.toLowerCase().includes(searchQuery.toLowerCase())
-        ),
-        [allBranches, searchQuery]
-    );
 
     const handleBranchSwitch = async (branchId: string) => {
         try {
@@ -68,27 +56,19 @@ export const BranchDisplay = observer(() => {
                 <Button
                     variant="ghost"
                     size="sm"
-                    className="text-sm text-foreground-secondary hover:text-foreground flex flex-row items-center gap-2 h-auto px-2 py-1"
+                    className="h-auto px-2 py-1 text-xs hover:bg-background-secondary"
+
                 >
                     <Icons.GitBranch className="h-4 w-4" />
-                    <span>{branch.name}</span>
-                    <Icons.ChevronDown className="h-3 w-3" />
+                    <span className="max-w-32 truncate">
+                        {branch.name}
+                    </span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[320px] p-0">
-                <div className="p-3 border-b">
-                    <DropdownMenuLabel className="mb-2">Branches</DropdownMenuLabel>
-                    <Input
-                        placeholder="Search"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-8"
-                    />
-                </div>
-
                 <ScrollArea className="max-h-[300px]">
                     <div className="p-1">
-                        {filteredBranches.map((b) => (
+                        {allBranches.map((b) => (
                             <DropdownMenuItem
                                 key={b.id}
                                 className="flex items-center justify-between p-2 cursor-pointer min-h-[40px]"
@@ -108,24 +88,14 @@ export const BranchDisplay = observer(() => {
                             </DropdownMenuItem>
                         ))}
 
-                        {filteredBranches.length === 0 && searchQuery && (
+                        {allBranches.length === 0 && (
                             <div className="text-sm text-muted-foreground text-center py-4">
                                 No branches found
                             </div>
                         )}
-
-                        {filteredBranches.length > 5 && (
-                            <div className="text-center py-2">
-                                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-                                    View 15 more...
-                                </Button>
-                            </div>
-                        )}
                     </div>
                 </ScrollArea>
-
                 <DropdownMenuSeparator />
-
                 <div className="p-1">
                     <DropdownMenuItem
                         className="flex items-center gap-2 p-2"
@@ -134,7 +104,6 @@ export const BranchDisplay = observer(() => {
                         <Icons.GitBranch className="h-4 w-4" />
                         <span>Fork into a new Branch</span>
                     </DropdownMenuItem>
-
                     <DropdownMenuItem
                         className="flex items-center gap-2 p-2"
                         onSelect={handleCreateBlankSandbox}
@@ -142,9 +111,7 @@ export const BranchDisplay = observer(() => {
                         <Icons.Plus className="h-4 w-4" />
                         <span>Create blank sandbox</span>
                     </DropdownMenuItem>
-
                     <DropdownMenuSeparator />
-
                     <DropdownMenuItem
                         className="flex items-center gap-2 p-2"
                         onSelect={handleManageBranches}

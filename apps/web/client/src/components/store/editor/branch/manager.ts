@@ -75,6 +75,10 @@ export class BranchManager {
         this.currentBranchId = branchId;
     }
 
+    getBranchById(branchId: string): Branch | null {
+        return this.branchMap.get(branchId)?.branch ?? null;
+    }
+
     get allBranches(): Branch[] {
         return Array.from(this.branchMap.values()).map(({ branch }) => branch);
     }

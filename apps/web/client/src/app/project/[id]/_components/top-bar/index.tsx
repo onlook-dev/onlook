@@ -5,7 +5,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { SettingsTabValue } from '@/components/ui/settings-modal/helpers';
-import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { transKeys } from '@/i18n/keys';
 import { Button } from '@onlook/ui/button';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
@@ -25,7 +24,6 @@ export const TopBar = observer(() => {
     const stateManager = useStateManager();
     const editorEngine = useEditorEngine();
     const { isWaiting } = useChatContext();
-    const { isEnabled } = useFeatureFlags();
     const t = useTranslations();
 
     const UNDO_REDO_BUTTONS = [

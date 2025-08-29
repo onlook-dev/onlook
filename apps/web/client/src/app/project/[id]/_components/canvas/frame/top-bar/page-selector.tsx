@@ -13,7 +13,7 @@ import { cn } from '@onlook/ui/utils';
 import { inferPageFromUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useState } from 'react';
-import { PageModal } from '../../left-panel/page-tab/page-modal';
+import { PageModal } from '../../../left-panel/page-tab/page-modal';
 
 interface PageSelectorProps {
     frame: Frame;
