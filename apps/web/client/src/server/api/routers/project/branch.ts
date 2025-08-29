@@ -15,6 +15,8 @@ export const branchRouter = createTRPCRouter({
             const dbBranches = await ctx.db.query.branches.findMany({
                 where: eq(branches.projectId, input.projectId),
             });
+            // TODO: Create a default branch if none exists for backwards compatibility
+
             if (!dbBranches || dbBranches.length === 0) {
                 throw new TRPCError({
                     code: 'NOT_FOUND',
