@@ -99,7 +99,7 @@ export const ProjectBreadcrumb = observer(() => {
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
-                        variant={'ghost'}
+                        variant='ghost'
                         className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent cursor-pointer group"
                     >
                         <Icons.OnlookLogo

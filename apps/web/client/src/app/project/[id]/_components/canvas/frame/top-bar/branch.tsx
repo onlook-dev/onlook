@@ -1,5 +1,5 @@
 import { useEditorEngine } from "@/components/store/editor";
-import type { Frame, Branch } from "@onlook/models";
+import type { Branch, Frame } from "@onlook/models";
 import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
@@ -9,8 +9,8 @@ import {
 import { Icons } from "@onlook/ui/icons";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
-import { BranchList } from "../../../shared/branch-list";
-import { BranchControls } from "../../../shared/branch-controls";
+import { BranchControls } from "../../../branch/branch-controls";
+import { BranchList } from "../../../branch/branch-list";
 
 interface BranchDisplayProps {
     frame: Frame;
@@ -21,11 +21,11 @@ export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch }
     const editorEngine = useEditorEngine();
     const frameBranch = editorEngine.branches.getBranchById(frame.branchId);
     const activeBranch = propActiveBranch || frameBranch;
-    
+
     if (!activeBranch) {
         return null;
     }
-    
+
     const allBranches = editorEngine.branches.allBranches;
     const [isOpen, setIsOpen] = useState(false);
 
