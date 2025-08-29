@@ -71,7 +71,7 @@ export const BranchDisplay = observer(({ frame }: { frame: Frame }) => {
                         {allBranches.map((b) => (
                             <DropdownMenuItem
                                 key={b.id}
-                                className="flex items-center justify-between p-2 cursor-pointer min-h-[40px]"
+                                className="flex items-center justify-between cursor-pointer"
                                 onSelect={() => handleBranchSwitch(b.id)}
                             >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -83,7 +83,7 @@ export const BranchDisplay = observer(({ frame }: { frame: Frame }) => {
                                     <span className="truncate font-medium">{b.name}</span>
                                 </div>
                                 <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
-                                    {timeAgo(b.updatedAt)}
+                                    {timeAgo(b.updatedAt)} ago
                                 </span>
                             </DropdownMenuItem>
                         ))}
@@ -98,14 +98,14 @@ export const BranchDisplay = observer(({ frame }: { frame: Frame }) => {
                 <DropdownMenuSeparator />
                 <div className="p-1">
                     <DropdownMenuItem
-                        className="flex items-center gap-2 p-2"
+                        className="flex items-center gap-2 "
                         onSelect={handleForkBranch}
                     >
                         <Icons.GitBranch className="h-4 w-4" />
                         <span>Fork into a new Branch</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                        className="flex items-center gap-2 p-2"
+                        className="flex items-center gap-2 "
                         onSelect={handleCreateBlankSandbox}
                     >
                         <Icons.Plus className="h-4 w-4" />
@@ -113,7 +113,7 @@ export const BranchDisplay = observer(({ frame }: { frame: Frame }) => {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                        className="flex items-center gap-2 p-2"
+                        className="flex items-center gap-2"
                         onSelect={handleManageBranches}
                     >
                         <Icons.Gear className="h-4 w-4" />

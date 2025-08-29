@@ -76,13 +76,12 @@ export const BranchDisplay = observer(() => {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[320px] p-0">
-                <div className="p-3 border-b">
-                    <DropdownMenuLabel className="mb-2">Branches</DropdownMenuLabel>
+                <div className="p-2 border-b">
+                    <DropdownMenuLabel>Branches</DropdownMenuLabel>
                     <Input
                         placeholder="Search"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="h-8"
                     />
                 </div>
 
@@ -91,7 +90,7 @@ export const BranchDisplay = observer(() => {
                         {filteredBranches.map((b) => (
                             <DropdownMenuItem
                                 key={b.id}
-                                className="flex items-center justify-between p-2 cursor-pointer min-h-[40px]"
+                                className="flex items-center justify-between cursor-pointer"
                                 onSelect={() => handleBranchSwitch(b.id)}
                             >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
