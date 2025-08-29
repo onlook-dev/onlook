@@ -31,6 +31,7 @@ describe('SandboxManager', () => {
     let mockWatcher: any;
     let mockFileSync: any;
     let mockEditorEngine: any;
+    let mockBranch: any;
 
     beforeEach(() => {
         mockGetItem.mockClear();
@@ -129,9 +130,31 @@ describe('SandboxManager', () => {
             screenshot: {
                 captureScreenshot: mock(async () => { }),
             },
+            preloadScript: {
+                ensurePreloadScriptFile: mock(async () => { }),
+            },
         };
 
-        sandboxManager = new SandboxManager(mockEditorEngine);
+        // Create mock Branch
+        mockBranch = {
+            id: 'test-branch-id',
+            projectId: 'test-project-id',
+            name: 'test-branch',
+            description: 'Test branch for unit tests',
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            isDefault: true,
+            git: {
+                branch: 'main',
+                commitSha: 'abc123',
+                repoUrl: 'https://github.com/test/repo.git',
+            },
+            sandbox: {
+                id: 'test-sandbox-id',
+            },
+        };
+
+        sandboxManager = new SandboxManager(mockBranch, mockEditorEngine);
         // Set the session directly on the session manager using runInAction to avoid MobX warnings
         // @ts-ignore - accessing private property for testing
         sandboxManager.session.session = mockSession;
@@ -181,7 +204,7 @@ describe('SandboxManager', () => {
             disconnect: mock(async () => { }),
         };
 
-        const errorManager = new SandboxManager(mockEditorEngine);
+        const errorManager = new SandboxManager(mockBranch, mockEditorEngine);
         // Set the session directly
         // @ts-ignore - accessing private property for testing
         errorManager.session.session = errorSession;
