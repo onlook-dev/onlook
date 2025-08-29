@@ -9,11 +9,13 @@ export const branchRouter = createTRPCRouter({
         .input(
             z.object({
                 projectId: z.string(),
+                onlyDefault: z.boolean().optional(),
             }),
         )
         .query(async ({ ctx, input }) => {
             const dbBranches = await ctx.db.query.branches.findMany({
                 where: eq(branches.projectId, input.projectId),
+                ...(input.onlyDefault ? { where: eq(branches.isDefault, true) } : {}),
             });
             // TODO: Create a default branch if none exists for backwards compatibility
 
