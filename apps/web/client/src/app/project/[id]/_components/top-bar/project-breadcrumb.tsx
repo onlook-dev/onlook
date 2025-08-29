@@ -51,7 +51,13 @@ export const ProjectBreadcrumb = observer(() => {
     }
 
     async function handleDownloadCode() {
-        if (!project?.sandbox?.id) {
+        if (!project) {
+            console.error('No project found');
+            return;
+        }
+
+        const sandboxId = editorEngine.branches.activeBranch.sandbox.id
+        if (!sandboxId) {
             console.error('No sandbox ID found');
             return;
         }

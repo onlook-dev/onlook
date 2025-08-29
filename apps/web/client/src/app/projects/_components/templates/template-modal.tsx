@@ -96,13 +96,10 @@ export function TemplateModal({
     };
 
     const handlePreviewTemplate = () => {
-        const sandboxId = templateProject.sandbox.id;
-        if (sandboxId) {
-            const sandboxUrl = getSandboxPreviewUrl(sandboxId, 3000);
-            window.open(sandboxUrl, '_blank');
-        } else {
-            console.error('No sandbox ID found:', sandboxId);
-        }
+        // TODO: Update to use branch-based sandbox ID access
+        // For now, disable preview functionality until template projects include branch data
+        console.warn('Preview functionality disabled - templateProject needs branch data');
+        toast.error('Preview not available for this template');
     };
 
     const handleEditTemplate = () => {

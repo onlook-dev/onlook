@@ -20,6 +20,7 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
         requestedBy: userId,
     } = deployment;
     try {
+        // TODO: Deploy based on active branch. Needs to update the endpoint
         const deploymentUrls = await getProjectUrls(db, projectId, type);
         const sandboxId = await getSandboxId(db, projectId);
 

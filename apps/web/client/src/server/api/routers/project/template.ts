@@ -3,7 +3,9 @@ import { trackEvent } from '@/utils/analytics/server';
 import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
 import { getSandboxPreviewUrl, Tags } from '@onlook/constants';
 import {
+    branches,
     canvases,
+    createDefaultBranch,
     createDefaultCanvas,
     createDefaultFrame,
     createDefaultUserCanvas,
@@ -55,15 +57,17 @@ export const forkTemplate = protectedProcedure
 
         // TODO: fork each branch's sandbox
 
-        if (!sourceProject.sandboxId) {
+        // Get the default branch (or first branch) for sandbox ID
+        const defaultBranch = sourceProject.branches?.find(b => b.isDefault) || sourceProject.branches?.[0];
+        if (!defaultBranch?.sandboxId) {
             throw new Error('Source project has no sandbox ID');
         }
 
         // 2. Fork the sandbox
-        const provider = await getProvider(sourceProject.sandboxId);
+        const provider = await getProvider(defaultBranch.sandboxId);
         const newSandbox = await provider.createProject({
             source: 'template',
-            id: sourceProject.sandboxId,
+            id: defaultBranch.sandboxId,
             title: `${sourceProject.name} (Fork)`,
             tags: ['template-fork'],
         });
@@ -75,8 +79,6 @@ export const forkTemplate = protectedProcedure
             name: `${sourceProject.name} (Copy)`,
             description: sourceProject.description,
             tags: sourceProject.tags?.filter(tag => tag !== Tags.TEMPLATE) ?? [],
-            sandboxId: newSandbox.id,
-            sandboxUrl: newSandboxUrl,
             previewImgUrl: sourceProject.previewImgUrl,
             previewImgPath: sourceProject.previewImgPath,
             previewImgBucket: sourceProject.previewImgBucket,
@@ -90,14 +92,21 @@ export const forkTemplate = protectedProcedure
                 throw new Error('Failed to create project in database');
             }
 
-            // 4. Create the association in the junction table
+            // 4. Create the default branch for the new project
+            const newBranch = createDefaultBranch({
+                projectId: newProject.id,
+                sandboxId: newSandbox.id,
+            });
+            await tx.insert(branches).values(newBranch);
+
+            // 5. Create the association in the junction table
             await tx.insert(userProjects).values({
                 userId: ctx.user.id,
                 projectId: newProject.id,
                 role: ProjectRole.OWNER,
             });
 
-            // 5. Clone the canvas
+            // 6. Clone the canvas
             const sourceCanvas = sourceProject.canvas;
             if (sourceCanvas) {
                 const newCanvas: Canvas = {
@@ -120,6 +129,7 @@ export const forkTemplate = protectedProcedure
                         ...frame,
                         id: uuidv4(),
                         canvasId: newCanvas.id,
+                        branchId: newBranch.id,
                         url: newSandboxUrl, // Update URL to point to new sandbox
                         createdAt: new Date(),
                         updatedAt: new Date(),
@@ -127,18 +137,28 @@ export const forkTemplate = protectedProcedure
                     await tx.insert(frames).values(newFrames);
                 } else {
                     // Create default frames if source had none
-                    const desktopFrame = createDefaultFrame(newCanvas.id, newSandboxUrl, {
-                        x: '5',
-                        y: '0',
-                        width: '1536',
-                        height: '960',
+                    const desktopFrame = createDefaultFrame({
+                        canvasId: newCanvas.id,
+                        branchId: newBranch.id,
+                        url: newSandboxUrl,
+                        overrides: {
+                            x: '5',
+                            y: '0',
+                            width: '1536',
+                            height: '960',
+                        },
                     });
                     await tx.insert(frames).values(desktopFrame);
-                    const mobileFrame = createDefaultFrame(newCanvas.id, newSandboxUrl, {
-                        x: '1600',
-                        y: '0',
-                        width: '440',
-                        height: '956',
+                    const mobileFrame = createDefaultFrame({
+                        canvasId: newCanvas.id,
+                        branchId: newBranch.id,
+                        url: newSandboxUrl,
+                        overrides: {
+                            x: '1600',
+                            y: '0',
+                            width: '440',
+                            height: '956',
+                        },
                     });
                     await tx.insert(frames).values(mobileFrame);
                 }
@@ -154,18 +174,28 @@ export const forkTemplate = protectedProcedure
                 });
                 await tx.insert(userCanvases).values(newUserCanvas);
 
-                const desktopFrame = createDefaultFrame(newCanvas.id, newSandboxUrl, {
-                    x: '5',
-                    y: '0',
-                    width: '1536',
-                    height: '960',
+                const desktopFrame = createDefaultFrame({
+                    canvasId: newCanvas.id,
+                    branchId: newBranch.id,
+                    url: newSandboxUrl,
+                    overrides: {
+                        x: '5',
+                        y: '0',
+                        width: '1536',
+                        height: '960',
+                    },
                 });
                 await tx.insert(frames).values(desktopFrame);
-                const mobileFrame = createDefaultFrame(newCanvas.id, newSandboxUrl, {
-                    x: '1600',
-                    y: '0',
-                    width: '440',
-                    height: '956',
+                const mobileFrame = createDefaultFrame({
+                    canvasId: newCanvas.id,
+                    branchId: newBranch.id,
+                    url: newSandboxUrl,
+                    overrides: {
+                        x: '1600',
+                        y: '0',
+                        width: '440',
+                        height: '956',
+                    },
                 });
                 await tx.insert(frames).values(mobileFrame);
             }

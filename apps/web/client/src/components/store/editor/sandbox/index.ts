@@ -33,6 +33,7 @@ import { SessionManager } from './session';
 const isDev = env.NODE_ENV === 'development';
 
 export class SandboxManager {
+    readonly branch: Branch;
     readonly session: SessionManager;
     readonly fileEventBus: FileEventBus = new FileEventBus();
 
@@ -47,9 +48,10 @@ export class SandboxManager {
     private providerReactionDisposer?: () => void;
 
     constructor(
-        private readonly branch: Branch,
+        branch: Branch,
         private readonly editorEngine: EditorEngine
     ) {
+        this.branch = branch;
         this.session = new SessionManager(
             this.branch,
             this.editorEngine
