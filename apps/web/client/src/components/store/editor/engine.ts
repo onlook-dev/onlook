@@ -116,7 +116,7 @@ export class EditorEngine {
     }
 
     clearUI() {
-        this.overlay.clear();
+        this.overlay.clearUI();
         this.elements.clear();
         this.frames.deselectAll();
     }

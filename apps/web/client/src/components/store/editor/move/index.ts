@@ -141,7 +141,7 @@ export class MoveManager {
         }
 
         try {
-            this.editorEngine.overlay.clear();
+            this.editorEngine.overlay.clearUI();
             const positionType = this.state.dragTarget.styles?.computed?.position;
 
             if (positionType === 'absolute') {

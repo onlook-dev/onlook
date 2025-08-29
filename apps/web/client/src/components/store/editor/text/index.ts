@@ -51,7 +51,7 @@ export class TextEditingManager {
 
             const adjustedRect = adaptRectToCanvas(el.rect, frameView);
             const isComponent = el.instanceId !== null;
-            this.editorEngine.overlay.clear();
+            this.editorEngine.overlay.clearUI();
 
             this.editorEngine.overlay.state.addTextEditor(
                 adjustedRect,

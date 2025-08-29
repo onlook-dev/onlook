@@ -98,10 +98,13 @@ export class OverlayManager {
         this.state.removeMeasurement();
     };
 
+    clearUI = () => {
+        this.removeMeasurement();
+        this.state.clear();
+    };
+
     clear = () => {
         this.canvasReactionDisposer?.();
         this.canvasReactionDisposer = undefined;
-        this.removeMeasurement();
-        this.state.clear();
     };
 }

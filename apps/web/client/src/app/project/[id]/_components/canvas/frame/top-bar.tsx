@@ -57,7 +57,7 @@ export const TopBar = observer(
 
         const clearElements = () => {
             editorEngine.elements.clear();
-            editorEngine.overlay.clear();
+            editorEngine.overlay.clearUI();
         };
 
         const handleReload = () => {
