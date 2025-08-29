@@ -3,8 +3,8 @@ import { ChatMessageRole } from '@onlook/models/chat';
 import { memo, useMemo } from 'react';
 import type { UIMessage } from 'ai';
 import { Icons } from '@onlook/ui/icons/index';
-import { ReasoningDisplay } from '../message-content/reasoning-display';
-import { MessageContent } from '../message-content';
+import { ReasoningDisplay } from './message-content/reasoning-display';
+import { MessageContent } from './message-content';
 
 const useStreamingParts = (streamingMessage: UIMessage | null) => {
     return useMemo(() => {
@@ -49,9 +49,14 @@ export const StreamMessage = memo(() => {
                 />
             )}
 
-            {isWaiting && !streamingPart && <ThinkingIndicator />}
+            {isWaiting && !streamingPart && (
+                <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
+                    <Icons.LoadingSpinner className="animate-spin" />
+                    <p>Thinking ...</p>
+                </div>
+            )}
 
-            {streamingPart && (
+            {streamingPart && streamingPart.type === 'reasoning' && 'text' in streamingPart && (
                 <ReasoningDisplay
                     messageId={lastAssistantMessage.id}
                     reasoning={streamingPart.text}
@@ -64,12 +69,3 @@ export const StreamMessage = memo(() => {
 });
 
 StreamMessage.displayName = 'StreamMessage';
-
-const ThinkingIndicator = memo(() => (
-    <div className="flex w-full h-full flex-row items-center gap-2 px-4 my-2 text-small content-start text-foreground-secondary">
-        <Icons.LoadingSpinner className="animate-spin" />
-        <p>Thinking ...</p>
-    </div>
-));
-
-ThinkingIndicator.displayName = 'ThinkingIndicator';
