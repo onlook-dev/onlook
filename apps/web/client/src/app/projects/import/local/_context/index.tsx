@@ -138,11 +138,8 @@ export const ProjectCreationProvider = ({
                         userId: user.id,
                         initClient: true,
                         keepActiveWhileConnected: false,
-                        getSession: async (sandboxId, userId) => {
-                            return startSandbox({
-                                sandboxId,
-                                userId,
-                            });
+                        getSession: async (sandboxId) => {
+                            return startSandbox({ sandboxId });
                         },
                     },
                 },

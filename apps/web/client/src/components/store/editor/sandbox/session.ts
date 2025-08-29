@@ -34,7 +34,7 @@ export class SessionManager {
                         userId,
                         initClient: true,
                         getSession: async (sandboxId, userId) => {
-                            return api.sandbox.start.mutate({ sandboxId, userId });
+                            return api.sandbox.start.mutate({ sandboxId });
                         },
                     },
                 },

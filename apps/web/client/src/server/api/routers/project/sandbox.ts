@@ -22,14 +22,14 @@ export const sandboxRouter = createTRPCRouter({
         .input(
             z.object({
                 sandboxId: z.string(),
-                userId: z.string().optional(),
             }),
         )
-        .mutation(async ({ input }) => {
-            const provider = await getProvider(input.sandboxId, input.userId);
+        .mutation(async ({ input, ctx }) => {
+            const userId = ctx.user.id;
+            const provider = await getProvider(input.sandboxId, userId);
             const session = await provider.createSession({
                 args: {
-                    id: shortenUuid(input.userId ?? uuidv4(), 20),
+                    id: shortenUuid(userId ?? uuidv4(), 20),
                 },
             });
             await provider.destroy();
