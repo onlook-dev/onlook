@@ -23,6 +23,7 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
 
     const handleClose = () => {
         editorEngine.state.branchTab = null;
+        editorEngine.state.manageBranchId = null;
     };
 
     const handleRename = async () => {
