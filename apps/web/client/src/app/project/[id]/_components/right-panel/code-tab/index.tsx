@@ -16,15 +16,14 @@ import { getMimeType } from '@onlook/utility';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { createSearchHighlight, getBasicSetup, getExtensions, scrollToFirstMatch } from './code-mirror-config';
+import { getBasicSetup, getExtensions, createSearchHighlight, clearSearchHighlight, scrollToFirstMatch } from './code-mirror-config';
 import { FileModal } from './file-modal';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
 import { FolderModal } from './folder-modal';
 
-export const CodeTab = observer(() => {
+export const DevTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const { branches } = editorEngine;
     const ide = editorEngine.ide;
     const [isFilesVisible, setIsFilesVisible] = useState(true);
     const [fileModalOpen, setFileModalOpen] = useState(false);
@@ -35,10 +34,10 @@ export const CodeTab = observer(() => {
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const fileTabsContainerRef = useRef<HTMLDivElement>(null);
 
-    // Helper function to check if active sandbox is connected and ready
+    // Helper function to check if sandbox is connected and ready
     const isSandboxReady = useCallback((): boolean => {
-        return !!(branches.activeSandbox.session.provider && !branches.activeSandbox.session.isConnecting);
-    }, [branches.activeSandbox.session.provider, branches.activeSandbox.session.isConnecting]);
+        return !!(editorEngine.sandbox.session.provider && !editorEngine.sandbox.session.isConnecting);
+    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
 
     // Helper function to handle sandbox not ready scenarios
     const handleSandboxNotReady = useCallback((operation: string): void => {
@@ -100,7 +99,7 @@ export const CodeTab = observer(() => {
         }
 
         try {
-            const templateNode = await branches.activeSandbox.getTemplateNode(element.oid);
+            const templateNode = await editorEngine.sandbox.getTemplateNode(element.oid);
             if (templateNode?.startTag) {
                 return {
                     startLineNumber: templateNode.startTag.start.line,
@@ -200,7 +199,7 @@ export const CodeTab = observer(() => {
             editorView.dispatch({
                 effects: createSearchHighlight(ide.searchTerm)
             });
-
+            
             setTimeout(() => {
                 scrollToFirstMatch(editorView, ide.searchTerm);
             }, 100);
@@ -231,12 +230,12 @@ export const CodeTab = observer(() => {
             }
         };
 
-        const unsubscribe = branches.activeSandbox.fileEventBus.subscribe('*', handleFileEvent);
+        const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', handleFileEvent);
 
         return () => {
             unsubscribe();
         };
-    }, [branches.activeSandbox, ide.activeFile]);
+    }, [editorEngine.sandbox, ide.activeFile]);
 
     // Load files when sandbox becomes connected
     useEffect(() => {
@@ -255,7 +254,7 @@ export const CodeTab = observer(() => {
         };
 
         loadInitialFiles();
-    }, [branches.activeSandbox.session.provider, branches.activeSandbox.session.isConnecting]);
+    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
 
     // Clear files and opened files when sandbox disconnects
     useEffect(() => {
@@ -265,7 +264,7 @@ export const CodeTab = observer(() => {
             editorViewsRef.current.forEach((view) => view.destroy());
             editorViewsRef.current.clear();
         }
-    }, [branches.activeSandbox.session.provider, branches.activeSandbox.session.isConnecting]);
+    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
 
     const handleRefreshFiles = useCallback(async () => {
         if (!isSandboxReady()) {
@@ -275,7 +274,7 @@ export const CodeTab = observer(() => {
 
         ide.isFilesLoading = true;
         try {
-            await branches.activeSandbox.index(true);
+            await editorEngine.sandbox.index(true);
             await ide.refreshFiles();
         } catch (error) {
             console.error('Error refreshing files:', error);
@@ -496,7 +495,7 @@ export const CodeTab = observer(() => {
                     <div className="flex flex-col items-center gap-3">
                         <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
                         <span className="text-sm text-muted-foreground">
-                            {branches.activeSandbox.session.isConnecting
+                            {editorEngine.sandbox.session.isConnecting
                                 ? 'Connecting to sandbox...'
                                 : 'Waiting for sandbox connection...'}
                         </span>
