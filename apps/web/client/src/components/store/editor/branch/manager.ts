@@ -141,6 +141,30 @@ export class BranchManager {
         }
     }
 
+    async updateBranch(branchId: string, updates: Partial<Branch>): Promise<void> {
+        const branchData = this.branchMap.get(branchId);
+        if (!branchData) {
+            throw new Error('Branch not found');
+        }
+
+        try {
+            const success = await api.branch.update.mutate({
+                id: branchId,
+                ...updates,
+            });
+            
+            if (success) {
+                // Update local branch state
+                Object.assign(branchData.branch, updates);
+            } else {
+                throw new Error('Failed to update branch');
+            }
+        } catch (error) {
+            console.error('Failed to update branch:', error);
+            throw error;
+        }
+    }
+
     removeBranch(branchId: string): void {
         const branchData = this.branchMap.get(branchId);
         if (branchData) {

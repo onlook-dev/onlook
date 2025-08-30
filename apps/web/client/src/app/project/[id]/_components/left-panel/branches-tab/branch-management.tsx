@@ -33,22 +33,11 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
         }
 
         try {
-            const success = await api.branch.update.mutate({
-                id: branch.id,
+            await editorEngine.branches.updateBranch(branch.id, {
                 name: newName.trim(),
             });
-
-            if (success) {
-                // Update local branch state
-                const branch = editorEngine.branches.getBranchById(branch.id);
-                if (branch) {
-                    branch.name = newName.trim();
-                }
-                toast.success(`Branch renamed to "${newName.trim()}"`);
-                setIsRenaming(false);
-            } else {
-                throw new Error('Failed to update branch');
-            }
+            toast.success(`Branch renamed to "${newName.trim()}"`);
+            setIsRenaming(false);
         } catch (error) {
             console.error('Failed to rename branch:', error);
             toast.error('Failed to rename branch');
