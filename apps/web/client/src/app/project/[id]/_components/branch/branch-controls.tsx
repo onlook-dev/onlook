@@ -1,4 +1,5 @@
 import { useEditorEngine } from "@/components/store/editor";
+import { LeftPanelTabValue } from "@onlook/models";
 import {
     DropdownMenuItem,
     DropdownMenuSeparator,
@@ -45,8 +46,9 @@ export function BranchControls({
     };
 
     const handleManageBranches = () => {
-        // TODO: Implement manage branches functionality
-        console.log("Manage branches functionality not yet implemented");
+        // Open the branches tab in the left panel
+        editorEngine.state.leftPanelTab = LeftPanelTabValue.BRANCHES;
+        editorEngine.state.leftPanelLocked = true;
         onManageBranches?.();
         onClose?.();
     };

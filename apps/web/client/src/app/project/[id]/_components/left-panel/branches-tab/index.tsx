@@ -37,6 +37,11 @@ export const BranchesTab = observer(() => {
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
     });
 
+    // Clear manageBranchId when not in manage mode
+    if (editorEngine.state.branchTab !== BranchTabValue.MANAGE && manageBranchId) {
+        setManageBranchId(null);
+    }
+
     // If branch management panel is visible, show it instead of the main content
     if (editorEngine.state.branchTab === BranchTabValue.MANAGE && manageBranchId) {
         const manageBranch = branches.find(b => b.id === manageBranchId);
@@ -51,8 +56,7 @@ export const BranchesTab = observer(() => {
         <div className="flex flex-col h-full">
             <div className="flex items-center justify-between p-4 border-b">
                 <div className="flex items-center gap-2">
-                    <Icons.GitBranch className="w-4 h-4" />
-                    <h2 className="text-sm font-medium">Branches</h2>
+                    <h2 className="text-sm">Branches</h2>
                     <span className="text-xs text-muted-foreground">({branches.length})</span>
                 </div>
             </div>

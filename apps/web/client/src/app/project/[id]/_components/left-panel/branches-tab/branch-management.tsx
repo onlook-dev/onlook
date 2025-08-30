@@ -141,7 +141,7 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                         />
                     ) : (
                         <div
-                            className="flex items-center justify-between p-2 bg-background-secondary rounded-md cursor-pointer hover:bg-background-secondary/70"
+                            className="flex items-center justify-between p-2 bg-background-secondary rounded-md cursor-pointer hover:bg-background-secondary/70 border"
                             onClick={() => setIsRenaming(true)}
                         >
                             <span className="font-medium">{branch.name}</span>
