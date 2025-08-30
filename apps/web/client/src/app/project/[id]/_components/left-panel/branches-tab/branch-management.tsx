@@ -51,7 +51,6 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
 
         try {
             setIsForking(true);
-            // Switch to the branch first if it's not already active
             if (!isActiveBranch) {
                 await editorEngine.branches.switchToBranch(branch.id);
             }
@@ -77,7 +76,6 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
             });
 
             if (success) {
-                // Remove branch from local state
                 editorEngine.branches.removeBranch(branch.id);
                 toast.success('Branch deleted successfully');
                 handleClose();
@@ -103,11 +101,9 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
 
     return (
         <div className="flex flex-col h-full text-xs text-active flex-grow w-full p-0">
-            {/* Header Section */}
             <div className="flex justify-between items-center pl-4 pr-2.5 py-3 border-b border-border">
                 <div className="flex items-center gap-2">
-                    <Icons.GitBranch className="w-4 h-4" />
-                    <h2 className="text-sm font-normal text-foreground">Branch Settings</h2>
+                    <h2 className="text-sm text-foreground">Branch Settings</h2>
                 </div>
                 <Button
                     variant="ghost"
@@ -119,11 +115,10 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                 </Button>
             </div>
 
-            {/* Branch Info Section */}
             <div className="p-4 border-b border-border space-y-4">
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm text-muted-foreground">Branch Name</label>
+                        <label className="text-sm font-medium text-foreground">Name</label>
                         {isActiveBranch && (
                             <span className="text-xs bg-accent text-foreground px-2 py-1 rounded">
                                 Active
@@ -151,12 +146,10 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                 </div>
             </div>
 
-            {/* Actions Section */}
             <div className="flex-1 p-4 space-y-3">
                 <div className="space-y-2">
                     <h3 className="text-sm font-medium text-foreground">Actions</h3>
                     <div className="flex flex-col items-center gap-2 w-full">
-                        {/* Fork Branch */}
                         <Button
                             variant="outline"
                             className="w-full"
@@ -176,7 +169,6 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                             )}
                         </Button>
 
-                        {/* Delete Branch */}
                         <Button
                             variant="destructive"
                             className="w-full"
@@ -199,10 +191,9 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                     </div>
                 </div>
 
-                {/* Placeholder Sections */}
                 <div className="pt-4 border-t border-border">
                     <div className="space-y-2">
-                        <h3 className="text-sm font-medium text-foreground">Branch Info</h3>
+                        <h3 className="text-sm font-medium text-foreground">Info</h3>
                         <div className="text-xs text-muted-foreground space-y-1">
                             <div>Created: {timeAgo(branch.createdAt)}</div>
                             <div>Last modified: {timeAgo(branch.updatedAt)}</div>

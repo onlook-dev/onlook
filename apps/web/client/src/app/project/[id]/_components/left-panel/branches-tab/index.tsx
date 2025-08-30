@@ -5,21 +5,20 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BranchManagement } from './branch-management';
 
 export const BranchesTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const branches = editorEngine.branches.allBranches;
-    const activeBranch = editorEngine.branches.activeBranch;
+    const { branches } = editorEngine;
     const [hoveredBranchId, setHoveredBranchId] = useState<string | null>(null);
     const [manageBranchId, setManageBranchId] = useState<string | null>(null);
 
     const handleBranchSwitch = async (branchId: string) => {
-        if (branchId === activeBranch.id) return;
-
+        if (branchId === branches.activeBranch.id) return;
+        
         try {
-            await editorEngine.branches.switchToBranch(branchId);
+            await branches.switchToBranch(branchId);
         } catch (error) {
             console.error('Failed to switch branch:', error);
         }
@@ -30,25 +29,22 @@ export const BranchesTab = observer(() => {
         editorEngine.state.branchTab = BranchTabValue.MANAGE;
     };
 
-    const sortedBranches = [...branches].sort((a, b) => {
-        // Show active branch first, then sort by updated time
-        if (a.id === activeBranch.id) return -1;
-        if (b.id === activeBranch.id) return 1;
+    const sortedBranches = [...branches.allBranches].sort((a, b) => {
+        if (a.id === branches.activeBranch.id) return -1;
+        if (b.id === branches.activeBranch.id) return 1;
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
     });
 
-    // Clear manageBranchId when not in manage mode
-    if (editorEngine.state.branchTab !== BranchTabValue.MANAGE && manageBranchId) {
-        setManageBranchId(null);
-    }
+    useEffect(() => {
+        if (editorEngine.state.branchTab !== BranchTabValue.MANAGE) {
+            setManageBranchId(null);
+        }
+    }, [editorEngine.state.branchTab]);
 
-    // If branch management panel is visible, show it instead of the main content
     if (editorEngine.state.branchTab === BranchTabValue.MANAGE && manageBranchId) {
-        const manageBranch = branches.find(b => b.id === manageBranchId);
+        const manageBranch = branches.allBranches.find(b => b.id === manageBranchId);
         if (manageBranch) {
-            return (
-                <BranchManagement branch={manageBranch} />
-            );
+            return <BranchManagement branch={manageBranch} />;
         }
     }
 
@@ -57,14 +53,14 @@ export const BranchesTab = observer(() => {
             <div className="flex items-center justify-between p-4 border-b">
                 <div className="flex items-center gap-2">
                     <h2 className="text-sm">Branches</h2>
-                    <span className="text-xs text-muted-foreground">({branches.length})</span>
+                    <span className="text-xs text-muted-foreground">({branches.allBranches.length})</span>
                 </div>
             </div>
 
             <div className="flex-1 overflow-auto">
                 <div className="p-2 space-y-1">
                     {sortedBranches.map((branch) => {
-                        const isActive = branch.id === activeBranch.id;
+                        const isActive = branch.id === branches.activeBranch.id;
                         const isHovered = hoveredBranchId === branch.id;
 
                         return (
@@ -96,9 +92,7 @@ export const BranchesTab = observer(() => {
                                     </div>
                                 </div>
 
-                                {/* Hover controls */}
                                 {isHovered && (
-                                    <div className="flex items-center gap-1">
                                         <Button
                                             variant="ghost"
                                             size="sm"
@@ -111,7 +105,6 @@ export const BranchesTab = observer(() => {
                                         >
                                             <Icons.Gear className="w-3 h-3" />
                                         </Button>
-                                    </div>
                                 )}
                             </div>
                         );
