@@ -241,8 +241,9 @@ export const CodeTab = observer(() => {
                 return;
             }
 
-            // Preserve the currently active file path before clearing
+            // Preserve the currently active file path and highlight range before clearing
             const activeFilePath = ide.activeFile?.path;
+            const savedHighlightRange = ide.highlightRange;
 
             // Clear existing files and editors when switching sandboxes
             ide.clear();
@@ -263,8 +264,11 @@ export const CodeTab = observer(() => {
                     const fileExists = ide.files.some(file => file === activeFilePath);
                     if (fileExists) {
                         await loadFile(activeFilePath);
-                        // Also update the file tree selection and clear any previous highlights
-                        ide.setHighlightRange(null);
+                        // Restore the highlight range if it was preserved
+                        if (savedHighlightRange) {
+                            ide.setHighlightRange(savedHighlightRange);
+                        }
+                        // Update the file tree selection
                         if (fileTreeRef.current?.selectFile) {
                             fileTreeRef.current.selectFile(activeFilePath);
                         }
