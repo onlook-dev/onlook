@@ -6,7 +6,7 @@ import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { nanoid } from 'nanoid';
 import path from 'path';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import { FileTreeNode } from './file-tree-node';
@@ -20,7 +20,7 @@ interface FileTreeProps {
     activeFilePath?: string | null;
 }
 
-function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh, activeFilePath }: FileTreeProps) {
+const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files, isLoading = false, onRefresh, activeFilePath }, ref) => {
     const editorEngine = useEditorEngine();
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
@@ -32,6 +32,22 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
     const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const { ref: containerRef, width: filesWidth } = useResizeObserver();
     const { ref: treeContainerRef, height: filesHeight } = useResizeObserver();
+
+    // Expose tree API to parent component
+    useImperativeHandle(ref, () => ({
+        deselectAll: () => {
+            if (treeRef.current) {
+                treeRef.current.deselectAll();
+            }
+        },
+        selectFile: (filePath: string) => {
+            const targetNode = findNodeByPath(treeData, filePath);
+            if (targetNode && treeRef.current) {
+                treeRef.current.select(targetNode.id);
+                treeRef.current.scrollTo(targetNode.id);
+            }
+        }
+    }), [treeData]);
 
     const isTextFile = useCallback((filePath: string): boolean => {
         const ext = path.extname(filePath).toLowerCase();
@@ -379,6 +395,6 @@ function UnmemoizedFileTree({ onFileSelect, files, isLoading = false, onRefresh,
             </div>
         </div>
     );
-}
+});
 
 export const FileTree = memo(UnmemoizedFileTree);

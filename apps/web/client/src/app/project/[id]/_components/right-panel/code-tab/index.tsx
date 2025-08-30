@@ -29,6 +29,7 @@ export const CodeTab = observer(() => {
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const fileTabsContainerRef = useRef<HTMLDivElement>(null);
+    const fileTreeRef = useRef<any>(null);
 
     // Helper function to check if sandbox is connected and ready
     const isSandboxReady = (): boolean => {
@@ -240,14 +241,35 @@ export const CodeTab = observer(() => {
                 return;
             }
 
+            // Preserve the currently active file path before clearing
+            const activeFilePath = ide.activeFile?.path;
+
             // Clear existing files and editors when switching sandboxes
             ide.clear();
             editorViewsRef.current.forEach((view) => view.destroy());
             editorViewsRef.current.clear();
 
+            // Reset file tree selection state
+            if (fileTreeRef.current?.deselectAll) {
+                fileTreeRef.current.deselectAll();
+            }
+
             ide.isFilesLoading = true;
             try {
                 await ide.refreshFiles();
+
+                // Reopen the previously active file if it exists in the new branch
+                if (activeFilePath) {
+                    const fileExists = ide.files.some(file => file === activeFilePath);
+                    if (fileExists) {
+                        await loadFile(activeFilePath);
+                        // Also update the file tree selection and clear any previous highlights
+                        ide.setHighlightRange(null);
+                        if (fileTreeRef.current?.selectFile) {
+                            fileTreeRef.current.selectFile(activeFilePath);
+                        }
+                    }
+                }
             } catch (error) {
                 console.error('Error loading files for active sandbox:', error);
             }
@@ -499,6 +521,7 @@ export const CodeTab = observer(() => {
                 <div className="flex flex-1 min-h-0 overflow-hidden">
                     {ide.isFilesVisible && (
                         <FileTree
+                            ref={fileTreeRef}
                             onFileSelect={loadFile}
                             files={ide.files}
                             isLoading={ide.isFilesLoading}
