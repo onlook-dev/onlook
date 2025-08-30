@@ -24,6 +24,7 @@ import { FolderModal } from './folder-modal';
 
 export const CodeTab = observer(() => {
     const editorEngine = useEditorEngine();
+    const { branches } = editorEngine;
     const ide = editorEngine.ide;
     const [isFilesVisible, setIsFilesVisible] = useState(true);
     const [fileModalOpen, setFileModalOpen] = useState(false);
@@ -34,10 +35,10 @@ export const CodeTab = observer(() => {
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const fileTabsContainerRef = useRef<HTMLDivElement>(null);
 
-    // Helper function to check if sandbox is connected and ready
+    // Helper function to check if active sandbox is connected and ready
     const isSandboxReady = useCallback((): boolean => {
-        return !!(editorEngine.sandbox.session.provider && !editorEngine.sandbox.session.isConnecting);
-    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
+        return !!(branches.activeSandbox.session.provider && !branches.activeSandbox.session.isConnecting);
+    }, [branches.activeSandbox.session.provider, branches.activeSandbox.session.isConnecting]);
 
     // Helper function to handle sandbox not ready scenarios
     const handleSandboxNotReady = useCallback((operation: string): void => {
@@ -99,7 +100,7 @@ export const CodeTab = observer(() => {
         }
 
         try {
-            const templateNode = await editorEngine.sandbox.getTemplateNode(element.oid);
+            const templateNode = await branches.activeSandbox.getTemplateNode(element.oid);
             if (templateNode?.startTag) {
                 return {
                     startLineNumber: templateNode.startTag.start.line,
@@ -230,12 +231,12 @@ export const CodeTab = observer(() => {
             }
         };
 
-        const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', handleFileEvent);
+        const unsubscribe = branches.activeSandbox.fileEventBus.subscribe('*', handleFileEvent);
 
         return () => {
             unsubscribe();
         };
-    }, [editorEngine.sandbox, ide.activeFile]);
+    }, [branches.activeSandbox, ide.activeFile]);
 
     // Load files when sandbox becomes connected
     useEffect(() => {
@@ -254,7 +255,7 @@ export const CodeTab = observer(() => {
         };
 
         loadInitialFiles();
-    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
+    }, [branches.activeSandbox.session.provider, branches.activeSandbox.session.isConnecting]);
 
     // Clear files and opened files when sandbox disconnects
     useEffect(() => {
@@ -264,7 +265,7 @@ export const CodeTab = observer(() => {
             editorViewsRef.current.forEach((view) => view.destroy());
             editorViewsRef.current.clear();
         }
-    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
+    }, [branches.activeSandbox.session.provider, branches.activeSandbox.session.isConnecting]);
 
     const handleRefreshFiles = useCallback(async () => {
         if (!isSandboxReady()) {
@@ -274,7 +275,7 @@ export const CodeTab = observer(() => {
 
         ide.isFilesLoading = true;
         try {
-            await editorEngine.sandbox.index(true);
+            await branches.activeSandbox.index(true);
             await ide.refreshFiles();
         } catch (error) {
             console.error('Error refreshing files:', error);
@@ -495,7 +496,7 @@ export const CodeTab = observer(() => {
                     <div className="flex flex-col items-center gap-3">
                         <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
                         <span className="text-sm text-muted-foreground">
-                            {editorEngine.sandbox.session.isConnecting
+                            {branches.activeSandbox.session.isConnecting
                                 ? 'Connecting to sandbox...'
                                 : 'Waiting for sandbox connection...'}
                         </span>

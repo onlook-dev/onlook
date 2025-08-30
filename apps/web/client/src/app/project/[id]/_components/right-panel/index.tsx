@@ -14,8 +14,8 @@ import { ChatTab } from './chat-tab';
 import { ChatControls } from './chat-tab/controls';
 import { ChatHistory } from './chat-tab/history';
 import { ChatPanelDropdown } from './chat-tab/panel-dropdown';
-import { CodeTab } from './dev-tab';
-import { CodeControls } from './dev-tab/code-controls';
+import { CodeTab } from './code-tab';
+import { CodeControls } from './code-tab/code-controls';
 
 const EDIT_PANEL_WIDTHS = {
     [EditorTabValue.CHAT]: 352,
