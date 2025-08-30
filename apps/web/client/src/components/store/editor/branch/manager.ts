@@ -152,7 +152,7 @@ export class BranchManager {
                 id: branchId,
                 ...updates,
             });
-            
+
             if (success) {
                 // Update local branch state
                 Object.assign(branchData.branch, updates);
@@ -172,16 +172,16 @@ export class BranchManager {
             const framesToRemove = this.editorEngine.frames.getAll().filter(
                 frameState => frameState.frame.branchId === branchId
             );
-            
+
             for (const frameState of framesToRemove) {
-                this.editorEngine.frames.removeFrame(frameState.frame.id);
+                this.editorEngine.frames.delete(frameState.frame.id);
             }
-            
+
             // Clean up the sandbox
             branchData.sandbox.clear();
             // Remove from the map
             this.branchMap.delete(branchId);
-            
+
             // If this was the current branch, switch to default or first available
             if (this.currentBranchId === branchId) {
                 const remainingBranches = Array.from(this.branchMap.values()).map(({ branch }) => branch);

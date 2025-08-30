@@ -15,16 +15,6 @@ export const BranchesTab = observer(() => {
     const [hoveredBranchId, setHoveredBranchId] = useState<string | null>(null);
     const [manageBranchId, setManageBranchId] = useState<string | null>(null);
 
-    // If branch management panel is visible, show it instead of the main content
-    if (editorEngine.state.branchTab === BranchTabValue.MANAGE && manageBranchId) {
-        const manageBranch = branches.find(b => b.id === manageBranchId);
-        if (manageBranch) {
-            return (
-                <BranchManagement branch={manageBranch} />
-            );
-        }
-    }
-
     const handleBranchSwitch = async (branchId: string) => {
         if (branchId === activeBranch.id) return;
 
@@ -46,6 +36,16 @@ export const BranchesTab = observer(() => {
         if (b.id === activeBranch.id) return 1;
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
     });
+
+    // If branch management panel is visible, show it instead of the main content
+    if (editorEngine.state.branchTab === BranchTabValue.MANAGE && manageBranchId) {
+        const manageBranch = branches.find(b => b.id === manageBranchId);
+        if (manageBranch) {
+            return (
+                <BranchManagement branch={manageBranch} />
+            );
+        }
+    }
 
     return (
         <div className="flex flex-col h-full">
@@ -78,7 +78,7 @@ export const BranchesTab = observer(() => {
                             >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
                                     {isActive ? (
-                                        <Icons.Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                                        <Icons.Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                                     ) : (
                                         <Icons.GitBranch className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                                     )}

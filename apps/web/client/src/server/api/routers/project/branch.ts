@@ -1,11 +1,11 @@
-import { branches, branchInsertSchema, branchUpdateSchema, fromDbBranch, createDefaultFrame, frames, canvases, fromDbFrame } from '@onlook/db';
 import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
 import { getSandboxPreviewUrl } from '@onlook/constants';
+import { branches, branchInsertSchema, branchUpdateSchema, canvases, createDefaultFrame, frames, fromDbBranch, fromDbFrame } from '@onlook/db';
 import type { Frame } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
-import { z } from 'zod';
 import { v4 as uuidv4 } from 'uuid';
+import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
 export const branchRouter = createTRPCRouter({
@@ -111,8 +111,8 @@ export const branchRouter = createTRPCRouter({
                     const forkedSandbox = await provider.createProject({
                         source: 'template',
                         id: sourceBranch.sandboxId,
-                        title: input.branchName || `Fork of ${sourceBranch.name}`,
-                        tags: ['forked'],
+                        title: input.branchName || `${sourceBranch.name}-fork`,
+                        tags: ['fork'],
                     });
 
                     await provider.destroy();
