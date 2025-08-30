@@ -28,7 +28,7 @@ export const EditorEngineProvider = ({
 
     const [editorEngine, setEditorEngine] = useState(() => {
         const engine = new EditorEngine(project.id, posthog);
-        engine.initializeBranches(branches);
+        engine.initBranches(branches);
         engine.init();
         engine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
         engineRef.current = engine;
@@ -45,7 +45,7 @@ export const EditorEngineProvider = ({
 
             // Create new engine for new project
             const newEngine = new EditorEngine(project.id, posthog);
-            newEngine.initializeBranches(branches);
+            newEngine.initBranches(branches);
             newEngine.init();
             newEngine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
 
@@ -58,7 +58,7 @@ export const EditorEngineProvider = ({
     // Update branches when they change (same project)
     useEffect(() => {
         if (currentProjectId.current === project.id) {
-            editorEngine.initializeBranches(branches);
+            editorEngine.initBranches(branches);
         }
     }, [branches, editorEngine, project.id]);
 

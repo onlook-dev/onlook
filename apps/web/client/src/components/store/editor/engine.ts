@@ -80,10 +80,8 @@ export class EditorEngine {
         this.frameEvent.init();
     }
 
-    initializeBranches(branches: any[]) {
-        // Initialize branches with actual data
-        this.branches.initializeBranches(branches);
-        // Now initialize the branch manager and its sandbox managers
+    initBranches(branches: any[]) {
+        this.branches.initBranches(branches);
         this.branches.init();
     }
 

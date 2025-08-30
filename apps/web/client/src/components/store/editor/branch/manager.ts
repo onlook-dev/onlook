@@ -1,7 +1,7 @@
 import { api } from '@/trpc/client';
 import type { Branch } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { SandboxManager } from '../sandbox';
 
@@ -14,14 +14,16 @@ export class BranchManager {
     private editorEngine: EditorEngine;
     private currentBranchId: string | null = null;
     private branchMap = new Map<string, BranchData>();
+    private reactionDisposer: (() => void) | null = null;
 
     constructor(editorEngine: EditorEngine) {
         this.editorEngine = editorEngine;
         makeAutoObservable(this);
     }
 
-    initializeBranches(branches: Branch[]): void {
-        // Tear down existing sandboxes to avoid leaks
+    initBranches(branches: Branch[]): void {
+        this.reactionDisposer?.();
+        this.reactionDisposer = null;
         for (const { sandbox } of this.branchMap.values()) {
             sandbox.clear();
         }
@@ -49,6 +51,23 @@ export class BranchManager {
         for (const branchData of this.branchMap.values()) {
             branchData.sandbox.init();
         }
+        this.setupActiveFrameReaction();
+    }
+
+    private setupActiveFrameReaction(): void {
+        this.reactionDisposer?.();
+        this.reactionDisposer = reaction(
+            () => {
+                const selectedFrames = this.editorEngine.frames.selected;
+                const activeFrame = selectedFrames.length > 0 ? selectedFrames[0] : this.editorEngine.frames.getAll()[0];
+                return activeFrame?.frame?.branchId || null;
+            },
+            (activeBranchId) => {
+                if (activeBranchId && activeBranchId !== this.currentBranchId && this.branchMap.has(activeBranchId)) {
+                    this.currentBranchId = activeBranchId;
+                }
+            }
+        );
     }
 
     get activeBranchData(): BranchData {
@@ -194,6 +213,8 @@ export class BranchManager {
     }
 
     clear(): void {
+        this.reactionDisposer?.();
+        this.reactionDisposer = null;
         for (const branchData of this.branchMap.values()) {
             branchData.sandbox.clear();
         }
