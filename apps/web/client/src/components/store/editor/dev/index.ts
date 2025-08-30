@@ -1,4 +1,4 @@
-import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/dev-tab/code-mirror-config';
+import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/code-tab/code-mirror-config';
 import { convertToBase64 } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
