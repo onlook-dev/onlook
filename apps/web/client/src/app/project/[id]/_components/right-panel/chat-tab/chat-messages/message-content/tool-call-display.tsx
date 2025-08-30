@@ -16,48 +16,35 @@ import {
 import type { WebSearchResult } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
-import type { ToolInvocation } from 'ai';
+import type { ToolUIPart } from 'ai';
 import { type z } from 'zod';
 import { BashCodeDisplay } from '../../code-display/bash-code-display';
 import { CollapsibleCodeBlock } from '../../code-display/collapsible-code-block';
 import { SearchSourcesDisplay } from '../../code-display/search-sources-display';
 import { ToolCallSimple } from './tool-call-simple';
 
-// Ensure ToolInvocation has a result property with proper typing
-const ensureToolInvocationResult = (
-    toolInvocation: ToolInvocation,
-): ToolInvocation & { result: unknown } => {
-    if (!('result' in toolInvocation)) {
-        return {
-            ...toolInvocation,
-            result: null,
-        };
-    }
-    return toolInvocation as ToolInvocation & { result: unknown };
-};
-
 export const ToolCallDisplay = ({
     messageId,
     index,
     lastToolInvocationIdx,
-    toolInvocationData,
+    toolInvocation,
     isStream,
     applied,
 }: {
     messageId: string;
     index: number;
     lastToolInvocationIdx: number;
-    toolInvocationData: ToolInvocation;
+    toolInvocation: ToolUIPart;
     isStream: boolean;
     applied: boolean;
 }) => {
     // Ensure the toolInvocation has a result property
-    const toolInvocation = ensureToolInvocationResult(toolInvocationData);
+    if (!isStream || toolInvocation.state === 'output-available') {
+        const toolName = toolInvocation.type.split('-')[1];
 
-    if (!isStream || toolInvocation.state === 'result') {
-        if (toolInvocation.toolName === TERMINAL_COMMAND_TOOL_NAME) {
-            const args = toolInvocation.args as { command: string };
-            const result = toolInvocation.result as { output?: string; error?: string } | null;
+        if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
+            const args = toolInvocation.input as { command: string };
+            const result = toolInvocation.output as { output?: string; error?: string } | null;
             if (!args?.command) {
                 return (
                     <ToolCallSimple
@@ -73,19 +60,21 @@ export const ToolCallDisplay = ({
                     content={args.command}
                     isStream={isStream}
                     defaultStdOut={
-                        toolInvocation.state === 'result' ? (result?.output ?? null) : null
+                        toolInvocation.state === 'output-available'
+                            ? (result?.output ?? null)
+                            : null
                     }
                     defaultStdErr={
-                        toolInvocation.state === 'result' ? (result?.error ?? null) : null
+                        toolInvocation.state === 'output-available' ? (result?.error ?? null) : null
                     }
                 />
             );
         }
 
-        if (toolInvocation.toolName === WEB_SEARCH_TOOL_NAME && toolInvocation.state === 'result') {
+        if (toolName === WEB_SEARCH_TOOL_NAME && toolInvocation.state === 'output-available') {
             const searchResult: WebSearchResult | null =
-                toolInvocation.result as WebSearchResult | null;
-            const args = toolInvocation.args as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
+                toolInvocation.output as WebSearchResult | null;
+            const args = toolInvocation.input as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
             if (args?.query && searchResult?.result && searchResult.result.length > 0) {
                 return (
                     <SearchSourcesDisplay
@@ -107,8 +96,8 @@ export const ToolCallDisplay = ({
             }
         }
 
-        if (toolInvocation.toolName === WRITE_FILE_TOOL_NAME) {
-            const args = toolInvocation.args as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>;
+        if (toolName === WRITE_FILE_TOOL_NAME) {
+            const args = toolInvocation.input as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>;
             const filePath = args?.file_path;
             const codeContent = args?.content;
             if (!filePath || !codeContent) {
@@ -133,8 +122,8 @@ export const ToolCallDisplay = ({
             );
         }
 
-        if (toolInvocation.toolName === FUZZY_EDIT_FILE_TOOL_NAME) {
-            const args = toolInvocation.args as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>;
+        if (toolName === FUZZY_EDIT_FILE_TOOL_NAME) {
+            const args = toolInvocation.input as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>;
             const filePath = args?.file_path;
             const codeContent = args?.content;
             if (!filePath || !codeContent) {
@@ -159,8 +148,8 @@ export const ToolCallDisplay = ({
             );
         }
 
-        if (toolInvocation.toolName === SEARCH_REPLACE_EDIT_FILE_TOOL_NAME) {
-            const args = toolInvocation.args as z.infer<
+        if (toolName === SEARCH_REPLACE_EDIT_FILE_TOOL_NAME) {
+            const args = toolInvocation.input as z.infer<
                 typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS
             >;
             const filePath = args?.file_path;
@@ -187,12 +176,12 @@ export const ToolCallDisplay = ({
             );
         }
 
-        if (toolInvocation.toolName === SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME) {
-            const args = toolInvocation.args as z.infer<
+        if (toolName === SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME) {
+            const args = toolInvocation.input as z.infer<
                 typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS
             >;
             const filePath = args?.file_path;
-            const codeContent = args?.edits.map((edit) => edit.new_string).join('\n...\n');
+            const codeContent = args?.edits?.map((edit) => edit.new_string).join('\n...\n');
             if (!filePath || !codeContent) {
                 return (
                     <ToolCallSimple
@@ -215,8 +204,8 @@ export const ToolCallDisplay = ({
             );
         }
 
-        if (toolInvocation.toolName === TODO_WRITE_TOOL_NAME) {
-            const args = toolInvocation.args as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>;
+        if (toolName === TODO_WRITE_TOOL_NAME) {
+            const args = toolInvocation.input as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>;
             const todos = args?.todos;
             if (!todos || todos.length === 0) {
                 return (

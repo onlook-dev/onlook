@@ -70,7 +70,7 @@ export const DefaultSettings = {
     },
 };
 
-const isDev = true;
+const isDev = process.env.NODE_ENV === 'development';
 export const DEFAULT_COLOR_NAME = 'DEFAULT';
 
 const CDN_PRELOAD_SCRIPT_SRC =

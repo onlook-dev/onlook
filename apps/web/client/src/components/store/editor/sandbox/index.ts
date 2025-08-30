@@ -21,7 +21,7 @@ import {
 } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
-
+import { env } from 'process';
 import type { EditorEngine } from '../engine';
 import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
@@ -30,7 +30,7 @@ import { normalizePath } from './helpers';
 import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
-const isDev = true;
+const isDev = env.NODE_ENV === 'development';
 
 export class SandboxManager {
     readonly session: SessionManager;

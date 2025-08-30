@@ -1,37 +1,22 @@
 import { trackEvent } from '@/utils/analytics/server';
-import { convertToStreamMessages } from '@onlook/ai';
-import { ChatType, type ChatMessage } from '@onlook/models';
-import { streamText } from 'ai';
+import { ChatType } from '@onlook/models';
+import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 'ai';
 import { type NextRequest } from 'next/server';
-import { google } from '@ai-sdk/google';
-
 import { v4 as uuidv4 } from 'uuid';
-import {
-    checkMessageLimit,
-    decrementUsage,
-    errorHandler,
-    getModelFromType,
-    getSupabaseUser,
-    getSystemPromptFromType,
-    getToolSetFromType,
-    incrementUsage,
-    repairToolCall,
-} from './helperts';
+import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
+const MAX_STEPS = 20;
 
 export async function POST(req: NextRequest) {
     try {
         const user = await getSupabaseUser(req);
         if (!user) {
-            return new Response(
-                JSON.stringify({
-                    error: 'Unauthorized, no user found. Please login again.',
-                    code: 401,
-                }),
-                {
-                    status: 401,
-                    headers: { 'Content-Type': 'application/json' },
-                },
-            );
+            return new Response(JSON.stringify({
+                error: 'Unauthorized, no user found. Please login again.',
+                code: 401
+            }), {
+                status: 401,
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
         const usageCheckResult = await checkMessageLimit(req);
         if (usageCheckResult.exceeded) {
@@ -42,44 +27,37 @@ export async function POST(req: NextRequest) {
                     usage: usageCheckResult.usage,
                 },
             });
-            return new Response(
-                JSON.stringify({
-                    error: 'Message limit exceeded. Please upgrade to a paid plan.',
-                    code: 402,
-                    usage: usageCheckResult.usage,
-                }),
-                {
-                    status: 402,
-                    headers: { 'Content-Type': 'application/json' },
-                },
-            );
+            return new Response(JSON.stringify({
+                error: 'Message limit exceeded. Please upgrade to a paid plan.',
+                code: 402,
+                usage: usageCheckResult.usage,
+            }), {
+                status: 402,
+                headers: { 'Content-Type': 'application/json' }
+            });
         }
 
         return streamResponse(req, user.id);
     } catch (error: unknown) {
         console.error('Error in chat', error);
-        return new Response(
-            JSON.stringify({
-                error: error instanceof Error ? error.message : String(error),
-                code: 500,
-            }),
-            {
-                status: 500,
-                headers: { 'Content-Type': 'application/json' },
-            },
-        );
+        return new Response(JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+            code: 500,
+        }), {
+            status: 500,
+            headers: { 'Content-Type': 'application/json' }
+        });
     }
 }
 
 export const streamResponse = async (req: NextRequest, userId: string) => {
-    const { messages, maxSteps, chatType, conversationId, projectId } = (await req.json()) as {
-        messages: ChatMessage[];
-        maxSteps: number;
-        chatType: ChatType;
-        conversationId: string;
-        projectId: string;
+    const body = await req.json();
+    const { messages, chatType, conversationId, projectId } = body as {
+        messages: UIMessage[],
+        chatType: ChatType,
+        conversationId: string,
+        projectId: string,
     };
-
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
     // If the call below fails, the user will not be penalized.
@@ -90,26 +68,26 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     if (chatType === ChatType.EDIT) {
         usageRecord = await incrementUsage(req);
     }
-    const { model, providerOptions, headers } = await getModelFromType(chatType);
+    const modelConfig = await getModelFromType(chatType);
+    const { model, providerOptions, headers } = modelConfig;
     const systemPrompt = await getSystemPromptFromType(chatType);
     const tools = await getToolSetFromType(chatType);
 
-    const lastUserMessage = messages.findLast((message) => message.role === 'user');
+    const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
     const traceId = lastUserMessage?.id ?? uuidv4();
-    const modell = google('gemini-2.0-flash-001');
+
     const result = streamText({
-        model: modell,
+        model,
         headers,
         tools,
-        maxSteps,
-        toolCallStreaming: true,
+        stopWhen: stepCountIs(MAX_STEPS),
         messages: [
             {
                 role: 'system',
                 content: systemPrompt,
                 providerOptions,
             },
-            ...convertToStreamMessages(messages),
+            ...convertToModelMessages(messages),
         ],
         experimental_telemetry: {
             isEnabled: true,
@@ -125,13 +103,33 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         },
         experimental_repairToolCall: repairToolCall,
         onError: async (error) => {
-            console.error('Error in chat', error);
+            console.error('Error in chat stream call', error);
             // if there was an error with the API, do not penalize the user
             await decrementUsage(req, usageRecord);
-        },
-    });
 
-    return result.toDataStreamResponse({
-        getErrorMessage: errorHandler,
-    });
-};
+            // Ensure the stream stops on error by re-throwing
+            if (error instanceof Error) {
+                throw error;
+            } else {
+                const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
+                throw new Error(errorMessage);
+            }
+        }
+    })
+
+    return result.toUIMessageStreamResponse(
+        {
+            originalMessages: messages,
+            messageMetadata: ({
+                part
+            }) => {
+                if (part.type === 'finish-step') {
+                    return {
+                        finishReason: part.finishReason,
+                    }
+                }
+            },
+            onError: errorHandler,
+        }
+    );
+}
