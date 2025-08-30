@@ -16,13 +16,13 @@ import { getMimeType } from '@onlook/utility';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getBasicSetup, getExtensions, createSearchHighlight, clearSearchHighlight, scrollToFirstMatch } from './code-mirror-config';
+import { createSearchHighlight, getBasicSetup, getExtensions, scrollToFirstMatch } from './code-mirror-config';
 import { FileModal } from './file-modal';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
 import { FolderModal } from './folder-modal';
 
-export const DevTab = observer(() => {
+export const CodeTab = observer(() => {
     const editorEngine = useEditorEngine();
     const ide = editorEngine.ide;
     const [isFilesVisible, setIsFilesVisible] = useState(true);
@@ -199,7 +199,7 @@ export const DevTab = observer(() => {
             editorView.dispatch({
                 effects: createSearchHighlight(ide.searchTerm)
             });
-            
+
             setTimeout(() => {
                 scrollToFirstMatch(editorView, ide.searchTerm);
             }, 100);
