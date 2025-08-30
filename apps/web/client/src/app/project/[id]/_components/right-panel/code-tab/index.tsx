@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { CodeRange, EditorFile } from '@/components/store/editor/dev';
+import type { CodeRange, EditorFile } from '@/components/store/editor/ide';
 import type { FileEvent } from '@/components/store/editor/sandbox/file-event-bus';
 import { EditorView } from '@codemirror/view';
 import { Button } from '@onlook/ui/button';
@@ -15,7 +15,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { getMimeType } from '@onlook/utility';
 import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { createSearchHighlight, getBasicSetup, getExtensions, scrollToFirstMatch } from './code-mirror-config';
 import { FileModal } from './file-modal';
 import { FileTab } from './file-tab';
@@ -24,26 +24,22 @@ import { FolderModal } from './folder-modal';
 
 export const CodeTab = observer(() => {
     const editorEngine = useEditorEngine();
+    const activeSandbox = editorEngine.branches.activeSandbox;
     const ide = editorEngine.ide;
-    const [isFilesVisible, setIsFilesVisible] = useState(true);
-    const [fileModalOpen, setFileModalOpen] = useState(false);
-    const [folderModalOpen, setFolderModalOpen] = useState(false);
-    const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
-    const [pendingCloseAll, setPendingCloseAll] = useState(false);
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const fileTabsContainerRef = useRef<HTMLDivElement>(null);
 
     // Helper function to check if sandbox is connected and ready
-    const isSandboxReady = useCallback((): boolean => {
-        return !!(editorEngine.sandbox.session.provider && !editorEngine.sandbox.session.isConnecting);
-    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
+    const isSandboxReady = (): boolean => {
+        return !!(activeSandbox.session.provider && !activeSandbox.session.isConnecting);
+    };
 
     // Helper function to handle sandbox not ready scenarios
-    const handleSandboxNotReady = useCallback((operation: string): void => {
+    const handleSandboxNotReady = (operation: string): void => {
         const message = `Cannot ${operation}: sandbox not connected`;
         console.error(message);
-    }, []);
+    };
 
     const getActiveEditorView = (): EditorView | undefined => {
         if (!ide.activeFile) {
@@ -99,7 +95,7 @@ export const CodeTab = observer(() => {
         }
 
         try {
-            const templateNode = await editorEngine.sandbox.getTemplateNode(element.oid);
+            const templateNode = await activeSandbox.getTemplateNode(element.oid);
             if (templateNode?.startTag) {
                 return {
                     startLineNumber: templateNode.startTag.start.line,
@@ -230,41 +226,36 @@ export const CodeTab = observer(() => {
             }
         };
 
-        const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', handleFileEvent);
+        const unsubscribe = activeSandbox.fileEventBus.subscribe('*', handleFileEvent);
 
         return () => {
             unsubscribe();
         };
-    }, [editorEngine.sandbox, ide.activeFile]);
+    }, [activeSandbox, ide.activeFile, editorEngine.branches.activeBranch.id]);
 
-    // Load files when sandbox becomes connected
+    // Load files when active sandbox changes
     useEffect(() => {
-        const loadInitialFiles = async () => {
-            // Only load files if sandbox is connected and not connecting
+        const loadFilesForActiveSandbox = async () => {
             if (!isSandboxReady()) {
                 return;
             }
+
+            // Clear existing files and editors when switching sandboxes
+            ide.clear();
+            editorViewsRef.current.forEach((view) => view.destroy());
+            editorViewsRef.current.clear();
 
             ide.isFilesLoading = true;
             try {
                 await ide.refreshFiles();
             } catch (error) {
-                console.error('Error loading initial files:', error);
+                console.error('Error loading files for active sandbox:', error);
             }
         };
 
-        loadInitialFiles();
-    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
+        loadFilesForActiveSandbox();
+    }, [activeSandbox]);
 
-    // Clear files and opened files when sandbox disconnects
-    useEffect(() => {
-        if (!isSandboxReady()) {
-            ide.clear();
-            // Clean up all editor instances
-            editorViewsRef.current.forEach((view) => view.destroy());
-            editorViewsRef.current.clear();
-        }
-    }, [editorEngine.sandbox.session.provider, editorEngine.sandbox.session.isConnecting]);
 
     const handleRefreshFiles = useCallback(async () => {
         if (!isSandboxReady()) {
@@ -274,7 +265,7 @@ export const CodeTab = observer(() => {
 
         ide.isFilesLoading = true;
         try {
-            await editorEngine.sandbox.index(true);
+            await activeSandbox.index(true);
             await ide.refreshFiles();
         } catch (error) {
             console.error('Error refreshing files:', error);
@@ -324,7 +315,7 @@ export const CodeTab = observer(() => {
 
     const closeFile = useCallback((fileId: string) => {
         if (ide.openedFiles.find(f => f.id === fileId)?.isDirty) {
-            setShowUnsavedDialog(true);
+            ide.showUnsavedDialog = true;
             return;
         }
 
@@ -334,7 +325,7 @@ export const CodeTab = observer(() => {
             editorViewsRef.current.delete(fileId);
         }
         ide.closeFile(fileId);
-    }, [ide, setShowUnsavedDialog]);
+    }, [ide]);
 
     const saveFile = useCallback(async () => {
         if (!ide.activeFile) {
@@ -346,7 +337,7 @@ export const CodeTab = observer(() => {
             return;
         }
 
-        if (pendingCloseAll) {
+        if (ide.pendingCloseAll) {
             const file = ide.openedFiles.find((f) => f.id === ide.activeFile?.id);
             if (file) {
                 await ide.saveActiveFile();
@@ -355,26 +346,26 @@ export const CodeTab = observer(() => {
 
             const remainingDirty = ide.openedFiles.filter((f) => f.isDirty);
             if (remainingDirty.length !== 0) {
-                setShowUnsavedDialog(true);
+                ide.showUnsavedDialog = true;
                 return;
             }
 
             ide.closeAllFiles();
-            setPendingCloseAll(false);
-            setShowUnsavedDialog(false);
+            ide.pendingCloseAll = false;
+            ide.showUnsavedDialog = false;
 
             return;
         }
 
         await ide.saveActiveFile();
 
-        if (showUnsavedDialog) {
-            setShowUnsavedDialog(false);
+        if (ide.showUnsavedDialog) {
+            ide.showUnsavedDialog = false;
             closeFile(ide.activeFile.id);
         }
 
         toast('File saved!');
-    }, [ide, isSandboxReady, handleSandboxNotReady, pendingCloseAll, showUnsavedDialog, setShowUnsavedDialog, setPendingCloseAll, closeFile]);
+    }, [ide, isSandboxReady, handleSandboxNotReady, closeFile]);
 
     const handleFileTreeSelect = async (nodes: any[]) => {
         if (nodes.length > 0 && !nodes[0].data.isDirectory) {
@@ -386,8 +377,8 @@ export const CodeTab = observer(() => {
     function closeAllFiles() {
         const dirtyFiles = ide.openedFiles.filter((file) => file.isDirty);
         if (dirtyFiles.length > 0) {
-            setShowUnsavedDialog(true);
-            setPendingCloseAll(true);
+            ide.showUnsavedDialog = true;
+            ide.pendingCloseAll = true;
             return;
         }
 
@@ -401,22 +392,22 @@ export const CodeTab = observer(() => {
     };
 
     async function discardChanges(fileId: string) {
-        if (pendingCloseAll) {
+        if (ide.pendingCloseAll) {
             const file = ide.openedFiles.find((e) => e.id === fileId);
             if (file) {
                 await ide.discardFileChanges(file.id);
                 closeFile(fileId);
-                setShowUnsavedDialog(true);
+                ide.showUnsavedDialog = true;
                 const isDirty = ide.openedFiles.filter((val) => val.isDirty);
                 if (isDirty.length === 0) {
                     ide.closeAllFiles();
-                    setPendingCloseAll(false);
-                    setShowUnsavedDialog(false);
+                    ide.pendingCloseAll = false;
+                    ide.showUnsavedDialog = false;
                 }
                 return;
             }
 
-            setPendingCloseAll(false);
+            ide.pendingCloseAll = false;
             return;
         }
 
@@ -426,7 +417,7 @@ export const CodeTab = observer(() => {
 
         await ide.discardFileChanges(fileId);
         closeFile(fileId);
-        setShowUnsavedDialog(false);
+        ide.showUnsavedDialog = false;
     }
 
     const getFileUrl = (file: EditorFile) => {
@@ -495,7 +486,7 @@ export const CodeTab = observer(() => {
                     <div className="flex flex-col items-center gap-3">
                         <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
                         <span className="text-sm text-muted-foreground">
-                            {editorEngine.sandbox.session.isConnecting
+                            {activeSandbox.session.isConnecting
                                 ? 'Connecting to sandbox...'
                                 : 'Waiting for sandbox connection...'}
                         </span>
@@ -506,7 +497,7 @@ export const CodeTab = observer(() => {
             {/* Main content - only show when sandbox is connected */}
             {isSandboxReady() && (
                 <div className="flex flex-1 min-h-0 overflow-hidden">
-                    {isFilesVisible && (
+                    {ide.isFilesVisible && (
                         <FileTree
                             onFileSelect={loadFile}
                             files={ide.files}
@@ -526,14 +517,14 @@ export const CodeTab = observer(() => {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => setIsFilesVisible(!isFilesVisible)}
+                                            onClick={() => ide.isFilesVisible = !ide.isFilesVisible}
                                             className="text-muted-foreground hover:text-foreground"
                                         >
-                                            {isFilesVisible ? <Icons.SidebarLeftCollapse /> : <Icons.SidebarLeftExpand />}
+                                            {ide.isFilesVisible ? <Icons.SidebarLeftCollapse /> : <Icons.SidebarLeftExpand />}
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom" className="mt-1" hideArrow>
-                                        {isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
+                                        {ide.isFilesVisible ? 'Collapse sidebar' : 'Expand sidebar'}
                                     </TooltipContent>
                                 </Tooltip>
                             </div>
@@ -650,7 +641,7 @@ export const CodeTab = observer(() => {
                                                     }}
                                                 />
                                             )}
-                                            {ide.activeFile?.isDirty && showUnsavedDialog && (
+                                            {ide.activeFile?.isDirty && ide.showUnsavedDialog && (
                                                 <div className="absolute top-4 left-1/2 z-50 -translate-x-1/2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 shadow-lg rounded-lg p-4 w-[320px]">
                                                     <div className="text-sm text-gray-800 dark:text-gray-100 mb-4">
                                                         You have unsaved changes. Are you sure you want
@@ -678,8 +669,8 @@ export const CodeTab = observer(() => {
                                                         <Button
                                                             variant="ghost"
                                                             onClick={() => {
-                                                                setShowUnsavedDialog(false);
-                                                                setPendingCloseAll(false);
+                                                                ide.showUnsavedDialog = false;
+                                                                ide.pendingCloseAll = false;
                                                             }}
                                                         >
                                                             Cancel
@@ -696,19 +687,19 @@ export const CodeTab = observer(() => {
                 </div>
             )}
 
-            {fileModalOpen && (
+            {ide.fileModalOpen && (
                 <FileModal
-                    open={fileModalOpen}
-                    onOpenChange={setFileModalOpen}
+                    open={ide.fileModalOpen}
+                    onOpenChange={(open) => ide.fileModalOpen = open}
                     basePath=""
                     files={ide.files}
                 />
             )}
 
-            {folderModalOpen && (
+            {ide.folderModalOpen && (
                 <FolderModal
-                    open={folderModalOpen}
-                    onOpenChange={setFolderModalOpen}
+                    open={ide.folderModalOpen}
+                    onOpenChange={(open) => ide.folderModalOpen = open}
                     basePath=""
                     files={ide.files}
                 />

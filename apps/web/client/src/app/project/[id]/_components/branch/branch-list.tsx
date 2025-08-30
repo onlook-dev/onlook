@@ -1,13 +1,13 @@
-import { Icons } from "@onlook/ui/icons";
-import { Input } from "@onlook/ui/input";
-import { ScrollArea } from "@onlook/ui/scroll-area";
+import type { Branch } from "@onlook/models";
 import {
     DropdownMenuItem,
     DropdownMenuLabel,
 } from "@onlook/ui/dropdown-menu";
+import { Icons } from "@onlook/ui/icons";
+import { Input } from "@onlook/ui/input";
+import { ScrollArea } from "@onlook/ui/scroll-area";
 import { timeAgo } from "@onlook/utility";
 import { useMemo, useState } from "react";
-import type { Branch } from "@onlook/models";
 
 interface BranchListProps {
     branches: Branch[];
@@ -16,28 +16,22 @@ interface BranchListProps {
     showSearch?: boolean;
 }
 
-export function BranchList({ 
-    branches, 
-    activeBranch, 
-    onBranchSwitch, 
-    showSearch = true 
+export function BranchList({
+    branches,
+    activeBranch,
+    onBranchSwitch,
+    showSearch = true
 }: BranchListProps) {
     const [searchQuery, setSearchQuery] = useState("");
 
-    const sortedBranches = useMemo(() => {
-        return branches.sort((a, b) => 
-            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-        );
-    }, [branches]);
-
     const filteredBranches = useMemo(() => {
         if (!showSearch || !searchQuery) {
-            return sortedBranches;
+            return branches;
         }
-        return sortedBranches.filter(branch =>
+        return branches.filter(branch =>
             branch.name.toLowerCase().includes(searchQuery.toLowerCase())
         );
-    }, [sortedBranches, searchQuery, showSearch]);
+    }, [branches, searchQuery, showSearch]);
 
     return (
         <>

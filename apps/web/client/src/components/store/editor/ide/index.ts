@@ -31,6 +31,11 @@ export class IDEManager {
     searchTerm: string = '';
     isLoading = false;
     isFilesLoading = false;
+    isFilesVisible = true;
+    fileModalOpen = false;
+    folderModalOpen = false;
+    showUnsavedDialog = false;
+    pendingCloseAll = false;
     private filesReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
