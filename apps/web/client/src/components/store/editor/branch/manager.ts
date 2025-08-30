@@ -141,6 +141,34 @@ export class BranchManager {
         }
     }
 
+    removeBranch(branchId: string): void {
+        const branchData = this.branchMap.get(branchId);
+        if (branchData) {
+            // Remove all frames associated with this branch
+            const framesToRemove = this.editorEngine.frames.getAll().filter(
+                frameState => frameState.frame.branchId === branchId
+            );
+            
+            for (const frameState of framesToRemove) {
+                this.editorEngine.frames.removeFrame(frameState.frame.id);
+            }
+            
+            // Clean up the sandbox
+            branchData.sandbox.clear();
+            // Remove from the map
+            this.branchMap.delete(branchId);
+            
+            // If this was the current branch, switch to default or first available
+            if (this.currentBranchId === branchId) {
+                const remainingBranches = Array.from(this.branchMap.values()).map(({ branch }) => branch);
+                this.currentBranchId =
+                    remainingBranches.find(b => b.isDefault)?.id
+                    ?? remainingBranches[0]?.id
+                    ?? null;
+            }
+        }
+    }
+
     clear(): void {
         for (const branchData of this.branchMap.values()) {
             branchData.sandbox.clear();

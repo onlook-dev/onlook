@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { api } from '@/trpc/client';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
@@ -31,14 +32,27 @@ export const BranchManagement = observer(({ branchId, branchName }: BranchManage
         }
 
         try {
-            // TODO: Implement branch rename API
-            console.log('Rename branch:', branchId, 'to:', newName);
-            toast.success(`Branch renamed to "${newName}"`);
-            setIsRenaming(false);
+            const success = await api.branch.update.mutate({
+                id: branchId,
+                name: newName.trim(),
+            });
+            
+            if (success) {
+                // Update local branch state
+                const branch = editorEngine.branches.getBranchById(branchId);
+                if (branch) {
+                    branch.name = newName.trim();
+                }
+                toast.success(`Branch renamed to "${newName.trim()}"`);
+                setIsRenaming(false);
+            } else {
+                throw new Error('Failed to update branch');
+            }
         } catch (error) {
             console.error('Failed to rename branch:', error);
             toast.error('Failed to rename branch');
             setNewName(branchName);
+            setIsRenaming(false);
         }
     };
 
@@ -67,10 +81,19 @@ export const BranchManagement = observer(({ branchId, branchName }: BranchManage
         
         try {
             setIsDeleting(true);
-            // TODO: Implement branch delete API
-            console.log('Delete branch:', branchId);
-            toast.success('Branch deleted successfully');
-            handleClose();
+            
+            const success = await api.branch.delete.mutate({
+                branchId: branchId,
+            });
+            
+            if (success) {
+                // Remove branch from local state
+                editorEngine.branches.removeBranch(branchId);
+                toast.success('Branch deleted successfully');
+                handleClose();
+            } else {
+                throw new Error('Failed to delete branch');
+            }
         } catch (error) {
             console.error('Failed to delete branch:', error);
             toast.error('Failed to delete branch');
