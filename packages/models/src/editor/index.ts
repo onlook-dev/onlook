@@ -34,6 +34,7 @@ export enum LeftPanelTabValue {
     IMAGES = 'images',
     WINDOWS = 'windows',
     BRAND = 'brand',
+    BRANCHES = 'branches',
     APPS = 'apps',
 }
 

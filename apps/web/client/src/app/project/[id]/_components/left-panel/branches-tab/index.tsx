@@ -1,0 +1,146 @@
+import { useEditorEngine } from '@/components/store/editor';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
+import { timeAgo } from '@onlook/utility';
+import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
+
+export const BranchesTab = observer(() => {
+    const editorEngine = useEditorEngine();
+    const branches = editorEngine.branches.allBranches;
+    const activeBranch = editorEngine.branches.activeBranch;
+    const [hoveredBranchId, setHoveredBranchId] = useState<string | null>(null);
+    const [isForking, setIsForking] = useState(false);
+
+    const handleBranchSwitch = async (branchId: string) => {
+        if (branchId === activeBranch.id) return;
+        
+        try {
+            await editorEngine.branches.switchToBranch(branchId);
+        } catch (error) {
+            console.error('Failed to switch branch:', error);
+        }
+    };
+
+    const handleForkBranch = async (branchId: string) => {
+        if (isForking) return;
+        
+        try {
+            setIsForking(true);
+            // Switch to the branch first if it's not already active
+            if (branchId !== activeBranch.id) {
+                await editorEngine.branches.switchToBranch(branchId);
+            }
+            await editorEngine.branches.forkBranch();
+        } catch (error) {
+            console.error('Failed to fork branch:', error);
+        } finally {
+            setIsForking(false);
+        }
+    };
+
+    const sortedBranches = [...branches].sort((a, b) => {
+        // Show active branch first, then sort by updated time
+        if (a.id === activeBranch.id) return -1;
+        if (b.id === activeBranch.id) return 1;
+        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+    });
+
+    return (
+        <div className="flex flex-col h-full">
+            <div className="flex items-center justify-between p-4 border-b">
+                <div className="flex items-center gap-2">
+                    <Icons.GitBranch className="w-4 h-4" />
+                    <h2 className="text-sm font-medium">Branches</h2>
+                    <span className="text-xs text-muted-foreground">({branches.length})</span>
+                </div>
+            </div>
+            
+            <div className="flex-1 overflow-auto">
+                <div className="p-2 space-y-1">
+                    {sortedBranches.map((branch) => {
+                        const isActive = branch.id === activeBranch.id;
+                        const isHovered = hoveredBranchId === branch.id;
+                        
+                        return (
+                            <div
+                                key={branch.id}
+                                className={cn(
+                                    "group relative flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors",
+                                    isActive 
+                                        ? "bg-accent text-foreground border border-border" 
+                                        : "hover:bg-accent/50 text-foreground-secondary hover:text-foreground"
+                                )}
+                                onClick={() => handleBranchSwitch(branch.id)}
+                                onMouseEnter={() => setHoveredBranchId(branch.id)}
+                                onMouseLeave={() => setHoveredBranchId(null)}
+                            >
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    {isActive ? (
+                                        <Icons.Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                                    ) : (
+                                        <Icons.GitBranch className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                        <div className="font-medium text-sm truncate">
+                                            {branch.name}
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            {timeAgo(branch.updatedAt)}
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {/* Hover controls */}
+                                {isHovered && !isActive && (
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0 hover:bg-background"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleForkBranch(branch.id);
+                                            }}
+                                            disabled={isForking}
+                                            title="Fork branch"
+                                        >
+                                            {isForking ? (
+                                                <Icons.LoadingSpinner className="w-3 h-3" />
+                                            ) : (
+                                                <Icons.GitBranch className="w-3 h-3" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
+                                
+                                {isActive && (
+                                    <div className="flex items-center gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-6 w-6 p-0 hover:bg-background/50"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleForkBranch(branch.id);
+                                            }}
+                                            disabled={isForking}
+                                            title="Fork current branch"
+                                        >
+                                            {isForking ? (
+                                                <Icons.LoadingSpinner className="w-3 h-3" />
+                                            ) : (
+                                                <Icons.GitBranch className="w-3 h-3" />
+                                            )}
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+});
