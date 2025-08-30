@@ -20,10 +20,7 @@ export const BranchesTab = observer(() => {
         const manageBranch = branches.find(b => b.id === manageBranchId);
         if (manageBranch) {
             return (
-                <BranchManagement
-                    branchId={manageBranch.id}
-                    branchName={manageBranch.name}
-                />
+                <BranchManagement branch={manageBranch} />
             );
         }
     }

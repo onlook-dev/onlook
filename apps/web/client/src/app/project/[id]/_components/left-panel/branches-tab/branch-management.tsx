@@ -1,45 +1,46 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { api } from '@/trpc/client';
+import type { Branch } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
+import { timeAgo } from '@onlook/utility/src/time';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface BranchManagementProps {
-    branchId: string;
-    branchName: string;
+    branch: Branch;
 }
 
-export const BranchManagement = observer(({ branchId, branchName }: BranchManagementProps) => {
+export const BranchManagement = observer(({ branch }: BranchManagementProps) => {
     const editorEngine = useEditorEngine();
     const [isRenaming, setIsRenaming] = useState(false);
-    const [newName, setNewName] = useState(branchName);
+    const [newName, setNewName] = useState(branch.name);
     const [isForking, setIsForking] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const isActiveBranch = editorEngine.branches.activeBranch.id === branchId;
+    const isActiveBranch = editorEngine.branches.activeBranch.id === branch.id;
 
     const handleClose = () => {
         editorEngine.state.branchTab = null;
     };
 
     const handleRename = async () => {
-        if (newName.trim() === branchName || !newName.trim()) {
+        if (newName.trim() === branch.name || !newName.trim()) {
             setIsRenaming(false);
-            setNewName(branchName);
+            setNewName(branch.name);
             return;
         }
 
         try {
             const success = await api.branch.update.mutate({
-                id: branchId,
+                id: branch.id,
                 name: newName.trim(),
             });
-            
+
             if (success) {
                 // Update local branch state
-                const branch = editorEngine.branches.getBranchById(branchId);
+                const branch = editorEngine.branches.getBranchById(branch.id);
                 if (branch) {
                     branch.name = newName.trim();
                 }
@@ -51,19 +52,19 @@ export const BranchManagement = observer(({ branchId, branchName }: BranchManage
         } catch (error) {
             console.error('Failed to rename branch:', error);
             toast.error('Failed to rename branch');
-            setNewName(branchName);
+            setNewName(branch.name);
             setIsRenaming(false);
         }
     };
 
     const handleFork = async () => {
         if (isForking) return;
-        
+
         try {
             setIsForking(true);
             // Switch to the branch first if it's not already active
             if (!isActiveBranch) {
-                await editorEngine.branches.switchToBranch(branchId);
+                await editorEngine.branches.switchToBranch(branch.id);
             }
             await editorEngine.branches.forkBranch();
             toast.success('Branch forked successfully');
@@ -78,17 +79,17 @@ export const BranchManagement = observer(({ branchId, branchName }: BranchManage
 
     const handleDelete = async () => {
         if (isDeleting || isActiveBranch) return;
-        
+
         try {
             setIsDeleting(true);
-            
+
             const success = await api.branch.delete.mutate({
-                branchId: branchId,
+                branchId: branch.id,
             });
-            
+
             if (success) {
                 // Remove branch from local state
-                editorEngine.branches.removeBranch(branchId);
+                editorEngine.branches.removeBranch(branch.id);
                 toast.success('Branch deleted successfully');
                 handleClose();
             } else {
@@ -107,7 +108,7 @@ export const BranchManagement = observer(({ branchId, branchName }: BranchManage
             handleRename();
         } else if (e.key === 'Escape') {
             setIsRenaming(false);
-            setNewName(branchName);
+            setNewName(branch.name);
         }
     };
 
@@ -150,11 +151,11 @@ export const BranchManagement = observer(({ branchId, branchName }: BranchManage
                             autoFocus
                         />
                     ) : (
-                        <div 
+                        <div
                             className="flex items-center justify-between p-2 bg-background-secondary rounded-md cursor-pointer hover:bg-background-secondary/70"
                             onClick={() => setIsRenaming(true)}
                         >
-                            <span className="font-medium">{branchName}</span>
+                            <span className="font-medium">{branch.name}</span>
                             <Icons.Pencil className="w-3 h-3 text-muted-foreground" />
                         </div>
                     )}
@@ -165,47 +166,48 @@ export const BranchManagement = observer(({ branchId, branchName }: BranchManage
             <div className="flex-1 p-4 space-y-3">
                 <div className="space-y-2">
                     <h3 className="text-sm font-medium text-foreground">Actions</h3>
-                    
-                    {/* Fork Branch */}
-                    <Button
-                        variant="ghost"
-                        className="w-full h-11 justify-start text-sm text-muted-foreground hover:text-foreground bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
-                        onClick={handleFork}
-                        disabled={isForking}
-                    >
-                        {isForking ? (
-                            <div className="flex items-center gap-2">
-                                <Icons.LoadingSpinner className="w-4 h-4" />
-                                <span>Forking...</span>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                <Icons.GitBranch className="w-4 h-4" />
-                                <span>Fork Branch</span>
-                            </div>
-                        )}
-                    </Button>
+                    <div className="flex flex-col items-center gap-2 w-full">
+                        {/* Fork Branch */}
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={handleFork}
+                            disabled={isForking}
+                        >
+                            {isForking ? (
+                                <div className="flex items-center gap-2">
+                                    <Icons.LoadingSpinner className="w-4 h-4" />
+                                    <span>Forking...</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <Icons.GitBranch className="w-4 h-4" />
+                                    <span>Fork</span>
+                                </div>
+                            )}
+                        </Button>
 
-                    {/* Delete Branch */}
-                    <Button
-                        variant="ghost"
-                        className="w-full h-11 justify-start text-sm text-destructive hover:text-destructive bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
-                        onClick={handleDelete}
-                        disabled={isDeleting || isActiveBranch}
-                        title={isActiveBranch ? "Cannot delete active branch" : "Delete branch"}
-                    >
-                        {isDeleting ? (
-                            <div className="flex items-center gap-2">
-                                <Icons.LoadingSpinner className="w-4 h-4" />
-                                <span>Deleting...</span>
-                            </div>
-                        ) : (
-                            <div className="flex items-center gap-2">
-                                <Icons.Trash className="w-4 h-4" />
-                                <span>Delete Branch</span>
-                            </div>
-                        )}
-                    </Button>
+                        {/* Delete Branch */}
+                        <Button
+                            variant="destructive"
+                            className="w-full"
+                            onClick={handleDelete}
+                            disabled={isDeleting || isActiveBranch}
+                            title={isActiveBranch ? "Cannot delete active branch" : "Delete branch"}
+                        >
+                            {isDeleting ? (
+                                <div className="flex items-center gap-2">
+                                    <Icons.LoadingSpinner className="w-4 h-4" />
+                                    <span>Deleting...</span>
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-2">
+                                    <Icons.Trash className="w-4 h-4" />
+                                    <span>Delete </span>
+                                </div>
+                            )}
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Placeholder Sections */}
@@ -213,27 +215,8 @@ export const BranchManagement = observer(({ branchId, branchName }: BranchManage
                     <div className="space-y-2">
                         <h3 className="text-sm font-medium text-foreground">Branch Info</h3>
                         <div className="text-xs text-muted-foreground space-y-1">
-                            <div>Created: Coming soon</div>
-                            <div>Last modified: Coming soon</div>
-                            <div>Commits: Coming soon</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="pt-4 border-t border-border">
-                    <div className="space-y-2">
-                        <h3 className="text-sm font-medium text-foreground">Collaboration</h3>
-                        <div className="space-y-2">
-                            <Button
-                                variant="ghost"
-                                className="w-full h-9 justify-start text-sm text-muted-foreground bg-background-secondary rounded-lg border border-white/5"
-                                disabled
-                            >
-                                <div className="flex items-center gap-2">
-                                    <Icons.Share className="w-4 h-4" />
-                                    <span>Share Branch (Coming Soon)</span>
-                                </div>
-                            </Button>
+                            <div>Created: {timeAgo(branch.createdAt)}</div>
+                            <div>Last modified: {timeAgo(branch.updatedAt)}</div>
                         </div>
                     </div>
                 </div>
