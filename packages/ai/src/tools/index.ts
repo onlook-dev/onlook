@@ -6,3 +6,4 @@ export * from './read';
 export * from './sandbox';
 export * from './toolset';
 export * from './web';
+export * from './typecheck';

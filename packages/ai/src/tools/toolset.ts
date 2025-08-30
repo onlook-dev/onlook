@@ -36,6 +36,7 @@ import {
 import { LIST_FILES_TOOL_NAME, listFilesTool, READ_FILE_TOOL_NAME, readFileTool } from './read';
 import { SANDBOX_TOOL_NAME, sandboxTool } from './sandbox';
 import { SCRAPE_URL_TOOL_NAME, scrapeUrlTool, WEB_SEARCH_TOOL_NAME, webSearchTool } from './web';
+import { TYPECHECK_TOOL_NAME, typecheckTool } from './typecheck';
 
 export const ASK_TOOL_SET: ToolSet = {
     [LIST_FILES_TOOL_NAME]: listFilesTool,
@@ -60,4 +61,5 @@ export const BUILD_TOOL_SET: ToolSet = {
     [BASH_EDIT_TOOL_NAME]: bashEditTool,
     [SANDBOX_TOOL_NAME]: sandboxTool,
     [TERMINAL_COMMAND_TOOL_NAME]: terminalCommandTool,
+    [TYPECHECK_TOOL_NAME]: typecheckTool,
 };

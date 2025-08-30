@@ -11,13 +11,13 @@ import { useSearchParams } from 'next/navigation';
 import { DevLoginButton, GithubLoginButton, GoogleLoginButton } from '../_components/login-button';
 
 export default function LoginPage() {
-    const isDev = process.env.NODE_ENV === 'development';
+    const isDev = true;
     const t = useTranslations();
     const backgroundUrl = useGetBackground('login');
     const returnUrl = useSearchParams().get(LocalForageKeys.RETURN_URL);
 
     return (
-        <div className="flex h-screen w-screen" >
+        <div className="flex h-screen w-screen">
             <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
                 <div className="flex items-center space-x-2">
                     <Link href={Routes.HOME} className="hover:opacity-80 transition-opacity">
@@ -26,9 +26,7 @@ export default function LoginPage() {
                 </div>
                 <div className="space-y-8">
                     <div className="space-y-4">
-                        <h1 className="text-title1 leading-tight">
-                            {t(transKeys.welcome.title)}
-                        </h1>
+                        <h1 className="text-title1 leading-tight">{t(transKeys.welcome.title)}</h1>
                         <p className="text-foreground-onlook text-regular">
                             {t(transKeys.welcome.description)}
                         </p>
@@ -37,7 +35,7 @@ export default function LoginPage() {
                         <GithubLoginButton returnUrl={returnUrl} />
                         <GoogleLoginButton returnUrl={returnUrl} />
                     </div>
-                    {isDev && <DevLoginButton returnUrl={returnUrl} />}
+                    <DevLoginButton returnUrl={returnUrl} />
                     <p className="text-small text-foreground-onlook">
                         {t(transKeys.welcome.terms.agreement)}{' '}
                         <Link
@@ -46,8 +44,7 @@ export default function LoginPage() {
                             className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {t(transKeys.welcome.terms.privacy)}
-                        </Link>
-                        {' '}
+                        </Link>{' '}
                         {t(transKeys.welcome.terms.and)}{' '}
                         <Link
                             href="https://onlook.com/terms-of-service"

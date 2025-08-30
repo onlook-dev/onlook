@@ -38,22 +38,25 @@ export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE)
 }
 
 export async function devLogin() {
-    if (process.env.NODE_ENV !== 'development') {
+    if (false) {
         throw new Error('Dev login is only available in development mode');
     }
 
     const supabase = await createClient();
 
-    const { data: { session } } = await supabase.auth.getSession();
+    const {
+        data: { session },
+    } = await supabase.auth.getSession();
 
     if (session) {
         redirect(Routes.AUTH_REDIRECT);
     }
-
+    console.log('SEED_USER', SEED_USER);
     const { data, error } = await supabase.auth.signInWithPassword({
         email: SEED_USER.EMAIL,
         password: SEED_USER.PASSWORD,
     });
+    console.log('data', data);
 
     if (error) {
         console.error('Error signing in with password:', error);

@@ -6,7 +6,7 @@ import {
     BASH_READ_TOOL_PARAMETERS,
     GLOB_TOOL_PARAMETERS,
     GREP_TOOL_PARAMETERS,
-    TERMINAL_COMMAND_TOOL_PARAMETERS
+    TERMINAL_COMMAND_TOOL_PARAMETERS,
 } from '@onlook/ai';
 import { z } from 'zod';
 
@@ -18,10 +18,14 @@ export async function handleTerminalCommandTool(
     success: boolean;
     error: string | null;
 }> {
+    console.log('handleTerminalCommandTool', args);
     return await editorEngine.sandbox.session.runCommand(args.command);
 }
 
-export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<{
+export async function handleBashReadTool(
+    args: z.infer<typeof BASH_READ_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+): Promise<{
     output: string;
     success: boolean;
     error: string | null;
@@ -32,11 +36,11 @@ export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PAR
         const commandParts = args.command.trim().split(/\s+/);
         const baseCommand = commandParts[0] || '';
 
-        if (!readOnlyCommands.some(cmd => baseCommand.includes(cmd))) {
+        if (!readOnlyCommands.some((cmd) => baseCommand.includes(cmd))) {
             return {
                 output: '',
                 success: false,
-                error: `Command '${baseCommand}' is not allowed in read-only mode. Only ${readOnlyCommands.join(', ')} commands are permitted.`
+                error: `Command '${baseCommand}' is not allowed in read-only mode. Only ${readOnlyCommands.join(', ')} commands are permitted.`,
             };
         }
 
@@ -44,25 +48,31 @@ export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PAR
         return {
             output: result.output,
             success: result.success,
-            error: result.error
+            error: result.error,
         };
     } catch (error: any) {
         return {
             output: '',
             success: false,
-            error: error.message || error.toString()
+            error: error.message || error.toString(),
         };
     }
 }
 
-export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string[]> {
+export async function handleGlobTool(
+    args: z.infer<typeof GLOB_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+): Promise<string[]> {
     try {
         const searchPath = args.path || '.';
         const command = `find ${searchPath} -name "${args.pattern}" 2>/dev/null | head -100`;
         const result = await editorEngine.sandbox.session.runCommand(command);
 
         if (result.success && result.output.trim()) {
-            return result.output.trim().split('\n').filter(line => line.trim());
+            return result.output
+                .trim()
+                .split('\n')
+                .filter((line) => line.trim());
         }
         return [];
     } catch (error) {
@@ -71,7 +81,10 @@ export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>,
     }
 }
 
-export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<any> {
+export async function handleGrepTool(
+    args: z.infer<typeof GREP_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+): Promise<any> {
     try {
         const searchPath = args.path || '.';
         let command = `rg "${args.pattern}" ${searchPath}`;
@@ -91,29 +104,35 @@ export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>,
         const result = await editorEngine.sandbox.session.runCommand(command);
 
         if (result.success) {
-            const lines = result.output.trim().split('\n').filter(line => line.trim());
+            const lines = result.output
+                .trim()
+                .split('\n')
+                .filter((line) => line.trim());
             return {
                 matches: lines,
                 mode: args.output_mode,
-                count: lines.length
+                count: lines.length,
             };
         }
 
         return {
             matches: [],
             mode: args.output_mode,
-            error: result.error
+            error: result.error,
         };
     } catch (error) {
         return {
             matches: [],
             mode: args.output_mode,
-            error: error instanceof Error ? error.message : String(error)
+            error: error instanceof Error ? error.message : String(error),
         };
     }
 }
 
-export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<{
+export async function handleBashEditTool(
+    args: z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>,
+    editorEngine: EditorEngine,
+): Promise<{
     output: string;
     success: boolean;
     error: string | null;
@@ -124,12 +143,12 @@ export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PAR
         const commandParts = args.command.trim().split(/\s+/);
         const baseCommand = commandParts[0] || '';
 
-        const isEditCommand = editCommands.some(cmd => baseCommand.includes(cmd));
+        const isEditCommand = editCommands.some((cmd) => baseCommand.includes(cmd));
         if (!isEditCommand) {
             return {
                 output: '',
                 success: false,
-                error: `Command '${baseCommand}' is not allowed in edit mode. Only ${editCommands.join(', ')} commands are permitted.`
+                error: `Command '${baseCommand}' is not allowed in edit mode. Only ${editCommands.join(', ')} commands are permitted.`,
             };
         }
 
@@ -137,13 +156,13 @@ export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PAR
         return {
             output: result.output,
             success: result.success,
-            error: result.error
+            error: result.error,
         };
     } catch (error: any) {
         return {
             output: '',
             success: false,
-            error: error.message || error.toString()
+            error: error.message || error.toString(),
         };
     }
 }
