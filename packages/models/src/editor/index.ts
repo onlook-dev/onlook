@@ -43,6 +43,10 @@ export enum BrandTabValue {
     FONTS = 'fonts',
 }
 
+export enum BranchTabValue {
+    MANAGE = 'manage',
+}
+
 export enum MouseAction {
     MOVE = 'move',
     MOUSE_DOWN = 'click',

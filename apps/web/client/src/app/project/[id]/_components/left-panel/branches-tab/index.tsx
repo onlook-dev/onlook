@@ -1,17 +1,32 @@
 import { useEditorEngine } from '@/components/store/editor';
+import { BranchTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { BranchManagement } from './branch-management';
 
 export const BranchesTab = observer(() => {
     const editorEngine = useEditorEngine();
     const branches = editorEngine.branches.allBranches;
     const activeBranch = editorEngine.branches.activeBranch;
     const [hoveredBranchId, setHoveredBranchId] = useState<string | null>(null);
-    const [isForking, setIsForking] = useState(false);
+    const [manageBranchId, setManageBranchId] = useState<string | null>(null);
+
+    // If branch management panel is visible, show it instead of the main content
+    if (editorEngine.state.branchTab === BranchTabValue.MANAGE && manageBranchId) {
+        const manageBranch = branches.find(b => b.id === manageBranchId);
+        if (manageBranch) {
+            return (
+                <BranchManagement 
+                    branchId={manageBranch.id} 
+                    branchName={manageBranch.name} 
+                />
+            );
+        }
+    }
 
     const handleBranchSwitch = async (branchId: string) => {
         if (branchId === activeBranch.id) return;
@@ -23,21 +38,9 @@ export const BranchesTab = observer(() => {
         }
     };
 
-    const handleForkBranch = async (branchId: string) => {
-        if (isForking) return;
-        
-        try {
-            setIsForking(true);
-            // Switch to the branch first if it's not already active
-            if (branchId !== activeBranch.id) {
-                await editorEngine.branches.switchToBranch(branchId);
-            }
-            await editorEngine.branches.forkBranch();
-        } catch (error) {
-            console.error('Failed to fork branch:', error);
-        } finally {
-            setIsForking(false);
-        }
+    const handleManageBranch = (branchId: string) => {
+        setManageBranchId(branchId);
+        editorEngine.state.branchTab = BranchTabValue.MANAGE;
     };
 
     const sortedBranches = [...branches].sort((a, b) => {
@@ -93,7 +96,7 @@ export const BranchesTab = observer(() => {
                                 </div>
                                 
                                 {/* Hover controls */}
-                                {isHovered && !isActive && (
+                                {isHovered && (
                                     <div className="flex items-center gap-1">
                                         <Button
                                             variant="ghost"
@@ -101,38 +104,11 @@ export const BranchesTab = observer(() => {
                                             className="h-6 w-6 p-0 hover:bg-background"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleForkBranch(branch.id);
+                                                handleManageBranch(branch.id);
                                             }}
-                                            disabled={isForking}
-                                            title="Fork branch"
+                                            title="Manage branch"
                                         >
-                                            {isForking ? (
-                                                <Icons.LoadingSpinner className="w-3 h-3" />
-                                            ) : (
-                                                <Icons.GitBranch className="w-3 h-3" />
-                                            )}
-                                        </Button>
-                                    </div>
-                                )}
-                                
-                                {isActive && (
-                                    <div className="flex items-center gap-1">
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-6 w-6 p-0 hover:bg-background/50"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleForkBranch(branch.id);
-                                            }}
-                                            disabled={isForking}
-                                            title="Fork current branch"
-                                        >
-                                            {isForking ? (
-                                                <Icons.LoadingSpinner className="w-3 h-3" />
-                                            ) : (
-                                                <Icons.GitBranch className="w-3 h-3" />
-                                            )}
+                                            <Icons.Gear className="w-3 h-3" />
                                         </Button>
                                     </div>
                                 )}

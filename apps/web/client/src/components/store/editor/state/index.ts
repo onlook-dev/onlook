@@ -1,5 +1,6 @@
 import {
     type BrandTabValue,
+    type BranchTabValue,
     EditorMode,
     EditorTabValue,
     type LeftPanelTabValue,
@@ -19,6 +20,7 @@ export class StateManager {
     leftPanelTab: LeftPanelTabValue | null = null;
     rightPanelTab: EditorTabValue = EditorTabValue.CHAT;
     brandTab: BrandTabValue | null = null;
+    branchTab: BranchTabValue | null = null;
     
     chatMode: ChatType = ChatType.EDIT;
 
