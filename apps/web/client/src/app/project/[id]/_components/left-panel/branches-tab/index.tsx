@@ -20,9 +20,9 @@ export const BranchesTab = observer(() => {
         const manageBranch = branches.find(b => b.id === manageBranchId);
         if (manageBranch) {
             return (
-                <BranchManagement 
-                    branchId={manageBranch.id} 
-                    branchName={manageBranch.name} 
+                <BranchManagement
+                    branchId={manageBranch.id}
+                    branchName={manageBranch.name}
                 />
             );
         }
@@ -30,7 +30,7 @@ export const BranchesTab = observer(() => {
 
     const handleBranchSwitch = async (branchId: string) => {
         if (branchId === activeBranch.id) return;
-        
+
         try {
             await editorEngine.branches.switchToBranch(branchId);
         } catch (error) {
@@ -59,20 +59,20 @@ export const BranchesTab = observer(() => {
                     <span className="text-xs text-muted-foreground">({branches.length})</span>
                 </div>
             </div>
-            
+
             <div className="flex-1 overflow-auto">
                 <div className="p-2 space-y-1">
                     {sortedBranches.map((branch) => {
                         const isActive = branch.id === activeBranch.id;
                         const isHovered = hoveredBranchId === branch.id;
-                        
+
                         return (
                             <div
                                 key={branch.id}
                                 className={cn(
-                                    "group relative flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors",
-                                    isActive 
-                                        ? "bg-accent text-foreground border border-border" 
+                                    "group relative flex items-center gap-3 p-1 rounded-lg cursor-pointer transition-colors",
+                                    isActive
+                                        ? "bg-accent text-foreground border border-border"
                                         : "hover:bg-accent/50 text-foreground-secondary hover:text-foreground"
                                 )}
                                 onClick={() => handleBranchSwitch(branch.id)}
@@ -94,7 +94,7 @@ export const BranchesTab = observer(() => {
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 {/* Hover controls */}
                                 {isHovered && (
                                     <div className="flex items-center gap-1">

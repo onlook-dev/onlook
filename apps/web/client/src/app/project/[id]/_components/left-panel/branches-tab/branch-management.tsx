@@ -166,7 +166,7 @@ export const BranchManagement = observer(({ branchId, branchName }: BranchManage
                     {/* Delete Branch */}
                     <Button
                         variant="ghost"
-                        className="w-full h-11 justify-start text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg border border-white/5"
+                        className="w-full h-11 justify-start text-sm text-destructive hover:text-destructive bg-background-secondary hover:bg-background-secondary/70 rounded-lg border border-white/5"
                         onClick={handleDelete}
                         disabled={isDeleting || isActiveBranch}
                         title={isActiveBranch ? "Cannot delete active branch" : "Delete branch"}
