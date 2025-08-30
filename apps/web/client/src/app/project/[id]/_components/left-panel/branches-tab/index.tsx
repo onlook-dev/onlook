@@ -5,44 +5,39 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { timeAgo } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { BranchManagement } from './branch-management';
 
 export const BranchesTab = observer(() => {
     const editorEngine = useEditorEngine();
     const { branches } = editorEngine;
     const [hoveredBranchId, setHoveredBranchId] = useState<string | null>(null);
-    const [manageBranchId, setManageBranchId] = useState<string | null>(null);
 
     const handleBranchSwitch = async (branchId: string) => {
         if (branchId === branches.activeBranch.id) return;
-        
+
         try {
-            await branches.switchToBranch(branchId);
+            // Find a frame that belongs to this branch
+            const branchFrame = editorEngine.frames.getAll().find(frameData => frameData.frame.branchId === branchId);
+            if (branchFrame) {
+                // Select the frame, which will trigger the reaction to update the active branch
+                editorEngine.frames.select([branchFrame.frame]);
+            } else {
+                // Fallback to direct branch switch if no frames found
+                await branches.switchToBranch(branchId);
+            }
         } catch (error) {
             console.error('Failed to switch branch:', error);
         }
     };
 
     const handleManageBranch = (branchId: string) => {
-        setManageBranchId(branchId);
+        editorEngine.state.manageBranchId = branchId;
         editorEngine.state.branchTab = BranchTabValue.MANAGE;
     };
 
-    const sortedBranches = [...branches.allBranches].sort((a, b) => {
-        if (a.id === branches.activeBranch.id) return -1;
-        if (b.id === branches.activeBranch.id) return 1;
-        return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-    });
-
-    useEffect(() => {
-        if (editorEngine.state.branchTab !== BranchTabValue.MANAGE) {
-            setManageBranchId(null);
-        }
-    }, [editorEngine.state.branchTab]);
-
-    if (editorEngine.state.branchTab === BranchTabValue.MANAGE && manageBranchId) {
-        const manageBranch = branches.allBranches.find(b => b.id === manageBranchId);
+    if (editorEngine.state.branchTab === BranchTabValue.MANAGE && editorEngine.state.manageBranchId) {
+        const manageBranch = branches.allBranches.find(b => b.id === editorEngine.state.manageBranchId);
         if (manageBranch) {
             return <BranchManagement branch={manageBranch} />;
         }
@@ -59,7 +54,7 @@ export const BranchesTab = observer(() => {
 
             <div className="flex-1 overflow-auto">
                 <div className="p-2 space-y-1">
-                    {sortedBranches.map((branch) => {
+                    {branches.allBranches.map((branch) => {
                         const isActive = branch.id === branches.activeBranch.id;
                         const isHovered = hoveredBranchId === branch.id;
 
@@ -93,18 +88,18 @@ export const BranchesTab = observer(() => {
                                 </div>
 
                                 {isHovered && (
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-6 w-6 p-0 hover:bg-background"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleManageBranch(branch.id);
-                                            }}
-                                            title="Manage branch"
-                                        >
-                                            <Icons.Gear className="w-3 h-3" />
-                                        </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-6 w-6 p-0 hover:bg-background"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleManageBranch(branch.id);
+                                        }}
+                                        title="Manage branch"
+                                    >
+                                        <Icons.Gear className="w-3 h-3" />
+                                    </Button>
                                 )}
                             </div>
                         );

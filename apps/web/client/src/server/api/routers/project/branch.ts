@@ -3,7 +3,7 @@ import { getSandboxPreviewUrl } from '@onlook/constants';
 import { branches, branchInsertSchema, branchUpdateSchema, canvases, createDefaultFrame, frames, fromDbBranch, fromDbFrame } from '@onlook/db';
 import type { Frame } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -18,8 +18,9 @@ export const branchRouter = createTRPCRouter({
         )
         .query(async ({ ctx, input }) => {
             const dbBranches = await ctx.db.query.branches.findMany({
-                where: eq(branches.projectId, input.projectId),
-                ...(input.onlyDefault ? { where: eq(branches.isDefault, true) } : {}),
+                where: input.onlyDefault ?
+                    and(eq(branches.isDefault, true), eq(branches.projectId, input.projectId)) :
+                    eq(branches.projectId, input.projectId),
             });
             // TODO: Create a default branch if none exists for backwards compatibility
 

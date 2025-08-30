@@ -14,7 +14,7 @@ import { ChatTab } from './chat-tab';
 import { ChatControls } from './chat-tab/controls';
 import { ChatHistory } from './chat-tab/history';
 import { ChatPanelDropdown } from './chat-tab/panel-dropdown';
-import { DevTab } from './dev-tab';
+import { CodeTab } from './dev-tab';
 import { CodeControls } from './dev-tab/code-controls';
 
 const EDIT_PANEL_WIDTHS = {
@@ -33,7 +33,6 @@ export const RightPanel = observer(() => {
 
     return (
         <div
-            id="style-panel"
             className={cn(
                 'flex h-full w-full transition-width duration-300 bg-background/95 group/panel border-[0.5px] backdrop-blur-xl shadow rounded-tl-xl',
                 editorEngine.state.editorMode === EditorMode.PREVIEW && 'hidden',
@@ -78,7 +77,7 @@ export const RightPanel = observer(() => {
                         <ChatTab inputValue={inputValue} setInputValue={setInputValue} />
                     </TabsContent>
                     <TabsContent forceMount className={cn('h-full overflow-y-auto', editorEngine.state.rightPanelTab !== EditorTabValue.DEV && 'hidden')} value={EditorTabValue.DEV}>
-                        <DevTab />
+                        <CodeTab />
                     </TabsContent>
                 </Tabs>
             </ResizablePanel>
