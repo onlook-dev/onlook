@@ -5,7 +5,7 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import Link from 'next/link';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
 import { BranchDisplay } from './branch';
 import { PageSelector } from './page-selector';
@@ -16,11 +16,42 @@ export const TopBar = observer(
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const topBarRef = useRef<HTMLDivElement>(null);
         const toolBarRef = useRef<HTMLDivElement>(null);
-        const topBarWidth = topBarRef.current?.clientWidth ?? 0;
-        const toolBarWidth = toolBarRef.current?.clientWidth ?? 0;
-        const padding = 210;
-        const shouldShowExternalLink =
-            (topBarWidth - toolBarWidth - padding) * editorEngine.canvas.scale > 250;
+        const [shouldShowExternalLink, setShouldShowExternalLink] = useState(true);
+
+        useEffect(() => {
+            const calculateVisibility = () => {
+                if (!topBarRef.current || !toolBarRef.current) {
+                    setShouldShowExternalLink(true);
+                    return;
+                }
+
+                const topBarWidth = topBarRef.current.clientWidth;
+                const toolBarWidth = toolBarRef.current.clientWidth;
+                const scale = editorEngine.canvas.scale;
+
+                // Both toolbar and external link are scaled down by (1/scale)
+                // So their visual widths are: actualWidth / scale
+                const visualToolBarWidth = toolBarWidth / scale;
+                const visualExternalLinkWidth = 32 / scale; // Button is ~32px, scaled down
+                const padding = 10 / scale; // Some padding between elements, also scaled
+
+                // Calculate if there's enough space for both toolbar and external link
+                // Add extra buffer to hide the external link before it gets too cramped
+                const totalNeededWidth = visualToolBarWidth + visualExternalLinkWidth + padding;
+                const hasEnoughSpace = topBarWidth >= totalNeededWidth;
+
+                setShouldShowExternalLink(hasEnoughSpace);
+            };
+
+            // Calculate on mount and when dependencies change
+            calculateVisibility();
+
+            // Recalculate when the window resizes or canvas scale changes
+            const handleResize = () => calculateVisibility();
+            window.addEventListener('resize', handleResize);
+
+            return () => window.removeEventListener('resize', handleResize);
+        }, [isSelected, editorEngine.canvas.scale, frame.dimension.width]);
 
         const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
             e.preventDefault();
@@ -150,7 +181,6 @@ export const TopBar = observer(
                     <Link
                         className={cn(
                             'absolute right-1 top-1/2 -translate-y-1/2 transition-opacity duration-300',
-                            !isSelected && 'hidden',
                         )}
                         href={frame.url.replace(/\[([^\]]+)\]/g, 'temp-$1')} // Dynamic routes are not supported so we replace them with a temporary value
                         target="_blank"

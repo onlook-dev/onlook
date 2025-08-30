@@ -1,9 +1,9 @@
 import { api } from '@/trpc/client';
 import type { Branch } from '@onlook/models';
+import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { SandboxManager } from '../sandbox';
-import { toast } from '@onlook/ui/sonner';
 
 interface BranchData {
     branch: Branch;
@@ -127,12 +127,13 @@ export class BranchManager {
             // Initialize the new sandbox
             sandboxManager.init();
 
+            // Add the created frames to the frame manager
+            if (result.frames && result.frames.length > 0) {
+                this.editorEngine.frames.applyFrames(result.frames);
+            }
+
             // Switch to the new branch
             await this.switchToBranch(result.branch.id);
-
-            // Refresh frames to include the new frame
-            // The frame should be automatically created by the API, but we might need to refresh the frames list
-            // This will depend on how the frames are loaded - they might need to be refetched
         } catch (error) {
             console.error('Failed to fork branch:', error);
             toast.error('Failed to fork branch');

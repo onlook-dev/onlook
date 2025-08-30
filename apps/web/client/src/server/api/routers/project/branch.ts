@@ -1,6 +1,7 @@
-import { branches, branchInsertSchema, branchUpdateSchema, fromDbBranch, createDefaultFrame, frames, canvases } from '@onlook/db';
+import { branches, branchInsertSchema, branchUpdateSchema, fromDbBranch, createDefaultFrame, frames, canvases, fromDbFrame } from '@onlook/db';
 import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
 import { getSandboxPreviewUrl } from '@onlook/constants';
+import type { Frame } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -138,6 +139,7 @@ export const branchRouter = createTRPCRouter({
                     await tx.insert(branches).values(newBranch);
 
                     // Create new frame in the same canvas if position is provided
+                    let createdFrames: Frame[] = [];
                     if (input.framePosition) {
                         // Get the canvas for the project
                         const canvas = await tx.query.canvases.findFirst({
@@ -158,11 +160,13 @@ export const branchRouter = createTRPCRouter({
                             });
 
                             await tx.insert(frames).values(newFrame);
+                            createdFrames.push(fromDbFrame(newFrame));
                         }
                     }
 
                     return {
                         branch: fromDbBranch(newBranch),
+                        frames: createdFrames,
                         sandboxId,
                         previewUrl,
                     };
