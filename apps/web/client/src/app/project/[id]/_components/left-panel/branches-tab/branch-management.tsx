@@ -20,6 +20,7 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
     const [isForking, setIsForking] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const isActiveBranch = editorEngine.branches.activeBranch.id === branch.id;
+    const isOnlyBranch = editorEngine.branches.allBranches.length === 1;
 
     const handleClose = () => {
         editorEngine.state.branchTab = null;
@@ -67,10 +68,30 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
     };
 
     const handleDelete = async () => {
-        if (isDeleting || isActiveBranch) return;
+        if (isDeleting) return;
 
         try {
             setIsDeleting(true);
+
+            // If this is the active branch, switch to a different one first
+            if (isActiveBranch) {
+                const allBranches = editorEngine.branches.allBranches;
+                const otherBranches = allBranches.filter(b => b.id !== branch.id);
+
+                if (otherBranches.length === 0) {
+                    throw new Error('Cannot delete the last remaining branch');
+                }
+
+                // Find the default branch, or use the first available branch
+                const targetBranch = otherBranches.find(b => b.isDefault) || otherBranches[0];
+
+                if (!targetBranch) {
+                    throw new Error('No target branch available for switching');
+                }
+
+                // Switch to the target branch first
+                await editorEngine.branches.switchToBranch(targetBranch.id);
+            }
 
             const success = await api.branch.delete.mutate({
                 branchId: branch.id,
@@ -85,7 +106,7 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
             }
         } catch (error) {
             console.error('Failed to delete branch:', error);
-            toast.error('Failed to delete branch');
+            toast.error(error instanceof Error ? error.message : 'Failed to delete branch');
         } finally {
             setIsDeleting(false);
         }
@@ -174,8 +195,12 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                             variant="destructive"
                             className="w-full"
                             onClick={handleDelete}
-                            disabled={isDeleting || isActiveBranch}
-                            title={isActiveBranch ? "Cannot delete active branch" : "Delete branch"}
+                            disabled={isDeleting || isOnlyBranch}
+                            title={
+                                isOnlyBranch
+                                    ? "Cannot delete the last remaining branch"
+                                    : "Delete branch"
+                            }
                         >
                             {isDeleting ? (
                                 <div className="flex items-center gap-2">
@@ -185,7 +210,7 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                             ) : (
                                 <div className="flex items-center gap-2">
                                     <Icons.Trash className="w-4 h-4" />
-                                    <span>Delete </span>
+                                    <span>Delete</span>
                                 </div>
                             )}
                         </Button>
