@@ -79,14 +79,14 @@ export class SessionManager {
 
     async createTerminalSessions(provider: Provider) {
         const task = new CLISessionImpl(
-            'Server (readonly)',
+            'server',
             CLISessionType.TASK,
             provider,
             this.editorEngine.error,
         );
         this.terminalSessions.set(task.id, task);
         const terminal = new CLISessionImpl(
-            'CLI',
+            'terminal',
             CLISessionType.TERMINAL,
             provider,
             this.editorEngine.error,

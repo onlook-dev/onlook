@@ -100,6 +100,10 @@ export class BranchManager {
         return this.branchMap.get(branchId)?.branch ?? null;
     }
 
+    getSandboxById(branchId: string): SandboxManager | null {
+        return this.branchMap.get(branchId)?.sandbox ?? null;
+    }
+
     get allBranches(): Branch[] {
         return Array.from(this.branchMap.values()).map(({ branch }) => branch);
     }

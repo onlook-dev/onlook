@@ -10,19 +10,43 @@ import { Terminal } from './terminal';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
-    const terminalSessions = editorEngine.sandbox.session.terminalSessions;
-    const activeSessionId = editorEngine.sandbox.session.activeTerminalSessionId;
+    const branches = editorEngine.branches;
+
+    // Collect terminal sessions from all branches
+    const allTerminalSessions = new Map<string, { name: string; branchName: string; branchId: string; sessionId: string; session: any }>();
+    let activeSessionId: string | null = null;
+
+    for (const branch of branches.allBranches) {
+        try {
+            const branchData = branches.getBranchById(branch.id);
+            if (!branchData) continue;
+
+            // Get the sandbox manager for this branch
+            const sandbox = branches.getSandboxById(branch.id);
+            if (!sandbox?.session?.terminalSessions) continue;
+
+            for (const [sessionId, session] of sandbox.session.terminalSessions) {
+                const key = `${branch.id}-${sessionId}`;
+                allTerminalSessions.set(key, {
+                    name: session.name,
+                    branchName: branch.name,
+                    branchId: branch.id,
+                    sessionId: sessionId,
+                    session: session
+                });
+
+                // Set active session if this is the currently active branch and session
+                if (branch.id === branches.activeBranch.id && sessionId === sandbox.session.activeTerminalSessionId) {
+                    activeSessionId = key;
+                }
+            }
+        } catch (error) {
+            // Skip branches that aren't properly initialized
+            continue;
+        }
+    }
 
     const [terminalHidden, setTerminalHidden] = useState(true);
-
-    if (!terminalSessions.size) {
-        return (
-            <div className="flex items-center justify-center h-full p-1 gap-2">
-                <Icons.LoadingSpinner className="animate-spin" />
-                <p className="text-foreground-secondary">Initializing Sandbox...</p>
-            </div>
-        )
-    }
 
     return (
         <>
@@ -77,17 +101,33 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     terminalHidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
                 )}
             >
-                <Tabs defaultValue={'cli'} value={activeSessionId} onValueChange={(value) => editorEngine.sandbox.session.activeTerminalSessionId = value}
+                <Tabs defaultValue={'cli'} value={activeSessionId || ''} onValueChange={(value) => {
+                    // Extract branch and session from the combined key
+                    const terminalData = allTerminalSessions.get(value);
+                    if (terminalData) {
+                        // Switch to the branch first
+                        editorEngine.branches.switchToBranch(terminalData.branchId);
+                        // Then set the active terminal session for that branch
+                        const sandbox = branches.getSandboxById(terminalData.branchId);
+                        if (sandbox) {
+                            sandbox.session.activeTerminalSessionId = terminalData.sessionId;
+                        }
+                    }
+                }}
                     className="w-full h-full">
                     <TabsList className="w-full h-8 rounded-none border-b border-border">
-                        {Array.from(terminalSessions).map(([id, terminal]) => (
-                            <TabsTrigger key={id} value={id} className="flex-1">{terminal.name}</TabsTrigger>
+                        {Array.from(allTerminalSessions).map(([key, terminalData]) => (
+                            <TabsTrigger key={key} value={key} className="flex-1">
+                                <span className="truncate">
+                                    {terminalData.name} ({terminalData.branchName})
+                                </span>
+                            </TabsTrigger>
                         ))}
                     </TabsList>
                     <div className="w-full h-full overflow-auto">
-                        {Array.from(terminalSessions).map(([id]) => (
-                            <TabsContent key={id} forceMount value={id} className="h-full" hidden={activeSessionId !== id}>
-                                <Terminal hidden={terminalHidden} terminalSessionId={id} />
+                        {Array.from(allTerminalSessions).map(([key, terminalData]) => (
+                            <TabsContent key={key} forceMount value={key} className="h-full" hidden={activeSessionId !== key}>
+                                <Terminal hidden={terminalHidden} terminalSessionId={terminalData.sessionId} branchId={terminalData.branchId} />
                             </TabsContent>
                         ))}
                     </div>

@@ -12,6 +12,7 @@ import { memo, useEffect, useRef } from 'react';
 interface TerminalProps {
     hidden: boolean;
     terminalSessionId: string;
+    branchId?: string;
 }
 
 const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
@@ -41,9 +42,17 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
     DARK: {}, // Use default dark theme
 };
 
-export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: TerminalProps) => {
+export const Terminal = memo(observer(({ hidden = false, terminalSessionId, branchId }: TerminalProps) => {
     const editorEngine = useEditorEngine();
-    const terminalSession = editorEngine.sandbox.session.getTerminalSession(terminalSessionId);
+    
+    // Get terminal session from the appropriate branch's sandbox
+    let terminalSession;
+    if (branchId) {
+        const sandbox = editorEngine.branches.getSandboxById(branchId);
+        terminalSession = sandbox?.session?.getTerminalSession(terminalSessionId);
+    } else {
+        terminalSession = editorEngine.sandbox.session.getTerminalSession(terminalSessionId);
+    }
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
 
@@ -70,7 +79,7 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId }: Te
                 containerRef.current.innerHTML = '';
             }
         };
-    }, [terminalSessionId, terminalSession, containerRef]);
+    }, [terminalSessionId, terminalSession, containerRef, branchId]);
 
     useEffect(() => {
         if (terminalSession?.xterm) {
