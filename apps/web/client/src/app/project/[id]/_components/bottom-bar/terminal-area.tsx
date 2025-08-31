@@ -101,37 +101,43 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     terminalHidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
                 )}
             >
-                <Tabs defaultValue={'cli'} value={activeSessionId || ''} onValueChange={(value) => {
-                    // Extract branch and session from the combined key
-                    const terminalData = allTerminalSessions.get(value);
-                    if (terminalData) {
-                        // Switch to the branch first
-                        editorEngine.branches.switchToBranch(terminalData.branchId);
-                        // Then set the active terminal session for that branch
-                        const sandbox = branches.getSandboxById(terminalData.branchId);
-                        if (sandbox) {
-                            sandbox.session.activeTerminalSessionId = terminalData.sessionId;
+{allTerminalSessions.size > 0 ? (
+                    <Tabs defaultValue={'cli'} value={activeSessionId || ''} onValueChange={(value) => {
+                        // Extract branch and session from the combined key
+                        const terminalData = allTerminalSessions.get(value);
+                        if (terminalData) {
+                            // Switch to the branch first
+                            editorEngine.branches.switchToBranch(terminalData.branchId);
+                            // Then set the active terminal session for that branch
+                            const sandbox = branches.getSandboxById(terminalData.branchId);
+                            if (sandbox) {
+                                sandbox.session.activeTerminalSessionId = terminalData.sessionId;
+                            }
                         }
-                    }
-                }}
-                    className="w-full h-full">
-                    <TabsList className="w-full h-8 rounded-none border-b border-border">
-                        {Array.from(allTerminalSessions).map(([key, terminalData]) => (
-                            <TabsTrigger key={key} value={key} className="flex-1">
-                                <span className="truncate">
-                                    {terminalData.name} ({terminalData.branchName})
-                                </span>
-                            </TabsTrigger>
-                        ))}
-                    </TabsList>
-                    <div className="w-full h-full overflow-auto">
-                        {Array.from(allTerminalSessions).map(([key, terminalData]) => (
-                            <TabsContent key={key} forceMount value={key} className="h-full" hidden={activeSessionId !== key}>
-                                <Terminal hidden={terminalHidden} terminalSessionId={terminalData.sessionId} branchId={terminalData.branchId} />
-                            </TabsContent>
-                        ))}
+                    }}
+                        className="w-full h-full">
+                        <TabsList className="w-full h-8 rounded-none border-b border-border">
+                            {Array.from(allTerminalSessions).map(([key, terminalData]) => (
+                                <TabsTrigger key={key} value={key} className="flex-1">
+                                    <span className="truncate">
+                                        {terminalData.name} ({terminalData.branchName})
+                                    </span>
+                                </TabsTrigger>
+                            ))}
+                        </TabsList>
+                        <div className="w-full h-full overflow-auto">
+                            {Array.from(allTerminalSessions).map(([key, terminalData]) => (
+                                <TabsContent key={key} forceMount value={key} className="h-full" hidden={activeSessionId !== key}>
+                                    <Terminal hidden={terminalHidden} terminalSessionId={terminalData.sessionId} branchId={terminalData.branchId} />
+                                </TabsContent>
+                            ))}
+                        </div>
+                    </Tabs>
+                ) : (
+                    <div className="flex items-center justify-center h-full text-muted-foreground">
+                        <span className="text-sm">No terminal sessions available</span>
                     </div>
-                </Tabs>
+                )}
             </div >
         </>
     );

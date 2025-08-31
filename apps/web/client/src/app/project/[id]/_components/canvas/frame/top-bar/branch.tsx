@@ -21,13 +21,12 @@ export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch }
     const editorEngine = useEditorEngine();
     const frameBranch = editorEngine.branches.getBranchById(frame.branchId);
     const activeBranch = propActiveBranch || frameBranch;
+    const [isOpen, setIsOpen] = useState(false);
+    const allBranches = editorEngine.branches.allBranches;
 
     if (!activeBranch) {
         return null;
     }
-
-    const allBranches = editorEngine.branches.allBranches;
-    const [isOpen, setIsOpen] = useState(false);
 
     const handleBranchSwitch = async (branchId: string) => {
         try {

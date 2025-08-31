@@ -78,15 +78,6 @@ export const Main = observer(() => {
         );
     }
 
-    if (editorEngine.sandbox.session.isConnecting) {
-        return (
-            <div className="h-screen w-screen flex items-center justify-center gap-2">
-                <Icons.LoadingSpinner className="h-6 w-6 animate-spin text-foreground-primary" />
-                <div className="text-xl">Connecting to sandbox...</div>
-            </div>
-        );
-    }
-
     return (
         <TooltipProvider>
             <div className="h-screen w-screen flex flex-row select-none relative overflow-hidden">
