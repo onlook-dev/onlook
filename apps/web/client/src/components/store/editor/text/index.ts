@@ -17,6 +17,10 @@ export class TextEditingManager {
         return this.targetDomEl !== null;
     }
 
+    get targetElement(): DomElement | null {
+        return this.targetDomEl;
+    }
+
     async start(el: DomElement, frameView: WebFrameView): Promise<void> {
         try {
             const isEditable = (await frameView.isChildTextEditable(el.oid ?? '')) as
