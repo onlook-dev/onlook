@@ -1,5 +1,33 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test';
 
+// CRITICAL: Mock TRPC client BEFORE any other imports
+mock.module('@/trpc/client', () => ({
+    api: {
+        sandbox: {
+            start: {
+                mutate: mock(async () => ({ id: 'mock-sandbox', status: 'ready' }))
+            },
+            hibernate: {
+                mutate: mock(async () => true)
+            }
+        },
+        branch: {
+            fork: { mutate: mock(async () => ({ branch: { id: 'mock-branch' }, frames: [] })) },
+            update: { mutate: mock(async () => true) },
+            delete: { mutate: mock(async () => true) }
+        }
+    }
+}));
+
+// Mock toast
+mock.module('@onlook/ui/sonner', () => ({
+    toast: {
+        success: mock(() => {}),
+        error: mock(() => {}),
+        info: mock(() => {})
+    }
+}));
+
 // Setup mocks before imports
 // Mock localforage before importing anything that uses it
 const mockGetItem = mock<(key: string) => Promise<any>>(async () => null);
