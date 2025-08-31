@@ -31,7 +31,8 @@
         "@onlook/typescript": "*"
     },
     "dependencies": {
-        "@codesandbox/sdk": "^1.1.6",
+        "@codesandbox/sdk": "^2.1.0",
+        "@codesandbox/pitcher-client": "^1.1.7",
         "@onlook/models": "*",
         "@onlook/parser": "*",
         "@onlook/utility": "*",

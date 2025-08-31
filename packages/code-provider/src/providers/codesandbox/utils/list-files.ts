@@ -1,8 +1,8 @@
-import { WebSocketSession } from '@codesandbox/sdk';
+import { type SandboxClient } from '@codesandbox/sdk';
 import type { ListFilesInput, ListFilesOutput } from '../../../types';
 
 export async function listFiles(
-    client: WebSocketSession,
+    client: SandboxClient,
     { args }: ListFilesInput,
 ): Promise<ListFilesOutput> {
     const files = await client.fs.readdir(args.path);

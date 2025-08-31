@@ -2,10 +2,10 @@ import {
     CodeSandbox,
     Command,
     Sandbox,
+    SandboxClient,
     Task,
     Terminal,
-    WebSocketSession,
-    type SandboxBrowserSession,
+    type SandboxSession,
     type Watcher,
 } from '@codesandbox/sdk';
 import { connectToSandbox } from '@codesandbox/sdk/browser';
@@ -60,9 +60,9 @@ import {
     type WriteFileInput,
     type WriteFileOutput,
 } from '../../types';
-import { writeFile } from './utils/write-file';
 import { listFiles } from './utils/list-files';
 import { readFile } from './utils/read-file';
+import { writeFile } from './utils/write-file';
 
 export interface CodesandboxProviderOptions {
     sandboxId?: string;
@@ -71,19 +71,17 @@ export interface CodesandboxProviderOptions {
     initClient?: boolean;
     // returns a session object used by codesandbox SDK
     // only populate this property in the browser
-    getSession?: (sandboxId: string, userId?: string) => Promise<SandboxBrowserSession | null>;
+    getSession?: (sandboxId: string, userId?: string) => Promise<SandboxSession | null>;
 }
 
 export interface CodesandboxCreateSessionInput extends CreateSessionInput {}
-export interface CodesandboxCreateSessionOutput
-    extends CreateSessionOutput,
-        SandboxBrowserSession {}
+export interface CodesandboxCreateSessionOutput extends CreateSessionOutput, SandboxSession {}
 
 export class CodesandboxProvider extends Provider {
     private readonly options: CodesandboxProviderOptions;
 
     private sandbox: Sandbox | null = null;
-    private _client: WebSocketSession | null = null;
+    private _client: SandboxClient | null = null;
 
     constructor(options: CodesandboxProviderOptions) {
         super();
@@ -104,11 +102,19 @@ export class CodesandboxProvider extends Provider {
                 this.options.sandboxId,
                 this.options.userId,
             );
+            if (!session) {
+                throw new Error('Session not found');
+            }
             if (this.options.initClient) {
                 this._client = await connectToSandbox({
                     session,
-                    getSession: async (id) =>
-                        (await this.options.getSession?.(id, this.options.userId)) || null,
+                    getSession: async (id) => {
+                        const session = await this.options.getSession?.(id, this.options.userId);
+                        if (!session) {
+                            throw new Error('Session not found');
+                        }
+                        return session;
+                    },
                 });
                 this._client.keepActiveWhileConnected(
                     this.options.keepActiveWhileConnected ?? true,
@@ -161,7 +167,6 @@ export class CodesandboxProvider extends Provider {
         const sdk = new CodeSandbox();
         const newSandbox = await sdk.sandboxes.create({
             id: input.id,
-            source: 'template',
             title: input.title,
             description: input.description,
             tags: input.tags,
@@ -317,7 +322,7 @@ export class CodesandboxProvider extends Provider {
         if (!this.client) {
             throw new Error('Client not initialized');
         }
-        const task = this.client.tasks.get(input.args.id);
+        const task = await this.client.tasks.get(input.args.id);
         if (!task) {
             throw new Error(`Task ${input.args.id} not found`);
         }
@@ -373,7 +378,7 @@ export class CodesandboxProvider extends Provider {
         if (!this.sandbox) {
             throw new Error('Client not initialized');
         }
-        return this.sandbox.createBrowserSession({
+        return this.sandbox.createSession({
             id: input.args.id,
         });
     }
@@ -382,7 +387,7 @@ export class CodesandboxProvider extends Provider {
 export class CodesandboxFileWatcher extends ProviderFileWatcher {
     private watcher: Watcher | null = null;
 
-    constructor(private readonly client: WebSocketSession) {
+    constructor(private readonly client: SandboxClient) {
         super();
     }
 

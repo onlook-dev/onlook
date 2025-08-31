@@ -3,6 +3,7 @@
 import { ProcessedFileType, type NextJsProjectValidation, type ProcessedFile } from '@/app/projects/types';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
+import type { SandboxSession } from '@codesandbox/sdk';
 import { CodeProvider, createCodeProviderClient, Provider } from '@onlook/code-provider';
 import { NEXT_JS_FILE_EXTENSIONS, SandboxTemplates, Templates } from '@onlook/constants';
 import { RouterType } from '@onlook/models';
@@ -139,10 +140,11 @@ export const ProjectCreationProvider = ({
                         initClient: true,
                         keepActiveWhileConnected: false,
                         getSession: async (sandboxId, userId) => {
+                            // TODO: Make better type inference on server side
                             return startSandbox({
                                 sandboxId,
                                 userId,
-                            });
+                            }) as unknown as SandboxSession;
                         },
                     },
                 },

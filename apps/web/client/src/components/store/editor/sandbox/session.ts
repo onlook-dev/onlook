@@ -1,5 +1,6 @@
 import { api } from '@/trpc/client';
-import { CodeProvider, type Provider, createCodeProviderClient } from '@onlook/code-provider';
+import type { SandboxSession } from '@codesandbox/sdk';
+import { CodeProvider, createCodeProviderClient, type Provider } from '@onlook/code-provider';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
@@ -19,7 +20,7 @@ export class SessionManager {
             return;
         }
         this.isConnecting = true;
-        
+
         try {
             this.provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
                 providerOptions: {
@@ -28,7 +29,8 @@ export class SessionManager {
                         userId,
                         initClient: true,
                         getSession: async (sandboxId, userId) => {
-                            return api.sandbox.start.mutate({ sandboxId, userId });
+                            // TODO: Make better type inference on server side
+                            return api.sandbox.start.mutate({ sandboxId, userId }) as unknown as SandboxSession;
                         },
                     },
                 },

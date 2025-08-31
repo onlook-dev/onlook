@@ -1,10 +1,10 @@
-import { WebSocketSession } from '@codesandbox/sdk';
+import { type SandboxClient } from '@codesandbox/sdk';
 import { convertToBase64 } from '@onlook/utility';
 import type { ReadFileInput, ReadFileOutput } from '../../../types';
 import { readRemoteFile } from './utils';
 
 export async function readFile(
-    client: WebSocketSession,
+    client: SandboxClient,
     { args }: ReadFileInput,
 ): Promise<ReadFileOutput> {
     const file = await readRemoteFile(client, args.path);

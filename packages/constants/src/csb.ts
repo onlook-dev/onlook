@@ -7,11 +7,11 @@ export enum Templates {
 
 export const SandboxTemplates: Record<Templates, SandboxTemplate> = {
     BLANK: {
-        id: 'xzsy8c',
+        id: 'pt_JQTY6AuyR5UtjDUPkE3Bsm',
         port: 3000,
     },
     EMPTY_NEXTJS: {
-        id: 'vgfzfw',
+        id: 'pt_JQTY6AuyR5UtjDUPkE3Bsm',
         port: 3000,
     },
 };

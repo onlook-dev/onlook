@@ -1,4 +1,4 @@
-import type { WebSocketSession } from '@codesandbox/sdk';
+import type { SandboxClient } from '@codesandbox/sdk';
 import { type SandboxFile } from '@onlook/models';
 import { isImageFile } from '@onlook/utility';
 
@@ -20,7 +20,7 @@ export function getFileFromContent(filePath: string, content: string | Uint8Arra
 }
 
 export async function readRemoteFile(
-    client: WebSocketSession,
+    client: SandboxClient,
     filePath: string,
 ): Promise<SandboxFile | null> {
     try {

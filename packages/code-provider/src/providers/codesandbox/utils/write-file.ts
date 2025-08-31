@@ -1,9 +1,9 @@
-import { WebSocketSession } from '@codesandbox/sdk';
+import { type SandboxClient } from '@codesandbox/sdk';
 import { normalizePath } from '@onlook/utility';
 import type { WriteFileInput, WriteFileOutput } from '../../../types';
 
 export async function writeFile(
-    client: WebSocketSession,
+    client: SandboxClient,
     { args }: WriteFileInput,
 ): Promise<WriteFileOutput> {
     const normalizedPath = normalizePath(args.path);
