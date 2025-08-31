@@ -47,9 +47,9 @@ export const DefaultSettings = {
     ORIENTATION: Orientation.Portrait,
     MIN_DIMENSIONS: { width: '280px', height: '360px' },
     COMMANDS: {
-        run: 'bun run dev',
-        build: 'bun run build',
-        install: 'bun install',
+        run: 'npm run dev',
+        build: 'npm run build',
+        install: 'npm install',
     },
     IMAGE_FOLDER: 'public',
     IMAGE_DIMENSION: { width: '100px', height: '100px' },
