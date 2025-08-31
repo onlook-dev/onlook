@@ -1,6 +1,6 @@
 import { Routes } from '@/utils/constants';
 import { legacySubscriptions, prices, subscriptions, toSubscription, users } from '@onlook/db';
-import { createBillingPortalSession, createCheckoutSession, createCustomer, isTierUpgrade, PriceKey, releaseSubscriptionSchedule, SubscriptionStatus, updateSubscription, updateSubscriptionNextPeriod } from '@onlook/stripe';
+import { createBillingPortalSession, createCheckoutSession, createCustomer, isTierUpgrade, PriceKey, releaseSubscriptionSchedule, SubscriptionStatus, updateSubscriptionNextPeriod, upgradeSubscription } from '@onlook/stripe';
 import { and, eq, isNull } from 'drizzle-orm';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -162,7 +162,7 @@ export const subscriptionRouter = createTRPCRouter({
         const isUpgrade = isTierUpgrade(currentPrice, newPrice);
         if (isUpgrade) {
             // If the new price is higher, we invoice the customer immediately.
-            await updateSubscription({
+            await upgradeSubscription({
                 subscriptionId: stripeSubscriptionId,
                 subscriptionItemId: stripeSubscriptionItemId,
                 priceId: stripePriceId,
