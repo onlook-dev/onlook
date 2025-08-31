@@ -39,6 +39,7 @@ export class ElementsManager {
         const frameEl: DomElement = {
             ...domEl,
             frameId: frameData.frame.id,
+            branchId: frameData.frame.branchId,
         };
         const { view } = frameData;
         const adjustedRect = adaptRectToCanvas(frameEl.rect, view);
@@ -82,7 +83,11 @@ export class ElementsManager {
                 isComponent,
                 domEl.domId,
             );
-            this._selected.push(domEl);
+            const enrichedElement: DomElement = {
+                ...domEl,
+                branchId: frameData.frame.branchId,
+            };
+            this._selected.push(enrichedElement);
         }
     }
 
