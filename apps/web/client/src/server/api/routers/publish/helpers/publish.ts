@@ -7,9 +7,17 @@ import { PublishManager } from '../manager';
 import { deployFreestyle } from './deploy';
 import { extractEnvVarsFromSandbox } from './env';
 import { forkBuildSandbox } from './fork';
-import { getProjectUrls, getSandboxId, updateDeployment } from './helpers';
+import { getProjectUrls, updateDeployment } from './helpers';
 
-export async function publish({ db, deployment }: { db: DrizzleDb; deployment: Deployment }) {
+export async function publish({
+    db,
+    deployment,
+    sandboxId
+}: {
+    db: DrizzleDb;
+    deployment: Deployment;
+    sandboxId: string
+}) {
     const {
         id: deploymentId,
         projectId,
@@ -20,10 +28,7 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
         requestedBy: userId,
     } = deployment;
     try {
-        // TODO: Deploy based on active branch. Needs to update the endpoint
         const deploymentUrls = await getProjectUrls(db, projectId, type);
-        const sandboxId = await getSandboxId(db, projectId);
-
         const updateDeploymentResult1 = await updateDeployment(db, {
             id: deploymentId,
             status: DeploymentStatus.IN_PROGRESS,

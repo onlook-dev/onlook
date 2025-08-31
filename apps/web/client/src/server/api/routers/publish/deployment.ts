@@ -30,7 +30,8 @@ export const deploymentRouter = createTRPCRouter({
     }),
     create: protectedProcedure.input(z.object({
         projectId: z.string(),
-        type: z.nativeEnum(DeploymentType),
+        type: z.enum(DeploymentType),
+        sandboxId: z.string(),
         buildScript: z.string().optional(),
         buildFlags: z.string().optional(),
         envVars: z.record(z.string(), z.string()).optional(),
@@ -38,6 +39,7 @@ export const deploymentRouter = createTRPCRouter({
         const {
             projectId,
             type,
+            sandboxId,
             buildScript,
             buildFlags,
             envVars,
@@ -65,8 +67,16 @@ export const deploymentRouter = createTRPCRouter({
             });
         }
 
-        const deployment = await createDeployment(ctx.db, projectId, type, userId);
-        return { deploymentId: deployment.id };
+        return await createDeployment({
+            db: ctx.db,
+            projectId,
+            type,
+            userId,
+            sandboxId,
+            buildScript,
+            buildFlags,
+            envVars,
+        });
     }),
     run: protectedProcedure.input(z.object({
         deploymentId: z.string(),
@@ -103,6 +113,7 @@ export const deploymentRouter = createTRPCRouter({
             await publish({
                 db: ctx.db,
                 deployment: existingDeployment,
+                sandboxId: existingDeployment.sandboxId!,
             });
             await updateDeployment(ctx.db, {
                 id: deploymentId,

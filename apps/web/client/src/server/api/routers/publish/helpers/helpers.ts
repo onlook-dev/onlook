@@ -1,4 +1,4 @@
-import { deployments, deploymentUpdateSchema, previewDomains, projectCustomDomains, projects, type Deployment } from '@onlook/db';
+import { deployments, deploymentUpdateSchema, previewDomains, projectCustomDomains, type Deployment } from '@onlook/db';
 import type { DrizzleDb } from '@onlook/db/src/client';
 import {
     DeploymentStatus,
@@ -37,31 +37,6 @@ export async function getProjectUrls(db: DrizzleDb, projectId: string, type: Dep
         assertNever(type);
     }
     return urls;
-}
-
-export async function getSandboxId(db: DrizzleDb, projectId: string): Promise<string> {
-    const project = await db.query.projects.findFirst({
-        where: eq(projects.id, projectId),
-        with: {
-            branches: true,
-        },
-    });
-    if (!project) {
-        throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'Project not found',
-        });
-    }
-    
-    const defaultBranch = project.branches?.find(b => b.isDefault) || project.branches?.[0];
-    if (!defaultBranch?.sandboxId) {
-        throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: 'No sandbox found for project',
-        });
-    }
-    
-    return defaultBranch.sandboxId;
 }
 
 export async function updateDeployment(db: DrizzleDb, deployment: z.infer<typeof deploymentUpdateSchema>): Promise<Deployment | null> {

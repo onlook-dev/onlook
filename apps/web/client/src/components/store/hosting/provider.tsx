@@ -10,6 +10,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 interface PublishParams {
     projectId: string;
     type: DeploymentType;
+    sandboxId: string;
     buildScript?: string;
     buildFlags?: string;
     envVars?: Record<string, string>;
@@ -117,33 +118,29 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
 
     // Publish function
     const publish = async (params: PublishParams): Promise<{ success: boolean } | null> => {
-        setSubscriptionStates(prev => ({
-            ...prev,
-            [params.type]: true,
-        }));
-
-        const deployment = await runCreateDeployment(params);
-
-        if (!deployment) {
-            return {
-                success: false,
-            };
-        }
-
-        toast.success('Deployment created', {
-            description: `Deployment ID: ${deployment.deploymentId}`,
-        });
-
+        let deployment: Deployment | null = null;
         try {
+            setSubscriptionStates(prev => ({
+                ...prev,
+                [params.type]: true,
+            }));
+
+            deployment = await runCreateDeployment(params);
+            if (!deployment) {
+                throw new Error('Failed to create deployment');
+            }
+
+            toast.success('Deployment created', {
+                description: `Deployment ID: ${deployment.id}`,
+            });
+
             // Refetch the specific deployment
             await refetch(params.type);
-
             await runDeployment({
-                deploymentId: deployment.deploymentId,
+                deploymentId: deployment.id,
             });
 
             refetch(params.type);
-
             toast.success('Deployment success!');
 
             return {
@@ -151,11 +148,13 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
             };
         } catch (error) {
             toast.error('Failed to publish deployment');
-            await runUpdateDeployment({
-                id: deployment.deploymentId,
-                status: DeploymentStatus.FAILED,
-                error: error instanceof Error ? error.message : 'Unknown error',
-            });
+            if (deployment) {
+                await runUpdateDeployment({
+                    id: deployment.id,
+                    status: DeploymentStatus.FAILED,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                });
+            }
             return {
                 success: false,
             };
@@ -164,20 +163,24 @@ export const HostingProvider = ({ children }: HostingProviderProps) => {
 
     // Unpublish function
     const unpublish = async (projectId: string, type: DeploymentType) => {
-        setSubscriptionStates(prev => ({
-            ...prev,
-            [type]: true,
-        }));
+        try {
+            setSubscriptionStates(prev => ({
+                ...prev,
+                [type]: true,
+            }));
 
-        const response = await runUnpublish({
-            projectId,
-            type,
-        });
+            const response = await runUnpublish({
+                projectId,
+                type,
+            });
 
-        // Refetch the specific deployment
-        await refetch(type);
-
-        return response;
+            // Refetch the specific deployment
+            await refetch(type);
+            return response;
+        } catch (error) {
+            toast.error('Failed to unpublish deployment');
+            return null;
+        }
     };
 
     // Refetch functions
