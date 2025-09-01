@@ -51,6 +51,26 @@ export class OverlayManager {
         for (const clickRect of newClickRects) {
             this.state.addClickRect(clickRect.rect, clickRect.styles);
         }
+
+        // Refresh text editor position if it's active
+        if (this.editorEngine.text.isEditing && this.editorEngine.text.targetElement) {
+            const targetElement = this.editorEngine.text.targetElement;
+            const frameData = this.editorEngine.frames.get(targetElement.frameId);
+            if (frameData?.view) {
+                try {
+                    const el: DomElement = await frameData.view.getElementByDomId(
+                        targetElement.domId,
+                        true,
+                    );
+                    if (el) {
+                        const adaptedRect = adaptRectToCanvas(el.rect, frameData.view);
+                        this.state.updateTextEditor(adaptedRect, el.styles?.computed);
+                    }
+                } catch {
+                    console.error('Error refreshing text editor position');
+                }
+            }
+        }
     };
 
     refresh = debounce(this.undebouncedRefresh, 100, { leading: true });
