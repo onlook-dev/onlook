@@ -31,6 +31,8 @@ import {
     TERMINAL_COMMAND_TOOL_PARAMETERS,
     TODO_WRITE_TOOL_NAME,
     TODO_WRITE_TOOL_PARAMETERS,
+    TYPECHECK_TOOL_NAME,
+    TYPECHECK_TOOL_PARAMETERS,
     WEB_SEARCH_TOOL_NAME,
     WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
@@ -167,6 +169,14 @@ const TOOL_HANDLERS: ClientToolMap = {
         handler: async (args: z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleWebSearchTool(args),
     },
+    [TYPECHECK_TOOL_NAME]: {
+        name: TYPECHECK_TOOL_NAME,
+        inputSchema: TYPECHECK_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof TYPECHECK_TOOL_PARAMETERS>, editorEngine: EditorEngine) => {
+            return handleTerminalCommandTool({ command: 'bun run typecheck' }, editorEngine);
+        },
+    },
+
 };
 
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {
