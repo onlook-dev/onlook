@@ -13,6 +13,8 @@ OAuth lets users log in using accounts they already have (like GitHub or Google)
 
 ## GitHub OAuth Setup
 
+> For detailed instructions, see the [Supabase GitHub OAuth documentation](https://supabase.com/docs/guides/auth/social-login/auth-github).
+
 ### 1. Create GitHub OAuth App
 
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
@@ -20,7 +22,9 @@ OAuth lets users log in using accounts they already have (like GitHub or Google)
 3. Fill in the details:
    - **Application name**: `Your Onlook App`
    - **Homepage URL**: `http://localhost:3000` (or your domain)
-   - **Authorization callback URL**: `http://localhost:54321/auth/v1/callback`
+   - **Authorization callback URL**: 
+     - **Local development**: `http://localhost:54321/auth/v1/callback`
+     - **Production**: `https://your-production-domain/auth/v1/callback`
 4. Click **"Register application"**
 5. Copy your **Client ID** and **Client Secret**
 
@@ -54,6 +58,8 @@ const signInWithGitHub = async () => {
 
 ## Google OAuth Setup
 
+> For detailed instructions, see the [Supabase Google OAuth documentation](https://supabase.com/docs/guides/auth/social-login/auth-google).
+
 ### 1. Create Google OAuth App
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
@@ -61,7 +67,9 @@ const signInWithGitHub = async () => {
 3. Go to **APIs & Services** → **Credentials**
 4. Click **"Create Credentials"** → **"OAuth client ID"**
 5. Choose **"Web application"**
-6. Add authorized redirect URI: `http://localhost:54321/auth/v1/callback`
+6. Add authorized redirect URIs:
+   - **Local development**: `http://localhost:54321/auth/v1/callback`
+   - **Production**: `https://your-production-domain/auth/v1/callback`
 7. Copy your **Client ID** and **Client Secret**
 
 ### 2. Configure Supabase
@@ -84,12 +92,16 @@ const signInWithGoogle = async () => {
 
 ## Other Providers
 
-Supabase supports many OAuth providers:
+Supabase supports many OAuth providers. For comprehensive setup instructions for all providers, see the [Supabase Social Login documentation](https://supabase.com/docs/guides/auth/social-login).
+
+Popular providers include:
 
 - **Discord**: Follow similar steps at [Discord Developer Portal](https://discord.com/developers/applications)
 - **Twitter**: Set up at [Twitter Developer Portal](https://developer.twitter.com/)
 - **Facebook**: Configure at [Facebook Developers](https://developers.facebook.com/)
 - **Apple**: Set up at [Apple Developer](https://developer.apple.com/)
+
+> **Note**: For each provider, remember to add both local (`http://localhost:54321/auth/v1/callback`) and production (`https://your-production-domain/auth/v1/callback`) redirect URIs to avoid redirect_uri_mismatch errors.
 
 ## Important Notes
 
