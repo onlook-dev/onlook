@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icons } from '@onlook/ui/icons';
 import { TailwindColorEditorMockup } from '../shared/mockups/tailwind-color-editor';
-import { DirectEditingInteractive } from '../shared/mockups/direct-editing-interactive';
+import { ComponentsMockup } from '../shared/mockups/components-mockup';
 import { AiChatInteractive } from '../shared/mockups/ai-chat-interactive';
 
 export function BuilderBenefitsSection() {
@@ -30,7 +30,7 @@ export function BuilderBenefitsSection() {
                         </p>
                     </div>
                     <div className="w-full h-100 rounded-lg order-1 lg:order-2">
-                        <TailwindColorEditorMockup />
+                        <ComponentsMockup />
                     </div>
                 </div>
                 
