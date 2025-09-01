@@ -21,7 +21,7 @@ OAuth lets users log in using accounts they already have (like GitHub or Google)
 2. Click **"New OAuth App"**
 3. Fill in the details:
    - **Application name**: `Your Onlook App`
-   - **Homepage URL**: `http://localhost:3000` (or your domain)
+   - **Homepage URL**: `http://localhost:3000` (or your production domain)
    - **Authorization callback URL**: 
      - **Local development**: `http://localhost:54321/auth/v1/callback`
      - **Production**: `https://your-production-domain/auth/v1/callback`
@@ -105,12 +105,6 @@ Popular providers include:
 
 ## Important Notes
 
-### Callback URLs
-
-Always use the correct callback URL format:
-- **Local development**: `http://localhost:54321/auth/v1/callback`
-- **Production**: `https://yourdomain.com/auth/v1/callback`
-
 ### Environment Variables
 
 Make sure your `.env.local` has:
@@ -135,12 +129,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 - Make sure it matches exactly: `http://localhost:54321/auth/v1/callback`
 
 **"Client ID not found"**
-- Verify you copied the Client ID correctly
-- Check that the OAuth app is enabled in Supabase
+- Verify you copied the Client ID and Client Secret correctly
+- Check that the OAuth provider is enabled in Supabase
 
 **"Access denied"**
-- Make sure your OAuth app is public (not in development mode)
-- Check that the user has access to your GitHub organization (if applicable)
+- Ensure your OAuth app is public (not in development mode)
+- For GitHub: Check that users have access to your organization (if applicable)
 
 ## Next Steps
 
