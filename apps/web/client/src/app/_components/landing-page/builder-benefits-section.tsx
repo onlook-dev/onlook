@@ -30,7 +30,7 @@ export function BuilderBenefitsSection() {
                         </p>
                     </div>
                     <div className="w-full h-100 rounded-lg order-1 lg:order-2">
-                        <DirectEditingInteractive />
+                        <TailwindColorEditorMockup />
                     </div>
                 </div>
                 
