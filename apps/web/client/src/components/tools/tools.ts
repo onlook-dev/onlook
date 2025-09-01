@@ -55,6 +55,7 @@ import {
     handleSearchReplaceEditFileTool,
     handleTerminalCommandTool,
     handleTodoWriteTool,
+    handleTypecheckTool,
     handleWebSearchTool,
     handleWriteFileTool
 } from './handlers';
@@ -172,11 +173,9 @@ const TOOL_HANDLERS: ClientToolMap = {
     [TYPECHECK_TOOL_NAME]: {
         name: TYPECHECK_TOOL_NAME,
         inputSchema: TYPECHECK_TOOL_PARAMETERS,
-        handler: async (args: z.infer<typeof TYPECHECK_TOOL_PARAMETERS>, editorEngine: EditorEngine) => {
-            return handleTerminalCommandTool({ command: 'bun run typecheck' }, editorEngine);
-        },
+        handler: async (args: z.infer<typeof TYPECHECK_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleTypecheckTool(args, editorEngine),
     },
-
 };
 
 export async function handleToolCall(toolCall: ToolCall<string, unknown>, editorEngine: EditorEngine) {

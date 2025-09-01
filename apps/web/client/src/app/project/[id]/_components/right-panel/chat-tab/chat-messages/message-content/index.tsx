@@ -24,10 +24,6 @@ export const MessageContent = observer(
             [parts]
         );
 
-        if (!parts.length) {
-            return null;
-        }
-
         const renderedParts = parts.map((part, idx) => {
             if (part.type === 'text') {
                 return (
