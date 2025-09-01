@@ -215,7 +215,6 @@ export class ConversationManager {
     }
 
     async upsertMessageInStorage(message: ChatMessage) {
-        console.log('upsertMessageInStorage', message);
         await api.chat.message.upsert.mutate({ message: fromMessage(message) });
     }
 

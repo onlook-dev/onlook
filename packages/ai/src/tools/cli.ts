@@ -104,7 +104,6 @@ export const grepTool = tool({
 export const TYPECHECK_TOOL_NAME = 'typecheck';
 export const TYPECHECK_TOOL_PARAMETERS = z.object({});
 export const typecheckTool = tool({
-    description:
-        'Run this as the final command after all other commands, especially after the final code edit, when type changes are suspected, and on new project creation, to ensure type safety across the project.',
+    description: 'Run this as the final command after code edits, when type changes are suspected.',
     inputSchema: TYPECHECK_TOOL_PARAMETERS,
 });
