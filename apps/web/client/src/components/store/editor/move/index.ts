@@ -199,12 +199,7 @@ export class MoveManager {
                 }
             } else {
                 // Handle regular drag with index changes
-                const res = (await frameData.view.endDrag(targetDomId)) as {
-                    newIndex: number;
-                    child: DomElement;
-                    parent: DomElement;
-                } | null;
-
+                const res = await frameData.view.endDrag(targetDomId);
                 if (res && savedState.originalIndex !== null) {
                     const { child, parent, newIndex } = res;
                     if (newIndex !== savedState.originalIndex) {
