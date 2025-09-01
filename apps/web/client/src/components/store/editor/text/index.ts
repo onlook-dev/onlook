@@ -84,15 +84,15 @@ export class TextEditingManager {
                 throw new Error('No frameView found for text editing');
             }
 
-            const domEl = (await frameData.view.editText(
+            const res = await frameData.view.editText(
                 this.targetDomEl.domId,
                 newContent,
-            )) as DomElement | null;
-            if (!domEl) {
+            )
+            if (!res) {
                 throw new Error('Failed to edit text. No dom element returned');
             }
 
-            await this.handleEditedText(domEl, newContent, frameData.view);
+            await this.handleEditedText(res.domEl, newContent, frameData.view);
         } catch (error) {
             console.error('Error editing text:', error);
         }
@@ -183,10 +183,10 @@ export class TextEditingManager {
                 return;
             }
 
-            const domEl = (await frameData.view.getElementByDomId(
+            const domEl = await frameData.view.getElementByDomId(
                 selectedEl.domId,
                 true,
-            )) as DomElement;
+            )
             if (!domEl) {
                 return;
             }
