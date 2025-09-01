@@ -32,6 +32,7 @@ export const TopBar = observer(
             const startPositionY = frame.position.y;
 
             const handleMove = async (e: MouseEvent) => {
+                clearElements();
                 const scale = editorEngine.canvas.scale;
                 const deltaX = (e.clientX - startX) / scale;
                 const deltaY = (e.clientY - startY) / scale;
@@ -47,7 +48,7 @@ export const TopBar = observer(
                         newPosition,
                         frame.dimension
                     );
-                    
+
                     if (snapTarget) {
                         newPosition = snapTarget.position;
                         editorEngine.snap.showSnapLines(snapTarget.snapLines);
