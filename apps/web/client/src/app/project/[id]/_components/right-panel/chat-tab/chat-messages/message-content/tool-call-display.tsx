@@ -5,7 +5,7 @@ import {
     type SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
     SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME,
     type SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS,
-    TERMINAL_COMMAND_TOOL_NAME, TODO_WRITE_TOOL_NAME,
+    TERMINAL_COMMAND_TOOL_NAME, TERMINAL_COMMAND_TOOL_PARAMETERS, TODO_WRITE_TOOL_NAME,
     type TODO_WRITE_TOOL_PARAMETERS, TYPECHECK_TOOL_NAME,
     WEB_SEARCH_TOOL_NAME,
     type WEB_SEARCH_TOOL_PARAMETERS,
@@ -42,7 +42,7 @@ export const ToolCallDisplay = ({
     const toolName = toolInvocation.type.split('-')[1];
 
     if (toolName === TERMINAL_COMMAND_TOOL_NAME) {
-        const args = toolInvocation.input as { command: string };
+        const args = toolInvocation.input as z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS> | null;
         const result = toolInvocation.output as { output?: string; error?: string } | null;
         if (!args?.command) {
             return (
@@ -81,7 +81,7 @@ export const ToolCallDisplay = ({
     }
 
     if (toolName === WRITE_FILE_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>
+        const args = toolInvocation.input as z.infer<typeof WRITE_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.content;
         if (!filePath || !codeContent) {
@@ -107,7 +107,7 @@ export const ToolCallDisplay = ({
     }
 
     if (toolName === FUZZY_EDIT_FILE_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>;
+        const args = toolInvocation.input as z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.content;
         if (!filePath || !codeContent) {
@@ -133,7 +133,7 @@ export const ToolCallDisplay = ({
     }
 
     if (toolName === SEARCH_REPLACE_EDIT_FILE_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>;
+        const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.new_string;
         if (!filePath || !codeContent) {
@@ -159,7 +159,7 @@ export const ToolCallDisplay = ({
     }
 
     if (toolName === SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>;
+        const args = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS> | null;
         const filePath = args?.file_path;
         const codeContent = args?.edits?.map((edit) => edit.new_string).join('\n...\n');
         if (!filePath || !codeContent) {
@@ -185,7 +185,7 @@ export const ToolCallDisplay = ({
     }
 
     if (toolName === TODO_WRITE_TOOL_NAME) {
-        const args = toolInvocation.input as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>;
+        const args = toolInvocation.input as z.infer<typeof TODO_WRITE_TOOL_PARAMETERS> | null;
         const todos = args?.todos;
         if (!todos || todos.length === 0) {
             return (
