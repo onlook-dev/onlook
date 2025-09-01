@@ -4,16 +4,17 @@ import { encode } from 'gpt-tokenizer';
 import { countTokensWithRoles } from '../src/tokens/index.ts';
 type Part =
     | { type: 'text'; text: string }
-    | { type: 'tool-invocation'; toolInvocation: unknown }
+    | { type: `tool-${string}`; input: unknown }
     | { type: string; [key: string]: unknown };
 
 function createMessage(parts: Part[], role: 'user' | 'assistant' = 'user') {
     return {
+        id: 'test-id',
+        createdAt: new Date(),
         role,
-        content: {
-            parts,
-            metadata: { context: [], checkpoints: [] },
-        },
+        threadId: 'test-thread',
+        parts,
+        metadata: { context: [], checkpoints: [] },
     } as unknown as ChatMessage;
 }
 
@@ -49,7 +50,7 @@ describe('countTokensWithRoles', () => {
         const messages = [
             createMessage([
                 { type: 'text', text },
-                { type: 'tool-invocation', toolInvocation: invocation },
+                { type: 'tool-sum', input: invocation },
             ]),
         ];
 

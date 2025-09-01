@@ -9,7 +9,7 @@ export const READ_FILE_TOOL_PARAMETERS = z.object({
 });
 export const readFileTool = tool({
     description: 'Read file contents with line numbers and range support',
-    parameters: READ_FILE_TOOL_PARAMETERS,
+    inputSchema: READ_FILE_TOOL_PARAMETERS,
 });
 
 export const LIST_FILES_TOOL_NAME = 'list_files';
@@ -19,5 +19,5 @@ export const LIST_FILES_TOOL_PARAMETERS = z.object({
 });
 export const listFilesTool = tool({
     description: 'List all files in the current directory, including subdirectories',
-    parameters: LIST_FILES_TOOL_PARAMETERS,
+    inputSchema: LIST_FILES_TOOL_PARAMETERS,
 });

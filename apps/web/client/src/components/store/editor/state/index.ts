@@ -2,7 +2,8 @@ import {
     type BrandTabValue,
     EditorMode,
     EditorTabValue,
-    type LeftPanelTabValue
+    type LeftPanelTabValue,
+    ChatType
 } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
@@ -18,6 +19,8 @@ export class StateManager {
     leftPanelTab: LeftPanelTabValue | null = null;
     rightPanelTab: EditorTabValue = EditorTabValue.CHAT;
     brandTab: BrandTabValue | null = null;
+    
+    chatMode: ChatType = ChatType.EDIT;
 
     constructor() {
         makeAutoObservable(this);

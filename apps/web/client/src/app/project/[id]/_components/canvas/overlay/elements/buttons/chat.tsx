@@ -23,13 +23,13 @@ export const OverlayChatInput = observer(({
     const t = useTranslations();
     const [isComposing, setIsComposing] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const { sendMessage, isWaiting } = useChatContext();
+    const { sendMessageToChat } = useChatContext();
 
     const handleSubmit = async () => {
         try {
             editorEngine.state.rightPanelTab = EditorTabValue.CHAT;
             await editorEngine.chat.addEditMessage(inputState.value);
-            sendMessage(ChatType.EDIT);
+            sendMessageToChat(ChatType.EDIT);
             setInputState(DEFAULT_INPUT_STATE);
         } catch (error) {
             console.error('Error sending message', error);
