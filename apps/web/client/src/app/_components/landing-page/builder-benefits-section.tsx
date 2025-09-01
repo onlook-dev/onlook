@@ -1,4 +1,7 @@
 import React from 'react';
+import { TailwindColorEditorMockup } from '../shared/mockups/tailwind-color-editor';
+import { ComponentsBlock } from './feature-blocks/components';
+import { AiChatInteractive } from '../shared/mockups/ai-chat-interactive';
 
 export function BuilderBenefitsSection() {
     return (
@@ -13,8 +16,8 @@ export function BuilderBenefitsSection() {
                         </p>
                     </div>
                     <div className="order-1 lg:order-2">
-                        <div className="w-full h-80 bg-gradient-to-br from-background-secondary to-background-tertiary rounded-lg flex items-center justify-center">
-                            <span className="text-foreground-secondary">Visual Editor Mockup</span>
+                        <div className="w-full h-80 rounded-lg">
+                            <TailwindColorEditorMockup />
                         </div>
                     </div>
                 </div>
@@ -28,8 +31,8 @@ export function BuilderBenefitsSection() {
                         </p>
                     </div>
                     <div className="order-1 lg:order-2">
-                        <div className="w-full h-80 bg-gradient-to-br from-background-secondary to-background-tertiary rounded-lg flex items-center justify-center">
-                            <span className="text-foreground-secondary">Drag & Drop Mockup</span>
+                        <div className="w-full h-80 rounded-lg">
+                            <ComponentsBlock />
                         </div>
                     </div>
                 </div>
@@ -43,8 +46,8 @@ export function BuilderBenefitsSection() {
                         </p>
                     </div>
                     <div className="order-1 lg:order-2">
-                        <div className="w-full h-80 bg-gradient-to-br from-background-secondary to-background-tertiary rounded-lg flex items-center justify-center">
-                            <span className="text-foreground-secondary">AI Assistant Mockup</span>
+                        <div className="w-full h-80 rounded-lg">
+                            <AiChatInteractive />
                         </div>
                     </div>
                 </div>
