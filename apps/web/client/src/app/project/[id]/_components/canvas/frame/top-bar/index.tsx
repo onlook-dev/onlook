@@ -64,14 +64,32 @@ export const TopBar = observer(
             const startPositionY = frame.position.y;
 
             const handleMove = async (e: MouseEvent) => {
+                clearElements();
                 const scale = editorEngine.canvas.scale;
                 const deltaX = (e.clientX - startX) / scale;
                 const deltaY = (e.clientY - startY) / scale;
 
-                const newPosition = {
+                let newPosition = {
                     x: startPositionX + deltaX,
                     y: startPositionY + deltaY,
                 };
+
+                if (editorEngine.snap.config.enabled && !e.ctrlKey && !e.metaKey) {
+                    const snapTarget = editorEngine.snap.calculateSnapTarget(
+                        frame.id,
+                        newPosition,
+                        frame.dimension
+                    );
+
+                    if (snapTarget) {
+                        newPosition = snapTarget.position;
+                        editorEngine.snap.showSnapLines(snapTarget.snapLines);
+                    } else {
+                        editorEngine.snap.hideSnapLines();
+                    }
+                } else {
+                    editorEngine.snap.hideSnapLines();
+                }
 
                 editorEngine.frames.updateAndSaveToStorage(frame.id, { position: newPosition });
             };
@@ -79,6 +97,7 @@ export const TopBar = observer(
             const endMove = (e: MouseEvent) => {
                 e.preventDefault();
                 e.stopPropagation();
+                editorEngine.snap.hideSnapLines();
                 window.removeEventListener('mousemove', handleMove);
                 window.removeEventListener('mouseup', endMove);
             };

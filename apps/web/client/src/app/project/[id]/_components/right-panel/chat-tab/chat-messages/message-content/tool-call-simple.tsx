@@ -24,6 +24,7 @@ import {
     TERMINAL_COMMAND_TOOL_NAME,
     TODO_WRITE_TOOL_NAME,
     type TODO_WRITE_TOOL_PARAMETERS,
+    TYPECHECK_TOOL_NAME,
     WEB_SEARCH_TOOL_NAME,
     type WEB_SEARCH_TOOL_PARAMETERS,
     WRITE_FILE_TOOL_NAME,
@@ -53,6 +54,7 @@ const TOOL_ICONS: Record<string, any> = {
     [TODO_WRITE_TOOL_NAME]: Icons.ListBullet,
     [EXIT_PLAN_MODE_TOOL_NAME]: Icons.ListBullet,
     [BASH_READ_TOOL_NAME]: Icons.EyeOpen,
+    [TYPECHECK_TOOL_NAME]: Icons.MagnifyingGlass,
 } as const;
 
 export function ToolCallSimple({
@@ -66,10 +68,6 @@ export function ToolCallSimple({
 }) {
     const toolName = toolInvocation.type.split('-')[1] ?? '';
     const Icon = TOOL_ICONS[toolName] ?? Icons.QuestionMarkCircled;
-
-    if (toolInvocation.state === 'output-available') {
-        return null;
-    }
 
     const getLabel = () => {
         try {
@@ -174,6 +172,8 @@ export function ToolCallSimple({
                     return 'Reading style guide';
                 case ONLOOK_INSTRUCTIONS_TOOL_NAME:
                     return 'Reading Onlook instructions';
+                case TYPECHECK_TOOL_NAME:
+                    return 'Checking types';
                 default:
                     return toolName?.replace(/[-_]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             }

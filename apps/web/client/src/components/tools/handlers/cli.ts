@@ -147,3 +147,32 @@ export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PAR
         };
     }
 }
+
+export async function handleTypecheckTool(
+    args: Record<string, never>,
+    editorEngine: EditorEngine,
+): Promise<{
+    success: boolean;
+    error?: string;
+}> {
+    try {
+        // Run Next.js typecheck command
+        const result = await editorEngine.sandbox.session.runCommand('bunx tsc --noEmit');
+
+        if (result.success) {
+            return {
+                success: true
+            };
+        } else {
+            return {
+                success: false,
+                error: result.error || result.output || 'Typecheck failed with unknown error'
+            };
+        }
+    } catch (error: any) {
+        return {
+            success: false,
+            error: error.message || error.toString()
+        };
+    }
+}

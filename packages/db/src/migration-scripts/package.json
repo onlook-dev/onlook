@@ -1,0 +1,17 @@
+{
+  "name": "@onlook/db-migration-scripts",
+  "version": "1.0.0",
+  "description": "Database migration scripts for Onlook",
+  "scripts": {
+    "migrate:branching": "bun run migrate-to-branching.ts",
+    "migrate": "bun run run-migration.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "*",
+    "postgres": "*",
+    "uuid": "*"
+  },
+  "devDependencies": {
+    "@types/uuid": "*"
+  }
+}
