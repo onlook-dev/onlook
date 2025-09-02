@@ -150,6 +150,9 @@ export const TopBar = observer(
                     }}
                     ref={toolBarRef}
                 >
+                    <HoverOnlyTooltip content="Hold to drag" side="top" className="mb-1" hideArrow>
+                        <Icons.DragHandleDots />
+                    </HoverOnlyTooltip>
                     <HoverOnlyTooltip content="Go back" side="top" className="mb-1" hideArrow>
                         <Button
                             variant="ghost"

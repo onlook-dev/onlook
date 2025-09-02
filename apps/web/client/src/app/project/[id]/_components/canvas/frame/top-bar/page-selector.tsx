@@ -13,6 +13,7 @@ import { cn } from '@onlook/ui/utils';
 import { inferPageFromUrl } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useMemo, useState } from 'react';
+import { HoverOnlyTooltip } from '../../../editor-bar/hover-tooltip';
 import { PageModal } from '../../../left-panel/page-tab/page-modal';
 
 interface PageSelectorProps {
@@ -137,21 +138,22 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
                 editorEngine.frames.select([frame]);
             }
         }}>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className={cn(
-                        "h-auto px-2 py-1 text-xs hover:bg-background-secondary",
-                        className
-                    )}
-                >
-                    <span className="max-w-32 truncate">
-                        {displayCurrentPage.name}
-                    </span>
-                    <Icons.ChevronDown className="ml-1 h-3 w-3" />
-                </Button>
-            </DropdownMenuTrigger>
+            <HoverOnlyTooltip content="Page" side="top" className="mb-1" hideArrow>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className={cn(
+                            "h-auto px-2 py-1 text-xs hover:bg-background-secondary",
+                            className
+                        )}
+                    >
+                        <span className="max-w-24 truncate">
+                            {displayCurrentPage.name}
+                        </span>
+                    </Button>
+                </DropdownMenuTrigger>
+            </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="w-48">
                 {displayPages.length > 0 ? (
                     <>

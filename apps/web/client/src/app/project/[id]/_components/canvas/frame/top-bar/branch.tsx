@@ -11,6 +11,7 @@ import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { BranchControls } from "../../../branch/branch-controls";
 import { BranchList } from "../../../branch/branch-list";
+import { HoverOnlyTooltip } from "../../../editor-bar/hover-tooltip";
 
 interface BranchDisplayProps {
     frame: Frame;
@@ -39,18 +40,20 @@ export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch }
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-            <DropdownMenuTrigger asChild>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-auto px-2 py-1 text-xs hover:bg-background-secondary"
-                >
-                    <Icons.GitBranch className="h-4 w-4" />
-                    <span className="max-w-32 truncate">
-                        {activeBranch.name}
-                    </span>
-                </Button>
-            </DropdownMenuTrigger>
+            <HoverOnlyTooltip content="Branch" side="top" className="mb-1" hideArrow>
+                <DropdownMenuTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto px-2 py-1 text-xs hover:bg-background-secondary"
+                    >
+                        <Icons.GitBranch />
+                        <span className="max-w-24 truncate">
+                            {activeBranch.name}
+                        </span>
+                    </Button>
+                </DropdownMenuTrigger>
+            </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="w-[320px] p-0">
                 <BranchList
                     branches={allBranches}
@@ -60,6 +63,6 @@ export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch }
                 />
                 <BranchControls onClose={() => setIsOpen(false)} />
             </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu >
     );
 });

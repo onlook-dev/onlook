@@ -118,7 +118,7 @@ export const branchRouter = createTRPCRouter({
                     const newBranchId = uuidv4();
                     const newBranch = {
                         id: newBranchId,
-                        name: input.branchName || `Fork of ${sourceBranch.name}`,
+                        name: input.branchName || `${sourceBranch.name} (fork)`,
                         description: null,
                         projectId: sourceBranch.projectId,
                         sandboxId,
