@@ -32,7 +32,7 @@
     },
     "dependencies": {
         "@ai-sdk/provider-utils": "^3.0.5",
-        "@ai-sdk/react": "2.0.25",
+        "@ai-sdk/react": "2.0.29",
         "@codemirror/lang-css": "^6.2.0",
         "@codemirror/lang-html": "^6.4.7",
         "@codemirror/lang-javascript": "^6.2.3",
