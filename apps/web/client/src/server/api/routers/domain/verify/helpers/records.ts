@@ -2,7 +2,8 @@ import { FREESTYLE_IP_ADDRESS } from '@onlook/constants';
 import { type CustomDomainVerification } from '@onlook/db';
 import { type AVerificationRecord } from '@onlook/models';
 import { promises as dns } from 'dns';
-import { parse } from 'psl';
+
+import { parse } from 'tldts';
 
 export const getARecords = (subdomain: string | null): AVerificationRecord[] => {
     if (!subdomain) {
@@ -76,7 +77,7 @@ export async function isTxtRecordPresent(fullDomain: string, name: string, expec
 }> {
     try {
         const parsedDomain = parse(fullDomain);
-        if (parsedDomain.error) {
+        if (!parsedDomain.domain) {
             return {
                 isPresent: false,
                 foundRecords: [],

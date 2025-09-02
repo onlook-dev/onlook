@@ -45,7 +45,7 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
 
 export const Terminal = memo(observer(({ hidden = false, terminalSessionId, branchId, isActive = true }: TerminalProps) => {
     const editorEngine = useEditorEngine();
-    
+
     // Get terminal session from the appropriate branch's sandbox
     const terminalSession =
         branchId
@@ -70,9 +70,9 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId, bran
         return () => {
             // Detach xterm from DOM on unmount (but do not dispose)
             if (
-                terminalSession.xterm.element &&
+                terminalSession?.xterm?.element &&
                 containerRef.current &&
-                terminalSession.xterm.element.parentElement === containerRef.current
+                terminalSession?.xterm?.element?.parentElement === containerRef.current
             ) {
                 containerRef.current.innerHTML = '';
             }
@@ -103,7 +103,7 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId, bran
 
         const resizeObserver = new ResizeObserver(() => {
             if (!hidden && isActive) {
-                terminalSession.fitAddon.fit();
+                terminalSession.fitAddon?.fit();
             }
         });
 
