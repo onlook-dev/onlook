@@ -20,5 +20,9 @@ export const createDefaultProject = (
         previewImgBucket: null,
         updatedPreviewImgAt: null,
         ...overrides,
+
+        // deprecated
+        sandboxId: null,
+        sandboxUrl: null,
     } satisfies DbProject;
 };

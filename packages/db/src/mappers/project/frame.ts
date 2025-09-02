@@ -2,6 +2,9 @@ import { type Frame } from '@onlook/models';
 import type { Frame as DbFrame } from '../../schema';
 
 export const fromDbFrame = (dbFrame: DbFrame): Frame => {
+    if (dbFrame.branchId === null) {
+        throw new Error('Frame branchId should not be null');
+    }
     return {
         id: dbFrame.id,
         canvasId: dbFrame.canvasId,
@@ -28,6 +31,9 @@ export const toDbFrame = (frame: Frame): DbFrame => {
         y: frame.position.y.toString(),
         width: frame.dimension.width.toString(),
         height: frame.dimension.height.toString(),
+
+        // deprecated
+        type: null,
     };
 };
 

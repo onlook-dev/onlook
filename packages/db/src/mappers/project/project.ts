@@ -30,6 +30,10 @@ export const toDbProject = (project: Project): DbProject => {
         previewImgPath,
         previewImgBucket,
         updatedPreviewImgAt,
+
+        // deprecated
+        sandboxId: null,
+        sandboxUrl: null,
     };
 };
 

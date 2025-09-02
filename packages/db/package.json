@@ -15,7 +15,8 @@
         "db:seed": "bun src/seed/seed.ts",
         "db:seed:stripe": "bun src/seed/stripe/stripe.ts",
         "db:reset": "bun src/seed/reset.ts",
-        "db:drop": "drizzle-kit drop"
+        "db:drop": "drizzle-kit drop",
+        "db:migrate:branching": "bun src/migration-scripts/migrate-to-branching.ts"
     },
     "dependencies": {
         "dotenv": "^17.2.1",

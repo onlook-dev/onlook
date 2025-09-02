@@ -1,4 +1,4 @@
-import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
+import { CodeProvider, getStaticCodeProvider } from '@onlook/code-provider';
 import { getSandboxPreviewUrl } from '@onlook/constants';
 import { branches, branchInsertSchema, branchUpdateSchema, canvases, createDefaultFrame, frames, fromDbBranch, fromDbFrame } from '@onlook/db';
 import type { Frame } from '@onlook/models';
@@ -101,22 +101,15 @@ export const branchRouter = createTRPCRouter({
                     }
 
                     // Fork the sandbox using code provider
-                    const provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
-                        providerOptions: {
-                            codesandbox: {
-                                sandboxId: sourceBranch.sandboxId,
-                            },
-                        },
-                    });
 
-                    const forkedSandbox = await provider.createProject({
+                    const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+                    const forkedSandbox = await CodesandboxProvider.createProject({
                         source: 'template',
                         id: sourceBranch.sandboxId,
                         title: input.branchName || `${sourceBranch.name}-fork`,
                         tags: ['fork'],
                     });
 
-                    await provider.destroy();
 
                     const sandboxId = forkedSandbox.id;
                     const previewUrl = getSandboxPreviewUrl(sandboxId, 3000);

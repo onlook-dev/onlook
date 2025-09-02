@@ -1,10 +1,9 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { Button } from '@onlook/ui/button';
+import type { FrameData } from '@/components/store/editor/frames';
 import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
 import { HoverOnlyTooltip } from '../hover-tooltip';
 import { ToolbarButton } from '../toolbar-button';
-import type { FrameData } from '@/components/store/editor/frames';
 
 export function WindowActionsGroup({ frameData }: { frameData: FrameData }) {
     const editorEngine = useEditorEngine();
@@ -39,7 +38,7 @@ export function WindowActionsGroup({ frameData }: { frameData: FrameData }) {
 
     return (
         <>
-            <HoverOnlyTooltip content="Duplicate Window" side="bottom" sideOffset={10}>
+            <HoverOnlyTooltip content="Duplicate Frame" side="bottom" sideOffset={10}>
                 <ToolbarButton
                     className="flex items-center w-9"
                     onClick={duplicateWindow}
@@ -53,7 +52,7 @@ export function WindowActionsGroup({ frameData }: { frameData: FrameData }) {
                 </ToolbarButton>
             </HoverOnlyTooltip>
             {editorEngine.frames.canDelete() && (
-                <HoverOnlyTooltip content="Delete Window" side="bottom" sideOffset={10}>
+                <HoverOnlyTooltip content="Delete Frame" side="bottom" sideOffset={10}>
                     <ToolbarButton
                         className="flex items-center w-9"
                         disabled={!editorEngine.frames.canDelete() || isDeleting}

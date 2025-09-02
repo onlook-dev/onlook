@@ -9,7 +9,10 @@ export const createDefaultFrame = (
         url,
         overrides,
     }: {
-        canvasId: string; branchId: string; url: string; overrides?: Partial<DbFrame>
+        canvasId: string;
+        branchId: string;
+        url: string;
+        overrides?: Partial<DbFrame>
     },
 ): DbFrame => {
     return {
@@ -22,5 +25,8 @@ export const createDefaultFrame = (
         width: DefaultSettings.FRAME_DIMENSION.width.toString(),
         height: DefaultSettings.FRAME_DIMENSION.height.toString(),
         ...overrides,
+
+        // deprecated
+        type: null,
     };
 };
