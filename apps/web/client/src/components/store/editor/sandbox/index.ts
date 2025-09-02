@@ -9,8 +9,7 @@ import {
     NEXT_JS_FILE_EXTENSIONS,
     PRELOAD_SCRIPT_SRC,
 } from '@onlook/constants';
-import { RouterType, type Branch, type SandboxFile, type TemplateNode } from '@onlook/models';
-import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
+import { RouterType, type Branch, type SandboxFile } from '@onlook/models';
 import {
     getBaseName,
     getDirName,
@@ -27,7 +26,6 @@ import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
 import { normalizePath } from './helpers';
-import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
 const isDev = env.NODE_ENV === 'development';
@@ -41,7 +39,6 @@ export class SandboxManager {
 
     private fileWatcher: ProviderFileWatcher | null = null;
     private fileSync: FileSyncManager;
-    private templateNodeMap: TemplateNodeMapper;
     private _isIndexed = false;
     private _isIndexing = false;
     private providerReactionDisposer?: () => void;
@@ -55,7 +52,6 @@ export class SandboxManager {
             this.editorEngine
         );
         this.fileSync = new FileSyncManager();
-        this.templateNodeMap = new TemplateNodeMapper(this.branch.id);
         makeAutoObservable(this);
     }
 
@@ -250,7 +246,8 @@ export class SandboxManager {
         // If the file is a JSX file, we need to process it for mapping before writing
         if (this.isJsxFile(normalizedPath)) {
             try {
-                const { newContent } = await this.templateNodeMap.processFileForMapping(
+                const { newContent } = await this.editorEngine.templateNodes.processFileForMapping(
+                    this.branch.id,
                     normalizedPath,
                     content,
                     this.routerConfig?.type,
@@ -585,7 +582,8 @@ export class SandboxManager {
                 }
             }
 
-            const { modified, newContent } = await this.templateNodeMap.processFileForMapping(
+            const { modified, newContent } = await this.editorEngine.templateNodes.processFileForMapping(
+                this.branch.id,
                 file.path,
                 file.content,
                 this.routerConfig?.type,
@@ -599,46 +597,6 @@ export class SandboxManager {
         }
     }
 
-    async getTemplateNode(oid: string): Promise<TemplateNode | null> {
-        return this.templateNodeMap.getTemplateNode(oid);
-    }
-
-    async getTemplateNodeChild(
-        parentOid: string,
-        child: TemplateNode,
-        index: number,
-    ): Promise<{ instanceId: string; component: string } | null> {
-        const codeBlock = await this.getCodeBlock(parentOid);
-
-        if (codeBlock == null) {
-            console.error(`Failed to read code block: ${parentOid}`);
-            return null;
-        }
-
-        return await getTemplateNodeChild(codeBlock, child, index);
-    }
-
-    async getCodeBlock(oid: string): Promise<string | null> {
-        const templateNode = this.templateNodeMap.getTemplateNode(oid);
-        if (!templateNode) {
-            console.error(`No template node found for oid ${oid}`);
-            return null;
-        }
-
-        const file = await this.readFile(templateNode.path);
-        if (!file) {
-            console.error(`No file found for template node ${oid}`);
-            return null;
-        }
-
-        if (file.type === 'binary') {
-            console.error(`File ${templateNode.path} is a binary file`);
-            return null;
-        }
-
-        const codeBlock = await getContentFromTemplateNode(templateNode, file.content);
-        return codeBlock;
-    }
 
     async fileExists(path: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
@@ -802,7 +760,6 @@ export class SandboxManager {
         void this.fileWatcher?.stop();
         this.fileWatcher = null;
         this.fileSync.clear();
-        this.templateNodeMap.clear();
         this.session.clear();
         this._isIndexed = false;
         this._isIndexing = false;

@@ -96,7 +96,7 @@ export const CodeTab = observer(() => {
         }
 
         try {
-            const templateNode = await activeSandbox.getTemplateNode(element.oid);
+            const templateNode = editorEngine.templateNodes.getTemplateNode(element.oid);
             if (templateNode?.startTag) {
                 return {
                     startLineNumber: templateNode.startTag.start.line,

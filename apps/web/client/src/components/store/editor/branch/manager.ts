@@ -202,6 +202,8 @@ export class BranchManager {
 
             // Clean up the sandbox
             branchData.sandbox.clear();
+            // Clean up template nodes for this branch
+            this.editorEngine.templateNodes.clearBranch(branchId);
             // Remove from the map
             this.branchMap.delete(branchId);
 

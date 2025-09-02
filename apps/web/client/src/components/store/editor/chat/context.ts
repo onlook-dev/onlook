@@ -62,7 +62,7 @@ export class ChatContext {
                 }
                 return { ...c, content: fileContent.content } satisfies FileMessageContext;
             } else if (c.type === MessageContextType.HIGHLIGHT && c.oid) {
-                const codeBlock = await this.editorEngine.sandbox.getCodeBlock(c.oid);
+                const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(c.oid);
                 if (codeBlock === null) {
                     console.error('No code block found for node', c.path);
                     return c;
@@ -119,13 +119,13 @@ export class ChatContext {
                 continue;
             }
 
-            const codeBlock = await this.editorEngine.sandbox.getCodeBlock(oid);
+            const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(oid);
             if (codeBlock === null) {
                 console.error('No code block found for node', node);
                 continue;
             }
 
-            const templateNode = await this.editorEngine.sandbox.getTemplateNode(oid);
+            const templateNode = this.editorEngine.templateNodes.getTemplateNode(oid);
             if (!templateNode) {
                 console.error('No template node found for node', node);
                 continue;

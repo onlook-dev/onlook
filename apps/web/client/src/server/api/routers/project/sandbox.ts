@@ -2,7 +2,6 @@ import { CodeProvider, createCodeProviderClient, getStaticCodeProvider } from '@
 import { getSandboxPreviewUrl } from '@onlook/constants';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { TRPCError } from '@trpc/server';
-import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
@@ -48,7 +47,7 @@ export const sandboxRouter = createTRPCRouter({
             });
             const session = await provider.createSession({
                 args: {
-                    id: shortenUuid(userId ?? uuidv4(), 20),
+                    id: shortenUuid(userId, 20),
                 },
             });
             await provider.destroy();

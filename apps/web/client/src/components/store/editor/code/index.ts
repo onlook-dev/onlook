@@ -117,7 +117,7 @@ export class CodeManager {
         const requestByFile: FileToRequests = new Map();
 
         for (const request of requests) {
-            const templateNode = await this.editorEngine.sandbox.getTemplateNode(request.oid);
+            const templateNode = this.editorEngine.templateNodes.getTemplateNode(request.oid);
             if (!templateNode) {
                 throw new Error(`Template node not found for oid: ${request.oid}`);
             }

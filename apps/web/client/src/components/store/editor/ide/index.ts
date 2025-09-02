@@ -257,7 +257,7 @@ export class IDEManager {
             return null;
         }
         try {
-            const templateNode = await this.editorEngine.sandbox.getTemplateNode(oid);
+            const templateNode = this.editorEngine.templateNodes.getTemplateNode(oid);
             if (templateNode?.path) {
                 return templateNode.path;
             }
@@ -277,7 +277,7 @@ export class IDEManager {
             return null;
         }
         try {
-            const templateNode = await this.editorEngine.sandbox.getTemplateNode(element.oid);
+            const templateNode = this.editorEngine.templateNodes.getTemplateNode(element.oid);
             if (templateNode?.startTag) {
                 return {
                     startLineNumber: templateNode.startTag.start.line,

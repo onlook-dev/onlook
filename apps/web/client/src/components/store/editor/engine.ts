@@ -26,6 +26,7 @@ import { ScreenshotManager } from './screenshot';
 import { SnapManager } from './snap';
 import { StateManager } from './state';
 import { StyleManager } from './style';
+import { TemplateNodeManager } from './template-nodes';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
@@ -66,6 +67,7 @@ export class EditorEngine {
     readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
     readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
     readonly snap: SnapManager = new SnapManager(this);
+    readonly templateNodes: TemplateNodeManager = new TemplateNodeManager(this);
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
@@ -113,6 +115,7 @@ export class EditorEngine {
         this.frameEvent.clear();
         this.screenshot.clear();
         this.snap.hideSnapLines();
+        this.templateNodes.clear();
     }
 
     clearUI() {
