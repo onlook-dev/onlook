@@ -62,8 +62,11 @@ export const sandboxRouter = createTRPCRouter({
         )
         .mutation(async ({ input }) => {
             const provider = await getProvider({ sandboxId: input.sandboxId });
-            await provider.pauseProject({});
-            await provider.destroy();
+            try {
+                await provider.pauseProject({});
+            } finally {
+                await provider.destroy().catch(() => { });
+            }
         }),
     list: protectedProcedure.input(z.object({ sandboxId: z.string() })).query(async ({ input }) => {
         const provider = await getProvider({ sandboxId: input.sandboxId });
@@ -135,8 +138,11 @@ export const sandboxRouter = createTRPCRouter({
         )
         .mutation(async ({ input }) => {
             const provider = await getProvider({ sandboxId: input.sandboxId });
-            await provider.stopProject({});
-            await provider.destroy();
+            try {
+                await provider.stopProject({});
+            } finally {
+                await provider.destroy().catch(() => { });
+            }
         }),
     createFromGitHub: protectedProcedure
         .input(
