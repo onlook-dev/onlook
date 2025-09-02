@@ -3,8 +3,10 @@ import { createOid } from '@onlook/utility';
 import { isReactFragment } from './helpers';
 import { type NodePath, type t as T, types as t, traverse } from './packages';
 
-export function addOidsToAst(ast: T.File): { ast: T.File; modified: boolean } {
-    const oids: Set<string> = new Set();
+export function addOidsToAst(
+    ast: T.File,
+    globalOids: Set<string> = new Set(),
+): { ast: T.File; modified: boolean } {
     let modified = false;
 
     traverse(ast, {
@@ -16,28 +18,23 @@ export function addOidsToAst(ast: T.File): { ast: T.File; modified: boolean } {
             const existingOid = getExistingOid(attributes);
 
             if (existingOid) {
-                // If the element already has an oid, we need to check if it's unique
+                // If the element already has an oid, check if it exists globally
                 const { value, index } = existingOid;
-                if (oids.has(value)) {
-                    // If the oid is not unique, we need to create a new one
+                if (globalOids.has(value)) {
+                    // If the oid already exists globally, replace it with a new one
                     const newOid = createOid();
                     const attr = attributes[index] as T.JSXAttribute;
                     attr.value = t.stringLiteral(newOid);
-                    oids.add(newOid);
                     modified = true;
-                } else {
-                    // If the oid is unique, we can add it to the set
-                    oids.add(value);
                 }
             } else {
-                // If the element doesn't have an oid, we need to create one
+                // If the element doesn't have an oid, create one
                 const newOid = createOid();
                 const newOidAttribute = t.jSXAttribute(
                     t.jSXIdentifier(EditorAttributes.DATA_ONLOOK_ID),
                     t.stringLiteral(newOid),
                 );
                 attributes.push(newOidAttribute);
-                oids.add(newOid);
                 modified = true;
             }
         },

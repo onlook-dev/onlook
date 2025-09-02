@@ -15,20 +15,11 @@ import { formatContent } from '../sandbox/helpers';
 
 export class TemplateNodeManager {
     private editorEngine: EditorEngine;
-    private branchTemplateNodes = new Map<string, Map<string, TemplateNode>>();
+    private templateNodes = new Map<string, TemplateNode>();
 
     constructor(editorEngine: EditorEngine) {
         this.editorEngine = editorEngine;
         makeAutoObservable(this);
-    }
-
-    private getBranchMap(branchId: string): Map<string, TemplateNode> {
-        let branchMap = this.branchTemplateNodes.get(branchId);
-        if (!branchMap) {
-            branchMap = new Map<string, TemplateNode>();
-            this.branchTemplateNodes.set(branchId, branchMap);
-        }
-        return branchMap;
     }
 
     private getActiveBranchId(): string {
@@ -37,6 +28,10 @@ export class TemplateNodeManager {
             throw new Error('No active branch found');
         }
         return activeBranch.id;
+    }
+
+    getAllOids(): Set<string> {
+        return new Set(this.templateNodes.keys());
     }
 
     async processFileForMapping(
@@ -57,7 +52,9 @@ export class TemplateNodeManager {
             injectPreloadScript(ast);
         }
 
-        const { ast: astWithIds, modified } = addOidsToAst(ast);
+        // Get global OIDs and pass to parser for uniqueness checking
+        const globalOids = this.getAllOids();
+        const { ast: astWithIds, modified } = addOidsToAst(ast, globalOids);
 
         // Format content then create map
         const unformattedContent = await getContentFromAst(astWithIds, content);
@@ -66,10 +63,9 @@ export class TemplateNodeManager {
         const finalAst = astWithIdsAndFormatted ?? astWithIds;
         const templateNodeMap = createTemplateNodeMap({ ast: finalAst, filename: filePath, branchId });
 
-        // Store template nodes for this branch
-        const branchMap = this.getBranchMap(branchId);
+        // Store template nodes in single map (overwrites any existing nodes with same OID)
         templateNodeMap.forEach((node, oid) => {
-            branchMap.set(oid, node);
+            this.templateNodes.set(oid, node);
         });
 
         const newContent = await getContentFromAst(finalAst, content);
@@ -80,13 +76,12 @@ export class TemplateNodeManager {
     }
 
     getTemplateNode(oid: string): TemplateNode | null {
-        const branchId = this.getActiveBranchId();
-        return this.getTemplateNodeByBranch(branchId, oid);
+        return this.templateNodes.get(oid) ?? null;
     }
 
     getTemplateNodeByBranch(branchId: string, oid: string): TemplateNode | null {
-        const branchMap = this.branchTemplateNodes.get(branchId);
-        return branchMap?.get(oid) ?? null;
+        const templateNode = this.templateNodes.get(oid);
+        return templateNode && templateNode.branchId === branchId ? templateNode : null;
     }
 
     async getTemplateNodeChild(
@@ -134,7 +129,13 @@ export class TemplateNodeManager {
     }
 
     getBranchTemplateNodes(branchId: string): Map<string, TemplateNode> {
-        return this.branchTemplateNodes.get(branchId) ?? new Map();
+        const branchNodes = new Map<string, TemplateNode>();
+        for (const [oid, node] of this.templateNodes) {
+            if (node.branchId === branchId) {
+                branchNodes.set(oid, node);
+            }
+        }
+        return branchNodes;
     }
 
     getAllTemplateNodes(): Map<string, TemplateNode> {
@@ -143,10 +144,14 @@ export class TemplateNodeManager {
     }
 
     clearBranch(branchId: string): void {
-        this.branchTemplateNodes.delete(branchId);
+        for (const [oid, node] of this.templateNodes) {
+            if (node.branchId === branchId) {
+                this.templateNodes.delete(oid);
+            }
+        }
     }
 
     clear(): void {
-        this.branchTemplateNodes.clear();
+        this.templateNodes.clear();
     }
 }

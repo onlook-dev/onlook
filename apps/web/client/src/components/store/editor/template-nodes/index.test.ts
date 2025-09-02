@@ -77,11 +77,10 @@ describe('TemplateNodeManager', () => {
         expect(result.newContent).toBe('processed content');
     });
 
-    test('getTemplateNode should return node for active branch', () => {
+    test('getTemplateNode should return node from global map', () => {
         // Arrange
-        const branchId = 'test-branch';
         const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
-        manager['branchTemplateNodes'].set(branchId, new Map([['test-oid', templateNode]]));
+        manager['templateNodes'].set('test-oid', templateNode);
 
         // Act
         const result = manager.getTemplateNode('test-oid');
@@ -90,25 +89,19 @@ describe('TemplateNodeManager', () => {
         expect(result).toEqual(templateNode);
     });
 
-    test('getTemplateNode should throw error when no active branch', () => {
-        // Arrange
-        const mockEditorEngineNoActiveBranch = {
-            branches: {
-                activeBranch: null,
-                getSandboxById: mock(() => null),
-            },
-        } as any;
-        const managerNoActiveBranch = new TemplateNodeManager(mockEditorEngineNoActiveBranch);
+    test('getTemplateNode should return null for non-existent OID', () => {
+        // Act
+        const result = manager.getTemplateNode('non-existent-oid');
 
-        // Act & Assert
-        expect(() => managerNoActiveBranch.getTemplateNode('test-oid')).toThrow('No active branch found');
+        // Assert
+        expect(result).toBeNull();
     });
 
     test('getTemplateNodeByBranch should return node for specific branch', () => {
         // Arrange
         const branchId = 'test-branch';
         const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
-        manager['branchTemplateNodes'].set(branchId, new Map([['test-oid', templateNode]]));
+        manager['templateNodes'].set('test-oid', templateNode);
 
         // Act
         const result = manager.getTemplateNodeByBranch(branchId, 'test-oid');
@@ -117,9 +110,14 @@ describe('TemplateNodeManager', () => {
         expect(result).toEqual(templateNode);
     });
 
-    test('getTemplateNodeByBranch should return null for non-existent branch', () => {
+    test('getTemplateNodeByBranch should return null for different branch', () => {
+        // Arrange
+        const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
+        templateNode.branchId = 'different-branch';
+        manager['templateNodes'].set('test-oid', templateNode);
+
         // Act
-        const result = manager.getTemplateNodeByBranch('non-existent-branch', 'test-oid');
+        const result = manager.getTemplateNodeByBranch('test-branch', 'test-oid');
 
         // Assert
         expect(result).toBeNull();
@@ -128,40 +126,44 @@ describe('TemplateNodeManager', () => {
     test('clearBranch should remove all template nodes for branch', () => {
         // Arrange
         const branchId = 'test-branch';
-        const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
-        manager['branchTemplateNodes'].set(branchId, new Map([['test-oid', templateNode]]));
+        const templateNode1 = createMockTemplateNode('test-oid-1', 'TestComponent1');
+        const templateNode2 = createMockTemplateNode('test-oid-2', 'TestComponent2');
+        templateNode2.branchId = 'different-branch';
+        
+        manager['templateNodes'].set('test-oid-1', templateNode1);
+        manager['templateNodes'].set('test-oid-2', templateNode2);
 
         // Act
         manager.clearBranch(branchId);
 
         // Assert
-        const result = manager.getTemplateNodeByBranch(branchId, 'test-oid');
-        expect(result).toBeNull();
+        expect(manager.getTemplateNode('test-oid-1')).toBeNull(); // Should be removed
+        expect(manager.getTemplateNode('test-oid-2')).toEqual(templateNode2); // Should remain
     });
 
     test('clear should remove all template nodes for all branches', () => {
         // Arrange
-        const branch1 = 'branch-1';
-        const branch2 = 'branch-2';
         const templateNode1 = createMockTemplateNode('oid-1', 'Component1');
+        templateNode1.branchId = 'branch-1';
         const templateNode2 = createMockTemplateNode('oid-2', 'Component2');
+        templateNode2.branchId = 'branch-2';
         
-        manager['branchTemplateNodes'].set(branch1, new Map([['oid-1', templateNode1]]));
-        manager['branchTemplateNodes'].set(branch2, new Map([['oid-2', templateNode2]]));
+        manager['templateNodes'].set('oid-1', templateNode1);
+        manager['templateNodes'].set('oid-2', templateNode2);
 
         // Act
         manager.clear();
 
         // Assert
-        expect(manager.getTemplateNodeByBranch(branch1, 'oid-1')).toBeNull();
-        expect(manager.getTemplateNodeByBranch(branch2, 'oid-2')).toBeNull();
-        expect(manager['branchTemplateNodes'].size).toBe(0);
+        expect(manager.getTemplateNode('oid-1')).toBeNull();
+        expect(manager.getTemplateNode('oid-2')).toBeNull();
+        expect(manager['templateNodes'].size).toBe(0);
     });
 
     test('getCodeBlock should get template node and read file content', async () => {
         // Arrange
         const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
-        manager['branchTemplateNodes'].set('test-branch', new Map([['test-oid', templateNode]]));
+        manager['templateNodes'].set('test-oid', templateNode);
 
         // Act
         const result = await manager.getCodeBlock('test-oid');
@@ -182,7 +184,7 @@ describe('TemplateNodeManager', () => {
         // Arrange
         const templateNode = createMockTemplateNode('test-oid', 'TestComponent');
         const childTemplateNode = createMockTemplateNode('child-oid', 'ChildComponent');
-        manager['branchTemplateNodes'].set('test-branch', new Map([['test-oid', templateNode]]));
+        manager['templateNodes'].set('test-oid', templateNode);
 
         const getCodeBlockSpy = spyOn(manager, 'getCodeBlock').mockResolvedValue('code block content');
 
@@ -192,5 +194,19 @@ describe('TemplateNodeManager', () => {
         // Assert
         expect(getCodeBlockSpy).toHaveBeenCalledWith('test-oid');
         expect(result).toEqual({ instanceId: 'test-instance', component: 'TestComponent' });
+    });
+
+    test('getAllOids should return all OIDs in the global map', () => {
+        // Arrange
+        const templateNode1 = createMockTemplateNode('oid-1', 'Component1');
+        const templateNode2 = createMockTemplateNode('oid-2', 'Component2');
+        manager['templateNodes'].set('oid-1', templateNode1);
+        manager['templateNodes'].set('oid-2', templateNode2);
+
+        // Act
+        const result = manager.getAllOids();
+
+        // Assert
+        expect(result).toEqual(new Set(['oid-1', 'oid-2']));
     });
 });
