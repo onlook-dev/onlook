@@ -1,6 +1,6 @@
 import { protectedProcedure } from '@/server/api/trpc';
 import { trackEvent } from '@/utils/analytics/server';
-import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
+import { CodeProvider, getStaticCodeProvider } from '@onlook/code-provider';
 import { getSandboxPreviewUrl, Tags } from '@onlook/constants';
 import {
     canvases,
@@ -18,17 +18,6 @@ import { ProjectRole } from '@onlook/models';
 import { eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
-
-function getProvider(sandboxId: string, userId?: string) {
-    return createCodeProviderClient(CodeProvider.CodeSandbox, {
-        providerOptions: {
-            codesandbox: {
-                sandboxId,
-                userId,
-            },
-        },
-    });
-}
 
 export const forkTemplate = protectedProcedure
     .input(z.object({
@@ -57,14 +46,13 @@ export const forkTemplate = protectedProcedure
         }
 
         // 2. Fork the sandbox
-        const provider = await getProvider(sourceProject.sandboxId);
-        const newSandbox = await provider.createProject({
+        const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+        const newSandbox = await CodesandboxProvider.createProject({
             source: 'template',
             id: sourceProject.sandboxId,
             title: `${sourceProject.name} (Fork)`,
             tags: ['template-fork'],
         });
-        await provider.destroy();
         const newSandboxUrl = getSandboxPreviewUrl(newSandbox.id, 3000);
 
         // 3. Create the new project with forked data

@@ -11,7 +11,7 @@ export const SandboxTemplates: Record<Templates, SandboxTemplate> = {
         port: 3000,
     },
     EMPTY_NEXTJS: {
-        id: '477dnd',
+        id: 'pt_JQTY6AuyR5UtjDUPkE3Bsm',
         port: 3000,
     },
 };
