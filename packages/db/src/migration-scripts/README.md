@@ -32,20 +32,26 @@ The `migrate-to-branching.ts` script migrates existing projects from the legacy 
 ### Running the Migration
 
 #### Prerequisites
-- Database URL must be set in `SUPABASE_DATABASE_URL` environment variable
+- Database URL must be set in `SUPABASE_DATABASE_URL` environment variable (should be in root .env file)
 - Database should be backed up before running
 
-#### Option 1: Direct Execution
+#### From packages/db directory:
 ```bash
-cd packages/db/src/migration-scripts
-SUPABASE_DATABASE_URL="your_db_url" bun run migrate-to-branching.ts
+cd packages/db
+bun run db:migrate:branching
 ```
 
-#### Option 2: Programmatic Usage
-```typescript
-import { migrateToBranching } from './packages/db/src/migration-scripts/migrate-to-branching';
+#### Direct execution:
+```bash
+cd packages/db/src/migration-scripts
+bun run migrate-to-branching.ts
+```
 
-await migrateToBranching('your_database_url');
+#### Programmatic Usage
+```typescript
+import { migrateToBranching } from '@onlook/db/src/migration-scripts/migrate-to-branching';
+
+await migrateToBranching();
 ```
 
 ### Migration Output

@@ -27,8 +27,8 @@ export const projects = pgTable('projects', {
     updatedPreviewImgAt: timestamp('updated_preview_img_at', { withTimezone: true }),
 
     // deprecated
-    // sandboxId: varchar('sandbox_id'),
-    // sandboxUrl: varchar('sandbox_url'),
+    sandboxId: varchar('sandbox_id'),
+    sandboxUrl: varchar('sandbox_url'),
 }).enableRLS();
 
 export const projectInsertSchema = createInsertSchema(projects);

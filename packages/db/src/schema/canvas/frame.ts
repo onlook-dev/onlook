@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { numeric, pgTable, uuid, varchar } from "drizzle-orm/pg-core";
+import { numeric, pgTable, text, uuid, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema, createUpdateSchema } from "drizzle-zod";
 import { z } from "zod";
 import { branches } from "../project";
@@ -22,7 +22,7 @@ export const frames = pgTable("frames", {
     height: numeric("height").notNull(),
 
     // deprecated
-    // type: text("type").notNull(),
+    type: text("type"),
 }).enableRLS();
 
 export const frameInsertSchema = createInsertSchema(frames);

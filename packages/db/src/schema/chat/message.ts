@@ -20,7 +20,7 @@ export const messages = pgTable("messages", {
     parts: jsonb("parts").$type<AiMessage['parts']>().default([]).notNull(),
     checkpoints: jsonb("checkpoints").$type<MessageCheckpoints[]>().default([]).notNull(),
 
-    // Deprecated
+    // deprecated
     applied: boolean("applied"),
     commitOid: text("commit_oid"),
     snapshots: jsonb("snapshots").$type<any>(),
