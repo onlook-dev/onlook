@@ -33,7 +33,7 @@ export const BranchDisplay = observer(() => {
                     variant="ghost"
                     className="text-small font-normal text-foreground-secondary hover:text-foreground flex flex-row items-center gap-2 h-auto px-2 py-1"
                 >
-                    <Icons.GitBranch className="h-4 w-4" />
+                    <Icons.Commit className="h-4 w-4" />
                     <span>{activeBranch.name}</span>
                 </Button>
             </DropdownMenuTrigger>

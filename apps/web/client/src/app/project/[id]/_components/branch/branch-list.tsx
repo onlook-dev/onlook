@@ -58,7 +58,7 @@ export function BranchList({
                                 {activeBranch.id === branch.id ? (
                                     <Icons.Check className="h-4 w-4 text-green-600" />
                                 ) : (
-                                    <Icons.GitBranch className="h-4 w-4 text-muted-foreground" />
+                                    <Icons.Commit className="h-4 w-4 text-muted-foreground" />
                                 )}
                                 <span className="truncate font-medium">{branch.name}</span>
                             </div>

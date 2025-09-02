@@ -60,7 +60,7 @@ export class ChatManager {
     async addFixErrorMessage(): Promise<UserChatMessage> {
         const errors = this.editorEngine.error.errors;
         const prompt = `How can I resolve these errors? If you propose a fix, please make it concise.`;
-        const errorContexts = this.context.getMessageContext(errors);
+        const errorContexts = this.context.getErrorContext(errors);
         const projectContexts = this.context.getProjectContext();
         const userMessage = await this.conversation.addUserMessage(prompt, [
             ...errorContexts,

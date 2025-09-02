@@ -32,6 +32,7 @@ import {
     ClipboardCopyIcon,
     ClipboardIcon,
     CodeIcon,
+    CommitIcon,
     ComponentInstanceIcon,
     CopyIcon,
     CornerTopLeftIcon,
@@ -115,7 +116,6 @@ import {
 } from '@radix-ui/react-icons';
 import {
     CreditCardIcon,
-    GitBranchIcon,
     ListCheckIcon,
     MailXIcon,
     MessageSquareIcon,
@@ -1529,7 +1529,6 @@ export const Icons = {
         </svg>
     ),
     BoxModel: BoxModelIcon,
-    GitBranch: GitBranchIcon,
 
     ChatBubble: ChatBubbleIcon,
     Check: CheckIcon,
@@ -1554,6 +1553,7 @@ export const Icons = {
     CursorArrow: CursorArrowIcon,
     Circle: CircleIcon,
     CreditCard: CreditCardIcon,
+    Commit: CommitIcon,
 
     Desktop: DesktopIcon,
     DotsVertical: DotsVerticalIcon,

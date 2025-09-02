@@ -185,7 +185,7 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-2">
-                                    <Icons.GitBranch className="w-4 h-4" />
+                                    <Icons.Commit className="w-4 h-4" />
                                     <span>Fork</span>
                                 </div>
                             )}

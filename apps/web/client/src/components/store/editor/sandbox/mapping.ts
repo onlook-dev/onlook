@@ -13,6 +13,8 @@ import { formatContent } from './helpers';
 export class TemplateNodeMapper {
     private oidToTemplateNodeMap = new Map<string, TemplateNode>();
 
+    constructor(private branchId: string) { }
+
     updateMapping(newMap: Map<string, TemplateNode>) {
         this.oidToTemplateNodeMap = new Map([...this.oidToTemplateNodeMap, ...newMap]);
     }
@@ -41,7 +43,7 @@ export class TemplateNodeMapper {
         const formattedContent = await formatContent(filePath, unformattedContent);
         const astWithIdsAndFormatted = getAstFromContent(formattedContent);
         const finalAst = astWithIdsAndFormatted ?? astWithIds;
-        const templateNodeMap = createTemplateNodeMap(finalAst, filePath);
+        const templateNodeMap = createTemplateNodeMap({ ast: finalAst, filename: filePath, branchId: this.branchId });
         this.updateMapping(templateNodeMap);
         const newContent = await getContentFromAst(finalAst, content);
         return {

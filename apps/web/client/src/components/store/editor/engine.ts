@@ -76,10 +76,10 @@ export class EditorEngine {
     async init() {
         this.overlay.init();
         this.ide.init();
-        this.chat.init();
         this.image.init();
         this.font.init();
         this.frameEvent.init();
+        this.chat.init();
     }
 
     initBranches(branches: any[]) {

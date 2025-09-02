@@ -5,8 +5,8 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
-import { BrandTab } from './brand-tab';
 import { BranchesTab } from './branches-tab';
+import { BrandTab } from './brand-tab';
 import { HelpDropdown } from './help-dropdown';
 import { ImagesTab } from './image-tab';
 import { LayersTab } from './layers-tab';
@@ -27,7 +27,7 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
         },
         {
             value: LeftPanelTabValue.BRANCHES,
-            icon: <Icons.GitBranch className="w-5 h-5" />,
+            icon: <Icons.Commit className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.branches,
         },
         {

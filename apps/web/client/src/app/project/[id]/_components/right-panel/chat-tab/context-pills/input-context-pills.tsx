@@ -26,26 +26,24 @@ export const InputContextPills = observer(() => {
             )}
         >
             <AnimatePresence mode="popLayout">
-                {editorEngine.chat.context.context.map(
-                    (context: MessageContext, index: number) => {
-                        if (context.type === MessageContextType.IMAGE) {
-                            return (
-                                <DraftImagePill
-                                    key={`image-${context.content}`}
-                                    context={context}
-                                    onRemove={() => handleRemoveContext(context)}
-                                />
-                            );
-                        }
+                {editorEngine.chat.context.context.map((context: MessageContext) => {
+                    if (context.type === MessageContextType.IMAGE) {
                         return (
-                            <DraftContextPill
-                                key={`${context.type}-${context.content}`}
+                            <DraftImagePill
+                                key={`image-${context.content}`}
                                 context={context}
                                 onRemove={() => handleRemoveContext(context)}
                             />
                         );
-                    },
-                )}
+                    }
+                    return (
+                        <DraftContextPill
+                            key={`${context.type}-${context.content}`}
+                            context={context}
+                            onRemove={() => handleRemoveContext(context)}
+                        />
+                    );
+                })}
             </AnimatePresence>
         </div>
     );

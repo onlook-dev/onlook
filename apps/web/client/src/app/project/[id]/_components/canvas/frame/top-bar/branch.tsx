@@ -47,7 +47,7 @@ export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch }
                         size="sm"
                         className="h-auto px-2 py-1 text-xs hover:bg-background-secondary"
                     >
-                        <Icons.GitBranch />
+                        <Icons.Commit />
                         <span className="max-w-24 truncate">
                             {activeBranch.name}
                         </span>

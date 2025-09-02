@@ -1,6 +1,7 @@
-import type { DomElement } from '@onlook/models';
+import type { Branch, DomElement } from '@onlook/models';
 import {
     MessageContextType,
+    type BranchMessageContext,
     type ErrorMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
@@ -32,14 +33,18 @@ export class ChatContext {
     async getChatContext(): Promise<MessageContext[]> {
         const selected = this.editorEngine.elements.selected;
         const fileNames = new Set<string>();
+        const branches = new Map<string, Branch>();
+
         let highlightedContext: HighlightMessageContext[] = [];
         if (selected.length) {
-            highlightedContext = await this.getHighlightedContext(selected, fileNames);
+            highlightedContext = await this.getHighlightedContext(selected, fileNames, branches);
         }
         const fileContext = await this.getFileContext(fileNames);
         const imageContext = await this.getImageContext();
         const projectContext = this.getProjectContext();
-        const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext];
+        const branchContext = this.getBranchContext(branches);
+        const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext, ...branchContext];
+        console.error('context', context);
         return context;
     }
 
@@ -92,9 +97,19 @@ export class ChatContext {
         return fileContext;
     }
 
+    getBranchContext(branches: Map<string, Branch>): BranchMessageContext[] {
+        return [...branches.values()].map((branch) => ({
+            type: MessageContextType.BRANCH,
+            branch,
+            content: branch.description || '',
+            displayName: branch.name,
+        } satisfies BranchMessageContext));
+    }
+
     private async getHighlightedContext(
         selected: DomElement[],
         fileNames: Set<string>,
+        branches: Map<string, Branch>,
     ): Promise<HighlightMessageContext[]> {
         const highlightedContext: HighlightMessageContext[] = [];
         for (const node of selected) {
@@ -126,6 +141,12 @@ export class ChatContext {
                 oid,
             });
             fileNames.add(templateNode.path);
+
+            // TODO: This is wrong, the sandbox should be derived from the template
+            const branch = this.editorEngine.branches.getBranchById(templateNode.branchId);
+            if (branch) {
+                branches.set(branch.id, branch);
+            }
         }
 
         return highlightedContext;
@@ -142,7 +163,7 @@ export class ChatContext {
         ];
     }
 
-    getMessageContext(errors: ParsedError[]): ErrorMessageContext[] {
+    getErrorContext(errors: ParsedError[]): ErrorMessageContext[] {
         const content = errors
             .map((e) => `Source: ${e.sourceId}\nContent: ${e.content}\n`)
             .join('\n');

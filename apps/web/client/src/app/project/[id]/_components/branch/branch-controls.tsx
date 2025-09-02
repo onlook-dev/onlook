@@ -14,18 +14,18 @@ interface BranchControlsProps {
     onManageBranches?: () => void;
 }
 
-export function BranchControls({ 
-    onClose, 
-    onForkBranch, 
-    onCreateBlankSandbox, 
-    onManageBranches 
+export function BranchControls({
+    onClose,
+    onForkBranch,
+    onCreateBlankSandbox,
+    onManageBranches
 }: BranchControlsProps) {
     const editorEngine = useEditorEngine();
     const [isForking, setIsForking] = useState(false);
 
     const handleForkBranch = async () => {
         if (isForking) return;
-        
+
         try {
             setIsForking(true);
             await editorEngine.branches.forkBranch();
@@ -65,7 +65,7 @@ export function BranchControls({
                     {isForking ? (
                         <Icons.LoadingSpinner className="h-4 w-4" />
                     ) : (
-                        <Icons.GitBranch className="h-4 w-4" />
+                        <Icons.Commit className="h-4 w-4" />
                     )}
                     <span>{isForking ? "Forking..." : "Fork into a new Branch"}</span>
                 </DropdownMenuItem>

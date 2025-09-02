@@ -55,7 +55,7 @@ export class SandboxManager {
             this.editorEngine
         );
         this.fileSync = new FileSyncManager();
-        this.templateNodeMap = new TemplateNodeMapper();
+        this.templateNodeMap = new TemplateNodeMapper(this.branch.id);
         makeAutoObservable(this);
     }
 
