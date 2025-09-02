@@ -121,8 +121,19 @@ export class OverlayState {
         this.textEditor = { rect, content, styles, onChange, onStop, isComponent };
     };
 
-    updateTextEditor = (rect: RectDimensions, styles?: Record<string, string>) => {
-        this.textEditor = this.textEditor ? { ...this.textEditor, rect, styles: styles ?? this.textEditor.styles } : null;
+    updateTextEditor = (rect: RectDimensions, {
+        content,
+        styles,
+    }: {
+        content?: string;
+        styles?: Record<string, string>;
+    }) => {
+        this.textEditor = this.textEditor ? {
+            ...this.textEditor,
+            rect,
+            content: content ?? this.textEditor.content,
+            styles: styles ?? this.textEditor.styles
+        } : null;
     };
 
     removeTextEditor = () => {

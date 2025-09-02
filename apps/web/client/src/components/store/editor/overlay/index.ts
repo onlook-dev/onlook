@@ -68,7 +68,9 @@ export class OverlayManager {
                     );
                     if (el) {
                         const adaptedRect = adaptRectToCanvas(el.rect, frameData.view);
-                        this.state.updateTextEditor(adaptedRect, el.styles?.computed);
+                        this.state.updateTextEditor(adaptedRect, {
+                            styles: el.styles?.computed
+                        });
                     }
                 } catch {
                     console.error('Error refreshing text editor position');

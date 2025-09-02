@@ -87,7 +87,7 @@ export class TextEditingManager {
             const res = await frameData.view.editText(
                 this.targetDomEl.domId,
                 newContent,
-            )
+            );
             if (!res) {
                 throw new Error('Failed to edit text. No dom element returned');
             }
@@ -152,7 +152,9 @@ export class TextEditingManager {
                 newContent,
             });
             const adjustedRect = adaptRectToCanvas(domEl.rect, frameView);
-            this.editorEngine.overlay.state.updateTextEditor(adjustedRect);
+            this.editorEngine.overlay.state.updateTextEditor(adjustedRect, {
+                content: newContent,
+            });
             await this.editorEngine.overlay.refresh();
         } catch (error) {
             console.error('Error handling edited text:', error);

@@ -353,7 +353,7 @@ export const CodeTab = observer(() => {
         ide.closeFile(fileId);
     }, [ide]);
 
-    const saveFile = useCallback(async () => {
+    const saveFile = async () => {
         if (!ide.activeFile) {
             return;
         }
@@ -391,7 +391,7 @@ export const CodeTab = observer(() => {
         }
 
         toast('File saved!');
-    }, [ide, isSandboxReady, handleSandboxNotReady, closeFile]);
+    };
 
     const handleFileTreeSelect = async (nodes: any[]) => {
         if (nodes.length > 0 && !nodes[0].data.isDirectory) {
@@ -459,23 +459,6 @@ export const CodeTab = observer(() => {
         };
     }, []);
 
-    // Add shortcut
-    const saveFileRef = useRef(saveFile);
-    useEffect(() => {
-        saveFileRef.current = saveFile;
-    }, [saveFile]);
-
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if ((event.metaKey || event.ctrlKey) && event.key === 's') {
-                event.preventDefault();
-                void saveFileRef.current();
-            }
-        };
-
-        document.addEventListener('keydown', handleKeyDown);
-        return () => document.removeEventListener('keydown', handleKeyDown);
-    }, []);
 
     const scrollToActiveTab = useCallback(() => {
         if (!fileTabsContainerRef.current || !ide.activeFile) return;

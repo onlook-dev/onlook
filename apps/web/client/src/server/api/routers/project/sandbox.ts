@@ -1,4 +1,4 @@
-import { CodeProvider, createCodeProviderClient } from '@onlook/code-provider';
+import { CodeProvider, createCodeProviderClient, getStaticCodeProvider } from '@onlook/code-provider';
 import { getSandboxPreviewUrl } from '@onlook/constants';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { TRPCError } from '@trpc/server';
@@ -6,15 +6,31 @@ import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
-function getProvider(sandboxId: string, userId?: string) {
-    return createCodeProviderClient(CodeProvider.CodeSandbox, {
-        providerOptions: {
-            codesandbox: {
-                sandboxId,
-                userId,
+function getProvider({
+    sandboxId,
+    userId,
+    provider = CodeProvider.CodeSandbox,
+}: {
+    sandboxId: string,
+    provider?: CodeProvider,
+    userId?: undefined | string,
+}) {
+    if (provider === CodeProvider.CodeSandbox) {
+        return createCodeProviderClient(CodeProvider.CodeSandbox, {
+            providerOptions: {
+                codesandbox: {
+                    sandboxId,
+                    userId,
+                },
             },
-        },
-    });
+        });
+    } else {
+        return createCodeProviderClient(CodeProvider.NodeFs, {
+            providerOptions: {
+                nodefs: {},
+            },
+        });
+    }
 }
 
 export const sandboxRouter = createTRPCRouter({
@@ -26,7 +42,10 @@ export const sandboxRouter = createTRPCRouter({
         )
         .mutation(async ({ input, ctx }) => {
             const userId = ctx.user.id;
-            const provider = await getProvider(input.sandboxId, userId);
+            const provider = await getProvider({
+                sandboxId: input.sandboxId,
+                userId,
+            });
             const session = await provider.createSession({
                 args: {
                     id: shortenUuid(userId ?? uuidv4(), 20),
@@ -42,12 +61,15 @@ export const sandboxRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input }) => {
-            const provider = await getProvider(input.sandboxId);
-            await provider.pauseProject({});
-            await provider.destroy();
+            const provider = await getProvider({ sandboxId: input.sandboxId });
+            try {
+                await provider.pauseProject({});
+            } finally {
+                await provider.destroy().catch(() => { });
+            }
         }),
     list: protectedProcedure.input(z.object({ sandboxId: z.string() })).query(async ({ input }) => {
-        const provider = await getProvider(input.sandboxId);
+        const provider = await getProvider({ sandboxId: input.sandboxId });
         const res = await provider.listProjects({});
         // TODO future iteration of code provider abstraction will need this code to be refactored
         if ('projects' in res) {
@@ -76,8 +98,8 @@ export const sandboxRouter = createTRPCRouter({
 
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    const provider = await getProvider(input.sandbox.id);
-                    const sandbox = await provider.createProject({
+                    const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+                    const sandbox = await CodesandboxProvider.createProject({
                         source: 'template',
                         id: input.sandbox.id,
 
@@ -85,7 +107,6 @@ export const sandboxRouter = createTRPCRouter({
                         title: input.config?.title,
                         tags: input.config?.tags,
                     });
-                    await provider.destroy();
 
                     const previewUrl = getSandboxPreviewUrl(sandbox.id, input.sandbox.port);
 
@@ -116,9 +137,12 @@ export const sandboxRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input }) => {
-            const provider = await getProvider(input.sandboxId);
-            await provider.stopProject({});
-            await provider.destroy();
+            const provider = await getProvider({ sandboxId: input.sandboxId });
+            try {
+                await provider.stopProject({});
+            } finally {
+                await provider.destroy().catch(() => { });
+            }
         }),
     createFromGitHub: protectedProcedure
         .input(
