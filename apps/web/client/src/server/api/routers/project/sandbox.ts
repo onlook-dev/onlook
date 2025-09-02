@@ -1,4 +1,4 @@
-import { CodeProvider, CodesandboxProvider, createCodeProviderClient } from '@onlook/code-provider';
+import { CodeProvider, createCodeProviderClient, getStaticCodeProvider } from '@onlook/code-provider';
 import { getSandboxPreviewUrl } from '@onlook/constants';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { TRPCError } from '@trpc/server';
@@ -95,7 +95,7 @@ export const sandboxRouter = createTRPCRouter({
 
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
                 try {
-                    // TODO: refactor this to use other static provider methods
+                    const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
                     const sandbox = await CodesandboxProvider.createProject({
                         source: 'template',
                         id: input.sandbox.id,

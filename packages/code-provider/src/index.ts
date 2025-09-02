@@ -2,10 +2,10 @@ import { CodeProvider } from './providers';
 import { CodesandboxProvider, type CodesandboxProviderOptions } from './providers/codesandbox';
 import { NodeFsProvider, type NodeFsProviderOptions } from './providers/nodefs';
 
-export * from './types';
 export * from './providers';
 export { CodesandboxProvider } from './providers/codesandbox';
 export { NodeFsProvider } from './providers/nodefs';
+export * from './types';
 
 export interface CreateClientOptions {
     providerOptions: ProviderInstanceOptions;
@@ -22,6 +22,19 @@ export async function createCodeProviderClient(
     const provider = newProviderInstance(codeProvider, providerOptions);
     await provider.initialize({});
     return provider;
+}
+
+export async function getStaticCodeProvider(
+    codeProvider: CodeProvider,
+): Promise<typeof CodesandboxProvider | typeof NodeFsProvider> {
+    if (codeProvider === CodeProvider.CodeSandbox) {
+        return CodesandboxProvider;
+    }
+
+    if (codeProvider === CodeProvider.NodeFs) {
+        return NodeFsProvider;
+    }
+    throw new Error(`Unimplemented code provider: ${codeProvider}`);
 }
 
 export interface ProviderInstanceOptions {
