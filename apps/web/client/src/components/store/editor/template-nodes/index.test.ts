@@ -209,4 +209,57 @@ describe('TemplateNodeManager', () => {
         // Assert
         expect(result).toEqual(new Set(['oid-1', 'oid-2']));
     });
+
+    test('getBranchOidMap should return mapping of OIDs to branch IDs', () => {
+        // Arrange
+        const templateNode1 = createMockTemplateNode('oid-1', 'Component1');
+        templateNode1.branchId = 'branch-1';
+        const templateNode2 = createMockTemplateNode('oid-2', 'Component2');
+        templateNode2.branchId = 'branch-2';
+        manager['templateNodes'].set('oid-1', templateNode1);
+        manager['templateNodes'].set('oid-2', templateNode2);
+
+        // Act
+        const result = manager.getBranchOidMap();
+
+        // Assert
+        expect(result.get('oid-1')).toBe('branch-1');
+        expect(result.get('oid-2')).toBe('branch-2');
+        expect(result.size).toBe(2);
+    });
+
+    test('processFileForMapping should preserve existing OIDs from same branch on multiple calls', async () => {
+        // Arrange  
+        const branchId = 'test-branch';
+        const filePath = 'test.tsx';
+        const fileContent = '<div>Test content</div>';
+
+        // Mock addOidsToAst to simulate existing OIDs being preserved
+        const { addOidsToAst } = await import('@onlook/parser');
+        const mockAddOidsToAst = addOidsToAst as any;
+        
+        // First call - simulate OIDs being added
+        mockAddOidsToAst.mockReturnValueOnce({ ast: { modified: true }, modified: true });
+        
+        // Second call - simulate OIDs being preserved (no modification)
+        mockAddOidsToAst.mockReturnValueOnce({ ast: { modified: false }, modified: false });
+
+        // Act - First processing
+        const result1 = await manager.processFileForMapping(branchId, filePath, fileContent);
+        
+        // Act - Second processing (should preserve OIDs)
+        const result2 = await manager.processFileForMapping(branchId, filePath, fileContent);
+
+        // Assert
+        expect(result1.modified).toBe(true); // First time should add OIDs
+        expect(result2.modified).toBe(false); // Second time should preserve existing OIDs
+        
+        // Verify addOidsToAst was called with branch context
+        expect(mockAddOidsToAst).toHaveBeenCalledWith(
+            expect.anything(), // ast
+            expect.any(Set), // globalOids
+            expect.any(Map), // branchOidMap
+            branchId // currentBranchId
+        );
+    });
 });

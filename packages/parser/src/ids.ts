@@ -6,8 +6,12 @@ import { type NodePath, type t as T, types as t, traverse } from './packages';
 export function addOidsToAst(
     ast: T.File,
     globalOids: Set<string> = new Set(),
+    branchOidMap: Map<string, string> = new Map(),
+    currentBranchId?: string,
 ): { ast: T.File; modified: boolean } {
     let modified = false;
+    // Track OIDs used within this AST to prevent duplicates in the same file
+    const localOids = new Set<string>();
 
     traverse(ast, {
         JSXOpeningElement(path) {
@@ -18,23 +22,46 @@ export function addOidsToAst(
             const existingOid = getExistingOid(attributes);
 
             if (existingOid) {
-                // If the element already has an oid, check if it exists globally
+                // If the element already has an oid, check if it conflicts with other branches or local duplicates
                 const { value, index } = existingOid;
-                if (globalOids.has(value)) {
-                    // If the oid already exists globally, replace it with a new one
-                    const newOid = createOid();
+                const oidOwnerBranch = branchOidMap.get(value);
+
+                // Replace OID if:
+                // 1. It exists globally AND belongs to a different branch, OR
+                // 2. It's already used elsewhere in this same AST
+                if (
+                    (globalOids.has(value) &&
+                        oidOwnerBranch &&
+                        oidOwnerBranch !== currentBranchId) ||
+                    localOids.has(value)
+                ) {
+                    // Generate a new unique OID that doesn't conflict globally or locally
+                    let newOid: string;
+                    do {
+                        newOid = createOid();
+                    } while (globalOids.has(newOid) || localOids.has(newOid));
+
                     const attr = attributes[index] as T.JSXAttribute;
                     attr.value = t.stringLiteral(newOid);
+                    localOids.add(newOid);
                     modified = true;
+                } else {
+                    // Keep existing OID and track it locally for future duplicate detection
+                    localOids.add(value);
                 }
             } else {
                 // If the element doesn't have an oid, create one
-                const newOid = createOid();
+                let newOid: string;
+                do {
+                    newOid = createOid();
+                } while (globalOids.has(newOid) || localOids.has(newOid));
+
                 const newOidAttribute = t.jSXAttribute(
                     t.jSXIdentifier(EditorAttributes.DATA_ONLOOK_ID),
                     t.stringLiteral(newOid),
                 );
                 attributes.push(newOidAttribute);
+                localOids.add(newOid);
                 modified = true;
             }
         },

@@ -34,6 +34,14 @@ export class TemplateNodeManager {
         return new Set(this.templateNodes.keys());
     }
 
+    getBranchOidMap(): Map<string, string> {
+        const branchOidMap = new Map<string, string>();
+        for (const [oid, node] of this.templateNodes) {
+            branchOidMap.set(oid, node.branchId);
+        }
+        return branchOidMap;
+    }
+
     async processFileForMapping(
         branchId: string,
         filePath: string,
@@ -52,9 +60,10 @@ export class TemplateNodeManager {
             injectPreloadScript(ast);
         }
 
-        // Get global OIDs and pass to parser for uniqueness checking
+        // Get global OIDs and branch mapping for conflict checking
         const globalOids = this.getAllOids();
-        const { ast: astWithIds, modified } = addOidsToAst(ast, globalOids);
+        const branchOidMap = this.getBranchOidMap();
+        const { ast: astWithIds, modified } = addOidsToAst(ast, globalOids, branchOidMap, branchId);
 
         // Format content then create map
         const unformattedContent = await getContentFromAst(astWithIds, content);

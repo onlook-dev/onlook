@@ -30,7 +30,17 @@ export const CodeTab = observer(() => {
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
     const fileTabsContainerRef = useRef<HTMLDivElement>(null);
     const fileTreeRef = useRef<any>(null);
-    const isSandboxReady = activeSandbox.session.provider && !activeSandbox.session.isConnecting;
+
+    // Helper function to check if sandbox is connected and ready
+    const isSandboxReady = (): boolean => {
+        return !!(activeSandbox.session.provider && !activeSandbox.session.isConnecting);
+    };
+
+    // Helper function to handle sandbox not ready scenarios
+    const handleSandboxNotReady = (operation: string): void => {
+        const message = `Cannot ${operation}: sandbox not connected`;
+        console.error(message);
+    };
 
     const getActiveEditorView = (): EditorView | undefined => {
         if (!ide.activeFile) {
@@ -77,6 +87,11 @@ export const CodeTab = observer(() => {
 
     async function getElementCodeRange(element: any): Promise<CodeRange | null> {
         if (!ide.activeFile || !element.oid) {
+            return null;
+        }
+
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('get element code range');
             return null;
         }
 
@@ -222,6 +237,10 @@ export const CodeTab = observer(() => {
     // Load files when active sandbox changes
     useEffect(() => {
         const loadFilesForActiveSandbox = async () => {
+            if (!isSandboxReady()) {
+                return;
+            }
+
             // Preserve the currently active file path and highlight range before clearing
             const activeFilePath = ide.activeFile?.path;
             const savedHighlightRange = ide.highlightRange;
@@ -264,7 +283,12 @@ export const CodeTab = observer(() => {
     }, [activeSandbox]);
 
 
-    const handleRefreshFiles = async () => {
+    const handleRefreshFiles = useCallback(async () => {
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('refresh files');
+            return;
+        }
+
         ide.isFilesLoading = true;
         try {
             await activeSandbox.index(true);
@@ -272,9 +296,14 @@ export const CodeTab = observer(() => {
         } catch (error) {
             console.error('Error refreshing files:', error);
         }
-    }
+    }, [isSandboxReady]);
 
     async function loadNewContent(filePath: string) {
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('load new content');
+            return;
+        }
+
         try {
             await ide.loadNewContent(filePath);
         } catch (error) {
@@ -282,15 +311,19 @@ export const CodeTab = observer(() => {
         }
     }
 
-    const loadFile = async (filePath: string, searchTerm?: string): Promise<EditorFile | null> => {
+    const loadFile = useCallback(async (filePath: string, searchTerm?: string): Promise<EditorFile | null> => {
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('load file');
+            return null;
+        }
+
         try {
-            // TODO: This is insanely stupid, fix later
             return await ide.openFile(filePath, searchTerm, false);
         } catch (error) {
             console.error('Error loading file:', error);
             return null;
         }
-    }
+    }, [isSandboxReady]);
 
     function handleFileSelect(file: EditorFile) {
         ide.setHighlightRange(null);
@@ -298,6 +331,11 @@ export const CodeTab = observer(() => {
     }
 
     async function getFilePathFromOid(oid: string): Promise<string | null> {
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('get file path from OID');
+            return null;
+        }
+
         return ide.getFilePathFromOid(oid);
     }
 
@@ -319,6 +357,12 @@ export const CodeTab = observer(() => {
         if (!ide.activeFile) {
             return;
         }
+
+        if (!isSandboxReady()) {
+            handleSandboxNotReady('save file');
+            return;
+        }
+
         if (ide.pendingCloseAll) {
             const file = ide.openedFiles.find((f) => f.id === ide.activeFile?.id);
             if (file) {
@@ -446,7 +490,7 @@ export const CodeTab = observer(() => {
         <div className="size-full flex flex-col">
 
             {/* Show connection status when sandbox is not ready */}
-            {!isSandboxReady && (
+            {!isSandboxReady() && (
                 <div className="flex-1 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-3">
                         <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
@@ -460,7 +504,7 @@ export const CodeTab = observer(() => {
             )}
 
             {/* Main content - only show when sandbox is connected */}
-            {isSandboxReady && (
+            {isSandboxReady() && (
                 <div className="flex flex-1 min-h-0 overflow-hidden">
                     {ide.isFilesVisible && (
                         <FileTree
