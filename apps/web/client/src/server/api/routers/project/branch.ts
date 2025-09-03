@@ -1,5 +1,5 @@
 import { CodeProvider, getStaticCodeProvider } from '@onlook/code-provider';
-import { getSandboxPreviewUrl } from '@onlook/constants';
+import { getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
 import { branches, branchInsertSchema, branchUpdateSchema, canvases, createDefaultFrame, frames, fromDbBranch, fromDbFrame } from '@onlook/db';
 import type { Frame } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
@@ -170,6 +170,93 @@ export const branchRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: 'INTERNAL_SERVER_ERROR',
                     message: error instanceof Error ? error.message : 'Failed to fork branch',
+                });
+            }
+        }),
+    createBlank: protectedProcedure
+        .input(
+            z.object({
+                projectId: z.string().uuid(),
+                branchName: z.string().optional(),
+                framePosition: z.object({
+                    x: z.number(),
+                    y: z.number(),
+                    width: z.number(),
+                    height: z.number(),
+                }).optional(),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            try {
+                return await ctx.db.transaction(async (tx) => {
+                    // Create new blank sandbox
+                    const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+                    const blankSandbox = await CodesandboxProvider.createProject({
+                        source: 'template',
+                        id: SandboxTemplates[Templates.EMPTY_NEXTJS].id,
+                        title: input.branchName || `empty branch`,
+                        tags: ['blank'],
+                    });
+
+                    const sandboxId = blankSandbox.id;
+                    const previewUrl = getSandboxPreviewUrl(sandboxId, 3000);
+
+                    // Create new branch
+                    const newBranchId = uuidv4();
+                    const newBranch = {
+                        id: newBranchId,
+                        name: input.branchName || 'empty branch',
+                        description: null,
+                        projectId: input.projectId,
+                        sandboxId,
+                        isDefault: false,
+                        gitBranch: null,
+                        gitCommitSha: null,
+                        gitRepoUrl: null,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                    };
+
+                    await tx.insert(branches).values(newBranch);
+
+                    // Create new frame if position is provided
+                    let createdFrames: Frame[] = [];
+                    if (input.framePosition) {
+                        // Get the canvas for the project
+                        const canvas = await tx.query.canvases.findFirst({
+                            where: eq(canvases.projectId, input.projectId),
+                        });
+
+                        if (canvas) {
+                            const newFrame = createDefaultFrame({
+                                canvasId: canvas.id,
+                                branchId: newBranchId,
+                                url: previewUrl,
+                                overrides: {
+                                    x: (input.framePosition.x + input.framePosition.width + 100).toString(),
+                                    y: input.framePosition.y.toString(),
+                                    width: input.framePosition.width.toString(),
+                                    height: input.framePosition.height.toString(),
+                                },
+                            });
+
+                            await tx.insert(frames).values(newFrame);
+                            createdFrames.push(fromDbFrame(newFrame));
+                        }
+                    }
+
+                    return {
+                        branch: fromDbBranch(newBranch),
+                        frames: createdFrames,
+                        sandboxId,
+                        previewUrl,
+                    };
+                });
+            } catch (error) {
+                console.error('Error creating blank sandbox', error);
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: error instanceof Error ? error.message : 'Failed to create blank sandbox',
                 });
             }
         }),

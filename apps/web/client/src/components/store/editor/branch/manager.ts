@@ -178,6 +178,66 @@ export class BranchManager {
         }
     }
 
+    async createBlankSandbox(branchName?: string): Promise<void> {
+        try {
+            toast.loading('Creating blank sandbox...');
+            // Get current active frame for positioning
+            const activeFrames = this.editorEngine.frames.selected;
+            const activeFrame = activeFrames.length > 0 ? activeFrames[0] : this.editorEngine.frames.getAll()[0];
+
+            let framePosition;
+            if (activeFrame) {
+                const frame = activeFrame.frame;
+                framePosition = {
+                    x: frame.position.x,
+                    y: frame.position.y,
+                    width: frame.dimension.width,
+                    height: frame.dimension.height,
+                };
+            }
+
+            // Get current project ID from existing branches
+            const currentBranches = Array.from(this.branchMap.values());
+            if (currentBranches.length === 0) {
+                throw new Error('No project context available');
+            }
+            const projectId = currentBranches[0]!.branch.projectId;
+
+            // Call the createBlank API
+            const result = await api.branch.createBlank.mutate({
+                projectId,
+                branchName,
+                framePosition,
+            });
+
+            // Add the new branch to the local branch map
+            const sandboxManager = new SandboxManager(result.branch, this.editorEngine);
+            const historyManager = new HistoryManager(this.editorEngine);
+            this.branchMap.set(result.branch.id, {
+                branch: result.branch,
+                sandbox: sandboxManager,
+                history: historyManager,
+            });
+
+            // Initialize the new sandbox
+            sandboxManager.init();
+
+            // Add the created frames to the frame manager
+            if (result.frames && result.frames.length > 0) {
+                this.editorEngine.frames.applyFrames(result.frames);
+            }
+
+            // Switch to the new branch
+            await this.switchToBranch(result.branch.id);
+        } catch (error) {
+            console.error('Failed to create blank sandbox:', error);
+            toast.error('Failed to create blank sandbox');
+            throw error;
+        } finally {
+            toast.dismiss();
+        }
+    }
+
     async updateBranch(branchId: string, updates: Partial<Branch>): Promise<void> {
         const branchData = this.branchMap.get(branchId);
         if (!branchData) {

@@ -189,11 +189,6 @@ export class FramesManager {
     }
 
     async delete(id: string) {
-        if (!this.canDelete()) {
-            console.error('Cannot delete the last frame');
-            return;
-        }
-
         const frameData = this.get(id);
         if (!frameData?.view) {
             console.error('Frame not found for delete', id);

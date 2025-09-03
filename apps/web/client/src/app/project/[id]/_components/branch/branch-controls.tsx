@@ -22,6 +22,7 @@ export function BranchControls({
 }: BranchControlsProps) {
     const editorEngine = useEditorEngine();
     const [isForking, setIsForking] = useState(false);
+    const [isCreatingBlank, setIsCreatingBlank] = useState(false);
 
     const handleForkBranch = async () => {
         if (isForking) return;
@@ -38,11 +39,19 @@ export function BranchControls({
         }
     };
 
-    const handleCreateBlankSandbox = () => {
-        // TODO: Implement create blank sandbox functionality
-        console.log("Create blank sandbox functionality not yet implemented");
-        onCreateBlankSandbox?.();
-        onClose?.();
+    const handleCreateBlankSandbox = async () => {
+        if (isCreatingBlank) return;
+
+        try {
+            setIsCreatingBlank(true);
+            await editorEngine.branches.createBlankSandbox();
+            onCreateBlankSandbox?.();
+            onClose?.();
+        } catch (error) {
+            console.error("Failed to create blank sandbox:", error);
+        } finally {
+            setIsCreatingBlank(false);
+        }
     };
 
     const handleManageBranches = () => {
@@ -73,9 +82,14 @@ export function BranchControls({
                 <DropdownMenuItem
                     className="flex items-center gap-2 p-2"
                     onSelect={handleCreateBlankSandbox}
+                    disabled={isCreatingBlank}
                 >
-                    <Icons.Plus className="h-4 w-4" />
-                    <span>Create blank sandbox</span>
+                    {isCreatingBlank ? (
+                        <Icons.LoadingSpinner className="h-4 w-4" />
+                    ) : (
+                        <Icons.Plus className="h-4 w-4" />
+                    )}
+                    <span>{isCreatingBlank ? "Creating..." : "Create blank sandbox"}</span>
                 </DropdownMenuItem>
 
                 <DropdownMenuSeparator />
