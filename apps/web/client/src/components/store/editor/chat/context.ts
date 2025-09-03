@@ -32,19 +32,18 @@ export class ChatContext {
 
     async getChatContext(): Promise<MessageContext[]> {
         const selected = this.editorEngine.elements.selected;
-        const fileNames = new Set<string>();
-        const branches = new Map<string, Branch>();
 
         let highlightedContext: HighlightMessageContext[] = [];
         if (selected.length) {
-            highlightedContext = await this.getHighlightedContext(selected, fileNames, branches);
+            highlightedContext = await this.getHighlightedContext(selected);
         }
-        const fileContext = await this.getFileContext(fileNames);
         const imageContext = await this.getImageContext();
         const projectContext = this.getProjectContext();
-        const branchContext = this.getBranchContext(branches);
+
+        // Derived from highlighted context
+        const fileContext = await this.getFileContext(highlightedContext);
+        const branchContext = this.getBranchContext(highlightedContext);
         const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext, ...branchContext];
-        console.error('context', context);
         return context;
     }
 
@@ -80,9 +79,16 @@ export class ChatContext {
         return imageContext;
     }
 
-    private async getFileContext(filePaths: Set<string>): Promise<FileMessageContext[]> {
+    private async getFileContext(highlightedContext: HighlightMessageContext[]): Promise<FileMessageContext[]> {
         const fileContext: FileMessageContext[] = [];
-        for (const filePath of filePaths) {
+
+        // Create a map of file path to branch ID from highlighted context
+        const filePathToBranch = new Map<string, string>();
+        highlightedContext.forEach(highlight => {
+            filePathToBranch.set(highlight.path, highlight.branchId);
+        });
+
+        for (const [filePath, branchId] of filePathToBranch) {
             const file = await this.editorEngine.sandbox.readFile(filePath);
             if (file === null || file.type === 'binary') {
                 continue;
@@ -92,24 +98,38 @@ export class ChatContext {
                 displayName: filePath,
                 path: filePath,
                 content: file.content,
+                branchId: branchId,
             });
         }
         return fileContext;
     }
 
-    getBranchContext(branches: Map<string, Branch>): BranchMessageContext[] {
-        return [...branches.values()].map((branch) => ({
-            type: MessageContextType.BRANCH,
-            branch,
-            content: branch.description || '',
-            displayName: branch.name,
-        } satisfies BranchMessageContext));
+    getBranchContext(highlightedContext: HighlightMessageContext[]): BranchMessageContext[] {
+        // Get unique branch IDs from highlighted context
+        const uniqueBranchIds = new Set<string>();
+        highlightedContext.forEach(highlight => {
+            uniqueBranchIds.add(highlight.branchId);
+        });
+
+        // Get branch objects for each unique branch ID
+        const branchContext: BranchMessageContext[] = [];
+        uniqueBranchIds.forEach(branchId => {
+            const branch = this.editorEngine.branches.getBranchById(branchId);
+            if (branch) {
+                branchContext.push({
+                    type: MessageContextType.BRANCH,
+                    branch,
+                    content: branch.description || '',
+                    displayName: branch.name,
+                } satisfies BranchMessageContext);
+            }
+        });
+
+        return branchContext;
     }
 
     private async getHighlightedContext(
         selected: DomElement[],
-        fileNames: Set<string>,
-        branches: Map<string, Branch>,
     ): Promise<HighlightMessageContext[]> {
         const highlightedContext: HighlightMessageContext[] = [];
         for (const node of selected) {
@@ -139,14 +159,8 @@ export class ChatContext {
                 start: templateNode.startTag.start.line,
                 end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
                 oid,
+                branchId: templateNode.branchId,
             });
-            fileNames.add(templateNode.path);
-
-            // TODO: This is wrong, the sandbox should be derived from the template
-            const branch = this.editorEngine.branches.getBranchById(templateNode.branchId);
-            if (branch) {
-                branches.set(branch.id, branch);
-            }
         }
 
         return highlightedContext;
@@ -168,11 +182,18 @@ export class ChatContext {
             .map((e) => `Source: ${e.sourceId}\nContent: ${e.content}\n`)
             .join('\n');
 
+        const activeBranchId = this.editorEngine.branches.activeBranch?.id;
+        if (!activeBranchId) {
+            console.error('No active branch found for error context');
+            return [];
+        }
+
         return [
             {
                 type: MessageContextType.ERROR,
                 content,
                 displayName: 'Error',
+                branchId: activeBranchId,
             },
         ];
     }
@@ -201,11 +222,17 @@ export class ChatContext {
             for (const pagePath of pagePaths) {
                 const file = await this.editorEngine.sandbox.readFile(pagePath);
                 if (file && file.type === 'text') {
+                    const activeBranchId = this.editorEngine.branches.activeBranch?.id;
+                    if (!activeBranchId) {
+                        console.error('No active branch found for default page context');
+                        continue;
+                    }
                     const defaultPageContext: FileMessageContext = {
                         type: MessageContextType.FILE,
                         path: pagePath,
                         content: file.content,
                         displayName: pagePath.split('/').pop() || 'page.tsx',
+                        branchId: activeBranchId,
                     }
                     return defaultPageContext
                 }
@@ -219,6 +246,12 @@ export class ChatContext {
 
     async getDefaultStyleGuideContext(): Promise<FileMessageContext[] | null> {
         try {
+            const activeBranchId = this.editorEngine.branches.activeBranch?.id;
+            if (!activeBranchId) {
+                console.error('No active branch found for style guide context');
+                return null;
+            }
+
             const styleGuide = await this.editorEngine.theme.initializeTailwindColorContent();
             if (!styleGuide) {
                 throw new Error('No style guide found');
@@ -228,6 +261,7 @@ export class ChatContext {
                 path: styleGuide.configPath,
                 content: styleGuide.configContent,
                 displayName: styleGuide.configPath.split('/').pop() || 'tailwind.config.ts',
+                branchId: activeBranchId,
             }
 
             const cssContext: FileMessageContext = {
@@ -235,6 +269,7 @@ export class ChatContext {
                 path: styleGuide.cssPath,
                 content: styleGuide.cssContent,
                 displayName: styleGuide.cssPath.split('/').pop() || 'globals.css',
+                branchId: activeBranchId,
             }
 
             return [tailwindConfigContext, cssContext];

@@ -23,6 +23,7 @@ export type BranchMessageContext = BaseMessageContext & {
 export type FileMessageContext = BaseMessageContext & {
     type: MessageContextType.FILE;
     path: string;
+    branchId: string;
 };
 
 export type HighlightMessageContext = BaseMessageContext & {
@@ -31,6 +32,7 @@ export type HighlightMessageContext = BaseMessageContext & {
     start: number;
     end: number;
     oid?: string;
+    branchId: string;
 };
 
 export type ImageMessageContext = BaseMessageContext & {
@@ -40,6 +42,7 @@ export type ImageMessageContext = BaseMessageContext & {
 
 export type ErrorMessageContext = BaseMessageContext & {
     type: MessageContextType.ERROR;
+    branchId: string;
 };
 
 export type ProjectMessageContext = BaseMessageContext & {
@@ -48,9 +51,9 @@ export type ProjectMessageContext = BaseMessageContext & {
 };
 
 export type MessageContext =
-    | FileMessageContext
     | HighlightMessageContext
     | ImageMessageContext
     | ErrorMessageContext
     | ProjectMessageContext
-    | BranchMessageContext;
+    | BranchMessageContext
+    | FileMessageContext;

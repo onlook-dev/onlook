@@ -1,11 +1,12 @@
 import type {
+    BranchMessageContext,
     ErrorMessageContext,
     FileMessageContext,
     HighlightMessageContext,
     MessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
-import type { UIDataTypes, UIMessage, UITools, UIMessagePart, TextUIPart, FileUIPart } from 'ai';
+import type { FileUIPart, UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
@@ -68,11 +69,25 @@ export function getHydratedUserMessage(
     opt: HydrateMessageOptions,
 ): UIMessage {
     let userParts: UIMessagePart<UIDataTypes, UITools>[] = [];
-    const files = context.filter((c) => c.type === 'file').map((c) => c);
-    const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
-    const errors = context.filter((c) => c.type === 'error').map((c) => c);
+    const files = context.filter((c) => c.type === 'file').map((c) => c as FileMessageContext);
+    const highlights = context
+        .filter((c) => c.type === 'highlight')
+        .map((c) => c as HighlightMessageContext);
+    const errors = context.filter((c) => c.type === 'error').map((c) => c as ErrorMessageContext);
     const project = context.filter((c) => c.type === 'project').map((c) => c);
     const images = context.filter((c) => c.type === 'image').map((c) => c);
+    const branches = context
+        .filter((c) => c.type === 'branch')
+        .map((c) => c as BranchMessageContext);
+
+    // Create branch lookup for easy access to branch info
+    const branchLookup = new Map<string, { id: string; name: string }>();
+    branches.forEach((branch) => {
+        branchLookup.set(branch.branch.id, {
+            id: branch.branch.id,
+            name: branch.branch.name || branch.branch.id,
+        });
+    });
 
     // If there are 50 user messages in the contexts, we can trim all of them except
     // the last one. The logic could be adjusted to trim more or less messages.
@@ -81,19 +96,19 @@ export function getHydratedUserMessage(
 
     let prompt = '';
     if (truncateFileContext) {
-        const contextPrompt = getTruncatedFilesContent(files);
+        const contextPrompt = getTruncatedFilesContent(files, branchLookup);
         if (contextPrompt) {
             prompt += wrapXml('truncated-context', contextPrompt);
         }
     } else {
-        const contextPrompt = getFilesContent(files, highlights);
+        const contextPrompt = getFilesContent(files, highlights, branchLookup);
         if (contextPrompt) {
             prompt += wrapXml('context', contextPrompt);
         }
     }
 
     if (errors.length > 0) {
-        let errorPrompt = getErrorsContent(errors);
+        let errorPrompt = getErrorsContent(errors, branchLookup);
         prompt += errorPrompt;
     }
 
@@ -128,7 +143,10 @@ export function getHydratedUserMessage(
     };
 }
 
-export function getTruncatedFilesContent(files: FileMessageContext[]) {
+export function getTruncatedFilesContent(
+    files: FileMessageContext[],
+    branchLookup: Map<string, { id: string; name: string }>,
+) {
     if (files.length === 0) {
         return '';
     }
@@ -136,7 +154,9 @@ export function getTruncatedFilesContent(files: FileMessageContext[]) {
     prompt += `${CONTEXT_PROMPTS.truncatedFilesContentPrefix}\n`;
     let index = 1;
     for (const file of files) {
-        let filePrompt = `${file.path}\n`;
+        const branchInfo = branchLookup.get(file.branchId);
+        const branchDisplay = branchInfo ? `${branchInfo.id}:${branchInfo.name}` : file.branchId;
+        let filePrompt = `${file.path} - branch: ${branchDisplay}\n`;
         filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
         prompt += filePrompt;
         index++;
@@ -148,6 +168,7 @@ export function getTruncatedFilesContent(files: FileMessageContext[]) {
 export function getFilesContent(
     files: FileMessageContext[],
     highlights: HighlightMessageContext[],
+    branchLookup: Map<string, { id: string; name: string }>,
 ) {
     if (files.length === 0) {
         return '';
@@ -156,11 +177,13 @@ export function getFilesContent(
     prompt += `${CONTEXT_PROMPTS.filesContentPrefix}\n`;
     let index = 1;
     for (const file of files) {
-        let filePrompt = `${file.path}\n`;
+        const branchInfo = branchLookup.get(file.branchId);
+        const branchDisplay = branchInfo ? `${branchInfo.id}:${branchInfo.name}` : file.branchId;
+        let filePrompt = `${file.path} - branch: ${branchDisplay}\n`;
         filePrompt += `${CODE_FENCE.start}${getLanguageFromFilePath(file.path)}\n`;
         filePrompt += file.content;
         filePrompt += `\n${CODE_FENCE.end}\n`;
-        filePrompt += getHighlightsContent(file.path, highlights);
+        filePrompt += getHighlightsContent(file.path, highlights, branchLookup);
 
         filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
         prompt += filePrompt;
@@ -170,13 +193,18 @@ export function getFilesContent(
     return prompt;
 }
 
-export function getErrorsContent(errors: ErrorMessageContext[]) {
+export function getErrorsContent(
+    errors: ErrorMessageContext[],
+    branchLookup: Map<string, { id: string; name: string }>,
+) {
     if (errors.length === 0) {
         return '';
     }
     let prompt = `${CONTEXT_PROMPTS.errorsContentPrefix}\n`;
     for (const error of errors) {
-        prompt += `${error.content}\n`;
+        const branchInfo = branchLookup.get(error.branchId);
+        const branchDisplay = branchInfo ? `${branchInfo.id}:${branchInfo.name}` : error.branchId;
+        prompt += `(Branch: ${branchDisplay}) ${error.content}\n`;
     }
 
     prompt = wrapXml('errors', prompt);
@@ -187,7 +215,11 @@ export function getLanguageFromFilePath(filePath: string): string {
     return filePath.split('.').pop() || '';
 }
 
-export function getHighlightsContent(filePath: string, highlights: HighlightMessageContext[]) {
+export function getHighlightsContent(
+    filePath: string,
+    highlights: HighlightMessageContext[],
+    branchLookup: Map<string, { id: string; name: string }>,
+) {
     const fileHighlights = highlights.filter((h) => h.path === filePath);
     if (fileHighlights.length === 0) {
         return '';
@@ -195,7 +227,11 @@ export function getHighlightsContent(filePath: string, highlights: HighlightMess
     let prompt = `${CONTEXT_PROMPTS.highlightPrefix}\n`;
     let index = 1;
     for (const highlight of fileHighlights) {
-        let highlightPrompt = `${filePath}#L${highlight.start}:L${highlight.end}\n`;
+        const branchInfo = branchLookup.get(highlight.branchId);
+        const branchDisplay = branchInfo
+            ? `${branchInfo.id}:${branchInfo.name}`
+            : highlight.branchId;
+        let highlightPrompt = `${filePath}#L${highlight.start}:L${highlight.end} (Branch: ${branchDisplay})\n`;
         highlightPrompt += `${CODE_FENCE.start}\n`;
         highlightPrompt += highlight.content;
         highlightPrompt += `\n${CODE_FENCE.end}\n`;
