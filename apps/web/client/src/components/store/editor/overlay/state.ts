@@ -128,12 +128,29 @@ export class OverlayState {
         content?: string;
         styles?: Record<string, string>;
     }) => {
-        this.textEditor = this.textEditor ? {
-            ...this.textEditor,
-            rect,
-            content: content ?? this.textEditor.content,
-            styles: styles ?? this.textEditor.styles
-        } : null;
+        if (!this.textEditor) return;
+        
+        const newContent = content ?? this.textEditor.content;
+        const newStyles = styles ?? this.textEditor.styles;
+        
+        // Only update if something actually changed
+        const rectChanged = 
+            rect.top !== this.textEditor.rect.top ||
+            rect.left !== this.textEditor.rect.left ||
+            rect.width !== this.textEditor.rect.width ||
+            rect.height !== this.textEditor.rect.height;
+        
+        const contentChanged = newContent !== this.textEditor.content;
+        const stylesChanged = JSON.stringify(newStyles) !== JSON.stringify(this.textEditor.styles);
+        
+        if (rectChanged || contentChanged || stylesChanged) {
+            this.textEditor = {
+                ...this.textEditor,
+                rect,
+                content: newContent,
+                styles: newStyles
+            };
+        }
     };
 
     removeTextEditor = () => {

@@ -1,34 +1,24 @@
+import { useEditorEngine } from '@/components/store/editor';
 import {
     applyStylesToEditor,
     createEditorPlugins,
     schema,
 } from '@/components/store/editor/overlay/prosemirror';
 import { EditorAttributes } from '@onlook/constants';
-import type { RectDimensions } from '@onlook/models';
 import { colors } from '@onlook/ui/tokens';
+import { observer } from 'mobx-react-lite';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
-interface TextEditorProps {
-    rect: RectDimensions;
-    content: string;
-    styles: Record<string, string>;
-    onChange?: (content: string) => void;
-    onStop?: () => void;
-    isComponent?: boolean;
-    isDisabled?: boolean;
-}
-
-// Helper functions to convert between formats
 const contentHelpers = {
     // Convert content with newlines to ProseMirror nodes
     createNodesFromContent: (content: string) => {
         if (!content) return [];
-        
+
         const lines = content.split('\n');
         const nodes = [];
-        
+
         for (let i = 0; i < lines.length; i++) {
             if (lines[i] || i === 0) {
                 nodes.push(schema.text(lines[i] || ''));
@@ -40,10 +30,9 @@ const contentHelpers = {
                 }
             }
         }
-        
         return nodes;
     },
-    
+
     // Convert ProseMirror document to text with newlines
     extractContentWithNewlines: (view: EditorView) => {
         let content = '';
@@ -58,19 +47,24 @@ const contentHelpers = {
     }
 };
 
-export const TextEditor: React.FC<TextEditorProps> = ({
-    rect,
-    content,
-    styles,
-    onChange,
-    onStop,
-    isComponent,
-    isDisabled = false,
-}) => {
+export const TextEditor = observer(() => {
+    const editorEngine = useEditorEngine();
+    const overlayState = editorEngine.overlay.state;
+    const isDisabled = false;
     const editorRef = useRef<HTMLDivElement>(null);
     const editorViewRef = useRef<EditorView | null>(null);
+    const onChangeRef = useRef<((content: string) => void) | undefined>(undefined);
+    const onStopRef = useRef<(() => void) | undefined>(undefined);
+    if (!overlayState.textEditor) {
+        return null;
+    }
+    const { rect, styles, onChange, onStop, isComponent, content } = overlayState.textEditor;
 
-    // Initialize ProseMirror
+    // Update callback refs
+    onChangeRef.current = onChange;
+    onStopRef.current = onStop;
+
+    // Initialize ProseMirror (only when component mounts)
     useEffect(() => {
         if (!editorRef.current) {
             return;
@@ -78,7 +72,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({
 
         const state = EditorState.create({
             schema,
-            plugins: createEditorPlugins(onStop, onStop),
+            plugins: createEditorPlugins(() => onStopRef.current?.(), () => onStopRef.current?.()),
         });
 
         const view = new EditorView(editorRef.current, {
@@ -87,9 +81,9 @@ export const TextEditor: React.FC<TextEditorProps> = ({
             dispatchTransaction: (transaction) => {
                 const newState = view.state.apply(transaction);
                 view.updateState(newState);
-                if (onChange && transaction.docChanged) {
+                if (onChangeRef.current && transaction.docChanged) {
                     const textContent = contentHelpers.extractContentWithNewlines(view);
-                    onChange(textContent);
+                    onChangeRef.current(textContent);
                 }
             },
             attributes: {
@@ -116,8 +110,8 @@ export const TextEditor: React.FC<TextEditorProps> = ({
 
         // Attach blur handler directly to ProseMirror's contenteditable
         const handleBlur = (event: FocusEvent) => {
-            if (onStop && !editorRef.current?.contains(event.relatedTarget as Node)) {
-                onStop();
+            if (onStopRef.current && !editorRef.current?.contains(event.relatedTarget as Node)) {
+                onStopRef.current();
             }
         };
         view.dom.addEventListener('blur', handleBlur, true);
@@ -126,7 +120,42 @@ export const TextEditor: React.FC<TextEditorProps> = ({
             view.dom.removeEventListener('blur', handleBlur, true);
             view.destroy();
         };
-    }, [content, styles, isComponent, isDisabled, onChange, onStop]);
+    }, []); // Only run on mount
+
+    // Update content when it changes (but preserve cursor position and avoid disrupting ongoing edits)
+    useEffect(() => {
+        const view = editorViewRef.current;
+        if (!view) return;
+
+        const currentContent = contentHelpers.extractContentWithNewlines(view);
+        if (currentContent !== content) {
+            // Only update if the editor doesn't have focus (to avoid disrupting user typing)
+            // or if the content change is significant (not just from user typing)
+            if (!view.hasFocus() || Math.abs(currentContent.length - content.length) > 1) {
+                const selection = view.state.selection;
+                const nodes = contentHelpers.createNodesFromContent(content);
+                const paragraph = schema.node('paragraph', null, nodes);
+                const newDoc = schema.node('doc', null, [paragraph]);
+                const tr = view.state.tr.replaceWith(0, view.state.doc.content.size, newDoc.content);
+
+                // Try to preserve cursor position if possible
+                const newSelection = selection.from <= tr.doc.content.size
+                    ? selection.constructor.near(tr.doc.resolve(Math.min(selection.from, tr.doc.content.size)))
+                    : selection.constructor.atEnd(tr.doc);
+                tr.setSelection(newSelection);
+
+                view.dispatch(tr);
+            }
+        }
+    }, [content]);
+
+    // Update styles when they change
+    useEffect(() => {
+        const view = editorViewRef.current;
+        if (view) {
+            applyStylesToEditor(view, styles);
+        }
+    }, [styles]);
 
     // Update editor state when disabled state changes
     useEffect(() => {
@@ -156,4 +185,4 @@ export const TextEditor: React.FC<TextEditorProps> = ({
             id={EditorAttributes.ONLOOK_RECT_ID}
         />
     );
-};
+});
