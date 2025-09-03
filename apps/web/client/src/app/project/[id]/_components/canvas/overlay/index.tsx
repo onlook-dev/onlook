@@ -56,14 +56,7 @@ export const Overlay = observer(() => {
             )}
             {!isTextEditing && clickRectsElements}
             {isTextEditing && overlayState.textEditor && (
-                <TextEditor
-                    rect={overlayState.textEditor.rect}
-                    content={overlayState.textEditor.content}
-                    styles={overlayState.textEditor.styles}
-                    onChange={overlayState.textEditor.onChange}
-                    onStop={overlayState.textEditor.onStop}
-                    isComponent={overlayState.textEditor.isComponent}
-                />
+                <TextEditor />
             )}
             {overlayState.measurement && (
                 <MeasurementOverlay
