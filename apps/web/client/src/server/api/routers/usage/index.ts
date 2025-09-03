@@ -27,7 +27,8 @@ export const usageRouter = createTRPCRouter({
     }),
 
     increment: protectedProcedure.input(z.object({
-        type: z.nativeEnum(UsageType),
+        type: z.enum(UsageType),
+        traceId: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
         const user = ctx.user;
         // running a transaction helps with concurrency issues and ensures that
@@ -75,6 +76,7 @@ export const usageRouter = createTRPCRouter({
                 userId: user.id,
                 type: input.type,
                 timestamp: new Date(),
+                traceId: input.traceId,
             }).returning({ id: usageRecords.id });
 
             return { rateLimitId, usageRecordId: usageRecord?.[0]?.id };

@@ -40,7 +40,7 @@ export const getSupabaseUser = async (request: NextRequest) => {
     return user;
 }
 
-export const incrementUsage = async (req: NextRequest): Promise<{
+export const incrementUsage = async (req: NextRequest, traceId?: string): Promise<{
     usageRecordId: string | undefined,
     rateLimitId: string | undefined,
 } | null> => {
@@ -52,6 +52,7 @@ export const incrementUsage = async (req: NextRequest): Promise<{
         const { api } = await createTRPCClient(req);
         const incrementRes = await api.usage.increment({
             type: UsageType.MESSAGE,
+            traceId,
         });
         return {
             usageRecordId: incrementRes?.usageRecordId,
