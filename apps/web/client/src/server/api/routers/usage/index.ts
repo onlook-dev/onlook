@@ -82,8 +82,8 @@ export const usageRouter = createTRPCRouter({
     }),
 
     revertIncrement: protectedProcedure.input(z.object({
-        usageRecordId: z.string(),
-        rateLimitId: z.string(),
+        usageRecordId: z.string().optional(),
+        rateLimitId: z.string().optional(),
     })).mutation(async ({ ctx, input }) => {
         return ctx.db.transaction(async (tx) => {
             if (input.rateLimitId) {

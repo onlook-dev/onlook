@@ -64,72 +64,82 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     let usageRecord: {
         usageRecordId: string | undefined;
         rateLimitId: string | undefined;
-    } | null;
-    if (chatType === ChatType.EDIT) {
-        usageRecord = await incrementUsage(req);
-    }
-    const modelConfig = await getModelFromType(chatType);
-    const { model, providerOptions, headers } = modelConfig;
-    const systemPrompt = await getSystemPromptFromType(chatType);
-    const tools = await getToolSetFromType(chatType);
-
-    const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
-    const traceId = lastUserMessage?.id ?? uuidv4();
-
-    const result = streamText({
-        model,
-        headers,
-        tools,
-        stopWhen: stepCountIs(MAX_STEPS),
-        messages: [
-            {
-                role: 'system',
-                content: systemPrompt,
-                providerOptions,
-            },
-            ...convertToModelMessages(messages),
-        ],
-        experimental_telemetry: {
-            isEnabled: true,
-            metadata: {
-                conversationId,
-                projectId,
-                userId,
-                chatType: chatType,
-                tags: ['chat'],
-                langfuseTraceId: traceId,
-                sessionId: conversationId,
-            },
-        },
-        experimental_repairToolCall: repairToolCall,
-        onError: async (error) => {
-            console.error('Error in chat stream call', error);
-            // if there was an error with the API, do not penalize the user
-            await decrementUsage(req, usageRecord);
-            
-            // Ensure the stream stops on error by re-throwing
-            if (error instanceof Error) {
-                throw error;
-            } else {
-                const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
-                throw new Error(errorMessage);
-            }
+    } | null = null;
+    
+    try {
+        if (chatType === ChatType.EDIT) {
+            usageRecord = await incrementUsage(req);
         }
-    })
+        const modelConfig = await getModelFromType(chatType);
+        const { model, providerOptions, headers } = modelConfig;
+        const systemPrompt = await getSystemPromptFromType(chatType);
+        const tools = await getToolSetFromType(chatType);
 
-    return result.toUIMessageStreamResponse(
-        {
-            originalMessages: messages,
-            messageMetadata: ({
-                part
-            }) => {
-                if (part.type === 'finish-step') {
-                    return {
-                        finishReason: part.finishReason,
-                    }
+        const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
+        const traceId = lastUserMessage?.id ?? uuidv4();
+
+        const result = streamText({
+            model,
+            headers,
+            tools,
+            stopWhen: stepCountIs(MAX_STEPS),
+            messages: [
+                {
+                    role: 'system',
+                    content: systemPrompt,
+                    providerOptions,
+                },
+                ...convertToModelMessages(messages),
+            ],
+            experimental_telemetry: {
+                isEnabled: true,
+                metadata: {
+                    conversationId,
+                    projectId,
+                    userId,
+                    chatType: chatType,
+                    tags: ['chat'],
+                    langfuseTraceId: traceId,
+                    sessionId: conversationId,
+                },
+            },
+            experimental_repairToolCall: repairToolCall,
+            onError: async (error) => {
+                console.error('Error in chat stream call', error);
+                // if there was an error with the API, do not penalize the user
+                await decrementUsage(req, usageRecord);
+                
+                // Ensure the stream stops on error by re-throwing
+                if (error instanceof Error) {
+                    throw error;
+                } else {
+                    const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
+                    throw new Error(errorMessage);
                 }
-            },
-            onError: errorHandler,
+            }
+        })
+
+        return result.toUIMessageStreamResponse(
+            {
+                originalMessages: messages,
+                messageMetadata: ({
+                    part
+                }) => {
+                    if (part.type === 'finish-step') {
+                        return {
+                            finishReason: part.finishReason,
+                        }
+                    }
+                },
+                onError: errorHandler,
+            }
+        );
+    } catch (error) {
+        console.error('Error in streamResponse setup', error);
+        // If there was an error setting up the stream and we incremented usage, revert it
+        if (usageRecord) {
+            await decrementUsage(req, usageRecord);
         }
-    );
+        throw error;
+    }
 }

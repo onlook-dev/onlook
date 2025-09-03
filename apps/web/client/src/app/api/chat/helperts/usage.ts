@@ -75,7 +75,9 @@ export const decrementUsage = async (
             return;
         }
         const { usageRecordId, rateLimitId } = usageRecord;
-        if (!usageRecordId || !rateLimitId) {
+        // We should call revertIncrement even if only one of the IDs is available
+        // For free plan users, rateLimitId will be undefined but we still want to delete the usage record
+        if (!usageRecordId && !rateLimitId) {
             return;
         }
         const { api } = await createTRPCClient(req);
