@@ -99,7 +99,6 @@ export class TextEditingManager {
     }
 
     async end(): Promise<void> {
-
         try {
             if (!this.targetDomEl) {
                 throw new Error('No target dom element to stop editing');
@@ -127,6 +126,14 @@ export class TextEditingManager {
     }
 
     async clean(): Promise<void> {
+        if (this.targetDomEl) {
+            try {
+                const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
+                await frameData?.view?.stopEditingText(this.targetDomEl.domId);
+            } catch (error) {
+                console.error('Error stopping editing text:', error);
+            }
+        }
         this.targetDomEl = null;
         this.editorEngine.overlay.state.removeTextEditor();
         await this.editorEngine.history.commitTransaction();
