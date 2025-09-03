@@ -194,7 +194,7 @@ export const branchRouter = createTRPCRouter({
                     const blankSandbox = await CodesandboxProvider.createProject({
                         source: 'template',
                         id: SandboxTemplates[Templates.EMPTY_NEXTJS].id,
-                        title: input.branchName || `empty branch`,
+                        title: input.branchName || `empty`,
                         tags: ['blank'],
                     });
 
@@ -205,7 +205,7 @@ export const branchRouter = createTRPCRouter({
                     const newBranchId = uuidv4();
                     const newBranch = {
                         id: newBranchId,
-                        name: input.branchName || 'empty branch',
+                        name: input.branchName || 'empty',
                         description: null,
                         projectId: input.projectId,
                         sandboxId,
