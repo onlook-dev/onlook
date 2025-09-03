@@ -28,35 +28,6 @@ export class CodeManager {
         makeAutoObservable(this);
     }
 
-    viewSourceFile(fileName: string) {
-        this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
-        this.editorEngine.ide.openFile(fileName);
-    }
-
-    async viewCodeBlock(oid: string) {
-        try {
-            this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
-            const element =
-                this.editorEngine.elements.selected.find((el: DomElement) => el.oid === oid) ||
-                this.editorEngine.elements.selected.find((el: DomElement) => el.instanceId === oid);
-
-            if (element) {
-                // First get the file path and load the file
-                const filePath = await this.editorEngine.ide.getFilePathFromOid(element.oid || '');
-                if (filePath) {
-                    // Load the file first
-                    await this.editorEngine.ide.openFile(filePath);
-                    // Then select the element after a small delay to ensure the file is loaded
-                    setTimeout(() => {
-                        this.editorEngine.elements.selected = [element];
-                    }, 500);
-                }
-            }
-        } catch (error) {
-            console.error('Error viewing source:', error);
-        }
-    }
-
     async write(action: Action) {
         try {
             // TODO: This is a hack to write code, we should refactor this

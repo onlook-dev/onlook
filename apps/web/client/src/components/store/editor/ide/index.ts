@@ -1,8 +1,8 @@
 import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/code-tab/code-mirror-config';
+import { EditorTabValue, type DomElement } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
-import path from 'path';
 import type { EditorEngine } from '../engine';
 
 export interface EditorFile {
@@ -76,7 +76,10 @@ export class IDEManager {
         }
     }
 
-    async openFile(filePath: string, searchTerm?: string): Promise<EditorFile | null> {
+    async openFile(filePath: string, searchTerm?: string, toggleTab: boolean = true): Promise<EditorFile | null> {
+        if (toggleTab) {
+            this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
+        }
         if (!this.isSandboxReady()) {
             console.error('Sandbox not connected');
             return null;
@@ -138,6 +141,29 @@ export class IDEManager {
         }
     }
 
+    async openCodeBlock(oid: string, toggleTab?: boolean) {
+        try {
+            const element =
+                this.editorEngine.elements.selected.find((el: DomElement) => el.oid === oid) ||
+                this.editorEngine.elements.selected.find((el: DomElement) => el.instanceId === oid);
+
+            if (element) {
+                // First get the file path and load the file
+                const filePath = await this.getFilePathFromOid(element.oid || '');
+                if (filePath) {
+                    // Load the file first
+                    await this.openFile(filePath, undefined, toggleTab);
+                    // Then select the element after a small delay to ensure the file is loaded
+                    setTimeout(() => {
+                        this.editorEngine.elements.selected = [element];
+                    }, 500);
+                }
+            }
+        } catch (error) {
+            console.error('Error viewing source:', error);
+        }
+    }
+
     updateFileContent(id: string, content: string) {
         const file = this.openedFiles.find((f) => f.id === id);
         if (!file) return;
@@ -188,24 +214,6 @@ export class IDEManager {
         } finally {
             this.isLoading = false;
         }
-    }
-
-    private refreshPreviewAfterSave() {
-        if (!this.activeFile) {
-            return;
-        }
-
-        if (this.shouldRefreshPreview(this.activeFile.path)) {
-            setTimeout(() => {
-                this.editorEngine.frames.reloadAllViews();
-            }, 100);
-        }
-    }
-
-    private shouldRefreshPreview(filePath: string): boolean {
-        const ext = path.extname(filePath).toLowerCase();
-        const affectsPreview = ['.js', '.jsx', '.ts', '.tsx', '.css', '.scss', '.sass', '.less', '.html'];
-        return affectsPreview.includes(ext);
     }
 
     closeFile(id: string) {
