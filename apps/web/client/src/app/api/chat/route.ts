@@ -9,7 +9,7 @@ const MAX_STEPS = 20;
 export async function POST(req: NextRequest) {
     try {
         const user = await getSupabaseUser(req);
-                if (!user) {
+        if (!user) {
             return new Response(JSON.stringify({
                 error: 'Unauthorized, no user found. Please login again.',
                 code: 401
@@ -57,79 +57,89 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
         chatType: ChatType,
         conversationId: string,
         projectId: string,
-    };    
+    };
     // Updating the usage record and rate limit is done here to avoid
     // abuse in the case where a single user sends many concurrent requests.
     // If the call below fails, the user will not be penalized.
     let usageRecord: {
         usageRecordId: string | undefined;
         rateLimitId: string | undefined;
-    } | null;
-    if (chatType === ChatType.EDIT) {
-        usageRecord = await incrementUsage(req);
-    }
-    const modelConfig = await getModelFromType(chatType);
-    const { model, providerOptions, headers } = modelConfig;
-    const systemPrompt = await getSystemPromptFromType(chatType);
-    const tools = await getToolSetFromType(chatType);
+    } | null = null;
 
-    const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
-    const traceId = lastUserMessage?.id ?? uuidv4();
-
-    const result = streamText({
-        model,
-        headers,
-        tools,
-        stopWhen: stepCountIs(MAX_STEPS),
-        messages: [
-            {
-                role: 'system',
-                content: systemPrompt,
-                providerOptions,
-            },
-            ...convertToModelMessages(messages),
-        ],
-        experimental_telemetry: {
-            isEnabled: true,
-            metadata: {
-                conversationId,
-                projectId,
-                userId,
-                chatType: chatType,
-                tags: ['chat'],
-                langfuseTraceId: traceId,
-                sessionId: conversationId,
-            },
-        },
-        experimental_repairToolCall: repairToolCall,
-        onError: async (error) => {
-            console.error('Error in chat stream call', error);
-            // if there was an error with the API, do not penalize the user
-            await decrementUsage(req, usageRecord);
-            
-            // Ensure the stream stops on error by re-throwing
-            if (error instanceof Error) {
-                throw error;
-            } else {
-                const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
-                throw new Error(errorMessage);
-            }
+    try {
+        const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
+        const traceId = lastUserMessage?.id ?? uuidv4();
+        
+        if (chatType === ChatType.EDIT) {
+            usageRecord = await incrementUsage(req, traceId);
         }
-    })
+        const modelConfig = await getModelFromType(chatType);
+        const { model, providerOptions, headers } = modelConfig;
+        const systemPrompt = await getSystemPromptFromType(chatType);
+        const tools = await getToolSetFromType(chatType);
 
-    return result.toUIMessageStreamResponse(
-        {
-            originalMessages: messages,
-            messageMetadata: ({
-                part
-            }) => {
-                if (part.type === 'finish-step') {
-                    return {
-                        finishReason: part.finishReason,
-                    }
+        const result = streamText({
+            model,
+            headers,
+            tools,
+            stopWhen: stepCountIs(MAX_STEPS),
+            messages: [
+                {
+                    role: 'system',
+                    content: systemPrompt,
+                    providerOptions,
+                },
+                ...convertToModelMessages(messages),
+            ],
+            experimental_telemetry: {
+                isEnabled: true,
+                metadata: {
+                    conversationId,
+                    projectId,
+                    userId,
+                    chatType: chatType,
+                    tags: ['chat'],
+                    langfuseTraceId: traceId,
+                    sessionId: conversationId,
+                },
+            },
+            experimental_repairToolCall: repairToolCall,
+            onError: async (error) => {
+                console.error('Error in chat stream call', error);
+                // if there was an error with the API, do not penalize the user
+                await decrementUsage(req, usageRecord);
+
+                // Ensure the stream stops on error by re-throwing
+                if (error instanceof Error) {
+                    throw error;
+                } else {
+                    const errorMessage = typeof error === 'string' ? error : JSON.stringify(error);
+                    throw new Error(errorMessage);
                 }
-            },
-            onError: errorHandler,
+            }
+        })
+
+        return result.toUIMessageStreamResponse(
+            {
+                originalMessages: messages,
+                messageMetadata: ({
+                    part
+                }) => {
+                    if (part.type === 'finish-step') {
+                        return {
+                            finishReason: part.finishReason,
+                        }
+                    }
+                },
+                onError: errorHandler,
+            }
+        );
+    } catch (error) {
+        console.error('Error in streamResponse setup', error);
+        // If there was an error setting up the stream and we incremented usage, revert it
+        if (usageRecord) {
+            await decrementUsage(req, usageRecord);
         }
-    );
+        throw error;
+    }
 }

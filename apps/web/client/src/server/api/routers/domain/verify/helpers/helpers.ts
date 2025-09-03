@@ -28,7 +28,7 @@ export const getCustomDomain = async (db: DrizzleDb, domain: string): Promise<{ 
     if (!parsedDomain.domain) {
         throw new TRPCError({
             code: 'BAD_REQUEST',
-            message: `Invalid domain format`,
+            message: `Invalid domain format ${domain}`,
         });
     }
 
