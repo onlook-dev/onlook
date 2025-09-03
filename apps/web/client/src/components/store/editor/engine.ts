@@ -13,7 +13,6 @@ import { FontManager } from './font';
 import { FrameEventManager } from './frame-events';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
-import { HistoryManager } from './history';
 import { IDEManager } from './ide';
 import { ImageManager } from './image';
 import { InsertManager } from './insert';
@@ -40,11 +39,14 @@ export class EditorEngine {
         return this.branches.activeSandbox;
     }
 
+    get history() {
+        return this.branches.activeHistory;
+    }
+
     readonly error: ErrorManager = new ErrorManager();
     readonly state: StateManager = new StateManager();
     readonly canvas: CanvasManager = new CanvasManager(this);
     readonly text: TextEditingManager = new TextEditingManager(this);
-    readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
     readonly overlay: OverlayManager = new OverlayManager(this);
     readonly insert: InsertManager = new InsertManager(this);
@@ -92,7 +94,6 @@ export class EditorEngine {
     clear() {
         this.elements.clear();
         this.frames.clear();
-        this.history.clear();
         this.action.clear();
         this.overlay.clear();
         this.ast.clear();

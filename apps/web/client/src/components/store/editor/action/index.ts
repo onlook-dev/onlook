@@ -286,6 +286,6 @@ export class ActionManager {
     }
 
     clear() {
-        this.editorEngine.history.clear();
+        // History clearing is now handled by BranchManager
     }
 }

@@ -3,11 +3,13 @@ import type { Branch } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
+import { HistoryManager } from '../history';
 import { SandboxManager } from '../sandbox';
 
 interface BranchData {
     branch: Branch;
     sandbox: SandboxManager;
+    history: HistoryManager;
 }
 
 export class BranchManager {
@@ -24,15 +26,18 @@ export class BranchManager {
     initBranches(branches: Branch[]): void {
         this.reactionDisposer?.();
         this.reactionDisposer = null;
-        for (const { sandbox } of this.branchMap.values()) {
+        for (const { sandbox, history } of this.branchMap.values()) {
             sandbox.clear();
+            history.clear();
         }
         this.branchMap.clear();
         for (const branch of branches) {
             const sandboxManager = new SandboxManager(branch, this.editorEngine);
+            const historyManager = new HistoryManager(this.editorEngine);
             this.branchMap.set(branch.id, {
                 branch,
                 sandbox: sandboxManager,
+                history: historyManager,
             });
         }
         // Preserve previous selection if still present; else default; else first; else null
@@ -89,6 +94,10 @@ export class BranchManager {
         return this.activeBranchData.sandbox;
     }
 
+    get activeHistory(): HistoryManager {
+        return this.activeBranchData.history;
+    }
+
     async switchToBranch(branchId: string): Promise<void> {
         if (this.currentBranchId === branchId) {
             return;
@@ -142,9 +151,11 @@ export class BranchManager {
 
             // Add the new branch to the local branch map
             const sandboxManager = new SandboxManager(result.branch, this.editorEngine);
+            const historyManager = new HistoryManager(this.editorEngine);
             this.branchMap.set(result.branch.id, {
                 branch: result.branch,
                 sandbox: sandboxManager,
+                history: historyManager,
             });
 
             // Initialize the new sandbox
@@ -200,8 +211,9 @@ export class BranchManager {
                 this.editorEngine.frames.delete(frameState.frame.id);
             }
 
-            // Clean up the sandbox
+            // Clean up the sandbox and history
             branchData.sandbox.clear();
+            branchData.history.clear();
             // Clean up template nodes for this branch
             this.editorEngine.templateNodes.clearBranch(branchId);
             // Remove from the map
@@ -223,6 +235,7 @@ export class BranchManager {
         this.reactionDisposer = null;
         for (const branchData of this.branchMap.values()) {
             branchData.sandbox.clear();
+            branchData.history.clear();
         }
         this.branchMap.clear();
         this.currentBranchId = null;
