@@ -80,7 +80,7 @@ export function FolderModal({
         try {
             setIsLoading(true);
 
-            await createFolderInSandbox(editorEngine.sandbox.session.provider, fullPath, editorEngine.sandbox);
+            await createFolderInSandbox(editorEngine.activeSandbox.session.provider, fullPath, editorEngine.activeSandbox);
             toast(`Folder "${name}" created successfully!`);
 
             setName('');

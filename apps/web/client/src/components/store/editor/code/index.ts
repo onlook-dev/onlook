@@ -1,10 +1,8 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
 import {
-    EditorTabValue,
     type Action,
     type CodeDiffRequest,
-    type DomElement,
-    type FileToRequests,
+    type FileToRequests
 } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { assertNever } from '@onlook/utility';
@@ -32,7 +30,7 @@ export class CodeManager {
         try {
             // TODO: This is a hack to write code, we should refactor this
             if (action.type === 'write-code' && action.diffs[0]) {
-                await this.editorEngine.sandbox.writeFile(
+                await this.editorEngine.activeSandbox.writeFile(
                     action.diffs[0].path,
                     action.diffs[0].generated,
                 );
@@ -53,7 +51,7 @@ export class CodeManager {
         const groupedRequests = await this.groupRequestByFile(requests);
         const codeDiffs = await processGroupedRequests(groupedRequests);
         for (const diff of codeDiffs) {
-            await this.editorEngine.sandbox.writeFile(diff.path, diff.generated);
+            await this.editorEngine.activeSandbox.writeFile(diff.path, diff.generated);
         }
     }
 
@@ -92,7 +90,7 @@ export class CodeManager {
             if (!templateNode) {
                 throw new Error(`Template node not found for oid: ${request.oid}`);
             }
-            const file = await this.editorEngine.sandbox.readFile(templateNode.path);
+            const file = await this.editorEngine.activeSandbox.readFile(templateNode.path);
             if (!file || file.type === 'binary') {
                 throw new Error(`Failed to read file: ${templateNode.path}`);
             }

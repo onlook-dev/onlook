@@ -24,7 +24,7 @@ export class GitManager {
      */
     async isRepoInitialized(): Promise<boolean> {
         try {
-            return (await this.editorEngine?.sandbox.fileExists('.git')) || false;
+            return (await this.editorEngine?.activeSandbox.fileExists('.git')) || false;
         } catch (error) {
             console.error('Error checking if repository is initialized:', error);
             return false;
@@ -36,7 +36,7 @@ export class GitManager {
      */
     async ensureGitConfig(): Promise<boolean> {
         try {
-            if (!this.editorEngine.sandbox.session) {
+            if (!this.editorEngine.activeSandbox.session) {
                 console.error('No editor engine or session available');
                 return false;
             }
@@ -89,7 +89,7 @@ export class GitManager {
                 return true;
             }
 
-            if (!this.editorEngine.sandbox.session) {
+            if (!this.editorEngine.activeSandbox.session) {
                 console.error('No editor engine or session available');
                 return false;
             }
@@ -122,7 +122,7 @@ export class GitManager {
      */
     async getStatus(): Promise<GitStatus | null> {
         try {
-            const status = await this.editorEngine?.sandbox.session.provider?.gitStatus({});
+            const status = await this.editorEngine?.activeSandbox.session.provider?.gitStatus({});
             if (!status) {
                 console.error('Failed to get git status');
                 return null;
@@ -240,7 +240,7 @@ export class GitManager {
      * Run a git command through the sandbox session
      */
     private runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
-        return this.editorEngine.sandbox.session.runCommand(
+        return this.editorEngine.activeSandbox.session.runCommand(
             command + (ignoreError ? ' 2>/dev/null || true' : ''),
         );
     }

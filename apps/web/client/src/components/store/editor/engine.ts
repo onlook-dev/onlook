@@ -36,7 +36,7 @@ export class EditorEngine {
     readonly posthog: PostHog;
     readonly branches: BranchManager = new BranchManager(this);
 
-    get sandbox(): SandboxManager {
+    get activeSandbox(): SandboxManager {
         return this.branches.activeSandbox;
     }
 

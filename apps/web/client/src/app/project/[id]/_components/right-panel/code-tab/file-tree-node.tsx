@@ -37,7 +37,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
 
         // Load the file into the editor
         try {
-            const content = await editorEngine.sandbox.readFile(node.data.path);
+            const content = await editorEngine.activeSandbox.readFile(node.data.path);
             if (content === null) {
                 throw new Error(`File content for ${node.data.path} not found`);
             }
@@ -119,7 +119,7 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
         {
             label: 'Delete',
             action: () => {
-                editorEngine.sandbox.delete(node.data.path, true);
+                editorEngine.activeSandbox.delete(node.data.path, true);
             },
             icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             separator: false,

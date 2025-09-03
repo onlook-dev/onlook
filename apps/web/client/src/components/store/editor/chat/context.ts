@@ -1,4 +1,4 @@
-import type { Branch, DomElement } from '@onlook/models';
+import type { DomElement } from '@onlook/models';
 import {
     MessageContextType,
     type BranchMessageContext,
@@ -50,7 +50,7 @@ export class ChatContext {
     async getRefreshedContext(context: MessageContext[]): Promise<MessageContext[]> {
         return await Promise.all(context.map(async (c) => {
             if (c.type === MessageContextType.FILE) {
-                const fileContent = await this.editorEngine.sandbox.readFile(c.path);
+                const fileContent = await this.editorEngine.activeSandbox.readFile(c.path);
                 if (fileContent === null) {
                     console.error('No file content found for file', c.path);
                     return c;
@@ -89,7 +89,7 @@ export class ChatContext {
         });
 
         for (const [filePath, branchId] of filePathToBranch) {
-            const file = await this.editorEngine.sandbox.readFile(filePath);
+            const file = await this.editorEngine.activeSandbox.readFile(filePath);
             if (file === null || file.type === 'binary') {
                 continue;
             }
@@ -220,7 +220,7 @@ export class ChatContext {
         try {
             const pagePaths = ['./app/page.tsx', './src/app/page.tsx'];
             for (const pagePath of pagePaths) {
-                const file = await this.editorEngine.sandbox.readFile(pagePath);
+                const file = await this.editorEngine.activeSandbox.readFile(pagePath);
                 if (file && file.type === 'text') {
                     const activeBranchId = this.editorEngine.branches.activeBranch?.id;
                     if (!activeBranchId) {

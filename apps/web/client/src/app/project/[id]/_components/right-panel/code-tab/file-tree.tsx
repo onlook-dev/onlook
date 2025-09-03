@@ -56,26 +56,26 @@ const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files
 
     const searchFileContent = useCallback(async (filePath: string, query: string): Promise<number> => {
         if (!isTextFile(filePath)) return 0;
-        
+
         try {
-            const file = await editorEngine.sandbox.readFile(filePath);
+            const file = await editorEngine.activeSandbox.readFile(filePath);
             if (!file || file.type !== 'text' || typeof file.content !== 'string') return 0;
-            
+
             const content = file.content.toLowerCase();
             const searchTerm = query.toLowerCase();
             let count = 0;
             let index = 0;
-            
+
             while ((index = content.indexOf(searchTerm, index)) !== -1) {
                 count++;
                 index += searchTerm.length;
             }
-            
+
             return count;
         } catch {
             return 0;
         }
-    }, [editorEngine.sandbox, isTextFile]);
+    }, [editorEngine.activeSandbox, isTextFile]);
 
     const performContentSearch = useCallback(async (query: string) => {
         if (!query.trim() || query.length < 2) {
@@ -86,7 +86,7 @@ const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files
 
         setIsSearching(true);
         const matches = new Map<string, number>();
-        
+
         const searchPromises = files
             .filter(isTextFile)
             .map(async (filePath) => {
@@ -288,8 +288,8 @@ const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files
             await onRefresh();
         } else {
             try {
-                await editorEngine.sandbox.index(true);
-                await editorEngine.sandbox.listAllFiles();
+                await editorEngine.activeSandbox.index(true);
+                await editorEngine.activeSandbox.listAllFiles();
             } catch (error) {
                 console.error('Error refreshing files:', error);
             }
@@ -387,7 +387,7 @@ const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files
                                     }
                                 />
                             )}
-                                                >
+                        >
                             {(props) => <FileTreeNode {...props} files={files} contentMatches={contentMatches} />}
                         </Tree>
                     )}

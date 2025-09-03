@@ -65,7 +65,7 @@ export const ProjectBreadcrumb = observer(() => {
         try {
             setIsDownloading(true);
 
-            const result = await editorEngine.sandbox.downloadFiles(project.name);
+            const result = await editorEngine.activeSandbox.downloadFiles(project.name);
 
             if (result) {
                 window.open(result.downloadUrl, '_blank');

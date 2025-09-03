@@ -93,10 +93,10 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
     };
 
     useEffect(() => {
-        if (editorEngine.sandbox.routerConfig) {
+        if (editorEngine.activeSandbox.routerConfig) {
             editorEngine.pages.scanPages();
         }
-    }, [editorEngine.sandbox.routerConfig]);
+    }, [editorEngine.activeSandbox.routerConfig]);
 
     const displayPages = useMemo(() => {
         if (allPages.length > 0) {

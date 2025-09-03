@@ -44,7 +44,7 @@ export class IDEManager {
 
     init() {
         this.filesReactionDisposer = reaction(
-            () => this.editorEngine.sandbox.files,
+            () => this.editorEngine.activeSandbox.files,
             (files) => {
                 this.files = files;
             },
@@ -56,8 +56,8 @@ export class IDEManager {
 
     private isSandboxReady() {
         return !!(
-            this.editorEngine.sandbox.session.provider &&
-            !this.editorEngine.sandbox.session.isConnecting
+            this.editorEngine.activeSandbox.session.provider &&
+            !this.editorEngine.activeSandbox.session.isConnecting
         );
     }
 
@@ -68,7 +68,7 @@ export class IDEManager {
         }
         this.isFilesLoading = true;
         try {
-            this.files = await this.editorEngine.sandbox.listAllFiles();
+            this.files = await this.editorEngine.activeSandbox.listAllFiles();
         } catch (error) {
             console.error('Error loading files:', error);
         } finally {
@@ -89,7 +89,7 @@ export class IDEManager {
             let content = "";
             let isBinary = false;
 
-            const foundFile = await this.editorEngine.sandbox.readFile(filePath);
+            const foundFile = await this.editorEngine.activeSandbox.readFile(filePath);
             if (!foundFile) {
                 return null;
             }
@@ -186,7 +186,7 @@ export class IDEManager {
         }
         this.isLoading = true;
         try {
-            const originalFile = await this.editorEngine.sandbox.readFile(
+            const originalFile = await this.editorEngine.activeSandbox.readFile(
                 this.activeFile.path,
             );
             if (!originalFile || originalFile.type === 'binary') {
@@ -242,7 +242,7 @@ export class IDEManager {
             console.error('File not found');
             return;
         }
-        const foundFile = await this.editorEngine.sandbox.readFile(path);
+        const foundFile = await this.editorEngine.activeSandbox.readFile(path);
         if (!foundFile || foundFile.type === 'binary') {
             console.error('Content is null');
             return;
@@ -311,7 +311,7 @@ export class IDEManager {
                 console.error('No path found');
                 return;
             }
-            const originalFile = await this.editorEngine.sandbox.readFile(path);
+            const originalFile = await this.editorEngine.activeSandbox.readFile(path);
             if (!originalFile || originalFile.type === 'binary') {
                 console.error('Error reading file');
                 return;

@@ -110,10 +110,10 @@ export const UploadModal = observer(({
                 let success: boolean;
                 if (isBinaryFile(file.name)) {
                     const content = await file.arrayBuffer();
-                    success = await editorEngine.sandbox.writeBinaryFile(finalPath, new Uint8Array(content));
+                    success = await editorEngine.activeSandbox.writeBinaryFile(finalPath, new Uint8Array(content));
                 } else {
                     const content = await file.text();
-                    success = await editorEngine.sandbox.writeFile(finalPath, content);
+                    success = await editorEngine.activeSandbox.writeFile(finalPath, content);
                 }
 
                 uploadResults.push(success);
@@ -123,7 +123,7 @@ export const UploadModal = observer(({
             const failedCount = uploadResults.filter(result => !result).length;
 
             if (failedCount === 0) {
-                editorEngine.sandbox.listAllFiles();
+                editorEngine.activeSandbox.listAllFiles();
 
                 const fileCount = selectedFiles.length;
                 const fileText = fileCount === 1 ? selectedFiles[0]?.name ?? 'file' : `${fileCount} files`;
@@ -142,7 +142,7 @@ export const UploadModal = observer(({
                 });
 
                 // Refresh file list even for partial success
-                editorEngine.sandbox.listAllFiles();
+                editorEngine.activeSandbox.listAllFiles();
             }
         } catch (error) {
             console.error('Error uploading files:', error);

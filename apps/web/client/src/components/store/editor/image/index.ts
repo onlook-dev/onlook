@@ -18,7 +18,7 @@ export class ImageManager {
 
     init() {
         this.indexingReactionDisposer = reaction(
-            () => this.editorEngine.sandbox.isIndexing,
+            () => this.editorEngine.activeSandbox.isIndexing,
             async (isIndexingFiles) => {
                 if (!isIndexingFiles) {
                     await this.scanImages();
@@ -122,7 +122,7 @@ export class ImageManager {
         try {
             const path = `${destinationFolder}/${file.name}`;
             const uint8Array = new Uint8Array(await file.arrayBuffer());
-            await this.editorEngine.sandbox.writeBinaryFile(path, uint8Array);
+            await this.editorEngine.activeSandbox.writeBinaryFile(path, uint8Array);
             await this.scanImages();
         } catch (error) {
             console.error('Error uploading image:', error);
@@ -132,7 +132,7 @@ export class ImageManager {
 
     async delete(originPath: string): Promise<void> {
         try {
-            await this.editorEngine.sandbox.delete(originPath);
+            await this.editorEngine.activeSandbox.delete(originPath);
             await this.scanImages();
         } catch (error) {
             console.error('Error deleting image:', error);
@@ -143,7 +143,7 @@ export class ImageManager {
     async rename(originPath: string, newName: string): Promise<void> {
         try {
             const newPath = generateNewFolderPath(originPath, newName, 'rename');
-            await this.editorEngine.sandbox.rename(originPath, newPath);
+            await this.editorEngine.activeSandbox.rename(originPath, newPath);
             await this.scanImages();
         } catch (error) {
             console.error('Error renaming image:', error);
@@ -190,7 +190,7 @@ export class ImageManager {
         this._isScanning = true;
 
         try {
-            const files = await this.editorEngine.sandbox.listFilesRecursively(
+            const files = await this.editorEngine.activeSandbox.listFilesRecursively(
                 DefaultSettings.IMAGE_FOLDER,
             );
             if (!files) {
@@ -228,7 +228,7 @@ export class ImageManager {
             }
 
             // Read the binary file using the sandbox
-            const file = await this.editorEngine.sandbox.readFile(imagePath);
+            const file = await this.editorEngine.activeSandbox.readFile(imagePath);
             if (!file || file.type === 'text' || !file.content) {
                 console.warn(`Failed to read binary data for ${imagePath}`);
                 return null;

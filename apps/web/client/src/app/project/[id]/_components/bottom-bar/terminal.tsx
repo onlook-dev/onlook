@@ -50,7 +50,7 @@ export const Terminal = memo(observer(({ hidden = false, terminalSessionId, bran
     const terminalSession =
         branchId
             ? editorEngine.branches.getSandboxById(branchId)?.session?.getTerminalSession(terminalSessionId)
-            : editorEngine.sandbox?.session?.getTerminalSession(terminalSessionId);
+            : editorEngine.activeSandbox?.session?.getTerminalSession(terminalSessionId);
     const containerRef = useRef<HTMLDivElement>(null);
     const { theme } = useTheme();
 

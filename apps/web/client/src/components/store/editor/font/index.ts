@@ -50,8 +50,8 @@ export class FontManager {
         this.sandboxReactionDisposer = reaction(
             () => {
                 return {
-                    isIndexing: this.editorEngine.sandbox.isIndexing,
-                    isIndexed: this.editorEngine.sandbox.isIndexed,
+                    isIndexing: this.editorEngine.activeSandbox.isIndexing,
+                    isIndexed: this.editorEngine.activeSandbox.isIndexed,
                 };
             },
             (sandboxStatus) => {
@@ -70,7 +70,7 @@ export class FontManager {
             this.fontConfigFileWatcher();
         }
 
-        this.fontConfigFileWatcher = this.editorEngine.sandbox.fileEventBus.subscribe(
+        this.fontConfigFileWatcher = this.editorEngine.activeSandbox.fileEventBus.subscribe(
             '*',
             this.handleFileEvent.bind(this),
         );
@@ -133,7 +133,7 @@ export class FontManager {
      */
     private async scanExistingFonts(): Promise<Font[] | undefined> {
         try {
-            const layoutPath = await this.editorEngine.sandbox.getRootLayoutPath();
+            const layoutPath = await this.editorEngine.activeSandbox.getRootLayoutPath();
             if (!layoutPath) {
                 console.log('Could not get layout path');
                 return [];
@@ -208,7 +208,7 @@ export class FontManager {
             const codeDiff = await this.layoutManager.updateDefaultFontInRootLayout(font);
 
             if (codeDiff) {
-                await this.editorEngine.sandbox.writeFile(codeDiff.path, codeDiff.generated);
+                await this.editorEngine.activeSandbox.writeFile(codeDiff.path, codeDiff.generated);
                 return true;
             }
             return false;
@@ -220,7 +220,7 @@ export class FontManager {
 
     async uploadFonts(fontFiles: FontUploadFile[]): Promise<boolean> {
         try {
-            const routerConfig = this.editorEngine.sandbox.routerConfig;
+            const routerConfig = this.editorEngine.activeSandbox.routerConfig;
             if (!routerConfig?.basePath) {
                 console.error('Could not get base path');
                 return false;
@@ -245,7 +245,7 @@ export class FontManager {
                 if (!this.fontConfigManager.fontConfigPath) {
                     return false;
                 }
-                await this.editorEngine.sandbox.writeFile(
+                await this.editorEngine.activeSandbox.writeFile(
                     this.fontConfigManager.fontConfigPath,
                     code,
                 );
@@ -350,7 +350,7 @@ export class FontManager {
      * Synchronizes detected fonts with the project configuration files
      */
     private async syncFontsWithConfigs(): Promise<void> {
-        const sandbox = this.editorEngine.sandbox;
+        const sandbox = this.editorEngine.activeSandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
             return;
@@ -397,7 +397,7 @@ export class FontManager {
      * Ensures both font config and tailwind config files exist
      */
     private async ensureConfigFilesExist(): Promise<void> {
-        const sandbox = this.editorEngine.sandbox;
+        const sandbox = this.editorEngine.activeSandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
             return;
