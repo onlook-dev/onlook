@@ -7,6 +7,7 @@ export const SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS = z.object({
     old_string: z.string().describe('Text to replace'),
     new_string: z.string().describe('Replacement text'),
     replace_all: z.boolean().optional().default(false).describe('Replace all occurrences'),
+    branchId: z.string().describe('Branch ID to edit the file in'),
 });
 export const searchReplaceEditFileTool = tool({
     description: 'Make exact string replacements in files with precise matching',
@@ -29,6 +30,7 @@ export const SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS = z.object({
             }),
         )
         .describe('Array of edit operations'),
+    branchId: z.string().describe('Branch ID to edit the file in'),
 });
 export const searchReplaceMultiEditFileTool = tool({
     description: 'Make multiple edits to a single file in one atomic operation',
@@ -39,6 +41,7 @@ export const WRITE_FILE_TOOL_NAME = 'write_file';
 export const WRITE_FILE_TOOL_PARAMETERS = z.object({
     file_path: z.string().describe('Absolute path to file'),
     content: z.string().describe('File content'),
+    branchId: z.string().describe('Branch ID to write the file in'),
 });
 export const writeFileTool = tool({
     description:
@@ -60,6 +63,7 @@ Make sure there's enough context for the other model to understand where the cha
         .describe(
             'A single sentence instruction describing what you are going to do for the sketched edit. This is used to assist another model in applying the edit. Use the first person to describe what you are going to do. Use it to disambiguate uncertainty in the edit.',
         ),
+    branchId: z.string().describe('Branch ID to edit the file in'),
 });
 export const fuzzyEditFileTool = tool({
     description:

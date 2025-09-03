@@ -4,6 +4,7 @@ import { z } from 'zod';
 export const TERMINAL_COMMAND_TOOL_NAME = 'terminal_command';
 export const TERMINAL_COMMAND_TOOL_PARAMETERS = z.object({
     command: z.string().describe('The command to run'),
+    branchId: z.string().describe('Branch ID to run the command in'),
 });
 export const terminalCommandTool = tool({
     description: 'Run any generic Linux Bash command in the terminal',
@@ -36,6 +37,7 @@ export const BASH_READ_TOOL_PARAMETERS = z.object({
         .describe('Override allowed commands for this execution'),
     description: z.string().optional().describe('What the command does (5-10 words)'),
     timeout: z.number().max(600000).optional().describe('Optional timeout in milliseconds'),
+    branchId: z.string().describe('Branch ID to run the command in'),
 });
 export const bashReadTool = tool({
     description: 'Execute read-only bash commands for exploration and analysis',
@@ -63,6 +65,7 @@ export const BASH_EDIT_TOOL_PARAMETERS = z.object({
         .describe('Override allowed commands for this execution'),
     description: z.string().optional().describe('What the command does (5-10 words)'),
     timeout: z.number().max(600000).optional().describe('Optional timeout in milliseconds'),
+    branchId: z.string().describe('Branch ID to run the command in'),
 });
 export const bashEditTool = tool({
     description: 'Execute file modification commands in a persistent shell session',
@@ -73,6 +76,7 @@ export const GLOB_TOOL_NAME = 'glob';
 export const GLOB_TOOL_PARAMETERS = z.object({
     pattern: z.string().describe('Glob pattern like "**/*.js"'),
     path: z.string().optional().describe('Directory to search (optional, defaults to current)'),
+    branchId: z.string().describe('Branch ID to search files in'),
 });
 export const globTool = tool({
     description: 'Fast file pattern matching tool that works with any codebase size',
@@ -96,13 +100,16 @@ export const GREP_TOOL_PARAMETERS = z.object({
     context_around: z.number().optional().describe('Lines around match'),
     multiline: z.boolean().optional().describe('Enable multiline matching'),
     head_limit: z.number().optional().describe('Limit output lines'),
+    branchId: z.string().describe('Branch ID to search files in'),
 });
 export const grepTool = tool({
     description: 'Powerful search tool built on ripgrep with full regex syntax support',
     inputSchema: GREP_TOOL_PARAMETERS,
 });
 export const TYPECHECK_TOOL_NAME = 'typecheck';
-export const TYPECHECK_TOOL_PARAMETERS = z.object({});
+export const TYPECHECK_TOOL_PARAMETERS = z.object({
+    branchId: z.string().describe('Branch ID to run typecheck in'),
+});
 export const typecheckTool = tool({
     description: 'Run this as the final command after code edits, when type changes are suspected.',
     inputSchema: TYPECHECK_TOOL_PARAMETERS,

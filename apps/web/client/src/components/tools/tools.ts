@@ -6,8 +6,6 @@ import {
     BASH_EDIT_TOOL_PARAMETERS,
     BASH_READ_TOOL_NAME,
     BASH_READ_TOOL_PARAMETERS,
-    EXIT_PLAN_MODE_TOOL_NAME,
-    EXIT_PLAN_MODE_TOOL_PARAMETERS,
     FUZZY_EDIT_FILE_TOOL_NAME,
     FUZZY_EDIT_FILE_TOOL_PARAMETERS,
     GLOB_TOOL_NAME,
@@ -29,8 +27,6 @@ import {
     SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_NAME,
     TERMINAL_COMMAND_TOOL_PARAMETERS,
-    TODO_WRITE_TOOL_NAME,
-    TODO_WRITE_TOOL_PARAMETERS,
     TYPECHECK_TOOL_NAME,
     TYPECHECK_TOOL_PARAMETERS,
     WEB_SEARCH_TOOL_NAME,
@@ -43,7 +39,6 @@ import { type z } from 'zod';
 import {
     handleBashEditTool,
     handleBashReadTool,
-    handleExitPlanModeTool,
     handleFuzzyEditFileTool,
     handleGlobTool,
     handleGrepTool,
@@ -54,7 +49,6 @@ import {
     handleScrapeUrlTool,
     handleSearchReplaceEditFileTool,
     handleTerminalCommandTool,
-    handleTodoWriteTool,
     handleTypecheckTool,
     handleWebSearchTool,
     handleWriteFileTool
@@ -68,7 +62,23 @@ interface ClientToolMap extends Record<string, {
 }> { }
 
 const TOOL_HANDLERS: ClientToolMap = {
-    // Primary Onlook tools (enhanced functionality)
+    [ONLOOK_INSTRUCTIONS_TOOL_NAME]: {
+        name: ONLOOK_INSTRUCTIONS_TOOL_NAME,
+        inputSchema: EMPTY_TOOL_PARAMETERS,
+        handler: async (_args: unknown, _editorEngine: EditorEngine) => ONLOOK_INSTRUCTIONS,
+    },
+    [WEB_SEARCH_TOOL_NAME]: {
+        name: WEB_SEARCH_TOOL_NAME,
+        inputSchema: WEB_SEARCH_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleWebSearchTool(args),
+    },
+    [SCRAPE_URL_TOOL_NAME]: {
+        name: SCRAPE_URL_TOOL_NAME,
+        inputSchema: SCRAPE_URL_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleScrapeUrlTool(args),
+    },
     [LIST_FILES_TOOL_NAME]: {
         name: LIST_FILES_TOOL_NAME,
         inputSchema: LIST_FILES_TOOL_PARAMETERS,
@@ -87,11 +97,6 @@ const TOOL_HANDLERS: ClientToolMap = {
         handler: async (args: unknown, editorEngine: EditorEngine) =>
             handleReadStyleGuideTool(editorEngine),
     },
-    [ONLOOK_INSTRUCTIONS_TOOL_NAME]: {
-        name: ONLOOK_INSTRUCTIONS_TOOL_NAME,
-        inputSchema: EMPTY_TOOL_PARAMETERS,
-        handler: async (_args: unknown, _editorEngine: EditorEngine) => ONLOOK_INSTRUCTIONS,
-    },
     [SEARCH_REPLACE_EDIT_FILE_TOOL_NAME]: {
         name: SEARCH_REPLACE_EDIT_FILE_TOOL_NAME,
         inputSchema: SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS,
@@ -109,12 +114,6 @@ const TOOL_HANDLERS: ClientToolMap = {
         inputSchema: TERMINAL_COMMAND_TOOL_PARAMETERS,
         handler: async (args: z.infer<typeof TERMINAL_COMMAND_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleTerminalCommandTool(args, editorEngine),
-    },
-    [SCRAPE_URL_TOOL_NAME]: {
-        name: SCRAPE_URL_TOOL_NAME,
-        inputSchema: SCRAPE_URL_TOOL_PARAMETERS,
-        handler: async (args: z.infer<typeof SCRAPE_URL_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
-            handleScrapeUrlTool(args),
     },
     [SANDBOX_TOOL_NAME]: {
         name: SANDBOX_TOOL_NAME,
@@ -151,24 +150,6 @@ const TOOL_HANDLERS: ClientToolMap = {
         inputSchema: FUZZY_EDIT_FILE_TOOL_PARAMETERS,
         handler: async (args: z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleFuzzyEditFileTool(args, editorEngine),
-    },
-    [TODO_WRITE_TOOL_NAME]: {
-        name: TODO_WRITE_TOOL_NAME,
-        inputSchema: TODO_WRITE_TOOL_PARAMETERS,
-        handler: async (args: z.infer<typeof TODO_WRITE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
-            handleTodoWriteTool(args, editorEngine),
-    },
-    [EXIT_PLAN_MODE_TOOL_NAME]: {
-        name: EXIT_PLAN_MODE_TOOL_NAME,
-        inputSchema: EXIT_PLAN_MODE_TOOL_PARAMETERS,
-        handler: async (args: z.infer<typeof EXIT_PLAN_MODE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
-            handleExitPlanModeTool(args, editorEngine),
-    },
-    [WEB_SEARCH_TOOL_NAME]: {
-        name: WEB_SEARCH_TOOL_NAME,
-        inputSchema: WEB_SEARCH_TOOL_PARAMETERS,
-        handler: async (args: z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
-            handleWebSearchTool(args),
     },
     [TYPECHECK_TOOL_NAME]: {
         name: TYPECHECK_TOOL_NAME,

@@ -9,7 +9,11 @@ export async function handleListFilesTool(
     args: z.infer<typeof LIST_FILES_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<{ path: string; type: 'file' | 'directory' }[]> {
-    const result = await editorEngine.sandbox.readDir(args.path);
+    const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+    if (!sandbox) {
+        throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
+    }
+    const result = await sandbox.readDir(args.path);
     if (!result) {
         throw new Error('Error listing files');
     }
@@ -24,7 +28,11 @@ export async function handleReadFileTool(args: z.infer<typeof READ_FILE_TOOL_PAR
     lines: number;
 }> {
     try {
-        const file = await editorEngine.sandbox.readFile(args.file_path);
+        const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+        if (!sandbox) {
+            throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
+        }
+        const file = await sandbox.readFile(args.file_path);
         if (!file) {
             throw new Error(`Cannot read file ${args.file_path}: file not found`);
         }

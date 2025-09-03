@@ -155,8 +155,9 @@ export function getTruncatedFilesContent(
     let index = 1;
     for (const file of files) {
         const branchInfo = branchLookup.get(file.branchId);
-        const branchDisplay = branchInfo ? `${branchInfo.id}:${branchInfo.name}` : file.branchId;
-        let filePrompt = `${file.path} - branch: ${branchDisplay}\n`;
+        const branchDisplay = branchInfo ? getBranchesContent(branchInfo.id, branchInfo.name) : '';
+        const pathDisplay = wrapXml('path', file.path);
+        let filePrompt = `${pathDisplay}\n${branchDisplay}\n`;
         filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
         prompt += filePrompt;
         index++;
@@ -178,8 +179,9 @@ export function getFilesContent(
     let index = 1;
     for (const file of files) {
         const branchInfo = branchLookup.get(file.branchId);
-        const branchDisplay = branchInfo ? `${branchInfo.id}:${branchInfo.name}` : file.branchId;
-        let filePrompt = `${file.path} - branch: ${branchDisplay}\n`;
+        const branchDisplay = branchInfo ? getBranchesContent(branchInfo.id, branchInfo.name) : '';
+        const pathDisplay = wrapXml('path', file.path);
+        let filePrompt = `${pathDisplay}\n${branchDisplay}\n`;
         filePrompt += `${CODE_FENCE.start}${getLanguageFromFilePath(file.path)}\n`;
         filePrompt += file.content;
         filePrompt += `\n${CODE_FENCE.end}\n`;
@@ -203,8 +205,9 @@ export function getErrorsContent(
     let prompt = `${CONTEXT_PROMPTS.errorsContentPrefix}\n`;
     for (const error of errors) {
         const branchInfo = branchLookup.get(error.branchId);
-        const branchDisplay = branchInfo ? `${branchInfo.id}:${branchInfo.name}` : error.branchId;
-        prompt += `(Branch: ${branchDisplay}) ${error.content}\n`;
+        const branchDisplay = branchInfo ? getBranchesContent(branchInfo.id, branchInfo.name) : '';
+        const errorDisplay = wrapXml('error', error.content);
+        prompt += `${branchDisplay}\n${errorDisplay}\n`;
     }
 
     prompt = wrapXml('errors', prompt);
@@ -228,10 +231,9 @@ export function getHighlightsContent(
     let index = 1;
     for (const highlight of fileHighlights) {
         const branchInfo = branchLookup.get(highlight.branchId);
-        const branchDisplay = branchInfo
-            ? `${branchInfo.id}:${branchInfo.name}`
-            : highlight.branchId;
-        let highlightPrompt = `${filePath}#L${highlight.start}:L${highlight.end} (Branch: ${branchDisplay})\n`;
+        const branchDisplay = branchInfo ? getBranchesContent(branchInfo.id, branchInfo.name) : '';
+        const pathDisplay = wrapXml('path', filePath);
+        let highlightPrompt = `${pathDisplay}#L${highlight.start}:L${highlight.end}\n${branchDisplay}\n`;
         highlightPrompt += `${CODE_FENCE.start}\n`;
         highlightPrompt += highlight.content;
         highlightPrompt += `\n${CODE_FENCE.end}\n`;
@@ -243,6 +245,10 @@ export function getHighlightsContent(
         index++;
     }
     return prompt;
+}
+
+export function getBranchesContent(id: string, name: string) {
+    return wrapXml('branch', `id: "${id}" - name: "${name}"`);
 }
 
 export function getSummaryPrompt() {
