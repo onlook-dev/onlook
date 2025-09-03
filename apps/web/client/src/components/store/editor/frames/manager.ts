@@ -212,7 +212,9 @@ export class FramesManager {
     }
 
     async create(frame: Frame) {
-        const success = await api.frame.create.mutate(toDbFrame(roundDimensions(frame)));
+        const success = await api.frame.create.mutate(
+            toDbFrame(roundDimensions(frame)),
+        );
 
         if (success) {
             this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
@@ -273,6 +275,21 @@ export class FramesManager {
     }
 
     canDelete() {
+        const selectedFrames = this.selected;
+
+        if (selectedFrames.length > 0) {
+            // Check if any selected frame is the last frame in its branch
+            for (const selectedFrame of selectedFrames) {
+                const branchId = selectedFrame.frame.branchId;
+                const framesInBranch = this.getAll().filter(frameData => frameData.frame.branchId === branchId);
+                if (framesInBranch.length <= 1) {
+                    return false; // Cannot delete if this is the last frame in the branch
+                }
+            }
+            return true;
+        }
+
+        // Fallback to checking total frames if none are selected
         return this.getAll().length > 1;
     }
 

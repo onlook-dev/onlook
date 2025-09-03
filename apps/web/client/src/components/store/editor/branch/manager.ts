@@ -127,6 +127,7 @@ export class BranchManager {
         }
 
         try {
+            toast.loading('Forking branch...');
             // Get current active frame for positioning
             const activeFrames = this.editorEngine.frames.selected;
             const activeFrame = activeFrames.length > 0 ? activeFrames[0] : this.editorEngine.frames.getAll()[0];
@@ -172,6 +173,8 @@ export class BranchManager {
             console.error('Failed to fork branch:', error);
             toast.error('Failed to fork branch');
             throw error;
+        } finally {
+            toast.dismiss();
         }
     }
 

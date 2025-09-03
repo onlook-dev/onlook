@@ -40,18 +40,6 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             icon: <Icons.Image className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.images,
         },
-        {
-            value: LeftPanelTabValue.APPS,
-            icon: <Icons.ViewGrid className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.apps,
-            disabled: true,
-        },
-        {
-            value: LeftPanelTabValue.COMPONENTS,
-            icon: <Icons.Component className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.components,
-            disabled: true,
-        },
     ];
 
 export const LeftPanel = observer(() => {
