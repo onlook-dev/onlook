@@ -7,7 +7,7 @@ import {
 import { EditorAttributes } from '@onlook/constants';
 import { colors } from '@onlook/ui/tokens';
 import { observer } from 'mobx-react-lite';
-import { EditorState } from 'prosemirror-state';
+import { EditorState, Selection, TextSelection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { useEffect, useRef } from 'react';
 
@@ -139,9 +139,10 @@ export const TextEditor = observer(() => {
                 const tr = view.state.tr.replaceWith(0, view.state.doc.content.size, newDoc.content);
 
                 // Try to preserve cursor position if possible
-                const newSelection = selection.from <= tr.doc.content.size
-                    ? selection.constructor.near(tr.doc.resolve(Math.min(selection.from, tr.doc.content.size)))
-                    : selection.constructor.atEnd(tr.doc);
+                const targetPos = Math.min(selection.from, tr.doc.content.size);
+                const newSelection = targetPos < tr.doc.content.size
+                    ? Selection.near(tr.doc.resolve(targetPos))
+                    : Selection.atEnd(tr.doc);
                 tr.setSelection(newSelection);
 
                 view.dispatch(tr);
