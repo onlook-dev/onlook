@@ -13,10 +13,10 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
     const editorEngine = useEditorEngine();
     const iFrameRef = useRef<IFrameView>(null);
     const [isResizing, setIsResizing] = useState(false);
-    
+
     // Check if sandbox is connecting for this frame's branch
     const sandbox = editorEngine.branches.getSandboxById(frame.branchId);
-    const isConnecting = sandbox?.session?.isConnecting || false;
+    const isConnecting = sandbox?.session?.isConnecting || sandbox?.isIndexing || false;
 
     return (
         <div
@@ -30,18 +30,14 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
                 <FrameComponent frame={frame} ref={iFrameRef} />
                 <GestureScreen frame={frame} isResizing={isResizing} />
-                
-                {/* Connection overlay */}
+
                 {isConnecting && (
-                    <div 
+                    <div
                         className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-md"
                         style={{ width: frame.dimension.width, height: frame.dimension.height }}
                     >
-                        <div className="flex flex-col items-center gap-3 text-foreground">
+                        <div className="flex flex-col items-center gap-3 text-foreground" style={{ transform: `scale(${1 / editorEngine.canvas.scale})` }}>
                             <Icons.LoadingSpinner className="animate-spin h-8 w-8" />
-                            <span className="text-sm text-muted-foreground">
-                                Connecting to sandbox...
-                            </span>
                         </div>
                     </div>
                 )}

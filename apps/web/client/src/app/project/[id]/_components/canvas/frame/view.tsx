@@ -45,6 +45,7 @@ export const FrameComponent = observer(
         const baseDelay = 1000;
         const [penpalChild, setPenpalChild] = useState<PenpalChildMethods | null>(null);
         const isSelected = editorEngine.frames.isSelected(frame.id);
+        const isActiveBranch = editorEngine.branches.activeBranch.id === frame.branchId;
 
         const undebouncedReloadIframe = () => {
             try {
@@ -279,7 +280,11 @@ export const FrameComponent = observer(
             <iframe
                 ref={iframeRef}
                 id={frame.id}
-                className={cn('backdrop-blur-sm transition outline outline-4', isSelected && 'outline-teal-400')}
+                className={cn(
+                    'backdrop-blur-sm transition outline outline-4',
+                    isActiveBranch && 'outline-teal-400',
+                    isActiveBranch && !isSelected && 'outline-dashed',
+                )}
                 src={frame.url}
                 sandbox="allow-modals allow-forms allow-same-origin allow-scripts allow-popups allow-downloads"
                 allow="geolocation; microphone; camera; midi; encrypted-media"
