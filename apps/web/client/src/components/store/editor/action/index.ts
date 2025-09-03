@@ -285,7 +285,5 @@ export class ActionManager {
         }
     }
 
-    clear() {
-        // History clearing is now handled by BranchManager
-    }
+    clear() { }
 }
