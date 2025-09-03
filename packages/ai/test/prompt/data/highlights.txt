@@ -1,9 +1,11 @@
 I am looking at this specific part of the file in the browser UI
-<highlight-1>test.txt#L1:L2
+<highlight-1><path>test.txt</path>#L1:L2
+
 ```
 test
 ```
-</highlight-1><highlight-2>test.txt#L3:L4
+</highlight-1><highlight-2><path>test.txt</path>#L3:L4
+
 ```
 test2
 ```

@@ -54,6 +54,7 @@ describe('Prompt', () => {
                     content: 'test',
                     type: MessageContextType.FILE,
                     displayName: 'test.txt',
+                    branchId: 'test',
                 },
 
                 {
@@ -63,12 +64,14 @@ describe('Prompt', () => {
                     content: 'test',
                     type: MessageContextType.HIGHLIGHT,
                     displayName: 'test.txt',
+                    branchId: 'test',
                 },
 
                 {
                     content: 'test',
                     type: MessageContextType.ERROR,
                     displayName: 'test',
+                    branchId: 'test',
                 },
                 {
                     path: 'test',
@@ -121,12 +124,14 @@ describe('Prompt', () => {
                     content: 'test',
                     type: MessageContextType.FILE,
                     displayName: 'test.txt',
+                    branchId: 'test',
                 },
                 {
                     path: 'test2.txt',
                     content: 'test2',
                     type: MessageContextType.FILE,
                     displayName: 'test2.txt',
+                    branchId: 'test',
                 },
             ],
             [
@@ -137,8 +142,10 @@ describe('Prompt', () => {
                     content: 'test',
                     type: MessageContextType.HIGHLIGHT,
                     displayName: 'test.txt',
+                    branchId: 'test',
                 },
             ],
+            new Map([['test.txt', { id: 'test', name: 'test' }]]),
         );
 
         if (SHOULD_WRITE_FILE_CONTENT) {
@@ -152,24 +159,30 @@ describe('Prompt', () => {
     test('Highlights should be the same', async () => {
         const highlightsPath = path.resolve(__dirname, './data/highlights.txt');
 
-        const prompt = getHighlightsContent('test.txt', [
-            {
-                path: 'test.txt',
-                start: 1,
-                end: 2,
-                content: 'test',
-                type: MessageContextType.HIGHLIGHT,
-                displayName: 'test.txt',
-            },
-            {
-                path: 'test.txt',
-                start: 3,
-                end: 4,
-                content: 'test2',
-                type: MessageContextType.HIGHLIGHT,
-                displayName: 'test.txt',
-            },
-        ]);
+        const prompt = getHighlightsContent(
+            'test.txt',
+            [
+                {
+                    path: 'test.txt',
+                    start: 1,
+                    end: 2,
+                    content: 'test',
+                    type: MessageContextType.HIGHLIGHT,
+                    displayName: 'test.txt',
+                    branchId: 'test',
+                },
+                {
+                    path: 'test.txt',
+                    start: 3,
+                    end: 4,
+                    content: 'test2',
+                    type: MessageContextType.HIGHLIGHT,
+                    displayName: 'test.txt',
+                    branchId: 'test',
+                },
+            ],
+            new Map([['test.txt', { id: 'test', name: 'test' }]]),
+        );
         if (SHOULD_WRITE_HIGHLIGHTS) {
             await Bun.write(highlightsPath, prompt);
         }
