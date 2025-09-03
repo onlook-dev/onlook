@@ -12,3 +12,9 @@ export const readStyleGuideTool = tool({
     description: 'Read the Tailwind config and global CSS file if available for the style guide',
     inputSchema: z.object({}),
 });
+
+export const LIST_BRANCHES_TOOL_NAME = 'list_branches';
+export const listBranchesTool = tool({
+    description: 'Get information about all available branches in the project',
+    inputSchema: z.object({}),
+});

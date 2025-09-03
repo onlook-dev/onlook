@@ -8,6 +8,7 @@ import {
     type FUZZY_EDIT_FILE_TOOL_PARAMETERS,
     GREP_TOOL_NAME,
     type GREP_TOOL_PARAMETERS,
+    LIST_BRANCHES_TOOL_NAME,
     LIST_FILES_TOOL_NAME,
     type LIST_FILES_TOOL_PARAMETERS,
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
@@ -55,6 +56,7 @@ const TOOL_ICONS: Record<string, any> = {
     [EXIT_PLAN_MODE_TOOL_NAME]: Icons.ListBullet,
     [BASH_READ_TOOL_NAME]: Icons.EyeOpen,
     [TYPECHECK_TOOL_NAME]: Icons.MagnifyingGlass,
+    [LIST_BRANCHES_TOOL_NAME]: Icons.Commit,
 } as const;
 
 export function ToolCallSimple({
@@ -74,6 +76,8 @@ export function ToolCallSimple({
             switch (toolName) {
                 case TERMINAL_COMMAND_TOOL_NAME:
                     return 'Terminal';
+                case LIST_BRANCHES_TOOL_NAME:
+                    return 'Listing branches';
                 case SEARCH_REPLACE_EDIT_FILE_TOOL_NAME:
                     const params = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>;
                     if (params?.file_path) {

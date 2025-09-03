@@ -12,6 +12,7 @@ import {
     GLOB_TOOL_PARAMETERS,
     GREP_TOOL_NAME,
     GREP_TOOL_PARAMETERS,
+    LIST_BRANCHES_TOOL_NAME,
     LIST_FILES_TOOL_NAME,
     LIST_FILES_TOOL_PARAMETERS,
     ONLOOK_INSTRUCTIONS,
@@ -42,6 +43,7 @@ import {
     handleFuzzyEditFileTool,
     handleGlobTool,
     handleGrepTool,
+    handleListBranchesTool,
     handleListFilesTool,
     handleReadFileTool,
     handleReadStyleGuideTool,
@@ -96,6 +98,12 @@ const TOOL_HANDLERS: ClientToolMap = {
         inputSchema: EMPTY_TOOL_PARAMETERS,
         handler: async (args: unknown, editorEngine: EditorEngine) =>
             handleReadStyleGuideTool(editorEngine),
+    },
+    [LIST_BRANCHES_TOOL_NAME]: {
+        name: LIST_BRANCHES_TOOL_NAME,
+        inputSchema: EMPTY_TOOL_PARAMETERS,
+        handler: async (args: unknown, editorEngine: EditorEngine) =>
+            handleListBranchesTool(editorEngine),
     },
     [SEARCH_REPLACE_EDIT_FILE_TOOL_NAME]: {
         name: SEARCH_REPLACE_EDIT_FILE_TOOL_NAME,
