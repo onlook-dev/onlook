@@ -75,6 +75,7 @@
         "embla-carousel-react": "^8.6.0",
         "flexsearch": "^0.8.160",
         "freestyle-sandboxes": "^0.0.78",
+        "gleap": "^14.8.8",
         "langfuse-vercel": "^3.38.4",
         "localforage": "^1.10.0",
         "lucide-react": "^0.486.0",

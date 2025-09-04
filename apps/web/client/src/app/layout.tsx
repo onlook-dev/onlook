@@ -2,6 +2,7 @@ import '@/styles/globals.css';
 import '@onlook/ui/globals.css';
 
 import { PostHogProvider } from '@/components/posthog-provider';
+import { GleapProvider } from '@/components/gleap-provider';
 import { env } from '@/env';
 import { FeatureFlagsProvider } from '@/hooks/use-feature-flags';
 import { TRPCReactProvider } from '@/trpc/react';
@@ -81,19 +82,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <TRPCReactProvider>
                     <FeatureFlagsProvider>
                         <PostHogProvider>
-                            <ThemeProvider
-                                attribute="class"
-                                forcedTheme="dark"
-                                enableSystem
-                                disableTransitionOnChange
-                            >
-                                <AuthProvider>
-                                    <NextIntlClientProvider>
-                                        {children}
-                                        <Toaster />
-                                    </NextIntlClientProvider>
-                                </AuthProvider>
-                            </ThemeProvider>
+                            <GleapProvider>
+                                <ThemeProvider
+                                    attribute="class"
+                                    forcedTheme="dark"
+                                    enableSystem
+                                    disableTransitionOnChange
+                                >
+                                    <AuthProvider>
+                                        <NextIntlClientProvider>
+                                            {children}
+                                            <Toaster />
+                                        </NextIntlClientProvider>
+                                    </AuthProvider>
+                                </ThemeProvider>
+                            </GleapProvider>
                         </PostHogProvider>
                     </FeatureFlagsProvider>
                 </TRPCReactProvider>

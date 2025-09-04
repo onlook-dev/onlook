@@ -70,6 +70,7 @@ export const env = createEnv({
         NEXT_PUBLIC_FEATURE_COLLABORATION: z.boolean().default(false),
         NEXT_PUBLIC_HOSTING_DOMAIN: z.string().optional(),
         NEXT_PUBLIC_RB2B_ID: z.string().optional(),
+        NEXT_PUBLIC_GLEAP_KEY: z.string().optional(),
     },
 
     /**
@@ -94,6 +95,8 @@ export const env = createEnv({
 
         // RB2B
         NEXT_PUBLIC_RB2B_ID: process.env.NEXT_PUBLIC_RB2B_ID,
+
+        NEXT_PUBLIC_GLEAP_KEY: process.env.NEXT_PUBLIC_GLEAP_KEY,
 
         // Hosting
         FREESTYLE_API_KEY: process.env.FREESTYLE_API_KEY,
