@@ -14,7 +14,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
 
 export class ChatContext {
-    context: MessageContext[] = this.getProjectContext();
+    context: MessageContext[] = [];
     private selectedReactionDisposer?: () => void;
 
     constructor(
@@ -38,12 +38,11 @@ export class ChatContext {
             highlightedContext = await this.getHighlightedContext(selected);
         }
         const imageContext = await this.getImageContext();
-        const projectContext = this.getProjectContext();
 
         // Derived from highlighted context
         const fileContext = await this.getFileContext(highlightedContext);
         const branchContext = this.getBranchContext(highlightedContext);
-        const context = [...fileContext, ...highlightedContext, ...imageContext, ...projectContext, ...branchContext];
+        const context = [...fileContext, ...highlightedContext, ...imageContext, ...branchContext];
         return context;
     }
 
@@ -166,6 +165,8 @@ export class ChatContext {
         return highlightedContext;
     }
 
+
+    // TODO: Enhance with custom rules
     getProjectContext(): ProjectMessageContext[] {
         return [
             {
