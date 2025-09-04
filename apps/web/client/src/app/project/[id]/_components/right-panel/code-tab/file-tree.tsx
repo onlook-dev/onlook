@@ -6,7 +6,7 @@ import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { nanoid } from 'nanoid';
 import path from 'path';
-import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import { FileTreeNode } from './file-tree-node';
@@ -20,7 +20,7 @@ interface FileTreeProps {
     activeFilePath?: string | null;
 }
 
-const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files, isLoading = false, onRefresh, activeFilePath }, ref) => {
+export const FileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files, isLoading = false, onRefresh, activeFilePath }, ref) => {
     const editorEngine = useEditorEngine();
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
@@ -396,5 +396,3 @@ const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files
         </div>
     );
 });
-
-export const FileTree = memo(UnmemoizedFileTree);
