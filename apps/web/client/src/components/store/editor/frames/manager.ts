@@ -7,6 +7,7 @@ import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
 import { FrameNavigationManager } from './navigation';
+import { calculateNonOverlappingPosition } from './positioning';
 
 export interface FrameData {
     frame: Frame;
@@ -27,6 +28,7 @@ function roundDimensions(frame: Frame): Frame {
         },
     };
 }
+
 
 export class FramesManager {
     private _frameIdToData = new Map<string, FrameData>();
@@ -225,14 +227,22 @@ export class FramesManager {
             return;
         }
 
-        const frame = frameData.frame
-        const newFrame: Frame = {
+        const frame = frameData.frame;
+        const allFrames = this.getAll().map(frameData => frameData.frame);
+        
+        const proposedFrame: Frame = {
             ...frame,
             id: uuid(),
             position: {
                 x: frame.position.x + frame.dimension.width + 100,
                 y: frame.position.y,
             },
+        };
+
+        const newPosition = calculateNonOverlappingPosition(proposedFrame, allFrames);
+        const newFrame: Frame = {
+            ...proposedFrame,
+            position: newPosition,
         };
 
         await this.create(newFrame);
@@ -290,6 +300,11 @@ export class FramesManager {
 
     canDuplicate() {
         return this.selected.length > 0;
+    }
+
+    calculateNonOverlappingPosition(proposedFrame: Frame): { x: number; y: number } {
+        const allFrames = this.getAll().map(frameData => frameData.frame);
+        return calculateNonOverlappingPosition(proposedFrame, allFrames);
     }
 
     async duplicateSelected() {
