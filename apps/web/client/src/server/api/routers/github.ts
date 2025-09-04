@@ -150,6 +150,7 @@ export const githubRouter = createTRPCRouter({
                 options: {
                     redirectTo: `${origin}${Routes.AUTH_CALLBACK}`,
                     skipBrowserRedirect: true,
+                    scopes: 'read:org repo read:user',
                 },
             });
 
@@ -163,4 +164,5 @@ export const githubRouter = createTRPCRouter({
 
             return { url: data.url };
         }),
+
 });
