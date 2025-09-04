@@ -119,7 +119,7 @@ export class ChatContext {
                 branchContext.push({
                     type: MessageContextType.BRANCH,
                     branch,
-                    content: branch.description || '',
+                    content: branch.description ?? branch.name,
                     displayName: branch.name,
                 } satisfies BranchMessageContext);
             }
