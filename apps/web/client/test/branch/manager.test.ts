@@ -70,6 +70,7 @@ describe('BranchManager', () => {
     let mockProject: any;
 
     test('should have TRPC mocks properly configured', async () => {
+        // @ts-ignore
         const { api } = await import('@/trpc/client');
 
         // Test that the mocks are working
