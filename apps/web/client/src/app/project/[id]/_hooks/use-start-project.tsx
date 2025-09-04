@@ -36,13 +36,21 @@ export const useStartProject = () => {
             await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
         },
     });
+    const { mutateAsync: trackProjectAccess } = api.project.trackAccess.useMutation({
+        onSuccess: () => {
+            // Invalidate project list to refresh recent projects
+            apiUtils.project.list.invalidate();
+        },
+    });
 
     useEffect(() => {
         if (project) {
             startSandbox(project);
             editorEngine.screenshot.lastScreenshotAt = project.metadata.updatedPreviewImgAt;
+            // Track project access to update "recent projects" list
+            trackProjectAccess({ projectId: project.id }).catch(console.error);
         }
-    }, [project]);
+    }, [project, trackProjectAccess]);
 
     const startSandbox = async (project: Project) => {
         try {

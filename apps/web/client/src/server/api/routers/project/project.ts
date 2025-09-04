@@ -1,5 +1,6 @@
 import { env } from '@/env';
 import { createTRPCRouter, protectedProcedure } from '@/server/api/trpc';
+import { TRPCError } from '@trpc/server';
 import { trackEvent } from '@/utils/analytics/server';
 import FirecrawlApp from '@mendable/firecrawl-js';
 import { initModel } from '@onlook/ai';
@@ -403,4 +404,29 @@ export const projectRouter = createTRPCRouter({
 
         return { success: true, tags: newTags };
     }),
+
+    trackAccess: protectedProcedure
+        .input(z.object({ projectId: z.string().uuid() }))
+        .mutation(async ({ ctx, input }) => {
+            // Check if user has access to this project
+            const membership = await ctx.db.query.userProjects.findFirst({
+                where: and(
+                    eq(userProjects.userId, ctx.user.id),
+                    eq(userProjects.projectId, input.projectId),
+                ),
+            });
+            
+            if (!membership) {
+                throw new TRPCError({ 
+                    code: 'FORBIDDEN',
+                    message: 'You do not have access to this project'
+                });
+            }
+
+            await ctx.db.update(projects).set({
+                updatedAt: new Date(),
+            }).where(eq(projects.id, input.projectId));
+            
+            return { success: true };
+        }),
 });
