@@ -26,13 +26,17 @@ export const forkTemplate = protectedProcedure
         projectId: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
-        // 1. Get the source project with canvas and frames
+        // 1. Get the source project with canvas, frames, and branches
         const sourceProject = await ctx.db.query.projects.findFirst({
             where: eq(projects.id, input.projectId),
             with: {
                 canvas: {
                     with: {
-                        frames: true,
+                        frames: {
+                            with: {
+                                branch: true,
+                            },
+                        },
                         userCanvases: true,
                     },
                 },

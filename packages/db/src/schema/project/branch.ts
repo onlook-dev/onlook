@@ -43,6 +43,7 @@ export const branchRelations = relations(branches, ({ one, many }) => ({
     project: one(projects, {
         fields: [branches.projectId],
         references: [projects.id],
+        relationName: PROJECT_BRANCH_RELATION_NAME,
     }),
     frames: many(frames),
 }));
