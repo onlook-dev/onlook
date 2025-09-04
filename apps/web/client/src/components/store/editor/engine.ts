@@ -79,7 +79,6 @@ export class EditorEngine {
 
     async init() {
         this.overlay.init();
-        this.ide.init();
         this.image.init();
         this.font.init();
         this.frameEvent.init();

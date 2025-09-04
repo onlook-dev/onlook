@@ -4,9 +4,10 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
 import path from 'path';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import { FileTreeNode } from './file-tree-node';
@@ -14,17 +15,17 @@ import { FileTreeRow } from './file-tree-row';
 
 interface FileTreeProps {
     onFileSelect: (filePath: string, searchTerm?: string) => void;
-    files: string[];
-    isLoading?: boolean;
-    onRefresh?: () => Promise<void>;
-    activeFilePath?: string | null;
 }
 
-export const FileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files, isLoading = false, onRefresh, activeFilePath }, ref) => {
+const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSelect }, ref) => {
     const editorEngine = useEditorEngine();
+    const ide = editorEngine.ide;
+    const files = ide.files;
+    const isLoading = ide.isFilesLoading;
+    const activeFilePath = ide.activeFile?.path || null;
+
     const [searchQuery, setSearchQuery] = useState('');
     const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null);
-    const [treeData, setTreeData] = useState<FileNode[]>([]);
     const [contentMatches, setContentMatches] = useState<Map<string, number>>(new Map());
     const [isSearching, setIsSearching] = useState(false);
     const treeRef = useRef<TreeApi<FileNode>>(null);
@@ -33,21 +34,6 @@ export const FileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files, i
     const { ref: containerRef, width: filesWidth } = useResizeObserver();
     const { ref: treeContainerRef, height: filesHeight } = useResizeObserver();
 
-    // Expose tree API to parent component
-    useImperativeHandle(ref, () => ({
-        deselectAll: () => {
-            if (treeRef.current) {
-                treeRef.current.deselectAll();
-            }
-        },
-        selectFile: (filePath: string) => {
-            const targetNode = findNodeByPath(treeData, filePath);
-            if (targetNode && treeRef.current) {
-                treeRef.current.select(targetNode.id);
-                treeRef.current.scrollTo(targetNode.id);
-            }
-        }
-    }), [treeData]);
 
     const isTextFile = useCallback((filePath: string): boolean => {
         const ext = path.extname(filePath).toLowerCase();
@@ -117,48 +103,62 @@ export const FileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files, i
         };
     }, [searchQuery, performContentSearch]);
 
-    const buildFileTree = useMemo(() => (files: string[]): FileNode[] => {
-        const root: FileNode = {
-            id: 'root',
-            name: 'root',
-            path: '',
-            isDirectory: true,
-            children: [],
-        };
+    const treeData = useMemo(() => {
+        const buildFileTree = (files: string[]): FileNode[] => {
+            const root: FileNode = {
+                id: 'root',
+                name: 'root',
+                path: '',
+                isDirectory: true,
+                children: [],
+            };
 
-        files.forEach((filePath) => {
-            const parts = filePath.split('/').filter(Boolean);
-            let current = root;
+            files.forEach((filePath) => {
+                const parts = filePath.split('/').filter(Boolean);
+                let current = root;
 
-            parts.forEach((part, index) => {
-                const isLast = index === parts.length - 1;
-                const filePath = parts.slice(0, index + 1).join('/');
-                const existingNode = current.children?.find((child) => child.name === part);
+                parts.forEach((part, index) => {
+                    const isLast = index === parts.length - 1;
+                    const filePath = parts.slice(0, index + 1).join('/');
+                    const existingNode = current.children?.find((child) => child.name === part);
 
-                if (existingNode) {
-                    current = existingNode;
-                } else {
-                    const newNode: FileNode = {
-                        id: nanoid(),
-                        name: part,
-                        path: filePath,
-                        isDirectory: !isLast,
-                        children: !isLast ? [] : undefined,
-                        extension: isLast ? path.extname(filePath) : undefined,
-                    };
-                    current.children?.push(newNode);
-                    current = newNode;
-                }
+                    if (existingNode) {
+                        current = existingNode;
+                    } else {
+                        const newNode: FileNode = {
+                            id: nanoid(),
+                            name: part,
+                            path: filePath,
+                            isDirectory: !isLast,
+                            children: !isLast ? [] : undefined,
+                            extension: isLast ? path.extname(filePath) : undefined,
+                        };
+                        current.children?.push(newNode);
+                        current = newNode;
+                    }
+                });
             });
-        });
 
-        return root.children || [];
-    }, []);
+            return root.children || [];
+        };
+        return buildFileTree(files);
+    }, [files]);
 
-    // Update tree data only when files change
-    useEffect(() => {
-        setTreeData(buildFileTree(files));
-    }, [files, buildFileTree]);
+    // Expose tree API to parent component
+    useImperativeHandle(ref, () => ({
+        deselectAll: () => {
+            if (treeRef.current) {
+                treeRef.current.deselectAll();
+            }
+        },
+        selectFile: (filePath: string) => {
+            const targetNode = findNodeByPath(treeData, filePath);
+            if (targetNode && treeRef.current) {
+                treeRef.current.select(targetNode.id);
+                treeRef.current.scrollTo(targetNode.id);
+            }
+        }
+    }), [treeData]);
 
     // Helper function to find tree node by file path
     const findNodeByPath = (nodes: FileNode[], targetPath: string): FileNode | null => {
@@ -283,17 +283,8 @@ export const FileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files, i
 
     const handleRefresh = async () => {
         setContentMatches(new Map());
-        editorEngine.ide.clearSearch();
-        if (onRefresh) {
-            await onRefresh();
-        } else {
-            try {
-                await editorEngine.activeSandbox.index(true);
-                await editorEngine.activeSandbox.listAllFiles();
-            } catch (error) {
-                console.error('Error refreshing files:', error);
-            }
-        }
+        ide.clearSearch();
+        await ide.refreshFiles();
     }
 
     return (
@@ -395,4 +386,6 @@ export const FileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files, i
             </div>
         </div>
     );
-});
+}));
+
+export const FileTree = memo(UnmemoizedFileTree);

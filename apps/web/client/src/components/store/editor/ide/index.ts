@@ -1,7 +1,7 @@
 import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/code-tab/code-mirror-config';
 import { EditorTabValue, type DomElement } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '../engine';
 
@@ -26,7 +26,6 @@ export interface CodeRange {
 export class IDEManager {
     openedFiles: EditorFile[] = [];
     activeFile: EditorFile | null = null;
-    files: string[] = [];
     highlightRange: CodeRange | null = null;
     searchTerm: string = '';
     isLoading = false;
@@ -36,22 +35,13 @@ export class IDEManager {
     folderModalOpen = false;
     showUnsavedDialog = false;
     pendingCloseAll = false;
-    private filesReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
-    init() {
-        this.filesReactionDisposer = reaction(
-            () => this.editorEngine.activeSandbox.files,
-            (files) => {
-                this.files = files;
-            },
-            {
-                fireImmediately: true,
-            }
-        );
+    get files(): string[] {
+        return this.editorEngine.activeSandbox?.files || [];
     }
 
     private isSandboxReady() {
@@ -68,7 +58,8 @@ export class IDEManager {
         }
         this.isFilesLoading = true;
         try {
-            this.files = await this.editorEngine.activeSandbox.listAllFiles();
+            // Trigger a fresh file list from the sandbox
+            await this.editorEngine.activeSandbox.listAllFiles();
         } catch (error) {
             console.error('Error loading files:', error);
         } finally {
@@ -350,11 +341,8 @@ export class IDEManager {
     }
 
     clear() {
-        this.filesReactionDisposer?.();
-        this.filesReactionDisposer = undefined;
         this.openedFiles = [];
         this.activeFile = null;
-        this.files = [];
         this.highlightRange = null;
         this.searchTerm = '';
         this.isLoading = false;

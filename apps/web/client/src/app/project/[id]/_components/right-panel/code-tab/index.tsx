@@ -510,10 +510,6 @@ export const CodeTab = observer(() => {
                         <FileTree
                             ref={fileTreeRef}
                             onFileSelect={loadFile}
-                            files={ide.files}
-                            isLoading={ide.isFilesLoading}
-                            onRefresh={handleRefreshFiles}
-                            activeFilePath={ide.activeFile?.path || null}
                         />
                     )}
 
