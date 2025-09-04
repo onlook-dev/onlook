@@ -35,7 +35,7 @@ export const EditorEngineProvider = ({
         return engine;
     });
 
-    // Handle project changes - create new engine when project.id changes
+    // Initialize editor engine when project ID changes
     useEffect(() => {
         if (currentProjectId.current !== project.id) {
             // Clean up old engine with delay to avoid race conditions
@@ -53,14 +53,7 @@ export const EditorEngineProvider = ({
             setEditorEngine(newEngine);
             currentProjectId.current = project.id;
         }
-    }, [project.id, posthog, branches]);
-
-    // Update branches when they change (same project)
-    useEffect(() => {
-        if (currentProjectId.current === project.id) {
-            editorEngine.initBranches(branches);
-        }
-    }, [branches, editorEngine, project.id]);
+    }, [project.id]);
 
     // Cleanup on unmount
     useEffect(() => {

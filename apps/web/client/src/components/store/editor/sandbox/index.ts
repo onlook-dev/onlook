@@ -109,20 +109,8 @@ export class SandboxManager {
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
-            for (const filePath of allFilePaths) {
-                // Track image files first
-                if (isImageFile(filePath)) {
-                    this.fileSync.writeEmptyFile(filePath, 'binary');
-                    continue;
-                }
-                const remoteFile = await this.readRemoteFile(filePath);
-                if (remoteFile) {
-                    this.fileSync.updateCache(remoteFile);
-                    if (this.isJsxFile(filePath)) {
-                        await this.processFileForMapping(remoteFile);
-                    }
-                }
-            }
+            // Process files in non-blocking batches
+            await this.processFilesInBatches(allFilePaths);
 
             await this.watchFiles();
             this._isIndexed = true;
@@ -133,6 +121,44 @@ export class SandboxManager {
         } finally {
             this._isIndexing = false;
         }
+    }
+
+    /**
+     * Process files in non-blocking batches to avoid blocking the UI thread
+     */
+    private async processFilesInBatches(allFilePaths: string[], batchSize: number = 20): Promise<void> {
+        let processed = 0;
+
+        for (let i = 0; i < allFilePaths.length; i += batchSize) {
+            const batch = allFilePaths.slice(i, i + batchSize);
+
+            // Process current batch
+            for (const filePath of batch) {
+                // Track image files first
+                if (isImageFile(filePath)) {
+                    this.fileSync.writeEmptyFile(filePath, 'binary');
+                    processed++;
+                    continue;
+                }
+
+                const remoteFile = await this.readRemoteFile(filePath);
+                if (remoteFile) {
+                    this.fileSync.updateCache(remoteFile);
+                    if (this.isJsxFile(filePath)) {
+                        await this.processFileForMapping(remoteFile);
+                    }
+                }
+                processed++;
+            }
+
+            // Yield control to the event loop after each batch
+            if (i + batchSize < allFilePaths.length) {
+                console.log(`[SandboxManager] Processed ${processed}/${allFilePaths.length} files...`);
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        }
+
+        console.log(`[SandboxManager] Completed processing ${processed} files`);
     }
 
     /**
