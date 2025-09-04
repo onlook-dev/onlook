@@ -37,7 +37,7 @@
         "@ai-sdk/google": "2.0.0",
         "@ai-sdk/google-vertex": "2.2.24",
         "@ai-sdk/openai": "2.0.0",
-        "@mendable/firecrawl-js": "^1.29.1",
+        "@mendable/firecrawl-js": "^4.3.1",
         "@openrouter/ai-sdk-provider": "^1.1.2",
         "ai": "5.0.26",
         "exa-js": "^1.8.26",
