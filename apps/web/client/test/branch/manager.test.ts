@@ -12,9 +12,9 @@ mock.module('@/trpc/client', () => ({
             }
         },
         branch: {
-            fork: { 
-                mutate: mock(async (params) => ({ 
-                    branch: { 
+            fork: {
+                mutate: mock(async (params) => ({
+                    branch: {
                         id: 'mock-branch',
                         name: params?.branchName || 'New Fork',
                         projectId: 'mock-project',
@@ -24,12 +24,12 @@ mock.module('@/trpc/client', () => ({
                         isDefault: false,
                         git: null,
                         sandbox: { id: 'mock-sandbox-id' }
-                    }, 
-                    frames: [] 
-                })) 
+                    },
+                    frames: []
+                }))
             },
-            update: { 
-                mutate: mock(async () => true) 
+            update: {
+                mutate: mock(async () => true)
             },
             delete: { mutate: mock(async () => true) }
         }
@@ -39,9 +39,11 @@ mock.module('@/trpc/client', () => ({
 // Mock toast
 mock.module('@onlook/ui/sonner', () => ({
     toast: {
-        success: mock(() => {}),
-        error: mock(() => {}),
-        info: mock(() => {})
+        success: mock(() => { }),
+        error: mock(() => { }),
+        info: mock(() => { }),
+        loading: mock(() => { }),
+        dismiss: mock(() => { })
     }
 }));
 
@@ -69,17 +71,17 @@ describe('BranchManager', () => {
 
     test('should have TRPC mocks properly configured', async () => {
         const { api } = await import('@/trpc/client');
-        
+
         // Test that the mocks are working
         expect(typeof api.branch.fork.mutate).toBe('function');
         expect(typeof api.branch.update.mutate).toBe('function');
-        
+
         // Test a simple mock call
         const forkResult = await api.branch.fork.mutate({ sourceBranchId: 'test', branchName: 'test-branch' });
         expect(forkResult).toBeTruthy();
         expect(forkResult.branch).toBeTruthy();
         expect(forkResult.branch.name).toBe('test-branch');
-        
+
         const updateResult = await api.branch.update.mutate({ id: 'test', name: 'updated' });
         expect(updateResult).toBe(true);
     });
@@ -89,17 +91,17 @@ describe('BranchManager', () => {
         mockEditorEngine = {
             frames: {
                 getAll: mock(() => []),
-                register: mock(() => {}),
-                select: mock(() => {}),
-                clear: mock(() => {}),
-                applyFrames: mock(() => {}),
+                register: mock(() => { }),
+                select: mock(() => { }),
+                clear: mock(() => { }),
+                applyFrames: mock(() => { }),
                 selected: [] // Add the selected property that forkBranch is trying to access
             },
             screenshot: {
-                captureScreenshot: mock(async () => {}),
+                captureScreenshot: mock(async () => { }),
             },
             preloadScript: {
-                ensurePreloadScriptFile: mock(async () => {}),
+                ensurePreloadScriptFile: mock(async () => { }),
             },
         };
 
@@ -144,7 +146,7 @@ describe('BranchManager', () => {
         const branch = branchManager.getBranchById('initial-branch-id');
         expect(branch).toBeTruthy();
         expect(branch?.name).toBe('main');
-        
+
         const nonExistentBranch = branchManager.getBranchById('non-existent');
         expect(nonExistentBranch).toBeNull();
     });
@@ -152,7 +154,7 @@ describe('BranchManager', () => {
     test('should get sandbox by id', () => {
         const sandbox = branchManager.getSandboxById('initial-branch-id');
         expect(sandbox).toBeTruthy();
-        
+
         const nonExistentSandbox = branchManager.getSandboxById('non-existent');
         expect(nonExistentSandbox).toBeNull();
     });
@@ -162,17 +164,17 @@ describe('BranchManager', () => {
         try {
             const initialBranchCount = branchManager.allBranches.length;
             const currentBranchId = branchManager.activeBranch.id;
-            
+
             // Verify we have the expected initial state
             expect(initialBranchCount).toBe(1);
             expect(currentBranchId).toBe('initial-branch-id');
-            
+
             await branchManager.forkBranch('New Fork');
-            
+
             // Check that a new branch was added
             const finalBranchCount = branchManager.allBranches.length;
             expect(finalBranchCount).toBe(initialBranchCount + 1);
-            
+
             const newBranch = branchManager.allBranches.find(b => b.name === 'New Fork');
             expect(newBranch).toBeTruthy();
             expect(newBranch?.id).toBe('mock-branch');
@@ -193,12 +195,12 @@ describe('BranchManager', () => {
             const originalBranch = branchManager.getBranchById('initial-branch-id');
             expect(originalBranch).toBeTruthy();
             expect(originalBranch?.name).toBe('main');
-            
+
             await branchManager.updateBranch('initial-branch-id', {
                 name: 'Updated Main',
                 description: 'Updated description'
             });
-            
+
             // Check that the branch was updated
             const updatedBranch = branchManager.getBranchById('initial-branch-id');
             expect(updatedBranch?.name).toBe('Updated Main');
@@ -217,7 +219,7 @@ describe('BranchManager', () => {
     test('should handle branch operations with mocked API', async () => {
         // Test that branch operations don't cause network timeouts
         const startTime = Date.now();
-        
+
         try {
             await branchManager.forkBranch('Test Fork');
             await branchManager.updateBranch('initial-branch-id', { name: 'Updated' });
@@ -225,10 +227,10 @@ describe('BranchManager', () => {
             // Even if there are other errors, they shouldn't be network timeout errors
             expect(error).not.toMatch(/Unable to connect|ECONNREFUSED|timeout/i);
         }
-        
+
         const endTime = Date.now();
         const duration = endTime - startTime;
-        
+
         // Should complete quickly since network calls are mocked
         expect(duration).toBeLessThan(1000); // Less than 1 second
     });

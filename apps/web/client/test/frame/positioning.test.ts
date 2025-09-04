@@ -50,8 +50,8 @@ describe('Frame Positioning', () => {
             const result = calculateNonOverlappingPosition(proposedFrame, [existingFrame]);
 
             // Should find an anchor point (right, below, or bottom-right)
-            const isToRight = result.x === existingFrame.position.x + existingFrame.dimension.width + 20;
-            const isBelow = result.y === existingFrame.position.y + existingFrame.dimension.height + 20;
+            const isToRight = result.x === existingFrame.position.x + existingFrame.dimension.width + 100;
+            const isBelow = result.y === existingFrame.position.y + existingFrame.dimension.height + 100;
 
             expect(isToRight || isBelow).toBe(true);
         });
@@ -165,7 +165,7 @@ describe('Frame Positioning', () => {
 
             const result = calculateNonOverlappingPosition(proposedFrame, [existingFrame]);
 
-            const expectedSpacing = 20;
+            const expectedSpacing = 100;
 
             // Check if positioned to the right
             if (result.x > existingFrame.position.x) {
