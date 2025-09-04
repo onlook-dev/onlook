@@ -29,6 +29,29 @@ export type IFrameView = HTMLIFrameElement & {
     isLoading: () => boolean;
 } & PromisifiedPendpalChildMethods;
 
+// Creates a proxy that provides safe fallback methods for any property access
+const createSafeFallbackMethods = (): PromisifiedPendpalChildMethods => {
+    return new Proxy({} as PromisifiedPendpalChildMethods, {
+        get(_target, prop: string | symbol) {
+            if (typeof prop === 'symbol') return undefined;
+            
+            return async (..._args: any[]) => {
+                const method = String(prop);
+                if (method.startsWith('get') || method.includes('capture') || method.includes('build')) {
+                    return null;
+                }
+                if (method.includes('Count')) {
+                    return 0;
+                }
+                if (method.includes('Editable') || method.includes('supports')) {
+                    return false;
+                }
+                return undefined;
+            };
+        }
+    });
+};
+
 interface FrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     frame: Frame;
 }
@@ -183,7 +206,7 @@ export const FrameComponent = observer(
 
         const remoteMethods = useMemo((): PromisifiedPendpalChildMethods => {
             if (!penpalChild) {
-                return {} as PromisifiedPendpalChildMethods;
+                return createSafeFallbackMethods();
             }
 
             return {
@@ -234,7 +257,18 @@ export const FrameComponent = observer(
             const iframe = iframeRef.current;
             if (!iframe) {
                 console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Iframe - Not found`);
-                return {} as IFrameView;
+                // Return safe fallback with no-op methods and safe defaults
+                const fallbackElement = document.createElement('iframe') as HTMLIFrameElement;
+                const safeFallback: IFrameView = Object.assign(fallbackElement, {
+                    // Custom sync methods with safe no-op implementations
+                    supportsOpenDevTools: () => false,
+                    setZoomLevel: () => {},
+                    reload: () => {},
+                    isLoading: () => false,
+                    // Reuse the safe fallback methods from remoteMethods
+                    ...remoteMethods,
+                });
+                return safeFallback;
             }
 
             const syncMethods = {
