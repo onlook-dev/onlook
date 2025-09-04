@@ -121,7 +121,6 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
                 this.memoryCache.set(key, item as CachedItem<T>);
             }
 
-            console.log(`[UnifiedCache:${this.config.name}] Loaded ${data.entries.length} items from persistent storage`);
         } catch (error) {
             console.warn(`[UnifiedCache:${this.config.name}] Failed to load from persistent storage:`, error);
         }
@@ -145,8 +144,7 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
             }
 
             if (entries.length === 0) {
-                console.log(`[UnifiedCache:${this.config.name}] No serializable items to save`);
-                return;
+                    return;
             }
 
             const data: PersistentCacheData = {
@@ -156,7 +154,6 @@ export class UnifiedCacheManager<T extends Serializable = Serializable> {
             };
 
             await this.persistentStore.setItem('cache-data', data);
-            console.log(`[UnifiedCache:${this.config.name}] Saved ${entries.length} items to persistent storage`);
         } catch (error) {
             console.warn(`[UnifiedCache:${this.config.name}] Failed to save to persistent storage:`, error);
         }

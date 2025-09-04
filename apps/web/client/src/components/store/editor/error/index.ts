@@ -18,7 +18,7 @@ export class ErrorManager {
             });
         });
         this.buffer.onSuccess(() => {
-            this.addSuccess('Success detected in buffer');
+            this.handleSuccess('Success detected in buffer');
         });
 
         makeAutoObservable(this);
@@ -64,8 +64,7 @@ export class ErrorManager {
         this.hideErrors = false;
     }
 
-    addSuccess(message: string) {
-        console.log('Success message received, clearing errors', message);
+    handleSuccess(message: string) {
         this.clear();
     }
 

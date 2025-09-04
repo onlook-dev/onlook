@@ -275,7 +275,7 @@ const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files
 
     const filesTreeDimensions = useMemo(
         () => ({
-            width: filesWidth ?? 250,
+            width: filesWidth ?? 224, // Match w-56 container width (224px)
             height: filesHeight ?? 300,
         }),
         [filesWidth, filesHeight, editorEngine.state.rightPanelTab],
@@ -301,7 +301,7 @@ const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files
             ref={containerRef}
             className="w-56 h-full border-r-[0.5px] flex-shrink-0 overflow-hidden flex flex-col"
         >
-            <div className="flex flex-col h-full overflow-hidden">
+            <div className="flex flex-col w-full h-full overflow-hidden">
                 <div className="p-1.5 flex-shrink-0">
                     <div className="flex flex-row justify-between items-center gap-1 mb-2 pb-1.5 border-b-[0.5px] border-border-primary">
                         <div className="relative flex-grow">
@@ -350,14 +350,14 @@ const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files
                         </Tooltip>
                     </div>
                 </div>
-                <div ref={treeContainerRef} className="min-w-full h-full overflow-x-auto text-xs w-full h-full px-2 flex-1">
+                <div ref={treeContainerRef} className="w-full h-full overflow-auto text-xs px-2 flex-1">
                     {isLoading ? (
                         <div className="flex flex-col justify-start items-center h-full text-sm text-foreground/50 pt-4">
                             <div className="animate-spin h-6 w-6 border-2 border-foreground-hover rounded-full border-t-transparent mb-2"></div>
                             <span>Loading files...</span>
                         </div>
                     ) : filteredFiles.length === 0 ? (
-                        <div className="flex justify-start items-start h-full text-sm text-foreground/50 pt-4 pl-2">
+                        <div className="flex flex-col justify-start items-center h-full text-sm text-foreground/50 pt-4">
                             {files.length === 0 ? 'No files found' : 'No files match your search'}
                         </div>
                     ) : (
@@ -373,7 +373,7 @@ const UnmemoizedFileTree = forwardRef<any, FileTreeProps>(({ onFileSelect, files
                             }
                             onSelect={handleFileTreeSelect}
                             height={filesTreeDimensions.height}
-                            width={filesTreeDimensions.width}
+                            width={(filesWidth || 224) - 16}
                             indent={8}
                             rowHeight={24}
                             openByDefault={false}
