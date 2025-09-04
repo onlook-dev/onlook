@@ -84,6 +84,7 @@ export class EditorEngine {
         this.font.init();
         this.frameEvent.init();
         this.chat.init();
+        this.templateNodes.init();
     }
 
     initBranches(branches: any[]) {

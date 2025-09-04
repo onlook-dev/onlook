@@ -4,6 +4,7 @@
     "": {
       "name": "@onlook/repo",
       "dependencies": {
+        "localforage": "^1.10.0",
         "tldts": "^7.0.12",
       },
       "devDependencies": {

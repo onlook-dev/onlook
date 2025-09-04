@@ -38,11 +38,9 @@ describe('FileSyncManager', async () => {
             return true;
         });
 
-        // Create FileSyncManager instance (no arguments needed)
+        // Create FileSyncManager instance and initialize
         fileSyncManager = new FileSyncManager();
-
-        // Wait for initialization to complete
-        await new Promise((resolve) => setTimeout(resolve, 10));
+        await fileSyncManager.init();
     });
 
     afterEach(async () => {
