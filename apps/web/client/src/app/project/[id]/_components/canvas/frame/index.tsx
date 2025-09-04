@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { type Frame } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
+import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useRef, useState } from 'react';
 import { GestureScreen } from './gesture';
@@ -13,10 +14,19 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
     const editorEngine = useEditorEngine();
     const iFrameRef = useRef<IFrameView>(null);
     const [isResizing, setIsResizing] = useState(false);
+    const [reloadKey, setReloadKey] = useState(0);
 
     // Check if sandbox is connecting for this frame's branch
     const sandbox = editorEngine.branches.getSandboxById(frame.branchId);
     const isConnecting = sandbox?.session?.isConnecting || sandbox?.isIndexing || false;
+
+    const undebouncedReloadIframe = () => {
+        setReloadKey(prev => prev + 1);
+    };
+
+    const reloadIframe = debounce(undebouncedReloadIframe, 1000, {
+        leading: true,
+    });
 
     return (
         <div
@@ -28,7 +38,7 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
             </RightClickMenu>
             <div className="relative">
                 <ResizeHandles frame={frame} setIsResizing={setIsResizing} />
-                <FrameComponent frame={frame} ref={iFrameRef} />
+                <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} ref={iFrameRef} />
                 <GestureScreen frame={frame} isResizing={isResizing} />
 
                 {isConnecting && (

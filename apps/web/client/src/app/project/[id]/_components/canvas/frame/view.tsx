@@ -9,7 +9,6 @@ import {
     type PromisifiedPendpalChildMethods,
 } from '@onlook/penpal';
 import { cn } from '@onlook/ui/utils';
-import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { WindowMessenger, connect } from 'penpal';
 import {
@@ -34,7 +33,7 @@ const createSafeFallbackMethods = (): PromisifiedPendpalChildMethods => {
     return new Proxy({} as PromisifiedPendpalChildMethods, {
         get(_target, prop: string | symbol) {
             if (typeof prop === 'symbol') return undefined;
-            
+
             return async (..._args: any[]) => {
                 const method = String(prop);
                 if (method.startsWith('get') || method.includes('capture') || method.includes('build')) {
@@ -54,10 +53,11 @@ const createSafeFallbackMethods = (): PromisifiedPendpalChildMethods => {
 
 interface FrameViewProps extends IframeHTMLAttributes<HTMLIFrameElement> {
     frame: Frame;
+    reloadIframe?: () => void;
 }
 
 export const FrameComponent = observer(
-    forwardRef<IFrameView, FrameViewProps>(({ frame, ...props }, ref) => {
+    forwardRef<IFrameView, FrameViewProps>(({ frame, reloadIframe, ...props }, ref) => {
         const editorEngine = useEditorEngine();
         const iframeRef = useRef<HTMLIFrameElement>(null);
         const zoomLevel = useRef(1);
@@ -70,20 +70,6 @@ export const FrameComponent = observer(
         const isSelected = editorEngine.frames.isSelected(frame.id);
         const isActiveBranch = editorEngine.branches.activeBranch.id === frame.branchId;
 
-        const undebouncedReloadIframe = () => {
-            try {
-                const iframe = iframeRef.current;
-                if (!iframe) return;
-                iframe.src = iframe.src;
-            } catch (error) {
-                console.error('Failed to reload iframe', error);
-            }
-        };
-
-        const reloadIframe = debounce(undebouncedReloadIframe, 1000, {
-            leading: true,
-        });
-
         const retrySetupPenpalConnection = (error?: Error) => {
             if (retryCount.current >= maxRetries) {
                 console.error(
@@ -91,7 +77,7 @@ export const FrameComponent = observer(
                     error,
                 );
                 retryCount.current = 0;
-                reloadIframe();
+                reloadIframe?.();
                 return;
             }
 
@@ -198,8 +184,6 @@ export const FrameComponent = observer(
                     return method(...args);
                 } catch (error) {
                     console.error(`${PENPAL_PARENT_CHANNEL} (${frame.id}) - Method failed:`, error);
-                    reloadIframe();
-                    throw error;
                 }
             };
         };
@@ -262,8 +246,8 @@ export const FrameComponent = observer(
                 const safeFallback: IFrameView = Object.assign(fallbackElement, {
                     // Custom sync methods with safe no-op implementations
                     supportsOpenDevTools: () => false,
-                    setZoomLevel: () => {},
-                    reload: () => {},
+                    setZoomLevel: () => { },
+                    reload: () => { },
                     isLoading: () => false,
                     // Reuse the safe fallback methods from remoteMethods
                     ...remoteMethods,
@@ -279,7 +263,7 @@ export const FrameComponent = observer(
                     iframe.style.transform = `scale(${level})`;
                     iframe.style.transformOrigin = 'top left';
                 },
-                reload: () => reloadIframe(),
+                reload: () => reloadIframe?.(),
                 isLoading: () => iframe.contentDocument?.readyState !== 'complete',
             };
 
