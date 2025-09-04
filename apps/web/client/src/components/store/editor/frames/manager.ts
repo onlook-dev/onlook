@@ -6,6 +6,7 @@ import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
+import { roundDimensions } from './dimension';
 import { FrameNavigationManager } from './navigation';
 import { calculateNonOverlappingPosition } from './positioning';
 
@@ -14,21 +15,6 @@ export interface FrameData {
     view: IFrameView | null;
     selected: boolean;
 }
-
-function roundDimensions(frame: Frame): Frame {
-    return {
-        ...frame,
-        position: {
-            x: Math.round(frame.position.x),
-            y: Math.round(frame.position.y),
-        },
-        dimension: {
-            width: Math.round(frame.dimension.width),
-            height: Math.round(frame.dimension.height),
-        },
-    };
-}
-
 
 export class FramesManager {
     private _frameIdToData = new Map<string, FrameData>();
@@ -229,7 +215,7 @@ export class FramesManager {
 
         const frame = frameData.frame;
         const allFrames = this.getAll().map(frameData => frameData.frame);
-        
+
         const proposedFrame: Frame = {
             ...frame,
             id: uuid(),

@@ -7,6 +7,15 @@ import { and, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
+import { calculateNonOverlappingPosition } from '@/components/store/editor/frames/positioning';
+
+// Helper function to get existing frames in a canvas
+async function getExistingFrames(tx: any, canvasId: string): Promise<Frame[]> {
+    const dbFrames = await tx.query.frames.findMany({
+        where: eq(frames.canvasId, canvasId),
+    });
+    return dbFrames.map(fromDbFrame);
+}
 
 export const branchRouter = createTRPCRouter({
     getByProjectId: protectedProcedure
@@ -141,13 +150,35 @@ export const branchRouter = createTRPCRouter({
                         });
 
                         if (canvas) {
+                            // Get existing frames for smart positioning
+                            const existingFrames = await getExistingFrames(tx, canvas.id);
+                            
+                            // Create a proposed frame based on input position
+                            const proposedFrame: Frame = {
+                                id: uuidv4(),
+                                branchId: newBranchId,
+                                canvasId: canvas.id,
+                                position: {
+                                    x: input.framePosition.x + input.framePosition.width + 100, // Initial simple offset
+                                    y: input.framePosition.y,
+                                },
+                                dimension: {
+                                    width: input.framePosition.width,
+                                    height: input.framePosition.height,
+                                },
+                                url: previewUrl,
+                            };
+
+                            // Calculate non-overlapping position
+                            const optimalPosition = calculateNonOverlappingPosition(proposedFrame, existingFrames);
+
                             const newFrame = createDefaultFrame({
                                 canvasId: canvas.id,
                                 branchId: newBranchId,
                                 url: previewUrl,
                                 overrides: {
-                                    x: (input.framePosition.x + input.framePosition.width + 100).toString(),
-                                    y: input.framePosition.y.toString(),
+                                    x: optimalPosition.x.toString(),
+                                    y: optimalPosition.y.toString(),
                                     width: input.framePosition.width.toString(),
                                     height: input.framePosition.height.toString(),
                                 },
@@ -228,13 +259,35 @@ export const branchRouter = createTRPCRouter({
                         });
 
                         if (canvas) {
+                            // Get existing frames for smart positioning
+                            const existingFrames = await getExistingFrames(tx, canvas.id);
+                            
+                            // Create a proposed frame based on input position
+                            const proposedFrame: Frame = {
+                                id: uuidv4(),
+                                branchId: newBranchId,
+                                canvasId: canvas.id,
+                                position: {
+                                    x: input.framePosition.x + input.framePosition.width + 100, // Initial simple offset
+                                    y: input.framePosition.y,
+                                },
+                                dimension: {
+                                    width: input.framePosition.width,
+                                    height: input.framePosition.height,
+                                },
+                                url: previewUrl,
+                            };
+
+                            // Calculate non-overlapping position
+                            const optimalPosition = calculateNonOverlappingPosition(proposedFrame, existingFrames);
+
                             const newFrame = createDefaultFrame({
                                 canvasId: canvas.id,
                                 branchId: newBranchId,
                                 url: previewUrl,
                                 overrides: {
-                                    x: (input.framePosition.x + input.framePosition.width + 100).toString(),
-                                    y: input.framePosition.y.toString(),
+                                    x: optimalPosition.x.toString(),
+                                    y: optimalPosition.y.toString(),
                                     width: input.framePosition.width.toString(),
                                     height: input.framePosition.height.toString(),
                                 },
