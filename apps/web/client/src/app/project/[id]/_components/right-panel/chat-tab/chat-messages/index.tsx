@@ -1,4 +1,3 @@
-import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 import { useEditorEngine } from '@/components/store/editor';
 import { transKeys } from '@/i18n/keys';
 import { ChatMessageRole, type ChatMessage } from '@onlook/models/chat';
@@ -12,12 +11,13 @@ import { AssistantMessage } from './assistant-message';
 import { ErrorMessage } from './error-message';
 import { StreamMessage } from './stream-message';
 import { UserMessage } from './user-message';
+import { useChatContext } from '@/app/project/[id]/_hooks/use-chat';
 
 export const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     const t = useTranslations();
-    const { messages: uiMessages, isWaiting } = useChatContext();
     const conversation = editorEngine.chat.conversation.current;
+    const { messages: uiMessages, isWaiting } = useChatContext();
     const engineMessages = editorEngine.chat.conversation.current?.messages;
 
     const renderMessage = useCallback((message: ChatMessage) => {
@@ -35,16 +35,16 @@ export const ChatMessages = observer(() => {
         return <div key={`message-${message.id}`}>{messageNode}</div>;
     }, []);
 
-    // Exclude the currently streaming assistant message (rendered by <StreamMessage />)
     const messagesToRender = useMemo(() => {
         if (!engineMessages || engineMessages.length === 0) return [] as ChatMessage[];
 
         const lastUiMessage = uiMessages?.[uiMessages.length - 1];
-        const streamingAssistantId = isWaiting && lastUiMessage?.role === 'assistant' ? lastUiMessage.id : undefined;
+        const streamingAssistantId =
+            isWaiting && lastUiMessage?.role === 'assistant' ? lastUiMessage.id : undefined;
 
         if (!streamingAssistantId) return engineMessages;
 
-        return (engineMessages).filter((m) => m.id !== streamingAssistantId);
+        return engineMessages.filter((m) => m.id !== streamingAssistantId);
     }, [engineMessages, uiMessages, isWaiting]);
 
     if (!conversation) {
@@ -70,8 +70,10 @@ export const ChatMessages = observer(() => {
     }
 
     return (
-        <ChatMessageList contentKey={`${messagesToRender.map((m) => m.id).join('|')}${isWaiting ? `|${uiMessages?.[uiMessages.length - 1]?.id ?? ''}` : ''}`}>
-            {messagesToRender.map((message) => renderMessage(message))}
+        <ChatMessageList contentKey={messagesToRender.map((m) => m.id).join('|')}>
+            {messagesToRender.map((message: ChatMessage) => (
+                <div key={`message-${message.id}`}>{renderMessage(message)}</div>
+            ))}
             <StreamMessage />
             <ErrorMessage />
         </ChatMessageList>

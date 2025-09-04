@@ -50,10 +50,9 @@ export const MessageContent = observer(
                     />
                 );
             } else if (part.type === 'reasoning') {
-                return null;
+                return null
             }
         }).filter(Boolean);
-
         return (
             <>
                 {renderedParts}

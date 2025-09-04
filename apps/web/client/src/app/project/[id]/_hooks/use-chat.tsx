@@ -9,7 +9,7 @@ import { ChatMessageRole, ChatType } from '@onlook/models';
 import { DefaultChatTransport, lastAssistantMessageIsCompleteWithToolCalls, type UIMessage } from 'ai';
 import { observer } from 'mobx-react-lite';
 import { usePostHog } from 'posthog-js/react';
-import { createContext, useContext, useRef } from 'react';
+import { createContext, useCallback, useContext, useRef } from 'react';
 
 type ExtendedUseChatHelpers = UseChatHelpers<UIMessage> & { sendMessageToChat: (type: ChatType) => Promise<void> };
 const ChatContext = createContext<ExtendedUseChatHelpers | null>(null);
@@ -22,6 +22,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
     const conversationId = editorEngine.chat.conversation.current?.conversation.id;
     const chat = useChat({
         id: 'user-chat',
+        experimental_throttle: 50,
         sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
         transport: new DefaultChatTransport({
             api: '/api/chat',
@@ -87,8 +88,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
             }
         }
     });
-
-    const sendMessageToChat = async (type: ChatType = ChatType.EDIT) => {
+    const sendMessageToChat = useCallback(async (type: ChatType = ChatType.EDIT) => {
         if (!conversationId) {
             throw new Error('No conversation id');
         }
@@ -96,6 +96,7 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
         editorEngine.chat.error.clear();
 
         const messages = editorEngine.chat.conversation.current?.messages ?? [];
+
         const uiMessages = messages.map((message, index) =>
             toVercelMessageFromOnlook(message, {
                 totalMessages: messages.length,
@@ -119,9 +120,12 @@ export const ChatProvider = observer(({ children }: { children: React.ReactNode 
                 conversationId
             },
         });
-    };
+    }, [chat, conversationId]);
 
-    return <ChatContext.Provider value={{ ...chat, sendMessageToChat }}>{children}</ChatContext.Provider>;
+    return <ChatContext.Provider value={{
+        ...chat,
+        sendMessageToChat,
+    }}>{children}</ChatContext.Provider>;
 });
 
 export function useChatContext() {

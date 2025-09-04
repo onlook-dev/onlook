@@ -21,13 +21,7 @@ import { Suggestions, type SuggestionsRef } from '../suggestions';
 import { ActionButtons } from './action-buttons';
 import { ChatModeToggle } from './chat-mode-toggle';
 
-export const ChatInput = observer(({
-    inputValue,
-    setInputValue,
-}: {
-    inputValue: string;
-    setInputValue: React.Dispatch<React.SetStateAction<string>>;
-}) => {
+export const ChatInput = observer(() => {
     const { sendMessageToChat, stop, isWaiting } = useChatContext();
     const editorEngine = useEditorEngine();
     const t = useTranslations();
@@ -36,6 +30,7 @@ export const ChatInput = observer(({
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
     const [isDragging, setIsDragging] = useState(false);
     const chatMode = editorEngine.state.chatMode;
+    const [inputValue, setInputValue] = useState('');
 
     const focusInput = () => {
         requestAnimationFrame(() => {
