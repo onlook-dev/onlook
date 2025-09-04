@@ -76,6 +76,7 @@
         "freestyle-sandboxes": "^0.0.78",
         "langfuse-vercel": "^3.38.4",
         "localforage": "^1.10.0",
+        "lru-cache": "^11.2.1",
         "lucide-react": "^0.486.0",
         "mobx-react-lite": "^4.1.0",
         "motion": "^12.6.3",

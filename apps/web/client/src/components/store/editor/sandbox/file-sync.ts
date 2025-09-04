@@ -1,14 +1,29 @@
 import type { SandboxDirectory, SandboxFile } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
+import { LRUCache } from 'lru-cache';
 import { normalizePath } from './helpers';
 
 export class FileSyncManager {
-    private cache: Map<string, SandboxFile>;
-    private directoryCache: Map<string, SandboxDirectory>;
+    private cache: LRUCache<string, SandboxFile>;
+    private directoryCache: LRUCache<string, SandboxDirectory>;
 
     constructor() {
-        this.cache = new Map();
-        this.directoryCache = new Map();
+        this.cache = new LRUCache<string, SandboxFile>({
+            max: 500, // Maximum 500 files
+            maxSize: 50 * 1024 * 1024, // Maximum 50MB
+            sizeCalculation: (file: SandboxFile) => {
+                if (file.content === null) return 1; // Minimum size for empty files
+                if (typeof file.content === 'string') {
+                    return Math.max(1, new TextEncoder().encode(file.content).length);
+                }
+                return Math.max(1, file.content.byteLength);
+            },
+            ttl: 1000 * 60 * 30, // 30 minutes TTL
+        });
+        this.directoryCache = new LRUCache<string, SandboxDirectory>({
+            max: 1000, // Maximum 1000 directories
+            ttl: 1000 * 60 * 60, // 1 hour TTL for directories
+        });
         makeAutoObservable(this);
     }
 
@@ -72,11 +87,12 @@ export class FileSyncManager {
 
     deleteDir(dirPath: string) {
         this.directoryCache.delete(dirPath);
-        this.cache.forEach((file, path) => {
+        // Iterate through cache keys to find files in the directory
+        for (const path of this.cache.keys()) {
             if (path.startsWith(dirPath + '/')) {
                 this.cache.delete(path);
             }
-        });
+        }
     }
 
     async delete(path: string) {
@@ -98,9 +114,12 @@ export class FileSyncManager {
         const normalizedNewPath = normalizePath(newPath);
 
         // Get all files that are within the old folder path
-        const filesToRename = Array.from(this.cache.entries())
-            .filter(([filePath]) => filePath.startsWith(normalizedOldPath + '/'))
-            .map(([filePath, file]) => ({ oldFilePath: filePath, file }));
+        const filesToRename: Array<{ oldFilePath: string; file: SandboxFile }> = [];
+        for (const [filePath, file] of this.cache.entries()) {
+            if (filePath.startsWith(normalizedOldPath + '/')) {
+                filesToRename.push({ oldFilePath: filePath, file });
+            }
+        }
 
         // Rename each file by updating its path in the cache
         for (const { oldFilePath, file } of filesToRename) {
@@ -158,6 +177,6 @@ export class FileSyncManager {
 
     async clear() {
         this.cache.clear();
-        this.cache = new Map();
+        this.directoryCache.clear();
     }
 }

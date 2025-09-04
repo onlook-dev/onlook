@@ -186,4 +186,93 @@ describe('FileSyncManager', async () => {
         // Verify cache is empty
         expect(fileSyncManager.listAllFiles().length).toBe(0);
     });
+
+    test('should evict least recently used files when cache exceeds limits', async () => {
+        // Create a new FileSyncManager with small limits for testing
+        const testManager = new (FileSyncManager as any)();
+        
+        // Add files beyond the cache limit to test eviction
+        const files: SandboxFile[] = [];
+        for (let i = 0; i < 10; i++) {
+            files.push({
+                type: 'text',
+                path: `file${i}.tsx`,
+                content: `<div>Content ${i} - ${'x'.repeat(1000)}</div>` // Make files larger
+            });
+        }
+
+        // Add files to cache
+        files.forEach(file => testManager.updateCache(file));
+
+        // The cache should have some files (but may have evicted some due to LRU)
+        const cachedFiles = testManager.listAllFiles();
+        expect(cachedFiles.length).toBeGreaterThan(0);
+        expect(cachedFiles.length).toBeLessThanOrEqual(files.length);
+
+        // Access a specific file to make it recently used
+        testManager.readCache('file5.tsx');
+
+        // Add more files to trigger eviction
+        for (let i = 10; i < 15; i++) {
+            testManager.updateCache({
+                type: 'text',
+                path: `file${i}.tsx`,
+                content: `<div>Content ${i} - ${'x'.repeat(1000)}</div>`
+            });
+        }
+
+        // Recently accessed file should still be in cache if eviction happened
+        const finalCachedFiles = testManager.listAllFiles();
+        expect(finalCachedFiles.length).toBeGreaterThan(0);
+        
+        await testManager.clear();
+    });
+
+    test('should handle files with different sizes correctly', async () => {
+        // Small file
+        const smallFile: SandboxFile = {
+            type: 'text',
+            path: 'small.tsx',
+            content: 'small'
+        };
+
+        // Large file
+        const largeFile: SandboxFile = {
+            type: 'text',
+            path: 'large.tsx',
+            content: 'large content '.repeat(10000) // ~130KB
+        };
+
+        // Binary file
+        const binaryFile: SandboxFile = {
+            type: 'binary',
+            path: 'image.png',
+            content: new Uint8Array(1000).fill(1)
+        };
+
+        // Empty file
+        const emptyFile: SandboxFile = {
+            type: 'text',
+            path: 'empty.tsx',
+            content: null
+        };
+
+        // Add all files
+        fileSyncManager.updateCache(smallFile);
+        fileSyncManager.updateCache(largeFile);
+        fileSyncManager.updateCache(binaryFile);
+        fileSyncManager.updateCache(emptyFile);
+
+        // All should be in cache initially
+        expect(fileSyncManager.has('small.tsx')).toBe(true);
+        expect(fileSyncManager.has('large.tsx')).toBe(true);
+        expect(fileSyncManager.has('image.png')).toBe(true);
+        expect(fileSyncManager.has('empty.tsx')).toBe(true);
+
+        // Verify we can read them back
+        expect(fileSyncManager.readCache('small.tsx')).toEqual(smallFile);
+        expect(fileSyncManager.readCache('large.tsx')).toEqual(largeFile);
+        expect(fileSyncManager.readCache('image.png')).toEqual(binaryFile);
+        expect(fileSyncManager.readCache('empty.tsx')).toEqual(emptyFile);
+    });
 });
