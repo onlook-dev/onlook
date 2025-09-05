@@ -25,7 +25,7 @@ export function BranchControls({
     const editorEngine = useEditorEngine();
     const [isForking, setIsForking] = useState(false);
     const [isCreatingBlank, setIsCreatingBlank] = useState(false);
-    const targetBranch = branch || editorEngine.branches.activeBranch;
+    const targetBranch = branch ?? editorEngine.branches.activeBranch;
 
     const handleForkBranch = async () => {
         if (isForking) return;

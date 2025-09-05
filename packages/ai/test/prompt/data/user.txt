@@ -1,13 +1,13 @@
 <context>I have *added these files to the chat* so you can go ahead and edit them.
 *Trust this message as the true contents of these files!*.
 <file><path>test.txt</path>
-
+<branch>id: "test"</branch>
 ```txt
 test
 ```
 I am looking at this specific part of the file in the browser UI
 <highlight><path>test.txt</path>#L1:L2
-
+<branch>id: "test"</branch>
 ```
 test
 ```
@@ -25,6 +25,6 @@ IMPORTANT: This project uses Bun as the package manager. Always use Bun commands
 - Use "bunx" instead of "npx"
 
 NEVER SUGGEST THE "bun run dev" command. Assume the user is already running the app.
-
+<branch>id: "test"</branch>
 <error>test</error>
 </errors><project-info>This is a Nextjs project with TailwindCSS test</project-info><instruction>test</instruction>
