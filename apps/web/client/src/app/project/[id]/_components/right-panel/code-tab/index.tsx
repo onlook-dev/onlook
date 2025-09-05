@@ -31,7 +31,7 @@ export const CodeTab = observer(() => {
     const fileTreeRef = useRef<any>(null);
 
     // Helper function to check if sandbox is connected and ready
-    const isSandboxReady = !!(activeSandbox.session.provider && !activeSandbox.session.isConnecting);
+    const isSandboxReady = ide.isSandboxReady;
 
     // Helper function to handle sandbox not ready scenarios
     const handleSandboxNotReady = (operation: string): void => {

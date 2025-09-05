@@ -5,7 +5,7 @@ export const createDefaultBranch = (
     {
         projectId,
         sandboxId,
-        overrides,
+        overrides = {},
     }: {
         projectId: string; sandboxId: string; overrides?: Partial<DbBranch>
     },

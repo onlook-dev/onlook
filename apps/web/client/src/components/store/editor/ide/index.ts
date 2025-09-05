@@ -41,7 +41,7 @@ export class IDEManager {
         makeAutoObservable(this);
     }
 
-    private isSandboxReady() {
+    get isSandboxReady() {
         return !!(
             this.editorEngine.activeSandbox.session.provider &&
             !this.editorEngine.activeSandbox.session.isConnecting
@@ -49,7 +49,7 @@ export class IDEManager {
     }
 
     async refreshFiles() {
-        if (!this.isSandboxReady()) {
+        if (!this.isSandboxReady) {
             console.error('Sandbox not connected');
             return;
         }
@@ -68,7 +68,7 @@ export class IDEManager {
         if (toggleTab) {
             this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
         }
-        if (!this.isSandboxReady()) {
+        if (!this.isSandboxReady) {
             console.error('Sandbox not connected');
             return null;
         }
@@ -168,7 +168,7 @@ export class IDEManager {
             console.error('No active file');
             return;
         }
-        if (!this.isSandboxReady()) {
+        if (!this.isSandboxReady) {
             console.error('Sandbox not connected');
             return;
         }
@@ -221,7 +221,7 @@ export class IDEManager {
     }
 
     async loadNewContent(path: string) {
-        if (!this.isSandboxReady()) {
+        if (!this.isSandboxReady) {
             console.error('Sandbox not connected');
             return;
         }
@@ -248,7 +248,7 @@ export class IDEManager {
     }
 
     async getFilePathFromOid(oid: string): Promise<string | null> {
-        if (!this.isSandboxReady()) {
+        if (!this.isSandboxReady) {
             console.error('Sandbox not connected');
             return null;
         }
@@ -268,7 +268,7 @@ export class IDEManager {
             console.error('No active file or OID');
             return null;
         }
-        if (!this.isSandboxReady()) {
+        if (!this.isSandboxReady) {
             console.error('Sandbox not connected');
             return null;
         }
