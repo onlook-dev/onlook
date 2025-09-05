@@ -19,9 +19,13 @@ import { PageModal } from '../../../left-panel/page-tab/page-modal';
 interface PageSelectorProps {
     frame: Frame;
     className?: string;
+    tooltipSide?: "top" | "bottom" | "left" | "right";
+    showIcon?: boolean;
+    buttonSize?: "sm" | "default" | "lg";
+    buttonClassName?: string;
 }
 
-export const PageSelector = observer(({ frame, className }: PageSelectorProps) => {
+export const PageSelector = observer(({ frame, className, tooltipSide = "top", showIcon = false, buttonSize = "sm", buttonClassName }: PageSelectorProps) => {
     const editorEngine = useEditorEngine();
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -140,16 +144,18 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
                 editorEngine.frames.select([frame]);
             }
         }}>
-            <HoverOnlyTooltip content="Page" side="top" className="mb-1" hideArrow disabled={isOpen}>
+            <HoverOnlyTooltip content="Page" side={tooltipSide} className="mb-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"
-                        size="sm"
+                        size={buttonSize}
                         className={cn(
                             "h-auto px-2 py-1 text-xs hover:bg-background-secondary",
+                            buttonClassName,
                             className
                         )}
                     >
+                        {showIcon && <Icons.File className="w-4 h-4 mr-2" />}
                         <span className="max-w-24 truncate">
                             {displayCurrentPage.name}
                         </span>

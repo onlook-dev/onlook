@@ -87,7 +87,7 @@ export const DeviceSelector = observer(() => {
     return (
         <Select value={device} onValueChange={handleDeviceChange} onOpenChange={setIsOpen}>
             <HoverOnlyTooltip content="Device" side="bottom" sideOffset={10} disabled={isOpen}>
-                <SelectTrigger className="flex items-center gap-2 text-muted-foreground dark:bg-transparent border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none">
+                <SelectTrigger size="sm" className="flex items-center gap-2 text-muted-foreground dark:bg-transparent border border-border/0 cursor-pointer rounded-lg hover:bg-background-tertiary/20 hover:text-white hover:border hover:border-border focus-visible:ring-0 focus-visible:ring-offset-0 focus:outline-none focus-visible:outline-none">
                     <DeviceIcon deviceType={deviceType} orientation={metadata.orientation} />
                     <span className="text-smallPlus">{deviceType}</span>
                 </SelectTrigger>

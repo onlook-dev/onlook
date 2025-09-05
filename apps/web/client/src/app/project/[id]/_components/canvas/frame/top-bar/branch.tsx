@@ -7,6 +7,7 @@ import {
     DropdownMenuTrigger
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
+import { cn } from "@onlook/ui/utils";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { BranchControls } from "../../../branch/branch-controls";
@@ -15,9 +16,12 @@ import { HoverOnlyTooltip } from "../../../editor-bar/hover-tooltip";
 interface BranchDisplayProps {
     frame: Frame;
     activeBranch?: Branch;
+    tooltipSide?: "top" | "bottom" | "left" | "right";
+    buttonSize?: "sm" | "default" | "lg";
+    buttonClassName?: string;
 }
 
-export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch }: BranchDisplayProps) => {
+export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch, tooltipSide = "top", buttonSize = "sm", buttonClassName }: BranchDisplayProps) => {
     const editorEngine = useEditorEngine();
     const frameBranch = editorEngine.branches.getBranchById(frame.branchId);
     const activeBranch = propActiveBranch || frameBranch;
@@ -29,12 +33,15 @@ export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch }
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-            <HoverOnlyTooltip content="Branch" side="top" className="mb-1" hideArrow>
+            <HoverOnlyTooltip content="Branch" side={tooltipSide} className="mb-1" hideArrow>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"
-                        size="sm"
-                        className="h-auto px-2 py-1 text-xs hover:bg-background-secondary"
+                        size={buttonSize}
+                        className={cn(
+                            "h-auto px-2 py-1 text-xs hover:bg-background-secondary",
+                            buttonClassName
+                        )}
                     >
                         <Icons.Commit />
                         <span className="max-w-24 truncate">
