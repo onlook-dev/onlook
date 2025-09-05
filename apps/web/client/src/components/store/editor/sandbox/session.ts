@@ -2,7 +2,7 @@ import { api } from '@/trpc/client';
 import { CodeProvider, createCodeProviderClient, type Provider } from '@onlook/code-provider';
 import type { Branch } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { ErrorManager } from '../error';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
 
 export class SessionManager {
@@ -13,7 +13,7 @@ export class SessionManager {
 
     constructor(
         private readonly branch: Branch,
-        private readonly editorEngine: EditorEngine
+        private readonly errorManager: ErrorManager
     ) {
         this.start(this.branch.sandbox.id);
         makeAutoObservable(this);
@@ -82,14 +82,14 @@ export class SessionManager {
             'server',
             CLISessionType.TASK,
             provider,
-            this.editorEngine.error,
+            this.errorManager,
         );
         this.terminalSessions.set(task.id, task);
         const terminal = new CLISessionImpl(
             'terminal',
             CLISessionType.TERMINAL,
             provider,
-            this.editorEngine.error,
+            this.errorManager,
         );
 
         this.terminalSessions.set(terminal.id, terminal);

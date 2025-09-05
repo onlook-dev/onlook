@@ -1,13 +1,12 @@
-import type { Action } from '@onlook/models';
+import type { Action, Branch } from '@onlook/models';
 import { type ParsedError, compareErrors, isErrorMessage, shouldIgnoreMessage, TerminalBuffer } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 
 export class ErrorManager {
     private _errors: ParsedError[] = [];
-    hideErrors = false;
     private buffer: TerminalBuffer;
 
-    constructor() {
+    constructor(private readonly branch: Branch) {
         this.buffer = new TerminalBuffer(20);
         this.buffer.onError((lines) => {
             // Add all error lines to error state
@@ -38,12 +37,13 @@ export class ErrorManager {
             sourceId: 'Dev Server Error (CLI)',
             type: 'terminal',
             content: message,
+            branchId: this.branch.id,
+            branchName: this.branch.name,
         };
         const existingErrors = this._errors || [];
         if (!existingErrors.some((e) => compareErrors(e, error))) {
             this._errors = [...existingErrors, error];
         }
-        this.hideErrors = false;
     }
 
     addCodeApplicationError(message: string, metadata: Action | Object) {
@@ -53,6 +53,8 @@ export class ErrorManager {
             sourceId,
             type: 'apply-code',
             content,
+            branchId: this.branch.id,
+            branchName: this.branch.name,
         };
 
         const existingErrors = this._errors || [];
@@ -61,7 +63,6 @@ export class ErrorManager {
         if (!isDuplicate) {
             this._errors = [...existingErrors, error];
         }
-        this.hideErrors = false;
     }
 
     handleSuccess(message: string) {

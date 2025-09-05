@@ -1,11 +1,11 @@
 import { useEditorEngine } from '@/components/store/editor';
-import type { BranchError } from '@/components/store/editor/branch/manager';
 import { ChatType } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
+import type { ParsedError } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -95,7 +95,7 @@ export const ErrorSection = observer(() => {
                             className="border-t border-amber-200/20 dark:border-amber-500/20"
                         >
                             <div className="px-2.5 py-2 max-h-60 overflow-auto">
-                                {allErrors.map((error: BranchError) => (
+                                {allErrors.map((error: ParsedError) => (
                                     <div key={`${error.branchId}-${error.content}`} className="mb-3 last:mb-0 font-mono">
                                         <div className="flex items-center gap-2 text-sm text-amber-800/80 dark:text-amber-200/80 mb-1">
                                             <span className="truncate">{error.sourceId} • {error.branchName}</span>

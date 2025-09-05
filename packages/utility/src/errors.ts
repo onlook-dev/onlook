@@ -1,6 +1,8 @@
 import stripAnsi from 'strip-ansi';
 
 export interface ParsedError {
+    branchId: string;
+    branchName: string;
     sourceId: string;
     type: 'frame' | 'terminal' | 'apply-code';
     content: string;
@@ -46,7 +48,6 @@ export function isErrorMessage(data: string) {
         'Invalid hook call',
         'Invalid configuration',
         'Parsing ecmascript source code failed',
-        'GET / 500',
 
         // Critical Package errors
         'npm ERR!',
@@ -67,12 +68,41 @@ export function isErrorMessage(data: string) {
 }
 
 export function isSuccessMessage(data: string): boolean {
-    const successPatterns = ['get / 200'];
+    // Strict regex patterns for Next.js success scenarios
+    const successRegexPatterns = [
+        // Next.js dev server ready patterns
+        /Local:\s+http:\/\/localhost:\d+/i,
+        /Ready in \d+(\.\d+)?(ms|s)/i,
+        /Compiled successfully in \d+(\.\d+)?(ms|s)/i,
 
-    if (successPatterns.some((pattern) => data.toLowerCase().includes(pattern.toLowerCase()))) {
+        // HTTP method success responses for any route
+        /(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)\s+\/[^\s]*\s+(200|201|204|304)/i,
+
+        // Next.js build success patterns
+        /Build completed in \d+(\.\d+)?(ms|s)/i,
+        /Export completed/i,
+        /Static generation complete/i,
+
+        // Webpack compilation success
+        /webpack compiled with \d+ warnings?/i,
+        /webpack compiled successfully/i,
+    ];
+
+    // Strict string patterns that must match exactly
+    const exactPatterns = [
+        'compiled successfully',
+        'ready - started server on',
+        'event - compiled successfully',
+        'wait - compiling',
+    ];
+
+    // Check regex patterns
+    if (successRegexPatterns.some((regex) => regex.test(data))) {
         return true;
     }
-    return false;
+
+    // Check exact string patterns (case insensitive)
+    return exactPatterns.some((pattern) => data.toLowerCase().includes(pattern.toLowerCase()));
 }
 
 // Stateful buffer for terminal output

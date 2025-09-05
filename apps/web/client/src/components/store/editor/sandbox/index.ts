@@ -22,6 +22,7 @@ import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import { env } from 'process';
 import type { EditorEngine } from '../engine';
+import type { ErrorManager } from '../error';
 import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
@@ -46,11 +47,12 @@ export class SandboxManager {
 
     constructor(
         private branch: Branch,
-        private readonly editorEngine: EditorEngine
+        private readonly editorEngine: EditorEngine,
+        private readonly errorManager: ErrorManager
     ) {
         this.session = new SessionManager(
             this.branch,
-            this.editorEngine
+            this.errorManager
         );
         this.fileSync = new FileSyncManager();
         makeAutoObservable(this);

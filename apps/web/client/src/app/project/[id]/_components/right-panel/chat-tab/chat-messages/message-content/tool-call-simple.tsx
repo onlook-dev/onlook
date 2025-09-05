@@ -6,6 +6,7 @@ import {
     EXIT_PLAN_MODE_TOOL_NAME,
     FUZZY_EDIT_FILE_TOOL_NAME,
     type FUZZY_EDIT_FILE_TOOL_PARAMETERS,
+    GLOB_TOOL_NAME,
     GREP_TOOL_NAME,
     type GREP_TOOL_PARAMETERS,
     LIST_BRANCHES_TOOL_NAME,
@@ -57,6 +58,7 @@ const TOOL_ICONS: Record<string, any> = {
     [BASH_READ_TOOL_NAME]: Icons.EyeOpen,
     [TYPECHECK_TOOL_NAME]: Icons.MagnifyingGlass,
     [LIST_BRANCHES_TOOL_NAME]: Icons.Commit,
+    [GLOB_TOOL_NAME]: Icons.MagnifyingGlass,
 } as const;
 
 export function ToolCallSimple({

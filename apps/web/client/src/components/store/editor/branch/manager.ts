@@ -15,11 +15,6 @@ interface BranchData {
     error: ErrorManager;
 }
 
-export interface BranchError extends ParsedError {
-    branchId: string;
-    branchName: string;
-}
-
 export class BranchManager {
     private editorEngine: EditorEngine;
     private currentBranchId: string | null = null;
@@ -41,9 +36,9 @@ export class BranchManager {
         }
         this.branchMap.clear();
         for (const branch of branches) {
-            const sandboxManager = new SandboxManager(branch, this.editorEngine);
+            const errorManager = new ErrorManager(branch);
+            const sandboxManager = new SandboxManager(branch, this.editorEngine, errorManager);
             const historyManager = new HistoryManager(this.editorEngine);
-            const errorManager = new ErrorManager();
             this.branchMap.set(branch.id, {
                 branch,
                 sandbox: sandboxManager,
@@ -170,9 +165,9 @@ export class BranchManager {
             });
 
             // Add the new branch to the local branch map
-            const sandboxManager = new SandboxManager(result.branch, this.editorEngine);
+            const errorManager = new ErrorManager(result.branch);
+            const sandboxManager = new SandboxManager(result.branch, this.editorEngine, errorManager);
             const historyManager = new HistoryManager(this.editorEngine);
-            const errorManager = new ErrorManager();
             this.branchMap.set(result.branch.id, {
                 branch: result.branch,
                 sandbox: sandboxManager,
@@ -232,9 +227,9 @@ export class BranchManager {
             });
 
             // Add the new branch to the local branch map
-            const sandboxManager = new SandboxManager(result.branch, this.editorEngine);
+            const errorManager = new ErrorManager(result.branch);
+            const sandboxManager = new SandboxManager(result.branch, this.editorEngine, errorManager);
             const historyManager = new HistoryManager(this.editorEngine);
-            const errorManager = new ErrorManager();
             this.branchMap.set(result.branch.id, {
                 branch: result.branch,
                 sandbox: sandboxManager,
@@ -330,8 +325,8 @@ export class BranchManager {
     }
 
     // Helper methods for error management
-    getAllErrors(): BranchError[] {
-        const allErrors: BranchError[] = [];
+    getAllErrors(): ParsedError[] {
+        const allErrors: ParsedError[] = [];
         for (const branchData of this.branchMap.values()) {
             const branchErrors = branchData.error.errors.map(error => ({
                 ...error,

@@ -9,8 +9,8 @@ import {
     type MessageContext,
     type ProjectMessageContext,
 } from '@onlook/models/chat';
+import type { ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
-import type { BranchError } from '../branch/manager';
 import type { EditorEngine } from '../engine';
 
 export class ChatContext {
@@ -177,10 +177,10 @@ export class ChatContext {
         ];
     }
 
-    getErrorContext(errors: BranchError[]): ErrorMessageContext[] {
+    getErrorContext(errors: ParsedError[]): ErrorMessageContext[] {
         const branchErrors = errors;
         // Group errors by branch for context
-        const branchGroups = new Map<string, BranchError[]>();
+        const branchGroups = new Map<string, ParsedError[]>();
         branchErrors.forEach(error => {
             const existing = branchGroups.get(error.branchId) || [];
             existing.push(error);

@@ -3,7 +3,6 @@ import type { PostHog } from 'posthog-js';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { BranchManager } from './branch';
-import type { ErrorManager } from './error';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
@@ -43,9 +42,6 @@ export class EditorEngine {
         return this.branches.activeHistory;
     }
 
-    get error(): ErrorManager {
-        return this.branches.activeError;
-    }
     readonly state: StateManager = new StateManager();
     readonly canvas: CanvasManager = new CanvasManager(this);
     readonly text: TextEditingManager = new TextEditingManager(this);

@@ -73,16 +73,6 @@ export function getHydratedUserMessage(
     const errors = context.filter((c) => c.type === 'error').map((c) => c);
     const project = context.filter((c) => c.type === 'project').map((c) => c);
     const images = context.filter((c) => c.type === 'image').map((c) => c);
-    const branches = context.filter((c) => c.type === 'branch').map((c) => c);
-
-    // Create branch lookup for easy access to branch info
-    const branchLookup = new Map<string, { id: string; name: string }>();
-    branches.forEach((branch) => {
-        branchLookup.set(branch.branch.id, {
-            id: branch.branch.id,
-            name: branch.branch.name || branch.branch.id,
-        });
-    });
 
     // If there are 50 user messages in the contexts, we can trim all of them except
     // the last one. The logic could be adjusted to trim more or less messages.
@@ -91,19 +81,19 @@ export function getHydratedUserMessage(
 
     let prompt = '';
     if (truncateFileContext) {
-        const contextPrompt = getTruncatedFilesContent(files, branchLookup);
+        const contextPrompt = getTruncatedFilesContent(files);
         if (contextPrompt) {
             prompt += wrapXml('truncated-context', contextPrompt);
         }
     } else {
-        const contextPrompt = getFilesContent(files, highlights, branchLookup);
+        const contextPrompt = getFilesContent(files, highlights);
         if (contextPrompt) {
             prompt += wrapXml('context', contextPrompt);
         }
     }
 
     if (errors.length > 0) {
-        let errorPrompt = getErrorsContent(errors, branchLookup);
+        let errorPrompt = getErrorsContent(errors);
         prompt += errorPrompt;
     }
 
@@ -138,10 +128,7 @@ export function getHydratedUserMessage(
     };
 }
 
-export function getTruncatedFilesContent(
-    files: FileMessageContext[],
-    branchLookup: Map<string, { id: string; name: string }>,
-) {
+export function getTruncatedFilesContent(files: FileMessageContext[]) {
     if (files.length === 0) {
         return '';
     }
@@ -149,8 +136,7 @@ export function getTruncatedFilesContent(
     prompt += `${CONTEXT_PROMPTS.truncatedFilesContentPrefix}\n`;
     let index = 1;
     for (const file of files) {
-        const branchInfo = branchLookup.get(file.branchId);
-        const branchDisplay = branchInfo ? getBranchesContent(branchInfo.id, branchInfo.name) : '';
+        const branchDisplay = getBranchesContent(file.branchId);
         const pathDisplay = wrapXml('path', file.path);
         let filePrompt = `${pathDisplay}\n${branchDisplay}\n`;
         filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
@@ -164,7 +150,6 @@ export function getTruncatedFilesContent(
 export function getFilesContent(
     files: FileMessageContext[],
     highlights: HighlightMessageContext[],
-    branchLookup: Map<string, { id: string; name: string }>,
 ) {
     if (files.length === 0) {
         return '';
@@ -173,14 +158,13 @@ export function getFilesContent(
     prompt += `${CONTEXT_PROMPTS.filesContentPrefix}\n`;
     let index = 1;
     for (const file of files) {
-        const branchInfo = branchLookup.get(file.branchId);
-        const branchDisplay = branchInfo ? getBranchesContent(branchInfo.id, branchInfo.name) : '';
+        const branchDisplay = getBranchesContent(file.branchId);
         const pathDisplay = wrapXml('path', file.path);
         let filePrompt = `${pathDisplay}\n${branchDisplay}\n`;
         filePrompt += `${CODE_FENCE.start}${getLanguageFromFilePath(file.path)}\n`;
         filePrompt += file.content;
         filePrompt += `\n${CODE_FENCE.end}\n`;
-        filePrompt += getHighlightsContent(file.path, highlights, branchLookup);
+        filePrompt += getHighlightsContent(file.path, highlights);
 
         filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
         prompt += filePrompt;
@@ -190,17 +174,13 @@ export function getFilesContent(
     return prompt;
 }
 
-export function getErrorsContent(
-    errors: ErrorMessageContext[],
-    branchLookup: Map<string, { id: string; name: string }>,
-) {
+export function getErrorsContent(errors: ErrorMessageContext[]) {
     if (errors.length === 0) {
         return '';
     }
     let prompt = `${CONTEXT_PROMPTS.errorsContentPrefix}\n`;
     for (const error of errors) {
-        const branchInfo = branchLookup.get(error.branchId);
-        const branchDisplay = branchInfo ? getBranchesContent(branchInfo.id, branchInfo.name) : '';
+        const branchDisplay = getBranchesContent(error.branchId);
         const errorDisplay = wrapXml('error', error.content);
         prompt += `${branchDisplay}\n${errorDisplay}\n`;
     }
@@ -213,11 +193,7 @@ export function getLanguageFromFilePath(filePath: string): string {
     return filePath.split('.').pop() || '';
 }
 
-export function getHighlightsContent(
-    filePath: string,
-    highlights: HighlightMessageContext[],
-    branchLookup: Map<string, { id: string; name: string }>,
-) {
+export function getHighlightsContent(filePath: string, highlights: HighlightMessageContext[]) {
     const fileHighlights = highlights.filter((h) => h.path === filePath);
     if (fileHighlights.length === 0) {
         return '';
@@ -225,8 +201,7 @@ export function getHighlightsContent(
     let prompt = `${CONTEXT_PROMPTS.highlightPrefix}\n`;
     let index = 1;
     for (const highlight of fileHighlights) {
-        const branchInfo = branchLookup.get(highlight.branchId);
-        const branchDisplay = branchInfo ? getBranchesContent(branchInfo.id, branchInfo.name) : '';
+        const branchDisplay = getBranchesContent(highlight.branchId);
         const pathDisplay = wrapXml('path', filePath);
         let highlightPrompt = `${pathDisplay}#L${highlight.start}:L${highlight.end}\n${branchDisplay}\n`;
         highlightPrompt += `${CODE_FENCE.start}\n`;
@@ -242,8 +217,8 @@ export function getHighlightsContent(
     return prompt;
 }
 
-export function getBranchesContent(id: string, name: string) {
-    return wrapXml('branch', `id: "${id}" - name: "${name}"`);
+export function getBranchesContent(id: string) {
+    return wrapXml('branch', `id: "${id}"`);
 }
 
 export function getSummaryPrompt() {
