@@ -116,23 +116,37 @@ export class FileCacheManager {
     }
 
     renameDirectory(oldPath: string, newPath: string): void {
+        // Normalize paths to handle trailing slash edge cases
+        const normalizeDir = (path: string): string => {
+            if (path === '/' || path === '') return '/';
+            return path.replace(/\/+$/, ''); // Remove trailing slashes
+        };
+
+        const normalizedOldPath = normalizeDir(oldPath);
+        const normalizedNewPath = normalizeDir(newPath);
+
+        // Create prefix for matching files (handle root case)
+        const prefix = normalizedOldPath === '/' ? '/' : normalizedOldPath + '/';
+
         // Update all files in the directory
         for (const [filePath, file] of this.fileCache.entries()) {
-            if (filePath.startsWith(oldPath + '/')) {
-                const relativePath = filePath.substring(oldPath.length);
-                const newFilePath = newPath + relativePath;
+            if (filePath.startsWith(prefix)) {
+                const relativePath = filePath.substring(prefix.length);
+                const newFilePath = normalizedNewPath === '/' 
+                    ? '/' + relativePath
+                    : normalizedNewPath + '/' + relativePath;
                 const updatedFile = { ...file, path: newFilePath };
                 this.setFile(updatedFile);
                 this.deleteFile(filePath);
             }
         }
 
-        // Update directory entry
-        const directory = this.directoryCache.get(oldPath);
+        // Update directory entry using normalized paths
+        const directory = this.directoryCache.get(normalizedOldPath);
         if (directory) {
-            const newDirectory = { ...directory, path: newPath };
+            const newDirectory = { ...directory, path: normalizedNewPath };
             this.setDirectory(newDirectory);
-            this.deleteDirectory(oldPath);
+            this.deleteDirectory(normalizedOldPath);
         }
     }
 
