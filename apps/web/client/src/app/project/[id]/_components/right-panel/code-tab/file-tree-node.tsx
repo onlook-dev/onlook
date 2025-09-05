@@ -11,10 +11,7 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
-import { useState } from 'react';
 import type { NodeApi } from 'react-arborist';
-import { FileModal } from './file-modal';
-import { FolderModal } from './folder-modal';
 
 interface FileTreeNodeProps {
     node: NodeApi<FileNode>;
@@ -26,8 +23,6 @@ interface FileTreeNodeProps {
 export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style, files = [], contentMatches }) => {
     const editorEngine = useEditorEngine();
     const isDirectory = node.data.isDirectory;
-    const [fileModalOpen, setFileModalOpen] = useState(false);
-    const [folderModalOpen, setFolderModalOpen] = useState(false);
 
     const handleClick = async (e: React.MouseEvent) => {
         if (isDirectory) {
@@ -90,13 +85,13 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
         ...(isDirectory ? [
             {
                 label: 'New File',
-                action: () => setFileModalOpen(true),
+                action: () => editorEngine.ide.fileModalOpen = true,
                 icon: <Icons.File className="mr-2 h-4 w-4" />,
                 separator: false,
             },
             {
                 label: 'New Folder',
-                action: () => setFolderModalOpen(true),
+                action: () => editorEngine.ide.folderModalOpen = true,
                 icon: <Icons.Directory className="mr-2 h-4 w-4" />,
                 separator: true,
             },
@@ -174,20 +169,6 @@ export const FileTreeNode: React.FC<FileTreeNodeProps> = observer(({ node, style
                     ))}
                 </ContextMenuContent>
             </ContextMenu>
-
-            <FileModal
-                open={fileModalOpen}
-                onOpenChange={setFileModalOpen}
-                basePath={basePath}
-                files={files}
-            />
-
-            <FolderModal
-                open={folderModalOpen}
-                onOpenChange={setFolderModalOpen}
-                basePath={basePath}
-                files={files}
-            />
         </>
     );
 });

@@ -22,21 +22,18 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface UploadModalProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
-    files: string[];
     basePath?: string;
     onSuccess?: () => void;
 }
 
 export const UploadModal = observer(({
-    open,
-    onOpenChange,
-    files,
     basePath,
     onSuccess,
 }: UploadModalProps) => {
     const editorEngine = useEditorEngine();
+    const files = editorEngine.activeSandbox.files;
+    const open = editorEngine.ide.uploadModalOpen;
+
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const [targetDirectory, setTargetDirectory] = useState<string>('root');
     const [isUploading, setIsUploading] = useState(false);
@@ -129,7 +126,7 @@ export const UploadModal = observer(({
                 const fileText = fileCount === 1 ? selectedFiles[0]?.name ?? 'file' : `${fileCount} files`;
                 toast(`Successfully uploaded ${fileText}!`);
 
-                onOpenChange(false);
+                editorEngine.ide.uploadModalOpen = false;
                 onSuccess?.();
             } else if (failedCount === selectedFiles.length) {
                 // All uploads failed
@@ -171,7 +168,7 @@ export const UploadModal = observer(({
     }, [open]);
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={(isOpen) => editorEngine.ide.uploadModalOpen = isOpen}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>Upload Files</DialogTitle>
@@ -240,7 +237,7 @@ export const UploadModal = observer(({
                 <DialogFooter>
                     <Button
                         variant="ghost"
-                        onClick={() => onOpenChange(false)}
+                        onClick={() => editorEngine.ide.uploadModalOpen = false}
                         disabled={isUploading}
                     >
                         Cancel

@@ -17,14 +17,13 @@ import CodeMirror, { EditorSelection } from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef } from 'react';
 import { createSearchHighlight, getBasicSetup, getExtensions, scrollToFirstMatch } from './code-mirror-config';
-import { FileModal } from './file-modal';
 import { FileTab } from './file-tab';
 import { FileTree } from './file-tree';
-import { FolderModal } from './folder-modal';
 
 export const CodeTab = observer(() => {
     const editorEngine = useEditorEngine();
     const activeSandbox = editorEngine.branches.activeSandbox;
+    const files = activeSandbox.files;
     const ide = editorEngine.ide;
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editorViewsRef = useRef<Map<string, EditorView>>(new Map());
@@ -261,7 +260,7 @@ export const CodeTab = observer(() => {
 
                 // Reopen the previously active file if it exists in the new branch
                 if (activeFilePath) {
-                    const fileExists = ide.files.some(file => file === activeFilePath);
+                    const fileExists = files.some(file => file === activeFilePath);
                     if (fileExists) {
                         await loadFile(activeFilePath);
                         // Restore the highlight range if it was preserved
@@ -691,24 +690,6 @@ export const CodeTab = observer(() => {
                         </div>
                     </div>
                 </div>
-            )}
-
-            {ide.fileModalOpen && (
-                <FileModal
-                    open={ide.fileModalOpen}
-                    onOpenChange={(open) => ide.fileModalOpen = open}
-                    basePath=""
-                    files={ide.files}
-                />
-            )}
-
-            {ide.folderModalOpen && (
-                <FolderModal
-                    open={ide.folderModalOpen}
-                    onOpenChange={(open) => ide.folderModalOpen = open}
-                    basePath=""
-                    files={ide.files}
-                />
             )}
         </div>
     );

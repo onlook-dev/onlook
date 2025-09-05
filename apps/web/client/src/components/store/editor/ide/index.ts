@@ -33,15 +33,12 @@ export class IDEManager {
     isFilesVisible = true;
     fileModalOpen = false;
     folderModalOpen = false;
+    uploadModalOpen = false;
     showUnsavedDialog = false;
     pendingCloseAll = false;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-    }
-
-    get files(): string[] {
-        return this.editorEngine.activeSandbox?.files || [];
     }
 
     private isSandboxReady() {

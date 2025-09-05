@@ -8,19 +8,15 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { cn } from '@onlook/ui/utils';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
-import { FileModal } from './file-modal';
-import { FolderModal } from './folder-modal';
-import { UploadModal } from './upload-modal';
+import { FileModal } from './modals/file-modal';
+import { FolderModal } from './modals/folder-modal';
+import { UploadModal } from './modals/upload-modal';
 
 export const CodeControls = observer(() => {
     const editorEngine = useEditorEngine();
-    const [fileModalOpen, setFileModalOpen] = useState(false);
-    const [folderModalOpen, setFolderModalOpen] = useState(false);
-    const [uploadModalOpen, setUploadModalOpen] = useState(false);
     const isDirty = editorEngine.ide.activeFile?.isDirty ?? false;
 
     const saveFile = () => {
@@ -30,11 +26,10 @@ export const CodeControls = observer(() => {
     const basePath = (() => {
         const activeFilePath = editorEngine.ide.activeFile?.path ?? '';
         if (!activeFilePath) return '';
-        
+
         const lastSlash = activeFilePath.lastIndexOf('/');
         return lastSlash > 0 ? activeFilePath.substring(0, lastSlash) : '';
     })();
-    const files = editorEngine.ide.files;
 
     return (
         <>
@@ -55,14 +50,14 @@ export const CodeControls = observer(() => {
                         <DropdownMenuContent align="start">
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={() => setFileModalOpen(true)}
+                                onClick={() => editorEngine.ide.fileModalOpen = true}
                             >
                                 <Icons.FilePlus className="h-4 w-4 mr-2" />
                                 Create new file
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className="cursor-pointer"
-                                onClick={() => setUploadModalOpen(true)}
+                                onClick={() => editorEngine.ide.uploadModalOpen = true}
                             >
                                 <Icons.Upload className="h-4 w-4 mr-2" />
                                 Upload file
@@ -79,7 +74,7 @@ export const CodeControls = observer(() => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => setFolderModalOpen(true)}
+                            onClick={() => editorEngine.ide.folderModalOpen = true}
                             className="p-2 w-fit h-fit hover:bg-background-onlook cursor-pointer"
                         >
                             <Icons.DirectoryPlus className="h-4 w-4" />
@@ -116,24 +111,9 @@ export const CodeControls = observer(() => {
                     </TooltipContent>
                 </Tooltip>
             </div>
-            <FileModal
-                open={fileModalOpen}
-                onOpenChange={setFileModalOpen}
-                basePath={basePath}
-                files={files}
-            />
-            <FolderModal
-                open={folderModalOpen}
-                onOpenChange={setFolderModalOpen}
-                basePath={basePath}
-                files={files}
-            />
-            <UploadModal
-                open={uploadModalOpen}
-                onOpenChange={setUploadModalOpen}
-                files={files}
-                basePath={basePath}
-            />
+            <FileModal basePath={basePath} />
+            <FolderModal basePath={basePath} />
+            <UploadModal basePath={basePath} />
         </>
     );
 }); 

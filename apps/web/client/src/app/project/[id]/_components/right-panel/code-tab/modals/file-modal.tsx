@@ -11,30 +11,29 @@ import {
 import { Input } from '@onlook/ui/input';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 import path from 'path';
 import { useEffect, useMemo, useState } from 'react';
 import {
-    createFolderInSandbox,
-    doesFolderExist,
-    validateFolderName,
-} from './file-operations';
+    createFileInSandbox,
+    doesFileExist,
+    validateFileName,
+} from '../file-operations';
+import { getFileTemplate } from '../file-templates';
 
-interface FolderModalProps {
-    open: boolean;
-    onOpenChange: (open: boolean) => void;
+interface FileModalProps {
     basePath: string;
-    files: string[];
     onSuccess?: () => void;
 }
 
-export function FolderModal({
-    open,
-    onOpenChange,
+export const FileModal = observer(({
     basePath,
-    files,
     onSuccess,
-}: FolderModalProps) {
+}: FileModalProps) => {
     const editorEngine = useEditorEngine();
+    const files = editorEngine.activeSandbox.files;
+    const open = editorEngine.ide.fileModalOpen;
+
     const [name, setName] = useState('');
     const [warning, setWarning] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -44,6 +43,11 @@ export function FolderModal({
         if (!name) return '';
         return path.join(basePath, name).replace(/\\/g, '/');
     }, [basePath, name]);
+
+    const title = 'Create New File';
+    const buttonText = 'Create File';
+    const loadingText = 'Creating file...';
+    const placeholder = 'component.tsx';
 
     // Reset name when modal opens
     useEffect(() => {
@@ -59,15 +63,15 @@ export function FolderModal({
             return;
         }
 
-        const { valid, error } = validateFolderName(name);
+        const { valid, error } = validateFileName(name);
 
         if (!valid) {
-            setWarning(error ?? 'Invalid folder name');
+            setWarning(error ?? 'Invalid file name');
             return;
         }
 
-        if (doesFolderExist(files, fullPath)) {
-            setWarning('This folder already exists');
+        if (doesFileExist(files, fullPath)) {
+            setWarning('This file already exists');
             return;
         }
 
@@ -80,15 +84,16 @@ export function FolderModal({
         try {
             setIsLoading(true);
 
-            await createFolderInSandbox(editorEngine.activeSandbox.session.provider, fullPath, editorEngine.activeSandbox);
-            toast(`Folder "${name}" created successfully!`);
+            const content = getFileTemplate(name);
+            await createFileInSandbox(editorEngine.activeSandbox.session.provider, fullPath, content, editorEngine.activeSandbox);
+            toast(`File "${name}" created successfully!`);
 
             setName('');
-            onOpenChange(false);
+            editorEngine.ide.fileModalOpen = false;
             onSuccess?.();
         } catch (error) {
-            console.error('Failed to create folder:', error);
-            const errorMessage = error instanceof Error ? error.message : 'Failed to create folder';
+            console.error('Failed to create file:', error);
+            const errorMessage = error instanceof Error ? error.message : 'Failed to create file';
             setWarning(errorMessage);
         } finally {
             setIsLoading(false);
@@ -98,12 +103,12 @@ export function FolderModal({
     const displayPath = basePath === '' ? '/' : `/${basePath}`;
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={(isOpen) => editorEngine.ide.fileModalOpen = isOpen}>
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Create New Folder</DialogTitle>
+                    <DialogTitle>{title}</DialogTitle>
                     <DialogDescription>
-                        Create a new folder in{' '}
+                        Create a new file in{' '}
                         <code className="bg-background-secondary px-1 py-0.5 rounded text-xs">
                             {displayPath}
                         </code>
@@ -119,7 +124,7 @@ export function FolderModal({
                             className={cn(
                                 warning && 'border-yellow-300 focus-visible:ring-yellow-300',
                             )}
-                            placeholder="components"
+                            placeholder={placeholder}
                             disabled={isLoading}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !isComposing && !warning && name) {
@@ -145,7 +150,7 @@ export function FolderModal({
                 <DialogFooter>
                     <Button
                         variant="ghost"
-                        onClick={() => onOpenChange(false)}
+                        onClick={() => editorEngine.ide.fileModalOpen = false}
                         disabled={isLoading}
                     >
                         Cancel
@@ -155,10 +160,10 @@ export function FolderModal({
                         onClick={handleSubmit}
                         disabled={isLoading || !!warning || !name}
                     >
-                        {isLoading ? 'Creating folder...' : 'Create Folder'}
+                        {isLoading ? loadingText : buttonText}
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     );
-} 
+}); 
