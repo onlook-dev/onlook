@@ -82,6 +82,10 @@ export class SandboxManager {
         return this._routerConfig;
     }
 
+    get errors() {
+        return this.errorManager.errors;
+    }
+
     async index(force = false) {
         console.log('[SandboxManager] Starting indexing, force:', force);
 

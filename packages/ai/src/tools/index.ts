@@ -1,5 +1,6 @@
 export * from './cli';
 export * from './edit';
+export * from './errors';
 export * from './guides';
 export * from './plan';
 export * from './read';

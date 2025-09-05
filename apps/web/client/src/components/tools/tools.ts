@@ -6,6 +6,8 @@ import {
     BASH_EDIT_TOOL_PARAMETERS,
     BASH_READ_TOOL_NAME,
     BASH_READ_TOOL_PARAMETERS,
+    CHECK_ERRORS_TOOL_NAME,
+    CHECK_ERRORS_TOOL_PARAMETERS,
     FUZZY_EDIT_FILE_TOOL_NAME,
     FUZZY_EDIT_FILE_TOOL_PARAMETERS,
     GLOB_TOOL_NAME,
@@ -40,6 +42,7 @@ import { type z } from 'zod';
 import {
     handleBashEditTool,
     handleBashReadTool,
+    handleCheckErrors,
     handleFuzzyEditFileTool,
     handleGlobTool,
     handleGrepTool,
@@ -164,6 +167,12 @@ const TOOL_HANDLERS: ClientToolMap = {
         inputSchema: TYPECHECK_TOOL_PARAMETERS,
         handler: async (args: z.infer<typeof TYPECHECK_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleTypecheckTool(args, editorEngine),
+    },
+    [CHECK_ERRORS_TOOL_NAME]: {
+        name: CHECK_ERRORS_TOOL_NAME,
+        inputSchema: CHECK_ERRORS_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof CHECK_ERRORS_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleCheckErrors(args, editorEngine),
     },
 };
 

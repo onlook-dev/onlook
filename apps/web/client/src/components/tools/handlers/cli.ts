@@ -82,12 +82,12 @@ export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>,
         }
 
         const searchPath = args.path || '.';
-        
+
         // Use a more sophisticated glob pattern matching approach
         // Convert common glob patterns to find commands
         let command: string;
         const pattern = args.pattern;
-        
+
         if (pattern.includes('**')) {
             // Recursive glob pattern
             const filePattern = pattern.split('**')[1]?.replace(/^\//, '') || '*';
@@ -99,14 +99,14 @@ export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>,
             // Exact filename
             command = `find "${searchPath}" -type f -name "${pattern}" 2>/dev/null | head -1000`;
         }
-        
+
         const result = await sandbox.session.runCommand(command);
 
         if (result.success && result.output.trim()) {
             const files = result.output.trim().split('\n')
                 .filter(line => line.trim())
                 .map(line => line.trim());
-                
+
             // Sort by modification time (newest first) if we have multiple files
             if (files.length > 1) {
                 const statCommand = `stat -c "%Y %n" ${files.map(f => `"${f}"`).join(' ')} 2>/dev/null | sort -nr | cut -d' ' -f2-`;
@@ -115,7 +115,7 @@ export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>,
                     return statResult.output.trim().split('\n').filter(line => line.trim());
                 }
             }
-            
+
             return files;
         }
         return [];
@@ -138,7 +138,7 @@ export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>,
 
         const searchPath = args.path || '.';
         let command = `rg "${args.pattern}"`;
-        
+
         // Add path at the end
         command += ` "${searchPath}"`;
 
@@ -158,7 +158,7 @@ export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>,
         } else if (args.output_mode === 'count') {
             command += ' --count';
         }
-        
+
         // Apply head limit at the end
         if (args.head_limit) {
             command += ` | head -${args.head_limit}`;
@@ -178,9 +178,9 @@ export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>,
                     count: 0
                 };
             }
-            
+
             const lines = output.split('\n').filter(line => line.trim());
-            
+
             // For count mode, return the actual counts with filenames
             if (args.output_mode === 'count') {
                 return {
@@ -192,7 +192,7 @@ export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>,
                     }, 0)
                 };
             }
-            
+
             return {
                 matches: lines,
                 mode: args.output_mode,
