@@ -1,5 +1,4 @@
 import type {
-    BranchMessageContext,
     ErrorMessageContext,
     FileMessageContext,
     HighlightMessageContext,
@@ -69,16 +68,12 @@ export function getHydratedUserMessage(
     opt: HydrateMessageOptions,
 ): UIMessage {
     let userParts: UIMessagePart<UIDataTypes, UITools>[] = [];
-    const files = context.filter((c) => c.type === 'file').map((c) => c as FileMessageContext);
-    const highlights = context
-        .filter((c) => c.type === 'highlight')
-        .map((c) => c as HighlightMessageContext);
-    const errors = context.filter((c) => c.type === 'error').map((c) => c as ErrorMessageContext);
+    const files = context.filter((c) => c.type === 'file').map((c) => c);
+    const highlights = context.filter((c) => c.type === 'highlight').map((c) => c);
+    const errors = context.filter((c) => c.type === 'error').map((c) => c);
     const project = context.filter((c) => c.type === 'project').map((c) => c);
     const images = context.filter((c) => c.type === 'image').map((c) => c);
-    const branches = context
-        .filter((c) => c.type === 'branch')
-        .map((c) => c as BranchMessageContext);
+    const branches = context.filter((c) => c.type === 'branch').map((c) => c);
 
     // Create branch lookup for easy access to branch info
     const branchLookup = new Map<string, { id: string; name: string }>();

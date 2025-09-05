@@ -21,7 +21,6 @@ export function shouldIgnoreMessage(message: string) {
 }
 
 export function isErrorMessage(data: string) {
-    console.error('isErrorMessage', data);
     // Critical CLI errors
     const errorPatterns = [
         // Next.js errors

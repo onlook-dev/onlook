@@ -9,8 +9,8 @@ import {
     type MessageContext,
     type ProjectMessageContext,
 } from '@onlook/models/chat';
-import type { ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
+import type { BranchError } from '../branch/manager';
 import type { EditorEngine } from '../engine';
 
 export class ChatContext {
@@ -177,25 +177,25 @@ export class ChatContext {
         ];
     }
 
-    getErrorContext(errors: ParsedError[]): ErrorMessageContext[] {
-        const content = errors
-            .map((e) => `Source: ${e.sourceId}\nContent: ${e.content}\n`)
-            .join('\n');
+    getErrorContext(errors: BranchError[]): ErrorMessageContext[] {
+        const branchErrors = errors;
+        // Group errors by branch for context
+        const branchGroups = new Map<string, BranchError[]>();
+        branchErrors.forEach(error => {
+            const existing = branchGroups.get(error.branchId) || [];
+            existing.push(error);
+            branchGroups.set(error.branchId, existing);
+        });
 
-        const activeBranchId = this.editorEngine.branches.activeBranch?.id;
-        if (!activeBranchId) {
-            console.error('No active branch found for error context');
-            return [];
-        }
-
-        return [
-            {
-                type: MessageContextType.ERROR,
-                content,
-                displayName: 'Error',
-                branchId: activeBranchId,
-            },
-        ];
+        // Create context for each branch with errors
+        return Array.from(branchGroups.entries()).map(([branchId, branchErrors]) => ({
+            type: MessageContextType.ERROR,
+            content: branchErrors
+                .map((e) => `Source: ${e.sourceId}\nContent: ${e.content}\n`)
+                .join('\n'),
+            displayName: `Errors - ${branchErrors[0]?.branchName || 'Unknown Branch'}`,
+            branchId,
+        }));
     }
 
     async getCreateContext() {
