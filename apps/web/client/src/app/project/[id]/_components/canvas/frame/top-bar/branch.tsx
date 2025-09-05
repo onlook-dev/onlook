@@ -10,7 +10,6 @@ import { Icons } from "@onlook/ui/icons";
 import { observer } from "mobx-react-lite";
 import { useState } from "react";
 import { BranchControls } from "../../../branch/branch-controls";
-import { BranchList } from "../../../branch/branch-list";
 import { HoverOnlyTooltip } from "../../../editor-bar/hover-tooltip";
 
 interface BranchDisplayProps {
@@ -23,20 +22,10 @@ export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch }
     const frameBranch = editorEngine.branches.getBranchById(frame.branchId);
     const activeBranch = propActiveBranch || frameBranch;
     const [isOpen, setIsOpen] = useState(false);
-    const allBranches = editorEngine.branches.allBranches;
 
     if (!activeBranch) {
         return null;
     }
-
-    const handleBranchSwitch = async (branchId: string) => {
-        try {
-            await editorEngine.branches.switchToBranch(branchId);
-            setIsOpen(false);
-        } catch (error) {
-            console.error("Failed to switch branch:", error);
-        }
-    };
 
     return (
         <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
@@ -55,12 +44,6 @@ export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch }
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="w-[320px] p-0">
-                <BranchList
-                    branches={allBranches}
-                    activeBranch={activeBranch}
-                    onBranchSwitch={handleBranchSwitch}
-                    showSearch={false}
-                />
                 <BranchControls onClose={() => setIsOpen(false)} />
             </DropdownMenuContent>
         </DropdownMenu >
