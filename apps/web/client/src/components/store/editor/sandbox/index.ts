@@ -42,6 +42,7 @@ export class SandboxManager {
     private _isIndexed = false;
     private _isIndexing = false;
     private providerReactionDisposer?: () => void;
+    private _discoveredFiles: string[] = [];
 
     constructor(
         private branch: Branch,
@@ -107,6 +108,7 @@ export class SandboxManager {
 
             // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
+            this._discoveredFiles = allFilePaths;
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
             // Process files in non-blocking batches
@@ -317,7 +319,7 @@ export class SandboxManager {
     }
 
     get files() {
-        return this.fileSync.listAllFiles();
+        return this._discoveredFiles;
     }
 
     get directories() {
@@ -790,5 +792,6 @@ export class SandboxManager {
         this._isIndexed = false;
         this._isIndexing = false;
         this._routerConfig = null;
+        this._discoveredFiles = [];
     }
 }
