@@ -24,6 +24,7 @@ interface PageSelectorProps {
 export const PageSelector = observer(({ frame, className }: PageSelectorProps) => {
     const editorEngine = useEditorEngine();
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
 
     // Get inferred current page from URL immediately
     const inferredCurrentPage = useMemo(() => inferPageFromUrl(frame.url), [frame.url]);
@@ -133,12 +134,13 @@ export const PageSelector = observer(({ frame, className }: PageSelectorProps) =
     };
 
     return (
-        <DropdownMenu onOpenChange={(open) => {
+        <DropdownMenu open={isOpen} onOpenChange={(open) => {
+            setIsOpen(open);
             if (open) {
                 editorEngine.frames.select([frame]);
             }
         }}>
-            <HoverOnlyTooltip content="Page" side="top" className="mb-1" hideArrow>
+            <HoverOnlyTooltip content="Page" side="top" className="mb-1" hideArrow disabled={isOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
                         variant="ghost"

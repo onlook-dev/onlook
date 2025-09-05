@@ -31,10 +31,12 @@ export const BranchDisplay = observer(() => {
             <DropdownMenuTrigger asChild>
                 <Button
                     variant="ghost"
-                    className="text-small font-normal text-foreground-secondary hover:text-foreground flex flex-row items-center gap-2 h-auto px-2 py-1"
+                    className="text-small font-normal text-foreground-onlook hover:text-foreground-active hover:bg-transparent cursor-pointer group px-0 gap-2"
                 >
                     <Icons.Commit className="h-4 w-4" />
-                    <span>{activeBranch.name}</span>
+                    <span className="max-w-[60px] md:max-w-[100px] lg:max-w-[200px] text-small truncate cursor-pointer group-hover:text-foreground-active">
+                        {activeBranch.name}
+                    </span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-[320px] p-0">

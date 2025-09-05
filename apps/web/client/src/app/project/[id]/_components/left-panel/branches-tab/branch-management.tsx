@@ -123,26 +123,24 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
 
     return (
         <div className="flex flex-col h-full text-xs text-active flex-grow w-full p-0">
-            <div className="flex justify-between items-center pl-4 pr-2.5 py-3 border-b border-border">
-                <div className="flex items-center gap-2">
-                    <h2 className="text-sm text-foreground">Branch Settings</h2>
-                </div>
+            <div className="flex items-center justify-start border-b border-border py-3 pr-2.5 pl-3 gap-2">
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 rounded-md hover:bg-background-secondary"
+                    className="hover:bg-background-secondary h-7 w-7 rounded-md"
                     onClick={handleClose}
                 >
-                    <Icons.CrossS className="h-4 w-4" />
+                    <Icons.ArrowLeft className="h-4 w-4" />
                 </Button>
+                <h2 className="text-foreground text-sm font-normal">Branch Settings</h2>
             </div>
 
             <div className="p-4 border-b border-border space-y-4">
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium text-foreground">Name</label>
+                        <label className="text-sm text-foreground">Name</label>
                         {isActiveBranch && (
-                            <span className="text-xs bg-accent text-foreground px-2 py-1 rounded">
+                            <span className="text-xs bg-teal-800 text-teal-200 px-2 py-1 rounded">
                                 Active
                             </span>
                         )}
@@ -158,11 +156,11 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                         />
                     ) : (
                         <div
-                            className="flex items-center justify-between p-2 bg-background-secondary rounded-md cursor-pointer hover:bg-background-secondary/70 border"
+                            className="flex items-start justify-between p-2 bg-background-secondary rounded-md cursor-pointer hover:bg-background-secondary/70 border"
                             onClick={() => setIsRenaming(true)}
                         >
-                            <span className="font-medium">{branch.name}</span>
-                            <Icons.Pencil className="w-3 h-3 text-muted-foreground" />
+                            <span className="font-medium break-words min-w-0 flex-1 mr-2 leading-tight">{branch.name}</span>
+                            <Icons.Pencil className="w-3 h-3 text-muted-foreground flex-shrink-0 mt-0.5" />
                         </div>
                     )}
                 </div>
@@ -170,7 +168,7 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
 
             <div className="flex-1 p-4 space-y-3">
                 <div className="space-y-2">
-                    <h3 className="text-sm font-medium text-foreground">Actions</h3>
+                    <h3 className="text-sm text-foreground">Actions</h3>
                     <div className="flex flex-col items-center gap-2 w-full">
                         <Button
                             variant="outline"
@@ -208,7 +206,7 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
                                     <span>Deleting...</span>
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 text-red-400">
                                     <Icons.Trash className="w-4 h-4" />
                                     <span>Delete</span>
                                 </div>
@@ -219,10 +217,9 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
 
                 <div className="pt-4 border-t border-border">
                     <div className="space-y-2">
-                        <h3 className="text-sm font-medium text-foreground">Info</h3>
-                        <div className="text-xs text-muted-foreground space-y-1">
-                            <div>Created: {timeAgo(branch.createdAt)}</div>
-                            <div>Last modified: {timeAgo(branch.updatedAt)}</div>
+                        <div className="text-xs text-foreground-tertiary/80 space-y-1">
+                            <div>Created {timeAgo(branch.createdAt)} ago</div>
+                            <div>Last modified {timeAgo(branch.updatedAt)} ago</div>
                         </div>
                     </div>
                 </div>

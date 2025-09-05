@@ -43,7 +43,7 @@ export const TopBar = observer(() => {
 
     return (
         <div className="bg-background-primary/20 backdrop-blur-md flex flex-row h-10 p-0 justify-center items-center">
-            <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
+            <div className="flex flex-row flex-grow basis-0 space-x-0 justify-start items-center">
                 <ProjectBreadcrumb />
                 <BranchDisplay />
             </div>

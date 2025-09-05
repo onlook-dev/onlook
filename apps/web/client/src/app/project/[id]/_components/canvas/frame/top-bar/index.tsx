@@ -131,13 +131,13 @@ export const TopBar = observer(
             <div
                 ref={topBarRef}
                 className={cn(
-                    'rounded-lg bg-background-primary/10 hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
+                    'rounded-lg bg-background-primary/10  hover:shadow h-6 m-auto flex flex-row items-center backdrop-blur-lg overflow-hidden relative shadow-sm border-input text-foreground-secondary group-hover:text-foreground cursor-grab active:cursor-grabbing',
                     isSelected && 'text-teal-400 fill-teal-400',
                 )}
                 style={{
                     height: `${28 / editorEngine.canvas.scale}px`,
                     width: `${frame.dimension.width}px`,
-                    marginBottom: `${10 / editorEngine.canvas.scale}px`,
+                    marginBottom: `${4 / editorEngine.canvas.scale}px`,
                 }}
                 onMouseDown={handleMouseDown}
                 onClick={handleClick}
@@ -151,14 +151,16 @@ export const TopBar = observer(
                     ref={toolBarRef}
                 >
                     <HoverOnlyTooltip content="Hold to drag" side="top" className="mb-1" hideArrow>
-                        <Icons.DragHandleDots />
+                        <div className="cursor-pointer rounded-lg h-auto px-1 py-1 flex items-center justify-center hover:bg-background-secondary">
+                            <Icons.DragHandleDots />
+                        </div>
                     </HoverOnlyTooltip>
                     <HoverOnlyTooltip content="Go back" side="top" className="mb-1" hideArrow>
                         <Button
                             variant="ghost"
-                            size="icon"
+                            size="sm"
                             className={cn(
-                                'cursor-pointer rounded-lg',
+                                'cursor-pointer rounded-lg h-auto px-1 py-1',
                                 !editorEngine.frames.navigation.canGoBack(frame.id) && 'hidden',
                                 !isSelected && 'hidden',
                             )}
@@ -171,9 +173,9 @@ export const TopBar = observer(
                     <HoverOnlyTooltip content="Go forward" side="top" className="mb-1" hideArrow>
                         <Button
                             variant="ghost"
-                            size="icon"
+                            size="sm"
                             className={cn(
-                                'cursor-pointer rounded-lg',
+                                'cursor-pointer rounded-lg h-auto px-1 py-1',
                                 !editorEngine.frames.navigation.canGoForward(frame.id) && 'hidden',
                                 !isSelected && 'hidden',
                             )}
@@ -186,9 +188,9 @@ export const TopBar = observer(
                     <HoverOnlyTooltip content="Refresh Page" side="top" className="mb-1" hideArrow>
                         <Button
                             variant="ghost"
-                            size="icon"
+                            size="sm"
                             className={cn(
-                                'cursor-pointer rounded-lg',
+                                'cursor-pointer rounded-lg h-auto px-1 py-1',
                                 !isSelected && 'hidden',
                             )}
                             onClick={handleReload}

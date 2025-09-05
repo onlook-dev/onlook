@@ -8,6 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { BranchManagement } from './branch-management';
 
+
 export const BranchesTab = observer(() => {
     const editorEngine = useEditorEngine();
     const { branches } = editorEngine;
@@ -62,10 +63,10 @@ export const BranchesTab = observer(() => {
                             <div
                                 key={branch.id}
                                 className={cn(
-                                    "group relative flex items-center gap-3 p-1 rounded-lg cursor-pointer transition-colors",
+                                    "group relative flex items-center gap-3 p-1 px-2 rounded-lg cursor-pointer transition-colors border",
                                     isActive
-                                        ? "bg-accent text-foreground border border-border"
-                                        : "hover:bg-accent/50 text-foreground-secondary hover:text-foreground"
+                                        ? "bg-accent text-foreground border-border"
+                                        : "border-transparent hover:bg-accent/50 text-foreground-secondary hover:text-foreground"
                                 )}
                                 onClick={() => handleBranchSwitch(branch.id)}
                                 onMouseEnter={() => setHoveredBranchId(branch.id)}
@@ -73,15 +74,15 @@ export const BranchesTab = observer(() => {
                             >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
                                     {isActive ? (
-                                        <Icons.Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                                        <Icons.CheckCircled className="w-4 h-4 text-teal-400 flex-shrink-0" />
                                     ) : (
                                         <Icons.Commit className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                                     )}
-                                    <div className="min-w-0 flex-1">
+                                    <div className="min-w-0 flex-1 overflow-hidden">
                                         <div className="font-medium text-sm truncate">
                                             {branch.name}
                                         </div>
-                                        <div className="text-xs text-muted-foreground">
+                                        <div className="text-mini text-muted-foreground mb-1 truncate">
                                             {timeAgo(branch.updatedAt)}
                                         </div>
                                     </div>
@@ -91,7 +92,7 @@ export const BranchesTab = observer(() => {
                                     <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="h-6 w-6 p-0 hover:bg-background"
+                                        className="h-8 w-8 p-2 hover:bg-background opacity-50 hover:opacity-100 transition-opacity"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             handleManageBranch(branch.id);
