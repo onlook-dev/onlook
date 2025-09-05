@@ -281,22 +281,6 @@ export const CodeTab = observer(() => {
         loadFilesForActiveSandbox();
     }, [activeSandbox]);
 
-
-    const handleRefreshFiles = useCallback(async () => {
-        if (!isSandboxReady()) {
-            handleSandboxNotReady('refresh files');
-            return;
-        }
-
-        ide.isFilesLoading = true;
-        try {
-            await activeSandbox.index(true);
-            await ide.refreshFiles();
-        } catch (error) {
-            console.error('Error refreshing files:', error);
-        }
-    }, [isSandboxReady]);
-
     async function loadNewContent(filePath: string) {
         if (!isSandboxReady()) {
             handleSandboxNotReady('load new content');
