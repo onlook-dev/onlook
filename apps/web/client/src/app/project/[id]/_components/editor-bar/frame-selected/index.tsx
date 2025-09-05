@@ -12,7 +12,7 @@ import { RotateGroup } from './rotate-group';
 import { ThemeGroup } from './theme-group';
 import { WindowActionsGroup } from './window-actions-group';
 
-export const WindowSelected = observer(({ availableWidth = 0 }: { availableWidth?: number }) => {
+export const FrameSelected = observer(({ availableWidth = 0 }: { availableWidth?: number }) => {
     const editorEngine = useEditorEngine();
     const frameData = editorEngine.frames.selected[0];
     const { isOpen, onOpenChange } = useDropdownControl({

@@ -1,6 +1,5 @@
 'use client';
 
-import { useEditorEngine } from '@/components/store/editor';
 import { FeedbackModal } from '@/components/ui/feedback-modal';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { SettingsModalWithProjects } from '@/components/ui/settings-modal/with-project';
@@ -21,7 +20,6 @@ import { RightPanel } from './right-panel';
 import { TopBar } from './top-bar';
 
 export const Main = observer(() => {
-    const editorEngine = useEditorEngine();
     const router = useRouter();
     const { isProjectReady, error } = useStartProject();
     const leftPanelRef = useRef<HTMLDivElement | null>(null);
