@@ -1,6 +1,6 @@
 'use client';
 
-import type { SandboxFile, SandboxDirectory } from '@onlook/models';
+import type { SandboxDirectory, SandboxFile } from '@onlook/models';
 import { UnifiedCacheManager } from './unified-cache';
 
 export class FileCacheManager {
@@ -89,15 +89,17 @@ export class FileCacheManager {
         writeFile: (path: string, content: string | Uint8Array) => Promise<boolean>,
     ): Promise<boolean> {
         try {
-            const type = content instanceof Uint8Array ? 'binary' : 'text';
-            const newFile: SandboxFile = {
-                type,
-                path: filePath,
-                content,
-            } as SandboxFile;
-
-            this.setFile(newFile);
-            return await writeFile(filePath, content);
+            const writeSuccess = await writeFile(filePath, content);
+            if (writeSuccess) {
+                const type = content instanceof Uint8Array ? 'binary' : 'text';
+                const newFile: SandboxFile = {
+                    type,
+                    path: filePath,
+                    content,
+                } as SandboxFile;
+                this.setFile(newFile);
+            }
+            return writeSuccess;
         } catch (error) {
             console.error(`Error writing file ${filePath}:`, error);
             return false;

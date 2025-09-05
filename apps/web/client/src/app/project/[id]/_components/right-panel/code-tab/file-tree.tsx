@@ -5,9 +5,8 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
-import { nanoid } from 'nanoid';
 import path from 'path';
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, memo, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import { FileTreeNode } from './file-tree-node';
@@ -17,7 +16,7 @@ interface FileTreeProps {
     onFileSelect: (filePath: string, searchTerm?: string) => void;
 }
 
-export const FileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSelect }, ref) => {
+const UnmemoizedFileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSelect }, ref) => {
     const editorEngine = useEditorEngine();
     const ide = editorEngine.ide;
     const files = editorEngine.activeSandbox.files;
@@ -126,7 +125,7 @@ export const FileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSelect 
                         current = existingNode;
                     } else {
                         const newNode: FileNode = {
-                            id: nanoid(),
+                            id: filePath || `dir:${filePath}`, // Use path as stable ID
                             name: part,
                             path: filePath,
                             isDirectory: !isLast,
@@ -387,3 +386,5 @@ export const FileTree = observer(forwardRef<any, FileTreeProps>(({ onFileSelect 
         </div>
     );
 }));
+
+export const FileTree = memo(UnmemoizedFileTree);

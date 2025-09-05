@@ -19,10 +19,6 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             return <div>Project not found</div>;
         }
 
-        if (!branches || branches.length === 0) {
-            return <div>No branches found for this project</div>;
-        }
-
         return (
             <ProjectProviders project={project} branches={branches}>
                 <Main />
