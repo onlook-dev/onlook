@@ -26,11 +26,6 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             label: transKeys.editor.panels.layers.tabs.brand,
         },
         {
-            value: LeftPanelTabValue.BRANCHES,
-            icon: <Icons.Commit className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.branches,
-        },
-        {
             value: LeftPanelTabValue.PAGES,
             icon: <Icons.File className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.pages,
@@ -39,6 +34,11 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             value: LeftPanelTabValue.IMAGES,
             icon: <Icons.Image className="w-5 h-5" />,
             label: transKeys.editor.panels.layers.tabs.images,
+        },
+        {
+            value: LeftPanelTabValue.BRANCHES,
+            icon: <Icons.Commit className="w-5 h-5" />,
+            label: transKeys.editor.panels.layers.tabs.branches,
         },
     ];
 
@@ -134,9 +134,9 @@ export const LeftPanel = observer(() => {
                         <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
                             {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
                             {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
-                            {selectedTab === LeftPanelTabValue.BRANCHES && <BranchesTab />}
                             {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
                             {selectedTab === LeftPanelTabValue.IMAGES && <ImagesTab />}
+                            {selectedTab === LeftPanelTabValue.BRANCHES && <BranchesTab />}
                         </div>
                     </div>
 
