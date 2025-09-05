@@ -165,7 +165,6 @@ export class ChatContext {
         return highlightedContext;
     }
 
-
     // TODO: Enhance with custom rules
     getProjectContext(): ProjectMessageContext[] {
         return [

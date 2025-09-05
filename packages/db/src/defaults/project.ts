@@ -1,13 +1,11 @@
 import type { Project as DbProject } from '@onlook/db';
 import { v4 as uuidv4 } from 'uuid';
 
-export const createDefaultProject = (
-    {
-        overrides = {},
-    }: {
-        overrides?: Partial<DbProject>
-    },
-): DbProject => {
+export const createDefaultProject = ({
+    overrides = {},
+}: {
+    overrides?: Partial<DbProject>
+}): DbProject => {
     return {
         id: uuidv4(),
         name: 'New Project',
