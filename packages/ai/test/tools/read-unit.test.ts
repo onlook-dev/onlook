@@ -1,4 +1,4 @@
-import { describe, expect, test, beforeEach, mock } from 'bun:test';
+import { describe, expect, mock, test } from 'bun:test';
 
 // Mock the path resolution utilities for unit testing
 describe('Path Resolution Utilities (Unit Tests)', () => {
@@ -107,10 +107,12 @@ describe('Path Resolution Utilities (Unit Tests)', () => {
 
         scored.sort((a, b) => b.score - a.score);
 
-        // config.ts should score highest (50 for partial match - 3 for path length = 47)
-        // config-backup.ts should score lower (25 for case match - 5 for path length = 20)
-        expect(scored[0].path).toBe('./src/config.ts');
-        expect(scored[0].score).toBeGreaterThan(scored[1].score);
+        // app.config.json should score highest (50 for partial match - 2 for path length = 48)
+        // config.ts should score second (50 for partial match - 3 for path length = 47)
+        expect(scored[0]?.path).toBe('./app.config.json');
+        expect(scored[0]?.score).toBe(48);
+        expect(scored[1]?.path).toBe('./src/config.ts');
+        expect(scored[1]?.score).toBe(47);
     });
 
     test('should handle directory vs file detection', async () => {
@@ -267,6 +269,8 @@ describe('Tool Parameter Processing (Unit Tests)', () => {
             recursive: false,
             show_hidden: false,
             file_types_only: false,
+            path: '.',
+            ignore: [],
         });
         const fullCommand = processListParams(fullParams);
 
@@ -292,7 +296,12 @@ describe('Tool Parameter Processing (Unit Tests)', () => {
         };
 
         // Test parameter processing
-        const processReadParams = (params: typeof offsetParams) => {
+        const processReadParams = (params: {
+            file_path: string;
+            offset?: number;
+            limit?: number;
+            branchId: string;
+        }) => {
             if (params.offset || params.limit) {
                 const start = Math.max(0, (params.offset || 1) - 1); // Convert to 0-based indexing
                 const end = params.limit ? start + params.limit : undefined;
