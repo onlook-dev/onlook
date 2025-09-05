@@ -82,11 +82,41 @@ export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>,
         }
 
         const searchPath = args.path || '.';
-        const command = `find ${searchPath} -name "${args.pattern}" 2>/dev/null | head -100`;
+        
+        // Use a more sophisticated glob pattern matching approach
+        // Convert common glob patterns to find commands
+        let command: string;
+        const pattern = args.pattern;
+        
+        if (pattern.includes('**')) {
+            // Recursive glob pattern
+            const filePattern = pattern.split('**')[1]?.replace(/^\//, '') || '*';
+            command = `find "${searchPath}" -type f -name "${filePattern}" 2>/dev/null | sort -t/ -k1,1 -k2,2n | head -1000`;
+        } else if (pattern.includes('*')) {
+            // Simple glob pattern
+            command = `find "${searchPath}" -maxdepth 1 -type f -name "${pattern}" 2>/dev/null | sort | head -1000`;
+        } else {
+            // Exact filename
+            command = `find "${searchPath}" -type f -name "${pattern}" 2>/dev/null | head -1000`;
+        }
+        
         const result = await sandbox.session.runCommand(command);
 
         if (result.success && result.output.trim()) {
-            return result.output.trim().split('\n').filter(line => line.trim());
+            const files = result.output.trim().split('\n')
+                .filter(line => line.trim())
+                .map(line => line.trim());
+                
+            // Sort by modification time (newest first) if we have multiple files
+            if (files.length > 1) {
+                const statCommand = `stat -c "%Y %n" ${files.map(f => `"${f}"`).join(' ')} 2>/dev/null | sort -nr | cut -d' ' -f2-`;
+                const statResult = await sandbox.session.runCommand(statCommand);
+                if (statResult.success && statResult.output.trim()) {
+                    return statResult.output.trim().split('\n').filter(line => line.trim());
+                }
+            }
+            
+            return files;
         }
         return [];
     } catch (error) {
@@ -107,24 +137,62 @@ export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>,
         }
 
         const searchPath = args.path || '.';
-        let command = `rg "${args.pattern}" ${searchPath}`;
+        let command = `rg "${args.pattern}"`;
+        
+        // Add path at the end
+        command += ` "${searchPath}"`;
 
-        if (args.case_insensitive) command += ' -i';
-        if (args.show_line_numbers) command += ' -n';
-        if (args.context_after) command += ` -A ${args.context_after}`;
-        if (args.context_before) command += ` -B ${args.context_before}`;
-        if (args.context_around) command += ` -C ${args.context_around}`;
-        if (args.glob) command += ` -g "${args.glob}"`;
-        if (args.type) command += ` -t ${args.type}`;
-        if (args.head_limit) command += ` | head -${args.head_limit}`;
+        // Add flags
+        if (args['-i']) command += ' -i';
+        if (args['-n'] && args.output_mode === 'content') command += ' -n';
+        if (args['-A'] && args.output_mode === 'content') command += ` -A ${args['-A']}`;
+        if (args['-B'] && args.output_mode === 'content') command += ` -B ${args['-B']}`;
+        if (args['-C'] && args.output_mode === 'content') command += ` -C ${args['-C']}`;
+        if (args.multiline) command += ' -U --multiline-dotall';
+        if (args.glob) command += ` --glob "${args.glob}"`;
+        if (args.type) command += ` --type ${args.type}`;
 
-        if (args.output_mode === 'files_with_matches') command += ' -l';
-        else if (args.output_mode === 'count') command += ' -c';
+        // Set output mode
+        if (args.output_mode === 'files_with_matches') {
+            command += ' --files-with-matches';
+        } else if (args.output_mode === 'count') {
+            command += ' --count';
+        }
+        
+        // Apply head limit at the end
+        if (args.head_limit) {
+            command += ` | head -${args.head_limit}`;
+        }
+
+        // Add null redirect for stderr to clean up output
+        command += ' 2>/dev/null';
 
         const result = await sandbox.session.runCommand(command);
 
-        if (result.success) {
-            const lines = result.output.trim().split('\n').filter(line => line.trim());
+        if (result.success || result.output.trim()) {
+            const output = result.output.trim();
+            if (!output) {
+                return {
+                    matches: [],
+                    mode: args.output_mode,
+                    count: 0
+                };
+            }
+            
+            const lines = output.split('\n').filter(line => line.trim());
+            
+            // For count mode, return the actual counts with filenames
+            if (args.output_mode === 'count') {
+                return {
+                    matches: lines,
+                    mode: args.output_mode,
+                    total_matches: lines.reduce((sum, line) => {
+                        const match = line.match(/^(\d+):/);
+                        return sum + (match?.[1] ? parseInt(match[1], 10) : 0);
+                    }, 0)
+                };
+            }
+            
             return {
                 matches: lines,
                 mode: args.output_mode,
@@ -135,7 +203,7 @@ export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>,
         return {
             matches: [],
             mode: args.output_mode,
-            error: result.error
+            error: result.error || 'No matches found'
         };
     } catch (error) {
         return {

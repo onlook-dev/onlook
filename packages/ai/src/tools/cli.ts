@@ -30,17 +30,27 @@ export const ALLOWED_BASH_READ_COMMANDS = z.enum([
 ]);
 export const BASH_READ_TOOL_NAME = 'bash_read';
 export const BASH_READ_TOOL_PARAMETERS = z.object({
-    command: z.string().describe('Read-only command to execute (no file modifications)'),
+    command: z
+        .string()
+        .describe('The read-only command to execute (no file modifications allowed)'),
     allowed_commands: z
         .array(ALLOWED_BASH_READ_COMMANDS)
         .optional()
         .describe('Override allowed commands for this execution'),
-    description: z.string().optional().describe('What the command does (5-10 words)'),
-    timeout: z.number().max(600000).optional().describe('Optional timeout in milliseconds'),
+    description: z
+        .string()
+        .optional()
+        .describe('Clear, concise description of what this command does in 5-10 words'),
+    timeout: z
+        .number()
+        .max(600000)
+        .optional()
+        .describe('Optional timeout in milliseconds (up to 600000ms / 10 minutes)'),
     branchId: z.string().describe('Branch ID to run the command in'),
 });
 export const bashReadTool = tool({
-    description: 'Execute read-only bash commands for exploration and analysis',
+    description:
+        'Executes read-only bash commands in a persistent shell session with optional timeout, ensuring proper handling and security measures. You can specify an optional timeout in milliseconds (up to 600000ms / 10 minutes). If not specified, commands will timeout after 120000ms (2 minutes).',
     inputSchema: BASH_READ_TOOL_PARAMETERS,
 });
 
@@ -58,52 +68,102 @@ export const ALLOWED_BASH_EDIT_COMMANDS = z.enum([
 ]);
 export const BASH_EDIT_TOOL_NAME = 'bash_edit';
 export const BASH_EDIT_TOOL_PARAMETERS = z.object({
-    command: z.string().describe('Command that modifies files (mkdir, rm, mv, etc.)'),
+    command: z
+        .string()
+        .describe('The command to execute that modifies files (mkdir, rm, mv, cp, chmod, etc.)'),
     allowed_commands: z
         .array(ALLOWED_BASH_EDIT_COMMANDS)
         .optional()
         .describe('Override allowed commands for this execution'),
-    description: z.string().optional().describe('What the command does (5-10 words)'),
-    timeout: z.number().max(600000).optional().describe('Optional timeout in milliseconds'),
+    description: z
+        .string()
+        .optional()
+        .describe('Clear, concise description of what this command does in 5-10 words'),
+    timeout: z
+        .number()
+        .max(600000)
+        .optional()
+        .describe('Optional timeout in milliseconds (up to 600000ms / 10 minutes)'),
     branchId: z.string().describe('Branch ID to run the command in'),
 });
 export const bashEditTool = tool({
-    description: 'Execute file modification commands in a persistent shell session',
+    description:
+        'Executes file modification commands in a persistent shell session with optional timeout, ensuring proper handling and security measures. You can specify an optional timeout in milliseconds (up to 600000ms / 10 minutes). If not specified, commands will timeout after 120000ms (2 minutes).',
     inputSchema: BASH_EDIT_TOOL_PARAMETERS,
 });
 
 export const GLOB_TOOL_NAME = 'glob';
 export const GLOB_TOOL_PARAMETERS = z.object({
-    pattern: z.string().describe('Glob pattern like "**/*.js"'),
-    path: z.string().optional().describe('Directory to search (optional, defaults to current)'),
+    pattern: z
+        .string()
+        .describe('The glob pattern to match files against (e.g., "**/*.js", "src/**/*.ts")'),
+    path: z
+        .string()
+        .optional()
+        .describe(
+            'The directory to search in. If not specified, the current working directory will be used. Must be a valid directory path if provided.',
+        ),
     branchId: z.string().describe('Branch ID to search files in'),
 });
 export const globTool = tool({
-    description: 'Fast file pattern matching tool that works with any codebase size',
+    description:
+        'Fast file pattern matching tool that works with any codebase size. Supports glob patterns like "**/*.js" or "src/**/*.ts". Returns matching file paths sorted by modification time. Use this tool when you need to find files by name patterns.',
     inputSchema: GLOB_TOOL_PARAMETERS,
 });
 
 export const GREP_TOOL_NAME = 'grep';
 export const GREP_TOOL_PARAMETERS = z.object({
-    pattern: z.string().describe('Regex pattern to search'),
-    path: z.string().optional().describe('File/directory to search'),
-    glob: z.string().optional().describe('Filter files with glob pattern'),
-    type: z.string().optional().describe('File type filter (js, py, rust, etc.)'),
+    pattern: z.string().describe('The regular expression pattern to search for in file contents'),
+    path: z
+        .string()
+        .optional()
+        .describe('File or directory to search in (defaults to current working directory)'),
+    glob: z
+        .string()
+        .optional()
+        .describe('Glob pattern to filter files (e.g. "*.js", "*.{ts,tsx}")'),
+    type: z
+        .string()
+        .optional()
+        .describe(
+            'File type to search (e.g., js, py, rust, go, java, etc.) More efficient than glob for standard file types',
+        ),
     output_mode: z
         .enum(['content', 'files_with_matches', 'count'])
         .optional()
-        .default('files_with_matches'),
-    case_insensitive: z.boolean().optional().describe('Case insensitive search'),
-    show_line_numbers: z.boolean().optional().describe('Show line numbers'),
-    context_after: z.number().optional().describe('Lines after match'),
-    context_before: z.number().optional().describe('Lines before match'),
-    context_around: z.number().optional().describe('Lines around match'),
-    multiline: z.boolean().optional().describe('Enable multiline matching'),
-    head_limit: z.number().optional().describe('Limit output lines'),
+        .default('files_with_matches')
+        .describe(
+            'Output mode: "content" shows matching lines, "files_with_matches" shows file paths, "count" shows match counts',
+        ),
+    '-i': z.boolean().optional().describe('Case insensitive search'),
+    '-n': z
+        .boolean()
+        .optional()
+        .describe('Show line numbers in output (requires output_mode: "content")'),
+    '-A': z
+        .number()
+        .optional()
+        .describe('Number of lines to show after each match (requires output_mode: "content")'),
+    '-B': z
+        .number()
+        .optional()
+        .describe('Number of lines to show before each match (requires output_mode: "content")'),
+    '-C': z
+        .number()
+        .optional()
+        .describe(
+            'Number of lines to show before and after each match (requires output_mode: "content")',
+        ),
+    multiline: z
+        .boolean()
+        .optional()
+        .describe('Enable multiline mode where . matches newlines and patterns can span lines'),
+    head_limit: z.number().optional().describe('Limit output to first N lines/entries'),
     branchId: z.string().describe('Branch ID to search files in'),
 });
 export const grepTool = tool({
-    description: 'Powerful search tool built on ripgrep with full regex syntax support',
+    description:
+        'A powerful search tool built on ripgrep. Supports full regex syntax (e.g., "log.*Error", "function\\s+\\w+"). Filter files with glob parameter (e.g., "*.js", "**/*.tsx") or type parameter (e.g., "js", "py", "rust"). Output modes: "content" shows matching lines, "files_with_matches" shows only file paths (default), "count" shows match counts.',
     inputSchema: GREP_TOOL_PARAMETERS,
 });
 export const TYPECHECK_TOOL_NAME = 'typecheck';
