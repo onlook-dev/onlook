@@ -31,9 +31,7 @@ export const CodeTab = observer(() => {
     const fileTreeRef = useRef<any>(null);
 
     // Helper function to check if sandbox is connected and ready
-    const isSandboxReady = (): boolean => {
-        return !!(activeSandbox.session.provider && !activeSandbox.session.isConnecting);
-    };
+    const isSandboxReady = !!(activeSandbox.session.provider && !activeSandbox.session.isConnecting);
 
     // Helper function to handle sandbox not ready scenarios
     const handleSandboxNotReady = (operation: string): void => {
@@ -89,7 +87,7 @@ export const CodeTab = observer(() => {
             return null;
         }
 
-        if (!isSandboxReady()) {
+        if (!isSandboxReady) {
             handleSandboxNotReady('get element code range');
             return null;
         }
@@ -236,7 +234,7 @@ export const CodeTab = observer(() => {
     // Load files when active sandbox changes
     useEffect(() => {
         const loadFilesForActiveSandbox = async () => {
-            if (!isSandboxReady()) {
+            if (!isSandboxReady) {
                 return;
             }
 
@@ -282,7 +280,7 @@ export const CodeTab = observer(() => {
     }, [activeSandbox]);
 
     async function loadNewContent(filePath: string) {
-        if (!isSandboxReady()) {
+        if (!isSandboxReady) {
             handleSandboxNotReady('load new content');
             return;
         }
@@ -295,7 +293,7 @@ export const CodeTab = observer(() => {
     }
 
     const loadFile = useCallback(async (filePath: string, searchTerm?: string): Promise<EditorFile | null> => {
-        if (!isSandboxReady()) {
+        if (!isSandboxReady) {
             handleSandboxNotReady('load file');
             return null;
         }
@@ -314,7 +312,7 @@ export const CodeTab = observer(() => {
     }
 
     async function getFilePathFromOid(oid: string): Promise<string | null> {
-        if (!isSandboxReady()) {
+        if (!isSandboxReady) {
             handleSandboxNotReady('get file path from OID');
             return null;
         }
@@ -341,7 +339,7 @@ export const CodeTab = observer(() => {
             return;
         }
 
-        if (!isSandboxReady()) {
+        if (!isSandboxReady) {
             handleSandboxNotReady('save file');
             return;
         }
@@ -473,21 +471,16 @@ export const CodeTab = observer(() => {
         <div className="size-full flex flex-col">
 
             {/* Show connection status when sandbox is not ready */}
-            {!isSandboxReady() && (
+            {!isSandboxReady ? (
                 <div className="flex-1 flex items-center justify-center">
                     <div className="flex flex-col items-center gap-3">
                         <div className="animate-spin h-8 w-8 border-2 border-foreground-hover rounded-full border-t-transparent"></div>
                         <span className="text-sm text-muted-foreground">
-                            {activeSandbox.session.isConnecting
-                                ? 'Connecting to sandbox...'
-                                : 'Waiting for sandbox connection...'}
+                            Connecting to sandbox...
                         </span>
                     </div>
                 </div>
-            )}
-
-            {/* Main content - only show when sandbox is connected */}
-            {isSandboxReady() && (
+            ) : (
                 <div className="flex flex-1 min-h-0 overflow-hidden">
                     {ide.isFilesVisible && (
                         <FileTree
