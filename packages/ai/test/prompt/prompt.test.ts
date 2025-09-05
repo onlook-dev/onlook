@@ -145,7 +145,6 @@ describe('Prompt', () => {
                     branchId: 'test',
                 },
             ],
-            new Map([['test.txt', { id: 'test', name: 'test' }]]),
         );
 
         if (SHOULD_WRITE_FILE_CONTENT) {
@@ -159,30 +158,26 @@ describe('Prompt', () => {
     test('Highlights should be the same', async () => {
         const highlightsPath = path.resolve(__dirname, './data/highlights.txt');
 
-        const prompt = getHighlightsContent(
-            'test.txt',
-            [
-                {
-                    path: 'test.txt',
-                    start: 1,
-                    end: 2,
-                    content: 'test',
-                    type: MessageContextType.HIGHLIGHT,
-                    displayName: 'test.txt',
-                    branchId: 'test',
-                },
-                {
-                    path: 'test.txt',
-                    start: 3,
-                    end: 4,
-                    content: 'test2',
-                    type: MessageContextType.HIGHLIGHT,
-                    displayName: 'test.txt',
-                    branchId: 'test',
-                },
-            ],
-            new Map([['test.txt', { id: 'test', name: 'test' }]]),
-        );
+        const prompt = getHighlightsContent('test.txt', [
+            {
+                path: 'test.txt',
+                start: 1,
+                end: 2,
+                content: 'test',
+                type: MessageContextType.HIGHLIGHT,
+                displayName: 'test.txt',
+                branchId: 'test',
+            },
+            {
+                path: 'test.txt',
+                start: 3,
+                end: 4,
+                content: 'test2',
+                type: MessageContextType.HIGHLIGHT,
+                displayName: 'test.txt',
+                branchId: 'test',
+            },
+        ]);
         if (SHOULD_WRITE_HIGHLIGHTS) {
             await Bun.write(highlightsPath, prompt);
         }
