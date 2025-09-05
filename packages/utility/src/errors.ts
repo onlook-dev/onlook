@@ -21,6 +21,7 @@ export function shouldIgnoreMessage(message: string) {
 }
 
 export function isErrorMessage(data: string) {
+    console.error('isErrorMessage', data);
     // Critical CLI errors
     const errorPatterns = [
         // Next.js errors
@@ -45,6 +46,8 @@ export function isErrorMessage(data: string) {
         'Build failed',
         'Invalid hook call',
         'Invalid configuration',
+        'Parsing ecmascript source code failed',
+        'GET / 500',
 
         // Critical Package errors
         'npm ERR!',

@@ -1,8 +1,10 @@
 import { api } from '@/trpc/client';
 import type { Branch } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
+import type { ParsedError } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '../engine';
+import { ErrorManager } from '../error';
 import { HistoryManager } from '../history';
 import { SandboxManager } from '../sandbox';
 
@@ -10,6 +12,12 @@ interface BranchData {
     branch: Branch;
     sandbox: SandboxManager;
     history: HistoryManager;
+    error: ErrorManager;
+}
+
+export interface BranchError extends ParsedError {
+    branchId: string;
+    branchName: string;
 }
 
 export class BranchManager {
@@ -26,18 +34,21 @@ export class BranchManager {
     initBranches(branches: Branch[]): void {
         this.reactionDisposer?.();
         this.reactionDisposer = null;
-        for (const { sandbox, history } of this.branchMap.values()) {
+        for (const { sandbox, history, error } of this.branchMap.values()) {
             sandbox.clear();
             history.clear();
+            error.clear();
         }
         this.branchMap.clear();
         for (const branch of branches) {
             const sandboxManager = new SandboxManager(branch, this.editorEngine);
             const historyManager = new HistoryManager(this.editorEngine);
+            const errorManager = new ErrorManager();
             this.branchMap.set(branch.id, {
                 branch,
                 sandbox: sandboxManager,
                 history: historyManager,
+                error: errorManager,
             });
         }
         // Preserve previous selection if still present; else default; else first; else null
@@ -96,6 +107,10 @@ export class BranchManager {
 
     get activeHistory(): HistoryManager {
         return this.activeBranchData.history;
+    }
+
+    get activeError(): ErrorManager {
+        return this.activeBranchData.error;
     }
 
     async switchToBranch(branchId: string): Promise<void> {
@@ -157,10 +172,12 @@ export class BranchManager {
             // Add the new branch to the local branch map
             const sandboxManager = new SandboxManager(result.branch, this.editorEngine);
             const historyManager = new HistoryManager(this.editorEngine);
+            const errorManager = new ErrorManager();
             this.branchMap.set(result.branch.id, {
                 branch: result.branch,
                 sandbox: sandboxManager,
                 history: historyManager,
+                error: errorManager,
             });
 
             // Initialize the new sandbox
@@ -217,10 +234,12 @@ export class BranchManager {
             // Add the new branch to the local branch map
             const sandboxManager = new SandboxManager(result.branch, this.editorEngine);
             const historyManager = new HistoryManager(this.editorEngine);
+            const errorManager = new ErrorManager();
             this.branchMap.set(result.branch.id, {
                 branch: result.branch,
                 sandbox: sandboxManager,
                 history: historyManager,
+                error: errorManager,
             });
 
             // Initialize the new sandbox
@@ -278,9 +297,10 @@ export class BranchManager {
                 this.editorEngine.frames.delete(frameState.frame.id);
             }
 
-            // Clean up the sandbox and history
+            // Clean up the sandbox, history, and error manager
             branchData.sandbox.clear();
             branchData.history.clear();
+            branchData.error.clear();
             // Clean up template nodes for this branch
             this.editorEngine.templateNodes.clearBranch(branchId);
             // Remove from the map
@@ -303,8 +323,35 @@ export class BranchManager {
         for (const branchData of this.branchMap.values()) {
             branchData.sandbox.clear();
             branchData.history.clear();
+            branchData.error.clear();
         }
         this.branchMap.clear();
         this.currentBranchId = null;
+    }
+
+    // Helper methods for error management
+    getAllErrors(): BranchError[] {
+        const allErrors: BranchError[] = [];
+        for (const branchData of this.branchMap.values()) {
+            const branchErrors = branchData.error.errors.map(error => ({
+                ...error,
+                branchId: branchData.branch.id,
+                branchName: branchData.branch.name,
+            }));
+            allErrors.push(...branchErrors);
+        }
+        return allErrors;
+    }
+
+    getTotalErrorCount(): number {
+        return Array.from(this.branchMap.values()).reduce(
+            (total, branchData) => total + branchData.error.errors.length,
+            0
+        );
+    }
+
+    getErrorsForBranch(branchId: string): ParsedError[] {
+        const branchData = this.getBranchDataById(branchId);
+        return branchData?.error.errors || [];
     }
 }

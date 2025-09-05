@@ -12,38 +12,36 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
     const editorEngine = useEditorEngine();
     const branches = editorEngine.branches;
 
-    // Collect terminal sessions from all branches
+    // Collect terminal sessions from active branch only
     const allTerminalSessions = new Map<string, { name: string; branchName: string; branchId: string; sessionId: string; session: any }>();
     let activeSessionId: string | null = null;
 
-    for (const branch of branches.allBranches) {
-        try {
-            const branchData = branches.getBranchById(branch.id);
-            if (!branchData) continue;
+    try {
+        const activeBranch = branches.activeBranch;
+        const branchData = branches.getBranchById(activeBranch.id);
+        if (branchData) {
+            // Get the sandbox manager for the active branch
+            const sandbox = branches.getSandboxById(activeBranch.id);
+            if (sandbox?.session?.terminalSessions) {
+                for (const [sessionId, session] of sandbox.session.terminalSessions) {
+                    const key = sessionId; // Use just sessionId since we're only showing active branch
+                    allTerminalSessions.set(key, {
+                        name: session.name,
+                        branchName: activeBranch.name,
+                        branchId: activeBranch.id,
+                        sessionId: sessionId,
+                        session: session
+                    });
 
-            // Get the sandbox manager for this branch
-            const sandbox = branches.getSandboxById(branch.id);
-            if (!sandbox?.session?.terminalSessions) continue;
-
-            for (const [sessionId, session] of sandbox.session.terminalSessions) {
-                const key = `${branch.id}-${sessionId}`;
-                allTerminalSessions.set(key, {
-                    name: session.name,
-                    branchName: branch.name,
-                    branchId: branch.id,
-                    sessionId: sessionId,
-                    session: session
-                });
-
-                // Set active session if this is the currently active branch and session
-                if (branch.id === branches.activeBranch.id && sessionId === sandbox.session.activeTerminalSessionId) {
-                    activeSessionId = key;
+                    // Set active session if this is the active session
+                    if (sessionId === sandbox.session.activeTerminalSessionId) {
+                        activeSessionId = key;
+                    }
                 }
             }
-        } catch (error) {
-            // Skip branches that aren't properly initialized
-            continue;
         }
+    } catch (error) {
+        // Skip if active branch isn't properly initialized
     }
 
     const [terminalHidden, setTerminalHidden] = useState(true);
@@ -103,12 +101,9 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
             >
 {allTerminalSessions.size > 0 ? (
                     <Tabs defaultValue={'cli'} value={activeSessionId || ''} onValueChange={(value) => {
-                        // Extract branch and session from the combined key
+                        // Set the active terminal session for the active branch
                         const terminalData = allTerminalSessions.get(value);
                         if (terminalData) {
-                            // Switch to the branch first
-                            editorEngine.branches.switchToBranch(terminalData.branchId);
-                            // Then set the active terminal session for that branch
                             const sandbox = branches.getSandboxById(terminalData.branchId);
                             if (sandbox) {
                                 sandbox.session.activeTerminalSessionId = terminalData.sessionId;
@@ -120,7 +115,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                             {Array.from(allTerminalSessions).map(([key, terminalData]) => (
                                 <TabsTrigger key={key} value={key} className="flex-1">
                                     <span className="truncate">
-                                        {terminalData.name} ({terminalData.branchName})
+                                        {terminalData.name}
                                     </span>
                                 </TabsTrigger>
                             ))}
