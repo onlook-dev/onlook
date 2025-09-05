@@ -7,6 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { motion } from 'motion/react';
 import { useState } from 'react';
 import { Terminal } from './terminal';
+import { toast } from '@onlook/ui/sonner';
 
 export const TerminalArea = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
@@ -14,6 +15,7 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
     const activeSessionId = editorEngine.sandbox.session.activeTerminalSessionId;
 
     const [terminalHidden, setTerminalHidden] = useState(true);
+    const [isRestarting, setIsRestarting] = useState(false);
 
     if (!terminalSessions.size) {
         return (
@@ -22,6 +24,23 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                 <p className="text-foreground-secondary">Initializing Sandbox...</p>
             </div>
         )
+    }
+
+    const handleRestartDevServer = async () => {
+        try {
+            if (isRestarting) return;
+            setIsRestarting(true);
+            const restartResponse = await editorEngine.sandbox.session.restartDevServer();
+            if (restartResponse) {
+                toast.success('Dev server restarting');
+            } else {
+                toast.error('Failed to restart dev server');
+            }
+        } catch (err) {
+            toast.error('Error restarting dev server');
+        } finally {
+            setIsRestarting(false);
+        }
     }
 
     return (
@@ -57,6 +76,17 @@ export const TerminalArea = observer(({ children }: { children: React.ReactNode 
                     </motion.span>
                     <div className="flex items-center gap-1">
                         <motion.div layout>{/* <RunButton /> */}</motion.div>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    onClick={() => handleRestartDevServer()}
+                                    className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent/50 rounded-md border border-transparent"
+                                >
+                                    <Icons.Reload className={cn("h-4 w-4", isRestarting && "animate-spin")}/>
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipContent sideOffset={5} hideArrow>Restart dev server</TooltipContent>
+                        </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <button

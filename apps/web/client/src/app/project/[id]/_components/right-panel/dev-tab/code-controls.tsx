@@ -12,6 +12,7 @@ import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { toast } from '@onlook/ui/sonner';
 import { FileModal } from './file-modal';
 import { FolderModal } from './folder-modal';
 import { UploadModal } from './upload-modal';
@@ -21,6 +22,7 @@ export const CodeControls = observer(() => {
     const [fileModalOpen, setFileModalOpen] = useState(false);
     const [folderModalOpen, setFolderModalOpen] = useState(false);
     const [uploadModalOpen, setUploadModalOpen] = useState(false);
+    const [isRestarting, setIsRestarting] = useState(false);
     const isDirty = editorEngine.ide.activeFile?.isDirty ?? false;
 
     const saveFile = () => {
@@ -36,9 +38,10 @@ export const CodeControls = observer(() => {
     })();
     const files = editorEngine.ide.files;
 
+    
     return (
         <>
-            <div className="flex flex-row opacity-50 transition-opacity duration-200 group-hover/panel:opacity-100">
+            <div className="flex flex-row items-center gap-1 opacity-50 transition-opacity duration-200 group-hover/panel:opacity-100">
                 <Tooltip>
                     <DropdownMenu>
                         <TooltipTrigger asChild>
