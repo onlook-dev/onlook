@@ -1,5 +1,5 @@
 import { useEditorEngine } from "@/components/store/editor";
-import { LeftPanelTabValue } from "@onlook/models";
+import { BranchTabValue, LeftPanelTabValue, type Branch } from "@onlook/models";
 import {
     DropdownMenuItem,
     DropdownMenuSeparator,
@@ -8,6 +8,7 @@ import { Icons } from "@onlook/ui/icons";
 import { useState } from "react";
 
 interface BranchControlsProps {
+    branch?: Branch;
     onClose?: () => void;
     onForkBranch?: () => void;
     onCreateBlankSandbox?: () => void;
@@ -15,6 +16,7 @@ interface BranchControlsProps {
 }
 
 export function BranchControls({
+    branch,
     onClose,
     onForkBranch,
     onCreateBlankSandbox,
@@ -23,6 +25,7 @@ export function BranchControls({
     const editorEngine = useEditorEngine();
     const [isForking, setIsForking] = useState(false);
     const [isCreatingBlank, setIsCreatingBlank] = useState(false);
+    const targetBranch = branch || editorEngine.branches.activeBranch;
 
     const handleForkBranch = async () => {
         if (isForking) return;
@@ -58,6 +61,8 @@ export function BranchControls({
         // Open the branches tab in the left panel
         editorEngine.state.leftPanelTab = LeftPanelTabValue.BRANCHES;
         editorEngine.state.leftPanelLocked = true;
+        editorEngine.state.branchTab = BranchTabValue.MANAGE;
+        editorEngine.state.manageBranchId = targetBranch.id;
         onManageBranches?.();
         onClose?.();
     };
@@ -99,7 +104,7 @@ export function BranchControls({
                     onSelect={handleManageBranches}
                 >
                     <Icons.Gear className="h-4 w-4" />
-                    <span>Manage Branches</span>
+                    <span>Manage Branch</span>
                 </DropdownMenuItem>
             </div>
         </>

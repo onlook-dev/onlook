@@ -105,12 +105,16 @@ export class BranchManager {
         this.currentBranchId = branchId;
     }
 
+    getBranchDataById(branchId: string): BranchData | null {
+        return this.branchMap.get(branchId) ?? null;
+    }
+
     getBranchById(branchId: string): Branch | null {
-        return this.branchMap.get(branchId)?.branch ?? null;
+        return this.getBranchDataById(branchId)?.branch ?? null;
     }
 
     getSandboxById(branchId: string): SandboxManager | null {
-        return this.branchMap.get(branchId)?.sandbox ?? null;
+        return this.getBranchDataById(branchId)?.sandbox ?? null;
     }
 
     get allBranches(): Branch[] {

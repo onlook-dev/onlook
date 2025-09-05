@@ -1,9 +1,10 @@
 import { useEditorEngine } from '@/components/store/editor';
 import { type Frame } from '@onlook/models';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/sonner';
 import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { GestureScreen } from './gesture';
 import { ResizeHandles } from './resize-handles';
 import { RightClickMenu } from './right-click';
@@ -15,10 +16,34 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
     const iFrameRef = useRef<IFrameView>(null);
     const [isResizing, setIsResizing] = useState(false);
     const [reloadKey, setReloadKey] = useState(0);
+    const [hasTimedOut, setHasTimedOut] = useState(false);
 
     // Check if sandbox is connecting for this frame's branch
-    const sandbox = editorEngine.branches.getSandboxById(frame.branchId);
-    const isConnecting = sandbox?.session?.isConnecting || sandbox?.isIndexing || false;
+    const branchData = editorEngine.branches.getBranchDataById(frame.branchId);
+    const isConnecting = branchData?.sandbox?.session?.isConnecting || branchData?.sandbox?.isIndexing || false;
+
+    // Timeout for connection attempts
+    useEffect(() => {
+        if (!isConnecting) {
+            setHasTimedOut(false);
+            return;
+        }
+
+        const timeoutId = setTimeout(() => {
+            // Check if still connecting when timeout fires
+            const currentBranchData = editorEngine.branches.getBranchDataById(frame.branchId);
+            const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting || currentBranchData?.sandbox?.isIndexing || false;
+
+            if (stillConnecting) {
+                setHasTimedOut(true);
+                toast.error('Connection timeout', {
+                    description: `Failed to connect to the branch ${branchData?.branch?.name}. Please try reloading.`,
+                });
+            }
+        }, 10000); // 10 second timeout
+
+        return () => clearTimeout(timeoutId);
+    }, [isConnecting, frame.branchId, editorEngine.branches]);
 
     const undebouncedReloadIframe = () => {
         setReloadKey(prev => prev + 1);
@@ -41,7 +66,7 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
                 <FrameComponent key={reloadKey} frame={frame} reloadIframe={reloadIframe} ref={iFrameRef} />
                 <GestureScreen frame={frame} isResizing={isResizing} />
 
-                {isConnecting && (
+                {isConnecting && !hasTimedOut && (
                     <div
                         className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 rounded-md"
                         style={{ width: frame.dimension.width, height: frame.dimension.height }}

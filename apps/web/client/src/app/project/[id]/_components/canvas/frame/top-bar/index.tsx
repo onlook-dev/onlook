@@ -20,8 +20,8 @@ export const TopBar = observer(
 
         useEffect(() => {
             const calculateVisibility = () => {
-                if (!topBarRef.current || !toolBarRef.current) {
-                    setShouldShowExternalLink(true);
+                if (!topBarRef.current || !toolBarRef.current || !isSelected) {
+                    setShouldShowExternalLink(false);
                     return;
                 }
 
@@ -151,7 +151,7 @@ export const TopBar = observer(
                     ref={toolBarRef}
                 >
                     <HoverOnlyTooltip content="Hold to drag" side="top" className="mb-1" hideArrow>
-                        <div className="cursor-pointer rounded-lg h-auto px-1 py-1 flex items-center justify-center hover:bg-background-secondary">
+                        <div className="cursor-pointer rounded-lg h-auto px-1 py-1 flex items-center justify-center hover:bg-background-secondary -ml-2 opacity-70">
                             <Icons.DragHandleDots />
                         </div>
                     </HoverOnlyTooltip>

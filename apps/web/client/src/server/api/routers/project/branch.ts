@@ -2,6 +2,7 @@ import { CodeProvider, getStaticCodeProvider } from '@onlook/code-provider';
 import { getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
 import { branches, branchInsertSchema, branchUpdateSchema, canvases, createDefaultFrame, frames, fromDbBranch, fromDbFrame } from '@onlook/db';
 import type { Frame } from '@onlook/models';
+import { generateUniqueBranchName } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
@@ -109,16 +110,28 @@ export const branchRouter = createTRPCRouter({
                         });
                     }
 
-                    // Fork the sandbox using code provider
+                    // Get existing branch names for unique name generation
+                    const existingBranches = await tx.query.branches.findMany({
+                        where: eq(branches.projectId, sourceBranch.projectId),
+                    });
+                    const existingNames = existingBranches.map(branch => branch.name);
 
+                    // Generate unique branch name if not provided
+                    let branchName: string;
+                    if (input.branchName) {
+                        branchName = input.branchName;
+                    } else {
+                        branchName = generateUniqueBranchName(sourceBranch.name, existingNames);
+                    }
+
+                    // Fork the sandbox using code provider
                     const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
                     const forkedSandbox = await CodesandboxProvider.createProject({
                         source: 'template',
                         id: sourceBranch.sandboxId,
-                        title: input.branchName || `${sourceBranch.name}-fork`,
+                        title: branchName,
                         tags: ['fork'],
                     });
-
 
                     const sandboxId = forkedSandbox.id;
                     const previewUrl = getSandboxPreviewUrl(sandboxId, 3000);
@@ -127,7 +140,7 @@ export const branchRouter = createTRPCRouter({
                     const newBranchId = uuidv4();
                     const newBranch = {
                         id: newBranchId,
-                        name: input.branchName || `${sourceBranch.name} (fork)`,
+                        name: branchName,
                         description: null,
                         projectId: sourceBranch.projectId,
                         sandboxId,
@@ -220,12 +233,27 @@ export const branchRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             try {
                 return await ctx.db.transaction(async (tx) => {
+                    // Get existing branch names for unique name generation
+                    const existingBranches = await tx.query.branches.findMany({
+                        where: eq(branches.projectId, input.projectId),
+                    });
+                    const existingNames = existingBranches.map(branch => branch.name);
+
+                    // Generate unique branch name if not provided
+                    const baseName = 'empty';
+                    let branchName: string;
+                    if (input.branchName) {
+                        branchName = input.branchName;
+                    } else {
+                        branchName = generateUniqueBranchName(baseName, existingNames);
+                    }
+
                     // Create new blank sandbox
                     const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
                     const blankSandbox = await CodesandboxProvider.createProject({
                         source: 'template',
                         id: SandboxTemplates[Templates.EMPTY_NEXTJS].id,
-                        title: input.branchName || `empty`,
+                        title: branchName,
                         tags: ['blank'],
                     });
 
@@ -236,7 +264,7 @@ export const branchRouter = createTRPCRouter({
                     const newBranchId = uuidv4();
                     const newBranch = {
                         id: newBranchId,
-                        name: input.branchName || 'empty',
+                        name: branchName,
                         description: null,
                         projectId: input.projectId,
                         sandboxId,

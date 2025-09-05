@@ -29,11 +29,11 @@ export const branches = pgTable('branches', {
     sandboxId: varchar('sandbox_id').notNull(),
 }, (table) => [
     index('branches_project_id_idx').on(table.projectId),
+    uniqueIndex('branches_name_per_project_ux').on(table.projectId, table.name),
     uniqueIndex('branches_default_per_project_ux')
         .on(table.projectId)
         .where(sql`${table.isDefault} = true`),
 ]).enableRLS();
-
 export const branchInsertSchema = createInsertSchema(branches);
 export const branchUpdateSchema = createUpdateSchema(branches, {
     id: z.string().uuid(),

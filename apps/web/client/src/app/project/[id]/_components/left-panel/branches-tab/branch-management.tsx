@@ -42,7 +42,9 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
             setIsRenaming(false);
         } catch (error) {
             console.error('Failed to rename branch:', error);
-            toast.error('Failed to rename branch');
+            toast.error('Failed to rename branch', {
+                description: error instanceof Error ? error.message : 'Please try again.',
+            });
             setNewName(branch.name);
             setIsRenaming(false);
         }

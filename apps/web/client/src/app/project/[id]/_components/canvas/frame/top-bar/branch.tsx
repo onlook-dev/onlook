@@ -44,7 +44,7 @@ export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch }
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
             <DropdownMenuContent align="start" className="w-[320px] p-0">
-                <BranchControls onClose={() => setIsOpen(false)} />
+                <BranchControls branch={activeBranch} onClose={() => setIsOpen(false)} />
             </DropdownMenuContent>
         </DropdownMenu >
     );
