@@ -87,12 +87,14 @@ export class PublishManager {
     }
 
     async publish({
+        deploymentId,
         buildScript,
         buildFlags,
         skipBadge,
         envVars,
         updateDeployment,
     }: {
+        deploymentId: string;
         buildScript: string;
         buildFlags: string;
         skipBadge: boolean;
@@ -103,6 +105,7 @@ export class PublishManager {
     }): Promise<Record<string, FreestyleFile>> {
         await this.runPrepareStep();
         await updateDeployment({
+            id: deploymentId,
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing deployment...',
             progress: 30,
@@ -111,6 +114,7 @@ export class PublishManager {
 
         if (!skipBadge) {
             await updateDeployment({
+                id: deploymentId,
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Adding "Built with Onlook" badge...',
                 progress: 35,
@@ -120,6 +124,7 @@ export class PublishManager {
         }
 
         await updateDeployment({
+            id: deploymentId,
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Building project...',
             progress: 40,
@@ -129,6 +134,7 @@ export class PublishManager {
         await this.runBuildStep(buildScript, buildFlags);
 
         await updateDeployment({
+            id: deploymentId,
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Postprocessing project...',
             progress: 50,
@@ -144,6 +150,7 @@ export class PublishManager {
         }
 
         await updateDeployment({
+            id: deploymentId,
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Preparing files for publish...',
             progress: 60,

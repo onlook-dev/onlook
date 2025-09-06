@@ -36,6 +36,9 @@ export function getContextIcon(context: MessageContext) {
         case MessageContextType.PROJECT:
             icon = Icons.Cube;
             break;
+        case MessageContextType.BRANCH:
+            icon = Icons.Commit;
+            break;
         default:
             assertNever(context);
     }

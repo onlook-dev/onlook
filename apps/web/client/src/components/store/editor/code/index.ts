@@ -1,10 +1,8 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
 import {
-    EditorTabValue,
     type Action,
     type CodeDiffRequest,
-    type DomElement,
-    type FileToRequests,
+    type FileToRequests
 } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
 import { assertNever } from '@onlook/utility';
@@ -28,40 +26,11 @@ export class CodeManager {
         makeAutoObservable(this);
     }
 
-    viewSourceFile(fileName: string) {
-        this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
-        this.editorEngine.ide.openFile(fileName);
-    }
-
-    async viewCodeBlock(oid: string) {
-        try {
-            this.editorEngine.state.rightPanelTab = EditorTabValue.DEV;
-            const element =
-                this.editorEngine.elements.selected.find((el: DomElement) => el.oid === oid) ||
-                this.editorEngine.elements.selected.find((el: DomElement) => el.instanceId === oid);
-
-            if (element) {
-                // First get the file path and load the file
-                const filePath = await this.editorEngine.ide.getFilePathFromOid(element.oid || '');
-                if (filePath) {
-                    // Load the file first
-                    await this.editorEngine.ide.openFile(filePath);
-                    // Then select the element after a small delay to ensure the file is loaded
-                    setTimeout(() => {
-                        this.editorEngine.elements.selected = [element];
-                    }, 500);
-                }
-            }
-        } catch (error) {
-            console.error('Error viewing source:', error);
-        }
-    }
-
     async write(action: Action) {
         try {
             // TODO: This is a hack to write code, we should refactor this
             if (action.type === 'write-code' && action.diffs[0]) {
-                await this.editorEngine.sandbox.writeFile(
+                await this.editorEngine.activeSandbox.writeFile(
                     action.diffs[0].path,
                     action.diffs[0].generated,
                 );
@@ -74,7 +43,7 @@ export class CodeManager {
             toast.error('Error writing requests', {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
-            this.editorEngine.error.addCodeApplicationError(error instanceof Error ? error.message : 'Unknown error', action);
+            this.editorEngine.branches.activeError.addCodeApplicationError(error instanceof Error ? error.message : 'Unknown error', action);
         }
     }
 
@@ -82,7 +51,7 @@ export class CodeManager {
         const groupedRequests = await this.groupRequestByFile(requests);
         const codeDiffs = await processGroupedRequests(groupedRequests);
         for (const diff of codeDiffs) {
-            await this.editorEngine.sandbox.writeFile(diff.path, diff.generated);
+            await this.editorEngine.activeSandbox.writeFile(diff.path, diff.generated);
         }
     }
 
@@ -117,11 +86,11 @@ export class CodeManager {
         const requestByFile: FileToRequests = new Map();
 
         for (const request of requests) {
-            const templateNode = await this.editorEngine.sandbox.getTemplateNode(request.oid);
+            const templateNode = this.editorEngine.templateNodes.getTemplateNode(request.oid);
             if (!templateNode) {
                 throw new Error(`Template node not found for oid: ${request.oid}`);
             }
-            const file = await this.editorEngine.sandbox.readFile(templateNode.path);
+            const file = await this.editorEngine.activeSandbox.readFile(templateNode.path);
             if (!file || file.type === 'binary') {
                 throw new Error(`Failed to read file: ${templateNode.path}`);
             }

@@ -12,7 +12,6 @@
         "url": "https://github.com/onlook-dev/onlook.git"
     },
     "scripts": {
-        "build": "bun build src/index.ts --outfile=dist/index.js",
         "clean": "rm -rf node_modules",
         "lint": "eslint --fix .",
         "format": "prettier --write .",

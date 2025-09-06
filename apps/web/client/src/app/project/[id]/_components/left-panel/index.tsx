@@ -5,6 +5,7 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
+import { BranchesTab } from './branches-tab';
 import { BrandTab } from './brand-tab';
 import { HelpDropdown } from './help-dropdown';
 import { ImagesTab } from './image-tab';
@@ -35,16 +36,9 @@ const tabs: { value: LeftPanelTabValue; icon: React.ReactNode; label: string; di
             label: transKeys.editor.panels.layers.tabs.images,
         },
         {
-            value: LeftPanelTabValue.APPS,
-            icon: <Icons.ViewGrid className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.apps,
-            disabled: true,
-        },
-        {
-            value: LeftPanelTabValue.COMPONENTS,
-            icon: <Icons.Component className="w-5 h-5" />,
-            label: transKeys.editor.panels.layers.tabs.components,
-            disabled: true,
+            value: LeftPanelTabValue.BRANCHES,
+            icon: <Icons.Commit className="w-5 h-5" />,
+            label: transKeys.editor.panels.layers.tabs.branches,
         },
     ];
 
@@ -139,9 +133,10 @@ export const LeftPanel = observer(() => {
                     <div className="flex-1 w-[280px] bg-background/95 rounded-xl">
                         <div className="border backdrop-blur-xl h-full shadow overflow-auto p-0 rounded-xl">
                             {selectedTab === LeftPanelTabValue.LAYERS && <LayersTab />}
+                            {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
                             {selectedTab === LeftPanelTabValue.PAGES && <PagesTab />}
                             {selectedTab === LeftPanelTabValue.IMAGES && <ImagesTab />}
-                            {selectedTab === LeftPanelTabValue.BRAND && <BrandTab />}
+                            {selectedTab === LeftPanelTabValue.BRANCHES && <BranchesTab />}
                         </div>
                     </div>
 

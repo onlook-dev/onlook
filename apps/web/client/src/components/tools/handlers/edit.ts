@@ -10,7 +10,11 @@ import { z } from 'zod';
 
 export async function handleSearchReplaceEditFileTool(args: z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     try {
-        const file = await editorEngine.sandbox.readFile(args.file_path);
+        const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+        if (!sandbox) {
+            throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
+        }
+        const file = await sandbox.readFile(args.file_path);
         if (!file || file.type !== 'text') {
             throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
         }
@@ -31,7 +35,7 @@ export async function handleSearchReplaceEditFileTool(args: z.infer<typeof SEARC
             newContent = file.content.replace(args.old_string, args.new_string);
         }
 
-        const result = await editorEngine.sandbox.writeFile(args.file_path, newContent);
+        const result = await sandbox.writeFile(args.file_path, newContent);
         if (!result) {
             throw new Error(`Failed to write file ${args.file_path}`);
         }
@@ -44,7 +48,11 @@ export async function handleSearchReplaceEditFileTool(args: z.infer<typeof SEARC
 
 export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof SEARCH_REPLACE_MULTI_EDIT_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     try {
-        const file = await editorEngine.sandbox.readFile(args.file_path);
+        const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+        if (!sandbox) {
+            throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
+        }
+        const file = await sandbox.readFile(args.file_path);
         if (!file || file.type !== 'text') {
             throw new Error(`Cannot read file ${args.file_path}: file not found or not text`);
         }
@@ -68,7 +76,7 @@ export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof 
             }
         }
 
-        const result = await editorEngine.sandbox.writeFile(args.file_path, content);
+        const result = await sandbox.writeFile(args.file_path, content);
         if (!result) {
             throw new Error(`Failed to write file ${args.file_path}`);
         }
@@ -81,7 +89,11 @@ export async function handleSearchReplaceMultiEditFileTool(args: z.infer<typeof 
 
 export async function handleWriteFileTool(args: z.infer<typeof WRITE_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     try {
-        const result = await editorEngine.sandbox.writeFile(args.file_path, args.content);
+        const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+        if (!sandbox) {
+            throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
+        }
+        const result = await sandbox.writeFile(args.file_path, args.content);
         if (!result) {
             throw new Error(`Failed to write file ${args.file_path}`);
         }
@@ -95,11 +107,15 @@ export async function handleFuzzyEditFileTool(
     args: z.infer<typeof FUZZY_EDIT_FILE_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<string> {
-    const exists = await editorEngine.sandbox.fileExists(args.file_path);
+    const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+    if (!sandbox) {
+        throw new Error(`Sandbox not found for branch ID: ${args.branchId}`);
+    }
+    const exists = await sandbox.fileExists(args.file_path);
     if (!exists) {
         throw new Error('File does not exist');
     }
-    const originalFile = await editorEngine.sandbox.readFile(args.file_path);
+    const originalFile = await sandbox.readFile(args.file_path);
 
     if (!originalFile) {
         throw new Error('Error reading file');
@@ -124,7 +140,7 @@ export async function handleFuzzyEditFileTool(
         throw new Error('Error applying code change: ' + updatedContent.error);
     }
 
-    const result = await editorEngine.sandbox.writeFile(args.file_path, updatedContent.result);
+    const result = await sandbox.writeFile(args.file_path, updatedContent.result);
     if (!result) {
         throw new Error('Error editing file');
     }

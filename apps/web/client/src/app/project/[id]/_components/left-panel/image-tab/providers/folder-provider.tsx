@@ -1,13 +1,13 @@
 import { useEditorEngine } from '@/components/store/editor';
-import { observer } from 'mobx-react-lite';
-import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 import type { FolderNode } from '@onlook/models';
 import {
-    validateFolderRename,
-    validateFolderMove,
+    isImageFile,
     validateFolderCreate,
-    isImageFile
+    validateFolderMove,
+    validateFolderRename
 } from '@onlook/utility';
+import { observer } from 'mobx-react-lite';
+import { createContext, useCallback, useContext, useState, type ReactNode } from 'react';
 
 interface FolderState {
     isLoading: boolean;
@@ -154,7 +154,7 @@ export const FolderProvider = observer(({ children }: FolderProviderProps) => {
             const oldPath = folderToRename.fullPath;
             const newPath = validation.newPath!;
 
-            await editorEngine.sandbox.rename(oldPath, newPath);
+            await editorEngine.activeSandbox.rename(oldPath, newPath);
 
             setRenameState({
                 folderToRename: null,
@@ -188,7 +188,7 @@ export const FolderProvider = observer(({ children }: FolderProviderProps) => {
         try {
             const folderPath = deleteState.folderToDelete.fullPath;
 
-            await editorEngine.sandbox.delete(folderPath, true);
+            await editorEngine.activeSandbox.delete(folderPath, true);
 
             setDeleteState({
                 folderToDelete: null,
@@ -252,7 +252,7 @@ export const FolderProvider = observer(({ children }: FolderProviderProps) => {
                 return;
             }
 
-            await editorEngine.sandbox.rename(oldPath, newPath);
+            await editorEngine.activeSandbox.rename(oldPath, newPath);
 
             setMoveState({
                 folderToMove: null,
@@ -337,7 +337,7 @@ export const FolderProvider = observer(({ children }: FolderProviderProps) => {
             // Create the folder with a .gitkeep file to make it visible in the sandbox
             const gitkeepPath = `${newFolderPath}/.gitkeep`.replace(/\\/g, '/');
             const gitkeepContent = '# This folder was created by Onlook\n';
-            const success = await editorEngine.sandbox.writeFile(gitkeepPath, gitkeepContent);
+            const success = await editorEngine.activeSandbox.writeFile(gitkeepPath, gitkeepContent);
 
             setCreateState({
                 isCreating: false,
@@ -369,7 +369,7 @@ export const FolderProvider = observer(({ children }: FolderProviderProps) => {
     }, []);
 
     const getChildFolders = useCallback((folder: FolderNode) => {
-        const childFolders = editorEngine.sandbox.directories.filter(dir => {
+        const childFolders = editorEngine.activeSandbox.directories.filter(dir => {
             if (dir.startsWith(folder.fullPath)) {
                 // Check if this is a direct child (not in a subdirectory)
                 const relativePath = dir.slice(folder.fullPath.length);
@@ -384,12 +384,12 @@ export const FolderProvider = observer(({ children }: FolderProviderProps) => {
             name: dir.split('/').pop() ?? '',
             fullPath: dir,
         }));
-    }, [editorEngine.sandbox.directories]);
+    }, [editorEngine.activeSandbox.directories]);
 
     // Get all folder paths
     const getImagesInFolder = useCallback((folder: FolderNode) => {
-        return editorEngine.sandbox.files.filter(image => {
-            if(image.startsWith(folder.fullPath)) {
+        return editorEngine.activeSandbox.files.filter(image => {
+            if (image.startsWith(folder.fullPath)) {
                 // Check if this is a direct child (not in a subdirectory)
                 const relativePath = image.slice(folder.fullPath.length);
                 // Remove leading slash if present
@@ -401,7 +401,7 @@ export const FolderProvider = observer(({ children }: FolderProviderProps) => {
             }
             return false;
         });
-    }, [editorEngine.sandbox.files]);
+    }, [editorEngine.activeSandbox.files]);
 
     // Check if any operation is loading
     const isOperating =

@@ -46,11 +46,11 @@ export function StartBlank({
             const newProject = await createProject({
                 project: {
                     name: 'New Project',
-                    sandboxId,
-                    sandboxUrl: previewUrl,
                     description: 'Your new blank project',
                     tags: ['blank'],
                 },
+                sandboxId,
+                sandboxUrl: previewUrl,
                 userId: user.id,
             });
 

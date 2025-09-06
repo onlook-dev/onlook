@@ -1,4 +1,4 @@
-import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame';
+import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import type { DomElement, EditTextResult, ElementPosition } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '../engine';
@@ -21,7 +21,7 @@ export class TextEditingManager {
         return this.targetDomEl;
     }
 
-    async start(el: DomElement, frameView: WebFrameView): Promise<void> {
+    async start(el: DomElement, frameView: IFrameView): Promise<void> {
         try {
             const isEditable = (await frameView.isChildTextEditable(el.oid ?? '')) as
                 | boolean
@@ -55,7 +55,7 @@ export class TextEditingManager {
 
             const adjustedRect = adaptRectToCanvas(el.rect, frameView);
             const isComponent = el.instanceId !== null;
-            this.editorEngine.overlay.clear();
+            this.editorEngine.overlay.clearUI();
 
             this.editorEngine.overlay.state.addTextEditor(
                 adjustedRect,
@@ -143,7 +143,7 @@ export class TextEditingManager {
     private async handleEditedText(
         domEl: DomElement,
         newContent: string,
-        frameView: WebFrameView,
+        frameView: IFrameView,
     ): Promise<void> {
         try {
             await this.editorEngine.history.push({
@@ -207,7 +207,7 @@ export class TextEditingManager {
         }
     }
 
-    async editElementAtLoc(pos: ElementPosition, frameView: WebFrameView): Promise<void> {
+    async editElementAtLoc(pos: ElementPosition, frameView: IFrameView): Promise<void> {
         try {
             const el = (await frameView.getElementAtLoc(pos.x, pos.y, true)) as DomElement;
             if (!el) {

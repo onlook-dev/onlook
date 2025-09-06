@@ -1,3 +1,4 @@
+export * from './branch';
 export * from './canvas';
 export * from './command';
 export * from './create';

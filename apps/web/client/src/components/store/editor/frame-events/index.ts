@@ -7,10 +7,14 @@ import type { EditorEngine } from '../engine';
 
 export class FrameEventManager {
     isCanvasOutOfView = false;
+    private viewportReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-        reaction(
+    }
+
+    init() {
+        this.viewportReactionDisposer = reaction(
             () => ({
                 position: this.editorEngine.canvas.position,
                 scale: this.editorEngine.canvas.scale,
@@ -148,5 +152,8 @@ export class FrameEventManager {
         }
     }
 
-    clear() { }
+    clear() {
+        this.viewportReactionDisposer?.();
+        this.viewportReactionDisposer = undefined;
+    }
 } 

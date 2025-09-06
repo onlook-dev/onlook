@@ -15,14 +15,15 @@
         "db:seed": "bun src/seed/seed.ts",
         "db:seed:stripe": "bun src/seed/stripe/stripe.ts",
         "db:reset": "bun src/seed/reset.ts",
-        "db:drop": "drizzle-kit drop"
+        "db:drop": "drizzle-kit drop",
+        "db:migrate:branching": "bun src/migration-scripts/migrate-to-branching.ts"
     },
     "dependencies": {
-        "dotenv": "^16.5.0",
-        "drizzle-orm": "^0.43.1",
+        "dotenv": "^17.2.1",
+        "drizzle-orm": "^0.44.5",
         "drizzle-zod": "^0.8.3",
-        "pg": "^8.11.3",
-        "postgres": "^3.4.5",
+        "pg": "^8.16.3",
+        "postgres": "^3.4.7",
         "uuid": "^11.1.0",
         "@onlook/stripe": "*"
     },

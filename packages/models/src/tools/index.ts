@@ -8,3 +8,16 @@ export interface WebSearchResult {
     }[];
     error: string | null;
 }
+
+export interface CheckErrorsResult {
+    success: boolean;
+    message: string;
+    errors: {
+        sourceId: string;
+        type: string;
+        content: string;
+        branchId: string;
+        branchName: string;
+    }[];
+    count: number;
+}

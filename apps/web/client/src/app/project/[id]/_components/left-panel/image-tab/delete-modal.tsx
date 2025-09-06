@@ -24,7 +24,7 @@ export const DeleteImageModal = () => {
 
     const handleClose = () => {
         if (!deleteState.isLoading) {
-            editorEngine.overlay.clear();
+            editorEngine.overlay.clearUI();
             handleDeleteModalToggle();
         }
     };

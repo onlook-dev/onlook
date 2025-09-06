@@ -1,4 +1,4 @@
 export * from './defaults';
-export * from './dto';
+export * from './mappers';
 export * from './schema';
 export * from './seed/constants';

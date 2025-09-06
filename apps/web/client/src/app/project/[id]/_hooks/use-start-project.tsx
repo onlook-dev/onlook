@@ -10,23 +10,21 @@ import {
     MessageContextType,
     ProjectCreateRequestStatus,
     type ImageMessageContext,
-    type MessageContext,
-    type Project,
+    type MessageContext
 } from '@onlook/models';
 import { toast } from '@onlook/ui/sonner';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
 
 export const useStartProject = () => {
     const editorEngine = useEditorEngine();
     const [isProjectReady, setIsProjectReady] = useState(false);
-    const [isSandboxLoading, setIsSandboxLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const processedRequestIdRef = useRef<string | null>(null);
 
     const { tabState } = useTabActive();
     const apiUtils = api.useUtils();
     const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
-    const { data: project, isLoading: isProjectLoading, error: projectError } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
     const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
     const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
@@ -36,25 +34,6 @@ export const useStartProject = () => {
             await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
         },
     });
-
-    useEffect(() => {
-        if (project) {
-            startSandbox(project);
-            editorEngine.screenshot.lastScreenshotAt = project.metadata.updatedPreviewImgAt;
-        }
-    }, [project]);
-
-    const startSandbox = async (project: Project) => {
-        try {
-            await editorEngine.sandbox.session.start(project.sandbox.id);
-            setIsSandboxLoading(false);
-        } catch (error) {
-            console.error('Failed to start sandbox', error);
-            toast.error('Failed to start sandbox', {
-                description: error instanceof Error ? error.message : 'Unknown error',
-            });
-        }
-    }
 
     useEffect(() => {
         if (canvasWithFrames) {
@@ -70,10 +49,11 @@ export const useStartProject = () => {
     }, [conversations]);
 
     useEffect(() => {
-        if (creationRequest && !isSandboxLoading) {
+        if (creationRequest && processedRequestIdRef.current !== creationRequest.id) {
+            processedRequestIdRef.current = creationRequest.id;
             resumeCreate(creationRequest);
         }
-    }, [creationRequest, isSandboxLoading]);
+    }, [creationRequest]);
 
     const resumeCreate = async (creationData: ProjectCreateRequest) => {
         try {
@@ -91,7 +71,7 @@ export const useStartProject = () => {
             const context: MessageContext[] = [...createContext, ...imageContexts];
             const prompt = creationData.context.filter((context) => context.type === CreateRequestContextType.PROMPT).map((context) => (context.content)).join('\n');
 
-            const message = await editorEngine.chat.addEditMessage(
+            await editorEngine.chat.addEditMessage(
                 prompt,
                 context,
             );
@@ -109,6 +89,7 @@ export const useStartProject = () => {
                 });
             }
         } catch (error) {
+            processedRequestIdRef.current = null; // Allow retry on failure
             console.error('Failed to resume create request', error);
             toast.error('Failed to resume create request', {
                 description: error instanceof Error ? error.message : 'Unknown error',
@@ -118,25 +99,23 @@ export const useStartProject = () => {
 
     useEffect(() => {
         if (tabState === 'reactivated') {
-            editorEngine.sandbox.session.reconnect(editorEngine.projectId, user?.id);
+            editorEngine.activeSandbox.session.reconnect(editorEngine.projectId, user?.id);
         }
     }, [tabState]);
 
     useEffect(() => {
         const allQueriesResolved =
             !isUserLoading &&
-            !isProjectLoading &&
             !isCanvasLoading &&
             !isConversationsLoading &&
-            !isCreationRequestLoading &&
-            !isSandboxLoading;
+            !isCreationRequestLoading;
 
         setIsProjectReady(allQueriesResolved);
-    }, [isUserLoading, isProjectLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading, isSandboxLoading]);
+    }, [isUserLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading]);
 
     useEffect(() => {
-        setError(userError?.message ?? projectError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
-    }, [userError, projectError, canvasError, conversationsError, creationRequestError]);
+        setError(userError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
+    }, [userError, canvasError, conversationsError, creationRequestError]);
 
     return { isProjectReady, error };
 }

@@ -287,6 +287,7 @@ declare const messages: {
                         "emptyState": "Select a window to edit its settings"
                     },
                     "brand": "Brand",
+                    "branches": "Branches",
                     "apps": "Apps"
                 }
             }

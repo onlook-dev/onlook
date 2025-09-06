@@ -2,8 +2,8 @@ import {
     canvases,
     createDefaultUserCanvas,
     projects,
-    toCanvas,
-    toFrame,
+    fromDbCanvas,
+    fromDbFrame,
     userCanvases,
     userCanvasUpdateSchema,
     type UserCanvas
@@ -33,7 +33,7 @@ export const userCanvasRouter = createTRPCRouter({
             if (!userCanvas) {
                 throw new Error('User canvas not found');
             }
-            return toCanvas(userCanvas);
+            return fromDbCanvas(userCanvas);
         }),
     getWithFrames: protectedProcedure
         .input(
@@ -56,8 +56,8 @@ export const userCanvasRouter = createTRPCRouter({
             }
             const userCanvas: UserCanvas = dbCanvas.userCanvases[0] ?? createDefaultUserCanvas(ctx.user.id, dbCanvas.id);
             return {
-                userCanvas: toCanvas(userCanvas),
-                frames: dbCanvas.frames.map(toFrame),
+                userCanvas: fromDbCanvas(userCanvas),
+                frames: dbCanvas.frames.map(fromDbFrame),
             };
         }),
     update: protectedProcedure.input(

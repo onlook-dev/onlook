@@ -42,7 +42,7 @@ export function SquareProjectCard({
         };
     }, [project.metadata?.previewImg]);
 
-    const lastUpdated = useMemo(() => timeAgo(new Date(project.metadata.updatedAt).toISOString()), [project.metadata.updatedAt]);
+    const lastUpdated = useMemo(() => timeAgo(project.metadata.updatedAt), [project.metadata.updatedAt]);
 
     return (
         <div

@@ -5,7 +5,6 @@ import { useEditorEngine } from '@/components/store/editor';
 import { useStateManager } from '@/components/store/state';
 import { CurrentUserAvatar } from '@/components/ui/avatar-dropdown';
 import { SettingsTabValue } from '@/components/ui/settings-modal/helpers';
-import { useFeatureFlags } from '@/hooks/use-feature-flags';
 import { transKeys } from '@/i18n/keys';
 import { Button } from '@onlook/ui/button';
 import { HotkeyLabel } from '@onlook/ui/hotkey-label';
@@ -16,6 +15,7 @@ import { motion } from 'motion/react';
 import { useTranslations } from 'next-intl';
 import { useChatContext } from '../../_hooks/use-chat';
 import { Members } from '../members';
+import { BranchDisplay } from './branch';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
 import { PublishButton } from './publish';
@@ -24,7 +24,6 @@ export const TopBar = observer(() => {
     const stateManager = useStateManager();
     const editorEngine = useEditorEngine();
     const { isWaiting } = useChatContext();
-    const { isEnabled } = useFeatureFlags();
     const t = useTranslations();
 
     const UNDO_REDO_BUTTONS = [
@@ -44,8 +43,9 @@ export const TopBar = observer(() => {
 
     return (
         <div className="bg-background-primary/20 backdrop-blur-md flex flex-row h-10 p-0 justify-center items-center">
-            <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
+            <div className="flex flex-row flex-grow basis-0 justify-start items-center">
                 <ProjectBreadcrumb />
+                <BranchDisplay />
             </div>
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2 mr-2">

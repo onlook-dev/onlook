@@ -1,27 +1,27 @@
+import { useEditorEngine } from '@/components/store/editor';
+import { DefaultSettings } from '@onlook/constants';
 import { type FolderNode } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Separator } from '@onlook/ui/separator';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { useEffect, useRef, useState, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { DeleteImageModal } from '../delete-modal';
 import { useFolderImages } from '../hooks/use-folder-images';
 import { useImageSearch } from '../hooks/use-image-search';
 import { ImageList } from '../image-list';
+import { MoveImageModal } from '../move-modal';
+import { useFolderContext } from '../providers/folder-provider';
 import { useImagesContext } from '../providers/images-provider';
+import { RenameImageModal } from '../rename-modal';
 import { FolderDropdownMenu } from './folder-dropdown-menu';
 import { FolderList } from './folder-list';
-import { useFolderContext } from '../providers/folder-provider';
-import { DefaultSettings } from '@onlook/constants';
-import { useEditorEngine } from '@/components/store/editor';
-import { DeleteImageModal } from '../delete-modal';
-import { MoveImageModal } from '../move-modal';
-import { RenameImageModal } from '../rename-modal';
-import { FolderRenameModal } from './modal/folder-rename-modal';
+import { FolderCreateModal } from './modal/folder-create-modal';
 import { FolderDeleteModal } from './modal/folder-delete-modal';
 import { FolderMoveModal } from './modal/folder-move-modal';
-import { FolderCreateModal } from './modal/folder-create-modal';
+import { FolderRenameModal } from './modal/folder-rename-modal';
 
 interface FolderPathItem {
     folder: FolderNode;
@@ -44,8 +44,8 @@ const Folder = observer(() => {
     const [childFolders, setChildFolders] = useState<FolderNode[]>([]);
 
     const folders = useMemo(
-        () => editorEngine.sandbox.directories.filter((dir) => dir.startsWith(rootDir.fullPath)),
-        [editorEngine.sandbox.directories, rootDir.fullPath],
+        () => editorEngine.activeSandbox.directories.filter((dir) => dir.startsWith(rootDir.fullPath)),
+        [editorEngine.activeSandbox.directories, rootDir.fullPath],
     );
 
     const { folderImagesState } = useFolderImages(currentFolder);

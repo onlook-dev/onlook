@@ -133,7 +133,7 @@ export class ElementsManager {
                 this.emitError('OID not found. Try refreshing the page.');
                 return;
             }
-            const codeBlock = await this.editorEngine.sandbox.getCodeBlock(oid);
+            const codeBlock = await this.editorEngine.templateNodes.getCodeBlock(oid);
 
             if (!codeBlock) {
                 this.emitError('Code block not found. Try refreshing the page.');

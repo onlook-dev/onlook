@@ -284,6 +284,7 @@
                         "emptyState": "选择一个窗口以编辑其设置"
                     },
                     "brand": "品牌",
+                    "branches": "分支",
                     "apps": "应用"
                 }
             }

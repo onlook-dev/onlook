@@ -16,14 +16,14 @@ export const useImageLoading = ({ uploadState, deleteState, renameState }: Opera
             deleteState.isLoading ||
             renameState.isLoading ||
             editorEngine.image.isScanning ||
-            editorEngine.sandbox.isIndexing
+            editorEngine.activeSandbox.isIndexing
         );
     }, [
         uploadState.isUploading,
         deleteState.isLoading,
         renameState.isLoading,
         editorEngine.image.isScanning,
-        editorEngine.sandbox.isIndexing,
+        editorEngine.activeSandbox.isIndexing,
     ]);
 
     return {

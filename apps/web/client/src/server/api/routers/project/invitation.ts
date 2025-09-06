@@ -4,7 +4,7 @@ import {
     createDefaultUserCanvas,
     projectInvitationInsertSchema,
     projectInvitations,
-    toUser,
+    fromDbUser,
     userCanvases,
     userProjects,
     users,
@@ -45,7 +45,7 @@ export const invitationRouter = createTRPCRouter({
         return {
             ...invitation,
             // @ts-expect-error - Drizzle is not typed correctly
-            inviter: toUser(invitation.inviter),
+            inviter: fromDbUser(invitation.inviter),
         };
     }),
     getWithoutToken: protectedProcedure.input(z.object({ id: z.string() })).query(async ({ ctx, input }) => {
@@ -74,7 +74,7 @@ export const invitationRouter = createTRPCRouter({
             ...invitation,
             token: null,
             // @ts-expect-error - Drizzle is not typed correctly
-            inviter: toUser(invitation.inviter),
+            inviter: fromDbUser(invitation.inviter),
         };
     }),
     list: protectedProcedure

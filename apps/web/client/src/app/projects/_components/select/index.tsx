@@ -42,8 +42,8 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
     const [spacing] = useState<number>(24);
 
     // Templates
-    const projects = fetchedProjects?.filter(project => !project.tags?.includes(Tags.TEMPLATE)) ?? [];
-    const templateProjects = fetchedProjects?.filter(project => project.tags?.includes(Tags.TEMPLATE)) ?? [];
+    const projects = fetchedProjects?.filter(project => !project.metadata.tags.includes(Tags.TEMPLATE)) ?? [];
+    const templateProjects = fetchedProjects?.filter(project => project.metadata.tags.includes(Tags.TEMPLATE)) ?? [];
     const shouldShowTemplate = templateProjects.length > 0;
     const [selectedTemplate, setSelectedTemplate] = useState<Project | null>(null);
     const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -140,7 +140,7 @@ export const SelectProject = ({ externalSearchQuery }: { externalSearchQuery?: s
         if (debouncedSearchQuery) {
             const q = debouncedSearchQuery.toLowerCase();
             filtered = projects.filter((p) =>
-                [p.name, p.metadata?.description ?? '', p.sandbox?.url ?? ''].some((s) =>
+                [p.name, p.metadata?.description ?? '', p.metadata.tags.join(', ')].some((s) =>
                     (s ?? '').toLowerCase().includes(q),
                 ),
             );

@@ -5,6 +5,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/sonner';
 import { cn } from '@onlook/ui/utils';
+import type { ParsedError } from '@onlook/utility';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -14,7 +15,8 @@ export const ErrorSection = observer(() => {
     const { isWaiting, sendMessageToChat } = useChatContext();
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
-    const errorCount = editorEngine.error.errors.length;
+    const allErrors = editorEngine.branches.getAllErrors();
+    const errorCount = editorEngine.branches.getTotalErrorCount();
 
     const sendFixError = async () => {
         try {
@@ -32,7 +34,7 @@ export const ErrorSection = observer(() => {
             onOpenChange={setIsOpen}
             className={cn(
                 'flex flex-col m-2',
-                (errorCount === 0 || editorEngine.error.hideErrors) && 'hidden',
+                errorCount === 0 && 'hidden',
             )}
         >
             <div
@@ -61,7 +63,7 @@ export const ErrorSection = observer(() => {
                                 </p>
                                 <p className="text-amber-800 dark:text-yellow-200 hidden truncate text-small pointer-events-none select-none max-w-[300px]">
                                     {errorCount === 1
-                                        ? editorEngine.error.errors[0]?.content
+                                        ? allErrors[0]?.content
                                         : `You have ${errorCount} errors`}
                                 </p>
                             </div>
@@ -93,14 +95,14 @@ export const ErrorSection = observer(() => {
                             className="border-t border-amber-200/20 dark:border-amber-500/20"
                         >
                             <div className="px-2.5 py-2 max-h-60 overflow-auto">
-                                {editorEngine.error.errors.map((error) => (
-                                    <div key={error.content} className="mb-3 last:mb-0 font-mono">
-                                        <div className="text-miniPlus text-amber-800/80 dark:text-amber-200/80 mb-1 truncate">
-                                            {error.sourceId}
+                                {allErrors.map((error: ParsedError) => (
+                                    <div key={`${error.branchId}-${error.content}`} className="mb-3 last:mb-0 font-mono">
+                                        <div className="flex items-center gap-2 text-sm text-amber-800/80 dark:text-amber-200/80 mb-1">
+                                            <span className="truncate">{error.sourceId} • {error.branchName}</span>
                                         </div>
-                                        <div className="text-micro text-amber-800/60 dark:text-amber-200/60">
+                                        <pre className="text-micro text-amber-800/60 dark:text-amber-200/60">
                                             {error.content}
-                                        </div>
+                                        </pre>
                                     </div>
                                 ))}
                             </div>

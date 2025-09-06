@@ -5,10 +5,10 @@ import {
     type UpdateStyleAction,
 } from '@onlook/models/actions';
 import { StyleChangeType, type StyleChange } from '@onlook/models/style';
+import { convertFontString } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { CSSProperties } from 'react';
 import type { EditorEngine } from '../engine';
-import { convertFontString } from '@onlook/utility';
 
 export interface SelectedStyle {
     styles: DomElementStyles;
@@ -26,10 +26,14 @@ export class StyleManager {
     domIdToStyle = new Map<string, SelectedStyle>();
     prevSelected = '';
     mode: StyleMode = StyleMode.Root;
+    private selectedElementsReactionDisposer?: () => void;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-        reaction(
+    }
+
+    init() {
+        this.selectedElementsReactionDisposer = reaction(
             () => this.editorEngine.elements.selected,
             (selectedElements) => this.onSelectedElementsChanged(selectedElements),
         );
@@ -54,7 +58,6 @@ export class StyleManager {
 
     updateFontFamily(style: string, value: Font) {
         const styleObj = { [style]: value.id };
-        
         const action = this.getUpdateStyleAction(styleObj);
         const formattedAction = {
             ...action,
@@ -188,6 +191,9 @@ export class StyleManager {
     }
 
     clear() {
+        // Clear reactions
+        this.selectedElementsReactionDisposer?.();
+        this.selectedElementsReactionDisposer = undefined;
         // Clear state
         this.selectedStyle = null;
         this.domIdToStyle = new Map();
