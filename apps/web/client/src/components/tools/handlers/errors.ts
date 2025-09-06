@@ -3,7 +3,7 @@ import type { CheckErrorsResult } from '@onlook/models';
 import type { ParsedError } from '@onlook/utility';
 
 export async function handleCheckErrors(
-    params: unknown,
+    _params: unknown,
     editorEngine: EditorEngine,
 ): Promise<CheckErrorsResult> {
     const errors = editorEngine.branches.getAllErrors();
