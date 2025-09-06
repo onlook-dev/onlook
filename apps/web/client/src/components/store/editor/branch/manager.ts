@@ -58,9 +58,9 @@ export class BranchManager {
         }
     }
 
-    init(): void {
+    async init(): Promise<void> {
         for (const branchData of this.branchMap.values()) {
-            branchData.sandbox.init();
+            await branchData.sandbox.init();
         }
         this.setupActiveFrameReaction();
     }
@@ -238,7 +238,7 @@ export class BranchManager {
             });
 
             // Initialize the new sandbox
-            sandboxManager.init();
+            await sandboxManager.init();
 
             // Add the created frames to the frame manager
             if (result.frames && result.frames.length > 0) {

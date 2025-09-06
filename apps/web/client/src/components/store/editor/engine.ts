@@ -86,9 +86,9 @@ export class EditorEngine {
         this.style.init();
     }
 
-    initBranches(branches: Branch[]) {
+    async initBranches(branches: Branch[]) {
         this.branches.initBranches(branches);
-        this.branches.init();
+        await this.branches.init();
     }
 
     clear() {

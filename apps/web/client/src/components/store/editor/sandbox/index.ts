@@ -58,7 +58,7 @@ export class SandboxManager {
         makeAutoObservable(this);
     }
 
-    init() {
+    async init() {
         this.providerReactionDisposer = reaction(
             () => this.session.provider,
             (provider) => {
@@ -68,6 +68,7 @@ export class SandboxManager {
                 }
             },
         );
+        await this.fileSync.init();
     }
 
     get isIndexed() {
