@@ -51,8 +51,5 @@
     "devDependencies": {
         "husky": "^9.1.6"
     },
-    "packageManager": "bun@1.2.13",
-    "dependencies": {
-        "tldts": "^7.0.12"
-    }
+    "packageManager": "bun@1.2.21"
 }

@@ -11,7 +11,7 @@ export async function handleCheckErrors(
     if (errors.length === 0) {
         return {
             success: true,
-            message: 'No terminal errors found.',
+            message: 'No errors found.',
             errors: [],
             count: 0,
         };
@@ -27,7 +27,7 @@ export async function handleCheckErrors(
 
     return {
         success: true,
-        message: `Found ${errors.length} terminal error${errors.length > 1 ? 's' : ''}`,
+        message: `Found ${errors.length} error${errors.length > 1 ? 's' : ''}`,
         errors: errorSummary,
         count: errors.length,
     };
