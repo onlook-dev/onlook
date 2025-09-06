@@ -5,10 +5,10 @@ import {
     type UpdateStyleAction,
 } from '@onlook/models/actions';
 import { StyleChangeType, type StyleChange } from '@onlook/models/style';
+import { convertFontString } from '@onlook/utility';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { CSSProperties } from 'react';
 import type { EditorEngine } from '../engine';
-import { convertFontString } from '@onlook/utility';
 
 export interface SelectedStyle {
     styles: DomElementStyles;
@@ -58,7 +58,6 @@ export class StyleManager {
 
     updateFontFamily(style: string, value: Font) {
         const styleObj = { [style]: value.id };
-        
         const action = this.getUpdateStyleAction(styleObj);
         const formattedAction = {
             ...action,

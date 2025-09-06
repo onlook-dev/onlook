@@ -82,6 +82,7 @@ export class EditorEngine {
         this.frameEvent.init();
         this.chat.init();
         this.templateNodes.init();
+        this.style.init();
     }
 
     initBranches(branches: any[]) {
