@@ -140,11 +140,13 @@ export class IDEManager {
                 const filePath = await this.getFilePathFromOid(element.oid || '');
                 if (filePath) {
                     // Load the file first
-                    await this.openFile(filePath, undefined, toggleTab);
-                    // Then select the element after a small delay to ensure the file is loaded
-                    setTimeout(() => {
-                        this.editorEngine.elements.selected = [element];
-                    }, 500);
+                    const file = await this.openFile(filePath, undefined, toggleTab);
+                    if (file) {
+                        // Use requestAnimationFrame to ensure DOM updates are complete
+                        requestAnimationFrame(() => {
+                            this.editorEngine.elements.selected = [element];
+                        });
+                    }
                 }
             }
         } catch (error) {
