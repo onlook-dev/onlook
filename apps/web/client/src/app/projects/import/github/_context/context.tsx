@@ -147,7 +147,6 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     }, [isGitHubConnected]);
 
     const validateRepo = api.github.validate.useMutation();
-    const reconnectGitHub = api.github.reconnectGitHub.useMutation();
 
     const nextStep = async () => {
         if (currentStep < totalSteps - 1) {
@@ -193,7 +192,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
 
         try {
             const repositoriesData = await clientApi.github.getRepositories.query(
-                username ? { username } : undefined,
+                username ? { owner: username } : undefined,
             );
             setRepositories(repositoriesData as GitHubRepository[]);
         } catch (error) {

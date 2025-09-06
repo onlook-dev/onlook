@@ -18,6 +18,7 @@ import { useChatContext } from '../../_hooks/use-chat';
 import { Members } from '../members';
 import { ModeToggle } from './mode-toggle';
 import { ProjectBreadcrumb } from './project-breadcrumb';
+import { GithubExportButton } from './github-export';
 import { PublishButton } from './publish';
 
 export const TopBar = observer(() => {
@@ -50,6 +51,7 @@ export const TopBar = observer(() => {
             <ModeToggle />
             <div className="flex flex-grow basis-0 justify-end items-center gap-2 mr-2">
                 <Members />
+                <GithubExportButton />
                 <CurrentUserAvatar className="size-7 cursor-pointer hover:opacity-80" />
                 <motion.div
                     className="space-x-0 hidden lg:block"

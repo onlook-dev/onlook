@@ -37,6 +37,7 @@ export const env = createEnv({
         GOOGLE_AI_STUDIO_API_KEY: z.string().optional(),
         OPENAI_API_KEY: z.string().optional(),
 
+
         // n8n
         N8N_WEBHOOK_URL: z.string().optional(),
         N8N_API_KEY: z.string().optional(),
@@ -122,6 +123,7 @@ export const env = createEnv({
         GOOGLE_AI_STUDIO_API_KEY: process.env.GOOGLE_AI_STUDIO_API_KEY,
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
         OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY,
+
 
         // n8n
         N8N_WEBHOOK_URL: process.env.N8N_WEBHOOK_URL,
