@@ -3,11 +3,11 @@ import { eq, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../client';
 import { createDefaultBranch } from '../defaults/branch';
+import type { Branch, Project } from '../schema';
 import { branches, canvases, frames, projects } from '../schema';
-import type { Branch, Frame, Project } from '../schema';
 
 // Load .env file
-config({ path: '../../../.env' });
+config({ path: '../../.env' });
 
 /**
  * Migration script to transition existing projects to the new branching structure
@@ -20,21 +20,17 @@ config({ path: '../../../.env' });
  */
 
 interface LegacyProject extends Project {
-    sandboxId?: string | null;
-    sandboxUrl?: string | null;
-}
-
-interface LegacyFrame extends Frame {
-    type?: string;
+    sandboxId: string | null;
+    sandboxUrl: string | null;
 }
 
 export async function migrateToBranching() {
     console.log('🔄 Starting migration to branching structure...');
-    
+
     try {
         // Step 1: Get all existing projects that don't have default branches yet
         console.log('📋 Fetching projects without default branches...');
-        
+
         const projectsToMigrate = await db
             .select()
             .from(projects)
@@ -45,19 +41,19 @@ export async function migrateToBranching() {
 
         // Step 2: Create default branches for projects that need them
         const newBranches: Branch[] = [];
-        
+
         for (const { projects: project } of projectsToMigrate) {
             console.log(`🔀 Creating default branch for project: ${project.name} (${project.id})`);
-            
+
             // Cast to legacy project to access potentially removed fields
             const legacyProject = project as LegacyProject;
             const sandboxId = legacyProject.sandboxId || uuidv4();
-            
+
             const defaultBranch = createDefaultBranch({
                 projectId: project.id,
                 sandboxId,
             });
-            
+
             newBranches.push(defaultBranch);
         }
 
@@ -66,27 +62,27 @@ export async function migrateToBranching() {
             await db.transaction(async (tx) => {
                 console.log(`📥 Inserting ${newBranches.length} default branches...`);
                 await tx.insert(branches).values(newBranches);
-                
+
                 // Step 4: Update frames to reference default branches
                 console.log('🔗 Updating frames to reference default branches...');
-                
+
                 for (const branch of newBranches) {
                     // Get all frames for this project's canvas that don't have a branch reference
                     const projectFrames = await tx
-                        .select({ 
+                        .select({
                             id: frames.id,
-                            canvasId: frames.canvasId 
+                            canvasId: frames.canvasId
                         })
                         .from(frames)
                         .innerJoin(canvases, eq(frames.canvasId, canvases.id))
                         .where(
                             eq(canvases.projectId, branch.projectId)
                         );
-                    
+
                     if (projectFrames.length > 0) {
                         const frameIds = projectFrames.map(f => f.id);
                         console.log(`  └─ Updating ${frameIds.length} frames for project ${branch.projectId}`);
-                        
+
                         // Update frames to reference the default branch
                         for (const frameId of frameIds) {
                             await tx
@@ -101,7 +97,7 @@ export async function migrateToBranching() {
 
         // Step 5: Handle any remaining orphaned frames
         console.log('🧹 Checking for orphaned frames...');
-        
+
         const orphanedFrames = await db
             .select({
                 frameId: frames.id,
@@ -114,7 +110,7 @@ export async function migrateToBranching() {
 
         if (orphanedFrames.length > 0) {
             console.log(`Found ${orphanedFrames.length} orphaned frames, fixing...`);
-            
+
             await db.transaction(async (tx) => {
                 for (const orphan of orphanedFrames) {
                     // Find the default branch for this frame's project
@@ -126,7 +122,7 @@ export async function migrateToBranching() {
                         )
                         .limit(1);
 
-                    if (defaultBranch.length > 0) {
+                    if (defaultBranch.length > 0 && !!defaultBranch[0]?.id) {
                         await tx
                             .update(frames)
                             .set({ branchId: defaultBranch[0].id })
@@ -138,7 +134,7 @@ export async function migrateToBranching() {
                             projectId: orphan.projectId,
                             sandboxId: uuidv4(),
                         });
-                        
+
                         await tx.insert(branches).values(emergencyBranch);
                         await tx
                             .update(frames)
@@ -151,16 +147,16 @@ export async function migrateToBranching() {
 
         // Step 6: Verification
         console.log('✅ Verifying migration completeness...');
-        
+
         const framesWithoutBranches = await db
             .select({ count: frames.id })
             .from(frames)
             .where(isNull(frames.branchId));
-        
+
         const totalBranches = await db
             .select({ count: branches.id })
             .from(branches);
-        
+
         const totalProjects = await db
             .select({ count: projects.id })
             .from(projects);
@@ -170,13 +166,13 @@ export async function migrateToBranching() {
         console.log(`  • Total branches: ${totalBranches.length}`);
         console.log(`  • Frames without branch reference: ${framesWithoutBranches.length}`);
         console.log(`  • New branches created: ${newBranches.length}`);
-        
+
         if (framesWithoutBranches.length > 0) {
             throw new Error(`Migration incomplete: ${framesWithoutBranches.length} frames still lack branch references`);
         }
 
         console.log('\n✅ Migration to branching structure completed successfully!');
-        
+
     } catch (error) {
         console.error('❌ Migration failed:', error);
         throw error;
@@ -190,7 +186,7 @@ if (require.main === module) {
             if (!process.env.SUPABASE_DATABASE_URL) {
                 throw new Error('SUPABASE_DATABASE_URL environment variable is required');
             }
-            
+
             console.log('🚀 Starting branching migration...');
             await migrateToBranching();
             console.log('🎉 Migration completed successfully');
