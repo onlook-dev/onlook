@@ -1,6 +1,6 @@
+import type { SandboxDirectory, SandboxFile } from '@onlook/models';
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test';
 import { FileCacheManager } from '../../src/components/store/editor/cache/file-cache';
-import type { SandboxFile, SandboxDirectory } from '@onlook/models';
 
 // Mock localforage
 mock.module('localforage', () => ({
@@ -94,7 +94,7 @@ describe('FileCacheManager', () => {
         };
 
         expect(fileCacheManager.hasFile('test.tsx')).toBe(false);
-        
+
         fileCacheManager.setFile(testFile);
         expect(fileCacheManager.hasFile('test.tsx')).toBe(true);
     });
@@ -143,8 +143,8 @@ describe('FileCacheManager', () => {
             content: null
         };
 
-        expect(await fileCacheManager.isFileLoaded(loadedFile)).toBe(true);
-        expect(await fileCacheManager.isFileLoaded(unloadedFile)).toBe(false);
+        expect(fileCacheManager.isFileLoaded(loadedFile)).toBe(true);
+        expect(fileCacheManager.isFileLoaded(unloadedFile)).toBe(false);
     });
 
     test('should read from cache or fetch from filesystem', async () => {
@@ -219,7 +219,7 @@ describe('FileCacheManager', () => {
 
         // Suppress console.error for this test
         const originalConsoleError = console.error;
-        console.error = mock(() => {});
+        console.error = mock(() => { });
 
         const result = await fileCacheManager.write('fail.tsx', 'content', failingWriteFile);
         expect(result).toBe(false);

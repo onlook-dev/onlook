@@ -1,4 +1,4 @@
-import type { SandboxDirectory, SandboxFile } from '@onlook/models';
+import type { SandboxFile } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
 import { FileCacheManager } from '../cache/file-cache';
 import { normalizePath } from './helpers';
@@ -23,7 +23,7 @@ export class FileSyncManager {
         return this.cacheManager.hasDirectory(dirPath);
     }
 
-    async isFileLoaded(file: SandboxFile) {
+    isFileLoaded(file: SandboxFile) {
         return file && file.content !== null;
     }
 

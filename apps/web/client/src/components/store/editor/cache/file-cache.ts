@@ -62,8 +62,7 @@ export class FileCacheManager {
         return this.directoryCache.delete(dirPath);
     }
 
-    // Utility methods
-    async isFileLoaded(file: SandboxFile): Promise<boolean> {
+    isFileLoaded(file: SandboxFile): boolean {
         return file && file.content !== null;
     }
 
@@ -125,6 +124,11 @@ export class FileCacheManager {
 
         const normalizedOldPath = normalizeDir(oldPath);
         const normalizedNewPath = normalizeDir(newPath);
+
+        // No-op when paths are identical
+        if (normalizedOldPath === normalizedNewPath) {
+            return;
+        }
 
         // Guard against renaming root directory
         if (normalizedOldPath === '/') {
