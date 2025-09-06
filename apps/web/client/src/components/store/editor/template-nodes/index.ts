@@ -12,9 +12,9 @@ import {
 } from '@onlook/parser';
 import { isRootLayoutFile } from '@onlook/utility/src/path';
 import { makeAutoObservable } from 'mobx';
+import { UnifiedCacheManager } from '../cache/unified-cache';
 import type { EditorEngine } from '../engine';
 import { formatContent } from '../sandbox/helpers';
-import { UnifiedCacheManager } from '../cache/unified-cache';
 
 interface TemplateNodeCacheData {
     templateNodeMap: [string, TemplateNode][];
@@ -97,7 +97,7 @@ export class TemplateNodeManager {
         if (shouldCache) {
             const contentHash = await this.calculateContentHash(content);
             const cached = this.processCache.getCached(cacheKey, contentHash);
-            
+
             if (cached) {
                 // Restore template nodes from cache
                 const templateNodeMap = new Map(cached.templateNodeMap);
@@ -223,7 +223,7 @@ export class TemplateNodeManager {
                 this.templateNodes.delete(oid);
             }
         }
-        
+
         // Clear from cache
         for (const key of this.processCache.keys()) {
             if (key.startsWith(`${branchId}:`)) {
@@ -235,10 +235,5 @@ export class TemplateNodeManager {
     clear(): void {
         this.templateNodes.clear();
         this.processCache.clear();
-    }
-
-    async clearAll(): Promise<void> {
-        this.clear();
-        await this.processCache.clearPersistent();
     }
 }

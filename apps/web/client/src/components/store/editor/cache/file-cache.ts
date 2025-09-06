@@ -119,11 +119,17 @@ export class FileCacheManager {
         // Normalize paths to handle trailing slash edge cases
         const normalizeDir = (path: string): string => {
             if (path === '/' || path === '') return '/';
-            return path.replace(/\/+$/, ''); // Remove trailing slashes
+            const normalized = path.replace(/\/+$/, ''); // Remove trailing slashes
+            return normalized === '' ? '/' : normalized;
         };
 
         const normalizedOldPath = normalizeDir(oldPath);
         const normalizedNewPath = normalizeDir(newPath);
+
+        // Guard against renaming root directory
+        if (normalizedOldPath === '/') {
+            throw new Error('Cannot rename root directory');
+        }
 
         // Create prefix for matching files (handle root case)
         const prefix = normalizedOldPath === '/' ? '/' : normalizedOldPath + '/';
@@ -138,6 +144,19 @@ export class FileCacheManager {
                 const updatedFile = { ...file, path: newFilePath };
                 this.setFile(updatedFile);
                 this.deleteFile(filePath);
+            }
+        }
+
+        // Update all nested directories in the directory
+        for (const [dirPath, directory] of this.directoryCache.entries()) {
+            if (dirPath.startsWith(prefix)) {
+                const relativePath = dirPath.substring(prefix.length);
+                const newDirPath = normalizedNewPath === '/' 
+                    ? '/' + relativePath
+                    : normalizedNewPath + '/' + relativePath;
+                const updatedDirectory = { ...directory, path: newDirPath };
+                this.setDirectory(updatedDirectory);
+                this.deleteDirectory(dirPath);
             }
         }
 

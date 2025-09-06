@@ -414,4 +414,82 @@ describe('FileCacheManager', () => {
         expect(fileCacheManager.hasFile('test.tsx')).toBe(true);
         expect(fileCacheManager.getFile('test.tsx')).toEqual(testFile);
     });
+
+    test('should rename nested directories when renaming parent directory', () => {
+        // Add nested directories and files
+        const nestedDir1: SandboxDirectory = {
+            type: 'directory',
+            path: 'src/components/ui'
+        };
+        const nestedDir2: SandboxDirectory = {
+            type: 'directory',
+            path: 'src/components/forms'
+        };
+        const nestedDir3: SandboxDirectory = {
+            type: 'directory',
+            path: 'src/components/ui/buttons'
+        };
+        const parentDir: SandboxDirectory = {
+            type: 'directory',
+            path: 'src/components'
+        };
+        const unrelatedDir: SandboxDirectory = {
+            type: 'directory',
+            path: 'src/utils'
+        };
+
+        // Add files in nested directories
+        const nestedFile: SandboxFile = {
+            type: 'text',
+            path: 'src/components/ui/Button.tsx',
+            content: 'button'
+        };
+
+        fileCacheManager.setDirectory(parentDir);
+        fileCacheManager.setDirectory(nestedDir1);
+        fileCacheManager.setDirectory(nestedDir2);
+        fileCacheManager.setDirectory(nestedDir3);
+        fileCacheManager.setDirectory(unrelatedDir);
+        fileCacheManager.setFile(nestedFile);
+
+        // Rename parent directory
+        fileCacheManager.renameDirectory('src/components', 'src/widgets');
+
+        // Check that all nested directories were renamed
+        expect(fileCacheManager.hasDirectory('src/components')).toBe(false);
+        expect(fileCacheManager.hasDirectory('src/components/ui')).toBe(false);
+        expect(fileCacheManager.hasDirectory('src/components/forms')).toBe(false);
+        expect(fileCacheManager.hasDirectory('src/components/ui/buttons')).toBe(false);
+
+        expect(fileCacheManager.hasDirectory('src/widgets')).toBe(true);
+        expect(fileCacheManager.hasDirectory('src/widgets/ui')).toBe(true);
+        expect(fileCacheManager.hasDirectory('src/widgets/forms')).toBe(true);
+        expect(fileCacheManager.hasDirectory('src/widgets/ui/buttons')).toBe(true);
+
+        // Unrelated directory should remain unchanged
+        expect(fileCacheManager.hasDirectory('src/utils')).toBe(true);
+
+        // Files in nested directories should also be renamed
+        expect(fileCacheManager.hasFile('src/components/ui/Button.tsx')).toBe(false);
+        expect(fileCacheManager.hasFile('src/widgets/ui/Button.tsx')).toBe(true);
+
+        const renamedFile = fileCacheManager.getFile('src/widgets/ui/Button.tsx');
+        expect(renamedFile?.path).toBe('src/widgets/ui/Button.tsx');
+        expect(renamedFile?.content).toBe('button');
+    });
+
+    test('should prevent renaming root directory', () => {
+        expect(() => {
+            fileCacheManager.renameDirectory('/', '/new-root');
+        }).toThrow('Cannot rename root directory');
+
+        expect(() => {
+            fileCacheManager.renameDirectory('', '/new-root');
+        }).toThrow('Cannot rename root directory');
+
+        // Test with trailing slashes that normalize to root
+        expect(() => {
+            fileCacheManager.renameDirectory('///', '/new-root');
+        }).toThrow('Cannot rename root directory');
+    });
 });
