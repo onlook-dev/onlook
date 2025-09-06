@@ -171,7 +171,7 @@ export class NodeFsProvider extends Provider {
         return true;
     }
 
-    async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
+    static async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
         return {
             id: input.id,
         };

@@ -10,6 +10,7 @@ import { MeasurementOverlay } from './elements/measurement';
 import { ClickRect } from './elements/rect/click';
 import { HoverRect } from './elements/rect/hover';
 import { InsertRect } from './elements/rect/insert';
+import { SnapGuidelines } from './elements/snap-guidelines';
 import { TextEditor } from './elements/text';
 
 export const Overlay = observer(() => {
@@ -55,14 +56,7 @@ export const Overlay = observer(() => {
             )}
             {!isTextEditing && clickRectsElements}
             {isTextEditing && overlayState.textEditor && (
-                <TextEditor
-                    rect={overlayState.textEditor.rect}
-                    content={overlayState.textEditor.content}
-                    styles={overlayState.textEditor.styles}
-                    onChange={overlayState.textEditor.onChange}
-                    onStop={overlayState.textEditor.onStop}
-                    isComponent={overlayState.textEditor.isComponent}
-                />
+                <TextEditor />
             )}
             {overlayState.measurement && (
                 <MeasurementOverlay
@@ -73,6 +67,7 @@ export const Overlay = observer(() => {
             {overlayState.clickRects.length > 0 && (
                 <OverlayButtons />
             )}
+            <SnapGuidelines />
         </div>
     );
 });

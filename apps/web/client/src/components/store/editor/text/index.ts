@@ -17,6 +17,10 @@ export class TextEditingManager {
         return this.targetDomEl !== null;
     }
 
+    get targetElement(): DomElement | null {
+        return this.targetDomEl;
+    }
+
     async start(el: DomElement, frameView: WebFrameView): Promise<void> {
         try {
             const isEditable = (await frameView.isChildTextEditable(el.oid ?? '')) as
@@ -80,22 +84,21 @@ export class TextEditingManager {
                 throw new Error('No frameView found for text editing');
             }
 
-            const domEl = (await frameData.view.editText(
+            const res = await frameData.view.editText(
                 this.targetDomEl.domId,
                 newContent,
-            )) as DomElement | null;
-            if (!domEl) {
+            );
+            if (!res) {
                 throw new Error('Failed to edit text. No dom element returned');
             }
 
-            await this.handleEditedText(domEl, newContent, frameData.view);
+            await this.handleEditedText(res.domEl, newContent, frameData.view);
         } catch (error) {
             console.error('Error editing text:', error);
         }
     }
 
     async end(): Promise<void> {
-
         try {
             if (!this.targetDomEl) {
                 throw new Error('No target dom element to stop editing');
@@ -123,6 +126,14 @@ export class TextEditingManager {
     }
 
     async clean(): Promise<void> {
+        if (this.targetDomEl) {
+            try {
+                const frameData = this.editorEngine.frames.get(this.targetDomEl.frameId);
+                await frameData?.view?.stopEditingText(this.targetDomEl.domId);
+            } catch (error) {
+                console.error('Error stopping editing text:', error);
+            }
+        }
         this.targetDomEl = null;
         this.editorEngine.overlay.state.removeTextEditor();
         await this.editorEngine.history.commitTransaction();
@@ -148,7 +159,9 @@ export class TextEditingManager {
                 newContent,
             });
             const adjustedRect = adaptRectToCanvas(domEl.rect, frameView);
-            this.editorEngine.overlay.state.updateTextEditor(adjustedRect);
+            this.editorEngine.overlay.state.updateTextEditor(adjustedRect, {
+                content: newContent,
+            });
             await this.editorEngine.overlay.refresh();
         } catch (error) {
             console.error('Error handling edited text:', error);
@@ -179,10 +192,10 @@ export class TextEditingManager {
                 return;
             }
 
-            const domEl = (await frameData.view.getElementByDomId(
+            const domEl = await frameData.view.getElementByDomId(
                 selectedEl.domId,
                 true,
-            )) as DomElement;
+            )
             if (!domEl) {
                 return;
             }

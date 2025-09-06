@@ -40,7 +40,7 @@ export const getSupabaseUser = async (request: NextRequest) => {
     return user;
 }
 
-export const incrementUsage = async (req: NextRequest): Promise<{
+export const incrementUsage = async (req: NextRequest, traceId?: string): Promise<{
     usageRecordId: string | undefined,
     rateLimitId: string | undefined,
 } | null> => {
@@ -52,6 +52,7 @@ export const incrementUsage = async (req: NextRequest): Promise<{
         const { api } = await createTRPCClient(req);
         const incrementRes = await api.usage.increment({
             type: UsageType.MESSAGE,
+            traceId,
         });
         return {
             usageRecordId: incrementRes?.usageRecordId,
@@ -75,7 +76,9 @@ export const decrementUsage = async (
             return;
         }
         const { usageRecordId, rateLimitId } = usageRecord;
-        if (!usageRecordId || !rateLimitId) {
+        // We should call revertIncrement even if only one of the IDs is available
+        // For free plan users, rateLimitId will be undefined but we still want to delete the usage record
+        if (!usageRecordId && !rateLimitId) {
             return;
         }
         const { api } = await createTRPCClient(req);
