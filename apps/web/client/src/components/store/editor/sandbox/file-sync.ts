@@ -95,8 +95,7 @@ export class FileSyncManager {
         this.cacheManager.writeEmptyFile(filePath, type);
     }
 
-
     async clear() {
-        this.cacheManager.clear();
+        await this.cacheManager.clear();
     }
 }

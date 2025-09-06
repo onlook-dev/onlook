@@ -43,8 +43,8 @@ describe('FileCacheManager', () => {
         });
     });
 
-    afterEach(() => {
-        fileCacheManager.clear();
+    afterEach(async () => {
+        await fileCacheManager.clear();
     });
 
     test('should store and retrieve text files', () => {
@@ -366,7 +366,7 @@ describe('FileCacheManager', () => {
         expect(file).toEqual(existingFile); // Should remain unchanged
     });
 
-    test('should clear all files and directories', () => {
+    test('should clear all files and directories', async () => {
         // Add files and directories
         fileCacheManager.setFile({ type: 'text', path: 'file.tsx', content: 'content' });
         fileCacheManager.setDirectory({ type: 'directory', path: 'src' });
@@ -374,7 +374,7 @@ describe('FileCacheManager', () => {
         expect(fileCacheManager.fileCount).toBe(1);
         expect(fileCacheManager.directoryCount).toBe(1);
 
-        fileCacheManager.clear();
+        await fileCacheManager.clear();
 
         expect(fileCacheManager.fileCount).toBe(0);
         expect(fileCacheManager.directoryCount).toBe(0);

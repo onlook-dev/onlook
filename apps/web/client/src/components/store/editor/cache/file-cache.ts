@@ -138,7 +138,7 @@ export class FileCacheManager {
         for (const [filePath, file] of this.fileCache.entries()) {
             if (filePath.startsWith(prefix)) {
                 const relativePath = filePath.substring(prefix.length);
-                const newFilePath = normalizedNewPath === '/' 
+                const newFilePath = normalizedNewPath === '/'
                     ? '/' + relativePath
                     : normalizedNewPath + '/' + relativePath;
                 const updatedFile = { ...file, path: newFilePath };
@@ -151,7 +151,7 @@ export class FileCacheManager {
         for (const [dirPath, directory] of this.directoryCache.entries()) {
             if (dirPath.startsWith(prefix)) {
                 const relativePath = dirPath.substring(prefix.length);
-                const newDirPath = normalizedNewPath === '/' 
+                const newDirPath = normalizedNewPath === '/'
                     ? '/' + relativePath
                     : normalizedNewPath + '/' + relativePath;
                 const updatedDirectory = { ...directory, path: newDirPath };
@@ -190,9 +190,18 @@ export class FileCacheManager {
         this.setFile(emptyFile);
     }
 
-    clear(): void {
-        this.fileCache.clear();
-        this.directoryCache.clear();
+    async clear(): Promise<void> {
+        try {
+            this.fileCache.clear();
+            this.directoryCache.clear();
+
+            await Promise.all([
+                this.fileCache.clearPersistent(),
+                this.directoryCache.clearPersistent(),
+            ]);
+        } catch (error) {
+            console.error('Error clearing file cache persistent storage:', error);
+        }
     }
 
     get fileCount(): number {

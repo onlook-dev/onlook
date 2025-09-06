@@ -28,6 +28,7 @@ import { TemplateNodeManager } from './template-nodes';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
+import type { Branch } from '@onlook/models';
 
 export class EditorEngine {
     readonly projectId: string;
@@ -85,7 +86,7 @@ export class EditorEngine {
         this.style.init();
     }
 
-    initBranches(branches: any[]) {
+    initBranches(branches: Branch[]) {
         this.branches.initBranches(branches);
         this.branches.init();
     }

@@ -1,4 +1,4 @@
-import { RouterType, type TemplateNode, type TemplateTag } from '@onlook/models';
+import { type TemplateNode, type TemplateTag } from '@onlook/models';
 import { beforeEach, describe, expect, mock, spyOn, test } from 'bun:test';
 import type { EditorEngine } from '../../src/components/store/editor/engine';
 import { TemplateNodeManager } from '../../src/components/store/editor/template-nodes/index';
@@ -11,7 +11,7 @@ mock.module('@onlook/parser', () => ({
     getContentFromAst: mock(async () => 'processed content'),
     getContentFromTemplateNode: mock(async () => 'template content'),
     getTemplateNodeChild: mock(async () => ({ instanceId: 'test-instance', component: 'TestComponent' })),
-    injectPreloadScript: mock(() => {}),
+    injectPreloadScript: mock(() => { }),
 }));
 
 // Mock utility functions
@@ -81,7 +81,7 @@ describe('TemplateNodeManager', () => {
         expect(result).toHaveProperty('newContent');
         expect(typeof result.modified).toBe('boolean');
         expect(typeof result.newContent).toBe('string');
-        
+
         // The template nodes would be stored by createTemplateNodeMap
         // but since we're mocking it to return empty map, we just verify the structure
         expect(result.modified).toBe(true);
@@ -140,7 +140,7 @@ describe('TemplateNodeManager', () => {
         const templateNode1 = createMockTemplateNode('test-oid-1', 'TestComponent1');
         const templateNode2 = createMockTemplateNode('test-oid-2', 'TestComponent2');
         templateNode2.branchId = 'different-branch';
-        
+
         manager['templateNodes'].set('test-oid-1', templateNode1);
         manager['templateNodes'].set('test-oid-2', templateNode2);
 
@@ -158,7 +158,7 @@ describe('TemplateNodeManager', () => {
         templateNode1.branchId = 'branch-1';
         const templateNode2 = createMockTemplateNode('oid-2', 'Component2');
         templateNode2.branchId = 'branch-2';
-        
+
         manager['templateNodes'].set('oid-1', templateNode1);
         manager['templateNodes'].set('oid-2', templateNode2);
 
@@ -248,16 +248,16 @@ describe('TemplateNodeManager', () => {
         // Mock addOidsToAst to simulate existing OIDs being preserved
         const { addOidsToAst } = await import('@onlook/parser');
         const mockAddOidsToAst = addOidsToAst as any;
-        
+
         // Clear any previous calls
         mockAddOidsToAst.mockClear();
-        
+
         // Set up consistent return values
         mockAddOidsToAst.mockReturnValue({ ast: { modified: true }, modified: true });
 
         // Act - First processing
         const result1 = await manager.processFileForMapping(branchId, filePath, fileContent);
-        
+
         // Act - Second processing (should use cache and skip processing)
         const result2 = await manager.processFileForMapping(branchId, filePath, fileContent);
 
@@ -265,7 +265,7 @@ describe('TemplateNodeManager', () => {
         expect(result1.modified).toBe(true);
         expect(result2.modified).toBe(true); // Same as cached result
         expect(result1.newContent).toBe(result2.newContent);
-        
+
         // Verify addOidsToAst was called at least once
         expect(mockAddOidsToAst).toHaveBeenCalledWith(
             expect.anything(), // ast
@@ -289,7 +289,7 @@ describe('TemplateNodeManager', () => {
         // Act - First processing
         await manager.processFileForMapping(branchId, filePath, fileContent);
         const firstCallCount = mockCreateTemplateNodeMap.mock.calls.length;
-        
+
         // Act - Second processing with same content
         await manager.processFileForMapping(branchId, filePath, fileContent);
         const secondCallCount = mockCreateTemplateNodeMap.mock.calls.length;
@@ -313,7 +313,7 @@ describe('TemplateNodeManager', () => {
         // Act - First processing
         await manager.processFileForMapping(branchId, filePath, originalContent);
         const firstCallCount = mockCreateTemplateNodeMap.mock.calls.length;
-        
+
         // Act - Second processing with different content
         await manager.processFileForMapping(branchId, filePath, modifiedContent);
         const secondCallCount = mockCreateTemplateNodeMap.mock.calls.length;
@@ -322,7 +322,7 @@ describe('TemplateNodeManager', () => {
         expect(secondCallCount).toBe(firstCallCount + 1); // Should process again
     });
 
-    test('should handle clearAll operation', async () => {
+    test('should handle clear operation', async () => {
         // Arrange  
         const branchId = 'test-branch';
         const filePath = 'test.tsx';
@@ -332,7 +332,7 @@ describe('TemplateNodeManager', () => {
         await manager.processFileForMapping(branchId, filePath, fileContent);
 
         // Act
-        await manager.clearAll();
+        await manager.clear();
 
         // Assert - Template nodes should be cleared
         expect(manager.getAllTemplateNodes().size).toBe(0);

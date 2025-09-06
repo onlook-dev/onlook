@@ -37,22 +37,26 @@ export const EditorEngineProvider = ({
 
     // Initialize editor engine when project ID changes
     useEffect(() => {
-        if (currentProjectId.current !== project.id) {
-            // Clean up old engine with delay to avoid race conditions
-            if (engineRef.current) {
-                setTimeout(() => engineRef.current?.clear(), 0);
+        const initializeEngine = async () => {
+            if (currentProjectId.current !== project.id) {
+                // Clean up old engine with delay to avoid race conditions
+                if (engineRef.current) {
+                    setTimeout(() => engineRef.current?.clear(), 0);
+                }
+
+                // Create new engine for new project
+                const newEngine = new EditorEngine(project.id, posthog);
+                await newEngine.initBranches(branches);
+                await newEngine.init();
+                newEngine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
+
+                engineRef.current = newEngine;
+                setEditorEngine(newEngine);
+                currentProjectId.current = project.id;
             }
+        };
 
-            // Create new engine for new project
-            const newEngine = new EditorEngine(project.id, posthog);
-            newEngine.initBranches(branches);
-            newEngine.init();
-            newEngine.screenshot.lastScreenshotAt = project.metadata?.previewImg?.updatedAt ?? null;
-
-            engineRef.current = newEngine;
-            setEditorEngine(newEngine);
-            currentProjectId.current = project.id;
-        }
+        initializeEngine();
     }, [project.id]);
 
     // Cleanup on unmount
