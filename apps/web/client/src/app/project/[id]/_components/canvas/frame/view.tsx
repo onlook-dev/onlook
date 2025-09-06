@@ -255,6 +255,9 @@ export const FrameComponent = observer(
                 return safeFallback;
             }
 
+            // Register the iframe with the editor engine
+            editorEngine.frames.registerView(frame, iframe as IFrameView);
+
             const syncMethods = {
                 supportsOpenDevTools: () =>
                     !!iframe.contentWindow && 'openDevTools' in iframe.contentWindow,
@@ -273,9 +276,6 @@ export const FrameComponent = observer(
                 );
                 return Object.assign(iframe, syncMethods, remoteMethods) as IFrameView;
             }
-
-            // Register the iframe with the editor engine
-            editorEngine.frames.registerView(frame, iframe as IFrameView);
 
             return Object.assign(iframe, {
                 ...syncMethods,
