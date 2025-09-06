@@ -93,7 +93,6 @@ export function isSuccessMessage(data: string): boolean {
         'compiled successfully',
         'ready - started server on',
         'event - compiled successfully',
-        'wait - compiling',
     ];
 
     // Check regex patterns
