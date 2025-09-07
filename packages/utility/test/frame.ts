@@ -1,6 +1,6 @@
 import type { Frame } from '@onlook/models';
 import { describe, expect, test } from 'bun:test';
-import { calculateNonOverlappingPosition } from '../../src/components/store/editor/frames/positioning';
+import { calculateNonOverlappingPosition } from '../src/frame';
 
 // Helper function to create a test frame
 function createFrame(id: string, x: number, y: number, width: number, height: number): Frame {
@@ -10,7 +10,7 @@ function createFrame(id: string, x: number, y: number, width: number, height: nu
         canvasId: 'test-canvas',
         position: { x, y },
         dimension: { width, height },
-        url: 'https://test.com'
+        url: 'https://test.com',
     };
 }
 
@@ -39,7 +39,9 @@ describe('Frame Positioning', () => {
             const result = calculateNonOverlappingPosition(proposedFrame, [existingFrame]);
 
             // Should be positioned to the right with spacing
-            expect(result.x).toBeGreaterThan(existingFrame.position.x + existingFrame.dimension.width);
+            expect(result.x).toBeGreaterThan(
+                existingFrame.position.x + existingFrame.dimension.width,
+            );
             expect(result.y).toBe(existingFrame.position.y);
         });
 
@@ -50,8 +52,10 @@ describe('Frame Positioning', () => {
             const result = calculateNonOverlappingPosition(proposedFrame, [existingFrame]);
 
             // Should find an anchor point (right, below, or bottom-right)
-            const isToRight = result.x === existingFrame.position.x + existingFrame.dimension.width + 100;
-            const isBelow = result.y === existingFrame.position.y + existingFrame.dimension.height + 100;
+            const isToRight =
+                result.x === existingFrame.position.x + existingFrame.dimension.width + 100;
+            const isBelow =
+                result.y === existingFrame.position.y + existingFrame.dimension.height + 100;
 
             expect(isToRight || isBelow).toBe(true);
         });
@@ -85,7 +89,8 @@ describe('Frame Positioning', () => {
                     bottom: frame.position.y + frame.dimension.height + spacing,
                 };
 
-                const hasOverlap = proposed.left < existing.right &&
+                const hasOverlap =
+                    proposed.left < existing.right &&
                     proposed.right > existing.left &&
                     proposed.top < existing.bottom &&
                     proposed.bottom > existing.top;
@@ -144,7 +149,7 @@ describe('Frame Positioning', () => {
             const result = calculateNonOverlappingPosition(proposedFrame, frames);
 
             // Should be to the right of the rightmost frame
-            const rightmostX = Math.max(...frames.map(f => f.position.x + f.dimension.width));
+            const rightmostX = Math.max(...frames.map((f) => f.position.x + f.dimension.width));
             expect(result.x).toBeGreaterThanOrEqual(rightmostX);
         });
 
@@ -169,13 +174,15 @@ describe('Frame Positioning', () => {
 
             // Check if positioned to the right
             if (result.x > existingFrame.position.x) {
-                const actualSpacing = result.x - (existingFrame.position.x + existingFrame.dimension.width);
+                const actualSpacing =
+                    result.x - (existingFrame.position.x + existingFrame.dimension.width);
                 expect(actualSpacing).toBe(expectedSpacing);
             }
 
             // Check if positioned below
             if (result.y > existingFrame.position.y) {
-                const actualSpacing = result.y - (existingFrame.position.y + existingFrame.dimension.height);
+                const actualSpacing =
+                    result.y - (existingFrame.position.y + existingFrame.dimension.height);
                 expect(actualSpacing).toBe(expectedSpacing);
             }
         });

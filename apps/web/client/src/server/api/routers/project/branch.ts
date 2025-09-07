@@ -2,13 +2,12 @@ import { CodeProvider, getStaticCodeProvider } from '@onlook/code-provider';
 import { getSandboxPreviewUrl, SandboxTemplates, Templates } from '@onlook/constants';
 import { branches, branchInsertSchema, branchUpdateSchema, canvases, createDefaultFrame, frames, fromDbBranch, fromDbFrame } from '@onlook/db';
 import type { Frame } from '@onlook/models';
-import { generateUniqueBranchName } from '@onlook/utility';
+import { calculateNonOverlappingPosition, generateUniqueBranchName } from '@onlook/utility';
 import { TRPCError } from '@trpc/server';
 import { and, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-import { calculateNonOverlappingPosition } from '@/components/store/editor/frames/positioning';
 
 // Helper function to get existing frames in a canvas
 async function getExistingFrames(tx: any, canvasId: string): Promise<Frame[]> {
@@ -165,7 +164,7 @@ export const branchRouter = createTRPCRouter({
                         if (canvas) {
                             // Get existing frames for smart positioning
                             const existingFrames = await getExistingFrames(tx, canvas.id);
-                            
+
                             // Create a proposed frame based on input position
                             const proposedFrame: Frame = {
                                 id: uuidv4(),
@@ -289,7 +288,7 @@ export const branchRouter = createTRPCRouter({
                         if (canvas) {
                             // Get existing frames for smart positioning
                             const existingFrames = await getExistingFrames(tx, canvas.id);
-                            
+
                             // Create a proposed frame based on input position
                             const proposedFrame: Frame = {
                                 id: uuidv4(),

@@ -1,6 +1,9 @@
 import type { Frame } from '@onlook/models';
 
-export function calculateNonOverlappingPosition(proposedFrame: Frame, existingFrames: Frame[]): { x: number; y: number } {
+export function calculateNonOverlappingPosition(
+    proposedFrame: Frame,
+    existingFrames: Frame[],
+): { x: number; y: number } {
     const SPACING = 100;
 
     if (existingFrames.length === 0) {
@@ -16,7 +19,12 @@ export function calculateNonOverlappingPosition(proposedFrame: Frame, existingFr
     return findBottomLeftPosition(proposedFrame, existingFrames, SPACING);
 }
 
-function hasOverlap(position: { x: number; y: number }, proposedFrame: Frame, existingFrames: Frame[], spacing: number): boolean {
+function hasOverlap(
+    position: { x: number; y: number },
+    proposedFrame: Frame,
+    existingFrames: Frame[],
+    spacing: number,
+): boolean {
     const proposed = {
         left: position.x,
         top: position.y,
@@ -24,7 +32,7 @@ function hasOverlap(position: { x: number; y: number }, proposedFrame: Frame, ex
         bottom: position.y + proposedFrame.dimension.height,
     };
 
-    return existingFrames.some(existingFrame => {
+    return existingFrames.some((existingFrame) => {
         if (existingFrame.id === proposedFrame.id) return false;
 
         const existing = {
@@ -34,14 +42,20 @@ function hasOverlap(position: { x: number; y: number }, proposedFrame: Frame, ex
             bottom: existingFrame.position.y + existingFrame.dimension.height + spacing,
         };
 
-        return proposed.left < existing.right &&
+        return (
+            proposed.left < existing.right &&
             proposed.right > existing.left &&
             proposed.top < existing.bottom &&
-            proposed.bottom > existing.top;
+            proposed.bottom > existing.top
+        );
     });
 }
 
-function findBottomLeftPosition(proposedFrame: Frame, existingFrames: Frame[], spacing: number): { x: number; y: number } {
+function findBottomLeftPosition(
+    proposedFrame: Frame,
+    existingFrames: Frame[],
+    spacing: number,
+): { x: number; y: number } {
     // Get all potential anchor points (corners of existing frames)
     const anchorPoints = getAnchorPoints(existingFrames, spacing);
 
@@ -50,7 +64,7 @@ function findBottomLeftPosition(proposedFrame: Frame, existingFrames: Frame[], s
 
     // Filter valid positions and sort by bottom-left preference
     const validPositions = anchorPoints
-        .filter(point => !hasOverlap(point, proposedFrame, existingFrames, spacing))
+        .filter((point) => !hasOverlap(point, proposedFrame, existingFrames, spacing))
         .sort((a, b) => {
             // Primary: prefer lower Y (bottom)
             if (Math.abs(a.y - b.y) > 10) {
@@ -78,7 +92,7 @@ function findBottomLeftPosition(proposedFrame: Frame, existingFrames: Frame[], s
 
     return {
         x: rightmostX + spacing,
-        y: rightmostY
+        y: rightmostY,
     };
 }
 
@@ -92,10 +106,13 @@ function getAnchorPoints(existingFrames: Frame[], spacing: number): { x: number;
         points.push(
             // Right edge, same Y
             { x: position.x + dimension.width + spacing, y: position.y },
-            // Bottom edge, same X  
+            // Bottom edge, same X
             { x: position.x, y: position.y + dimension.height + spacing },
             // Bottom-right corner
-            { x: position.x + dimension.width + spacing, y: position.y + dimension.height + spacing }
+            {
+                x: position.x + dimension.width + spacing,
+                y: position.y + dimension.height + spacing,
+            },
         );
     }
 

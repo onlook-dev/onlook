@@ -8,7 +8,7 @@ import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
 import { roundDimensions } from './dimension';
 import { FrameNavigationManager } from './navigation';
-import { calculateNonOverlappingPosition } from './positioning';
+import { calculateNonOverlappingPosition } from '@onlook/utility';
 
 export interface FrameData {
     frame: Frame;

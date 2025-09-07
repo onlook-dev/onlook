@@ -10,11 +10,16 @@ export const fromDbBranch = (dbBranch: DbBranch): Branch => {
         createdAt: dbBranch.createdAt,
         updatedAt: dbBranch.updatedAt,
         isDefault: dbBranch.isDefault,
-        git: {
-            branch: dbBranch.gitBranch,
-            commitSha: dbBranch.gitCommitSha,
-            repoUrl: dbBranch.gitRepoUrl,
-        },
+        git:
+            dbBranch.gitBranch ||
+                dbBranch.gitCommitSha ||
+                dbBranch.gitRepoUrl
+                ? {
+                    branch: dbBranch.gitBranch,
+                    commitSha: dbBranch.gitCommitSha,
+                    repoUrl: dbBranch.gitRepoUrl,
+                }
+                : null,
         sandbox: {
             id: dbBranch.sandboxId,
         },
