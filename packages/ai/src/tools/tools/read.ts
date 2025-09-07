@@ -1,5 +1,6 @@
 import { tool } from 'ai';
 import { z } from 'zod';
+import { BRANCH_ID_SCHEMA } from './branch';
 
 export const READ_FILE_TOOL_NAME = 'read_file';
 export const READ_FILE_TOOL_PARAMETERS = z.object({
@@ -21,7 +22,7 @@ export const READ_FILE_TOOL_PARAMETERS = z.object({
         .describe(
             'The number of lines to read. Only provide if the file is too large to read at once.',
         ),
-    branchId: z.string().min(1).describe('Branch ID to read the file from'),
+    branchId: BRANCH_ID_SCHEMA,
 });
 export const readFileTool = tool({
     description:
@@ -51,7 +52,7 @@ export const LIST_FILES_TOOL_PARAMETERS = z.object({
         .array(z.string())
         .optional()
         .describe('Array of glob patterns to ignore (e.g., ["node_modules", "*.log", ".git"])'),
-    branchId: z.string().min(1).describe('Branch ID to list files from'),
+    branchId: BRANCH_ID_SCHEMA,
 });
 export const listFilesTool = tool({
     description:
