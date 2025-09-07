@@ -5,7 +5,6 @@ import { getSandboxPreviewUrl, Tags } from '@onlook/constants';
 import {
     branches,
     canvases,
-    createDefaultBranch,
     createDefaultCanvas,
     createDefaultFrame,
     createDefaultUserCanvas,
@@ -114,7 +113,7 @@ function createMappedFrames(
     branchMapping: Map<string, ForkedBranch>
 ): DbFrame[] {
     const newFrames: DbFrame[] = [];
-    
+
     for (const frame of sourceFrames) {
         if (frame.branchId) {
             const branchMap = branchMapping.get(frame.branchId);
@@ -129,7 +128,7 @@ function createMappedFrames(
             }
         }
     }
-    
+
     return newFrames;
 }
 
@@ -142,7 +141,7 @@ function createDefaultFramesForDefaultBranch(
 ): DbFrame[] {
     const defaultBranchMap = Array.from(branchMapping.values())
         .find(({ newBranch }) => newBranch.isDefault);
-    
+
     if (!defaultBranchMap) {
         return [];
     }
@@ -176,7 +175,7 @@ function createDefaultFramesForDefaultBranch(
 
 export const forkTemplate = protectedProcedure
     .input(z.object({
-        projectId: z.string(),
+        projectId: z.string().uuid(),
     }))
     .mutation(async ({ ctx, input }) => {
         // 1. Get the source project with canvas, frames, and branches
@@ -254,7 +253,7 @@ export const forkTemplate = protectedProcedure
                         newCanvas.id,
                         branchMapping
                     );
-                    
+
                     if (newFrames.length > 0) {
                         await tx.insert(frames).values(newFrames);
                     }
@@ -264,7 +263,7 @@ export const forkTemplate = protectedProcedure
                         newCanvas.id,
                         branchMapping
                     );
-                    
+
                     if (defaultFrames.length > 0) {
                         await tx.insert(frames).values(defaultFrames);
                     }
@@ -286,7 +285,7 @@ export const forkTemplate = protectedProcedure
                     newCanvas.id,
                     branchMapping
                 );
-                
+
                 if (defaultFrames.length > 0) {
                     await tx.insert(frames).values(defaultFrames);
                 }
