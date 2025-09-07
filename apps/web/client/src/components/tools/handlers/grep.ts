@@ -236,9 +236,9 @@ function buildGrepCommand(args: z.infer<typeof GREP_TOOL_PARAMETERS>): string {
 
     // Context lines (only for content output mode)
     if (args.output_mode === 'content') {
-        if (args['-A']) grepFlags += ` -A ${args['-A']}`;
-        if (args['-B']) grepFlags += ` -B ${args['-B']}`;
-        if (args['-C']) grepFlags += ` -C ${args['-C']}`;
+        if (args['-A'] !== undefined) grepFlags += ` -A ${args['-A']}`;
+        if (args['-B'] !== undefined) grepFlags += ` -B ${args['-B']}`;
+        if (args['-C'] !== undefined) grepFlags += ` -C ${args['-C']}`;
     }
 
     // Output mode flags

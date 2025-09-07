@@ -182,6 +182,50 @@ describe('Grep Tool', () => {
             expect(result).toContain('No matches found for text \'test\''); // Should pass validation and continue to search
         });
 
+        test('should allow -B parameter of 0', async () => {
+            mockSandbox.session.runCommand.mockImplementation((command: string) => {
+                if (command.includes('test -e') || command.includes('test -d')) {
+                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                }
+                if (command.includes('find')) {
+                    return Promise.resolve({ success: true, output: '' });
+                }
+                return Promise.resolve({ success: true, output: '' });
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                pattern: 'test',
+                '-B': 0,  // 0 should be valid for context lines
+                output_mode: 'content' as const
+            };
+
+            const result = await handleGrepTool(args, mockEngine);
+            expect(result).toContain('No matches found for text \'test\''); // Should pass validation and continue to search
+        });
+
+        test('should allow -C parameter of 0', async () => {
+            mockSandbox.session.runCommand.mockImplementation((command: string) => {
+                if (command.includes('test -e') || command.includes('test -d')) {
+                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                }
+                if (command.includes('find')) {
+                    return Promise.resolve({ success: true, output: '' });
+                }
+                return Promise.resolve({ success: true, output: '' });
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                pattern: 'test',
+                '-C': 0,  // 0 should be valid for context lines
+                output_mode: 'content' as const
+            };
+
+            const result = await handleGrepTool(args, mockEngine);
+            expect(result).toContain('No matches found for text \'test\''); // Should pass validation and continue to search
+        });
+
         test('should validate -B parameter range', async () => {
             const args = {
                 branchId: 'test-branch',
@@ -506,6 +550,78 @@ describe('Grep Tool', () => {
 
             const result = await handleGrepTool(args, mockEngine);
             expect(result).toContain('src/file.ts:42:match line');
+        });
+
+        test('should include -A 0 flag in grep command when zero after lines specified', async () => {
+            let capturedCommand = '';
+            mockSandbox.session.runCommand.mockImplementation((command: string) => {
+                if (command.includes('test -e') || command.includes('test -d')) {
+                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                }
+                if (command.includes('find')) {
+                    capturedCommand = command;
+                    return Promise.resolve({ success: true, output: '' });
+                }
+                return Promise.resolve({ success: true, output: 'exists' });
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                pattern: 'match',
+                '-A': 0,
+                output_mode: 'content' as const
+            };
+
+            await handleGrepTool(args, mockEngine);
+            expect(capturedCommand).toContain('-A 0');
+        });
+
+        test('should include -B 0 flag in grep command when zero before lines specified', async () => {
+            let capturedCommand = '';
+            mockSandbox.session.runCommand.mockImplementation((command: string) => {
+                if (command.includes('test -e') || command.includes('test -d')) {
+                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                }
+                if (command.includes('find')) {
+                    capturedCommand = command;
+                    return Promise.resolve({ success: true, output: '' });
+                }
+                return Promise.resolve({ success: true, output: 'exists' });
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                pattern: 'match',
+                '-B': 0,
+                output_mode: 'content' as const
+            };
+
+            await handleGrepTool(args, mockEngine);
+            expect(capturedCommand).toContain('-B 0');
+        });
+
+        test('should include -C 0 flag in grep command when zero context lines specified', async () => {
+            let capturedCommand = '';
+            mockSandbox.session.runCommand.mockImplementation((command: string) => {
+                if (command.includes('test -e') || command.includes('test -d')) {
+                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                }
+                if (command.includes('find')) {
+                    capturedCommand = command;
+                    return Promise.resolve({ success: true, output: '' });
+                }
+                return Promise.resolve({ success: true, output: 'exists' });
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                pattern: 'match',
+                '-C': 0,
+                output_mode: 'content' as const
+            };
+
+            await handleGrepTool(args, mockEngine);
+            expect(capturedCommand).toContain('-C 0');
         });
     });
 
