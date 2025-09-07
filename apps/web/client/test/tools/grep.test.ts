@@ -139,6 +139,16 @@ describe('Grep Tool', () => {
         });
 
         test('should validate -A parameter range', async () => {
+            mockSandbox.session.runCommand.mockImplementation((command: string) => {
+                if (command.includes('test -e')) {
+                    return Promise.resolve({ success: true, output: 'exists' });
+                }
+                if (command.includes('test -d')) {
+                    return Promise.resolve({ success: true, output: 'dir' });
+                }
+                return Promise.resolve({ success: true, output: '' });
+            });
+
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
@@ -148,6 +158,28 @@ describe('Grep Tool', () => {
 
             const result = await handleGrepTool(args, mockEngine);
             expect(result).toBe('Error: After context lines (-A) must be between 0 and 100, got -1');
+        });
+
+        test('should allow -A parameter of 0', async () => {
+            mockSandbox.session.runCommand.mockImplementation((command: string) => {
+                if (command.includes('test -e') || command.includes('test -d')) {
+                    return Promise.resolve({ success: true, output: command.includes('-d') ? 'dir' : 'exists' });
+                }
+                if (command.includes('find')) {
+                    return Promise.resolve({ success: true, output: '' });
+                }
+                return Promise.resolve({ success: true, output: '' });
+            });
+
+            const args = {
+                branchId: 'test-branch',
+                pattern: 'test',
+                '-A': 0,  // 0 should be valid for context lines
+                output_mode: 'content' as const
+            };
+
+            const result = await handleGrepTool(args, mockEngine);
+            expect(result).toContain('No matches found for text \'test\''); // Should pass validation and continue to search
         });
 
         test('should validate -B parameter range', async () => {
@@ -189,12 +221,12 @@ describe('Grep Tool', () => {
             const args = {
                 branchId: 'test-branch',
                 pattern: 'test',
-                head_limit: -1,  // Use -1 instead of 0 since 0 is falsy and doesn't trigger validation
+                head_limit: 0,  // Now 0 should properly trigger validation
                 output_mode: 'content' as const
             };
 
             const result = await handleGrepTool(args, mockEngine);
-            expect(result).toBe('Error: Head limit must be between 1 and 10000, got -1');
+            expect(result).toBe('Error: Head limit must be between 1 and 10000, got 0');
         });
 
         test('should validate conflicting -C with -A/-B', async () => {

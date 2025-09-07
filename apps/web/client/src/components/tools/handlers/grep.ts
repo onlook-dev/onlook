@@ -90,16 +90,16 @@ async function validateGrepInputs(
     }
 
     // Validate numeric parameters
-    if (args['-A'] && (args['-A'] < 0 || args['-A'] > 100)) {
+    if (args['-A'] !== undefined && (args['-A'] < 0 || args['-A'] > 100)) {
         return `Error: After context lines (-A) must be between 0 and 100, got ${args['-A']}`;
     }
-    if (args['-B'] && (args['-B'] < 0 || args['-B'] > 100)) {
+    if (args['-B'] !== undefined && (args['-B'] < 0 || args['-B'] > 100)) {
         return `Error: Before context lines (-B) must be between 0 and 100, got ${args['-B']}`;
     }
-    if (args['-C'] && (args['-C'] < 0 || args['-C'] > 100)) {
+    if (args['-C'] !== undefined && (args['-C'] < 0 || args['-C'] > 100)) {
         return `Error: Context lines (-C) must be between 0 and 100, got ${args['-C']}`;
     }
-    if (args.head_limit && (args.head_limit < 1 || args.head_limit > 10000)) {
+    if (args.head_limit !== undefined && (args.head_limit < 1 || args.head_limit > 10000)) {
         return `Error: Head limit must be between 1 and 10000, got ${args.head_limit}`;
     }
 
