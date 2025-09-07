@@ -62,6 +62,10 @@ const TOOL_ICONS: Record<string, any> = {
     [GLOB_TOOL_NAME]: Icons.MagnifyingGlass,
 } as const;
 
+function truncateString(str: string, maxLength: number = 30) {
+    return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
+}
+
 export function ToolCallSimple({
     toolInvocation,
     className,
@@ -134,7 +138,7 @@ export function ToolCallSimple({
                     if (toolInvocation.input && typeof toolInvocation.input === 'object' && 'query' in toolInvocation.input) {
                         const params10 = toolInvocation.input as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
                         const query = params10.query;
-                        return "Searching \"" + (query.length > 30 ? query.substring(0, 30) + "..." : query) + "\"";
+                        return "Searching \"" + truncateString(query) + "\"";
                     } else {
                         return 'Searching web';
                     }
@@ -148,7 +152,7 @@ export function ToolCallSimple({
                     if (toolInvocation.input && typeof toolInvocation.input === 'object' && 'pattern' in toolInvocation.input) {
                         const params11 = toolInvocation.input as z.infer<typeof GREP_TOOL_PARAMETERS>;
                         const pattern = params11.pattern;
-                        return 'Searching for ' + pattern;
+                        return 'Searching for ' + truncateString(pattern);
                     } else {
                         return 'Searching';
                     }
@@ -176,7 +180,7 @@ export function ToolCallSimple({
                 case GLOB_TOOL_NAME:
                     const params12 = toolInvocation.input as z.infer<typeof GLOB_TOOL_PARAMETERS>;
                     if (params12?.pattern) {
-                        return 'Searching for ' + params12.pattern;
+                        return 'Searching for ' + truncateString(params12.pattern);
                     } else {
                         return 'Searching';
                     }
