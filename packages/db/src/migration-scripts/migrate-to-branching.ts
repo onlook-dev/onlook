@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import { eq, isNull, inArray, and } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../client';
 import { createDefaultBranch } from '../defaults/branch';
@@ -66,9 +66,9 @@ async function checkMigrationStatus(): Promise<{
         .from(frames)
         .where(isNull(frames.branchId));
 
-    const isCompleted = totalBranches.length > 0 && 
-                       totalBranches.length === totalProjects.length && 
-                       framesWithoutBranches.length === 0;
+    const isCompleted = totalBranches.length > 0 &&
+        totalBranches.length === totalProjects.length &&
+        framesWithoutBranches.length === 0;
     const isPartial = totalBranches.length > 0 && !isCompleted;
 
     return {
@@ -115,16 +115,16 @@ async function insertBranchesInBatches(branches: Branch[]): Promise<void> {
     if (branches.length === 0) return;
 
     console.log(`📥 Inserting ${branches.length} default branches...`);
-    
+
     const branchBatchSize = 500;
     const branchChunks = chunkArray(branches, branchBatchSize);
-    
+
     for (let i = 0; i < branchChunks.length; i++) {
         const chunk = branchChunks[i];
         if (!chunk) continue;
-        
+
         console.log(`  └─ Inserting batch ${i + 1}/${branchChunks.length} (${chunk.length} branches)`);
-        
+
         await insertWithConstraintRetry(
             async () => {
                 await db.transaction(async (tx) => {
@@ -160,7 +160,7 @@ async function processFrameUpdatesInParallel(
         }
 
         const frameIds = projectFrames.map(f => f.id);
-        
+
         // Single bulk update - much faster than individual queries
         await db.transaction(async (tx) => {
             await tx
@@ -168,13 +168,13 @@ async function processFrameUpdatesInParallel(
                 .set({ branchId })
                 .where(inArray(frames.id, frameIds));
         });
-        
+
         return { branchId, projectId, rowsUpdated: frameIds.length };
     });
 
     // Process all branches in parallel for maximum speed
     const results = await Promise.all(updatePromises);
-    
+
     // Log results
     for (const { branchId, projectId, rowsUpdated } of results) {
         if (rowsUpdated > 0) {
@@ -204,13 +204,13 @@ async function updateFramesForBranches(branches: Branch[]): Promise<void> {
     for (let i = 0; i < batches.length; i++) {
         const batch = batches[i];
         if (!batch || batch.length === 0) continue;
-        
+
         console.log(`  Processing batch ${i + 1}/${batches.length} (${batch.length} projects)`);
         await processFrameUpdatesInParallel(batch);
     }
 }
 
-// Handle orphaned frames
+// Handle orphaned frames with optimized batch processing
 async function fixOrphanedFrames(): Promise<void> {
     console.log('🧹 Checking for orphaned frames...');
 
@@ -233,7 +233,7 @@ async function fixOrphanedFrames(): Promise<void> {
 
     // Group orphaned frames by project
     const framesByProject = new Map<string, { frameId: string; canvasId: string; projectId: string }[]>();
-    
+
     for (const orphan of orphanedFrames) {
         if (!framesByProject.has(orphan.projectId)) {
             framesByProject.set(orphan.projectId, []);
@@ -241,14 +241,27 @@ async function fixOrphanedFrames(): Promise<void> {
         framesByProject.get(orphan.projectId)!.push(orphan);
     }
 
-    for (const [projectId, projectOrphans] of framesByProject) {
-        await fixOrphanedFramesForProject(projectId, projectOrphans.length);
+    // Process projects in parallel batches for optimal performance
+    const projectIds = Array.from(framesByProject.keys());
+    const concurrencyLimit = 100; // Process up to 100 projects simultaneously
+    const batches = chunkArray(projectIds, concurrencyLimit);
+
+    for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        if (!batch || batch.length === 0) continue;
+
+        console.log(`  Processing batch ${i + 1}/${batches.length} (${batch.length} projects)`);
+
+        // Process all projects in the batch in parallel
+        await Promise.all(batch.map(projectId =>
+            fixOrphanedFramesForProject(projectId, framesByProject.get(projectId)!.length)
+        ));
     }
 }
 
 // Fix orphaned frames for a specific project using bulk operations
 async function fixOrphanedFramesForProject(
-    projectId: string, 
+    projectId: string,
     orphanCount: number
 ): Promise<void> {
     const defaultBranch = await db
@@ -265,47 +278,38 @@ async function fixOrphanedFramesForProject(
         branchId = await createEmergencyBranch(projectId);
     }
 
-    // Get orphaned frame IDs first, then update in bulk
-    const orphanedFrames = await db
-        .select({ id: frames.id })
-        .from(frames)
-        .innerJoin(canvases, eq(frames.canvasId, canvases.id))
-        .where(
-            and(
-                eq(canvases.projectId, projectId),
-                isNull(frames.branchId)
-            )
-        );
-
-    if (orphanedFrames.length === 0) {
-        console.log(`  └─ No orphaned frames found for project ${projectId}`);
-        return;
-    }
-
-    const frameIds = orphanedFrames.map(f => f.id);
-    
-    // Single bulk update - much more efficient than individual updates
-    await db.transaction(async (tx) => {
-        await tx
+    // Direct bulk update without fetching frame IDs first - more efficient
+    const result = await db.transaction(async (tx) => {
+        return await tx
             .update(frames)
             .set({ branchId })
-            .where(inArray(frames.id, frameIds));
+            .where(
+                and(
+                    inArray(
+                        frames.canvasId,
+                        tx.select({ id: canvases.id })
+                            .from(canvases)
+                            .where(eq(canvases.projectId, projectId))
+                    ),
+                    isNull(frames.branchId)
+                )
+            );
     });
 
-    console.log(`  └─ Fixed ${frameIds.length} orphaned frames for project ${projectId}`);
+    console.log(`  └─ Fixed ${orphanCount} orphaned frames for project ${projectId}`);
 }
 
 // Create emergency branch with proper error handling
 async function createEmergencyBranch(projectId: string): Promise<string> {
     console.log(`  └─ Creating emergency branch for orphaned frames in project ${projectId}`);
-    
+
     // Double-check in case a branch was created concurrently
     const recheckBranch = await db
         .select({ id: branchesTable.id })
         .from(branchesTable)
         .where(eq(branchesTable.projectId, projectId))
         .limit(1);
-        
+
     if (recheckBranch.length > 0 && !!recheckBranch[0]?.id) {
         console.log(`    └─ Branch was created concurrently, using existing one`);
         return recheckBranch[0].id;
@@ -329,7 +333,7 @@ async function createEmergencyBranch(projectId: string): Promise<string> {
                 .from(branchesTable)
                 .where(eq(branchesTable.projectId, projectId))
                 .limit(1);
-            
+
             if (existingBranch.length > 0 && !!existingBranch[0]?.id) {
                 return existingBranch[0].id;
             } else {
@@ -375,7 +379,7 @@ export async function migrateToBranching() {
     try {
         // Step 1: Check migration status
         const status = await checkMigrationStatus();
-        
+
         console.log('📊 Current migration state:');
         console.log(`  • Total projects: ${status.totalProjects}`);
         console.log(`  • Total branches: ${status.totalBranches}`);
