@@ -1,5 +1,5 @@
 import { getLanguageFromFileName } from '@/app/project/[id]/_components/right-panel/code-tab/code-mirror-config';
-import { EditorTabValue, type DomElement } from '@onlook/models';
+import { EditorTabValue } from '@onlook/models';
 import { convertToBase64 } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
@@ -131,23 +131,9 @@ export class IDEManager {
 
     async openCodeBlock(oid: string, toggleTab?: boolean) {
         try {
-            const element =
-                this.editorEngine.elements.selected.find((el: DomElement) => el.oid === oid) ||
-                this.editorEngine.elements.selected.find((el: DomElement) => el.instanceId === oid);
-
-            if (element) {
-                // First get the file path and load the file
-                const filePath = await this.getFilePathFromOid(element.oid || '');
-                if (filePath) {
-                    // Load the file first
-                    const file = await this.openFile(filePath, undefined, toggleTab);
-                    if (file) {
-                        // Use requestAnimationFrame to ensure DOM updates are complete
-                        requestAnimationFrame(() => {
-                            this.editorEngine.elements.selected = [element];
-                        });
-                    }
-                }
+            const filePath = await this.getFilePathFromOid(oid);
+            if (filePath) {
+                await this.openFile(filePath, undefined, toggleTab);
             }
         } catch (error) {
             console.error('Error viewing source:', error);
