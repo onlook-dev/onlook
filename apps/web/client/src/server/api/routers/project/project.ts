@@ -33,25 +33,8 @@ import { generateText } from 'ai';
 import { and, eq, ne } from 'drizzle-orm';
 import { z } from 'zod';
 import { projectCreateRequestRouter } from './createRequest';
+import { extractCsbPort } from './helper';
 import { forkTemplate } from './template';
-
-function extractCsbPort(frames: any[]): number | null {
-    if (!frames || frames.length === 0) return null;
-    
-    for (const frame of frames) {
-        if (frame.url) {
-            // Match CSB preview URL pattern: https://sandboxId-port.csb.app
-            const match = frame.url.match(/https:\/\/[^-]+-(\d+)\.csb\.app/);
-            if (match && match[1]) {
-                const port = parseInt(match[1], 10);
-                if (!isNaN(port)) {
-                    return port;
-                }
-            }
-        }
-    }
-    return null;
-}
 
 export const projectRouter = createTRPCRouter({
     hasAccess: protectedProcedure

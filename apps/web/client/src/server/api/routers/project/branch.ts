@@ -8,24 +8,7 @@ import { and, eq } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
-
-function extractCsbPort(frames: any[]): number | null {
-    if (!frames || frames.length === 0) return null;
-
-    for (const frame of frames) {
-        if (frame.url) {
-            // Match CSB preview URL pattern: https://sandboxId-port.csb.app
-            const match = frame.url.match(/https:\/\/[^-]+-(\d+)\.csb\.app/);
-            if (match && match[1]) {
-                const port = parseInt(match[1], 10);
-                if (!isNaN(port)) {
-                    return port;
-                }
-            }
-        }
-    }
-    return null;
-}
+import { extractCsbPort } from './helper';
 
 // Helper function to get existing frames in a canvas
 async function getExistingFrames(tx: any, canvasId: string): Promise<Frame[]> {
