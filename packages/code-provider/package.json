@@ -34,6 +34,7 @@
     },
     "dependencies": {
         "@codesandbox/sdk": "^1.1.6",
+        "@microsoft/fetch-event-source": "^2.0.1",
         "@onlook/models": "*",
         "@onlook/parser": "*",
         "@onlook/utility": "*",

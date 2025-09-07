@@ -32,6 +32,15 @@ import type {
     CoderouterApiSandboxFileWatchPost200Response,
     CoderouterApiSandboxFileWatchPostRequest,
     CoderouterApiSandboxFileWritePostRequest,
+    CoderouterApiSandboxTerminalCommandPost200Response,
+    CoderouterApiSandboxTerminalCommandPostRequest,
+    CoderouterApiSandboxTerminalCreatePostRequest,
+    CoderouterApiSandboxTerminalKillPost200Response,
+    CoderouterApiSandboxTerminalKillPostRequest,
+    CoderouterApiSandboxTerminalRunPost200Response,
+    CoderouterApiSandboxTerminalRunPostRequest,
+    CoderouterApiSandboxTerminalWritePost200Response,
+    CoderouterApiSandboxTerminalWritePostRequest,
     CoderouterApiSandboxUrlPost200Response,
 } from '../models/index';
 import {
@@ -71,6 +80,24 @@ import {
     CoderouterApiSandboxFileWatchPostRequestToJSON,
     CoderouterApiSandboxFileWritePostRequestFromJSON,
     CoderouterApiSandboxFileWritePostRequestToJSON,
+    CoderouterApiSandboxTerminalCommandPost200ResponseFromJSON,
+    CoderouterApiSandboxTerminalCommandPost200ResponseToJSON,
+    CoderouterApiSandboxTerminalCommandPostRequestFromJSON,
+    CoderouterApiSandboxTerminalCommandPostRequestToJSON,
+    CoderouterApiSandboxTerminalCreatePostRequestFromJSON,
+    CoderouterApiSandboxTerminalCreatePostRequestToJSON,
+    CoderouterApiSandboxTerminalKillPost200ResponseFromJSON,
+    CoderouterApiSandboxTerminalKillPost200ResponseToJSON,
+    CoderouterApiSandboxTerminalKillPostRequestFromJSON,
+    CoderouterApiSandboxTerminalKillPostRequestToJSON,
+    CoderouterApiSandboxTerminalRunPost200ResponseFromJSON,
+    CoderouterApiSandboxTerminalRunPost200ResponseToJSON,
+    CoderouterApiSandboxTerminalRunPostRequestFromJSON,
+    CoderouterApiSandboxTerminalRunPostRequestToJSON,
+    CoderouterApiSandboxTerminalWritePost200ResponseFromJSON,
+    CoderouterApiSandboxTerminalWritePost200ResponseToJSON,
+    CoderouterApiSandboxTerminalWritePostRequestFromJSON,
+    CoderouterApiSandboxTerminalWritePostRequestToJSON,
     CoderouterApiSandboxUrlPost200ResponseFromJSON,
     CoderouterApiSandboxUrlPost200ResponseToJSON,
 } from '../models/index';
@@ -129,6 +156,30 @@ export interface CoderouterApiSandboxResumePostRequest {
 
 export interface CoderouterApiSandboxStopPostRequest {
     body?: object;
+}
+
+export interface CoderouterApiSandboxTerminalCommandPostOperationRequest {
+    coderouterApiSandboxTerminalCommandPostRequest?: CoderouterApiSandboxTerminalCommandPostRequest;
+}
+
+export interface CoderouterApiSandboxTerminalCreatePostOperationRequest {
+    coderouterApiSandboxTerminalCreatePostRequest?: CoderouterApiSandboxTerminalCreatePostRequest;
+}
+
+export interface CoderouterApiSandboxTerminalKillPostOperationRequest {
+    coderouterApiSandboxTerminalKillPostRequest?: CoderouterApiSandboxTerminalKillPostRequest;
+}
+
+export interface CoderouterApiSandboxTerminalOpenGetRequest {
+    terminalId: string;
+}
+
+export interface CoderouterApiSandboxTerminalRunPostOperationRequest {
+    coderouterApiSandboxTerminalRunPostRequest?: CoderouterApiSandboxTerminalRunPostRequest;
+}
+
+export interface CoderouterApiSandboxTerminalWritePostOperationRequest {
+    coderouterApiSandboxTerminalWritePostRequest?: CoderouterApiSandboxTerminalWritePostRequest;
 }
 
 /**
@@ -866,6 +917,338 @@ export class DefaultApi extends runtime.BaseAPI {
         initOverrides?: RequestInit | runtime.InitOverrideFunction,
     ): Promise<CoderouterApiSandboxCreatePost200Response> {
         const response = await this.coderouterApiSandboxStopPostRaw(
+            requestParameters,
+            initOverrides,
+        );
+        return await response.value();
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalCommandPostRaw(
+        requestParameters: CoderouterApiSandboxTerminalCommandPostOperationRequest,
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<runtime.ApiResponse<CoderouterApiSandboxTerminalCommandPost200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token('jwt', []);
+
+            if (tokenString) {
+                headerParameters['Authorization'] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/coderouter/api/sandbox/terminal/command`;
+
+        const response = await this.request(
+            {
+                path: urlPath,
+                method: 'POST',
+                headers: headerParameters,
+                query: queryParameters,
+                body: CoderouterApiSandboxTerminalCommandPostRequestToJSON(
+                    requestParameters['coderouterApiSandboxTerminalCommandPostRequest'],
+                ),
+            },
+            initOverrides,
+        );
+
+        return new runtime.JSONApiResponse(response, (jsonValue) =>
+            CoderouterApiSandboxTerminalCommandPost200ResponseFromJSON(jsonValue),
+        );
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalCommandPost(
+        requestParameters: CoderouterApiSandboxTerminalCommandPostOperationRequest = {},
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<CoderouterApiSandboxTerminalCommandPost200Response> {
+        const response = await this.coderouterApiSandboxTerminalCommandPostRaw(
+            requestParameters,
+            initOverrides,
+        );
+        return await response.value();
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalCreatePostRaw(
+        requestParameters: CoderouterApiSandboxTerminalCreatePostOperationRequest,
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<runtime.ApiResponse<CoderouterApiSandboxTerminalCreatePostRequest>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token('jwt', []);
+
+            if (tokenString) {
+                headerParameters['Authorization'] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/coderouter/api/sandbox/terminal/create`;
+
+        const response = await this.request(
+            {
+                path: urlPath,
+                method: 'POST',
+                headers: headerParameters,
+                query: queryParameters,
+                body: CoderouterApiSandboxTerminalCreatePostRequestToJSON(
+                    requestParameters['coderouterApiSandboxTerminalCreatePostRequest'],
+                ),
+            },
+            initOverrides,
+        );
+
+        return new runtime.JSONApiResponse(response, (jsonValue) =>
+            CoderouterApiSandboxTerminalCreatePostRequestFromJSON(jsonValue),
+        );
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalCreatePost(
+        requestParameters: CoderouterApiSandboxTerminalCreatePostOperationRequest = {},
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<CoderouterApiSandboxTerminalCreatePostRequest> {
+        const response = await this.coderouterApiSandboxTerminalCreatePostRaw(
+            requestParameters,
+            initOverrides,
+        );
+        return await response.value();
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalKillPostRaw(
+        requestParameters: CoderouterApiSandboxTerminalKillPostOperationRequest,
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<runtime.ApiResponse<CoderouterApiSandboxTerminalKillPost200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token('jwt', []);
+
+            if (tokenString) {
+                headerParameters['Authorization'] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/coderouter/api/sandbox/terminal/kill`;
+
+        const response = await this.request(
+            {
+                path: urlPath,
+                method: 'POST',
+                headers: headerParameters,
+                query: queryParameters,
+                body: CoderouterApiSandboxTerminalKillPostRequestToJSON(
+                    requestParameters['coderouterApiSandboxTerminalKillPostRequest'],
+                ),
+            },
+            initOverrides,
+        );
+
+        return new runtime.JSONApiResponse(response, (jsonValue) =>
+            CoderouterApiSandboxTerminalKillPost200ResponseFromJSON(jsonValue),
+        );
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalKillPost(
+        requestParameters: CoderouterApiSandboxTerminalKillPostOperationRequest = {},
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<CoderouterApiSandboxTerminalKillPost200Response> {
+        const response = await this.coderouterApiSandboxTerminalKillPostRaw(
+            requestParameters,
+            initOverrides,
+        );
+        return await response.value();
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalOpenGetRaw(
+        requestParameters: CoderouterApiSandboxTerminalOpenGetRequest,
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<runtime.ApiResponse<string>> {
+        if (requestParameters['terminalId'] == null) {
+            throw new runtime.RequiredError(
+                'terminalId',
+                'Required parameter "terminalId" was null or undefined when calling coderouterApiSandboxTerminalOpenGet().',
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['terminalId'] != null) {
+            queryParameters['terminalId'] = requestParameters['terminalId'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token('jwt', []);
+
+            if (tokenString) {
+                headerParameters['Authorization'] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/coderouter/api/sandbox/terminal/open`;
+
+        const response = await this.request(
+            {
+                path: urlPath,
+                method: 'GET',
+                headers: headerParameters,
+                query: queryParameters,
+            },
+            initOverrides,
+        );
+
+        if (this.isJsonMime(response.headers.get('content-type'))) {
+            return new runtime.JSONApiResponse<string>(response);
+        } else {
+            return new runtime.TextApiResponse(response) as any;
+        }
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalOpenGet(
+        requestParameters: CoderouterApiSandboxTerminalOpenGetRequest,
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<string> {
+        const response = await this.coderouterApiSandboxTerminalOpenGetRaw(
+            requestParameters,
+            initOverrides,
+        );
+        return await response.value();
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalRunPostRaw(
+        requestParameters: CoderouterApiSandboxTerminalRunPostOperationRequest,
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<runtime.ApiResponse<CoderouterApiSandboxTerminalRunPost200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token('jwt', []);
+
+            if (tokenString) {
+                headerParameters['Authorization'] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/coderouter/api/sandbox/terminal/run`;
+
+        const response = await this.request(
+            {
+                path: urlPath,
+                method: 'POST',
+                headers: headerParameters,
+                query: queryParameters,
+                body: CoderouterApiSandboxTerminalRunPostRequestToJSON(
+                    requestParameters['coderouterApiSandboxTerminalRunPostRequest'],
+                ),
+            },
+            initOverrides,
+        );
+
+        return new runtime.JSONApiResponse(response, (jsonValue) =>
+            CoderouterApiSandboxTerminalRunPost200ResponseFromJSON(jsonValue),
+        );
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalRunPost(
+        requestParameters: CoderouterApiSandboxTerminalRunPostOperationRequest = {},
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<CoderouterApiSandboxTerminalRunPost200Response> {
+        const response = await this.coderouterApiSandboxTerminalRunPostRaw(
+            requestParameters,
+            initOverrides,
+        );
+        return await response.value();
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalWritePostRaw(
+        requestParameters: CoderouterApiSandboxTerminalWritePostOperationRequest,
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<runtime.ApiResponse<CoderouterApiSandboxTerminalWritePost200Response>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token('jwt', []);
+
+            if (tokenString) {
+                headerParameters['Authorization'] = `Bearer ${tokenString}`;
+            }
+        }
+
+        let urlPath = `/coderouter/api/sandbox/terminal/write`;
+
+        const response = await this.request(
+            {
+                path: urlPath,
+                method: 'POST',
+                headers: headerParameters,
+                query: queryParameters,
+                body: CoderouterApiSandboxTerminalWritePostRequestToJSON(
+                    requestParameters['coderouterApiSandboxTerminalWritePostRequest'],
+                ),
+            },
+            initOverrides,
+        );
+
+        return new runtime.JSONApiResponse(response, (jsonValue) =>
+            CoderouterApiSandboxTerminalWritePost200ResponseFromJSON(jsonValue),
+        );
+    }
+
+    /**
+     */
+    async coderouterApiSandboxTerminalWritePost(
+        requestParameters: CoderouterApiSandboxTerminalWritePostOperationRequest = {},
+        initOverrides?: RequestInit | runtime.InitOverrideFunction,
+    ): Promise<CoderouterApiSandboxTerminalWritePost200Response> {
+        const response = await this.coderouterApiSandboxTerminalWritePostRaw(
             requestParameters,
             initOverrides,
         );

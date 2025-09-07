@@ -17,20 +17,24 @@ import {
 import { Sandbox as _E2BSandbox } from '@e2b/code-interpreter';
 import { ClientError, ClientErrorCode } from '@/provider/definition';
 import { E2BSandboxFile } from './file';
+import { E2BSandboxTerminal } from './terminal';
 
 export class E2BSandbox extends Sandbox<E2BClient> {
     public readonly file: E2BSandboxFile;
+    public readonly terminal: E2BSandboxTerminal;
 
     constructor(protected readonly client: E2BClient) {
         super(client);
         this.file = new E2BSandboxFile(this.client);
+        this.terminal = new E2BSandboxTerminal(this.client);
     }
 
     async beforeSandboxCall(): Promise<void> {
         const e2bSandboxId = (await this.get({})).externalId;
         this.client._sandbox = await _E2BSandbox.connect(e2bSandboxId);
         // bump the timeout to 5 minutes
-        this.client._sandbox.setTimeout(1000 * 60 * 5);
+        // this.client._sandbox.setTimeout(1000 * 60 * 5);
+        this.client._sandbox.setTimeout(1000 * 60 * 30);
     }
 
     async create(input: SandboxCreateInput): Promise<SandboxCreateOutput> {
@@ -57,6 +61,7 @@ export class E2BSandbox extends Sandbox<E2BClient> {
         }
         this.client._sandbox = await _E2BSandbox.create(input.templateId, {
             apiKey: this.client.apiKey,
+            timeoutMs: 1000 * 60 * 30,
             metadata,
         });
         return {

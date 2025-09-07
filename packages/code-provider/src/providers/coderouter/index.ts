@@ -52,6 +52,8 @@ import {
 } from '../../types';
 
 import * as OpenAPI from './codegen';
+import { v4 as uuid } from 'uuid';
+import { fetchEventSource } from '@microsoft/fetch-event-source';
 
 export interface CoderouterProviderOptions {
     // URL to Coderouter
@@ -272,8 +274,10 @@ export class CoderouterProvider extends Provider {
     }
 
     async createTerminal(input: CreateTerminalInput): Promise<CreateTerminalOutput> {
+        const terminal = new CoderouterTerminal(this.api, () => this.requestInitOverrides());
+        await terminal.start();
         return {
-            terminal: new CoderouterTerminal(),
+            terminal,
         };
     }
 
@@ -474,32 +478,149 @@ export class CoderouterFileWatcher extends ProviderFileWatcher {
 }
 
 export class CoderouterTerminal extends ProviderTerminal {
+    protected _id: string;
+    protected callbacks: Array<(output: string) => void> = [];
+    protected abortController: AbortController | null = null;
+
+    constructor(
+        private readonly api: OpenAPI.DefaultApi,
+        private readonly requestInitOverrides: () => RequestInit,
+    ) {
+        super();
+        this._id = uuid();
+    }
+
     get id(): string {
-        return 'unimplemented';
+        return this._id;
     }
 
     get name(): string {
-        return 'unimplemented';
+        return this._id;
     }
 
-    open(): Promise<string> {
-        return Promise.resolve('');
+    protected off = true;
+
+    async start(): Promise<void> {
+        if (!this.off) {
+            return;
+        }
+
+        this.off = false;
+
+        await this.api.coderouterApiSandboxTerminalCreatePost(
+            {
+                coderouterApiSandboxTerminalCreatePostRequest: {
+                    terminalId: this._id,
+                    name: this._id,
+                },
+            },
+            this.requestInitOverrides(),
+        );
     }
 
-    write(): Promise<void> {
-        return Promise.resolve();
+    async open(dimensions?: object): Promise<string> {
+        if (this.off) {
+            return '';
+        }
+
+        fetchEventSource(
+            `${this.api['configuration'].basePath}/coderouter/api/sandbox/terminal/open?terminalId=${this._id}`,
+            {
+                ...(this.requestInitOverrides() as Record<string, any>),
+                onmessage: (event) => {
+                    if (event.event === 'message') {
+                        const res = JSON.parse(event.data);
+                        console.log('res', res);
+                        this.callbacks.forEach((callback) => callback(res.output));
+                    }
+                },
+                onerror: (err) => {
+                    console.error('[coderouter/terminal/open] SSE error', err);
+                },
+            },
+        );
+
+        // this.off = false;
+
+        // const tick = async () => {
+        //     if (this.off) {
+        //         return '';
+        //     }
+
+        //     if (this.abortController) {
+        //         this.abortController.abort();
+        //     }
+
+        //     this.abortController = new AbortController();
+
+        //     let output = '';
+        //     try {
+        //         const body = await this.api.coderouterApiSandboxTerminalOpenGet(
+        //             {
+        //                 terminalId: this._id,
+        //             },
+        //             {
+        //                 ...this.requestInitOverrides(),
+        //                 signal: this.abortController?.signal,
+        //             },
+        //         );
+
+        //         this.callbacks.forEach((callback) => {
+        //             callback(body.output);
+        //         });
+
+        //         output = body.output;
+        //     } catch (err) {
+        //         console.error('[coderouter] poll error', err);
+        //     } finally {
+        //         // schedule next poll immediately
+        //         setTimeout(tick, 200);
+        //     }
+        //     return output;
+        // };
+
+        // tick();
+        return '';
     }
 
-    run(): Promise<void> {
-        return Promise.resolve();
+    async write(input: string, dimensions?: object): Promise<void> {
+        await this.api.coderouterApiSandboxTerminalWritePost(
+            {
+                coderouterApiSandboxTerminalWritePostRequest: {
+                    terminalId: this._id,
+                    input,
+                },
+            },
+            this.requestInitOverrides(),
+        );
     }
 
-    kill(): Promise<void> {
-        return Promise.resolve();
+    async run(input: string, dimensions?: object): Promise<void> {
+        await this.api.coderouterApiSandboxTerminalRunPost(
+            {
+                coderouterApiSandboxTerminalRunPostRequest: {
+                    terminalId: this._id,
+                    input,
+                },
+            },
+            this.requestInitOverrides(),
+        );
+    }
+
+    async kill(): Promise<void> {
+        await this.api.coderouterApiSandboxTerminalKillPost(
+            {
+                coderouterApiSandboxTerminalKillPostRequest: {
+                    terminalId: this._id,
+                },
+            },
+            this.requestInitOverrides(),
+        );
     }
 
     onOutput(callback: (data: string) => void): () => void {
-        return () => {};
+        this.callbacks.push(callback);
+        return () => null;
     }
 }
 

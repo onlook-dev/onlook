@@ -392,23 +392,23 @@ export class SandboxManager {
         // Convert ignored directories to glob patterns with ** wildcard
         const excludePatterns = EXCLUDED_SYNC_DIRECTORIES.map((dir) => `${dir}/**`);
 
-        const res = await this.session.provider.watchFiles({
-            args: {
-                path: './',
-                recursive: true,
-                excludes: excludePatterns,
-            },
-            onFileChange: async (event) => {
-                this.fileEventBus.publish({
-                    type: event.type,
-                    paths: event.paths,
-                    timestamp: Date.now(),
-                });
-                await this.handleFileChange(event);
-            },
-        });
+        // const res = await this.session.provider.watchFiles({
+        //     args: {
+        //         path: './',
+        //         recursive: true,
+        //         excludes: excludePatterns,
+        //     },
+        //     onFileChange: async (event) => {
+        //         this.fileEventBus.publish({
+        //             type: event.type,
+        //             paths: event.paths,
+        //             timestamp: Date.now(),
+        //         });
+        //         await this.handleFileChange(event);
+        //     },
+        // });
 
-        this.fileWatcher = res.watcher;
+        // this.fileWatcher = res.watcher;
     }
 
     async handleFileChange(event: WatchEvent) {

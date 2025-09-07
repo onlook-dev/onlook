@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import { logger } from 'hono/logger';
 import { OpenAPIHono } from '@hono/zod-openapi';
 import { api_sandbox_create } from './api/sandbox/create';
 import { api_sandbox_file_copy } from './api/sandbox/file/copy';
@@ -24,6 +23,13 @@ import { setupRequiredSandboxIdMiddleware } from './middleware/requireSandboxId'
 import { env, serve } from 'bun';
 import { setupBeforeSandboxCallMiddleware } from './middleware/beforeSandboxCall';
 import { setupErrorMiddleware } from './middleware/error';
+import { api_sandbox_terminal_create } from './api/sandbox/terminal/create';
+import { api_sandbox_terminal_command } from './api/sandbox/terminal/command';
+import { api_sandbox_terminal_open } from './api/sandbox/terminal/open';
+import { api_sandbox_terminal_run } from './api/sandbox/terminal/run';
+import { api_sandbox_terminal_write } from './api/sandbox/terminal/write';
+import { api_sandbox_terminal_kill } from './api/sandbox/terminal/kill';
+import { streamSSE } from 'hono/streaming';
 
 export interface Variables {
     client: Client;
@@ -63,6 +69,7 @@ setupBeforeSandboxCallMiddleware(app, basePath + '/sandbox/resume');
 setupBeforeSandboxCallMiddleware(app, basePath + '/sandbox/stop');
 setupBeforeSandboxCallMiddleware(app, basePath + '/sandbox/url');
 setupBeforeSandboxCallMiddleware(app, basePath + '/sandbox/file/*');
+setupBeforeSandboxCallMiddleware(app, basePath + '/sandbox/terminal/*');
 
 // auth routes
 api_auth_sign(app);
@@ -84,6 +91,14 @@ api_sandbox_file_rename(app);
 api_sandbox_file_stat(app);
 api_sandbox_file_watch(app);
 api_sandbox_file_write(app);
+
+// sandbox terminal routes
+api_sandbox_terminal_command(app);
+api_sandbox_terminal_create(app);
+api_sandbox_terminal_open(app);
+api_sandbox_terminal_run(app);
+api_sandbox_terminal_write(app);
+api_sandbox_terminal_kill(app);
 
 app.doc('/openapi.json', {
     openapi: '3.0.0',
