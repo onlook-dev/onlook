@@ -4,8 +4,6 @@ import {
     ALLOWED_BASH_READ_COMMANDS,
     BASH_EDIT_TOOL_PARAMETERS,
     BASH_READ_TOOL_PARAMETERS,
-    GLOB_TOOL_PARAMETERS,
-    GREP_TOOL_PARAMETERS,
     TERMINAL_COMMAND_TOOL_PARAMETERS,
     TYPECHECK_TOOL_PARAMETERS
 } from '@onlook/ai';
@@ -70,113 +68,6 @@ export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PAR
             success: false,
             error: error.message || error.toString()
         };
-    }
-}
-
-
-export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<any> {
-    try {
-        const sandbox = editorEngine.branches.getSandboxById(args.branchId);
-        if (!sandbox) {
-            return {
-                matches: [],
-                mode: args.output_mode,
-                error: `Sandbox not found for branch ID: ${args.branchId}`
-            };
-        }
-
-        const searchPath = args.path || '.';
-        
-        // Build find command for file filtering with common exclusions
-        let findCommand = `find "${searchPath}" -type f`;
-        
-        // Exclude common directories that should be ignored
-        const excludeDirs = [
-            'node_modules',
-            '.next',
-            '.git',
-            'dist',
-            'build',
-            '.cache',
-            'coverage',
-            '.nyc_output',
-            'tmp',
-            'temp',
-            '.temp',
-            '.tmp',
-            'logs',
-            '*.log',
-            '.DS_Store',
-            'Thumbs.db'
-        ];
-        
-        for (const excludeDir of excludeDirs) {
-            findCommand += ` -not -path "*/${excludeDir}/*" -not -name "${excludeDir}"`;
-        }
-        
-        // Add file filtering based on glob or type
-        if (args.glob) {
-            findCommand += ` -name "${args.glob}"`;
-        } else if (args.type) {
-            // Convert common file types to extensions
-            const typeMap: Record<string, string> = {
-                'js': '*.js',
-                'ts': '*.ts',
-                'jsx': '*.jsx',
-                'tsx': '*.tsx',
-                'py': '*.py',
-                'java': '*.java',
-                'go': '*.go',
-                'rust': '*.rs',
-                'cpp': '*.cpp',
-                'c': '*.c',
-                'html': '*.html',
-                'css': '*.css',
-                'json': '*.json',
-                'xml': '*.xml',
-                'yaml': '*.yaml',
-                'yml': '*.yml'
-            };
-            const extension = typeMap[args.type] || `*.${args.type}`;
-            findCommand += ` -name "${extension}"`;
-        }
-
-        // Build grep flags
-        let grepFlags = '';
-        if (args['-i']) grepFlags += ' -i';
-        if (args['-n'] && args.output_mode === 'content') grepFlags += ' -n';
-        if (args['-A'] && args.output_mode === 'content') grepFlags += ` -A ${args['-A']}`;
-        if (args['-B'] && args.output_mode === 'content') grepFlags += ` -B ${args['-B']}`;
-        if (args['-C'] && args.output_mode === 'content') grepFlags += ` -C ${args['-C']}`;
-
-        // Set output mode flags
-        if (args.output_mode === 'files_with_matches') {
-            grepFlags += ' -l';
-        } else if (args.output_mode === 'count') {
-            grepFlags += ' -c';
-        }
-
-        // Handle multiline searching (limited support with traditional grep)
-        let command: string;
-        if (args.multiline) {
-            // Use perl-style regex with grep -P if available, otherwise fall back to awk
-            command = `${findCommand} -exec grep -P${grepFlags} -z "${args.pattern}" {} + || ${findCommand} -exec awk 'BEGIN{RS=""} /${args.pattern.replace(/'/g, "'\\''")}/ {print FILENAME ${args.output_mode === 'content' ? ': $0' : ''}}' {} +`;
-        } else {
-            // Standard grep with find - grep returns exit code 1 when no matches found
-            command = `${findCommand} -exec grep${grepFlags} "${args.pattern}" {} +`;
-        }
-
-        // Apply head limit
-        if (args.head_limit) {
-            command += ` | head -${args.head_limit}`;
-        }
-
-        const result = await sandbox.session.runCommand(command, undefined, true);
-
-        // Return raw output without post-processing
-        return result.output || '';
-    } catch (error) {
-        return `Error: ${error instanceof Error ? error.message : String(error)}`;
     }
 }
 
