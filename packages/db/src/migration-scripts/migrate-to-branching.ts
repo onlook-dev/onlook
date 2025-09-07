@@ -1,10 +1,10 @@
 import { config } from 'dotenv';
-import { eq, isNull, inArray } from 'drizzle-orm';
+import { eq, isNull, inArray, and } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../client';
 import { createDefaultBranch } from '../defaults/branch';
 import type { Branch, Project } from '../schema';
-import { branches, canvases, frames, projects } from '../schema';
+import { branches as branchesTable, canvases, frames, projects } from '../schema';
 
 // Load .env file
 config({ path: '../../.env' });
@@ -33,42 +33,368 @@ function chunkArray<T>(array: T[], chunkSize: number): T[][] {
     return chunks;
 }
 
+// Utility function to handle database insert with retry logic
+async function insertWithConstraintRetry<T>(
+    operation: () => Promise<void>,
+    entityType: string,
+    batchNumber?: number
+): Promise<void> {
+    try {
+        await operation();
+    } catch (error: any) {
+        if (error?.code === '23505' || error?.message?.includes('duplicate') || error?.message?.includes('unique')) {
+            const batchInfo = batchNumber ? ` batch ${batchNumber}` : '';
+            console.log(`    └─ ${entityType}${batchInfo} already exist (safe to continue)`);
+        } else {
+            throw error;
+        }
+    }
+}
+
+// Check current migration status
+async function checkMigrationStatus(): Promise<{
+    totalProjects: number;
+    totalBranches: number;
+    framesWithoutBranches: number;
+    isCompleted: boolean;
+    isPartial: boolean;
+}> {
+    const totalProjects = await db.select({ count: projects.id }).from(projects);
+    const totalBranches = await db.select({ count: branchesTable.id }).from(branchesTable);
+    const framesWithoutBranches = await db
+        .select({ count: frames.id })
+        .from(frames)
+        .where(isNull(frames.branchId));
+
+    const isCompleted = totalBranches.length > 0 && 
+                       totalBranches.length === totalProjects.length && 
+                       framesWithoutBranches.length === 0;
+    const isPartial = totalBranches.length > 0 && !isCompleted;
+
+    return {
+        totalProjects: totalProjects.length,
+        totalBranches: totalBranches.length,
+        framesWithoutBranches: framesWithoutBranches.length,
+        isCompleted,
+        isPartial
+    };
+}
+
+// Get projects that need migration
+async function getProjectsToMigrate() {
+    return await db
+        .select()
+        .from(projects)
+        .leftJoin(branchesTable, eq(projects.id, branchesTable.projectId))
+        .where(isNull(branchesTable.id));
+}
+
+// Create branch objects for projects
+function createBranchesForProjects(projectsToMigrate: Awaited<ReturnType<typeof getProjectsToMigrate>>): Branch[] {
+    const newBranches: Branch[] = [];
+
+    for (const { projects: project } of projectsToMigrate) {
+        console.log(`🔀 Creating default branch for project: ${project.name} (${project.id})`);
+
+        const legacyProject = project as LegacyProject;
+        const sandboxId = legacyProject.sandboxId || uuidv4();
+
+        const defaultBranch = createDefaultBranch({
+            projectId: project.id,
+            sandboxId,
+        });
+
+        newBranches.push(defaultBranch);
+    }
+
+    return newBranches;
+}
+
+// Insert branches in batches
+async function insertBranchesInBatches(branches: Branch[]): Promise<void> {
+    if (branches.length === 0) return;
+
+    console.log(`📥 Inserting ${branches.length} default branches...`);
+    
+    const branchBatchSize = 500;
+    const branchChunks = chunkArray(branches, branchBatchSize);
+    
+    for (let i = 0; i < branchChunks.length; i++) {
+        const chunk = branchChunks[i];
+        if (!chunk) continue;
+        
+        console.log(`  └─ Inserting batch ${i + 1}/${branchChunks.length} (${chunk.length} branches)`);
+        
+        await insertWithConstraintRetry(
+            async () => {
+                await db.transaction(async (tx) => {
+                    await tx.insert(branchesTable).values(chunk);
+                });
+            },
+            'branches',
+            i + 1
+        );
+    }
+}
+
+// Process batch of frame updates in parallel
+async function processFrameUpdatesInParallel(
+    branchUpdates: { branchId: string; projectId: string }[],
+    batchSize: number = 1000
+): Promise<void> {
+    const updatePromises = branchUpdates.map(async ({ branchId, projectId }) => {
+        // Get frame IDs first, then update in bulk - still more efficient than individual queries
+        const projectFrames = await db
+            .select({ id: frames.id })
+            .from(frames)
+            .innerJoin(canvases, eq(frames.canvasId, canvases.id))
+            .where(
+                and(
+                    eq(canvases.projectId, projectId),
+                    isNull(frames.branchId)
+                )
+            );
+
+        if (projectFrames.length === 0) {
+            return { branchId, projectId, rowsUpdated: 0 };
+        }
+
+        const frameIds = projectFrames.map(f => f.id);
+        
+        // Single bulk update - much faster than individual queries
+        await db.transaction(async (tx) => {
+            await tx
+                .update(frames)
+                .set({ branchId })
+                .where(inArray(frames.id, frameIds));
+        });
+        
+        return { branchId, projectId, rowsUpdated: frameIds.length };
+    });
+
+    // Process all branches in parallel for maximum speed
+    const results = await Promise.all(updatePromises);
+    
+    // Log results
+    for (const { branchId, projectId, rowsUpdated } of results) {
+        if (rowsUpdated > 0) {
+            console.log(`  └─ Updated ${rowsUpdated} frames for project ${projectId}`);
+        } else {
+            console.log(`  └─ No frames need updating for project ${projectId} (already have branchId)`);
+        }
+    }
+}
+
+// Optimized bulk frame updates using single JOIN query per branch
+async function updateFramesForBranches(branches: Branch[]): Promise<void> {
+    if (branches.length === 0) return;
+
+    console.log('🔗 Updating frames to reference default branches...');
+
+    // Prepare batch updates - stateless operation
+    const branchUpdates = branches.map(branch => ({
+        branchId: branch.id,
+        projectId: branch.projectId
+    }));
+
+    // Process in parallel batches for optimal performance
+    const concurrencyLimit = 5; // Limit concurrent transactions
+    const batches = chunkArray(branchUpdates, concurrencyLimit);
+
+    for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        if (!batch || batch.length === 0) continue;
+        
+        console.log(`  Processing batch ${i + 1}/${batches.length} (${batch.length} projects)`);
+        await processFrameUpdatesInParallel(batch);
+    }
+}
+
+// Handle orphaned frames
+async function fixOrphanedFrames(): Promise<void> {
+    console.log('🧹 Checking for orphaned frames...');
+
+    const orphanedFrames = await db
+        .select({
+            frameId: frames.id,
+            canvasId: frames.canvasId,
+            projectId: canvases.projectId
+        })
+        .from(frames)
+        .innerJoin(canvases, eq(frames.canvasId, canvases.id))
+        .where(isNull(frames.branchId));
+
+    if (orphanedFrames.length === 0) {
+        console.log('✅ No orphaned frames found.');
+        return;
+    }
+
+    console.log(`Found ${orphanedFrames.length} orphaned frames, fixing...`);
+
+    // Group orphaned frames by project
+    const framesByProject = new Map<string, { frameId: string; canvasId: string; projectId: string }[]>();
+    
+    for (const orphan of orphanedFrames) {
+        if (!framesByProject.has(orphan.projectId)) {
+            framesByProject.set(orphan.projectId, []);
+        }
+        framesByProject.get(orphan.projectId)!.push(orphan);
+    }
+
+    for (const [projectId, projectOrphans] of framesByProject) {
+        await fixOrphanedFramesForProject(projectId, projectOrphans.length);
+    }
+}
+
+// Fix orphaned frames for a specific project using bulk operations
+async function fixOrphanedFramesForProject(
+    projectId: string, 
+    orphanCount: number
+): Promise<void> {
+    const defaultBranch = await db
+        .select({ id: branchesTable.id })
+        .from(branchesTable)
+        .where(eq(branchesTable.projectId, projectId))
+        .limit(1);
+
+    let branchId: string;
+
+    if (defaultBranch.length > 0 && !!defaultBranch[0]?.id) {
+        branchId = defaultBranch[0].id;
+    } else {
+        branchId = await createEmergencyBranch(projectId);
+    }
+
+    // Get orphaned frame IDs first, then update in bulk
+    const orphanedFrames = await db
+        .select({ id: frames.id })
+        .from(frames)
+        .innerJoin(canvases, eq(frames.canvasId, canvases.id))
+        .where(
+            and(
+                eq(canvases.projectId, projectId),
+                isNull(frames.branchId)
+            )
+        );
+
+    if (orphanedFrames.length === 0) {
+        console.log(`  └─ No orphaned frames found for project ${projectId}`);
+        return;
+    }
+
+    const frameIds = orphanedFrames.map(f => f.id);
+    
+    // Single bulk update - much more efficient than individual updates
+    await db.transaction(async (tx) => {
+        await tx
+            .update(frames)
+            .set({ branchId })
+            .where(inArray(frames.id, frameIds));
+    });
+
+    console.log(`  └─ Fixed ${frameIds.length} orphaned frames for project ${projectId}`);
+}
+
+// Create emergency branch with proper error handling
+async function createEmergencyBranch(projectId: string): Promise<string> {
+    console.log(`  └─ Creating emergency branch for orphaned frames in project ${projectId}`);
+    
+    // Double-check in case a branch was created concurrently
+    const recheckBranch = await db
+        .select({ id: branchesTable.id })
+        .from(branchesTable)
+        .where(eq(branchesTable.projectId, projectId))
+        .limit(1);
+        
+    if (recheckBranch.length > 0 && !!recheckBranch[0]?.id) {
+        console.log(`    └─ Branch was created concurrently, using existing one`);
+        return recheckBranch[0].id;
+    }
+
+    const emergencyBranch = createDefaultBranch({
+        projectId: projectId,
+        sandboxId: uuidv4(),
+    });
+
+    try {
+        await db.transaction(async (tx) => {
+            await tx.insert(branchesTable).values(emergencyBranch);
+        });
+        return emergencyBranch.id;
+    } catch (error: any) {
+        if (error?.code === '23505' || error?.message?.includes('duplicate') || error?.message?.includes('unique')) {
+            console.log(`    └─ Emergency branch already exists, finding it...`);
+            const existingBranch = await db
+                .select({ id: branchesTable.id })
+                .from(branchesTable)
+                .where(eq(branchesTable.projectId, projectId))
+                .limit(1);
+            
+            if (existingBranch.length > 0 && !!existingBranch[0]?.id) {
+                return existingBranch[0].id;
+            } else {
+                throw new Error(`Failed to create or find branch for project ${projectId}`);
+            }
+        } else {
+            throw error;
+        }
+    }
+}
+
+// Verify migration completeness
+async function verifyMigrationCompleteness(newBranchesCount: number): Promise<void> {
+    console.log('✅ Verifying migration completeness...');
+
+    const finalFramesWithoutBranches = await db
+        .select({ count: frames.id })
+        .from(frames)
+        .where(isNull(frames.branchId));
+
+    const finalTotalBranches = await db
+        .select({ count: branchesTable.id })
+        .from(branchesTable);
+
+    const finalTotalProjects = await db
+        .select({ count: projects.id })
+        .from(projects);
+
+    console.log(`\n📊 Final Migration Summary:`);
+    console.log(`  • Total projects: ${finalTotalProjects.length}`);
+    console.log(`  • Total branches: ${finalTotalBranches.length}`);
+    console.log(`  • Frames without branch reference: ${finalFramesWithoutBranches.length}`);
+    console.log(`  • New branches created this run: ${newBranchesCount}`);
+
+    if (finalFramesWithoutBranches.length > 0) {
+        throw new Error(`Migration incomplete: ${finalFramesWithoutBranches.length} frames still lack branch references`);
+    }
+}
+
 export async function migrateToBranching() {
     console.log('🔄 Starting migration to branching structure...');
 
     try {
-        // Check if this is a resumed migration
-        const totalProjects = await db.select({ count: projects.id }).from(projects);
-        const totalBranches = await db.select({ count: branches.id }).from(branches);
-        const framesWithoutBranches = await db
-            .select({ count: frames.id })
-            .from(frames)
-            .where(isNull(frames.branchId));
-
+        // Step 1: Check migration status
+        const status = await checkMigrationStatus();
+        
         console.log('📊 Current migration state:');
-        console.log(`  • Total projects: ${totalProjects.length}`);
-        console.log(`  • Total branches: ${totalBranches.length}`);
-        console.log(`  • Frames without branch reference: ${framesWithoutBranches.length}`);
+        console.log(`  • Total projects: ${status.totalProjects}`);
+        console.log(`  • Total branches: ${status.totalBranches}`);
+        console.log(`  • Frames without branch reference: ${status.framesWithoutBranches}`);
 
-        if (totalBranches.length > 0 && totalBranches.length === totalProjects.length && framesWithoutBranches.length === 0) {
+        if (status.isCompleted) {
             console.log('✅ Migration already completed - nothing to do!');
             return;
         }
 
-        if (totalBranches.length > 0) {
+        if (status.isPartial) {
             console.log('🔄 Detected partial migration - resuming from where we left off...');
         } else {
             console.log('🚀 Starting fresh migration...');
         }
 
-        // Step 1: Get all existing projects that don't have default branches yet
+        // Step 2: Get projects to migrate
         console.log('📋 Fetching projects without default branches...');
-
-        const projectsToMigrate = await db
-            .select()
-            .from(projects)
-            .leftJoin(branches, eq(projects.id, branches.projectId))
-            .where(isNull(branches.id));
+        const projectsToMigrate = await getProjectsToMigrate();
 
         if (projectsToMigrate.length === 0) {
             console.log('✅ All projects already have branches!');
@@ -76,223 +402,18 @@ export async function migrateToBranching() {
             console.log(`Found ${projectsToMigrate.length} projects to migrate`);
         }
 
-        // Step 2: Create default branches for projects that need them
-        const newBranches: Branch[] = [];
+        // Step 3: Create and insert branches
+        const newBranches = createBranchesForProjects(projectsToMigrate);
+        await insertBranchesInBatches(newBranches);
 
-        for (const { projects: project } of projectsToMigrate) {
-            console.log(`🔀 Creating default branch for project: ${project.name} (${project.id})`);
+        // Step 4: Update frames
+        await updateFramesForBranches(newBranches);
 
-            // Cast to legacy project to access potentially removed fields
-            const legacyProject = project as LegacyProject;
-            const sandboxId = legacyProject.sandboxId || uuidv4();
+        // Step 5: Fix orphaned frames
+        await fixOrphanedFrames();
 
-            const defaultBranch = createDefaultBranch({
-                projectId: project.id,
-                sandboxId,
-            });
-
-            newBranches.push(defaultBranch);
-        }
-
-        // Step 3: Insert all new branches in batched transactions
-        if (newBranches.length > 0) {
-            console.log(`📥 Inserting ${newBranches.length} default branches...`);
-            
-            // Insert branches in batches to avoid parameter limits
-            const branchBatchSize = 500; // Conservative batch size for branch inserts
-            const branchChunks = chunkArray(newBranches, branchBatchSize);
-            
-            for (let i = 0; i < branchChunks.length; i++) {
-                const chunk = branchChunks[i];
-                console.log(`  └─ Inserting batch ${i + 1}/${branchChunks.length} (${chunk.length} branches)`);
-                
-                try {
-                    await db.transaction(async (tx) => {
-                        await tx.insert(branches).values(chunk);
-                    });
-                } catch (error: any) {
-                    // Check if this is a constraint violation (branches already exist)
-                    if (error?.code === '23505' || error?.message?.includes('duplicate') || error?.message?.includes('unique')) {
-                        console.log(`    └─ Batch ${i + 1} branches already exist (safe to continue)`);
-                    } else {
-                        // Re-throw if it's not a duplicate key error
-                        throw error;
-                    }
-                }
-            }
-
-            // Step 4: Update frames to reference default branches (in separate transactions)
-            console.log('🔗 Updating frames to reference default branches...');
-
-            for (const branch of newBranches) {
-                // Get all frames for this project's canvas that don't have a branch reference
-                const projectFrames = await db
-                    .select({
-                        id: frames.id,
-                        canvasId: frames.canvasId
-                    })
-                    .from(frames)
-                    .innerJoin(canvases, eq(frames.canvasId, canvases.id))
-                    .where(
-                        eq(canvases.projectId, branch.projectId).and(
-                            isNull(frames.branchId)
-                        )
-                    );
-
-                if (projectFrames.length > 0) {
-                    const frameIds = projectFrames.map(f => f.id);
-                    console.log(`  └─ Updating ${frameIds.length} frames for project ${branch.projectId}`);
-
-                    // Process frames in batches to avoid parameter limits
-                    const batchSize = 1000;
-                    const frameIdChunks = chunkArray(frameIds, batchSize);
-
-                    for (let i = 0; i < frameIdChunks.length; i++) {
-                        const chunk = frameIdChunks[i];
-                        console.log(`    └─ Processing batch ${i + 1}/${frameIdChunks.length} (${chunk.length} frames)`);
-
-                        await db.transaction(async (tx) => {
-                            await tx
-                                .update(frames)
-                                .set({ branchId: branch.id })
-                                .where(inArray(frames.id, chunk));
-                        });
-                    }
-                } else {
-                    console.log(`  └─ No frames need updating for project ${branch.projectId} (already have branchId)`);
-                }
-            }
-        }
-
-        // Step 5: Handle any remaining orphaned frames
-        console.log('🧹 Checking for orphaned frames...');
-
-        const orphanedFrames = await db
-            .select({
-                frameId: frames.id,
-                canvasId: frames.canvasId,
-                projectId: canvases.projectId
-            })
-            .from(frames)
-            .innerJoin(canvases, eq(frames.canvasId, canvases.id))
-            .where(isNull(frames.branchId));
-
-        if (orphanedFrames.length > 0) {
-            console.log(`Found ${orphanedFrames.length} orphaned frames, fixing...`);
-
-            // Group orphaned frames by project to batch process them
-            const framesByProject = new Map<string, { frameId: string; canvasId: string; projectId: string }[]>();
-            
-            for (const orphan of orphanedFrames) {
-                if (!framesByProject.has(orphan.projectId)) {
-                    framesByProject.set(orphan.projectId, []);
-                }
-                framesByProject.get(orphan.projectId)!.push(orphan);
-            }
-
-            for (const [projectId, projectOrphans] of framesByProject) {
-                // Find the default branch for this project
-                const defaultBranch = await db
-                    .select({ id: branches.id })
-                    .from(branches)
-                    .where(eq(branches.projectId, projectId))
-                    .limit(1);
-
-                let branchId: string;
-
-                if (defaultBranch.length > 0 && !!defaultBranch[0]?.id) {
-                    branchId = defaultBranch[0].id;
-                } else {
-                    // Create a default branch if none exists - but double-check first
-                    console.log(`  └─ Creating emergency branch for orphaned frames in project ${projectId}`);
-                    
-                    // Double-check in case a branch was created concurrently
-                    const recheckBranch = await db
-                        .select({ id: branches.id })
-                        .from(branches)
-                        .where(eq(branches.projectId, projectId))
-                        .limit(1);
-                        
-                    if (recheckBranch.length > 0 && !!recheckBranch[0]?.id) {
-                        console.log(`    └─ Branch was created concurrently, using existing one`);
-                        branchId = recheckBranch[0].id;
-                    } else {
-                        const emergencyBranch = createDefaultBranch({
-                            projectId: projectId,
-                            sandboxId: uuidv4(),
-                        });
-
-                        try {
-                            await db.transaction(async (tx) => {
-                                await tx.insert(branches).values(emergencyBranch);
-                            });
-                            branchId = emergencyBranch.id;
-                        } catch (error: any) {
-                            // If branch creation fails due to constraint, find the existing one
-                            if (error?.code === '23505' || error?.message?.includes('duplicate') || error?.message?.includes('unique')) {
-                                console.log(`    └─ Emergency branch already exists, finding it...`);
-                                const existingBranch = await db
-                                    .select({ id: branches.id })
-                                    .from(branches)
-                                    .where(eq(branches.projectId, projectId))
-                                    .limit(1);
-                                
-                                if (existingBranch.length > 0 && !!existingBranch[0]?.id) {
-                                    branchId = existingBranch[0].id;
-                                } else {
-                                    throw new Error(`Failed to create or find branch for project ${projectId}`);
-                                }
-                            } else {
-                                throw error;
-                            }
-                        }
-                    }
-                }
-
-                // Update orphaned frames for this project in batches
-                const frameIds = projectOrphans.map(o => o.frameId);
-                const batchSize = 1000;
-                const frameIdChunks = chunkArray(frameIds, batchSize);
-
-                for (let i = 0; i < frameIdChunks.length; i++) {
-                    const chunk = frameIdChunks[i];
-                    console.log(`  └─ Fixing batch ${i + 1}/${frameIdChunks.length} (${chunk.length} orphaned frames) for project ${projectId}`);
-
-                    await db.transaction(async (tx) => {
-                        await tx
-                            .update(frames)
-                            .set({ branchId })
-                            .where(inArray(frames.id, chunk));
-                    });
-                }
-            }
-        }
-
-        // Step 6: Verification
-        console.log('✅ Verifying migration completeness...');
-
-        const framesWithoutBranches = await db
-            .select({ count: frames.id })
-            .from(frames)
-            .where(isNull(frames.branchId));
-
-        const totalBranches = await db
-            .select({ count: branches.id })
-            .from(branches);
-
-        const totalProjects = await db
-            .select({ count: projects.id })
-            .from(projects);
-
-        console.log(`\n📊 Final Migration Summary:`);
-        console.log(`  • Total projects: ${totalProjects.length}`);
-        console.log(`  • Total branches: ${totalBranches.length}`);
-        console.log(`  • Frames without branch reference: ${framesWithoutBranches.length}`);
-        console.log(`  • New branches created this run: ${newBranches.length}`);
-
-        if (framesWithoutBranches.length > 0) {
-            throw new Error(`Migration incomplete: ${framesWithoutBranches.length} frames still lack branch references`);
-        }
+        // Step 6: Verify completeness
+        await verifyMigrationCompleteness(newBranches.length);
 
         console.log('\n✅ Migration to branching structure completed successfully!');
 
