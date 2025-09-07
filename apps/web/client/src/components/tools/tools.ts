@@ -96,6 +96,12 @@ const TOOL_HANDLERS: ClientToolMap = {
         handler: async (args: z.infer<typeof READ_FILE_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleReadFileTool(args, editorEngine),
     },
+    [BASH_READ_TOOL_NAME]: {
+        name: BASH_READ_TOOL_NAME,
+        inputSchema: BASH_READ_TOOL_PARAMETERS,
+        handler: async (args: z.infer<typeof BASH_READ_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
+            handleBashReadTool(args, editorEngine),
+    },
     [READ_STYLE_GUIDE_TOOL_NAME]: {
         name: READ_STYLE_GUIDE_TOOL_NAME,
         inputSchema: EMPTY_TOOL_PARAMETERS,
@@ -131,12 +137,6 @@ const TOOL_HANDLERS: ClientToolMap = {
         inputSchema: SANDBOX_TOOL_PARAMETERS,
         handler: async (args: z.infer<typeof SANDBOX_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
             handleSandboxTool(args, editorEngine),
-    },
-    [BASH_READ_TOOL_NAME]: {
-        name: BASH_READ_TOOL_NAME,
-        inputSchema: BASH_READ_TOOL_PARAMETERS,
-        handler: async (args: z.infer<typeof BASH_READ_TOOL_PARAMETERS>, editorEngine: EditorEngine) =>
-            handleBashReadTool(args, editorEngine),
     },
     [GLOB_TOOL_NAME]: {
         name: GLOB_TOOL_NAME,
