@@ -38,19 +38,20 @@ export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>,
         const searchPath = args.path || '.';
         const pattern = args.pattern;
         
-        // Validate inputs
-        if (!pattern.trim()) {
-            return 'Error: Pattern cannot be empty';
+        // Enhanced input validation
+        const validationError = await validateInputs(pattern, searchPath, sandbox);
+        if (validationError) {
+            return validationError;
         }
 
         // Try different approaches in order of preference
         const result = await tryGlobApproaches(sandbox, searchPath, pattern);
         
         if (!result.success) {
-            return `Error: No files found matching pattern "${pattern}" in path "${searchPath}"`;
+            return `No files found matching pattern "${pattern}" in path "${searchPath}"`;
         }
 
-        return cleanAndFilterOutput(result.output);
+        return await processAndFormatResults(result.output, pattern, searchPath, result.method);
         
     } catch (error) {
         return `Error: ${error instanceof Error ? error.message : String(error)}`;
@@ -194,6 +195,73 @@ function buildExclusionPattern(): string {
     });
     
     return conditions.join(' && ');
+}
+
+async function validateInputs(pattern: string, searchPath: string, sandbox: any): Promise<string | null> {
+    // Basic pattern validation
+    if (!pattern.trim()) {
+        return 'Error: Pattern cannot be empty';
+    }
+    
+    // Check for obviously invalid patterns
+    if (pattern.includes('///') || pattern.includes('\\\\\\')) {
+        return `Error: Invalid pattern "${pattern}". Check your glob syntax.`;
+    }
+    
+    // Validate search path exists
+    const pathValidation = await sandbox.session.runCommand(`test -e "${searchPath}" && echo "exists" || echo "not_found"`, undefined, true);
+    if (pathValidation.success && pathValidation.output.trim() === 'not_found') {
+        return `Error: Search path "${searchPath}" does not exist`;
+    }
+    
+    // Check if it's a directory (not a file)
+    const dirValidation = await sandbox.session.runCommand(`test -d "${searchPath}" && echo "dir" || echo "not_dir"`, undefined, true);
+    if (dirValidation.success && dirValidation.output.trim() === 'not_dir') {
+        return `Error: Search path "${searchPath}" is not a directory`;
+    }
+    
+    return null; // All validations passed
+}
+
+async function processAndFormatResults(output: string, pattern: string, searchPath: string, method: 'bash' | 'sh' | 'find'): Promise<string> {
+    if (!output || !output.trim()) {
+        return `No files found matching pattern "${pattern}" in path "${searchPath}"`;
+    }
+    
+    let lines = output.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    // Additional filtering for any paths that slipped through
+    lines = lines.filter(line => {
+        const pathParts = line.split('/');
+        return !pathParts.some(part => DEFAULT_EXCLUDED_PATTERNS.includes(part));
+    });
+    
+    // Clean up the output
+    const cleanLines = lines.map(line => line.replace(/\r/g, '').replace(/^\.\//, ''));
+    const finalLines = cleanLines.filter(line => line.length > 0);
+    
+    // Check for truncation (we use head -1000 in commands)
+    const wasTruncated = lines.length >= 1000;
+    const resultCount = finalLines.length;
+    
+    if (resultCount === 0) {
+        return `No files found matching pattern "${pattern}" in path "${searchPath}"`;
+    }
+    
+    // Format result with count information
+    let result = finalLines.join('\n');
+    
+    if (wasTruncated) {
+        result = `Showing first ${resultCount} of 1000+ files (truncated). Please refine your pattern.\n\n${result}`;
+    } else {
+        if (resultCount === 1) {
+            result = `Found 1 file:\n\n${result}`;
+        } else {
+            result = `Found ${resultCount} files:\n\n${result}`;
+        }
+    }
+    
+    return result;
 }
 
 function cleanAndFilterOutput(output: string): string {
