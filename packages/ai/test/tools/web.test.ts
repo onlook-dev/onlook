@@ -5,7 +5,7 @@ import {
     SCRAPE_URL_TOOL_NAME,
     SCRAPE_URL_TOOL_PARAMETERS,
     scrapeUrlTool,
-} from '../../src/tools/';
+} from '../../src/tools';
 
 describe('Firecrawl Web Scraping Tool', () => {
     it('should have the correct tool name and parameters', () => {

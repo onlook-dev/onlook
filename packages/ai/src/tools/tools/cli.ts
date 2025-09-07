@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const TERMINAL_COMMAND_TOOL_NAME = 'terminal_command';
 export const TERMINAL_COMMAND_TOOL_PARAMETERS = z.object({
     command: z.string().describe('The command to run'),
-    branchId: z.string().describe('Branch ID to run the command in'),
+    branchId: z.string().trim().min(1).describe('Branch ID to run the command in'),
 });
 export const terminalCommandTool = tool({
     description: 'Run any generic Linux Bash command in the terminal',
@@ -46,7 +46,7 @@ export const BASH_READ_TOOL_PARAMETERS = z.object({
         .max(600000)
         .optional()
         .describe('Optional timeout in milliseconds (up to 600000ms / 10 minutes)'),
-    branchId: z.string().describe('Branch ID to run the command in'),
+    branchId: z.string().trim().min(1).describe('Branch ID to run the command in'),
 });
 export const bashReadTool = tool({
     description:
@@ -84,7 +84,7 @@ export const BASH_EDIT_TOOL_PARAMETERS = z.object({
         .max(600000)
         .optional()
         .describe('Optional timeout in milliseconds (up to 600000ms / 10 minutes)'),
-    branchId: z.string().describe('Branch ID to run the command in'),
+    branchId: z.string().trim().min(1).describe('Branch ID to run the command in'),
 });
 export const bashEditTool = tool({
     description:
@@ -103,7 +103,7 @@ export const GLOB_TOOL_PARAMETERS = z.object({
         .describe(
             'The directory to search in. If not specified, the current working directory will be used. Must be a valid directory path if provided.',
         ),
-    branchId: z.string().describe('Branch ID to search files in'),
+    branchId: z.string().trim().min(1).describe('Branch ID to search files in'),
 });
 export const globTool = tool({
     description:
@@ -159,7 +159,7 @@ export const GREP_TOOL_PARAMETERS = z.object({
         .optional()
         .describe('Enable multiline mode where . matches newlines and patterns can span lines'),
     head_limit: z.number().optional().describe('Limit output to first N lines/entries'),
-    branchId: z.string().describe('Branch ID to search files in'),
+    branchId: z.string().trim().min(1).describe('Branch ID to search files in'),
 });
 export const grepTool = tool({
     description:
@@ -168,7 +168,7 @@ export const grepTool = tool({
 });
 export const TYPECHECK_TOOL_NAME = 'typecheck';
 export const TYPECHECK_TOOL_PARAMETERS = z.object({
-    branchId: z.string().describe('Branch ID to run typecheck in'),
+    branchId: z.string().trim().min(1).describe('Branch ID to run typecheck in'),
 });
 export const typecheckTool = tool({
     description: 'Run this as the final command after code edits, when type changes are suspected.',

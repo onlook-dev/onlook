@@ -5,7 +5,7 @@ import {
     WEB_SEARCH_TOOL_NAME,
     WEB_SEARCH_TOOL_PARAMETERS,
     webSearchTool,
-} from '../../src/tools/';
+} from '../../src/tools';
 
 describe('Web Search Tool', () => {
     it('should have the correct tool name and inputSchema', () => {
