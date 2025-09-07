@@ -37,7 +37,9 @@ async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | 
     if (!targetName) return null;
     
     // Search for files/directories with similar names using find
-    const findCommand = `find . -name "*${targetName}*" -type f -o -name "*${targetName}*" -type d | head -10`;
+    // Properly escape the targetName by replacing single quotes with '\''
+    const escapedTargetName = targetName.replace(/'/g, "'\\''");
+    const findCommand = `find . \\( -name '*${escapedTargetName}*' -type f -o -name '*${escapedTargetName}*' -type d \\) | head -10`;
     const result = await sandbox.session.runCommand(findCommand);
     
     if (result.success && result.output.trim()) {
