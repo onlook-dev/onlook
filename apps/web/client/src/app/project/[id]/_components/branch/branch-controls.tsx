@@ -8,7 +8,7 @@ import { Icons } from "@onlook/ui/icons";
 import { useState } from "react";
 
 interface BranchControlsProps {
-    branch?: Branch;
+    branch: Branch;
     onClose?: () => void;
     onForkBranch?: () => void;
     onCreateBlankSandbox?: () => void;
@@ -25,14 +25,13 @@ export function BranchControls({
     const editorEngine = useEditorEngine();
     const [isForking, setIsForking] = useState(false);
     const [isCreatingBlank, setIsCreatingBlank] = useState(false);
-    const targetBranch = branch ?? editorEngine.branches.activeBranch;
 
     const handleForkBranch = async () => {
         if (isForking) return;
 
         try {
             setIsForking(true);
-            await editorEngine.branches.forkBranch();
+            await editorEngine.branches.forkBranch(branch.id);
             onForkBranch?.();
             onClose?.();
         } catch (error) {
@@ -62,14 +61,13 @@ export function BranchControls({
         editorEngine.state.leftPanelTab = LeftPanelTabValue.BRANCHES;
         editorEngine.state.leftPanelLocked = true;
         editorEngine.state.branchTab = BranchTabValue.MANAGE;
-        editorEngine.state.manageBranchId = targetBranch.id;
+        editorEngine.state.manageBranchId = branch.id;
         onManageBranches?.();
         onClose?.();
     };
 
     return (
         <>
-            <DropdownMenuSeparator />
             <div className="p-1">
                 <DropdownMenuItem
                     className="flex items-center gap-2 p-2"

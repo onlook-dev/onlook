@@ -11,6 +11,7 @@ import {
     createDefaultCanvas,
     createDefaultFrame,
     createDefaultUserCanvas,
+    DefaultFrameType,
     frames,
     fromDbCanvas,
     fromDbFrame,
@@ -278,24 +279,14 @@ export const projectRouter = createTRPCRouter({
                     canvasId: newCanvas.id,
                     branchId: newBranch.id,
                     url: input.sandboxUrl,
-                    overrides: {
-                        x: '5',
-                        y: '0',
-                        width: '1536',
-                        height: '960',
-                    },
+                    type: DefaultFrameType.DESKTOP,
                 });
                 await tx.insert(frames).values(desktopFrame);
                 const mobileFrame = createDefaultFrame({
                     canvasId: newCanvas.id,
                     branchId: newBranch.id,
                     url: input.sandboxUrl,
-                    overrides: {
-                        x: '1600',
-                        y: '0',
-                        width: '440',
-                        height: '956',
-                    },
+                    type: DefaultFrameType.MOBILE,
                 });
                 await tx.insert(frames).values(mobileFrame);
 

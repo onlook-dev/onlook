@@ -46,7 +46,7 @@ export const BranchDisplay = observer(() => {
                     onBranchSwitch={handleBranchSwitch}
                     showSearch={true}
                 />
-                <BranchControls onClose={() => setIsOpen(false)} />
+                <BranchControls branch={activeBranch} onClose={() => setIsOpen(false)} />
             </DropdownMenuContent>
         </DropdownMenu>
     );

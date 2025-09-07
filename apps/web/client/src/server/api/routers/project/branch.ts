@@ -85,21 +85,14 @@ export const branchRouter = createTRPCRouter({
     fork: protectedProcedure
         .input(
             z.object({
-                sourceBranchId: z.string().uuid(),
-                branchName: z.string().optional(),
-                framePosition: z.object({
-                    x: z.number(),
-                    y: z.number(),
-                    width: z.number(),
-                    height: z.number(),
-                }).optional(),
+                branchId: z.uuid(),
             }),
         )
         .mutation(async ({ ctx, input }) => {
             try {
                 // Get source branch with its frames to extract port
                 const sourceBranch = await ctx.db.query.branches.findFirst({
-                    where: eq(branches.id, input.sourceBranchId),
+                    where: eq(branches.id, input.branchId),
                     with: {
                         frames: true,
                     },
@@ -118,13 +111,8 @@ export const branchRouter = createTRPCRouter({
                 });
                 const existingNames = existingBranches.map(branch => branch.name);
 
-                // Generate unique branch name if not provided
-                let branchName: string;
-                if (input.branchName) {
-                    branchName = input.branchName;
-                } else {
-                    branchName = generateUniqueBranchName(sourceBranch.name, existingNames);
-                }
+                // Generate unique branch name
+                const branchName: string = generateUniqueBranchName(sourceBranch.name, existingNames);
 
                 // Fork the sandbox using code provider
                 const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
@@ -159,52 +147,65 @@ export const branchRouter = createTRPCRouter({
                 return await ctx.db.transaction(async (tx) => {
                     await tx.insert(branches).values(newBranch);
 
-                    // Create new frame in the same canvas if position is provided
+                    // Always create at least one frame using the target branch's frame data
                     let createdFrames: Frame[] = [];
-                    if (input.framePosition) {
-                        // Get the canvas for the project
-                        const canvas = await tx.query.canvases.findFirst({
-                            where: eq(canvases.projectId, sourceBranch.projectId),
+
+                    // Get the canvas for the project
+                    const canvas = await tx.query.canvases.findFirst({
+                        where: eq(canvases.projectId, sourceBranch.projectId),
+                    });
+
+                    if (canvas) {
+                        // Get existing frames for smart positioning
+                        const existingFrames = await getExistingFrames(tx, canvas.id);
+
+                        // Use the first frame from the source branch as reference, or default dimensions
+                        let frameWidth = 1200;
+                        let frameHeight = 800;
+                        let baseX = 100;
+                        let baseY = 100;
+
+                        if (sourceBranch.frames && sourceBranch.frames.length > 0 && sourceBranch.frames[0]) {
+                            const sourceFrame = sourceBranch.frames[0];
+                            frameWidth = parseInt(sourceFrame.width) || frameWidth;
+                            frameHeight = parseInt(sourceFrame.height) || frameHeight;
+                            baseX = parseInt(sourceFrame.x) || baseX;
+                            baseY = parseInt(sourceFrame.y) || baseY;
+                        }
+
+                        // Create a proposed frame based on source frame dimensions
+                        const proposedFrame: Frame = {
+                            id: uuidv4(),
+                            branchId: newBranchId,
+                            canvasId: canvas.id,
+                            position: {
+                                x: baseX + frameWidth + 100, // Initial offset to the right
+                                y: baseY,
+                            },
+                            dimension: {
+                                width: frameWidth,
+                                height: frameHeight,
+                            },
+                            url: previewUrl,
+                        };
+
+                        // Calculate non-overlapping position
+                        const optimalPosition = calculateNonOverlappingPosition(proposedFrame, existingFrames);
+
+                        const newFrame = createDefaultFrame({
+                            canvasId: canvas.id,
+                            branchId: newBranchId,
+                            url: previewUrl,
+                            overrides: {
+                                x: optimalPosition.x.toString(),
+                                y: optimalPosition.y.toString(),
+                                width: frameWidth.toString(),
+                                height: frameHeight.toString(),
+                            },
                         });
 
-                        if (canvas) {
-                            // Get existing frames for smart positioning
-                            const existingFrames = await getExistingFrames(tx, canvas.id);
-
-                            // Create a proposed frame based on input position
-                            const proposedFrame: Frame = {
-                                id: uuidv4(),
-                                branchId: newBranchId,
-                                canvasId: canvas.id,
-                                position: {
-                                    x: input.framePosition.x + input.framePosition.width + 100, // Initial simple offset
-                                    y: input.framePosition.y,
-                                },
-                                dimension: {
-                                    width: input.framePosition.width,
-                                    height: input.framePosition.height,
-                                },
-                                url: previewUrl,
-                            };
-
-                            // Calculate non-overlapping position
-                            const optimalPosition = calculateNonOverlappingPosition(proposedFrame, existingFrames);
-
-                            const newFrame = createDefaultFrame({
-                                canvasId: canvas.id,
-                                branchId: newBranchId,
-                                url: previewUrl,
-                                overrides: {
-                                    x: optimalPosition.x.toString(),
-                                    y: optimalPosition.y.toString(),
-                                    width: input.framePosition.width.toString(),
-                                    height: input.framePosition.height.toString(),
-                                },
-                            });
-
-                            await tx.insert(frames).values(newFrame);
-                            createdFrames.push(fromDbFrame(newFrame));
-                        }
+                        await tx.insert(frames).values(newFrame);
+                        createdFrames.push(fromDbFrame(newFrame));
                     }
 
                     return {

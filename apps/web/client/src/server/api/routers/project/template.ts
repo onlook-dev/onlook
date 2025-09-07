@@ -8,6 +8,7 @@ import {
     createDefaultCanvas,
     createDefaultFrame,
     createDefaultUserCanvas,
+    DefaultFrameType,
     frames,
     projects,
     userCanvases,
@@ -150,24 +151,14 @@ function createDefaultFramesForDefaultBranch(
         canvasId,
         branchId: defaultBranchMap.newBranch.id,
         url: defaultBranchMap.newSandboxUrl,
-        overrides: {
-            x: '5',
-            y: '0',
-            width: '1536',
-            height: '960',
-        },
+        type: DefaultFrameType.DESKTOP,
     });
 
     const mobileFrame = createDefaultFrame({
         canvasId,
         branchId: defaultBranchMap.newBranch.id,
         url: defaultBranchMap.newSandboxUrl,
-        overrides: {
-            x: '1600',
-            y: '0',
-            width: '440',
-            height: '956',
-        },
+        type: DefaultFrameType.MOBILE,
     });
 
     return [desktopFrame, mobileFrame];

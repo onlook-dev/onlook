@@ -55,10 +55,7 @@ export const BranchManagement = observer(({ branch }: BranchManagementProps) => 
 
         try {
             setIsForking(true);
-            if (!isActiveBranch) {
-                await editorEngine.branches.switchToBranch(branch.id);
-            }
-            await editorEngine.branches.forkBranch();
+            await editorEngine.branches.forkBranch(branch.id);
             toast.success('Branch forked successfully');
             handleClose();
         } catch (error) {

@@ -1,9 +1,10 @@
 import { useEditorEngine } from "@/components/store/editor";
-import type { Branch, Frame } from "@onlook/models";
+import type { Frame } from "@onlook/models";
 import { Button } from "@onlook/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@onlook/ui/dropdown-menu";
 import { Icons } from "@onlook/ui/icons";
@@ -15,19 +16,17 @@ import { HoverOnlyTooltip } from "../../../editor-bar/hover-tooltip";
 
 interface BranchDisplayProps {
     frame: Frame;
-    activeBranch?: Branch;
     tooltipSide?: "top" | "bottom" | "left" | "right";
     buttonSize?: "sm" | "default" | "lg";
     buttonClassName?: string;
 }
 
-export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch, tooltipSide = "top", buttonSize = "sm", buttonClassName }: BranchDisplayProps) => {
+export const BranchDisplay = observer(({ frame, tooltipSide = "top", buttonSize = "sm", buttonClassName }: BranchDisplayProps) => {
     const editorEngine = useEditorEngine();
     const frameBranch = editorEngine.branches.getBranchById(frame.branchId);
-    const activeBranch = propActiveBranch || frameBranch;
     const [isOpen, setIsOpen] = useState(false);
 
-    if (!activeBranch) {
+    if (!frameBranch) {
         return null;
     }
 
@@ -45,13 +44,14 @@ export const BranchDisplay = observer(({ frame, activeBranch: propActiveBranch, 
                     >
                         <Icons.Commit />
                         <span className="max-w-24 truncate">
-                            {activeBranch.name}
+                            {frameBranch.name}
                         </span>
                     </Button>
                 </DropdownMenuTrigger>
             </HoverOnlyTooltip>
+            <DropdownMenuSeparator />
             <DropdownMenuContent align="start" className="w-[320px] p-0">
-                <BranchControls branch={activeBranch} onClose={() => setIsOpen(false)} />
+                <BranchControls branch={frameBranch} onClose={() => setIsOpen(false)} />
             </DropdownMenuContent>
         </DropdownMenu >
     );

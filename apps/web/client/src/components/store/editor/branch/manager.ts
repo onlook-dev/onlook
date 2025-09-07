@@ -135,34 +135,20 @@ export class BranchManager {
         return [];
     }
 
-    async forkBranch(branchName?: string): Promise<void> {
-        if (!this.currentBranchId) {
+    async forkBranch(branchId: string): Promise<void> {
+        if (!branchId) {
             throw new Error('No active branch to fork');
         }
 
+        const branch = this.getBranchById(branchId);
+        if (!branch) {
+            throw new Error('Branch not found');
+        }
+
         try {
-            toast.loading('Forking branch...');
-            // Get current active frame for positioning
-            const activeFrames = this.editorEngine.frames.selected;
-            const activeFrame = activeFrames.length > 0 ? activeFrames[0] : this.editorEngine.frames.getAll()[0];
-
-            let framePosition;
-            if (activeFrame) {
-                const frame = activeFrame.frame;
-                framePosition = {
-                    x: frame.position.x,
-                    y: frame.position.y,
-                    width: frame.dimension.width,
-                    height: frame.dimension.height,
-                };
-            }
-
+            toast.loading(`Forking branch "${branch.name}"...`);
             // Call the fork API
-            const result = await api.branch.fork.mutate({
-                sourceBranchId: this.currentBranchId,
-                branchName,
-                framePosition,
-            });
+            const result = await api.branch.fork.mutate({ branchId });
 
             // Add the new branch to the local branch map
             const errorManager = new ErrorManager(result.branch);
