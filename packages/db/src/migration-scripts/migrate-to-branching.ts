@@ -66,12 +66,22 @@ export async function migrateToBranching() {
             newBranches.push(defaultBranch);
         }
 
-        // Step 3: Insert all new branches in a transaction
+        // Step 3: Insert all new branches in batched transactions
         if (newBranches.length > 0) {
-            await db.transaction(async (tx) => {
-                console.log(`📥 Inserting ${newBranches.length} default branches...`);
-                await tx.insert(branches).values(newBranches);
-            });
+            console.log(`📥 Inserting ${newBranches.length} default branches...`);
+            
+            // Insert branches in batches to avoid parameter limits
+            const branchBatchSize = 500; // Conservative batch size for branch inserts
+            const branchChunks = chunkArray(newBranches, branchBatchSize);
+            
+            for (let i = 0; i < branchChunks.length; i++) {
+                const chunk = branchChunks[i];
+                console.log(`  └─ Inserting batch ${i + 1}/${branchChunks.length} (${chunk.length} branches)`);
+                
+                await db.transaction(async (tx) => {
+                    await tx.insert(branches).values(chunk);
+                });
+            }
 
             // Step 4: Update frames to reference default branches (in separate transactions)
             console.log('🔗 Updating frames to reference default branches...');
