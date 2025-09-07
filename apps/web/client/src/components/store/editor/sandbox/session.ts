@@ -165,6 +165,7 @@ export class SessionManager {
     async runCommand(
         command: string,
         streamCallback?: (output: string) => void,
+        ignoreError: boolean = false,
     ): Promise<{
         output: string;
         success: boolean;
@@ -174,8 +175,12 @@ export class SessionManager {
             if (!this.provider) {
                 throw new Error('No provider found in runCommand');
             }
-            streamCallback?.(command + '\n');
-            const { output } = await this.provider.runCommand({ args: { command } });
+            
+            // Append error suppression if ignoreError is true
+            const finalCommand = ignoreError ? `${command} 2>/dev/null || true` : command;
+            
+            streamCallback?.(finalCommand + '\n');
+            const { output } = await this.provider.runCommand({ args: { command: finalCommand } });
             streamCallback?.(output);
             return {
                 output,

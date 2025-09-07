@@ -6,24 +6,27 @@ import {
 import { z } from 'zod';
 
 // Utility functions for path resolution and fuzzy matching
-async function resolvePath(inputPath: string, sandbox: any): Promise<string | null> {
+async function resolvePath(inputPath: string, sandbox: any): Promise<{ path: string | null; wasFuzzy: boolean }> {
     // If already absolute path, try it first
     if (inputPath.startsWith('/')) {
         const result = await sandbox.session.runCommand(`test -e "${inputPath}" && echo "exists" || echo "not_found"`);
         if (result.success && result.output.trim() === 'exists') {
-            return inputPath;
+            return { path: inputPath, wasFuzzy: false };
         }
     } else {
         // Try relative to current directory first
         const result = await sandbox.session.runCommand(`test -e "${inputPath}" && realpath "${inputPath}" || echo "not_found"`);
         if (result.success && result.output.trim() !== 'not_found') {
-            return result.output.trim();
+            const resolvedPath = result.output.trim();
+            // Only consider it fuzzy if the resolved path is significantly different from input
+            const wasFuzzy = !resolvedPath.endsWith(inputPath) && !inputPath.includes('/');
+            return { path: resolvedPath, wasFuzzy };
         }
     }
     
     // Fuzzy path matching - try to find similar paths
     const fuzzyResult = await findFuzzyPath(inputPath, sandbox);
-    return fuzzyResult;
+    return { path: fuzzyResult, wasFuzzy: fuzzyResult !== null };
 }
 
 async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | null> {
@@ -80,11 +83,11 @@ async function resolveDirectoryPath(inputPath: string | undefined, sandbox: any)
     }
     
     const resolved = await resolvePath(inputPath, sandbox);
-    if (resolved) {
+    if (resolved.path) {
         // Verify it's a directory
-        const isDir = await sandbox.session.runCommand(`test -d "${resolved}" && echo "dir" || echo "not_dir"`);
+        const isDir = await sandbox.session.runCommand(`test -d "${resolved.path}" && echo "dir" || echo "not_dir"`);
         if (isDir.success && isDir.output.trim() === 'dir') {
-            return resolved;
+            return resolved.path;
         }
     }
     
@@ -131,9 +134,9 @@ export async function handleListFilesTool(
         }
         
         // Add formatting to get file info
-        findCommand += ' -printf "%p|%y|%s|%TY-%Tm-%Td %TH:%TM\\n" 2>/dev/null';
+        findCommand += ' -printf "%p|%y|%s|%TY-%Tm-%Td %TH:%TM\\n"';
         
-        const result = await sandbox.session.runCommand(findCommand);
+        const result = await sandbox.session.runCommand(findCommand, undefined, true);
         
         if (!result.success) {
             // Fallback to the original method if find command fails
@@ -197,7 +200,9 @@ export async function handleReadFileTool(args: z.infer<typeof READ_FILE_TOOL_PAR
         }
 
         // First try to resolve the path with fuzzy matching
-        let resolvedPath = await resolvePath(args.file_path, sandbox);
+        const resolved = await resolvePath(args.file_path, sandbox);
+        let resolvedPath = resolved.path;
+        const wasFuzzyMatch = resolved.wasFuzzy;
         
         if (!resolvedPath) {
             // If fuzzy matching fails, try the original path
@@ -242,10 +247,10 @@ export async function handleReadFileTool(args: z.infer<typeof READ_FILE_TOOL_PAR
         const lines = file.content.split('\n');
         const totalLines = lines.length;
 
-        // Helper function to add fuzzy matching warning
+        // Helper function to add fuzzy matching warning - only for actual fuzzy matches
         const addWarningIfNeeded = (content: string) => {
-            if (resolvedPath !== args.file_path) {
-                return `⚠️  Warning: Requested '${args.file_path}' but found '${resolvedPath}' via fuzzy matching.\n\n` + content;
+            if (wasFuzzyMatch) {
+                return `⚠️ Found: ${resolvedPath}\n\n` + content;
             }
             return content;
         };
@@ -258,7 +263,7 @@ export async function handleReadFileTool(args: z.infer<typeof READ_FILE_TOOL_PAR
             return {
                 content: addWarningIfNeeded(selectedLines.map((line: string, index: number) => `${start + index + 1}→${line}`).join('\n')),
                 lines: selectedLines.length,
-                resolved_path: resolvedPath !== args.file_path ? resolvedPath : undefined
+                resolved_path: wasFuzzyMatch ? resolvedPath : undefined
             };
         }
 
@@ -269,14 +274,14 @@ export async function handleReadFileTool(args: z.infer<typeof READ_FILE_TOOL_PAR
             return {
                 content: addWarningIfNeeded(selectedLines.map((line: string, index: number) => `${index + 1}→${line}`).join('\n') + `\n... (truncated, showing first ${maxLines} of ${totalLines} lines)`),
                 lines: maxLines,
-                resolved_path: resolvedPath !== args.file_path ? resolvedPath : undefined
+                resolved_path: wasFuzzyMatch ? resolvedPath : undefined
             };
         }
 
         return {
             content: addWarningIfNeeded(lines.map((line: string, index: number) => `${index + 1}→${line}`).join('\n')),
             lines: lines.length,
-            resolved_path: resolvedPath !== args.file_path ? resolvedPath : undefined
+            resolved_path: wasFuzzyMatch ? resolvedPath : undefined
         };
     } catch (error) {
         throw new Error(`Cannot read file ${args.file_path}: ${error instanceof Error ? error.message : String(error)}`);

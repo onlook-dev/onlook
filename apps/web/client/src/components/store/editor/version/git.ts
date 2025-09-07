@@ -240,9 +240,7 @@ export class GitManager {
      * Run a git command through the sandbox session
      */
     private runCommand(command: string, ignoreError: boolean = false): Promise<GitCommandResult> {
-        return this.editorEngine.activeSandbox.session.runCommand(
-            command + (ignoreError ? ' 2>/dev/null || true' : ''),
-        );
+        return this.editorEngine.activeSandbox.session.runCommand(command, undefined, ignoreError);
     }
 
     /**

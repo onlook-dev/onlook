@@ -7,6 +7,7 @@ import {
     FUZZY_EDIT_FILE_TOOL_NAME,
     type FUZZY_EDIT_FILE_TOOL_PARAMETERS,
     GLOB_TOOL_NAME,
+    GLOB_TOOL_PARAMETERS,
     GREP_TOOL_NAME,
     type GREP_TOOL_PARAMETERS,
     LIST_BRANCHES_TOOL_NAME,
@@ -171,6 +172,13 @@ export function ToolCallSimple({
                         return 'Writing todos ' + (params9?.todos.map((todo: { content: string; status: string; priority: string; }) => todo.content).join(', ') || '');
                     } else {
                         return 'Writing todos';
+                    }
+                case GLOB_TOOL_NAME:
+                    const params12 = toolInvocation.input as z.infer<typeof GLOB_TOOL_PARAMETERS>;
+                    if (params12?.pattern) {
+                        return 'Searching for ' + params12.pattern;
+                    } else {
+                        return 'Searching';
                     }
                 case EXIT_PLAN_MODE_TOOL_NAME:
                     return 'Exiting plan mode';

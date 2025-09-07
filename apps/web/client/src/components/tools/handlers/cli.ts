@@ -91,16 +91,16 @@ export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>,
         if (pattern.includes('**')) {
             // Recursive glob pattern
             const filePattern = pattern.split('**')[1]?.replace(/^\//, '') || '*';
-            command = `find "${searchPath}" -type f -name "${filePattern}" 2>/dev/null | sort -t/ -k1,1 -k2,2n | head -1000`;
+            command = `find "${searchPath}" -type f -name "${filePattern}" | sort -t/ -k1,1 -k2,2n | head -1000`;
         } else if (pattern.includes('*')) {
             // Simple glob pattern
-            command = `find "${searchPath}" -maxdepth 1 -type f -name "${pattern}" 2>/dev/null | sort | head -1000`;
+            command = `find "${searchPath}" -maxdepth 1 -type f -name "${pattern}" | sort | head -1000`;
         } else {
             // Exact filename
-            command = `find "${searchPath}" -type f -name "${pattern}" 2>/dev/null | head -1000`;
+            command = `find "${searchPath}" -type f -name "${pattern}" | head -1000`;
         }
 
-        const result = await sandbox.session.runCommand(command);
+        const result = await sandbox.session.runCommand(command, undefined, true);
 
         if (result.success && result.output.trim()) {
             const files = result.output.trim().split('\n')
@@ -109,8 +109,8 @@ export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>,
 
             // Sort by modification time (newest first) if we have multiple files
             if (files.length > 1) {
-                const statCommand = `stat -c "%Y %n" ${files.map(f => `"${f}"`).join(' ')} 2>/dev/null | sort -nr | cut -d' ' -f2-`;
-                const statResult = await sandbox.session.runCommand(statCommand);
+                const statCommand = `stat -c "%Y %n" ${files.map(f => `"${f}"`).join(' ')} | sort -nr | cut -d' ' -f2-`;
+                const statResult = await sandbox.session.runCommand(statCommand, undefined, true);
                 if (statResult.success && statResult.output.trim()) {
                     return statResult.output.trim().split('\n').filter(line => line.trim());
                 }
@@ -137,80 +137,97 @@ export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>,
         }
 
         const searchPath = args.path || '.';
-        let command = `rg "${args.pattern}"`;
-
-        // Add path at the end
-        command += ` "${searchPath}"`;
-
-        // Add flags
-        if (args['-i']) command += ' -i';
-        if (args['-n'] && args.output_mode === 'content') command += ' -n';
-        if (args['-A'] && args.output_mode === 'content') command += ` -A ${args['-A']}`;
-        if (args['-B'] && args.output_mode === 'content') command += ` -B ${args['-B']}`;
-        if (args['-C'] && args.output_mode === 'content') command += ` -C ${args['-C']}`;
-        if (args.multiline) command += ' -U --multiline-dotall';
-        if (args.glob) command += ` --glob "${args.glob}"`;
-        if (args.type) command += ` --type ${args.type}`;
-
-        // Set output mode
-        if (args.output_mode === 'files_with_matches') {
-            command += ' --files-with-matches';
-        } else if (args.output_mode === 'count') {
-            command += ' --count';
+        
+        // Build find command for file filtering with common exclusions
+        let findCommand = `find "${searchPath}" -type f`;
+        
+        // Exclude common directories that should be ignored
+        const excludeDirs = [
+            'node_modules',
+            '.next',
+            '.git',
+            'dist',
+            'build',
+            '.cache',
+            'coverage',
+            '.nyc_output',
+            'tmp',
+            'temp',
+            '.temp',
+            '.tmp',
+            'logs',
+            '*.log',
+            '.DS_Store',
+            'Thumbs.db'
+        ];
+        
+        for (const excludeDir of excludeDirs) {
+            findCommand += ` -not -path "*/${excludeDir}/*" -not -name "${excludeDir}"`;
+        }
+        
+        // Add file filtering based on glob or type
+        if (args.glob) {
+            findCommand += ` -name "${args.glob}"`;
+        } else if (args.type) {
+            // Convert common file types to extensions
+            const typeMap: Record<string, string> = {
+                'js': '*.js',
+                'ts': '*.ts',
+                'jsx': '*.jsx',
+                'tsx': '*.tsx',
+                'py': '*.py',
+                'java': '*.java',
+                'go': '*.go',
+                'rust': '*.rs',
+                'cpp': '*.cpp',
+                'c': '*.c',
+                'html': '*.html',
+                'css': '*.css',
+                'json': '*.json',
+                'xml': '*.xml',
+                'yaml': '*.yaml',
+                'yml': '*.yml'
+            };
+            const extension = typeMap[args.type] || `*.${args.type}`;
+            findCommand += ` -name "${extension}"`;
         }
 
-        // Apply head limit at the end
+        // Build grep flags
+        let grepFlags = '';
+        if (args['-i']) grepFlags += ' -i';
+        if (args['-n'] && args.output_mode === 'content') grepFlags += ' -n';
+        if (args['-A'] && args.output_mode === 'content') grepFlags += ` -A ${args['-A']}`;
+        if (args['-B'] && args.output_mode === 'content') grepFlags += ` -B ${args['-B']}`;
+        if (args['-C'] && args.output_mode === 'content') grepFlags += ` -C ${args['-C']}`;
+
+        // Set output mode flags
+        if (args.output_mode === 'files_with_matches') {
+            grepFlags += ' -l';
+        } else if (args.output_mode === 'count') {
+            grepFlags += ' -c';
+        }
+
+        // Handle multiline searching (limited support with traditional grep)
+        let command: string;
+        if (args.multiline) {
+            // Use perl-style regex with grep -P if available, otherwise fall back to awk
+            command = `${findCommand} -exec grep -P${grepFlags} -z "${args.pattern}" {} + || ${findCommand} -exec awk 'BEGIN{RS=""} /${args.pattern.replace(/'/g, "'\\''")}/ {print FILENAME ${args.output_mode === 'content' ? ': $0' : ''}}' {} +`;
+        } else {
+            // Standard grep with find - grep returns exit code 1 when no matches found
+            command = `${findCommand} -exec grep${grepFlags} "${args.pattern}" {} +`;
+        }
+
+        // Apply head limit
         if (args.head_limit) {
             command += ` | head -${args.head_limit}`;
         }
 
-        // Add null redirect for stderr to clean up output
-        command += ' 2>/dev/null';
+        const result = await sandbox.session.runCommand(command, undefined, true);
 
-        const result = await sandbox.session.runCommand(command);
-
-        if (result.success || result.output.trim()) {
-            const output = result.output.trim();
-            if (!output) {
-                return {
-                    matches: [],
-                    mode: args.output_mode,
-                    count: 0
-                };
-            }
-
-            const lines = output.split('\n').filter(line => line.trim());
-
-            // For count mode, return the actual counts with filenames
-            if (args.output_mode === 'count') {
-                return {
-                    matches: lines,
-                    mode: args.output_mode,
-                    total_matches: lines.reduce((sum, line) => {
-                        const match = line.match(/^(\d+):/);
-                        return sum + (match?.[1] ? parseInt(match[1], 10) : 0);
-                    }, 0)
-                };
-            }
-
-            return {
-                matches: lines,
-                mode: args.output_mode,
-                count: lines.length
-            };
-        }
-
-        return {
-            matches: [],
-            mode: args.output_mode,
-            error: result.error || 'No matches found'
-        };
+        // Return raw output without post-processing
+        return result.output || '';
     } catch (error) {
-        return {
-            matches: [],
-            mode: args.output_mode,
-            error: error instanceof Error ? error.message : String(error)
-        };
+        return `Error: ${error instanceof Error ? error.message : String(error)}`;
     }
 }
 
