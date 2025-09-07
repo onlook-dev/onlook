@@ -16,7 +16,7 @@ mock.module('@/trpc/client', () => ({
                 mutate: mock(async (params) => ({
                     branch: {
                         id: 'mock-branch',
-                        name: params?.branchName || 'New Fork',
+                        name: 'New Fork',
                         projectId: 'mock-project',
                         description: 'Mock forked branch',
                         createdAt: new Date(),
@@ -78,10 +78,10 @@ describe('BranchManager', () => {
         expect(typeof api.branch.update.mutate).toBe('function');
 
         // Test a simple mock call
-        const forkResult = await api.branch.fork.mutate({ sourceBranchId: 'test', branchName: 'test-branch' });
+        const forkResult = await api.branch.fork.mutate({ branchId: 'test' });
         expect(forkResult).toBeTruthy();
         expect(forkResult.branch).toBeTruthy();
-        expect(forkResult.branch.name).toBe('test-branch');
+        expect(forkResult.branch.name).toBe('New Fork');
 
         const updateResult = await api.branch.update.mutate({ id: 'test', name: 'updated' });
         expect(updateResult).toBe(true);
@@ -170,7 +170,7 @@ describe('BranchManager', () => {
             expect(initialBranchCount).toBe(1);
             expect(currentBranchId).toBe('initial-branch-id');
 
-            await branchManager.forkBranch('New Fork');
+            await branchManager.forkBranch('initial-branch-id');
 
             // Check that a new branch was added
             const finalBranchCount = branchManager.allBranches.length;
@@ -222,7 +222,7 @@ describe('BranchManager', () => {
         const startTime = Date.now();
 
         try {
-            await branchManager.forkBranch('Test Fork');
+            await branchManager.forkBranch('initial-branch-id');
             await branchManager.updateBranch('initial-branch-id', { name: 'Updated' });
         } catch (error) {
             // Even if there are other errors, they shouldn't be network timeout errors
