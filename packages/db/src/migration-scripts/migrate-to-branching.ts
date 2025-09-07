@@ -1,5 +1,5 @@
 import { config } from 'dotenv';
-import { eq, isNull } from 'drizzle-orm';
+import { eq, isNull, inArray } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../client';
 import { createDefaultBranch } from '../defaults/branch';
@@ -22,6 +22,15 @@ config({ path: '../../.env' });
 interface LegacyProject extends Project {
     sandboxId: string | null;
     sandboxUrl: string | null;
+}
+
+// Helper function to chunk array into smaller batches
+function chunkArray<T>(array: T[], chunkSize: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+        chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
 }
 
 export async function migrateToBranching() {
@@ -62,37 +71,45 @@ export async function migrateToBranching() {
             await db.transaction(async (tx) => {
                 console.log(`📥 Inserting ${newBranches.length} default branches...`);
                 await tx.insert(branches).values(newBranches);
+            });
 
-                // Step 4: Update frames to reference default branches
-                console.log('🔗 Updating frames to reference default branches...');
+            // Step 4: Update frames to reference default branches (in separate transactions)
+            console.log('🔗 Updating frames to reference default branches...');
 
-                for (const branch of newBranches) {
-                    // Get all frames for this project's canvas that don't have a branch reference
-                    const projectFrames = await tx
-                        .select({
-                            id: frames.id,
-                            canvasId: frames.canvasId
-                        })
-                        .from(frames)
-                        .innerJoin(canvases, eq(frames.canvasId, canvases.id))
-                        .where(
-                            eq(canvases.projectId, branch.projectId)
-                        );
+            for (const branch of newBranches) {
+                // Get all frames for this project's canvas that don't have a branch reference
+                const projectFrames = await db
+                    .select({
+                        id: frames.id,
+                        canvasId: frames.canvasId
+                    })
+                    .from(frames)
+                    .innerJoin(canvases, eq(frames.canvasId, canvases.id))
+                    .where(
+                        eq(canvases.projectId, branch.projectId)
+                    );
 
-                    if (projectFrames.length > 0) {
-                        const frameIds = projectFrames.map(f => f.id);
-                        console.log(`  └─ Updating ${frameIds.length} frames for project ${branch.projectId}`);
+                if (projectFrames.length > 0) {
+                    const frameIds = projectFrames.map(f => f.id);
+                    console.log(`  └─ Updating ${frameIds.length} frames for project ${branch.projectId}`);
 
-                        // Update frames to reference the default branch
-                        for (const frameId of frameIds) {
+                    // Process frames in batches to avoid parameter limits
+                    const batchSize = 1000;
+                    const frameIdChunks = chunkArray(frameIds, batchSize);
+
+                    for (let i = 0; i < frameIdChunks.length; i++) {
+                        const chunk = frameIdChunks[i];
+                        console.log(`    └─ Processing batch ${i + 1}/${frameIdChunks.length} (${chunk.length} frames)`);
+
+                        await db.transaction(async (tx) => {
                             await tx
                                 .update(frames)
                                 .set({ branchId: branch.id })
-                                .where(eq(frames.id, frameId));
-                        }
+                                .where(inArray(frames.id, chunk));
+                        });
                     }
                 }
-            });
+            }
         }
 
         // Step 5: Handle any remaining orphaned frames
@@ -111,38 +128,60 @@ export async function migrateToBranching() {
         if (orphanedFrames.length > 0) {
             console.log(`Found ${orphanedFrames.length} orphaned frames, fixing...`);
 
-            await db.transaction(async (tx) => {
-                for (const orphan of orphanedFrames) {
-                    // Find the default branch for this frame's project
-                    const defaultBranch = await tx
-                        .select({ id: branches.id })
-                        .from(branches)
-                        .where(
-                            eq(branches.projectId, orphan.projectId)
-                        )
-                        .limit(1);
-
-                    if (defaultBranch.length > 0 && !!defaultBranch[0]?.id) {
-                        await tx
-                            .update(frames)
-                            .set({ branchId: defaultBranch[0].id })
-                            .where(eq(frames.id, orphan.frameId));
-                    } else {
-                        // Create a default branch if none exists
-                        console.log(`  └─ Creating emergency branch for orphaned frame in project ${orphan.projectId}`);
-                        const emergencyBranch = createDefaultBranch({
-                            projectId: orphan.projectId,
-                            sandboxId: uuidv4(),
-                        });
-
-                        await tx.insert(branches).values(emergencyBranch);
-                        await tx
-                            .update(frames)
-                            .set({ branchId: emergencyBranch.id })
-                            .where(eq(frames.id, orphan.frameId));
-                    }
+            // Group orphaned frames by project to batch process them
+            const framesByProject = new Map<string, { frameId: string; canvasId: string; projectId: string }[]>();
+            
+            for (const orphan of orphanedFrames) {
+                if (!framesByProject.has(orphan.projectId)) {
+                    framesByProject.set(orphan.projectId, []);
                 }
-            });
+                framesByProject.get(orphan.projectId)!.push(orphan);
+            }
+
+            for (const [projectId, projectOrphans] of framesByProject) {
+                // Find the default branch for this project
+                const defaultBranch = await db
+                    .select({ id: branches.id })
+                    .from(branches)
+                    .where(eq(branches.projectId, projectId))
+                    .limit(1);
+
+                let branchId: string;
+
+                if (defaultBranch.length > 0 && !!defaultBranch[0]?.id) {
+                    branchId = defaultBranch[0].id;
+                } else {
+                    // Create a default branch if none exists
+                    console.log(`  └─ Creating emergency branch for orphaned frames in project ${projectId}`);
+                    const emergencyBranch = createDefaultBranch({
+                        projectId: projectId,
+                        sandboxId: uuidv4(),
+                    });
+
+                    await db.transaction(async (tx) => {
+                        await tx.insert(branches).values(emergencyBranch);
+                    });
+                    
+                    branchId = emergencyBranch.id;
+                }
+
+                // Update orphaned frames for this project in batches
+                const frameIds = projectOrphans.map(o => o.frameId);
+                const batchSize = 1000;
+                const frameIdChunks = chunkArray(frameIds, batchSize);
+
+                for (let i = 0; i < frameIdChunks.length; i++) {
+                    const chunk = frameIdChunks[i];
+                    console.log(`  └─ Fixing batch ${i + 1}/${frameIdChunks.length} (${chunk.length} orphaned frames) for project ${projectId}`);
+
+                    await db.transaction(async (tx) => {
+                        await tx
+                            .update(frames)
+                            .set({ branchId })
+                            .where(inArray(frames.id, chunk));
+                    });
+                }
+            }
         }
 
         // Step 6: Verification
