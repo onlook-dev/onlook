@@ -35,6 +35,24 @@ import { z } from 'zod';
 import { projectCreateRequestRouter } from './createRequest';
 import { forkTemplate } from './template';
 
+function extractCsbPort(frames: any[]): number | null {
+    if (!frames || frames.length === 0) return null;
+    
+    for (const frame of frames) {
+        if (frame.url) {
+            // Match CSB preview URL pattern: https://sandboxId-port.csb.app
+            const match = frame.url.match(/https:\/\/[^-]+-(\d+)\.csb\.app/);
+            if (match && match[1]) {
+                const port = parseInt(match[1], 10);
+                if (!isNaN(port)) {
+                    return port;
+                }
+            }
+        }
+    }
+    return null;
+}
+
 export const projectRouter = createTRPCRouter({
     hasAccess: protectedProcedure
         .input(z.object({ projectId: z.string() }))
@@ -60,7 +78,10 @@ export const projectRouter = createTRPCRouter({
                 }
 
                 const branch = await ctx.db.query.branches.findFirst({
-                    where: eq(branches.projectId, input.projectId),
+                    where: and(eq(branches.projectId, input.projectId), eq(branches.isDefault, true)),
+                    with: {
+                        frames: true,
+                    },
                 });
 
                 if (!branch) {
@@ -68,11 +89,12 @@ export const projectRouter = createTRPCRouter({
                 }
 
                 if (!branch.sandboxId) {
-                    throw new Error('No sandbox URL found');
+                    throw new Error('No sandbox found for branch');
                 }
 
-                // TODO: Adopt port better
-                const url = getSandboxPreviewUrl(branch.sandboxId, 3000);
+                // Extract port from existing frame URL or fall back to 3000
+                const port = extractCsbPort(branch.frames) ?? 3000;
+                const url = getSandboxPreviewUrl(branch.sandboxId, port);
                 const app = new FirecrawlApp({ apiKey: env.FIRECRAWL_API_KEY });
 
                 // Optional: Add actions to click the button for CSB free tier

@@ -9,6 +9,24 @@ import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
+function extractCsbPort(frames: any[]): number | null {
+    if (!frames || frames.length === 0) return null;
+
+    for (const frame of frames) {
+        if (frame.url) {
+            // Match CSB preview URL pattern: https://sandboxId-port.csb.app
+            const match = frame.url.match(/https:\/\/[^-]+-(\d+)\.csb\.app/);
+            if (match && match[1]) {
+                const port = parseInt(match[1], 10);
+                if (!isNaN(port)) {
+                    return port;
+                }
+            }
+        }
+    }
+    return null;
+}
+
 // Helper function to get existing frames in a canvas
 async function getExistingFrames(tx: any, canvasId: string): Promise<Frame[]> {
     const dbFrames = await tx.query.frames.findMany({
@@ -96,61 +114,66 @@ export const branchRouter = createTRPCRouter({
         )
         .mutation(async ({ ctx, input }) => {
             try {
+                // Get source branch with its frames to extract port
+                const sourceBranch = await ctx.db.query.branches.findFirst({
+                    where: eq(branches.id, input.sourceBranchId),
+                    with: {
+                        frames: true,
+                    },
+                });
+
+                if (!sourceBranch) {
+                    throw new TRPCError({
+                        code: 'NOT_FOUND',
+                        message: 'Source branch not found',
+                    });
+                }
+
+                // Get existing branch names for unique name generation
+                const existingBranches = await ctx.db.query.branches.findMany({
+                    where: eq(branches.projectId, sourceBranch.projectId),
+                });
+                const existingNames = existingBranches.map(branch => branch.name);
+
+                // Generate unique branch name if not provided
+                let branchName: string;
+                if (input.branchName) {
+                    branchName = input.branchName;
+                } else {
+                    branchName = generateUniqueBranchName(sourceBranch.name, existingNames);
+                }
+
+                // Fork the sandbox using code provider
+                const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
+                const forkedSandbox = await CodesandboxProvider.createProject({
+                    source: 'template',
+                    id: sourceBranch.sandboxId,
+                    title: branchName,
+                    tags: ['fork'],
+                });
+
+                const sandboxId = forkedSandbox.id;
+                // Extract port from source branch frames or fall back to 3000
+                const port = extractCsbPort(sourceBranch.frames) ?? 3000;
+                const previewUrl = getSandboxPreviewUrl(sandboxId, port);
+
+                // Create new branch
+                const newBranchId = uuidv4();
+                const newBranch = {
+                    id: newBranchId,
+                    name: branchName,
+                    description: null,
+                    projectId: sourceBranch.projectId,
+                    sandboxId,
+                    isDefault: false,
+                    gitBranch: null,
+                    gitCommitSha: null,
+                    gitRepoUrl: null,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                };
+
                 return await ctx.db.transaction(async (tx) => {
-                    // Get source branch
-                    const sourceBranch = await tx.query.branches.findFirst({
-                        where: eq(branches.id, input.sourceBranchId),
-                    });
-
-                    if (!sourceBranch) {
-                        throw new TRPCError({
-                            code: 'NOT_FOUND',
-                            message: 'Source branch not found',
-                        });
-                    }
-
-                    // Get existing branch names for unique name generation
-                    const existingBranches = await tx.query.branches.findMany({
-                        where: eq(branches.projectId, sourceBranch.projectId),
-                    });
-                    const existingNames = existingBranches.map(branch => branch.name);
-
-                    // Generate unique branch name if not provided
-                    let branchName: string;
-                    if (input.branchName) {
-                        branchName = input.branchName;
-                    } else {
-                        branchName = generateUniqueBranchName(sourceBranch.name, existingNames);
-                    }
-
-                    // Fork the sandbox using code provider
-                    const CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox);
-                    const forkedSandbox = await CodesandboxProvider.createProject({
-                        source: 'template',
-                        id: sourceBranch.sandboxId,
-                        title: branchName,
-                        tags: ['fork'],
-                    });
-
-                    const sandboxId = forkedSandbox.id;
-                    const previewUrl = getSandboxPreviewUrl(sandboxId, 3000);
-
-                    // Create new branch
-                    const newBranchId = uuidv4();
-                    const newBranch = {
-                        id: newBranchId,
-                        name: branchName,
-                        description: null,
-                        projectId: sourceBranch.projectId,
-                        sandboxId,
-                        isDefault: false,
-                        gitBranch: null,
-                        gitCommitSha: null,
-                        gitRepoUrl: null,
-                        createdAt: new Date(),
-                        updatedAt: new Date(),
-                    };
-
                     await tx.insert(branches).values(newBranch);
 
                     // Create new frame in the same canvas if position is provided
@@ -232,9 +255,12 @@ export const branchRouter = createTRPCRouter({
         .mutation(async ({ ctx, input }) => {
             try {
                 return await ctx.db.transaction(async (tx) => {
-                    // Get existing branch names for unique name generation
+                    // Get existing branches with frames for unique name generation and port extraction
                     const existingBranches = await tx.query.branches.findMany({
                         where: eq(branches.projectId, input.projectId),
+                        with: {
+                            frames: true,
+                        },
                     });
                     const existingNames = existingBranches.map(branch => branch.name);
 
@@ -257,7 +283,10 @@ export const branchRouter = createTRPCRouter({
                     });
 
                     const sandboxId = blankSandbox.id;
-                    const previewUrl = getSandboxPreviewUrl(sandboxId, 3000);
+                    // Extract port from existing project frames or fall back to 3000
+                    const allFrames = existingBranches.flatMap(branch => branch.frames || []);
+                    const port = extractCsbPort(allFrames) ?? 3000;
+                    const previewUrl = getSandboxPreviewUrl(sandboxId, port);
 
                     // Create new branch
                     const newBranchId = uuidv4();
