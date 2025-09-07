@@ -50,6 +50,7 @@ export function TemplateModal({
     user,
 }: TemplateModalProps) {
     const { mutateAsync: forkTemplate } = api.project.forkTemplate.useMutation();
+    const { data: branches } = api.branch.getByProjectId.useQuery({ projectId: templateProject.id, onlyDefault: true });
     const { setIsAuthModalOpen } = useAuthContext();
     const [isCreatingProject, setIsCreatingProject] = useState(false);
     const router = useRouter();
@@ -96,14 +97,14 @@ export function TemplateModal({
     };
 
     const handlePreviewTemplate = () => {
-        const sandboxId = templateProject.sandbox.id;
-        if (sandboxId) {
-            const sandboxUrl = getSandboxPreviewUrl(sandboxId, 3000);
-            window.open(sandboxUrl, '_blank');
-        } else {
-            console.error('No sandbox ID found:', sandboxId);
+        if (!branches || branches.length === 0 || !branches[0]?.sandbox.id) {
+            toast.error('No branches found for this template');
+            return;
         }
-    };
+
+        const sandboxUrl = getSandboxPreviewUrl(branches[0].sandbox.id, 3000);
+        window.open(sandboxUrl, '_blank');
+    }
 
     const handleEditTemplate = () => {
         router.push(`${Routes.PROJECT}/${templateProject.id}`);

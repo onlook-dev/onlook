@@ -32,6 +32,7 @@ import {
     ClipboardCopyIcon,
     ClipboardIcon,
     CodeIcon,
+    CommitIcon,
     ComponentInstanceIcon,
     CopyIcon,
     CornerTopLeftIcon,
@@ -1552,6 +1553,7 @@ export const Icons = {
     CursorArrow: CursorArrowIcon,
     Circle: CircleIcon,
     CreditCard: CreditCardIcon,
+    Commit: CommitIcon,
 
     Desktop: DesktopIcon,
     DotsVertical: DotsVerticalIcon,

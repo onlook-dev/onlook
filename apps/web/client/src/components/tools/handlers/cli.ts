@@ -4,9 +4,8 @@ import {
     ALLOWED_BASH_READ_COMMANDS,
     BASH_EDIT_TOOL_PARAMETERS,
     BASH_READ_TOOL_PARAMETERS,
-    GLOB_TOOL_PARAMETERS,
-    GREP_TOOL_PARAMETERS,
-    TERMINAL_COMMAND_TOOL_PARAMETERS
+    TERMINAL_COMMAND_TOOL_PARAMETERS,
+    TYPECHECK_TOOL_PARAMETERS
 } from '@onlook/ai';
 import { z } from 'zod';
 
@@ -18,7 +17,15 @@ export async function handleTerminalCommandTool(
     success: boolean;
     error: string | null;
 }> {
-    return await editorEngine.sandbox.session.runCommand(args.command);
+    const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+    if (!sandbox) {
+        return {
+            output: '',
+            success: false,
+            error: `Sandbox not found for branch ID: ${args.branchId}`
+        };
+    }
+    return await sandbox.session.runCommand(args.command);
 }
 
 export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<{
@@ -27,6 +34,15 @@ export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PAR
     error: string | null;
 }> {
     try {
+        const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+        if (!sandbox) {
+            return {
+                output: '',
+                success: false,
+                error: `Sandbox not found for branch ID: ${args.branchId}`
+            };
+        }
+
         // Use allowed commands from parameter or default to all enum values
         const readOnlyCommands = args.allowed_commands || ALLOWED_BASH_READ_COMMANDS.options;
         const commandParts = args.command.trim().split(/\s+/);
@@ -40,7 +56,7 @@ export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PAR
             };
         }
 
-        const result = await editorEngine.sandbox.session.runCommand(args.command);
+        const result = await sandbox.session.runCommand(args.command);
         return {
             output: result.output,
             success: result.success,
@@ -55,70 +71,21 @@ export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PAR
     }
 }
 
-export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string[]> {
-    try {
-        const searchPath = args.path || '.';
-        const command = `find ${searchPath} -name "${args.pattern}" 2>/dev/null | head -100`;
-        const result = await editorEngine.sandbox.session.runCommand(command);
-
-        if (result.success && result.output.trim()) {
-            return result.output.trim().split('\n').filter(line => line.trim());
-        }
-        return [];
-    } catch (error) {
-        console.error('Glob search failed:', error);
-        return [];
-    }
-}
-
-export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<any> {
-    try {
-        const searchPath = args.path || '.';
-        let command = `rg "${args.pattern}" ${searchPath}`;
-
-        if (args.case_insensitive) command += ' -i';
-        if (args.show_line_numbers) command += ' -n';
-        if (args.context_after) command += ` -A ${args.context_after}`;
-        if (args.context_before) command += ` -B ${args.context_before}`;
-        if (args.context_around) command += ` -C ${args.context_around}`;
-        if (args.glob) command += ` -g "${args.glob}"`;
-        if (args.type) command += ` -t ${args.type}`;
-        if (args.head_limit) command += ` | head -${args.head_limit}`;
-
-        if (args.output_mode === 'files_with_matches') command += ' -l';
-        else if (args.output_mode === 'count') command += ' -c';
-
-        const result = await editorEngine.sandbox.session.runCommand(command);
-
-        if (result.success) {
-            const lines = result.output.trim().split('\n').filter(line => line.trim());
-            return {
-                matches: lines,
-                mode: args.output_mode,
-                count: lines.length
-            };
-        }
-
-        return {
-            matches: [],
-            mode: args.output_mode,
-            error: result.error
-        };
-    } catch (error) {
-        return {
-            matches: [],
-            mode: args.output_mode,
-            error: error instanceof Error ? error.message : String(error)
-        };
-    }
-}
-
 export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<{
     output: string;
     success: boolean;
     error: string | null;
 }> {
     try {
+        const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+        if (!sandbox) {
+            return {
+                output: '',
+                success: false,
+                error: `Sandbox not found for branch ID: ${args.branchId}`
+            };
+        }
+
         // Use allowed commands from parameter or default to all enum values
         const editCommands = args.allowed_commands || ALLOWED_BASH_EDIT_COMMANDS.options;
         const commandParts = args.command.trim().split(/\s+/);
@@ -133,7 +100,7 @@ export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PAR
             };
         }
 
-        const result = await editorEngine.sandbox.session.runCommand(args.command);
+        const result = await sandbox.session.runCommand(args.command);
         return {
             output: result.output,
             success: result.success,
@@ -149,15 +116,23 @@ export async function handleBashEditTool(args: z.infer<typeof BASH_EDIT_TOOL_PAR
 }
 
 export async function handleTypecheckTool(
-    args: Record<string, never>,
+    args: z.infer<typeof TYPECHECK_TOOL_PARAMETERS>,
     editorEngine: EditorEngine,
 ): Promise<{
     success: boolean;
     error?: string;
 }> {
     try {
+        const sandbox = editorEngine.branches.getSandboxById(args.branchId);
+        if (!sandbox) {
+            return {
+                success: false,
+                error: `Sandbox not found for branch ID: ${args.branchId}`
+            };
+        }
+
         // Run Next.js typecheck command
-        const result = await editorEngine.sandbox.session.runCommand('bunx tsc --noEmit');
+        const result = await sandbox.session.runCommand('bunx tsc --noEmit');
 
         if (result.success) {
             return {

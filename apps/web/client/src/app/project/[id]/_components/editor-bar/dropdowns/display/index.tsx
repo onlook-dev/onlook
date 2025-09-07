@@ -8,11 +8,12 @@ import { useEffect, useState } from 'react';
 import { useDropdownControl } from '../../hooks/use-dropdown-manager';
 import { HoverOnlyTooltip } from '../../hover-tooltip';
 import { ToolbarButton } from '../../toolbar-button';
-import { HorizontalAlignInput, VerticalAlignInput } from './align';
+import { VerticalAlignInput } from './vertical-align';
 import { DirectionInput } from './direction';
 import { GapInput } from './gap';
 import { TypeInput } from './type';
 import { observer } from 'mobx-react-lite';
+import { HorizontalAlignInput } from './horizontal-align';
 
 export interface CssValue {
     value: string;

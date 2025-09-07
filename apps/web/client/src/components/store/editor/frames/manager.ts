@@ -1,31 +1,19 @@
-import type { WebFrameView } from '@/app/project/[id]/_components/canvas/frame/web-frame.tsx';
+import type { IFrameView } from '@/app/project/[id]/_components/canvas/frame/view';
 import { api } from '@/trpc/client';
-import { fromFrame, fromPartialFrame } from '@onlook/db';
-import { FrameType, type Frame, type WebFrame } from '@onlook/models';
+import { toDbFrame, toDbPartialFrame } from '@onlook/db';
+import { type Frame } from '@onlook/models';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { v4 as uuid } from 'uuid';
 import type { EditorEngine } from '../engine';
+import { roundDimensions } from './dimension';
 import { FrameNavigationManager } from './navigation';
+import { calculateNonOverlappingPosition } from '@onlook/utility';
 
 export interface FrameData {
     frame: Frame;
-    view: WebFrameView | null;
+    view: IFrameView | null;
     selected: boolean;
-}
-
-function roundDimensions(frame: WebFrame): WebFrame {
-    return {
-        ...frame,
-        position: {
-            x: Math.round(frame.position.x),
-            y: Math.round(frame.position.y),
-        },
-        dimension: {
-            width: Math.round(frame.dimension.width),
-            height: Math.round(frame.dimension.height),
-        },
-    };
 }
 
 export class FramesManager {
@@ -63,11 +51,11 @@ export class FramesManager {
         return Array.from(this._frameIdToData.values());
     }
 
-    get(id: string): FrameData | undefined {
-        return this._frameIdToData.get(id);
+    get(id: string): FrameData | null {
+        return this._frameIdToData.get(id) ?? null;
     }
 
-    registerView(frame: Frame, view: WebFrameView) {
+    registerView(frame: Frame, view: IFrameView) {
         const isSelected = this.isSelected(frame.id);
         this._frameIdToData.set(frame.id, { frame, view, selected: isSelected });
         const framePathname = new URL(view.src).pathname;
@@ -189,11 +177,6 @@ export class FramesManager {
     }
 
     async delete(id: string) {
-        if (!this.canDelete()) {
-            console.error('Cannot delete the last frame');
-            return;
-        }
-
         const frameData = this.get(id);
         if (!frameData?.view) {
             console.error('Frame not found for delete', id);
@@ -211,8 +194,10 @@ export class FramesManager {
         }
     }
 
-    async create(frame: WebFrame) {
-        const success = await api.frame.create.mutate(fromFrame(roundDimensions(frame)));
+    async create(frame: Frame) {
+        const success = await api.frame.create.mutate(
+            toDbFrame(roundDimensions(frame)),
+        );
 
         if (success) {
             this._frameIdToData.set(frame.id, { frame, view: null, selected: false });
@@ -228,14 +213,10 @@ export class FramesManager {
             return;
         }
 
-        // Force to webframe for now, later we can support other frame types
-        if (frameData.frame.type !== FrameType.WEB) {
-            console.error('No handler for this frame type', frameData.frame.type);
-            return;
-        }
+        const frame = frameData.frame;
+        const allFrames = this.getAll().map(frameData => frameData.frame);
 
-        const frame = frameData.frame as WebFrame;
-        const newFrame: WebFrame = {
+        const proposedFrame: Frame = {
             ...frame,
             id: uuid(),
             position: {
@@ -244,10 +225,16 @@ export class FramesManager {
             },
         };
 
+        const newPosition = calculateNonOverlappingPosition(proposedFrame, allFrames);
+        const newFrame: Frame = {
+            ...proposedFrame,
+            position: newPosition,
+        };
+
         await this.create(newFrame);
     }
 
-    async updateAndSaveToStorage(frameId: string, frame: Partial<WebFrame>) {
+    async updateAndSaveToStorage(frameId: string, frame: Partial<Frame>) {
         const existingFrame = this.get(frameId);
         if (existingFrame) {
             const newFrame = { ...existingFrame.frame, ...frame };
@@ -262,12 +249,12 @@ export class FramesManager {
 
     saveToStorage = debounce(this.undebouncedSaveToStorage.bind(this), 1000);
 
-    async undebouncedSaveToStorage(frameId: string, frame: Partial<WebFrame>) {
+    async undebouncedSaveToStorage(frameId: string, frame: Partial<Frame>) {
         try {
-            const frameToUpdate = fromPartialFrame(frame);
+            const frameToUpdate = toDbPartialFrame(frame);
             const success = await api.frame.update.mutate({
-                frameId,
-                frame: frameToUpdate,
+                ...frameToUpdate,
+                id: frameId,
             });
 
             if (!success) {
@@ -279,11 +266,31 @@ export class FramesManager {
     }
 
     canDelete() {
+        const selectedFrames = this.selected;
+
+        if (selectedFrames.length > 0) {
+            // Check if any selected frame is the last frame in its branch
+            for (const selectedFrame of selectedFrames) {
+                const branchId = selectedFrame.frame.branchId;
+                const framesInBranch = this.getAll().filter(frameData => frameData.frame.branchId === branchId);
+                if (framesInBranch.length <= 1) {
+                    return false; // Cannot delete if this is the last frame in the branch
+                }
+            }
+            return true;
+        }
+
+        // Fallback to checking total frames if none are selected
         return this.getAll().length > 1;
     }
 
     canDuplicate() {
         return this.selected.length > 0;
+    }
+
+    calculateNonOverlappingPosition(proposedFrame: Frame): { x: number; y: number } {
+        const allFrames = this.getAll().map(frameData => frameData.frame);
+        return calculateNonOverlappingPosition(proposedFrame, allFrames);
     }
 
     async duplicateSelected() {

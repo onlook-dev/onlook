@@ -4,4 +4,5 @@ export interface Canvas {
     id: string;
     scale: number;
     position: RectPosition;
+    userId: string;
 }

@@ -138,11 +138,8 @@ export const ProjectCreationProvider = ({
                         userId: user.id,
                         initClient: true,
                         keepActiveWhileConnected: false,
-                        getSession: async (sandboxId, userId) => {
-                            return startSandbox({
-                                sandboxId,
-                                userId,
-                            });
+                        getSession: async (sandboxId) => {
+                            return startSandbox({ sandboxId });
                         },
                     },
                 },
@@ -155,10 +152,10 @@ export const ProjectCreationProvider = ({
             const project = await createProject({
                 project: {
                     name: projectData.name ?? 'New project',
-                    sandboxId: forkedSandbox.sandboxId,
-                    sandboxUrl: forkedSandbox.previewUrl,
                     description: 'Your new project',
                 },
+                sandboxId: forkedSandbox.sandboxId,
+                sandboxUrl: forkedSandbox.previewUrl,
                 userId: user.id,
             });
             if (!project) {

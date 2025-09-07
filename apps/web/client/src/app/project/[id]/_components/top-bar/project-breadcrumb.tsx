@@ -51,7 +51,13 @@ export const ProjectBreadcrumb = observer(() => {
     }
 
     async function handleDownloadCode() {
-        if (!project?.sandbox?.id) {
+        if (!project) {
+            console.error('No project found');
+            return;
+        }
+
+        const sandboxId = editorEngine.branches.activeBranch.sandbox.id
+        if (!sandboxId) {
             console.error('No sandbox ID found');
             return;
         }
@@ -59,7 +65,7 @@ export const ProjectBreadcrumb = observer(() => {
         try {
             setIsDownloading(true);
 
-            const result = await editorEngine.sandbox.downloadFiles(project.name);
+            const result = await editorEngine.activeSandbox.downloadFiles(project.name);
 
             if (result) {
                 window.open(result.downloadUrl, '_blank');
@@ -93,7 +99,7 @@ export const ProjectBreadcrumb = observer(() => {
             <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                 <DropdownMenuTrigger asChild>
                     <Button
-                        variant={'ghost'}
+                        variant='ghost'
                         className="mx-0 px-0 gap-2 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent cursor-pointer group"
                     >
                         <Icons.OnlookLogo

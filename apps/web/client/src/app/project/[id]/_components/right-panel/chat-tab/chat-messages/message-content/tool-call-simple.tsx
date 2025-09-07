@@ -6,8 +6,11 @@ import {
     EXIT_PLAN_MODE_TOOL_NAME,
     FUZZY_EDIT_FILE_TOOL_NAME,
     type FUZZY_EDIT_FILE_TOOL_PARAMETERS,
+    GLOB_TOOL_NAME,
+    GLOB_TOOL_PARAMETERS,
     GREP_TOOL_NAME,
     type GREP_TOOL_PARAMETERS,
+    LIST_BRANCHES_TOOL_NAME,
     LIST_FILES_TOOL_NAME,
     type LIST_FILES_TOOL_PARAMETERS,
     ONLOOK_INSTRUCTIONS_TOOL_NAME,
@@ -55,7 +58,13 @@ const TOOL_ICONS: Record<string, any> = {
     [EXIT_PLAN_MODE_TOOL_NAME]: Icons.ListBullet,
     [BASH_READ_TOOL_NAME]: Icons.EyeOpen,
     [TYPECHECK_TOOL_NAME]: Icons.MagnifyingGlass,
+    [LIST_BRANCHES_TOOL_NAME]: Icons.Commit,
+    [GLOB_TOOL_NAME]: Icons.MagnifyingGlass,
 } as const;
+
+function truncateString(str: string, maxLength: number = 30) {
+    return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
+}
 
 export function ToolCallSimple({
     toolInvocation,
@@ -74,6 +83,8 @@ export function ToolCallSimple({
             switch (toolName) {
                 case TERMINAL_COMMAND_TOOL_NAME:
                     return 'Terminal';
+                case LIST_BRANCHES_TOOL_NAME:
+                    return 'Listing branches';
                 case SEARCH_REPLACE_EDIT_FILE_TOOL_NAME:
                     const params = toolInvocation.input as z.infer<typeof SEARCH_REPLACE_EDIT_FILE_TOOL_PARAMETERS>;
                     if (params?.file_path) {
@@ -127,7 +138,7 @@ export function ToolCallSimple({
                     if (toolInvocation.input && typeof toolInvocation.input === 'object' && 'query' in toolInvocation.input) {
                         const params10 = toolInvocation.input as z.infer<typeof WEB_SEARCH_TOOL_PARAMETERS>;
                         const query = params10.query;
-                        return "Searching \"" + (query.length > 30 ? query.substring(0, 30) + "..." : query) + "\"";
+                        return "Searching \"" + truncateString(query) + "\"";
                     } else {
                         return 'Searching web';
                     }
@@ -141,7 +152,7 @@ export function ToolCallSimple({
                     if (toolInvocation.input && typeof toolInvocation.input === 'object' && 'pattern' in toolInvocation.input) {
                         const params11 = toolInvocation.input as z.infer<typeof GREP_TOOL_PARAMETERS>;
                         const pattern = params11.pattern;
-                        return 'Searching for ' + pattern;
+                        return 'Searching for ' + truncateString(pattern);
                     } else {
                         return 'Searching';
                     }
@@ -165,6 +176,13 @@ export function ToolCallSimple({
                         return 'Writing todos ' + (params9?.todos.map((todo: { content: string; status: string; priority: string; }) => todo.content).join(', ') || '');
                     } else {
                         return 'Writing todos';
+                    }
+                case GLOB_TOOL_NAME:
+                    const params12 = toolInvocation.input as z.infer<typeof GLOB_TOOL_PARAMETERS>;
+                    if (params12?.pattern) {
+                        return 'Searching for ' + truncateString(params12.pattern);
+                    } else {
+                        return 'Searching';
                     }
                 case EXIT_PLAN_MODE_TOOL_NAME:
                     return 'Exiting plan mode';
