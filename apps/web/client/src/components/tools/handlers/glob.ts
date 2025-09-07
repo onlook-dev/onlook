@@ -220,6 +220,15 @@ async function validateInputs(pattern: string, searchPath: string, sandbox: any)
         return `Error: Search path "${searchPath}" is not a directory`;
     }
     
+    // Validate pattern base directory exists (for patterns like "nonexistent/**/*")
+    const patternBasePath = extractPatternBasePath(pattern, searchPath);
+    if (patternBasePath && patternBasePath !== searchPath) {
+        const basePathValidation = await sandbox.session.runCommand(`test -d "${patternBasePath}" && echo "exists" || echo "not_found"`, undefined, true);
+        if (basePathValidation.success && basePathValidation.output.trim() === 'not_found') {
+            return `Error: Pattern base path "${patternBasePath}" does not exist`;
+        }
+    }
+    
     return null; // All validations passed
 }
 
@@ -262,6 +271,42 @@ async function processAndFormatResults(output: string, pattern: string, searchPa
     }
     
     return result;
+}
+
+function extractPatternBasePath(pattern: string, searchPath: string): string | null {
+    // Extract the base directory from patterns like "doesnotexist/**/*" or "src/nonexistent/*"
+    
+    // Find the first wildcard or brace
+    const wildcardIndex = pattern.search(/[\*\?\[\{]/);
+    if (wildcardIndex === -1) {
+        // No wildcards, the pattern itself is the path
+        return searchPath === '.' ? pattern : `${searchPath}/${pattern}`.replace(/\/+/g, '/');
+    }
+    
+    // Get the part before the wildcard
+    const beforeWildcard = pattern.substring(0, wildcardIndex);
+    
+    // Find the last directory separator before the wildcard
+    const lastSlash = beforeWildcard.lastIndexOf('/');
+    if (lastSlash === -1) {
+        // No slash before wildcard, pattern starts with wildcard
+        return null;
+    }
+    
+    // Extract the base path
+    const basePath = beforeWildcard.substring(0, lastSlash);
+    
+    if (!basePath) {
+        // Empty base path after removing last segment
+        return null;
+    }
+    
+    // Combine with search path if relative
+    if (searchPath === '.') {
+        return basePath;
+    } else {
+        return `${searchPath}/${basePath}`.replace(/\/+/g, '/');
+    }
 }
 
 function cleanAndFilterOutput(output: string): string {
