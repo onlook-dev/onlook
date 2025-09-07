@@ -73,25 +73,44 @@ export async function handleBashReadTool(args: z.infer<typeof BASH_READ_TOOL_PAR
     }
 }
 
-export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string[]> {
+export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>, editorEngine: EditorEngine): Promise<string> {
     try {
         const sandbox = editorEngine.branches.getSandboxById(args.branchId);
         if (!sandbox) {
-            console.error(`Sandbox not found for branch ID: ${args.branchId}`);
-            return [];
+            return `Error: Sandbox not found for branch ID: ${args.branchId}`;
         }
 
         const searchPath = args.path || '.';
-
-        // Use a more sophisticated glob pattern matching approach
-        // Convert common glob patterns to find commands
-        let command: string;
         const pattern = args.pattern;
 
-        if (pattern.includes('**')) {
+        // Build find command with proper brace expansion and pattern handling
+        let command: string;
+        
+        if (pattern.includes('{') && pattern.includes('}')) {
+            // Handle brace expansion patterns like *.{js,jsx,ts,tsx}
+            const braceMatch = pattern.match(/^(.*)?\{([^}]+)\}(.*)$/);
+            if (braceMatch && braceMatch[2]) {
+                const [, prefix = '', extensions, suffix = ''] = braceMatch;
+                const extensionList = extensions.split(',').map(ext => ext.trim());
+                
+                // Build find command with multiple -name conditions
+                const nameConditions = extensionList.map(ext => `-name "${prefix}${ext}${suffix}"`).join(' -o ');
+                
+                if (pattern.includes('**')) {
+                    // Recursive search with brace expansion
+                    command = `find "${searchPath}" -type f \\( ${nameConditions} \\) | sort | head -1000`;
+                } else {
+                    // Non-recursive search with brace expansion
+                    command = `find "${searchPath}" -maxdepth 1 -type f \\( ${nameConditions} \\) | sort | head -1000`;
+                }
+            } else {
+                // Fallback to shell brace expansion
+                command = `find "${searchPath}" -type f -name "${pattern}" | sort | head -1000`;
+            }
+        } else if (pattern.includes('**')) {
             // Recursive glob pattern
             const filePattern = pattern.split('**')[1]?.replace(/^\//, '') || '*';
-            command = `find "${searchPath}" -type f -name "${filePattern}" | sort -t/ -k1,1 -k2,2n | head -1000`;
+            command = `find "${searchPath}" -type f -name "${filePattern}" | sort | head -1000`;
         } else if (pattern.includes('*')) {
             // Simple glob pattern
             command = `find "${searchPath}" -maxdepth 1 -type f -name "${pattern}" | sort | head -1000`;
@@ -101,27 +120,19 @@ export async function handleGlobTool(args: z.infer<typeof GLOB_TOOL_PARAMETERS>,
         }
 
         const result = await sandbox.session.runCommand(command, undefined, true);
-
-        if (result.success && result.output.trim()) {
-            const files = result.output.trim().split('\n')
-                .filter(line => line.trim())
-                .map(line => line.trim());
-
-            // Sort by modification time (newest first) if we have multiple files
-            if (files.length > 1) {
-                const statCommand = `stat -c "%Y %n" ${files.map(f => `"${f}"`).join(' ')} | sort -nr | cut -d' ' -f2-`;
-                const statResult = await sandbox.session.runCommand(statCommand, undefined, true);
-                if (statResult.success && statResult.output.trim()) {
-                    return statResult.output.trim().split('\n').filter(line => line.trim());
-                }
-            }
-
-            return files;
-        }
-        return [];
+        
+        // Clean up the output: remove carriage returns and normalize paths
+        let cleanOutput = result.output || '';
+        
+        // Remove carriage return characters
+        cleanOutput = cleanOutput.replace(/\r/g, '');
+        
+        // Normalize paths - remove redundant ./ prefixes for cleaner output
+        cleanOutput = cleanOutput.replace(/^\.\//gm, '');
+        
+        return cleanOutput.trim();
     } catch (error) {
-        console.error('Glob search failed:', error);
-        return [];
+        return `Error: ${error instanceof Error ? error.message : String(error)}`;
     }
 }
 
