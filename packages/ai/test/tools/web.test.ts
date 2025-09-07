@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'bun:test';
-import { ASK_TOOL_SET, BUILD_TOOL_SET } from '../../src/tools/toolset';
 import {
+    ASK_TOOL_SET,
+    BUILD_TOOL_SET,
     SCRAPE_URL_TOOL_NAME,
     SCRAPE_URL_TOOL_PARAMETERS,
     scrapeUrlTool,
-} from '../../src/tools/web';
+} from '../../src/tools/';
 
 describe('Firecrawl Web Scraping Tool', () => {
     it('should have the correct tool name and parameters', () => {

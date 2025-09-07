@@ -22,9 +22,9 @@ mock.module('@/trpc/client', () => ({
 // Mock toast
 mock.module('@onlook/ui/sonner', () => ({
     toast: {
-        success: mock(() => {}),
-        error: mock(() => {}),
-        info: mock(() => {})
+        success: mock(() => { }),
+        error: mock(() => { }),
+        info: mock(() => { })
     }
 }));
 
@@ -60,6 +60,7 @@ describe('SandboxManager', () => {
     let mockFileSync: any;
     let mockEditorEngine: any;
     let mockBranch: any;
+    let mockErrorManager: any;
 
     beforeEach(() => {
         mockGetItem.mockClear();
@@ -163,6 +164,16 @@ describe('SandboxManager', () => {
             },
         };
 
+        mockErrorManager = {
+            addError: mock(() => { }),
+            clear: mock(() => { }),
+            errors: [],
+            buffer: {
+                onError: mock(() => { }),
+                onSuccess: mock(() => { }),
+            },
+        };
+
         // Create mock Branch
         mockBranch = {
             id: 'test-branch-id',
@@ -182,7 +193,7 @@ describe('SandboxManager', () => {
             },
         };
 
-        sandboxManager = new SandboxManager(mockBranch, mockEditorEngine);
+        sandboxManager = new SandboxManager(mockBranch, mockEditorEngine, mockErrorManager);
         // Set the session directly on the session manager using runInAction to avoid MobX warnings
         // @ts-ignore - accessing private property for testing
         sandboxManager.session.session = mockSession;
@@ -232,7 +243,7 @@ describe('SandboxManager', () => {
             disconnect: mock(async () => { }),
         };
 
-        const errorManager = new SandboxManager(mockBranch, mockEditorEngine);
+        const errorManager = new SandboxManager(mockBranch, mockEditorEngine, mockErrorManager);
         // Set the session directly
         // @ts-ignore - accessing private property for testing
         errorManager.session.session = errorSession;

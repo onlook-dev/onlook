@@ -108,10 +108,8 @@ export async function handleListFilesTool(
         // Build the find command based on parameters
         let findCommand = `find "${resolvedPath}"`;
         
-        // Set depth based on recursive option
-        if (!args.recursive) {
-            findCommand += ' -maxdepth 1';
-        }
+        // Always use non-recursive behavior (maxdepth 1)
+        findCommand += ' -maxdepth 1';
         
         // Filter by type if specified
         if (args.file_types_only) {

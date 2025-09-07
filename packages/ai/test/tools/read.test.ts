@@ -7,7 +7,7 @@ import {
     READ_FILE_TOOL_PARAMETERS,
     readFileTool,
 } from '../../src/tools/read';
-import { ASK_TOOL_SET, BUILD_TOOL_SET } from '../../src/tools/toolset';
+import { ASK_TOOL_SET, BUILD_TOOL_SET } from '../../src/tools';
 
 describe('Read File Tool', () => {
     test('should have the correct tool name and parameters', () => {
@@ -97,7 +97,6 @@ describe('List Files Tool', () => {
 
         // Check optional fields
         expect(params.shape.path).toBeDefined();
-        expect(params.shape.recursive).toBeDefined();
         expect(params.shape.show_hidden).toBeDefined();
         expect(params.shape.file_types_only).toBeDefined();
         expect(params.shape.ignore).toBeDefined();
@@ -110,7 +109,6 @@ describe('List Files Tool', () => {
 
         const fullParams = {
             path: '/some/directory',
-            recursive: true,
             show_hidden: false,
             file_types_only: true,
             ignore: ['node_modules', '*.log', '.git'],
@@ -137,7 +135,6 @@ describe('List Files Tool', () => {
 
         const parsed = LIST_FILES_TOOL_PARAMETERS.parse(minimalParams);
 
-        expect(parsed.recursive).toBe(false);
         expect(parsed.show_hidden).toBe(false);
         expect(parsed.file_types_only).toBe(false);
         expect(parsed.path).toBeUndefined();
@@ -203,7 +200,7 @@ describe('Error Handling', () => {
         };
 
         const invalidListParams = {
-            recursive: 'true', // Should be boolean
+            show_hidden: 'true', // Should be boolean
             branchId: 'test',
         };
 

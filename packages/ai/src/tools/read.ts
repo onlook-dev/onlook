@@ -37,11 +37,6 @@ export const LIST_FILES_TOOL_PARAMETERS = z.object({
         .describe(
             'The directory path to list files from. Can be absolute or relative. If not specified, uses current working directory. Supports fuzzy path matching if exact path is not found.',
         ),
-    recursive: z
-        .boolean()
-        .optional()
-        .default(false)
-        .describe('Whether to list files recursively in subdirectories'),
     show_hidden: z
         .boolean()
         .optional()
@@ -60,6 +55,6 @@ export const LIST_FILES_TOOL_PARAMETERS = z.object({
 });
 export const listFilesTool = tool({
     description:
-        'List files and directories in a specified path. Supports both absolute and relative paths with fuzzy matching. Can list recursively, filter by type, and exclude patterns. Returns file paths with type information (file/directory).',
+        'List files and directories in a specified path. Supports both absolute and relative paths with fuzzy matching. Can filter by type and exclude patterns. Returns file paths with type information (file/directory). Only lists immediate children (non-recursive).',
     inputSchema: LIST_FILES_TOOL_PARAMETERS,
 });
