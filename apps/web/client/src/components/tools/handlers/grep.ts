@@ -1,46 +1,11 @@
 import type { EditorEngine } from '@/components/store/editor/engine';
 import { GREP_TOOL_PARAMETERS } from '@onlook/ai';
 import { z } from 'zod';
-
-// Common directories and files to exclude by default
-const DEFAULT_EXCLUDED_PATTERNS = [
-    'node_modules',
-    '.next',
-    '.git',
-    'dist',
-    'build',
-    '.cache',
-    'coverage',
-    '.nyc_output',
-    'tmp',
-    'temp',
-    '.temp',
-    '.tmp',
-    'logs',
-    '*.log',
-    '.DS_Store',
-    'Thumbs.db'
-];
-
-// File type to extension mapping
-const FILE_TYPE_MAP: Record<string, string> = {
-    'js': '*.js',
-    'ts': '*.ts',
-    'jsx': '*.jsx',
-    'tsx': '*.tsx',
-    'py': '*.py',
-    'java': '*.java',
-    'go': '*.go',
-    'rust': '*.rs',
-    'cpp': '*.cpp',
-    'c': '*.c',
-    'html': '*.html',
-    'css': '*.css',
-    'json': '*.json',
-    'xml': '*.xml',
-    'yaml': '*.yaml',
-    'yml': '*.yml'
-};
+import {
+    addFindExclusions,
+    escapeForShell,
+    getFileTypePattern
+} from './helpers';
 
 interface GrepResult {
     success: boolean;
@@ -58,7 +23,7 @@ export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>,
         }
 
         const searchPath = args.path || '.';
-        
+
         // Enhanced input validation
         const validationError = await validateGrepInputs(args.pattern, searchPath, args, sandbox);
         if (validationError) {
@@ -67,22 +32,22 @@ export async function handleGrepTool(args: z.infer<typeof GREP_TOOL_PARAMETERS>,
 
         // Build and execute grep command
         const result = await executeGrepSearch(sandbox, searchPath, args);
-        
+
         if (!result.success && result.error) {
             return result.error;
         }
 
         return await processGrepResults(result, args.pattern, searchPath, args);
-        
+
     } catch (error) {
         return `Error: ${error instanceof Error ? error.message : String(error)}`;
     }
 }
 
 async function validateGrepInputs(
-    pattern: string, 
-    searchPath: string, 
-    args: z.infer<typeof GREP_TOOL_PARAMETERS>, 
+    pattern: string,
+    searchPath: string,
+    args: z.infer<typeof GREP_TOOL_PARAMETERS>,
     sandbox: any
 ): Promise<string | null> {
     // Pattern validation
@@ -157,7 +122,7 @@ function validateMultilinePattern(pattern: string): string | null {
     if (pattern.includes('\n') || pattern.includes('\\n')) {
         return `Error: Multiline patterns with literal newlines are not fully supported. Use \\s*\\n\\s* or similar patterns instead.`;
     }
-    
+
     try {
         // Test if the pattern can be compiled as a regex
         new RegExp(pattern, 'gm');
@@ -171,48 +136,48 @@ async function findFuzzyPath(inputPath: string, sandbox: any): Promise<string | 
     // Extract directory name from path for fuzzy matching
     const parts = inputPath.split('/').filter(p => p);
     const targetName = parts[parts.length - 1];
-    
+
     if (!targetName) return null;
-    
+
     // Search for directories with similar names
     const findCommand = `find . -type d -name "*${targetName}*" | head -5`;
     const result = await sandbox.session.runCommand(findCommand, undefined, true);
-    
+
     if (result.success && result.output.trim()) {
         const candidates = result.output.trim().split('\n').filter((line: string) => line.trim());
-        
+
         // Simple scoring - prefer exact matches and shorter paths
         const scored = candidates.map((candidate: string) => {
             const candidateName = candidate.split('/').pop() || '';
             let score = 0;
-            
+
             if (candidateName === targetName) score += 100;
             else if (candidateName.includes(targetName)) score += 50;
             else if (candidateName.toLowerCase().includes(targetName.toLowerCase())) score += 25;
-            
+
             score -= candidate.split('/').length; // Prefer shorter paths
-            
+
             return { path: candidate, score };
         });
-        
+
         scored.sort((a: { path: string; score: number }, b: { path: string; score: number }) => b.score - a.score);
         if (scored.length > 0 && scored[0].score > 0) {
             return scored[0].path;
         }
     }
-    
+
     return null;
 }
 
 async function executeGrepSearch(sandbox: any, searchPath: string, args: z.infer<typeof GREP_TOOL_PARAMETERS>): Promise<GrepResult> {
     // Build find command for file filtering
     let findCommand = buildFindCommand(searchPath, args);
-    
+
     // Build grep command
     const grepCommand = buildGrepCommand(args);
-    
+
     let command: string;
-    
+
     if (args.multiline) {
         // Handle multiline search with appropriate method
         command = await buildMultilineCommand(findCommand, grepCommand, args, sandbox);
@@ -228,10 +193,10 @@ async function executeGrepSearch(sandbox: any, searchPath: string, args: z.infer
 
     // Execute the command with ignoreError to handle "no matches found" gracefully
     const result = await sandbox.session.runCommand(command, undefined, true);
-    
+
     // Determine if results were truncated
-    const wasTruncated = args.head_limit ? 
-        (result.output ? result.output.split('\n').length >= args.head_limit : false) : 
+    const wasTruncated = args.head_limit ?
+        (result.output ? result.output.split('\n').length >= args.head_limit : false) :
         false;
 
     return {
@@ -245,67 +210,61 @@ async function executeGrepSearch(sandbox: any, searchPath: string, args: z.infer
 
 function buildFindCommand(searchPath: string, args: z.infer<typeof GREP_TOOL_PARAMETERS>): string {
     let findCommand = `find "${escapeForShell(searchPath)}" -type f`;
-    
+
     // Add exclusions for common directories
-    for (const excludeDir of DEFAULT_EXCLUDED_PATTERNS) {
-        if (excludeDir.includes('*')) {
-            findCommand += ` -not -name "${excludeDir}"`;
-        } else {
-            findCommand += ` -not -path "*/${excludeDir}/*" -not -name "${excludeDir}"`;
-        }
-    }
-    
+    findCommand = addFindExclusions(findCommand);
+
     // Add file filtering based on glob or type
     if (args.glob) {
         findCommand += ` -name "${escapeForShell(args.glob)}"`;
     } else if (args.type) {
-        const extension = FILE_TYPE_MAP[args.type] || `*.${args.type}`;
+        const extension = getFileTypePattern(args.type);
         findCommand += ` -name "${extension}"`;
     }
-    
+
     return findCommand;
 }
 
 function buildGrepCommand(args: z.infer<typeof GREP_TOOL_PARAMETERS>): string {
     let grepFlags = '';
-    
+
     // Case insensitive
     if (args['-i']) grepFlags += ' -i';
-    
+
     // Line numbers (only for content output mode)
     if (args['-n'] && args.output_mode === 'content') grepFlags += ' -n';
-    
+
     // Context lines (only for content output mode)
     if (args.output_mode === 'content') {
         if (args['-A']) grepFlags += ` -A ${args['-A']}`;
         if (args['-B']) grepFlags += ` -B ${args['-B']}`;
         if (args['-C']) grepFlags += ` -C ${args['-C']}`;
     }
-    
+
     // Output mode flags
     if (args.output_mode === 'files_with_matches') {
         grepFlags += ' -l';
     } else if (args.output_mode === 'count') {
         grepFlags += ' -c';
     }
-    
+
     // Use fixed strings if pattern doesn't contain regex chars (better performance)
     if (!containsRegexChars(args.pattern)) {
         grepFlags += ' -F';
     }
-    
+
     return grepFlags;
 }
 
 async function buildMultilineCommand(
-    findCommand: string, 
-    grepFlags: string, 
+    findCommand: string,
+    grepFlags: string,
     args: z.infer<typeof GREP_TOOL_PARAMETERS>,
     sandbox: any
 ): Promise<string> {
     // Check if grep supports -P flag (Perl regex)
     const perlSupport = await sandbox.session.runCommand('grep --help | grep -q "\\-P" && echo "yes" || echo "no"', undefined, true);
-    
+
     if (perlSupport.success && perlSupport.output.trim() === 'yes') {
         // Use grep -P with -z for null-separated records
         return `${findCommand} -exec grep -P${grepFlags} -z "${escapeForShell(args.pattern)}" {} +`;
@@ -316,51 +275,47 @@ async function buildMultilineCommand(
     }
 }
 
-function escapeForShell(str: string): string {
-    // Escape special shell characters
-    return str.replace(/["`$\\]/g, '\\$&');
-}
 
 async function processGrepResults(
-    result: GrepResult, 
-    pattern: string, 
-    searchPath: string, 
+    result: GrepResult,
+    pattern: string,
+    searchPath: string,
     args: z.infer<typeof GREP_TOOL_PARAMETERS>
 ): Promise<string> {
     if (result.isEmpty) {
         // Provide specific message for no matches
         const patternType = containsRegexChars(pattern) ? 'regex pattern' : 'text';
         let message = `No matches found for ${patternType} '${pattern}'`;
-        
+
         if (searchPath !== '.') {
             message += ` in path '${searchPath}'`;
         }
-        
+
         if (args.type || args.glob) {
             const filterType = args.type ? `${args.type} files` : `files matching '${args.glob}'`;
             message += ` among ${filterType}`;
         }
-        
+
         return message;
     }
-    
+
     // Clean up the output
     let cleanOutput = result.output.trim();
-    
+
     // Remove any control characters except newlines and tabs
     cleanOutput = cleanOutput.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
-    
+
     // Format based on output mode
     if (args.output_mode === 'count') {
         cleanOutput = formatCountOutput(cleanOutput, pattern);
     }
-    
+
     // Add truncation warning if needed
     if (result.wasTruncated && args.head_limit) {
         const lines = cleanOutput.split('\n').length;
         cleanOutput = `Showing first ${lines} results (truncated at ${args.head_limit}). Use head_limit to see more or refine your search.\n\n${cleanOutput}`;
     }
-    
+
     return cleanOutput;
 }
 
@@ -372,11 +327,11 @@ function formatCountOutput(output: string, pattern: string): string {
         const count = parseInt(parts[parts.length - 1] || '0', 10);
         return sum + (isNaN(count) ? 0 : count);
     }, 0);
-    
+
     if (totalMatches === 0) {
         return `No matches found for '${pattern}'`;
     }
-    
+
     // Add summary line
     const formattedLines = lines.map(line => {
         const parts = line.split(':');
@@ -384,6 +339,6 @@ function formatCountOutput(output: string, pattern: string): string {
         const filename = parts.slice(0, -1).join(':');
         return count === '0' ? `${filename}: 0 matches` : `${filename}: ${count} matches`;
     });
-    
+
     return `Total: ${totalMatches} matches across ${lines.length} files\n\n${formattedLines.join('\n')}`;
 }
