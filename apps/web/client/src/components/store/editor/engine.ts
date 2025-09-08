@@ -28,6 +28,7 @@ import { TemplateNodeManager } from './template-nodes';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
+import { GitChangesManager } from './git-changes';
 import type { Branch } from '@onlook/models';
 
 export class EditorEngine {
@@ -40,7 +41,22 @@ export class EditorEngine {
     }
 
     get history() {
-        return this.branches.activeHistory;
+        const activeHistory = this.branches.activeHistory;
+        if (!activeHistory) {
+            // Return a mock history manager for defensive purposes
+            return {
+                canUndo: false,
+                canRedo: false,
+                undo: () => {},
+                redo: () => {},
+                clear: () => {},
+                add: () => {},
+                length: 0,
+                current: -1,
+                entries: []
+            };
+        }
+        return activeHistory;
     }
 
     readonly state: StateManager = new StateManager();
@@ -69,6 +85,7 @@ export class EditorEngine {
     readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
     readonly snap: SnapManager = new SnapManager(this);
     readonly templateNodes: TemplateNodeManager = new TemplateNodeManager(this);
+    readonly gitChanges: GitChangesManager = new GitChangesManager(this);
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
@@ -84,6 +101,7 @@ export class EditorEngine {
         this.chat.init();
         this.templateNodes.init();
         this.style.init();
+        this.gitChanges.init();
     }
 
     async initBranches(branches: Branch[]) {
@@ -116,6 +134,7 @@ export class EditorEngine {
         this.screenshot.clear();
         this.snap.hideSnapLines();
         this.templateNodes.clear();
+        this.gitChanges.clear();
     }
 
     clearUI() {

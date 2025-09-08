@@ -8,6 +8,11 @@ export interface Project {
         description: string | null;
         tags: string[];
     };
+    githubRepoName?: string | null;
+    githubRepoOwner?: string | null;
+    githubRepoUrl?: string | null;
+    githubDefaultBranch?: string | null;
+    githubConnectedAt?: Date | null;
 }
 
 export interface PreviewImg {

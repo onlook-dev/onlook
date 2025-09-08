@@ -6,7 +6,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
-import { GithubExportModal } from './modal';
+import { GitHubExportModal } from './modal';
 
 export const GithubExportButton = observer(() => {
     const editorEngine = useEditorEngine();
@@ -35,7 +35,7 @@ export const GithubExportButton = observer(() => {
                 </TooltipContent>
             </Tooltip>
             <PopoverContent className="w-96 p-0">
-                <GithubExportModal />
+                {editorEngine.state.githubExportOpen && <GitHubExportModal />}
             </PopoverContent>
         </Popover>
     );

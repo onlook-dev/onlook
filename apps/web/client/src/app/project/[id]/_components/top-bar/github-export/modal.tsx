@@ -11,10 +11,11 @@ import { Separator } from '@onlook/ui/separator';
 import { observer } from 'mobx-react-lite';
 import React, { useState } from 'react';
 import { toast } from 'sonner';
+import { GitPanel } from './simple-git-panel';
 
-type ExportStep = 'create-repo' | 'select-branch' | 'uploading';
+type ExportStep = 'create-repo' | 'select-branch' | 'uploading' | 'connected';
 
-interface GitHubRepository {
+interface Repository {
     id: number;
     name: string;
     fullName: string;
@@ -31,7 +32,7 @@ interface OwnerOption {
     type: 'user' | 'org';
 }
 
-export const GithubExportModal = observer(() => {
+export const GitHubExportModal = observer(() => {
     const editorEngine = useEditorEngine();
     const [currentStep, setCurrentStep] = useState<ExportStep>('create-repo');
     const [repositoryName, setRepositoryName] = useState('');
@@ -39,74 +40,106 @@ export const GithubExportModal = observer(() => {
     const [selectedBranch, setSelectedBranch] = useState('main');
     const [customBranch, setCustomBranch] = useState('');
     const [isCreating, setIsCreating] = useState(false);
-    const [connectedRepo, setConnectedRepo] = useState<GitHubRepository | null>(null);
+    const [connectedRepo, setConnectedRepo] = useState<Repository | null>(null);
 
-    const { data: userInfo } = api.github.getUserInfo.useQuery();
-    const { data: organizations } = api.github.getOrganizations.useQuery();
+    if (!editorEngine) {
+        return (
+            <div className="p-6">
+                <div className="flex flex-col items-center justify-center space-y-2">
+                    <Icons.LoadingSpinner className="h-6 w-6 animate-spin" />
+                    <p className="text-sm text-muted-foreground">Loading editor...</p>
+                </div>
+            </div>
+        );
+    }
+
+    const { data: userInfo, error: userError, isLoading: isLoadingUser } = api.github.getUserInfo.useQuery(undefined, {
+        retry: (failureCount, error) => {
+            if (error?.data?.code === 'UNAUTHORIZED' || 
+                error?.message?.includes('GitHub') ||
+                error?.message?.includes('sign in')) {
+                return false;
+            }
+            return failureCount < 1;
+        },
+        staleTime: 5 * 60 * 1000,
+        gcTime: 0
+    });
+    const { data: organizations } = api.github.getOrganizations.useQuery(undefined, {
+        enabled: !!userInfo && !userError,
+        retry: false,
+    });
     const { data: project } = api.project.get.useQuery({ projectId: editorEngine.projectId });
     
     const createRepoMutation = api.github.createRepository.useMutation();
     const uploadFilesMutation = api.github.uploadProjectFiles.useMutation();
+    const connectRepoMutation = api.project.connectGithubRepo.useMutation();
+    const disconnectRepoMutation = api.project.disconnectGithubRepo.useMutation();
 
-    const getRepositoryStorageKey = () => `onlook-github-repo-${editorEngine.projectId}`;
+    const getStorageKey = () => {
+        const activeBranch = editorEngine.branches.activeBranch;
+        return `onlook-github-repo-${editorEngine.projectId}-${activeBranch?.id || 'default'}`;
+    };
     
-    const saveRepositoryConnection = (repository: GitHubRepository) => {
+    const saveConnection = async (repository: Repository) => {
         try {
-            localStorage.setItem(getRepositoryStorageKey(), JSON.stringify({
-                repository,
-                owner: selectedOwner,
-                timestamp: Date.now()
-            }));
-        } catch {
-            // Silent fail - localStorage not critical
+            await connectRepoMutation.mutateAsync({
+                projectId: editorEngine.projectId,
+                repoName: repository.name,
+                repoOwner: selectedOwner,
+                repoUrl: repository.htmlUrl,
+                defaultBranch: repository.defaultBranch,
+            });
+        } catch (error) {
+            toast.error('Failed to save repository connection');
         }
     };
 
-    const loadRepositoryConnection = () => {
-        try {
-            const stored = localStorage.getItem(getRepositoryStorageKey());
-            if (stored) {
-                const data = JSON.parse(stored);
-                const isStale = Date.now() - data.timestamp > 24 * 60 * 60 * 1000;
-                return isStale ? null : data;
-            }
-        } catch {
-            // Silent fail - localStorage not critical
-        }
-        return null;
-    };
 
-    const clearRepositoryConnection = () => {
+    const clearConnection = async () => {
         try {
-            localStorage.removeItem(getRepositoryStorageKey());
-        } catch {
-            // Silent fail
+            await disconnectRepoMutation.mutateAsync({
+                projectId: editorEngine.projectId,
+            });
+        } catch (error) {
+            toast.error('Failed to disconnect repository');
         }
     };
 
-    const handleDisconnectRepository = () => {
-        clearRepositoryConnection();
+    const handleDisconnect = async () => {
+        await clearConnection();
         setConnectedRepo(null);
         setRepositoryName('');
+        setSelectedOwner('');
         setCurrentStep('create-repo');
         toast.info('Repository disconnected');
     };
 
     React.useEffect(() => {
-        const existingConnection = loadRepositoryConnection();
-        if (existingConnection) {
-            setConnectedRepo(existingConnection.repository);
-            setSelectedOwner(existingConnection.owner);
-            setRepositoryName(existingConnection.repository.name);
-            setCurrentStep('select-branch');
+        if (project && project.githubRepoName && project.githubRepoOwner) {
+            
+            setConnectedRepo({
+                id: 0,
+                name: project.githubRepoName,
+                fullName: `${project.githubRepoOwner}/${project.githubRepoName}`,
+                htmlUrl: project.githubRepoUrl || `https://github.com/${project.githubRepoOwner}/${project.githubRepoName}`,
+                cloneUrl: `https://github.com/${project.githubRepoOwner}/${project.githubRepoName}.git`,
+                sshUrl: `git@github.com:${project.githubRepoOwner}/${project.githubRepoName}.git`,
+                private: true,
+                defaultBranch: project.githubDefaultBranch || 'main',
+            });
+            
+            setSelectedOwner(project.githubRepoOwner);
+            setRepositoryName(project.githubRepoName);
+            setCurrentStep('connected');
         }
-    }, []);
+    }, [project]);
 
     React.useEffect(() => {
-        if (userInfo?.login && !selectedOwner) {
+        if (userInfo?.login && !selectedOwner && !connectedRepo) {
             setSelectedOwner(userInfo.login);
         }
-    }, [userInfo?.login, selectedOwner]);
+    }, [userInfo?.login, selectedOwner, connectedRepo]);
 
     React.useEffect(() => {
         if (project?.name && !repositoryName) {
@@ -141,7 +174,7 @@ export const GithubExportModal = observer(() => {
         return btoa(binary);
     };
 
-    const handleCreateRepository = async () => {
+    const handleCreate = async () => {
         if (!repositoryName.trim()) {
             toast.error('Repository name is required');
             return;
@@ -165,8 +198,8 @@ export const GithubExportModal = observer(() => {
             });
 
             setConnectedRepo(result.repository);
-            saveRepositoryConnection(result.repository);
-            setCurrentStep('select-branch');
+            saveConnection(result.repository);
+            setCurrentStep('connected');
             toast.success('Repository created successfully!');
 
         } catch (error: unknown) {
@@ -184,22 +217,19 @@ export const GithubExportModal = observer(() => {
         }
     };
 
-    const handleConnectToBranch = async () => {
+    const handleConnect = async () => {
         if (!connectedRepo) return;
 
         setCurrentStep('uploading');
 
         try {
-            // Collect and upload files
             const allPaths = editorEngine.activeSandbox.listAllFiles();
             const filesMap = await editorEngine.activeSandbox.readFiles(allPaths);
             const files = Object.entries(filesMap).map(([path, file]) => {
                 if (file.type === 'text') {
                     return { path: path.replace(/^\.\//, ''), content: file.content, encoding: 'utf-8' as const };
                 }
-                if (!file.content) {
-                    throw new Error(`File content is null for ${path}`);
-                }
+                if (!file.content) throw new Error(`File content is null for ${path}`);
                 const base64 = encodeToBase64(file.content as Uint8Array);
                 return { path: path.replace(/^\.\//, ''), content: base64, encoding: 'base64' as const };
             });
@@ -236,7 +266,7 @@ export const GithubExportModal = observer(() => {
         }
     };
 
-    const getAvailableOwners = (): OwnerOption[] => {
+    const getOwners = (): OwnerOption[] => {
         const owners: OwnerOption[] = [];
         
         if (userInfo) {
@@ -260,7 +290,41 @@ export const GithubExportModal = observer(() => {
         return owners;
     };
 
-    if (!userInfo) {
+    if (isLoadingUser) {
+        return (
+            <div className="p-6">
+                <div className="flex flex-col items-center justify-center space-y-2">
+                    <Icons.LoadingSpinner className="h-6 w-6 animate-spin" />
+                    <p className="text-sm text-muted-foreground">Loading GitHub connection...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!userInfo || userError) {
+        // Enhanced error messaging based on the specific error
+        let errorMessage = 'Sign in to GitHub to export your project as a repository.';
+        let buttonText = 'Sign in with GitHub';
+        
+        if (userError) {
+            buttonText = 'Re-authenticate with GitHub';
+            
+            if (userError.message?.includes('token is expired')) {
+                errorMessage = 'Your GitHub token has expired. Please sign in again.';
+            } else if (userError.message?.includes('invalid')) {
+                errorMessage = 'Your GitHub authentication is invalid. Please sign in again.';
+            } else if (userError.message?.includes('permissions')) {
+                errorMessage = 'GitHub authentication needs additional permissions. Please sign in again.';
+            } else {
+                errorMessage = 'GitHub authentication failed. Please sign in again.';
+            }
+            
+            // Debug logging in development
+            if (process.env.NODE_ENV === 'development') {
+                console.warn('GitHub auth error:', userError);
+            }
+        }
+        
         return (
             <div className="p-6">
                 <div className="space-y-4">
@@ -269,21 +333,49 @@ export const GithubExportModal = observer(() => {
                         <h3 className="font-semibold text-lg">Connect to GitHub</h3>
                     </div>
                     <p className="text-sm text-muted-foreground">
-                        Sign in to GitHub to export your project as a repository.
+                        {errorMessage}
                     </p>
                     <Button
-                        onClick={() => window.location.href = '/login'}
+                        onClick={() => window.location.href = '/login?provider=github'}
                         className="w-full flex items-center gap-2"
                     >
                         <Icons.GitHubLogo className="h-4 w-4" />
-                        Sign in with GitHub
+                        {buttonText}
                     </Button>
                 </div>
             </div>
         );
     }
 
-    const availableOwners = getAvailableOwners();
+    const owners = getOwners();
+
+    // Debug logging
+    console.log('Modal render state:', {
+        connectedRepo: connectedRepo?.name,
+        selectedOwner,
+        currentStep,
+        userInfo: userInfo?.login,
+        hasUserError: !!userError
+    });
+
+    // Show GitPanel whenever we have a connected repository (prioritize this over step logic)
+    if (connectedRepo && selectedOwner) {
+        console.log('Showing GitPanel for connected repo:', connectedRepo.name, 'owner:', selectedOwner);
+        return (
+            <GitPanel 
+                connectedRepo={{
+                    name: connectedRepo.name,
+                    fullName: connectedRepo.fullName,
+                    htmlUrl: connectedRepo.htmlUrl,
+                    owner: selectedOwner,
+                    defaultBranch: connectedRepo.defaultBranch,
+                    isConnected: true,
+                }}
+                onClose={() => editorEngine.state.setGithubExportOpen(false)}
+                onChangeRepo={handleDisconnect}
+            />
+        );
+    }
 
     if (currentStep === 'create-repo') {
         return (
@@ -309,7 +401,7 @@ export const GithubExportModal = observer(() => {
                                     </div>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {availableOwners.map((owner) => (
+                                    {owners.map((owner) => (
                                         <SelectItem key={owner.value} value={owner.value}>
                                             <div className="flex items-center gap-2">
                                                 <Icons.GitHubLogo className="h-4 w-4" />
@@ -346,7 +438,7 @@ export const GithubExportModal = observer(() => {
                             Cancel
                         </Button>
                         <Button 
-                            onClick={handleCreateRepository}
+                            onClick={handleCreate}
                             disabled={!repositoryName.trim() || !selectedOwner || isCreating}
                             className="flex-1"
                         >
@@ -385,7 +477,7 @@ export const GithubExportModal = observer(() => {
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={handleDisconnectRepository}
+                                onClick={handleDisconnect}
                                 className="text-xs h-auto p-1 text-muted-foreground hover:text-foreground"
                             >
                                 Change
@@ -433,7 +525,7 @@ export const GithubExportModal = observer(() => {
 
                     <div className="pt-4">
                         <Button 
-                            onClick={handleConnectToBranch}
+                            onClick={handleConnect}
                             disabled={selectedBranch === 'custom' && !customBranch.trim()}
                             className="w-full"
                         >

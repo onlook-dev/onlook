@@ -299,6 +299,120 @@ export const githubRouter = createTRPCRouter({
             }
         }),
 
+    pushChanges: protectedProcedure
+        .input(
+            z.object({
+                owner: z.string(),
+                repo: z.string(),
+                files: z.array(
+                    z.object({
+                        path: z.string(),
+                        content: z.string(),
+                        encoding: z.enum(['utf-8', 'base64']).default('utf-8'),
+                    })
+                ),
+                commitMessage: z.string(),
+                branchName: z.string().default('main'),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            const { octokit } = await getGitHubServiceForUser(ctx.supabase);
+
+            try {
+                // Check if branch exists, if not create it
+                let branchRef;
+                try {
+                    const { data: refData } = await octokit.rest.git.getRef({
+                        owner: input.owner,
+                        repo: input.repo,
+                        ref: `heads/${input.branchName}`,
+                    });
+                    branchRef = refData;
+                } catch (error: any) {
+                    if (error.status === 404) {
+                        // Branch doesn't exist, create it from main/default branch
+                        const { data: defaultRefData } = await octokit.rest.git.getRef({
+                            owner: input.owner,
+                            repo: input.repo,
+                            ref: 'heads/main',
+                        });
+                        
+                        const { data: newRefData } = await octokit.rest.git.createRef({
+                            owner: input.owner,
+                            repo: input.repo,
+                            ref: `refs/heads/${input.branchName}`,
+                            sha: defaultRefData.object.sha,
+                        });
+                        branchRef = newRefData;
+                    } else {
+                        throw error;
+                    }
+                }
+
+                const latestCommitSha = branchRef.object.sha;
+
+                // Get the tree SHA from the latest commit
+                const { data: commitData } = await octokit.rest.git.getCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    commit_sha: latestCommitSha,
+                });
+
+                // Create tree entries for all files
+                const treeEntries = input.files.map(file => ({
+                    path: file.path,
+                    mode: '100644' as const,
+                    type: 'blob' as const,
+                    content: file.content,
+                }));
+
+                // Create a new tree with all files
+                const { data: treeData } = await octokit.rest.git.createTree({
+                    owner: input.owner,
+                    repo: input.repo,
+                    tree: treeEntries,
+                    base_tree: commitData.tree.sha,
+                });
+
+                // Create a new commit
+                const { data: newCommit } = await octokit.rest.git.createCommit({
+                    owner: input.owner,
+                    repo: input.repo,
+                    message: input.commitMessage,
+                    tree: treeData.sha,
+                    parents: [latestCommitSha],
+                });
+
+                // Update the reference to point to the new commit
+                await octokit.rest.git.updateRef({
+                    owner: input.owner,
+                    repo: input.repo,
+                    ref: `heads/${input.branchName}`,
+                    sha: newCommit.sha,
+                });
+
+                return {
+                    success: true,
+                    commit: {
+                        sha: newCommit.sha,
+                        htmlUrl: `https://github.com/${input.owner}/${input.repo}/commit/${newCommit.sha}`,
+                    }
+                };
+            } catch (error: any) {
+                if (error?.status === 401) {
+                    throw new TRPCError({
+                        code: 'UNAUTHORIZED',
+                        message: 'GitHub authentication failed. Please re-authenticate with GitHub.',
+                    });
+                }
+                
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: error?.message || 'Failed to push changes',
+                });
+            }
+        }),
+
     getUserInfo: protectedProcedure
         .query(async ({ ctx }) => {
             try {

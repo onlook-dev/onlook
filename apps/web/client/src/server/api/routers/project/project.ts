@@ -424,4 +424,54 @@ export const projectRouter = createTRPCRouter({
 
         return { success: true, tags: newTags };
     }),
+    
+    connectGithubRepo: protectedProcedure
+        .input(z.object({
+            projectId: z.string(),
+            repoName: z.string(),
+            repoOwner: z.string(),
+            repoUrl: z.string(),
+            defaultBranch: z.string(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const [updatedProject] = await ctx.db
+                .update(projects)
+                .set({
+                    githubRepoName: input.repoName,
+                    githubRepoOwner: input.repoOwner,
+                    githubRepoUrl: input.repoUrl,
+                    githubDefaultBranch: input.defaultBranch,
+                    githubConnectedAt: new Date(),
+                    updatedAt: new Date(),
+                })
+                .where(eq(projects.id, input.projectId))
+                .returning();
+
+            if (!updatedProject) throw new Error('Project not found');
+
+            return fromDbProject(updatedProject);
+        }),
+
+    disconnectGithubRepo: protectedProcedure
+        .input(z.object({
+            projectId: z.string(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+            const [updatedProject] = await ctx.db
+                .update(projects)
+                .set({
+                    githubRepoName: null,
+                    githubRepoOwner: null,
+                    githubRepoUrl: null,
+                    githubDefaultBranch: null,
+                    githubConnectedAt: null,
+                    updatedAt: new Date(),
+                })
+                .where(eq(projects.id, input.projectId))
+                .returning();
+
+            if (!updatedProject) throw new Error('Project not found');
+
+            return fromDbProject(updatedProject);
+        }),
 });
