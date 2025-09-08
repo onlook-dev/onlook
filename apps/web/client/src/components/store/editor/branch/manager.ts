@@ -81,31 +81,40 @@ export class BranchManager {
         );
     }
 
-    get activeBranchData(): BranchData {
+    get activeBranchData(): BranchData | null {
         if (!this.currentBranchId) {
-            throw new Error('No branch selected. This should not happen after proper initialization.');
+            return null;
         }
         const branchData = this.branchMap.get(this.currentBranchId);
         if (!branchData) {
-            throw new Error(`Branch not found for branch ${this.currentBranchId}. This should not happen after proper initialization.`);
+            console.warn(`Branch not found for branch ${this.currentBranchId}. Resetting current branch.`);
+            this.currentBranchId = null;
+            return null;
         }
         return branchData;
     }
 
-    get activeBranch(): Branch {
-        return this.activeBranchData.branch;
+    get activeBranch(): Branch | null {
+        const branchData = this.activeBranchData;
+        return branchData ? branchData.branch : null;
     }
 
     get activeSandbox(): SandboxManager {
-        return this.activeBranchData.sandbox;
+        const branchData = this.activeBranchData;
+        if (!branchData) {
+            throw new Error('No active branch available. Cannot access sandbox.');
+        }
+        return branchData.sandbox;
     }
 
-    get activeHistory(): HistoryManager {
-        return this.activeBranchData.history;
+    get activeHistory(): HistoryManager | null {
+        const branchData = this.activeBranchData;
+        return branchData ? branchData.history : null;
     }
 
-    get activeError(): ErrorManager {
-        return this.activeBranchData.error;
+    get activeError(): ErrorManager | null {
+        const branchData = this.activeBranchData;
+        return branchData ? branchData.error : null;
     }
 
     async switchToBranch(branchId: string): Promise<void> {

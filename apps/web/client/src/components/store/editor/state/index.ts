@@ -13,6 +13,7 @@ export class StateManager {
     private _canvasScrolling = false;
     hotkeysOpen = false;
     publishOpen = false;
+    githubExportOpen = false;
     leftPanelLocked = false;
     canvasPanning = false;
 
@@ -37,6 +38,10 @@ export class StateManager {
     get shouldHideOverlay() {
         return this._canvasScrolling || this.canvasPanning
     }
+    
+    setGithubExportOpen(open: boolean) {
+        this.githubExportOpen = open;
+    }
 
     private resetCanvasScrolling() {
         this.resetCanvasScrollingDebounced();
@@ -49,6 +54,7 @@ export class StateManager {
     clear() {
         this.hotkeysOpen = false;
         this.publishOpen = false;
+        this.githubExportOpen = false;
         this.branchTab = null;
         this.manageBranchId = null;
         this.resetCanvasScrollingDebounced.cancel();

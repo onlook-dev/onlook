@@ -26,6 +26,13 @@ export const projects = pgTable('projects', {
     previewImgBucket: varchar('preview_img_bucket'),
     updatedPreviewImgAt: timestamp('updated_preview_img_at', { withTimezone: true }),
 
+    // github integration
+    githubRepoName: varchar('github_repo_name'),
+    githubRepoOwner: varchar('github_repo_owner'),
+    githubRepoUrl: varchar('github_repo_url'),
+    githubDefaultBranch: varchar('github_default_branch'),
+    githubConnectedAt: timestamp('github_connected_at', { withTimezone: true }),
+
     // deprecated
     sandboxId: varchar('sandbox_id'),
     sandboxUrl: varchar('sandbox_url'),
