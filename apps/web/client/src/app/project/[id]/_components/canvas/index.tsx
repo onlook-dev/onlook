@@ -50,6 +50,9 @@ export const Canvas = observer(() => {
             const deltaX = (x - position.x) * zoomFactor;
             const deltaY = (y - position.y) * zoomFactor;
 
+            // Add slight Y offset to compensate for drift
+            const yOffset = zoomFactor * -32; // TODO: Debug where this offset is coming from
+
             editorEngine.canvas.scale = lintedScale;
 
             if (newScale < MIN_ZOOM || newScale > MAX_ZOOM) {
@@ -58,7 +61,7 @@ export const Canvas = observer(() => {
             const newPosition = clampPosition(
                 {
                     x: position.x - deltaX,
-                    y: position.y - deltaY,
+                    y: position.y - deltaY - yOffset,
                 },
                 lintedScale,
             );

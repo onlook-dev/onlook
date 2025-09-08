@@ -191,8 +191,8 @@ export const GithubExportModal = observer(() => {
 
         try {
             // Collect and upload files
-            const allPaths = editorEngine.sandbox.listAllFiles();
-            const filesMap = await editorEngine.sandbox.readFiles(allPaths);
+            const allPaths = editorEngine.activeSandbox.listAllFiles();
+            const filesMap = await editorEngine.activeSandbox.readFiles(allPaths);
             const files = Object.entries(filesMap).map(([path, file]) => {
                 if (file.type === 'text') {
                     return { path: path.replace(/^\.\//, ''), content: file.content, encoding: 'utf-8' as const };
@@ -200,7 +200,7 @@ export const GithubExportModal = observer(() => {
                 if (!file.content) {
                     throw new Error(`File content is null for ${path}`);
                 }
-                const base64 = encodeToBase64(file.content);
+                const base64 = encodeToBase64(file.content as Uint8Array);
                 return { path: path.replace(/^\.\//, ''), content: base64, encoding: 'base64' as const };
             });
 

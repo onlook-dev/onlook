@@ -5,7 +5,7 @@ import type {
     MessageContext,
     ProjectMessageContext,
 } from '@onlook/models';
-import type { UIDataTypes, UIMessage, UITools, UIMessagePart, TextUIPart, FileUIPart } from 'ai';
+import type { FileUIPart, UIDataTypes, UIMessage, UIMessagePart, UITools } from 'ai';
 import { ASK_MODE_SYSTEM_PROMPT } from './ask';
 import { CONTEXT_PROMPTS } from './context';
 import { CREATE_NEW_PAGE_SYSTEM_PROMPT } from './create';
@@ -136,7 +136,9 @@ export function getTruncatedFilesContent(files: FileMessageContext[]) {
     prompt += `${CONTEXT_PROMPTS.truncatedFilesContentPrefix}\n`;
     let index = 1;
     for (const file of files) {
-        let filePrompt = `${file.path}\n`;
+        const branchDisplay = getBranchesContent(file.branchId);
+        const pathDisplay = wrapXml('path', file.path);
+        let filePrompt = `${pathDisplay}\n${branchDisplay}\n`;
         filePrompt = wrapXml(files.length > 1 ? `file-${index}` : 'file', filePrompt);
         prompt += filePrompt;
         index++;
@@ -156,7 +158,9 @@ export function getFilesContent(
     prompt += `${CONTEXT_PROMPTS.filesContentPrefix}\n`;
     let index = 1;
     for (const file of files) {
-        let filePrompt = `${file.path}\n`;
+        const branchDisplay = getBranchesContent(file.branchId);
+        const pathDisplay = wrapXml('path', file.path);
+        let filePrompt = `${pathDisplay}\n${branchDisplay}\n`;
         filePrompt += `${CODE_FENCE.start}${getLanguageFromFilePath(file.path)}\n`;
         filePrompt += file.content;
         filePrompt += `\n${CODE_FENCE.end}\n`;
@@ -176,7 +180,9 @@ export function getErrorsContent(errors: ErrorMessageContext[]) {
     }
     let prompt = `${CONTEXT_PROMPTS.errorsContentPrefix}\n`;
     for (const error of errors) {
-        prompt += `${error.content}\n`;
+        const branchDisplay = getBranchesContent(error.branchId);
+        const errorDisplay = wrapXml('error', error.content);
+        prompt += `${branchDisplay}\n${errorDisplay}\n`;
     }
 
     prompt = wrapXml('errors', prompt);
@@ -195,7 +201,9 @@ export function getHighlightsContent(filePath: string, highlights: HighlightMess
     let prompt = `${CONTEXT_PROMPTS.highlightPrefix}\n`;
     let index = 1;
     for (const highlight of fileHighlights) {
-        let highlightPrompt = `${filePath}#L${highlight.start}:L${highlight.end}\n`;
+        const branchDisplay = getBranchesContent(highlight.branchId);
+        const pathDisplay = wrapXml('path', filePath);
+        let highlightPrompt = `${pathDisplay}#L${highlight.start}:L${highlight.end}\n${branchDisplay}\n`;
         highlightPrompt += `${CODE_FENCE.start}\n`;
         highlightPrompt += highlight.content;
         highlightPrompt += `\n${CODE_FENCE.end}\n`;
@@ -207,6 +215,10 @@ export function getHighlightsContent(filePath: string, highlights: HighlightMess
         index++;
     }
     return prompt;
+}
+
+export function getBranchesContent(id: string) {
+    return wrapXml('branch', `id: "${id}"`);
 }
 
 export function getSummaryPrompt() {

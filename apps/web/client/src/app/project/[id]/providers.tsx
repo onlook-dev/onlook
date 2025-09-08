@@ -2,13 +2,24 @@
 
 import { EditorEngineProvider } from '@/components/store/editor';
 import { HostingProvider } from '@/components/store/hosting';
+import type { Branch, Project } from '@onlook/models';
 import { ChatProvider } from './_hooks/use-chat';
 
-export const ProjectProviders = ({ children, projectId }: { children: React.ReactNode, projectId: string }) => {
+export const ProjectProviders = ({
+    children,
+    project,
+    branches
+}: {
+    children: React.ReactNode,
+    project: Project,
+    branches: Branch[]
+}) => {
     return (
-        <EditorEngineProvider projectId={projectId}>
+        <EditorEngineProvider project={project} branches={branches}>
             <HostingProvider>
-                <ChatProvider>{children}</ChatProvider>
+                <ChatProvider>
+                    {children}
+                </ChatProvider>
             </HostingProvider>
         </EditorEngineProvider>
     );

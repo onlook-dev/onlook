@@ -2,7 +2,6 @@ import { CodeProvider, createCodeProviderClient, getStaticCodeProvider } from '@
 import { getSandboxPreviewUrl } from '@onlook/constants';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { TRPCError } from '@trpc/server';
-import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
@@ -38,17 +37,17 @@ export const sandboxRouter = createTRPCRouter({
         .input(
             z.object({
                 sandboxId: z.string(),
-                userId: z.string().optional(),
             }),
         )
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
+            const userId = ctx.user.id;
             const provider = await getProvider({
                 sandboxId: input.sandboxId,
-                userId: input.userId,
+                userId,
             });
             const session = await provider.createSession({
                 args: {
-                    id: shortenUuid(input.userId ?? uuidv4(), 20),
+                    id: shortenUuid(userId, 20),
                 },
             });
             await provider.destroy();

@@ -1,10 +1,13 @@
 ## Why a backend stack?
 
-This is our server stack built in Supabase which you can also run locally or self-host.
+This is our server stack built in Supabase which you can also run locally or
+self-host.
 
-Used to enable online capabilities such as managing users, collaborating, persisting data, etc.
+Used to enable online capabilities such as managing users, collaborating,
+persisting data, etc.
 
-We will offer this as a hosted instance at some point. Ideally, the product should still work offline with no backend connection.
+We will offer this as a hosted instance at some point. Ideally, the product
+should still work offline with no backend connection.
 
 ## Usage
 
@@ -14,17 +17,17 @@ We will offer this as a hosted instance at some point. Ideally, the product shou
 2. Install necessary packages
 
 ```bash
-npm install
+bun install
 ```
 
 3. Run the supabase instance locally
 
 ```bash
-npm run start
+bun run start
 ```
 
 4. Set up the latest snapshot of the database
 
 ```bash
-npm run reset
+bun run reset
 ```

@@ -32,7 +32,6 @@ export class ActionManager {
         if (action == null) {
             return;
         }
-        await this.dispatch(action);
         await this.editorEngine.code.write(action);
         this.editorEngine.posthog.capture('undo');
     }
@@ -42,7 +41,6 @@ export class ActionManager {
         if (action == null) {
             return;
         }
-        await this.dispatch(action);
         await this.editorEngine.code.write(action);
         this.editorEngine.posthog.capture('redo');
     }
@@ -287,7 +285,5 @@ export class ActionManager {
         }
     }
 
-    clear() {
-        this.editorEngine.history.clear();
-    }
+    clear() { }
 }

@@ -57,7 +57,7 @@ export const VersionRow = observer(
 
         const renderDate = () => {
             if (type === VersionRowType.TODAY) {
-                return `${timeAgo(new Date(commit.timestamp * 1000).toISOString())} ago`;
+                return `${timeAgo(new Date(commit.timestamp * 1000))} ago`;
             }
             return formatCommitDate(commit.timestamp, {
                 includeDate: type === VersionRowType.SAVED,

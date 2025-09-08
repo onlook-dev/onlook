@@ -17,6 +17,7 @@ import {
     userCanvasRouter,
     userRouter,
 } from './routers';
+import { branchRouter } from './routers/project/branch';
 
 /**
  * This is the primary router for your server.
@@ -28,6 +29,7 @@ export const appRouter = createTRPCRouter({
     user: userRouter,
     invitation: invitationRouter,
     project: projectRouter,
+    branch: branchRouter,
     settings: settingsRouter,
     chat: chatRouter,
     frame: frameRouter,

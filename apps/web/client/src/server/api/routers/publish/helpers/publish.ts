@@ -1,15 +1,23 @@
 import { DefaultSettings } from '@onlook/constants';
+import type { Deployment } from '@onlook/db';
 import type { DrizzleDb } from '@onlook/db/src/client';
-import type { Deployment } from '@onlook/db/src/schema/project/deployment';
 import { DeploymentStatus, DeploymentType } from '@onlook/models';
 import { TRPCError } from '@trpc/server';
 import { PublishManager } from '../manager';
 import { deployFreestyle } from './deploy';
 import { extractEnvVarsFromSandbox } from './env';
 import { forkBuildSandbox } from './fork';
-import { getProjectUrls, getSandboxId, updateDeployment } from './helpers';
+import { getProjectUrls, updateDeployment } from './helpers';
 
-export async function publish({ db, deployment }: { db: DrizzleDb; deployment: Deployment }) {
+export async function publish({
+    db,
+    deployment,
+    sandboxId
+}: {
+    db: DrizzleDb;
+    deployment: Deployment;
+    sandboxId: string
+}) {
     const {
         id: deploymentId,
         projectId,
@@ -21,9 +29,8 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
     } = deployment;
     try {
         const deploymentUrls = await getProjectUrls(db, projectId, type);
-        const sandboxId = await getSandboxId(db, projectId);
-
-        const updateDeploymentResult1 = await updateDeployment(db, deploymentId, {
+        const updateDeploymentResult1 = await updateDeployment(db, {
+            id: deploymentId,
             status: DeploymentStatus.IN_PROGRESS,
             message: 'Creating build environment...',
             progress: 10,
@@ -43,7 +50,8 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
         );
 
         try {
-            const updateDeploymentResult2 = await updateDeployment(db, deploymentId, {
+            const updateDeploymentResult2 = await updateDeployment(db, {
+                id: deploymentId,
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Creating optimized build...',
                 progress: 20,
@@ -59,14 +67,16 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
 
             const publishManager = new PublishManager(provider);
             const files = await publishManager.publish({
+                deploymentId,
                 skipBadge: type === DeploymentType.CUSTOM,
                 buildScript: buildScript ?? DefaultSettings.COMMANDS.build,
                 buildFlags: buildFlags ?? DefaultSettings.EDITOR_SETTINGS.buildFlags,
                 envVars: deployment.envVars ?? {},
-                updateDeployment: (deploymentUpdate) => updateDeployment(db, deploymentId, deploymentUpdate),
+                updateDeployment: (deploymentUpdate) => updateDeployment(db, deploymentUpdate),
             });
 
-            const updateDeploymentResult3 = await updateDeployment(db, deploymentId, {
+            const updateDeploymentResult3 = await updateDeployment(db, {
+                id: deploymentId,
                 status: DeploymentStatus.IN_PROGRESS,
                 message: 'Deploying build...',
                 progress: 80,
@@ -93,7 +103,8 @@ export async function publish({ db, deployment }: { db: DrizzleDb; deployment: D
         }
     } catch (error) {
         console.error(error);
-        await updateDeployment(db, deploymentId, {
+        await updateDeployment(db, {
+            id: deploymentId,
             status: DeploymentStatus.FAILED,
             error: error instanceof Error ? error.message : 'Unknown error',
             progress: 100,

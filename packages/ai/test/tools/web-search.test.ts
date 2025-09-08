@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 import {
+    ASK_TOOL_SET,
+    BUILD_TOOL_SET,
     WEB_SEARCH_TOOL_NAME,
     WEB_SEARCH_TOOL_PARAMETERS,
     webSearchTool,
-} from '../../src/tools/web';
-import { ASK_TOOL_SET, BUILD_TOOL_SET } from '../../src/tools/toolset';
+} from '../../src/tools';
 
 describe('Web Search Tool', () => {
     it('should have the correct tool name and inputSchema', () => {

@@ -1,7 +1,8 @@
 import { api } from '@/trpc/client';
-import { CodeProvider, type Provider, createCodeProviderClient } from '@onlook/code-provider';
+import { CodeProvider, createCodeProviderClient, type Provider } from '@onlook/code-provider';
+import type { Branch } from '@onlook/models';
 import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '../engine';
+import type { ErrorManager } from '../error';
 import { CLISessionImpl, CLISessionType, type CLISession, type TerminalSession } from './terminal';
 
 export class SessionManager {
@@ -10,7 +11,11 @@ export class SessionManager {
     terminalSessions = new Map<string, CLISession>();
     activeTerminalSessionId = 'cli';
 
-    constructor(private readonly editorEngine: EditorEngine) {
+    constructor(
+        private readonly branch: Branch,
+        private readonly errorManager: ErrorManager
+    ) {
+        this.start(this.branch.sandbox.id);
         makeAutoObservable(this);
     }
 
@@ -19,7 +24,7 @@ export class SessionManager {
             return;
         }
         this.isConnecting = true;
-        
+
         try {
             this.provider = await createCodeProviderClient(CodeProvider.CodeSandbox, {
                 providerOptions: {
@@ -28,7 +33,7 @@ export class SessionManager {
                         userId,
                         initClient: true,
                         getSession: async (sandboxId, userId) => {
-                            return api.sandbox.start.mutate({ sandboxId, userId });
+                            return api.sandbox.start.mutate({ sandboxId });
                         },
                     },
                 },
@@ -74,17 +79,17 @@ export class SessionManager {
 
     async createTerminalSessions(provider: Provider) {
         const task = new CLISessionImpl(
-            'Server (readonly)',
+            'server',
             CLISessionType.TASK,
             provider,
-            this.editorEngine.error,
+            this.errorManager,
         );
         this.terminalSessions.set(task.id, task);
         const terminal = new CLISessionImpl(
-            'CLI',
+            'terminal',
             CLISessionType.TERMINAL,
             provider,
-            this.editorEngine.error,
+            this.errorManager,
         );
 
         this.terminalSessions.set(terminal.id, terminal);
@@ -160,6 +165,7 @@ export class SessionManager {
     async runCommand(
         command: string,
         streamCallback?: (output: string) => void,
+        ignoreError: boolean = false,
     ): Promise<{
         output: string;
         success: boolean;
@@ -169,8 +175,12 @@ export class SessionManager {
             if (!this.provider) {
                 throw new Error('No provider found in runCommand');
             }
-            streamCallback?.(command + '\n');
-            const { output } = await this.provider.runCommand({ args: { command } });
+            
+            // Append error suppression if ignoreError is true
+            const finalCommand = ignoreError ? `${command} 2>/dev/null || true` : command;
+            
+            streamCallback?.(finalCommand + '\n');
+            const { output } = await this.provider.runCommand({ args: { command: finalCommand } });
             streamCallback?.(output);
             return {
                 output,

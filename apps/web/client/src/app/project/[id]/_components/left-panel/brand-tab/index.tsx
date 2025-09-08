@@ -111,7 +111,7 @@ export const BrandTab = observer(() => {
         };
 
         // Listen for file changes in the sandbox
-        const unsubscribe = editorEngine.sandbox.fileEventBus.subscribe('*', (event) => {
+        const unsubscribe = editorEngine.activeSandbox.fileEventBus.subscribe('*', (event) => {
             // Check if any of the changed files are Tailwind config files
             const isTailwindConfigChange = event.paths.some(path =>
                 path.includes('tailwind.config') || path.includes('globals.css')
@@ -125,7 +125,7 @@ export const BrandTab = observer(() => {
         return () => {
             unsubscribe();
         };
-    }, [editorEngine.theme, editorEngine.sandbox]);
+    }, [editorEngine.theme, editorEngine.activeSandbox]);
 
     // If color panel is visible, show it instead of the main content
     if (editorEngine.state.brandTab === BrandTabValue.COLORS) {

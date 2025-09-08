@@ -68,11 +68,11 @@ export const useImageMove = () => {
                 return;
             }
 
-            const copied = await editorEngine.sandbox.copy(currentPath, fullPath, true);
+            const copied = await editorEngine.activeSandbox.copy(currentPath, fullPath, true);
             if (!copied) {
                 throw new Error('Failed to copy image');
             }
-            const deleted = await editorEngine.sandbox.delete(currentPath);
+            const deleted = await editorEngine.activeSandbox.delete(currentPath);
             if (!deleted) {
                 throw new Error('Failed to delete image');
             }

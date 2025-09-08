@@ -141,7 +141,7 @@ export class MoveManager {
         }
 
         try {
-            this.editorEngine.overlay.clear();
+            this.editorEngine.overlay.clearUI();
             const positionType = this.state.dragTarget.styles?.computed?.position;
 
             if (positionType === 'absolute') {
@@ -161,7 +161,7 @@ export class MoveManager {
 
     async end(_e: React.MouseEvent<HTMLDivElement>) {
         if (!this.state) {
-            console.log('No drag state to end');
+            console.warn('No drag state to end');
             return;
         }
 
@@ -169,7 +169,7 @@ export class MoveManager {
         this.clear();
 
         if (savedState?.dragState !== DragState.IN_PROGRESS) {
-            console.log('Drag was not in progress, ending early');
+            console.warn('Drag was not in progress, ending early');
             await this.endAllDrag();
             return;
         }

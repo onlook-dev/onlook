@@ -15,7 +15,7 @@ export class PreloadScriptManager {
      */
     async ensurePreloadScriptFile(): Promise<boolean> {
         try {
-            if (!this.editorEngine.sandbox.session.provider) {
+            if (!this.editorEngine.activeSandbox.session.provider) {
                 console.warn(
                     '[PreloadScriptManager] No sandbox provider available for preload script file check',
                 );
@@ -23,7 +23,7 @@ export class PreloadScriptManager {
             }
             // check if the file exists in the public folder
             const publicScriptPath = normalizePath(`public${LOCAL_PRELOAD_SCRIPT_SRC}`);
-            const existingFile = await this.editorEngine.sandbox.readFile(publicScriptPath);
+            const existingFile = await this.editorEngine.activeSandbox.readFile(publicScriptPath);
 
             if (existingFile && existingFile.type === 'text' && existingFile.content.length > 0) {
                 return true;
@@ -47,7 +47,7 @@ export class PreloadScriptManager {
      */
     private async copyPreloadScriptToPublic(existingFile: SandboxFile | null): Promise<boolean> {
         try {
-            if (!this.editorEngine.sandbox.session.provider) {
+            if (!this.editorEngine.activeSandbox.session.provider) {
                 console.error('[PreloadScriptManager] No sandbox provider available for preload script file check');
                 return false;
             }
@@ -74,7 +74,7 @@ export class PreloadScriptManager {
             }
 
             // Write the script content to the CodeSandbox project 
-            const writeSuccess = await this.editorEngine.sandbox.writeFile(
+            const writeSuccess = await this.editorEngine.activeSandbox.writeFile(
                 `public${LOCAL_PRELOAD_SCRIPT_SRC}`,
                 scriptContent,
             );

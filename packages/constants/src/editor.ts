@@ -39,8 +39,6 @@ export const DefaultSettings = {
     SCALE: 0.7,
     PAN_POSITION: { x: 175, y: 100 },
     URL: 'http://localhost:3000/',
-    FRAME_POSITION: { x: 0, y: 0 },
-    FRAME_DIMENSION: { width: 1536, height: 960 },
     ASPECT_RATIO_LOCKED: false,
     DEVICE: 'Custom:Custom',
     THEME: Theme.System,

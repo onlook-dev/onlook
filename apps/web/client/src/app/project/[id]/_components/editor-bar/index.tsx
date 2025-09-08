@@ -8,7 +8,7 @@ import { motion } from 'motion/react';
 import { DivSelected } from './div-selected';
 import { DropdownManagerProvider } from './hooks/use-dropdown-manager';
 import { TextSelected } from './text-selected';
-import { WindowSelected } from './window-selected';
+import { FrameSelected } from './frame-selected';
 
 enum TAG_CATEGORIES {
     TEXT = 'text',
@@ -78,7 +78,7 @@ export const EditorBar = observer(({ availableWidth }: { availableWidth?: number
 
     const getTopBar = () => {
         if (windowSelected) {
-            return <WindowSelected availableWidth={availableWidth} />;
+            return <FrameSelected availableWidth={availableWidth} />;
         }
         if (selectedTag === TAG_CATEGORIES.TEXT) {
             return <TextSelected availableWidth={availableWidth} />;

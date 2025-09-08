@@ -462,10 +462,10 @@ export class ThemeManager {
                 return shouldKeep;
             });
             const updatedCssContent = updatedCssLines.join('\n');
-            await this.editorEngine.sandbox.writeFile(cssPath, updatedCssContent);
+            await this.editorEngine.activeSandbox.writeFile(cssPath, updatedCssContent);
 
             const output = generate(updateAst, {}, configContent).code;
-            await this.editorEngine.sandbox.writeFile(configPath, output);
+            await this.editorEngine.activeSandbox.writeFile(configPath, output);
 
             // Also delete the color group in the class references
             const replacements: ClassReplacement[] = [];
@@ -669,7 +669,7 @@ export class ThemeManager {
         configPath: string | null;
         cssPath: string | null;
     } {
-        const list: string[] = this.editorEngine.sandbox.listAllFiles();
+        const list: string[] = this.editorEngine.activeSandbox.listAllFiles();
 
         if (!list.length) {
             return { configPath: null, cssPath: null };
@@ -689,8 +689,8 @@ export class ThemeManager {
                 return null;
             }
 
-            const configFile = await this.editorEngine.sandbox.readFile(configPath);
-            const cssFile = await this.editorEngine.sandbox.readFile(cssPath);
+            const configFile = await this.editorEngine.activeSandbox.readFile(configPath);
+            const cssFile = await this.editorEngine.activeSandbox.readFile(cssPath);
             const configContent = configFile && configFile.type === 'text' ? extractColorsFromTailwindConfig(configFile.content) : '';
             const cssContent = cssFile && cssFile.type === 'text' ? extractTailwindCssVariables(cssFile.content) : '';
             return {
@@ -794,7 +794,7 @@ export class ThemeManager {
         });
 
         const output = generate(updateAst, {}, configContent).code;
-        await this.editorEngine.sandbox.writeFile(configPath, output);
+        await this.editorEngine.activeSandbox.writeFile(configPath, output);
 
         if (!isUpdated) {
             const newCssVarName = `${colorFamily}-${shadeKey}`;
@@ -804,7 +804,7 @@ export class ThemeManager {
                 newColor,
             );
 
-            await this.editorEngine.sandbox.writeFile(cssPath, updatedCssContent);
+            await this.editorEngine.activeSandbox.writeFile(cssPath, updatedCssContent);
         } else {
             // Update the CSS file
             const originalName = `${colorFamily}-${shadeKey}`;
@@ -815,7 +815,7 @@ export class ThemeManager {
                 newColor,
                 theme,
             );
-            await this.editorEngine.sandbox.writeFile(cssPath, updatedCssContent);
+            await this.editorEngine.activeSandbox.writeFile(cssPath, updatedCssContent);
         }
 
         return isUpdated;
@@ -859,7 +859,7 @@ export class ThemeManager {
             theme,
         );
 
-        await this.editorEngine.sandbox.writeFile(cssPath, updatedCssContent);
+        await this.editorEngine.activeSandbox.writeFile(cssPath, updatedCssContent);
 
         // Update config file
         const { keyUpdated, valueUpdated, output } = this.updateTailwindConfigFile(
@@ -871,7 +871,7 @@ export class ThemeManager {
         );
 
         if (keyUpdated || valueUpdated) {
-            await this.editorEngine.sandbox.writeFile(configPath, output);
+            await this.editorEngine.activeSandbox.writeFile(configPath, output);
 
             // Update class references if the name changed
             if (keyUpdated) {
@@ -921,7 +921,7 @@ export class ThemeManager {
                 newCssVarName,
                 newColor,
             );
-            await this.editorEngine.sandbox.writeFile(cssPath, updatedCssContent);
+            await this.editorEngine.activeSandbox.writeFile(cssPath, updatedCssContent);
         }
 
         // Update config file
@@ -948,7 +948,7 @@ export class ThemeManager {
         });
 
         const output = generate(updateAst, { compact: false }, configContent).code;
-        await this.editorEngine.sandbox.writeFile(configPath, output);
+        await this.editorEngine.activeSandbox.writeFile(configPath, output);
 
         return { success: true };
     }
@@ -959,7 +959,7 @@ export class ThemeManager {
             return null;
         }
 
-        const files = await this.editorEngine.sandbox.readFiles([configPath, cssPath]);
+        const files = await this.editorEngine.activeSandbox.readFiles([configPath, cssPath]);
         if (!files[configPath] || !files[cssPath]) {
             return null;
         }
@@ -1140,12 +1140,12 @@ export class ThemeManager {
     }
 
     async updateClassReferences(replacements: ClassReplacement[]): Promise<void> {
-        const sourceFiles = this.editorEngine.sandbox.listAllFiles();
+        const sourceFiles = this.editorEngine.activeSandbox.listAllFiles();
         const filesToUpdate = sourceFiles.filter((file) => file.endsWith('.tsx'))
 
         await Promise.all(
             filesToUpdate.map(async (file) => {
-                const foundFile = await this.editorEngine.sandbox.readFile(file);
+                const foundFile = await this.editorEngine.activeSandbox.readFile(file);
                 if (!foundFile || foundFile.type === 'binary') {
                     return;
                 }
@@ -1195,7 +1195,7 @@ export class ThemeManager {
                 if (updates.size > 0) {
                     transformAst(ast, updates);
                     const output = generate(ast, { retainLines: true }, foundFile.content).code;
-                    await this.editorEngine.sandbox.writeFile(file, output);
+                    await this.editorEngine.activeSandbox.writeFile(file, output);
                 }
             }),
         );

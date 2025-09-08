@@ -1,7 +1,7 @@
 import {
     projectSettings,
     projectSettingsInsertSchema,
-    toProjectSettings
+    fromDbProjectSettings
 } from '@onlook/db';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
@@ -22,7 +22,7 @@ export const settingsRouter = createTRPCRouter({
             if (!setting) {
                 return null;
             }
-            return toProjectSettings(setting);
+            return fromDbProjectSettings(setting);
         }),
     upsert: protectedProcedure
         .input(
@@ -46,7 +46,7 @@ export const settingsRouter = createTRPCRouter({
                     message: 'Failed to update project settings',
                 });
             }
-            return toProjectSettings(updatedSettings);
+            return fromDbProjectSettings(updatedSettings);
         }),
     delete: protectedProcedure
         .input(

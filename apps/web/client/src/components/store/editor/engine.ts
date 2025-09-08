@@ -2,18 +2,17 @@ import { makeAutoObservable } from 'mobx';
 import type { PostHog } from 'posthog-js';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
+import { BranchManager } from './branch';
 import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
 import { CopyManager } from './copy';
-import { IDEManager } from './dev';
 import { ElementsManager } from './element';
-import { ErrorManager } from './error';
 import { FontManager } from './font';
 import { FrameEventManager } from './frame-events';
 import { FramesManager } from './frames';
 import { GroupManager } from './group';
-import { HistoryManager } from './history';
+import { IDEManager } from './ide';
 import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
@@ -25,20 +24,28 @@ import { ScreenshotManager } from './screenshot';
 import { SnapManager } from './snap';
 import { StateManager } from './state';
 import { StyleManager } from './style';
+import { TemplateNodeManager } from './template-nodes';
 import { TextEditingManager } from './text';
 import { ThemeManager } from './theme';
 import { VersionsManager } from './version';
+import type { Branch } from '@onlook/models';
 
 export class EditorEngine {
     readonly projectId: string;
     readonly posthog: PostHog;
+    readonly branches: BranchManager = new BranchManager(this);
 
-    readonly error: ErrorManager = new ErrorManager();
+    get activeSandbox(): SandboxManager {
+        return this.branches.activeSandbox;
+    }
+
+    get history() {
+        return this.branches.activeHistory;
+    }
+
     readonly state: StateManager = new StateManager();
     readonly canvas: CanvasManager = new CanvasManager(this);
     readonly text: TextEditingManager = new TextEditingManager(this);
-    readonly sandbox: SandboxManager = new SandboxManager(this);
-    readonly history: HistoryManager = new HistoryManager(this);
     readonly elements: ElementsManager = new ElementsManager(this);
     readonly overlay: OverlayManager = new OverlayManager(this);
     readonly insert: InsertManager = new InsertManager(this);
@@ -61,6 +68,7 @@ export class EditorEngine {
     readonly preloadScript: PreloadScriptManager = new PreloadScriptManager(this);
     readonly screenshot: ScreenshotManager = new ScreenshotManager(this);
     readonly snap: SnapManager = new SnapManager(this);
+    readonly templateNodes: TemplateNodeManager = new TemplateNodeManager(this);
 
     constructor(projectId: string, posthog: PostHog) {
         this.projectId = projectId;
@@ -68,10 +76,24 @@ export class EditorEngine {
         makeAutoObservable(this);
     }
 
+    async init() {
+        this.overlay.init();
+        this.image.init();
+        this.font.init();
+        this.frameEvent.init();
+        this.chat.init();
+        this.templateNodes.init();
+        this.style.init();
+    }
+
+    async initBranches(branches: Branch[]) {
+        this.branches.initBranches(branches);
+        await this.branches.init();
+    }
+
     clear() {
         this.elements.clear();
         this.frames.clear();
-        this.history.clear();
         this.action.clear();
         this.overlay.clear();
         this.ast.clear();
@@ -89,15 +111,15 @@ export class EditorEngine {
         this.chat.clear();
         this.code.clear();
         this.ide.clear();
-        this.error.clear();
-        this.sandbox.clear();
+        this.branches.clear();
         this.frameEvent.clear();
         this.screenshot.clear();
         this.snap.hideSnapLines();
+        this.templateNodes.clear();
     }
 
     clearUI() {
-        this.overlay.clear();
+        this.overlay.clearUI();
         this.elements.clear();
         this.frames.deselectAll();
         this.snap.hideSnapLines();
