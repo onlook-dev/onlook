@@ -115,11 +115,11 @@ export class E2BSandboxTerminal extends SandboxTerminal<E2BClient> {
             await watcher.start();
         }
 
-        watcher.onOutput((output) => onOutput(output));
+        const unsubscribe = watcher.onOutput((output) => onOutput(output));
 
         return {
             close: () => {
-                watcher.stop();
+                unsubscribe();
             },
         };
     }
@@ -145,9 +145,7 @@ export class E2BSandboxTerminal extends SandboxTerminal<E2BClient> {
         // Write input to the terminal
         await watcher.writeInput(input.input);
 
-        return {
-            output: '',
-        };
+        return {};
     }
 
     async run(input: SandboxTerminalRunInput): Promise<SandboxTerminalRunOutput> {
@@ -171,9 +169,7 @@ export class E2BSandboxTerminal extends SandboxTerminal<E2BClient> {
         // Execute the command and get output
         await watcher.executeCommand(input.input);
 
-        return {
-            output: '',
-        };
+        return {};
     }
 
     async kill(input: SandboxTerminalKillInput): Promise<SandboxTerminalKillOutput> {
@@ -254,13 +250,17 @@ class TerminalWatcher {
             console.error('error waiting for terminal handle', err);
             throw err;
         } finally {
-            console.log('stopping terminal watcher');
             this.stop();
         }
     }
 
-    onOutput(callback: (output: SandboxTerminalOpenOutput) => void): void {
+    onOutput(callback: (output: SandboxTerminalOpenOutput) => void): () => void {
         this._onOutputCallbacks.push(callback);
+        return () => {
+            this._onOutputCallbacks = this._onOutputCallbacks.filter(
+                (callback) => callback !== callback,
+            );
+        };
     }
 
     async writeInput(input: string): Promise<void> {

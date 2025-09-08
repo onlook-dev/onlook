@@ -32,9 +32,7 @@ export interface SandboxTerminalWriteInput {
     terminalId: string;
     input: string;
 }
-export interface SandboxTerminalWriteOutput {
-    output: string;
-}
+export interface SandboxTerminalWriteOutput {}
 
 export interface SandboxTerminalKillInput {
     terminalId: string;
@@ -47,9 +45,7 @@ export interface SandboxTerminalRunInput {
     terminalId: string;
     input: string;
 }
-export interface SandboxTerminalRunOutput {
-    output: string;
-}
+export interface SandboxTerminalRunOutput {}
 
 export abstract class SandboxTerminal<T extends Client> {
     constructor(protected readonly client: T) {}

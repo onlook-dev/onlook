@@ -3,6 +3,8 @@ import { LocalHono } from '@/server';
 import { JwtAuthResponses } from '@/util/auth';
 import { createRoute, z } from '@hono/zod-openapi';
 import { env } from 'bun';
+import { streamSSE } from 'hono/streaming';
+import { v4 as uuid } from 'uuid';
 
 const BodySchema: z.ZodType<SandboxFileWatchInput> = z.object({
     path: z.string().openapi({
@@ -17,15 +19,6 @@ const BodySchema: z.ZodType<SandboxFileWatchInput> = z.object({
         description: 'The paths to exclude from the watch.',
         example: ['/path/to/exclude'],
     }),
-});
-
-const ResponseSchema: z.ZodType<SandboxFileWatchOutput> = z.object({
-    events: z.array(
-        z.object({
-            path: z.string(),
-            type: z.enum(['create', 'update', 'delete']),
-        }),
-    ),
 });
 
 const route = createRoute({
@@ -44,11 +37,13 @@ const route = createRoute({
     responses: {
         200: {
             content: {
-                'application/json': {
-                    schema: ResponseSchema,
+                'text/event-stream': {
+                    schema: z.string().openapi({
+                        description: 'A stream of server-sent events.',
+                    }),
                 },
             },
-            description: 'Watch a file to the sandbox.',
+            description: 'Return file watch events. Design for SSE',
         },
         ...JwtAuthResponses,
     },
@@ -56,8 +51,39 @@ const route = createRoute({
 
 export function api_sandbox_file_watch(app: LocalHono) {
     app.openapi(route, async (c) => {
-        const body = await c.req.valid('json');
-        const result = await c.get('client').sandbox.file.watch(body);
-        return c.json(result, 200);
+        const query = await c.req.valid('json');
+        return streamSSE(c, async (stream) => {
+            // Send a "connected" message immediately
+            await stream.writeSSE({
+                id: uuid(),
+                event: 'status',
+                data: 'Connected to endpoint.',
+            });
+
+            const onOutput = (res: SandboxFileWatchOutput) => {
+                stream.writeSSE({
+                    id: res.id,
+                    event: 'message',
+                    data: JSON.stringify({ events: res.events }),
+                });
+            };
+
+            const { close } = await c.get('client').sandbox.file.watch(query, onOutput);
+
+            let open = true;
+            stream.onAbort(() => {
+                close();
+                open = false;
+            });
+
+            while (open) {
+                await stream.writeSSE({
+                    id: uuid(),
+                    event: 'status',
+                    data: 'Endpoint is still open.',
+                });
+                await stream.sleep(5000);
+            }
+        });
     });
 }

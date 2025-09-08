@@ -23,6 +23,7 @@ import {
 } from '../../../definition/sandbox/file';
 import { NotFoundError, WatchHandle } from '@e2b/code-interpreter';
 import path from 'path';
+import { v4 as uuid } from 'uuid';
 
 const watchers: Map<string, Watcher> = new Map();
 
@@ -167,7 +168,7 @@ export class E2BSandboxFile extends SandboxFile<E2BClient> {
         return {};
     }
 
-    async watch(input: SandboxFileWatchInput): Promise<SandboxFileWatchOutput> {
+    async watch(input: SandboxFileWatchInput, onOutput: (output: SandboxFileWatchOutput) => void) {
         if (!this.client._sandbox) {
             throw new ClientError(
                 ClientErrorCode.ImplementationError,
@@ -205,13 +206,12 @@ export class E2BSandboxFile extends SandboxFile<E2BClient> {
             });
         }
 
-        const events = await watcher.list();
+        watcher.onOutput((output) => onOutput(output));
 
         return {
-            events: events.map((event) => ({
-                path: event.path,
-                type: event.type,
-            })),
+            close: () => {
+                watcher.stop();
+            },
         };
     }
 
@@ -235,8 +235,7 @@ class Watcher {
 
     protected _off: boolean = true;
     protected _watchHandle: WatchHandle | null = null;
-    protected _timeout: NodeJS.Timeout | null = null;
-    protected _resolvers: Array<() => void> = [];
+    protected _onEventCallbacks: Array<(output: SandboxFileWatchOutput) => void> = [];
 
     constructor(protected readonly client: E2BClient) {}
 
@@ -289,12 +288,15 @@ class Watcher {
 
                 // debounce the resolution of the promise
                 timeout = setTimeout(() => {
-                    this._resolvers.forEach((resolve) => resolve());
-                    this._resolvers = [];
-                }, 300);
+                    this._onEventCallbacks.forEach((callback) =>
+                        callback({
+                            id: uuid(),
+                            events: this.events,
+                        }),
+                    );
+                }, 200);
             },
             {
-                // requestTimeoutMs: 0,
                 timeoutMs: 0,
                 recursive: input.recursive,
                 onExit: (err) => {
@@ -305,39 +307,8 @@ class Watcher {
         );
     }
 
-    async list(): Promise<Array<WatcherEvent>> {
-        if (this._timeout) {
-            clearTimeout(this._timeout);
-            this._timeout = null;
-        }
-
-        // if there hasn't been any calls to `list` within the timeout, stop the watcher
-        this._timeout = setTimeout(() => {
-            this.stop();
-        }, this.watchTimeout);
-
-        // if there are no events, do not return yet
-        if (this.events.length === 0) {
-            let resolved = false;
-            await new Promise<void>((resolve) => {
-                this._resolvers.push(() => {
-                    if (!resolved) {
-                        resolve();
-                        resolved = true;
-                    }
-                });
-                setTimeout(() => {
-                    if (!resolved) {
-                        resolve();
-                        resolved = true;
-                    }
-                }, this.promiseTimeout);
-            });
-        }
-
-        const events = this.events;
-        this.events = [];
-        return events;
+    onOutput(callback: (output: SandboxFileWatchOutput) => void): void {
+        this._onEventCallbacks.push(callback);
     }
 
     async stop(): Promise<void> {

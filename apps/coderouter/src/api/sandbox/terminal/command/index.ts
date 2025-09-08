@@ -16,22 +16,22 @@ const BodySchema: z.ZodType<SandboxTerminalCommandInput> = z.object({
 
 const ResponseSchema: z.ZodType<SandboxTerminalCommandOutput> = z.object({
     is_error: z.boolean().openapi({
-        description: 'Whether the command was successful.',
-        example: true,
+        description: 'True if the command failed.',
+        example: false,
     }),
     output: z.string().openapi({
-        description: 'The output of the command.',
-        example: 'ls -la',
+        description: 'Combined output (stdout + stderr).',
+        example: 'total 0',
     }),
-    stdout: z.string().openapi({
+    stdout: z.string().optional().openapi({
         description: 'The stdout of the command.',
-        example: 'ls -la',
+        example: 'total 0',
     }),
-    stderr: z.string().openapi({
+    stderr: z.string().optional().openapi({
         description: 'The stderr of the command.',
-        example: 'ls -la',
+        example: '',
     }),
-    exit_code: z.number().openapi({
+    exit_code: z.number().optional().openapi({
         description: 'The exit code of the command.',
         example: 0,
     }),

@@ -57,6 +57,7 @@ export interface SandboxFileWatchInput {
     excludePaths: string[];
 }
 export interface SandboxFileWatchOutput {
+    id: string;
     events: Array<{
         path: string;
         type: 'create' | 'update' | 'delete';
@@ -73,6 +74,9 @@ export abstract class SandboxFile<T extends Client> {
     abstract read(input: SandboxFileReadInput): Promise<SandboxFileReadOutput>;
     abstract rename(input: SandboxFileRenameInput): Promise<SandboxFileRenameOutput>;
     abstract stat(input: SandboxFileStatInput): Promise<SandboxFileStatOutput>;
-    abstract watch(input: SandboxFileWatchInput): Promise<SandboxFileWatchOutput>;
+    abstract watch(
+        input: SandboxFileWatchInput,
+        onOutput: (output: SandboxFileWatchOutput) => void,
+    ): Promise<{ close: () => void }>;
     abstract write(input: SandboxFileWriteInput): Promise<SandboxFileWriteOutput>;
 }

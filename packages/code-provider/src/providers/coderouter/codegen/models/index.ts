@@ -16,8 +16,6 @@ export * from './CoderouterApiSandboxFileReadPostRequest';
 export * from './CoderouterApiSandboxFileRenamePostRequest';
 export * from './CoderouterApiSandboxFileStatPost200Response';
 export * from './CoderouterApiSandboxFileStatPostRequest';
-export * from './CoderouterApiSandboxFileWatchPost200Response';
-export * from './CoderouterApiSandboxFileWatchPost200ResponseEventsInner';
 export * from './CoderouterApiSandboxFileWatchPostRequest';
 export * from './CoderouterApiSandboxFileWritePostRequest';
 export * from './CoderouterApiSandboxFileWritePostRequestFilesInner';

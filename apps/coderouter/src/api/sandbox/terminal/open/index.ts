@@ -6,7 +6,7 @@ import { SandboxTerminalOpenOutput } from '@/provider/definition/sandbox/termina
 import { LocalHono } from '@/server';
 import { JwtAuthResponses } from '@/util/auth';
 import { createRoute, z } from '@hono/zod-openapi';
-import { env, sleep } from 'bun';
+import { env } from 'bun';
 import { streamSSE } from 'hono/streaming';
 import { v4 as uuid } from 'uuid';
 
@@ -29,12 +29,11 @@ const route = createRoute({
             content: {
                 'text/event-stream': {
                     schema: z.string().openapi({
-                        description:
-                            'A stream of server-sent events (not JSON array, continuous text).',
+                        description: 'A stream of server-sent events.',
                     }),
                 },
             },
-            description: 'Return the output of a terminal in the sandbox. Design for long-polling',
+            description: 'Return the output of a terminal in the sandbox. Design for SSE',
         },
         ...JwtAuthResponses,
     },
@@ -52,7 +51,6 @@ export function api_sandbox_terminal_open(app: LocalHono) {
             });
 
             const onOutput = (res: SandboxTerminalOpenOutput) => {
-                console.log(res.output);
                 stream.writeSSE({
                     id: res.id,
                     event: 'message',
@@ -74,7 +72,7 @@ export function api_sandbox_terminal_open(app: LocalHono) {
                     event: 'status',
                     data: 'Endpoint is still open.',
                 });
-                await sleep(5000);
+                await stream.sleep(5000);
             }
         });
     });

@@ -413,63 +413,55 @@ export class CoderouterFileWatcher extends ProviderFileWatcher {
 
         this.off = false;
 
-        const tick = async () => {
-            if (this.off) {
-                return;
-            }
+        fetchEventSource(
+            `${this.api['configuration'].basePath}/coderouter/api/sandbox/file/watch`,
+            {
+                ...(this.requestInitOverrides() as Record<string, any>),
+                method: 'POST',
+                body: JSON.stringify({
+                    path: input.args.path,
+                    recursive: input.args.recursive ?? true,
+                    excludePaths: input.args.excludes ?? [],
+                }),
+                signal: this.abortController?.signal,
+                onmessage: (event) => {
+                    if (event.event === 'message') {
+                        const res = JSON.parse(event.data);
+                        // convert the events to a map of type to paths as the defined by the product
+                        const events = (res.events as Array<{ path: string; type: string }>).reduce(
+                            (acc, event) => {
+                                acc[event.type] = [...(acc[event.type] || []), event.path];
+                                return acc;
+                            },
+                            {} as Record<string, string[]>,
+                        );
 
-            if (this.abortController) {
-                this.abortController.abort();
-            }
-
-            this.abortController = new AbortController();
-
-            try {
-                const body = await this.api.coderouterApiSandboxFileWatchPost(
-                    {
-                        coderouterApiSandboxFileWatchPostRequest: {
-                            path: input.args.path,
-                            recursive: input.args.recursive ?? true,
-                            excludePaths: input.args.excludes ?? [],
-                        },
-                    },
-                    {
-                        ...this.requestInitOverrides(),
-                        signal: this.abortController?.signal,
-                    },
-                );
-
-                // convert the events to a map of type to paths as the defined by the product
-                const events = body.events.reduce(
-                    (acc, event) => {
-                        acc[event.type] = [...(acc[event.type] || []), event.path];
-                        return acc;
-                    },
-                    {} as Record<string, string[]>,
-                );
-
-                for (const [type, paths] of Object.entries(events)) {
-                    this.callbacks.forEach(async (callback) => {
-                        await callback({
-                            type:
-                                type === 'create' ? 'add' : type === 'delete' ? 'remove' : 'change',
-                            paths,
-                        });
-                    });
-                }
-            } catch (err) {
-                console.error('[coderouter] poll error', err);
-            } finally {
-                // schedule next poll immediately
-                setTimeout(tick, 200);
-            }
-        };
-
-        tick();
+                        for (const [type, paths] of Object.entries(events)) {
+                            this.callbacks.forEach(async (callback) => {
+                                await callback({
+                                    type:
+                                        type === 'create'
+                                            ? 'add'
+                                            : type === 'delete'
+                                              ? 'remove'
+                                              : 'change',
+                                    paths,
+                                });
+                            });
+                        }
+                        this.callbacks.forEach((callback) => callback(res.output));
+                    }
+                },
+                onerror: (err) => {
+                    console.error('[coderouter/file/watch] SSE error', err);
+                },
+            },
+        );
     }
 
     async stop(): Promise<void> {
         this.off = true;
+        this.abortController?.abort();
     }
 
     registerEventCallback(callback: (event: WatchEvent) => Promise<void>): void {
@@ -527,10 +519,10 @@ export class CoderouterTerminal extends ProviderTerminal {
             `${this.api['configuration'].basePath}/coderouter/api/sandbox/terminal/open?terminalId=${this._id}`,
             {
                 ...(this.requestInitOverrides() as Record<string, any>),
+                signal: this.abortController?.signal,
                 onmessage: (event) => {
                     if (event.event === 'message') {
                         const res = JSON.parse(event.data);
-                        console.log('res', res);
                         this.callbacks.forEach((callback) => callback(res.output));
                     }
                 },
@@ -540,46 +532,6 @@ export class CoderouterTerminal extends ProviderTerminal {
             },
         );
 
-        // this.off = false;
-
-        // const tick = async () => {
-        //     if (this.off) {
-        //         return '';
-        //     }
-
-        //     if (this.abortController) {
-        //         this.abortController.abort();
-        //     }
-
-        //     this.abortController = new AbortController();
-
-        //     let output = '';
-        //     try {
-        //         const body = await this.api.coderouterApiSandboxTerminalOpenGet(
-        //             {
-        //                 terminalId: this._id,
-        //             },
-        //             {
-        //                 ...this.requestInitOverrides(),
-        //                 signal: this.abortController?.signal,
-        //             },
-        //         );
-
-        //         this.callbacks.forEach((callback) => {
-        //             callback(body.output);
-        //         });
-
-        //         output = body.output;
-        //     } catch (err) {
-        //         console.error('[coderouter] poll error', err);
-        //     } finally {
-        //         // schedule next poll immediately
-        //         setTimeout(tick, 200);
-        //     }
-        //     return output;
-        // };
-
-        // tick();
         return '';
     }
 
@@ -608,6 +560,7 @@ export class CoderouterTerminal extends ProviderTerminal {
     }
 
     async kill(): Promise<void> {
+        this.abortController?.abort();
         await this.api.coderouterApiSandboxTerminalKillPost(
             {
                 coderouterApiSandboxTerminalKillPostRequest: {
@@ -620,7 +573,9 @@ export class CoderouterTerminal extends ProviderTerminal {
 
     onOutput(callback: (data: string) => void): () => void {
         this.callbacks.push(callback);
-        return () => null;
+        return () => {
+            this.callbacks = this.callbacks.filter((callback) => callback !== callback);
+        };
     }
 }
 

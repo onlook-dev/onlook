@@ -21,8 +21,8 @@ const BodySchema: z.ZodType<SandboxTerminalRunInput> = z.object({
 const ResponseSchema: z.ZodType<SandboxTerminalRunOutput> = z.object({
     output: z.string().openapi({
         description:
-            'The output of the run command. The output includes lines before and after the command execution.',
-        example: 'My Terminal',
+            'Combined stdout/stderr captured from the terminal around the command execution.',
+        example: '$ ls -la\\n.\\n..\\nREADME.md\\n',
     }),
 });
 
