@@ -30,20 +30,19 @@ export const FrameView = observer(({ frame }: { frame: Frame }) => {
         }
 
         const timeoutId = setTimeout(() => {
-            // Check if still connecting when timeout fires
             const currentBranchData = editorEngine.branches.getBranchDataById(frame.branchId);
             const stillConnecting = currentBranchData?.sandbox?.session?.isConnecting || currentBranchData?.sandbox?.isIndexing || false;
 
             if (stillConnecting) {
                 setHasTimedOut(true);
                 toast.error('Connection timeout', {
-                    description: `Failed to connect to the branch ${branchData?.branch?.name}. Please try reloading.`,
+                    description: `Failed to connect to the branch ${currentBranchData?.branch?.name}. Please try reloading.`,
                 });
             }
-        }, 10000); // 10 second timeout
+        }, 30000);
 
         return () => clearTimeout(timeoutId);
-    }, [isConnecting, frame.branchId, editorEngine.branches]);
+    }, [isConnecting, frame.branchId]);
 
     const undebouncedReloadIframe = () => {
         setReloadKey(prev => prev + 1);
