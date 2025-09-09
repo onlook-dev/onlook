@@ -1,4 +1,6 @@
+import { env } from '@/env';
 import { Routes } from '@/utils/constants';
+import { generateInstallationUrl } from '@onlook/github';
 import { TRPCError } from '@trpc/server';
 import { Octokit } from 'octokit';
 import { z } from 'zod';
@@ -35,6 +37,25 @@ const createUserOctokit = async (supabase: any) => {
 };
 
 export const githubRouter = createTRPCRouter({
+    generateInstallationUrl: protectedProcedure
+        .input(
+            z.object({
+                state: z.string()
+            }),
+        )
+        .query(async ({ input, ctx }) => {
+            if (!env.GITHUB_APP_SLUG) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'GitHub app slug not found'
+                });
+            }
+
+            return generateInstallationUrl(env.GITHUB_APP_SLUG, {
+                state: input.state
+            });
+        }),
+
     validate: protectedProcedure
         .input(
             z.object({
