@@ -118,9 +118,9 @@ export class CreateManager {
         }
     }
 
-    async createSandboxFromGithub(repoUrl: string, branch: string) {
+    async createSandboxFromGithub(url: string, branch: string) {
         return await api.sandbox.createFromGitHub.mutate({
-            repoUrl,
+            url,
             branch
         });
     }

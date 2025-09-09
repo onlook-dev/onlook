@@ -1,4 +1,4 @@
-import { CodeProvider, createCodeProviderClient, getStaticCodeProvider } from '@onlook/code-provider';
+import { CodeProvider, CodesandboxProvider, createCodeProviderClient, getStaticCodeProvider } from '@onlook/code-provider';
 import { getSandboxPreviewUrl } from '@onlook/constants';
 import { shortenUuid } from '@onlook/utility/src/id';
 import { TRPCError } from '@trpc/server';
@@ -145,7 +145,7 @@ export const sandboxRouter = createTRPCRouter({
     createFromGitHub: protectedProcedure
         .input(
             z.object({
-                repoUrl: z.string(),
+                url: z.string(),
                 branch: z.string(),
             }),
         )
@@ -156,12 +156,9 @@ export const sandboxRouter = createTRPCRouter({
 
             for (let attempt = 1; attempt <= MAX_RETRY_ATTEMPTS; attempt++) {
                 try {
-                    const { CodeSandbox } = await import('@codesandbox/sdk');
-                    const sdk = new CodeSandbox();
-                    
-                    const sandbox = await sdk.sandboxes.create({
-                        source: 'git',
-                        url: input.repoUrl,
+                    const CodeSandboxProvider: typeof CodesandboxProvider = await getStaticCodeProvider(CodeProvider.CodeSandbox) as typeof CodesandboxProvider;
+                    const sandbox = await CodeSandboxProvider.createProjectFromGit({
+                        url: input.url,
                         branch: input.branch,
                         async setup(session) {
                             await session.setup.run();

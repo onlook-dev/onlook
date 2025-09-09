@@ -171,6 +171,23 @@ export class CodesandboxProvider extends Provider {
         };
     }
 
+    static async createProjectFromGit(input: {
+        url: string;
+        branch: string;
+        setup: (session: SandboxBrowserSession) => Promise<void>;
+    }): Promise<CreateProjectOutput> {
+        const sdk = new CodeSandbox();
+        const newSandbox = await sdk.sandboxes.create({
+            source: 'git',
+            url: input.url,
+            branch: input.branch,
+            setup: input.setup,
+        });
+        return {
+            id: newSandbox.id,
+        };
+    }
+
     async pauseProject(input: PauseProjectInput): Promise<PauseProjectOutput> {
         if (this.sandbox && this.options.sandboxId) {
             const sdk = new CodeSandbox();

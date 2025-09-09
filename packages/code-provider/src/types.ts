@@ -160,6 +160,7 @@ export interface CreateProjectInput {
     description?: string;
     tags?: string[];
 }
+
 export interface CreateProjectOutput {
     id: string;
 }
