@@ -17,6 +17,7 @@ import { Separator } from '@onlook/ui/separator';
 import { getInitials } from '@onlook/utility';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { resetTelemetry, openFeedbackWidget } from '@/utils/telemetry';
 import { UsageSection } from './plans';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
@@ -31,6 +32,8 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const [open, setOpen] = useState(false);
 
     const handleSignOut = async () => {
+        // Clear analytics/feedback identities before signing out
+        void resetTelemetry();
         await supabase.auth.signOut();
         const returnUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
         router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(returnUrl)}`);
@@ -61,7 +64,7 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
             label: 'Send Feedback',
             icon: Icons.MessageSquare,
             onClick: () => {
-                stateManager.isFeedbackModalOpen = true;
+                void openFeedbackWidget();
                 setOpen(false);
             },
         },

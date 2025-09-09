@@ -1,7 +1,7 @@
 import '@/styles/globals.css';
 import '@onlook/ui/globals.css';
 
-import { PostHogProvider } from '@/components/posthog-provider';
+import { TelemetryProvider } from '@/components/telemetry-provider';
 import { env } from '@/env';
 import { FeatureFlagsProvider } from '@/hooks/use-feature-flags';
 import { TRPCReactProvider } from '@/trpc/react';
@@ -80,7 +80,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 )}
                 <TRPCReactProvider>
                     <FeatureFlagsProvider>
-                        <PostHogProvider>
+                        <TelemetryProvider>
                             <ThemeProvider
                                 attribute="class"
                                 forcedTheme="dark"
@@ -94,7 +94,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                                     </NextIntlClientProvider>
                                 </AuthProvider>
                             </ThemeProvider>
-                        </PostHogProvider>
+                        </TelemetryProvider>
                     </FeatureFlagsProvider>
                 </TRPCReactProvider>
             </body>

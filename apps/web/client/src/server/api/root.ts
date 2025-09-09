@@ -3,7 +3,6 @@ import {
     chatRouter,
     codeRouter,
     domainRouter,
-    feedbackRouter,
     frameRouter,
     githubRouter,
     invitationRouter,
@@ -41,7 +40,6 @@ export const appRouter = createTRPCRouter({
     subscription: subscriptionRouter,
     usage: usageRouter,
     publish: publishRouter,
-    feedback: feedbackRouter,
 });
 
 // export type definition of API

@@ -1,5 +1,6 @@
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
+import { openFeedbackWidget } from '@/utils/telemetry';
 import { Links, SUPPORT_EMAIL } from '@onlook/constants';
 import {
     DropdownMenu,
@@ -139,7 +140,7 @@ export const HelpDropdown = observer(() => {
                     className="text-sm"
                     onClick={() => {
                         setIsDropdownOpen(false);
-                        stateManager.isFeedbackModalOpen = true;
+                        void openFeedbackWidget();
                     }}
                 >
                     <Icons.MessageSquare className="w-4 h-4 mr-2" />
