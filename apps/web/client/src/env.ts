@@ -51,10 +51,6 @@ export const env = createEnv({
         LANGFUSE_SECRET_KEY: z.string().optional(),
         LANGFUSE_PUBLIC_KEY: z.string().optional(),
         LANGFUSE_BASEURL: z.string().url().optional(),
-
-        // Feedback
-        FEEDBACK_FROM_EMAIL: z.string().email().optional(),
-        FEEDBACK_TO_EMAIL: z.string().email().optional(),
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -67,6 +63,7 @@ export const env = createEnv({
         NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string(),
         NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
         NEXT_PUBLIC_POSTHOG_HOST: z.string().optional(),
+        NEXT_PUBLIC_GLEAP_API_KEY: z.string().optional(),
         NEXT_PUBLIC_FEATURE_COLLABORATION: z.boolean().default(false),
         NEXT_PUBLIC_HOSTING_DOMAIN: z.string().optional(),
         NEXT_PUBLIC_RB2B_ID: z.string().optional(),
@@ -91,6 +88,7 @@ export const env = createEnv({
         // Posthog
         NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
         NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+        NEXT_PUBLIC_GLEAP_API_KEY: process.env.NEXT_PUBLIC_GLEAP_API_KEY,
 
         // RB2B
         NEXT_PUBLIC_RB2B_ID: process.env.NEXT_PUBLIC_RB2B_ID,
@@ -137,10 +135,6 @@ export const env = createEnv({
         LANGFUSE_SECRET_KEY: process.env.LANGFUSE_SECRET_KEY,
         LANGFUSE_PUBLIC_KEY: process.env.LANGFUSE_PUBLIC_KEY,
         LANGFUSE_BASEURL: process.env.LANGFUSE_BASEURL,
-
-        // Feedback
-        FEEDBACK_FROM_EMAIL: process.env.FEEDBACK_FROM_EMAIL,
-        FEEDBACK_TO_EMAIL: process.env.FEEDBACK_TO_EMAIL,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially

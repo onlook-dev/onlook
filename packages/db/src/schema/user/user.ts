@@ -1,7 +1,6 @@
 import { relations } from 'drizzle-orm';
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
-import { feedbacks } from '../feedback';
 import { projectInvitations } from '../project';
 import { usageRecords } from '../subscription';
 import { subscriptions } from '../subscription/subscription';
@@ -32,7 +31,6 @@ export const usersRelations = relations(users, ({ many, one }) => ({
     subscriptions: many(subscriptions),
     usageRecords: many(usageRecords),
     projectInvitations: many(projectInvitations),
-    feedbacks: many(feedbacks),
 }));
 
 export const userInsertSchema = createInsertSchema(users);
