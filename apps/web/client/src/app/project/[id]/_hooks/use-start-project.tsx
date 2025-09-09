@@ -49,11 +49,11 @@ export const useStartProject = () => {
     }, [conversations]);
 
     useEffect(() => {
-        if (creationRequest && processedRequestIdRef.current !== creationRequest.id) {
+        if (creationRequest && processedRequestIdRef.current !== creationRequest.id && isProjectReady) {
             processedRequestIdRef.current = creationRequest.id;
             resumeCreate(creationRequest);
         }
-    }, [creationRequest]);
+    }, [creationRequest, isProjectReady]);
 
     const resumeCreate = async (creationData: ProjectCreateRequest) => {
         try {

@@ -7,8 +7,10 @@ import { getSandboxPreviewUrl, STORAGE_BUCKETS } from '@onlook/constants';
 import {
     branches,
     canvases,
+    conversations,
     createDefaultBranch,
     createDefaultCanvas,
+    createDefaultConversation,
     createDefaultFrame,
     createDefaultUserCanvas,
     DefaultFrameType,
@@ -290,7 +292,10 @@ export const projectRouter = createTRPCRouter({
                 });
                 await tx.insert(frames).values(mobileFrame);
 
-                // 6. Create the creation request
+                // 6. Create the default chat conversation
+                await tx.insert(conversations).values(createDefaultConversation(newProject.id));
+
+                // 7. Create the creation request
                 if (input.creationData) {
                     await tx.insert(projectCreateRequests).values({
                         ...input.creationData,
