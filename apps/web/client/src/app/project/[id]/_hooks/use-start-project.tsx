@@ -16,44 +16,71 @@ import { toast } from '@onlook/ui/sonner';
 import { useEffect, useRef, useState } from 'react';
 import { useTabActive } from '../_hooks/use-tab-active';
 
+interface ProjectReadyState {
+    canvas: boolean;
+    conversations: boolean;
+    sandbox: boolean;
+}
+
 export const useStartProject = () => {
     const editorEngine = useEditorEngine();
-    const [isProjectReady, setIsProjectReady] = useState(false);
+    const sandbox = editorEngine.activeSandbox;
     const [error, setError] = useState<string | null>(null);
     const processedRequestIdRef = useRef<string | null>(null);
-
     const { tabState } = useTabActive();
     const apiUtils = api.useUtils();
-    const { data: user, isLoading: isUserLoading, error: userError } = api.user.get.useQuery();
-    const { data: canvasWithFrames, isLoading: isCanvasLoading, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
-    const { data: conversations, isLoading: isConversationsLoading, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
-    const { data: creationRequest, isLoading: isCreationRequestLoading, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
+    const { data: user, error: userError } = api.user.get.useQuery();
+    const { data: canvasWithFrames, error: canvasError } = api.userCanvas.getWithFrames.useQuery({ projectId: editorEngine.projectId });
+    const { data: conversations, error: conversationsError } = api.chat.conversation.getAll.useQuery({ projectId: editorEngine.projectId });
+    const { data: creationRequest, error: creationRequestError } = api.project.createRequest.getPendingRequest.useQuery({ projectId: editorEngine.projectId });
     const { sendMessageToChat } = useChatContext();
     const { mutateAsync: updateCreateRequest } = api.project.createRequest.updateStatus.useMutation({
         onSettled: async () => {
             await apiUtils.project.createRequest.getPendingRequest.invalidate({ projectId: editorEngine.projectId });
         },
     });
+    const [projectReadyState, setProjectReadyState] = useState<ProjectReadyState>({
+        canvas: false,
+        conversations: false,
+        sandbox: false,
+    });
+
+    const updateProjectReadyState = (state: Partial<ProjectReadyState>) => {
+        setProjectReadyState((prev) => ({ ...prev, ...state }));
+    };
+
+    useEffect(() => {
+        if (!sandbox.session.isConnecting) {
+            updateProjectReadyState({ sandbox: true });
+        }
+    }, [sandbox.session.isConnecting]);
 
     useEffect(() => {
         if (canvasWithFrames) {
             editorEngine.canvas.applyCanvas(canvasWithFrames.userCanvas);
             editorEngine.frames.applyFrames(canvasWithFrames.frames);
+            updateProjectReadyState({ canvas: true });
         }
     }, [canvasWithFrames]);
 
     useEffect(() => {
-        if (conversations) {
-            editorEngine.chat.conversation.applyConversations(conversations);
-        }
+        const applyConversations = async () => {
+            if (conversations) {
+                await editorEngine.chat.conversation.applyConversations(conversations);
+                updateProjectReadyState({ conversations: true });
+            }
+        };
+        applyConversations();
     }, [conversations]);
 
     useEffect(() => {
+        const isProjectReady = Object.values(projectReadyState).every((value) => value);
         if (creationRequest && processedRequestIdRef.current !== creationRequest.id && isProjectReady) {
+            console.error('Resume create', creationRequest, isProjectReady, processedRequestIdRef.current);
             processedRequestIdRef.current = creationRequest.id;
             resumeCreate(creationRequest);
         }
-    }, [creationRequest, isProjectReady]);
+    }, [creationRequest, projectReadyState]);
 
     const resumeCreate = async (creationData: ProjectCreateRequest) => {
         try {
@@ -104,18 +131,8 @@ export const useStartProject = () => {
     }, [tabState]);
 
     useEffect(() => {
-        const allQueriesResolved =
-            !isUserLoading &&
-            !isCanvasLoading &&
-            !isConversationsLoading &&
-            !isCreationRequestLoading;
-
-        setIsProjectReady(allQueriesResolved);
-    }, [isUserLoading, isCanvasLoading, isConversationsLoading, isCreationRequestLoading]);
-
-    useEffect(() => {
         setError(userError?.message ?? canvasError?.message ?? conversationsError?.message ?? creationRequestError?.message ?? null);
     }, [userError, canvasError, conversationsError, creationRequestError]);
 
-    return { isProjectReady, error };
+    return { isProjectReady: Object.values(projectReadyState).every((value) => value), error };
 }
