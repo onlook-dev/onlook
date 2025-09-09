@@ -9,8 +9,7 @@ import {
     NEXT_JS_FILE_EXTENSIONS,
     PRELOAD_SCRIPT_SRC,
 } from '@onlook/constants';
-import { RouterType, type SandboxFile, type TemplateNode } from '@onlook/models';
-import { getContentFromTemplateNode, getTemplateNodeChild } from '@onlook/parser';
+import { RouterType, type Branch, type SandboxFile } from '@onlook/models';
 import {
     getBaseName,
     getDirName,
@@ -23,11 +22,11 @@ import { makeAutoObservable, reaction } from 'mobx';
 import path from 'path';
 import { env } from 'process';
 import type { EditorEngine } from '../engine';
+import type { ErrorManager } from '../error';
 import { detectRouterTypeInSandbox } from '../pages/helper';
 import { FileEventBus } from './file-event-bus';
 import { FileSyncManager } from './file-sync';
 import { normalizePath } from './helpers';
-import { TemplateNodeMapper } from './mapping';
 import { SessionManager } from './session';
 
 const isDev = env.NODE_ENV === 'development';
@@ -41,17 +40,26 @@ export class SandboxManager {
 
     private fileWatcher: ProviderFileWatcher | null = null;
     private fileSync: FileSyncManager;
-    private templateNodeMap: TemplateNodeMapper;
     private _isIndexed = false;
     private _isIndexing = false;
+    private providerReactionDisposer?: () => void;
+    private _discoveredFiles: string[] = [];
 
-    constructor(private readonly editorEngine: EditorEngine) {
-        this.session = new SessionManager(this.editorEngine);
+    constructor(
+        private branch: Branch,
+        private readonly editorEngine: EditorEngine,
+        private readonly errorManager: ErrorManager
+    ) {
+        this.session = new SessionManager(
+            this.branch,
+            this.errorManager
+        );
         this.fileSync = new FileSyncManager();
-        this.templateNodeMap = new TemplateNodeMapper();
         makeAutoObservable(this);
+    }
 
-        reaction(
+    async init() {
+        this.providerReactionDisposer = reaction(
             () => this.session.provider,
             (provider) => {
                 this._isIndexed = false;
@@ -60,6 +68,7 @@ export class SandboxManager {
                 }
             },
         );
+        await this.fileSync.init();
     }
 
     get isIndexed() {
@@ -72,6 +81,10 @@ export class SandboxManager {
 
     get routerConfig(): { type: RouterType; basePath: string } | null {
         return this._routerConfig;
+    }
+
+    get errors() {
+        return this.errorManager.errors;
     }
 
     async index(force = false) {
@@ -102,22 +115,11 @@ export class SandboxManager {
 
             // Get all file paths
             const allFilePaths = await this.getAllFilePathsFlat('./', EXCLUDED_SYNC_DIRECTORIES);
+            this._discoveredFiles = allFilePaths;
             timer.log(`File discovery completed - ${allFilePaths.length} files found`);
 
-            for (const filePath of allFilePaths) {
-                // Track image files first
-                if (isImageFile(filePath)) {
-                    this.fileSync.writeEmptyFile(filePath, 'binary');
-                    continue;
-                }
-                const remoteFile = await this.readRemoteFile(filePath);
-                if (remoteFile) {
-                    this.fileSync.updateCache(remoteFile);
-                    if (this.isJsxFile(filePath)) {
-                        await this.processFileForMapping(remoteFile);
-                    }
-                }
-            }
+            // Process files in non-blocking batches
+            await this.processFilesInBatches(allFilePaths);
 
             await this.watchFiles();
             this._isIndexed = true;
@@ -128,6 +130,44 @@ export class SandboxManager {
         } finally {
             this._isIndexing = false;
         }
+    }
+
+    /**
+     * Process files in non-blocking batches to avoid blocking the UI thread
+     */
+    private async processFilesInBatches(allFilePaths: string[], batchSize: number = 20): Promise<void> {
+        let processed = 0;
+
+        for (let i = 0; i < allFilePaths.length; i += batchSize) {
+            const batch = allFilePaths.slice(i, i + batchSize);
+
+            // Process current batch
+            for (const filePath of batch) {
+                // Track image files first
+                if (isImageFile(filePath)) {
+                    this.fileSync.writeEmptyFile(filePath, 'binary');
+                    processed++;
+                    continue;
+                }
+
+                const remoteFile = await this.readRemoteFile(filePath);
+                if (remoteFile) {
+                    this.fileSync.updateCache(remoteFile);
+                    if (this.isJsxFile(filePath)) {
+                        await this.processFileForMapping(remoteFile);
+                    }
+                }
+                processed++;
+            }
+
+            // Yield control to the event loop after each batch
+            if (i + batchSize < allFilePaths.length) {
+                console.log(`[SandboxManager] Processed ${processed}/${allFilePaths.length} files...`);
+                await new Promise(resolve => setTimeout(resolve, 0));
+            }
+        }
+
+        console.log(`[SandboxManager] Completed processing ${processed} files`);
     }
 
     /**
@@ -241,7 +281,8 @@ export class SandboxManager {
         // If the file is a JSX file, we need to process it for mapping before writing
         if (this.isJsxFile(normalizedPath)) {
             try {
-                const { newContent } = await this.templateNodeMap.processFileForMapping(
+                const { newContent } = await this.editorEngine.templateNodes.processFileForMapping(
+                    this.branch.id,
                     normalizedPath,
                     content,
                     this.routerConfig?.type,
@@ -285,7 +326,7 @@ export class SandboxManager {
     }
 
     get files() {
-        return this.fileSync.listAllFiles();
+        return this._discoveredFiles;
     }
 
     get directories() {
@@ -576,7 +617,8 @@ export class SandboxManager {
                 }
             }
 
-            const { modified, newContent } = await this.templateNodeMap.processFileForMapping(
+            const { modified, newContent } = await this.editorEngine.templateNodes.processFileForMapping(
+                this.branch.id,
                 file.path,
                 file.content,
                 this.routerConfig?.type,
@@ -590,46 +632,6 @@ export class SandboxManager {
         }
     }
 
-    async getTemplateNode(oid: string): Promise<TemplateNode | null> {
-        return this.templateNodeMap.getTemplateNode(oid);
-    }
-
-    async getTemplateNodeChild(
-        parentOid: string,
-        child: TemplateNode,
-        index: number,
-    ): Promise<{ instanceId: string; component: string } | null> {
-        const codeBlock = await this.getCodeBlock(parentOid);
-
-        if (codeBlock == null) {
-            console.error(`Failed to read code block: ${parentOid}`);
-            return null;
-        }
-
-        return await getTemplateNodeChild(codeBlock, child, index);
-    }
-
-    async getCodeBlock(oid: string): Promise<string | null> {
-        const templateNode = this.templateNodeMap.getTemplateNode(oid);
-        if (!templateNode) {
-            console.error(`No template node found for oid ${oid}`);
-            return null;
-        }
-
-        const file = await this.readFile(templateNode.path);
-        if (!file) {
-            console.error(`No file found for template node ${oid}`);
-            return null;
-        }
-
-        if (file.type === 'binary') {
-            console.error(`File ${templateNode.path} is a binary file`);
-            return null;
-        }
-
-        const codeBlock = await getContentFromTemplateNode(templateNode, file.content);
-        return codeBlock;
-    }
 
     async fileExists(path: string): Promise<boolean> {
         const normalizedPath = normalizePath(path);
@@ -788,13 +790,15 @@ export class SandboxManager {
     }
 
     clear() {
+        this.providerReactionDisposer?.();
+        this.providerReactionDisposer = undefined;
         void this.fileWatcher?.stop();
         this.fileWatcher = null;
         this.fileSync.clear();
-        this.templateNodeMap.clear();
         this.session.clear();
         this._isIndexed = false;
         this._isIndexing = false;
         this._routerConfig = null;
+        this._discoveredFiles = [];
     }
 }

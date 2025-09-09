@@ -8,5 +8,5 @@ export const createStripeClient = (secretKey?: string) => {
     if (!apiKey) {
         throw new Error('STRIPE_SECRET_KEY is not set');
     }
-    return new Stripe(apiKey, { apiVersion: '2025-05-28.basil' });
+    return new Stripe(apiKey, { apiVersion: '2025-08-27.basil' });
 };

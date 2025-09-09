@@ -2,10 +2,12 @@ import { useEditorEngine } from '@/components/store/editor';
 import { BrandTabValue } from '@onlook/models';
 import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import ColorPanel from './color-panel';
 import FontPanel from './font-panel';
 import SystemFont from './font-panel/system-font';
+
+
 
 interface ColorSquareProps {
     color: string;
@@ -13,37 +15,117 @@ interface ColorSquareProps {
 
 const ColorSquare = ({ color }: ColorSquareProps) => (
     <div
-        className="w-full aspect-square rounded-lg cursor-pointer hover:ring-2 hover:ring-border-primary border border-white/10"
+        className="w-full aspect-square cursor-pointer"
         style={{ backgroundColor: color }}
     />
 );
 
 export const BrandTab = observer(() => {
     const editorEngine = useEditorEngine();
+    const [brandColors, setBrandColors] = useState<string[]>([]);
 
     useEffect(() => {
         if (editorEngine.font.fontConfigPath) {
             editorEngine.font.scanFonts();
         }
-    }, [editorEngine.font.fontConfigPath]);
+        // Pre-load theme configuration to avoid delay when opening color panel
+        editorEngine.theme.scanConfig();
+    }, [editorEngine.font.fontConfigPath, editorEngine.theme]);
 
-    // Sample colors for the brand palette
-    const brandColors = [
-        // Primary colors
-        '#ff5a6a', // Coral Red
-        '#ff7a8a', // Salmon Pink
-        '#ff9aa8', // Light Coral
-        '#ffb9c3', // Light Pink
-        '#ffd8de', // Pale Pink
-        '#fff0f2', // Very Light Pink
+    // Get project brand colors
+    useEffect(() => {
+        const loadBrandColors = async () => {
+            await editorEngine.theme.scanConfig();
+            const { colorGroups, colorDefaults } = editorEngine.theme;
 
-        // Secondary colors
-        '#ff5a6a', // Coral Red
-        '#ff7a8a', // Salmon Pink
-        '#ff9aa8', // Light Coral
-        '#ffb9c3', // Light Pink
-        '#ffd8de', // Pale Pink
-    ];
+            // Extract color-500 variants from project colors
+            const projectColors: string[] = [];
+
+            // Add colors from custom color groups (user-defined in Tailwind config)
+            Object.values(colorGroups).forEach(group => {
+                group.forEach(color => {
+                    // Get the default/500 color from each custom color group
+                    if (color.name === '500' || color.name === 'default' || color.name === 'DEFAULT') {
+                        projectColors.push(color.lightColor);
+                    }
+                });
+            });
+
+            // Add colors from default color groups (standard Tailwind colors)
+            Object.values(colorDefaults).forEach(group => {
+                group.forEach(color => {
+                    // Get the default/500 color from each default color group
+                    if (color.name === '500' || color.name === 'default' || color.name === 'DEFAULT') {
+                        projectColors.push(color.lightColor);
+                    }
+                });
+            });
+
+            setBrandColors(projectColors);
+        };
+
+        loadBrandColors();
+    }, [editorEngine.theme]);
+
+    // Watch for file changes to automatically detect new color groups
+    useEffect(() => {
+        const handleFileChange = async (filePath: string) => {
+            // Check if the changed file is the Tailwind config
+            if (filePath.includes('tailwind.config') || filePath.includes('globals.css')) {
+                // Rescan for new color groups
+                setTimeout(async () => {
+                    try {
+                        await editorEngine.theme.scanConfig();
+
+                        const { colorGroups, colorDefaults } = editorEngine.theme;
+
+                        // Extract color-500 variants from project colors
+                        const projectColors: string[] = [];
+
+                        // Add colors from custom color groups (user-defined in Tailwind config)
+                        Object.values(colorGroups).forEach(group => {
+                            group.forEach(color => {
+                                // Get the default/500 color from each custom color group
+                                if (color.name === '500' || color.name === 'default' || color.name === 'DEFAULT') {
+                                    projectColors.push(color.lightColor);
+                                }
+                            });
+                        });
+
+                        // Add colors from default color groups (standard Tailwind colors)
+                        Object.values(colorDefaults).forEach(group => {
+                            group.forEach(color => {
+                                // Get the default/500 color from each default color group
+                                if (color.name === '500' || color.name === 'default' || color.name === 'DEFAULT') {
+                                    projectColors.push(color.lightColor);
+                                }
+                            });
+                        });
+
+                        setBrandColors(projectColors);
+                    } catch (error) {
+                        console.warn('Theme scanning failed:', error);
+                    }
+                }, 100); // Small delay to ensure file is fully written
+            }
+        };
+
+        // Listen for file changes in the sandbox
+        const unsubscribe = editorEngine.activeSandbox.fileEventBus.subscribe('*', (event) => {
+            // Check if any of the changed files are Tailwind config files
+            const isTailwindConfigChange = event.paths.some(path =>
+                path.includes('tailwind.config') || path.includes('globals.css')
+            );
+
+            if (isTailwindConfigChange && event.paths[0]) {
+                handleFileChange(event.paths[0]);
+            }
+        });
+
+        return () => {
+            unsubscribe();
+        };
+    }, [editorEngine.theme, editorEngine.activeSandbox]);
 
     // If color panel is visible, show it instead of the main content
     if (editorEngine.state.brandTab === BrandTabValue.COLORS) {
@@ -64,10 +146,22 @@ export const BrandTab = observer(() => {
                         <span className="text-sm">Brand Colors</span>
                     </div>
 
-                    <div className="grid grid-cols-6 gap-1">
-                        {brandColors.map((color, index) => (
-                            <ColorSquare key={`brand-color-${index}`} color={color} />
-                        ))}
+                    <div
+                        className="grid grid-cols-12 gap-0 rounded-lg overflow-hidden h-[40px] max-h-[40px] bg-background-onlook border-[0.5px] border-white/50 hover:border-[0.5px] hover:border-white cursor-pointer hover:border-transparent transition-all duration-200"
+                        onClick={() => (editorEngine.state.brandTab = BrandTabValue.COLORS)}
+                    >
+                        {brandColors.length > 0 ? (
+                            brandColors.map((color, index) => (
+                                <ColorSquare key={`brand-color-${index}`} color={color} />
+                            ))
+                        ) : (
+                            Array.from({ length: 12 }, (_, index) => (
+                                <div
+                                    key={`loading-color-${index}`}
+                                    className="w-full h-full bg-gradient-to-r from-gray-300 via-gray-400 to-gray-300 bg-[length:200%_100%] animate-shimmer"
+                                />
+                            ))
+                        )}
                     </div>
                 </div>
 

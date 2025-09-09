@@ -30,7 +30,7 @@
         "db:reset": "cd apps/backend && bun run reset",
         "format": "bun --filter '*' format",
         "lint": "bun --filter @onlook/web-client lint",
-        "typecheck": "bun --elide-lines 0 --filter '*' typecheck",
+        "typecheck": "cd apps/web/client && bun run typecheck",
         "prepare": "husky",
         "clean": "git clean -xdf node_modules",
         "clean:workspaces": "bun --filter '*' clean",
@@ -51,5 +51,5 @@
     "devDependencies": {
         "husky": "^9.1.6"
     },
-    "packageManager": "bun@1.2.13"
+    "packageManager": "bun@1.2.21"
 }

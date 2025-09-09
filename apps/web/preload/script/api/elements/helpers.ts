@@ -37,7 +37,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
             frameId: getFrameId(),
             oid: parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
             instanceId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string,
-            rect: parent.getBoundingClientRect() as DOMRect,
+            rect: parent.getBoundingClientRect(),
         }
         : null;
 

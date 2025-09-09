@@ -54,7 +54,7 @@ export class LayoutManager {
                     if (!newContent) {
                         return false;
                     }
-                    await this.editorEngine.sandbox.writeFile(layoutPath, newContent);
+                    await this.editorEngine.activeSandbox.writeFile(layoutPath, newContent);
                 }
             }
             return true;
@@ -104,7 +104,7 @@ export class LayoutManager {
                 if (!newContent) {
                     return false;
                 }
-                return await this.editorEngine.sandbox.writeFile(layoutPath, newContent);
+                return await this.editorEngine.activeSandbox.writeFile(layoutPath, newContent);
             }
             return false;
         } catch (error) {
@@ -213,7 +213,7 @@ export class LayoutManager {
         elementsFound: boolean;
         ast: T.File;
     } | null> {
-        const sandbox = this.editorEngine.sandbox;
+        const sandbox = this.editorEngine.activeSandbox;
         if (!sandbox) {
             console.error('No sandbox session found');
             return null;
@@ -278,15 +278,15 @@ export class LayoutManager {
     private async getLayoutContext(): Promise<
         { layoutPath: string; targetElements: string[]; layoutContent: string } | undefined
     > {
-        const layoutPath = await this.editorEngine.sandbox.getRootLayoutPath();
-        const routerConfig = this.editorEngine.sandbox.routerConfig;
+        const layoutPath = await this.editorEngine.activeSandbox.getRootLayoutPath();
+        const routerConfig = this.editorEngine.activeSandbox.routerConfig;
 
         if (!layoutPath || !routerConfig) {
             console.error('Could not get layout path or router config');
             return;
         }
 
-        const file = await this.editorEngine.sandbox.readFile(layoutPath);
+        const file = await this.editorEngine.activeSandbox.readFile(layoutPath);
         if (!file || file.type === 'binary') {
             console.error(`Failed to read file: ${layoutPath}`);
             return;

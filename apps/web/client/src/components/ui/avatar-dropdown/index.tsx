@@ -5,7 +5,6 @@ import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { createClient } from '@/utils/supabase/client';
 import { getReturnUrlQueryParam } from '@/utils/url';
-import { Links } from '@onlook/constants';
 import { Avatar, AvatarFallback, AvatarImage } from '@onlook/ui/avatar';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -18,6 +17,7 @@ import { Separator } from '@onlook/ui/separator';
 import { getInitials } from '@onlook/utility';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
+import { resetTelemetry, openFeedbackWidget } from '@/utils/telemetry';
 import { UsageSection } from './plans';
 
 export const CurrentUserAvatar = ({ className }: { className?: string }) => {
@@ -32,6 +32,8 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
     const [open, setOpen] = useState(false);
 
     const handleSignOut = async () => {
+        // Clear analytics/feedback identities before signing out
+        void resetTelemetry();
         await supabase.auth.signOut();
         const returnUrl = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
         router.push(`${Routes.LOGIN}?${getReturnUrlQueryParam(returnUrl)}`);
@@ -59,9 +61,12 @@ export const CurrentUserAvatar = ({ className }: { className?: string }) => {
             onClick: handleOpenSettings,
         },
         {
-            label: 'Report Issue',
-            icon: Icons.ExclamationTriangle,
-            onClick: () => window.open(Links.OPEN_ISSUE, '_blank'),
+            label: 'Send Feedback',
+            icon: Icons.MessageSquare,
+            onClick: () => {
+                void openFeedbackWidget();
+                setOpen(false);
+            },
         },
         {
             label: 'Sign Out',

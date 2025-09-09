@@ -1,5 +1,6 @@
 import { useStateManager } from '@/components/store/state';
 import { transKeys } from '@/i18n/keys';
+import { openFeedbackWidget } from '@/utils/telemetry';
 import { Links, SUPPORT_EMAIL } from '@onlook/constants';
 import {
     DropdownMenu,
@@ -136,10 +137,14 @@ export const HelpDropdown = observer(() => {
                     </DropdownMenuSubContent>
                 </DropdownMenuSub>
                 <DropdownMenuItem
-                    onClick={() => window.open(Links.OPEN_ISSUE, '_blank')}
+                    className="text-sm"
+                    onClick={() => {
+                        setIsDropdownOpen(false);
+                        void openFeedbackWidget();
+                    }}
                 >
-                    <Icons.ExclamationTriangle className="w-4 h-4 mr-2" />
-                    {t(transKeys.help.menu.reportIssue)}
+                    <Icons.MessageSquare className="w-4 h-4 mr-2" />
+                    Send Feedback
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

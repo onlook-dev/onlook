@@ -35,7 +35,7 @@ export const Suggestions = observer(
             disabled ||
             inputValue.trim().length > 0 ||
             editorEngine.chat.error.hasError() ||
-            editorEngine.error.errors.length > 0;
+            editorEngine.branches.getAllErrors().length > 0;
 
         const handleTabNavigation = (reverse: boolean) => {
             if (shouldHideSuggestions || suggestions.length === 0) {

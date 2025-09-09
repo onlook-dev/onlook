@@ -5,7 +5,7 @@ This is a Next.js application for the Onlook documentation.
 Run development server:
 
 ```bash
-npm run dev
+bun run dev
 # or
 pnpm dev
 # or
@@ -18,8 +18,10 @@ Open http://localhost:3000 with your browser to see the result.
 
 In the project, you can see:
 
-- `lib/source.ts`: Code for content source adapter, provides the interface to access your content.
-- `app/layout.config.tsx`: Shared options for layouts, optional but preferred to keep.
+- `lib/source.ts`: Code for content source adapter, provides the interface to
+  access your content.
+- `app/layout.config.tsx`: Shared options for layouts, optional but preferred to
+  keep.
 
 | Route                     | Description                                            |
 | ------------------------- | ------------------------------------------------------ |
@@ -41,5 +43,6 @@ The documentation is organized into the following sections:
 
 To learn more about Next.js, take a look at the following resources:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js
+  features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.

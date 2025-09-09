@@ -35,6 +35,9 @@ export function Footer() {
                             <li><a href={Routes.PROJECTS} className="hover:underline" title="View your projects">My Projects</a></li>
                             <li><a href={ExternalRoutes.GITHUB} target="_blank" className="hover:underline" title="View Onlook on GitHub">GitHub Repo</a></li>
                             <li><a href="/features" className="hover:underline" title="View Onlook features">Features</a></li>
+                            <li><a href={Routes.FEATURES_AI} className="hover:underline" title="AI-powered development tools">AI</a></li>
+                            <li><a href={Routes.FEATURES_PROTOTYPE} className="hover:underline" title="Rapid prototyping features">Prototyping</a></li>
+                            <li><a href={Routes.FEATURES_BUILDER} className="hover:underline" title="Visual builder tools">Visual Builder</a></li>
                             <li><a href="/pricing" className="hover:underline" title="View Onlook pricing">Pricing</a></li>
                         </ul>
                     </div>
@@ -81,4 +84,4 @@ export function Footer() {
             </div>
         </footer>
     );
-} 
+}  

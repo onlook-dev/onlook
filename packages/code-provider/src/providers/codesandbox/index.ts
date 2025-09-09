@@ -60,9 +60,9 @@ import {
     type WriteFileInput,
     type WriteFileOutput,
 } from '../../types';
-import { writeFile } from './utils/write-file';
 import { listFiles } from './utils/list-files';
 import { readFile } from './utils/read-file';
+import { writeFile } from './utils/write-file';
 
 export interface CodesandboxProviderOptions {
     sandboxId?: string;
@@ -157,7 +157,7 @@ export class CodesandboxProvider extends Provider {
         this.sandbox = null;
     }
 
-    async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
+    static async createProject(input: CreateProjectInput): Promise<CreateProjectOutput> {
         const sdk = new CodeSandbox();
         const newSandbox = await sdk.sandboxes.create({
             id: input.id,
