@@ -1,6 +1,5 @@
 'use client';
 
-import { FeedbackModal } from '@/components/ui/feedback-modal';
 import { SubscriptionModal } from '@/components/ui/pricing-modal';
 import { NonProjectSettingsModal } from '@/components/ui/settings-modal/non-project';
 import { observer } from 'mobx-react-lite';
@@ -17,7 +16,6 @@ const Page = observer(() => {
                 <SelectProject externalSearchQuery={searchQuery} />
             </div>
             <SubscriptionModal />
-            <FeedbackModal />
             <NonProjectSettingsModal />
         </div>
     );
