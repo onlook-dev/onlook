@@ -10,9 +10,13 @@ import { useEffect } from "react"
 export const PostHogProvider = observer(({ children }: { children: React.ReactNode }) => {
     const { data: user } = api.user.get.useQuery();
 
+    const hasValidKey = env.NEXT_PUBLIC_POSTHOG_KEY && 
+                       env.NEXT_PUBLIC_POSTHOG_KEY.trim() !== '' &&
+                       !env.NEXT_PUBLIC_POSTHOG_KEY.includes('<Your PostHog API key') &&
+                       !env.NEXT_PUBLIC_POSTHOG_KEY.startsWith('<')
+
     useEffect(() => {
-        if (!env.NEXT_PUBLIC_POSTHOG_KEY) {
-            console.warn('PostHog key is not set, skipping initialization');
+        if (!hasValidKey) {
             return;
         }
         posthog.init(
@@ -22,10 +26,10 @@ export const PostHogProvider = observer(({ children }: { children: React.ReactNo
             capture_pageleave: true,
             capture_exceptions: true,
         })
-    }, [])
+    }, [hasValidKey])
 
     useEffect(() => {
-        if (user) {
+        if (user && hasValidKey) {
             try {
                 posthog.identify(user.id, {
                     firstName: user.firstName,
@@ -40,7 +44,11 @@ export const PostHogProvider = observer(({ children }: { children: React.ReactNo
                 console.error('Error identifying user:', error);
             }
         }
-    }, [user])
+    }, [user, hasValidKey])
+
+    if (!hasValidKey) {
+        return <>{children}</>
+    }
 
     return (
         <PHProvider client={posthog}>
