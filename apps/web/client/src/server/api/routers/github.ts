@@ -1,39 +1,30 @@
+import type { DrizzleDb } from '@onlook/db/src/client';
 import { users } from '@onlook/db/src/schema';
 import {
     createInstallationOctokit,
-    generateInstallationUrl,
-    getGitHubAppConfig
+    generateInstallationUrl
 } from '@onlook/github';
 import { TRPCError } from '@trpc/server';
 import { eq } from 'drizzle-orm';
-import { Octokit } from 'octokit';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
 
-const getUserGitHubToken = async (supabase: any) => {
-    const { data: { session }, error } = await supabase.auth.getSession();
+const getUserGitHubInstallation = async (db: DrizzleDb, userId: string) => {
+    const user = await db.query.users.findFirst({
+        where: eq(users.id, userId),
+        columns: { githubInstallationId: true }
+    });
 
-    if (error || !session) {
+    if (!user?.githubInstallationId) {
         throw new TRPCError({
-            code: 'UNAUTHORIZED',
-            message: 'No active session found'
+            code: 'PRECONDITION_FAILED',
+            message: 'GitHub App installation required',
         });
     }
-
-    const githubToken = session.provider_token;
-    if (!githubToken) {
-        throw new TRPCError({
-            code: 'UNAUTHORIZED',
-            message: `GitHub token not found. Please reconnect your GitHub account.`
-        });
-    }
-
-    return githubToken;
-};
-
-const createUserOctokit = async (supabase: any) => {
-    const token = await getUserGitHubToken(supabase);
-    return new Octokit({ auth: token });
+    return {
+        octokit: createInstallationOctokit(user.githubInstallationId),
+        installationId: user.githubInstallationId
+    };
 };
 
 export const githubRouter = createTRPCRouter({
@@ -45,7 +36,7 @@ export const githubRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ input, ctx }) => {
-            const octokit = await createUserOctokit(ctx.supabase);
+            const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
             const { data } = await octokit.rest.repos.get({ owner: input.owner, repo: input.repo });
             return {
                 branch: data.default_branch,
@@ -61,7 +52,7 @@ export const githubRouter = createTRPCRouter({
             }),
         )
         .query(async ({ input, ctx }) => {
-            const octokit = await createUserOctokit(ctx.supabase);
+            const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
             const { data } = await octokit.rest.repos.get({
                 owner: input.owner,
                 repo: input.repo
@@ -71,40 +62,13 @@ export const githubRouter = createTRPCRouter({
 
     getOrganizations: protectedProcedure
         .query(async ({ ctx }) => {
-            const { data: user } = await ctx.supabase.auth.getUser();
-            if (!user?.user?.id) {
-                throw new TRPCError({
-                    code: 'UNAUTHORIZED',
-                    message: 'User not authenticated',
-                });
-            }
-
-            const userData = await ctx.db.query.users.findFirst({
-                where: eq(users.id, user.user.id),
-                columns: { githubInstallationId: true }
-            });
-
-            if (!userData?.githubInstallationId) {
-                throw new TRPCError({
-                    code: 'PRECONDITION_FAILED',
-                    message: 'GitHub App installation required',
-                });
-            }
-
-            const config = getGitHubAppConfig();
-            if (!config) {
-                throw new TRPCError({
-                    code: 'INTERNAL_SERVER_ERROR',
-                    message: 'GitHub App configuration not available',
-                });
-            }
 
             try {
-                const octokit = createInstallationOctokit(config, userData.githubInstallationId);
+                const { octokit, installationId } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
 
                 // Get installation details to determine account type
                 const installation = await octokit.rest.apps.getInstallation({
-                    installation_id: parseInt(userData.githubInstallationId, 10),
+                    installation_id: parseInt(installationId, 10),
                 });
 
                 // If installed on an organization, return that organization
@@ -137,7 +101,7 @@ export const githubRouter = createTRPCRouter({
             })
         )
         .query(async ({ input, ctx }) => {
-            const octokit = await createUserOctokit(ctx.supabase);
+            const { octokit } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
             const { data } = await octokit.rest.repos.getContent({
                 owner: input.owner,
                 repo: input.repo,
@@ -154,26 +118,9 @@ export const githubRouter = createTRPCRouter({
             }).optional()
         )
         .mutation(async ({ input, ctx }) => {
-            const config = getGitHubAppConfig();
-            if (!config) {
-                throw new TRPCError({
-                    code: 'INTERNAL_SERVER_ERROR',
-                    message: 'GitHub App configuration not found',
-                });
-            }
-
-            // Get the current user ID to use as state parameter for CSRF protection
-            const { data: user } = await ctx.supabase.auth.getUser();
-            if (!user?.user?.id) {
-                throw new TRPCError({
-                    code: 'UNAUTHORIZED',
-                    message: 'User not authenticated',
-                });
-            }
-
-            const { url, state } = generateInstallationUrl(config, {
+            const { url, state } = generateInstallationUrl({
                 redirectUrl: input?.redirectUrl,
-                state: user.user.id, // Use user ID as state for CSRF protection
+                state: ctx.user.id, // Use user ID as state for CSRF protection
             });
 
             return { url, state };
@@ -181,34 +128,12 @@ export const githubRouter = createTRPCRouter({
 
     checkGitHubAppInstallation: protectedProcedure
         .query(async ({ ctx }): Promise<string | null> => {
-            const user = await ctx.user;
-
-            // Get user's GitHub installation ID from database
-            const userData = await ctx.db.query.users.findFirst({
-                where: eq(users.id, user.id),
-                columns: { githubInstallationId: true }
-            });
-
-            if (!userData?.githubInstallationId) {
-                return null;
-            }
-
-            // Verify the installation is still valid
-            const config = getGitHubAppConfig();
-            if (!config) {
-                throw new TRPCError({
-                    code: 'INTERNAL_SERVER_ERROR',
-                    message: 'GitHub App configuration not available'
-                });
-            }
-
             try {
-                const octokit = createInstallationOctokit(config, userData.githubInstallationId);
+                const { octokit, installationId } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
                 await octokit.rest.apps.getInstallation({
-                    installation_id: parseInt(userData.githubInstallationId, 10),
+                    installation_id: parseInt(installationId, 10),
                 });
-
-                return userData.githubInstallationId;
+                return installationId;
             } catch (error) {
                 console.error('Error checking GitHub App installation:', error);
                 throw new TRPCError({
@@ -217,7 +142,6 @@ export const githubRouter = createTRPCRouter({
                     cause: error
                 });
             }
-
         }),
 
     // Repository fetching using GitHub App installation (required)
@@ -228,39 +152,11 @@ export const githubRouter = createTRPCRouter({
             }).optional()
         )
         .query(async ({ ctx }) => {
-            const { data: user } = await ctx.supabase.auth.getUser();
-            if (!user?.user?.id) {
-                throw new TRPCError({
-                    code: 'UNAUTHORIZED',
-                    message: 'User not authenticated',
-                });
-            }
-
-            const userData = await ctx.db.query.users.findFirst({
-                where: eq(users.id, user.user.id),
-                columns: { githubInstallationId: true }
-            });
-
-            if (!userData?.githubInstallationId) {
-                throw new TRPCError({
-                    code: 'PRECONDITION_FAILED',
-                    message: 'GitHub App installation required. Please install the GitHub App first.',
-                });
-            }
-
-            const config = getGitHubAppConfig();
-            if (!config) {
-                throw new TRPCError({
-                    code: 'INTERNAL_SERVER_ERROR',
-                    message: 'GitHub App configuration not available',
-                });
-            }
-
             try {
-                const octokit = createInstallationOctokit(config, userData.githubInstallationId);
+                const { octokit, installationId } = await getUserGitHubInstallation(ctx.db, ctx.user.id);
 
                 const { data } = await octokit.rest.apps.listReposAccessibleToInstallation({
-                    installation_id: parseInt(userData.githubInstallationId, 10),
+                    installation_id: parseInt(installationId, 10),
                     per_page: 100,
                     page: 1,
                 });
@@ -289,8 +185,6 @@ export const githubRouter = createTRPCRouter({
                 });
             }
         }),
-
-    // Handle GitHub App installation callback
     handleInstallationCallbackUrl: protectedProcedure
         .input(
             z.object({
@@ -300,17 +194,9 @@ export const githubRouter = createTRPCRouter({
             })
         )
         .mutation(async ({ input, ctx }) => {
-            const { data: user } = await ctx.supabase.auth.getUser();
-            if (!user?.user?.id) {
-                throw new TRPCError({
-                    code: 'UNAUTHORIZED',
-                    message: 'User not authenticated',
-                });
-            }
-
             // Validate state parameter matches current user ID for CSRF protection
-            if (input.state && input.state !== user.user.id) {
-                console.error('State mismatch:', { expected: user.user.id, received: input.state });
+            if (input.state && input.state !== ctx.user.id) {
+                console.error('State mismatch:', { expected: ctx.user.id, received: input.state });
                 throw new TRPCError({
                     code: 'BAD_REQUEST',
                     message: 'Invalid state parameter',
@@ -321,9 +207,9 @@ export const githubRouter = createTRPCRouter({
             try {
                 await ctx.db.update(users)
                     .set({ githubInstallationId: input.installationId })
-                    .where(eq(users.id, user.user.id));
+                    .where(eq(users.id, ctx.user.id));
 
-                console.log(`Updated installation ID for user: ${user.user.id}`);
+                console.log(`Updated installation ID for user: ${ctx.user.id}`);
 
                 return {
                     success: true,

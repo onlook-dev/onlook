@@ -1,14 +1,12 @@
 import { createAppAuth } from '@octokit/auth-app';
 import { Octokit } from '@octokit/rest';
-import type { GitHubAppConfig } from './config';
+import { getGitHubAppConfig } from './config';
 
 /**
  * Create an authenticated Octokit instance for a specific installation
  */
-export function createInstallationOctokit(
-    config: GitHubAppConfig,
-    installationId: string
-): Octokit {
+export function createInstallationOctokit(installationId: string): Octokit {
+    const config = getGitHubAppConfig();
     if (!installationId || installationId.trim() === '') {
         throw new Error('Installation ID is required and cannot be empty.');
     }

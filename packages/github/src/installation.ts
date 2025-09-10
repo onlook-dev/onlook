@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import type { GitHubAppConfig } from './config';
+import { getGitHubAppConfig } from './config';
 
 export interface InstallationUrlOptions {
     state?: string;
@@ -16,9 +16,9 @@ export interface InstallationCallbackData {
  * Generate a secure installation URL for GitHub App
  */
 export function generateInstallationUrl(
-    config: GitHubAppConfig,
     options: InstallationUrlOptions = {}
 ): { url: string; state: string } {
+    const config = getGitHubAppConfig();
     const state = options.state || uuidv4();
 
     const params = new URLSearchParams({
