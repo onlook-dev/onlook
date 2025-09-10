@@ -1,9 +1,11 @@
+import { users } from '@onlook/db/src/schema';
 import {
     createInstallationOctokit,
     generateInstallationUrl,
     getGitHubAppConfig
 } from '@onlook/github';
 import { TRPCError } from '@trpc/server';
+import { eq } from 'drizzle-orm';
 import { Octokit } from 'octokit';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
@@ -77,13 +79,12 @@ export const githubRouter = createTRPCRouter({
                 });
             }
 
-            const { data: userData } = await ctx.supabase
-                .from('users')
-                .select('github_installation_id')
-                .eq('id', user.user.id)
-                .single();
+            const userData = await ctx.db.query.users.findFirst({
+                where: eq(users.id, user.user.id),
+                columns: { githubInstallationId: true }
+            });
 
-            if (!userData?.github_installation_id) {
+            if (!userData?.githubInstallationId) {
                 throw new TRPCError({
                     code: 'PRECONDITION_FAILED',
                     message: 'GitHub App installation required',
@@ -99,11 +100,11 @@ export const githubRouter = createTRPCRouter({
             }
 
             try {
-                const octokit = createInstallationOctokit(config, userData.github_installation_id);
+                const octokit = createInstallationOctokit(config, userData.githubInstallationId);
 
                 // Get installation details to determine account type
                 const installation = await octokit.rest.apps.getInstallation({
-                    installation_id: parseInt(userData.github_installation_id, 10),
+                    installation_id: parseInt(userData.githubInstallationId, 10),
                 });
 
                 // If installed on an organization, return that organization
@@ -120,10 +121,9 @@ export const githubRouter = createTRPCRouter({
                 return [];
             } catch (error) {
                 // If installation is invalid, clear it from database
-                await ctx.supabase
-                    .from('users')
-                    .update({ github_installation_id: null })
-                    .eq('id', user.user.id);
+                await ctx.db.update(users)
+                    .set({ githubInstallationId: null })
+                    .where(eq(users.id, user.user.id));
 
                 throw new TRPCError({
                     code: 'FORBIDDEN',
@@ -183,105 +183,52 @@ export const githubRouter = createTRPCRouter({
             return { url, state };
         }),
 
-    handleInstallationCallback: protectedProcedure
-        .input(
-            z.object({
-                installationId: z.string(),
-                setupAction: z.string(),
-                state: z.string().optional(),
-            })
-        )
-        .mutation(async ({ input, ctx }) => {
-            try {
-                // Update user with GitHub installation ID
-                const { data: user } = await ctx.supabase.auth.getUser();
-                if (!user?.user?.id) {
-                    throw new TRPCError({
-                        code: 'UNAUTHORIZED',
-                        message: 'User not authenticated',
-                    });
-                }
-
-                // Update user's GitHub installation ID in the database
-                const { error } = await ctx.supabase
-                    .from('users')
-                    .update({ github_installation_id: input.installationId })
-                    .eq('id', user.user.id);
-
-                if (error) {
-                    throw new TRPCError({
-                        code: 'INTERNAL_SERVER_ERROR',
-                        message: 'Failed to update user with GitHub installation ID',
-                        cause: error,
-                    });
-                }
-
-                return {
-                    success: true,
-                    installationId: input.installationId,
-                };
-            } catch (error) {
-                throw new TRPCError({
-                    code: 'INTERNAL_SERVER_ERROR',
-                    message: 'Failed to handle GitHub App installation callback',
-                    cause: error,
-                });
-            }
-        }),
-
     checkGitHubAppInstallation: protectedProcedure
-        .query(async ({ ctx }) => {
+        .query(async ({ ctx }): Promise<string | null> => {
             try {
                 const { data: user } = await ctx.supabase.auth.getUser();
                 if (!user?.user?.id) {
-                    return { hasInstallation: false, installationId: null };
+                    return null;
                 }
-
 
                 // Get user's GitHub installation ID from database
-                const { data: userData, error } = await ctx.supabase
-                    .from('users')
-                    .select('github_installation_id')
-                    .eq('id', user.user.id)
-                    .single();
+                const userData = await ctx.db.query.users.findFirst({
+                    where: eq(users.id, user.user.id),
+                    columns: { githubInstallationId: true }
+                });
 
-                if (error || !userData?.github_installation_id) {
-                    return { hasInstallation: false, installationId: null };
+                if (!userData?.githubInstallationId) {
+                    return null;
                 }
 
                 // Verify the installation is still valid
                 const config = getGitHubAppConfig();
                 if (!config) {
                     // If no GitHub App config, clear any stored installation ID
-                    await ctx.supabase
-                        .from('users')
-                        .update({ github_installation_id: null })
-                        .eq('id', user.user.id);
-                    return { hasInstallation: false, installationId: null };
+                    await ctx.db.update(users)
+                        .set({ githubInstallationId: null })
+                        .where(eq(users.id, user.user.id));
+                    return null;
                 }
 
                 try {
-                    const octokit = createInstallationOctokit(config, userData.github_installation_id);
+                    const octokit = createInstallationOctokit(config, userData.githubInstallationId);
                     await octokit.rest.apps.getInstallation({
-                        installation_id: parseInt(userData.github_installation_id, 10),
+                        installation_id: parseInt(userData.githubInstallationId, 10),
                     });
 
-                    return {
-                        hasInstallation: true,
-                        installationId: userData.github_installation_id
-                    };
+                    return userData.githubInstallationId;
                 } catch (error) {
                     // Installation might be deleted or suspended
                     // Clear the invalid installation ID from database
-                    await ctx.supabase
-                        .from('users')
-                        .update({ github_installation_id: null })
-                        .eq('id', user.user.id);
-                    return { hasInstallation: false, installationId: null };
+                    await ctx.db.update(users)
+                        .set({ githubInstallationId: null })
+                        .where(eq(users.id, user.user.id));
+                    return null;
                 }
             } catch (error) {
                 console.error('Error checking GitHub App installation:', error);
-                return { hasInstallation: false, installationId: null };
+                return null;
             }
         }),
 
@@ -301,13 +248,12 @@ export const githubRouter = createTRPCRouter({
                 });
             }
 
-            const { data: userData } = await ctx.supabase
-                .from('users')
-                .select('github_installation_id')
-                .eq('id', user.user.id)
-                .single();
+            const userData = await ctx.db.query.users.findFirst({
+                where: eq(users.id, user.user.id),
+                columns: { githubInstallationId: true }
+            });
 
-            if (!userData?.github_installation_id) {
+            if (!userData?.githubInstallationId) {
                 throw new TRPCError({
                     code: 'PRECONDITION_FAILED',
                     message: 'GitHub App installation required. Please install the GitHub App first.',
@@ -323,10 +269,10 @@ export const githubRouter = createTRPCRouter({
             }
 
             try {
-                const octokit = createInstallationOctokit(config, userData.github_installation_id);
+                const octokit = createInstallationOctokit(config, userData.githubInstallationId);
 
                 const { data } = await octokit.rest.apps.listReposAccessibleToInstallation({
-                    installation_id: parseInt(userData.github_installation_id, 10),
+                    installation_id: parseInt(userData.githubInstallationId, 10),
                     per_page: 100,
                     page: 1,
                 });
@@ -351,7 +297,7 @@ export const githubRouter = createTRPCRouter({
                 // If installation is invalid, clear it from database
                 await ctx.supabase
                     .from('users')
-                    .update({ github_installation_id: null })
+                    .update({ githubInstallationId: null })
                     .eq('id', user.user.id);
 
                 throw new TRPCError({
@@ -367,7 +313,7 @@ export const githubRouter = createTRPCRouter({
             z.object({
                 installationId: z.string(),
                 setupAction: z.string(),
-                state: z.string().optional(),
+                state: z.string(),
             })
         )
         .mutation(async ({ input, ctx }) => {
@@ -390,18 +336,9 @@ export const githubRouter = createTRPCRouter({
 
             // Update user's GitHub installation ID
             try {
-                const { error } = await ctx.supabase
-                    .from('users')
-                    .update({ github_installation_id: input.installationId })
-                    .eq('id', user.user.id);
-
-                if (error) {
-                    throw new TRPCError({
-                        code: 'INTERNAL_SERVER_ERROR',
-                        message: 'Failed to update installation',
-                        cause: error,
-                    });
-                }
+                await ctx.db.update(users)
+                    .set({ githubInstallationId: input.installationId })
+                    .where(eq(users.id, user.user.id));
 
                 console.log(`Updated installation ID for user: ${user.user.id}`);
 

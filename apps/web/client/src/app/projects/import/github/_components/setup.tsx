@@ -11,16 +11,13 @@ import { useImportGithubProject } from '../_context/context';
 export const SetupGithub = () => {
     const {
         prevStep,
-        organizations,
         selectedOrg,
         setSelectedOrg,
         nextStep,
-        isLoadingOrganizations,
-        isFinalizing,
-        repositories,
         selectedRepo,
         setSelectedRepo,
-        isLoadingRepositories,
+        githubData,
+        repositoryImport,
     } = useImportGithubProject();
     
     const [searchQuery, setSearchQuery] = useState('');
@@ -35,14 +32,14 @@ export const SetupGithub = () => {
         if (value === 'all') {
             setSelectedOrg(null);
         } else {
-            const organization = organizations.find((org) => org.login === value);
+            const organization = githubData.organizations.find((org: any) => org.login === value);
             setSelectedOrg(organization || null);
         }
         setSelectedRepo(null);
     };
 
     const handleRepositorySelect = (value: string) => {
-        const repository = repositories.find((repo) => repo.full_name === value);
+        const repository = githubData.repositories.find((repo: any) => repo.full_name === value);
         setSelectedRepo(repository || null);
     };
 
@@ -58,7 +55,7 @@ export const SetupGithub = () => {
     };
 
     // Filter repositories by organization and search query
-    const filteredRepositories = repositories.filter((repo) => {
+    const filteredRepositories = githubData.repositories.filter((repo: any) => {
         const matchesOrg = selectedOrg ? repo.owner.login === selectedOrg.login : true;
         const matchesSearch = searchQuery.trim() === '' || 
             repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -118,7 +115,7 @@ export const SetupGithub = () => {
                             <Select
                                 value={selectedOrg?.login || 'all'}
                                 onValueChange={handleOrganizationSelect}
-                                disabled={isLoadingOrganizations}
+                                disabled={githubData.isLoadingOrganizations}
                             >
                                 <SelectTrigger className="w-full max-w-sm">
                                     <SelectValue placeholder="All repositories" />
@@ -130,7 +127,7 @@ export const SetupGithub = () => {
                                             <span>All repositories</span>
                                         </div>
                                     </SelectItem>
-                                    {organizations.map((org) => (
+                                    {githubData.organizations.map((org: any) => (
                                         <SelectItem key={org.id} value={org.login}>
                                             <div className="flex items-center gap-2 w-full">
                                                 <img
@@ -149,7 +146,7 @@ export const SetupGithub = () => {
                                     ))}
                                 </SelectContent>
                             </Select>
-                            {isLoadingOrganizations && (
+                            {githubData.isLoadingOrganizations && (
                                 <div className="flex items-center gap-2 text-sm text-foreground-secondary">
                                     <Icons.Shadow className="w-3 h-3 animate-spin" />
                                     Loading organizations...
@@ -213,7 +210,7 @@ export const SetupGithub = () => {
                                             </div>
                                         )}
                                         
-                                        {isLoadingRepositories ? (
+                                        {githubData.isLoadingRepositories ? (
                                             <div className="flex items-center justify-center gap-2 h-full text-sm text-foreground-secondary">
                                                 <Icons.Shadow className="w-3 h-3 animate-spin" />
                                                 Loading repositories...
@@ -230,7 +227,7 @@ export const SetupGithub = () => {
                                                 className="h-full overflow-y-auto"
                                                 onScroll={updateScrollIndicators}
                                             >
-                                                {filteredRepositories.map((repo) => (
+                                                {filteredRepositories.map((repo: any) => (
                                                     <button
                                                         key={repo.id}
                                                         onClick={() => handleRepositorySelect(repo.full_name)}
@@ -278,7 +275,7 @@ export const SetupGithub = () => {
                 <Button onClick={prevStep} variant="outline">
                     Cancel
                 </Button>
-                <Button className="px-3 py-2" onClick={nextStep} disabled={!selectedRepo || isFinalizing}>
+                <Button className="px-3 py-2" onClick={nextStep} disabled={!selectedRepo || repositoryImport.isImporting}>
                     <Icons.Download className="w-4 h-4 mr-2" />
                     <span>Import</span>
                 </Button>

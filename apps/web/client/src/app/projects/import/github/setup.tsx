@@ -14,31 +14,34 @@ import { StepContent, StepFooter, StepHeader } from '../steps';
 export const SetupGithub = () => {
     const {
         prevStep,
-        organizations,
         selectedOrg,
         setSelectedOrg,
-        importRepo,
-        isLoadingOrganizations,
-        repositories,
         selectedRepo,
         setSelectedRepo,
-        isLoadingRepositories,
+        githubData,
+        repositoryImport,
     } = useImportGithubProject();
 
     const handleOrganizationSelect = (value: string) => {
-        const organization = organizations.find((org) => org.login === value);
+        const organization = githubData.organizations.find((org: any) => org.login === value);
         setSelectedOrg(organization || null);
         setSelectedRepo(null);
     };
 
     const handleRepositorySelect = (value: string) => {
-        const repository = filteredRepositories.find((repo) => repo.name === value);
+        const repository = filteredRepositories.find((repo: any) => repo.name === value);
         setSelectedRepo(repository || null);
     };
 
     const filteredRepositories = selectedOrg
-        ? repositories.filter((repo) => repo.owner.login === selectedOrg.login)
-        : repositories;
+        ? githubData.repositories.filter((repo: any) => repo.owner.login === selectedOrg.login)
+        : githubData.repositories;
+
+    const importRepo = () => {
+        if (selectedRepo) {
+            repositoryImport.importRepository(selectedRepo);
+        }
+    };
 
     return (
         <>
@@ -62,13 +65,13 @@ export const SetupGithub = () => {
                         <Select
                             value={selectedOrg?.login || ''}
                             onValueChange={handleOrganizationSelect}
-                            disabled={isLoadingOrganizations}
+                            disabled={githubData.isLoadingOrganizations}
                         >
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Select organization" />
                             </SelectTrigger>
                             <SelectContent className="max-w-[26rem]">
-                                {organizations.map((org) => (
+                                {githubData.organizations.map((org: any) => (
                                     <SelectItem key={org.id} value={org.login}>
                                         <div className="flex items-center gap-2 w-full">
                                             <img
@@ -87,7 +90,7 @@ export const SetupGithub = () => {
                                 ))}
                             </SelectContent>
                         </Select>
-                        {isLoadingOrganizations && (
+                        {githubData.isLoadingOrganizations && (
                             <div className="flex items-center gap-2 text-sm text-foreground-secondary">
                                 <Icons.Shadow className="w-3 h-3 animate-spin" />
                                 Loading organizations...
@@ -101,13 +104,13 @@ export const SetupGithub = () => {
                         <Select
                             value={selectedRepo?.name || ''}
                             onValueChange={handleRepositorySelect}
-                            disabled={isLoadingRepositories || !selectedOrg}
+                            disabled={githubData.isLoadingRepositories || !selectedOrg}
                         >
                             <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Find a NextJS repository" />
                             </SelectTrigger>
                             <SelectContent className="max-w-[27rem]">
-                                {filteredRepositories.map((repo) => (
+                                {filteredRepositories.map((repo: any) => (
                                     <SelectItem key={repo.id} value={repo.name}>
                                         <div className="flex items-center gap-2 w-full">
                                             <div className="flex items-center gap-1">
@@ -128,7 +131,7 @@ export const SetupGithub = () => {
                                 ))}
                             </SelectContent>
                         </Select>
-                        {isLoadingRepositories && (
+                        {githubData.isLoadingRepositories && (
                             <div className="flex items-center gap-2 text-sm text-foreground-secondary">
                                 <Icons.Shadow className="w-3 h-3 animate-spin" />
                                 Loading repositories...
@@ -136,7 +139,7 @@ export const SetupGithub = () => {
                         )}
                         {selectedOrg &&
                             filteredRepositories.length === 0 &&
-                            !isLoadingRepositories && (
+                            !githubData.isLoadingRepositories && (
                                 <div className="text-sm text-foreground-secondary">
                                     No repositories found for {selectedOrg.login}
                                 </div>

@@ -18,6 +18,6 @@ export default async function Layout({ children }: Readonly<{ children: React.Re
         redirect(Routes.LOGIN);
     }
     return (
-        <ImportGithubProjectProvider totalSteps={3}>{children} </ImportGithubProjectProvider>
+        <ImportGithubProjectProvider totalSteps={3}>{children}</ImportGithubProjectProvider>
     );
 }

@@ -8,7 +8,7 @@ import { StepContent, StepFooter, StepHeader } from '../../steps';
 import { useImportGithubProject } from '../_context/context';
 
 export const FinalizingGithubProject = () => {
-    const { isFinalizing, filesError, retry, cancel } = useImportGithubProject();
+    const { repositoryImport, retry, cancel } = useImportGithubProject();
 
     return (
         <>
@@ -24,21 +24,21 @@ export const FinalizingGithubProject = () => {
                     exit={{ opacity: 0, scale: 0.9 }}
                     className="w-full"
                 >
-                    {filesError ? (
+                    {repositoryImport.error ? (
                         <div className="w-full h-full flex items-center justify-center">
-                            <p>{filesError}</p>
+                            <p>{repositoryImport.error}</p>
                         </div>
                     ) : (
-                        <ProgressWithInterval isLoading={isFinalizing ?? false} />
+                        <ProgressWithInterval isLoading={repositoryImport.isImporting ?? false} />
                     )}
                 </motion.div>
             </StepContent>
             <StepFooter>
-                <Button onClick={cancel} disabled={isFinalizing} variant="outline">
+                <Button onClick={cancel} disabled={repositoryImport.isImporting} variant="outline">
                     Cancel
                 </Button>
-                {filesError && (
-                    <Button onClick={retry} disabled={isFinalizing}>
+                {repositoryImport.error && (
+                    <Button onClick={retry} disabled={repositoryImport.isImporting}>
                         Retry
                     </Button>
                 )}

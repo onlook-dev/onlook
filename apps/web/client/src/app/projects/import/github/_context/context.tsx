@@ -1,9 +1,9 @@
 'use client';
 
 import { Routes } from '@/utils/constants';
+import type { GitHubOrganization, GitHubRepository } from '@onlook/github';
 import { useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { GitHubOrganization, GitHubRepository } from '@onlook/github';
 import {
     useGitHubAppInstallation,
     useGitHubData,
@@ -28,46 +28,22 @@ interface ImportGithubContextType {
     setRepoUrl: (repoUrl: string) => void;
     branch: string;
     setBranch: (branch: string) => void;
-
-    // Selected repository data
     selectedRepo: GitHubRepository | null;
     setSelectedRepo: (repo: GitHubRepository | null) => void;
     selectedOrg: GitHubOrganization | null;
     setSelectedOrg: (org: GitHubOrganization | null) => void;
 
-    // GitHub data
-    organizations: GitHubOrganization[];
-    repositories: GitHubRepository[];
+    // Hook instances (exposed directly)
+    installation: ReturnType<typeof useGitHubAppInstallation>;
+    githubData: ReturnType<typeof useGitHubData>;
+    repositoryImport: ReturnType<typeof useRepositoryImport>;
+    repositoryValidation: ReturnType<typeof useRepositoryValidation>;
 
-    // Loading states
-    isLoadingOrganizations: boolean;
-    isLoadingRepositories: boolean;
-    isLoadingFiles: boolean;
-    isFinalizing: boolean;
-    isCheckingAppInstallation: boolean;
-
-    // Connection state
-    hasGitHubAppInstallation: boolean;
-    gitHubInstallationId: string | null;
-
-    // Error states
-    organizationsError: string | null;
-    repositoriesError: string | null;
-    filesError: string | null;
-    appInstallationError: string | null;
-
-    // Functions
-    fetchOrganizations: () => void;
-    fetchRepositories: (username?: string) => void;
-    fetchUserRepositories: () => void;
-    fetchOrgRepositories: (orgName: string) => void;
-    importRepo: () => void;
+    // Utility functions
     validateRepository: (
         owner: string,
         repo: string,
     ) => Promise<{ branch: string; isPrivateRepo: boolean } | null>;
-    checkGitHubAppInstallation: () => void;
-    redirectToGitHubAppInstallation: () => void;
     clearErrors: () => void;
     retry: () => void;
     cancel: () => void;
@@ -88,26 +64,26 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     const [selectedRepo, setSelectedRepo] = useState<GitHubRepository | null>(null);
     const [selectedOrg, setSelectedOrg] = useState<GitHubOrganization | null>(null);
 
-    // Custom hooks
-    const gitHubAppInstallation = useGitHubAppInstallation();
-    const gitHubData = useGitHubData();
+    // Hook instances
+    const installation = useGitHubAppInstallation();
+    const githubData = useGitHubData();
     const repositoryImport = useRepositoryImport();
     const repositoryValidation = useRepositoryValidation();
 
     useEffect(() => {
-        gitHubAppInstallation.checkInstallation();
+        installation.refetch();
     }, []);
 
     useEffect(() => {
-        if (gitHubAppInstallation.hasInstallation) {
-            gitHubData.fetchOrganizations();
-            gitHubData.fetchRepositories();
+        if (installation.hasInstallation) {
+            githubData.fetchOrganizations();
+            githubData.fetchRepositories();
         }
-    }, [gitHubAppInstallation.hasInstallation]);
+    }, [installation.hasInstallation]);
 
     const nextStep = async () => {
-        if (currentStep === 0 && !gitHubAppInstallation.hasInstallation) {
-            gitHubAppInstallation.redirectToInstallation();
+        if (currentStep === 0 && !installation.hasInstallation) {
+            installation.redirectToInstallation();
             return;
         }
 
@@ -138,8 +114,8 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     };
 
     const clearErrors = () => {
-        gitHubAppInstallation.clearError();
-        gitHubData.clearErrors();
+        installation.clearError();
+        githubData.clearErrors();
         repositoryImport.clearError();
         repositoryValidation.clearError();
     };
@@ -177,36 +153,14 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
         selectedOrg,
         setSelectedOrg,
 
-        // GitHub data
-        organizations: gitHubData.organizations,
-        repositories: gitHubData.repositories,
+        // Hook instances (exposed directly)
+        installation,
+        githubData,
+        repositoryImport,
+        repositoryValidation,
 
-        // Loading states
-        isLoadingOrganizations: gitHubData.isLoadingOrganizations,
-        isLoadingRepositories: gitHubData.isLoadingRepositories,
-        isLoadingFiles: repositoryImport.isImporting,
-        isFinalizing: repositoryImport.isImporting,
-        isCheckingAppInstallation: gitHubAppInstallation.isChecking,
-
-        // Connection state
-        hasGitHubAppInstallation: gitHubAppInstallation.hasInstallation,
-        gitHubInstallationId: gitHubAppInstallation.installationId,
-
-        // Error states
-        organizationsError: gitHubData.organizationsError,
-        repositoriesError: gitHubData.repositoriesError,
-        filesError: repositoryImport.error,
-        appInstallationError: gitHubAppInstallation.error,
-
-        // Functions
-        fetchOrganizations: gitHubData.fetchOrganizations,
-        fetchRepositories: gitHubData.fetchRepositories,
-        fetchUserRepositories: gitHubData.fetchRepositories,
-        fetchOrgRepositories: gitHubData.fetchRepositories,
-        importRepo: () => selectedRepo && repositoryImport.importRepository(selectedRepo),
+        // Utility functions
         validateRepository,
-        checkGitHubAppInstallation: gitHubAppInstallation.checkInstallation,
-        redirectToGitHubAppInstallation: gitHubAppInstallation.redirectToInstallation,
         clearErrors,
         retry,
         cancel,

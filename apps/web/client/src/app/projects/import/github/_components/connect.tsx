@@ -12,10 +12,7 @@ export const ConnectGithub = () => {
     const {
         prevStep,
         nextStep,
-        hasGitHubAppInstallation,
-        redirectToGitHubAppInstallation,
-        appInstallationError,
-        isCheckingAppInstallation
+        installation,
     } = useImportGithubProject();
 
     const itemContent = ({
@@ -65,19 +62,19 @@ export const ConnectGithub = () => {
                 >
                     <Separator orientation="horizontal" className="shrink-0 bg-border mb-6" />
                     {itemContent({
-                        title: hasGitHubAppInstallation
+                        title: installation.hasInstallation
                             ? 'GitHub App already connected'
                             : 'Install Onlook GitHub App',
-                        description: hasGitHubAppInstallation
+                        description: installation.hasInstallation
                             ? 'You can access your repositories through the GitHub App'
                             : 'Get secure repository access with fine-grained permissions',
-                        icon: hasGitHubAppInstallation
+                        icon: installation.hasInstallation
                             ? <Icons.Check className="w-5 h-5 text-green-500" />
                             : <Icons.GitHubLogo className="w-5 h-5" />,
                     })}
-                    {appInstallationError && (
+                    {installation.error && (
                         <div className="mt-4 p-3 bg-red-900 border border-red-800 rounded-md">
-                            <div className="text-red-100 text-sm">{appInstallationError}</div>
+                            <div className="text-red-100 text-sm">{installation.error}</div>
                         </div>
                     )}
                     <Separator orientation="horizontal" className="shrink-0 bg-border mt-6" />
@@ -88,7 +85,7 @@ export const ConnectGithub = () => {
                     Cancel
                 </Button>
 
-                {hasGitHubAppInstallation ? (
+                {installation.hasInstallation ? (
                     <Button className="px-3 py-2" onClick={nextStep}>
                         <Icons.ArrowRight className="w-4 h-4 mr-2" />
                         <span>Continue</span>
@@ -96,8 +93,8 @@ export const ConnectGithub = () => {
                 ) : (
                     <Button
                         className="px-3 py-2"
-                        onClick={() => redirectToGitHubAppInstallation()}
-                        disabled={isCheckingAppInstallation}
+                        onClick={() => installation.redirectToInstallation()}
+                        disabled={installation.isChecking}
                     >
                         <Icons.GitHubLogo className="w-4 h-4 mr-2" />
                         <span>Install GitHub App</span>

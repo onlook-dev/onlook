@@ -32,12 +32,24 @@ export default function GitHubInstallCallbackPage() {
             return;
         }
 
+        if (!setupAction) {
+            setState('error');
+            setMessage('Missing setup_action parameter');
+            return;
+        }
+
+        if (!stateParam) {
+            setState('error');
+            setMessage('Missing state parameter');
+            return;
+        }
+
         // Call the TRPC mutation to handle the callback
         handleInstallationCallback.mutate(
             {
                 installationId,
-                setupAction: setupAction || '',
-                state: stateParam || undefined,
+                setupAction: setupAction,
+                state: stateParam,
             },
             {
                 onSuccess: (data) => {
