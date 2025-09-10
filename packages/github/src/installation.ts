@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 import type { GitHubAppConfig } from './config';
 
 export interface InstallationUrlOptions {
@@ -35,7 +35,7 @@ export function generateInstallationUrl(
     config: GitHubAppConfig,
     options: InstallationUrlOptions = {}
 ): { url: string; state: string } {
-    const state = options.state || crypto.randomBytes(32).toString('hex');
+    const state = options.state || uuidv4();
 
     const params = new URLSearchParams({
         client_id: config.clientId,
