@@ -27,7 +27,6 @@ export async function login(provider: SignInMethod.GITHUB | SignInMethod.GOOGLE)
         provider,
         options: {
             redirectTo,
-            scopes: provider === 'github' ? 'read:org repo read:user' : undefined,
         },
     });
 
