@@ -361,4 +361,63 @@ export const githubRouter = createTRPCRouter({
             }
         }),
 
+    // Handle GitHub App installation callback
+    handleInstallationCallbackUrl: protectedProcedure
+        .input(
+            z.object({
+                installationId: z.string(),
+                setupAction: z.string(),
+                state: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            const { data: user } = await ctx.supabase.auth.getUser();
+            if (!user?.user?.id) {
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                    message: 'User not authenticated',
+                });
+            }
+
+            // Validate state parameter matches current user ID for CSRF protection
+            if (input.state && input.state !== user.user.id) {
+                console.error('State mismatch:', { expected: user.user.id, received: input.state });
+                throw new TRPCError({
+                    code: 'BAD_REQUEST',
+                    message: 'Invalid state parameter',
+                });
+            }
+
+            // Update user's GitHub installation ID
+            try {
+                const { error } = await ctx.supabase
+                    .from('users')
+                    .update({ github_installation_id: input.installationId })
+                    .eq('id', user.user.id);
+
+                if (error) {
+                    throw new TRPCError({
+                        code: 'INTERNAL_SERVER_ERROR',
+                        message: 'Failed to update installation',
+                        cause: error,
+                    });
+                }
+
+                console.log(`Updated installation ID for user: ${user.user.id}`);
+
+                return {
+                    success: true,
+                    message: 'GitHub App installation completed successfully',
+                    installationId: input.installationId,
+                };
+
+            } catch (error) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Failed to update GitHub installation',
+                    cause: error,
+                });
+            }
+        }),
+
 });

@@ -39,7 +39,7 @@ export const useGitHubAppInstallation = () => {
 
     const redirectToInstallation = async (redirectUrl?: string) => {
         try {
-            const finalRedirectUrl = redirectUrl || `${window.location.origin}/projects/import/github/setup`;
+            const finalRedirectUrl = redirectUrl;
             const result = await generateInstallationUrl.mutateAsync({
                 redirectUrl: finalRedirectUrl,
             });
