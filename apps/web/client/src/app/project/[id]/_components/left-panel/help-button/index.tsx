@@ -1,3 +1,5 @@
+'use client';
+
 import { openFeedbackWidget } from '@/utils/telemetry';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
