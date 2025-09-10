@@ -9,10 +9,9 @@ import { StepContent, StepFooter, StepHeader } from '../../steps';
 import { useImportGithubProject } from '../_context/context';
 
 export const ConnectGithub = () => {
-    const { 
-        prevStep, 
-        nextStep, 
-        isGitHubConnected, 
+    const {
+        prevStep,
+        nextStep,
         hasGitHubAppInstallation,
         redirectToGitHubAppInstallation,
         appInstallationError,
@@ -62,36 +61,23 @@ export const ConnectGithub = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="w-full"
+                    className="w-full text-sm"
                 >
                     <Separator orientation="horizontal" className="shrink-0 bg-border mb-6" />
                     {itemContent({
-                        title: hasGitHubAppInstallation 
-                            ? 'GitHub App already connected' 
+                        title: hasGitHubAppInstallation
+                            ? 'GitHub App already connected'
                             : 'Install Onlook GitHub App',
                         description: hasGitHubAppInstallation
                             ? 'You can access your repositories through the GitHub App'
                             : 'Get secure repository access with fine-grained permissions',
-                        icon: hasGitHubAppInstallation 
+                        icon: hasGitHubAppInstallation
                             ? <Icons.Check className="w-5 h-5 text-green-500" />
                             : <Icons.GitHubLogo className="w-5 h-5" />,
                     })}
-                    {itemContent({
-                        title: 'You set what Onlook can access',
-                        description: 'Onlook is strictly limited to the permissions you set',
-                        icon: <Icons.Key className="w-5 h-5" />,
-                    })}
-                    {itemContent({
-                        title: 'You are in control',
-                        description: hasGitHubAppInstallation || isGitHubConnected
-                            ? 'You can revoke access at any time in GitHub settings'
-                            : 'Sign in and confirm permissions in GitHub',
-                        icon: <Icons.LockClosed className="w-5 h-5" />,
-                    })}
-                    
                     {appInstallationError && (
-                        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                            <div className="text-red-800 text-sm">{appInstallationError}</div>
+                        <div className="mt-4 p-3 bg-red-900 border border-red-800 rounded-md">
+                            <div className="text-red-100 text-sm">{appInstallationError}</div>
                         </div>
                     )}
                     <Separator orientation="horizontal" className="shrink-0 bg-border mt-6" />
@@ -101,15 +87,15 @@ export const ConnectGithub = () => {
                 <Button onClick={prevStep} variant="outline">
                     Cancel
                 </Button>
-                
+
                 {hasGitHubAppInstallation ? (
                     <Button className="px-3 py-2" onClick={nextStep}>
                         <Icons.ArrowRight className="w-4 h-4 mr-2" />
                         <span>Continue</span>
                     </Button>
                 ) : (
-                    <Button 
-                        className="px-3 py-2" 
+                    <Button
+                        className="px-3 py-2"
                         onClick={redirectToGitHubAppInstallation}
                         disabled={isCheckingAppInstallation}
                     >

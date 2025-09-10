@@ -1,13 +1,14 @@
 'use client';
 
-import { login } from '@/app/login/actions';
-import { api as clientApi } from '@/trpc/client';
-import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
-import { SignInMethod } from '@onlook/models/auth';
 import { useRouter } from 'next/navigation';
 import { createContext, useContext, useEffect, useState } from 'react';
-
+import {
+    useGitHubAppInstallation,
+    useGitHubData,
+    useRepositoryImport,
+    useRepositoryValidation,
+} from '../_hooks';
 
 interface GitHubOrganization {
     id: number;
@@ -64,12 +65,10 @@ interface ImportGithubContextType {
     isLoadingOrganizations: boolean;
     isLoadingRepositories: boolean;
     isLoadingFiles: boolean;
-    isCheckingConnection: boolean;
     isFinalizing: boolean;
     isCheckingAppInstallation: boolean;
 
     // Connection state
-    isGitHubConnected: boolean;
     hasGitHubAppInstallation: boolean;
     gitHubInstallationId: string | null;
 
@@ -77,7 +76,6 @@ interface ImportGithubContextType {
     organizationsError: string | null;
     repositoriesError: string | null;
     filesError: string | null;
-    connectionError: string | null;
     appInstallationError: string | null;
 
     // Functions
@@ -90,7 +88,6 @@ interface ImportGithubContextType {
         owner: string,
         repo: string,
     ) => Promise<{ branch: string; isPrivateRepo: boolean } | null>;
-    checkGitHubConnection: () => void;
     checkGitHubAppInstallation: () => void;
     redirectToGitHubAppInstallation: () => void;
     clearErrors: () => void;
@@ -103,6 +100,7 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     totalSteps = 1,
 }) => {
     const router = useRouter();
+
     // Step management
     const [currentStep, setCurrentStep] = useState(0);
 
@@ -112,64 +110,34 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     const [selectedRepo, setSelectedRepo] = useState<GitHubRepository | null>(null);
     const [selectedOrg, setSelectedOrg] = useState<GitHubOrganization | null>(null);
 
-    // GitHub data
-    const [organizations, setOrganizations] = useState<GitHubOrganization[]>([]);
-    const [repositories, setRepositories] = useState<GitHubRepository[]>([]);
-
-    // Loading states
-    const [isLoadingOrganizations, setIsLoadingOrganizations] = useState(false);
-    const [isLoadingRepositories, setIsLoadingRepositories] = useState(false);
-    const [isLoadingFiles, setIsLoadingFiles] = useState(false);
-    const [isCheckingConnection, setIsCheckingConnection] = useState(false);
-    const [isFinalizing, setIsFinalizing] = useState(false);
-    const [isCheckingAppInstallation, setIsCheckingAppInstallation] = useState(false);
-    
-    // Connection state
-    const [isGitHubConnected, setIsGitHubConnected] = useState(false);
-    const [hasGitHubAppInstallation, setHasGitHubAppInstallation] = useState(false);
-    const [gitHubInstallationId, setGitHubInstallationId] = useState<string | null>(null);
-
-    // Error states
-    const [organizationsError, setOrganizationsError] = useState<string | null>(null);
-    const [repositoriesError, setRepositoriesError] = useState<string | null>(null);
-    const [filesError, setFilesError] = useState<string | null>(null);
-    const [connectionError, setConnectionError] = useState<string | null>(null);
-    const [appInstallationError, setAppInstallationError] = useState<string | null>(null);
-
-    // Create manager
-    const { data: user } = api.user.get.useQuery();
+    // Custom hooks
+    const gitHubAppInstallation = useGitHubAppInstallation();
+    const gitHubData = useGitHubData();
+    const repositoryImport = useRepositoryImport();
+    const repositoryValidation = useRepositoryValidation();
 
     useEffect(() => {
-        checkGitHubConnection();
-        checkGitHubAppInstallation();
+        gitHubAppInstallation.checkInstallation();
     }, []);
 
     useEffect(() => {
-        if (hasGitHubAppInstallation) {
-            fetchOrganizations();
-            fetchRepositories();
+        if (gitHubAppInstallation.hasInstallation) {
+            gitHubData.fetchOrganizations();
+            gitHubData.fetchRepositories();
         }
-    }, [hasGitHubAppInstallation]);
-
-    const validateRepo = api.github.validate.useMutation();
-    const reconnectGitHub = api.github.reconnectGitHub.useMutation();
-    const generateInstallationUrl = api.github.generateInstallationUrl.useMutation();
-    const checkAppInstallation = api.github.checkGitHubAppInstallation.useQuery(undefined, {
-        enabled: false,
-        refetchOnWindowFocus: false,
-    });
+    }, [gitHubAppInstallation.hasInstallation]);
 
     const nextStep = async () => {
-        if (currentStep === 0 && !hasGitHubAppInstallation) {
-            // Redirect to GitHub App installation if not installed
-            redirectToGitHubAppInstallation();
+        if (currentStep === 0 && !gitHubAppInstallation.hasInstallation) {
+            gitHubAppInstallation.redirectToInstallation();
             return;
         }
-        
+
         if (currentStep === 1) {
-            // Going from SetupGithub to FinalizingGithubProject - trigger import
             setCurrentStep(2);
-            await importRepo();
+            if (selectedRepo) {
+                await repositoryImport.importRepository(selectedRepo);
+            }
         } else if (currentStep < totalSteps - 1) {
             setCurrentStep((prev) => prev + 1);
         }
@@ -183,203 +151,36 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
         setCurrentStep((prev) => prev - 1);
     };
 
-    const fetchOrganizations = async () => {
-        setIsLoadingOrganizations(true);
-        setOrganizationsError(null);
-
-        try {
-            const organizationsData = await clientApi.github.getOrganizations.query();
-            setOrganizations(organizationsData as GitHubOrganization[]);
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : 'Failed to fetch organizations';
-            setOrganizationsError(errorMessage);
-            console.error('Error fetching organizations:', error);
-        } finally {
-            setIsLoadingOrganizations(false);
-        }
-    };
-
-    const fetchRepositories = async () => {
-        setIsLoadingRepositories(true);
-        setRepositoriesError(null);
-
-        try {
-            const repositoriesData = await clientApi.github.getRepositoriesWithApp.query();
-            setRepositories(repositoriesData as GitHubRepository[]);
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : 'Failed to fetch repositories';
-            setRepositoriesError(errorMessage);
-            console.error('Error fetching repositories:', error);
-        } finally {
-            setIsLoadingRepositories(false);
-        }
-    };
-
-    const fetchUserRepositories = () => {
-        fetchRepositories();
-    };
-
-    const fetchOrgRepositories = () => {
-        fetchRepositories();
-    };
-
-    const importRepo = async () => {
-        setIsFinalizing(true);
-        setIsLoadingFiles(true);
-        setFilesError(null);
-
-        try {
-            if (!user?.id) {
-                console.error('No user found');
-                return;
-            }
-
-            if (!selectedRepo) {
-                console.error('No repository selected');
-                return;
-            }
-
-
-            const { sandboxId, previewUrl } = await clientApi.sandbox.createFromGitHub.mutate({
-                repoUrl: selectedRepo.clone_url,
-                branch: selectedRepo.default_branch,
-            });
-
-
-            const project = await clientApi.project.create.mutate({
-                project: {
-                    name: selectedRepo.name ?? 'New project',
-                    description: selectedRepo.description || 'Imported from GitHub',
-                },
-                userId: user.id,
-                sandboxId,
-                sandboxUrl: previewUrl,
-            });
-
-            
-            if (!project) {
-                console.error('Failed to create project');
-                return;
-            }
-
-            // Open the project
-            router.push(`${Routes.PROJECT}/${project.id}`);
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : 'Failed to import repository';
-            setFilesError(errorMessage);
-            console.error('Error importing repository:', error);
-        } finally {
-            setIsLoadingFiles(false);
-            setIsFinalizing(false);
-        }
-    };
-
     const validateRepository = async (owner: string, repo: string) => {
-        try {
-            const result = await validateRepo.mutateAsync({ owner, repo });
+        const result = await repositoryValidation.validateRepository(owner, repo);
+        if (result) {
             setBranch(result.branch);
-            return result;
-        } catch (error) {
-            console.error('Error validating repository:', error);
-            return null;
         }
-    };
-
-    const checkGitHubConnection = async () => {
-        setIsCheckingConnection(true);
-        setConnectionError(null);
-
-        try {
-            const result = await clientApi.github.checkGitHubConnection.query();
-            setIsGitHubConnected(result.connected);
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : 'Failed to check GitHub connection';
-            setConnectionError(errorMessage);
-            setIsGitHubConnected(false);
-            console.error('Error checking GitHub connection:', error);
-        } finally {
-            setIsCheckingConnection(false);
-        }
-    };
-
-    const checkGitHubAppInstallation = async () => {
-        setIsCheckingAppInstallation(true);
-        setAppInstallationError(null);
-
-        try {
-            const result = await checkAppInstallation.refetch();
-            if (result.data) {
-                setHasGitHubAppInstallation(result.data.hasInstallation);
-                setGitHubInstallationId(result.data.installationId);
-            }
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : 'Failed to check GitHub App installation';
-            setAppInstallationError(errorMessage);
-            setHasGitHubAppInstallation(false);
-            setGitHubInstallationId(null);
-            console.error('Error checking GitHub App installation:', error);
-        } finally {
-            setIsCheckingAppInstallation(false);
-        }
-    };
-
-    const redirectToGitHubAppInstallation = async () => {
-        try {
-            const redirectUrl = `${window.location.origin}/projects/import/github/setup`;
-            const result = await generateInstallationUrl.mutateAsync({
-                redirectUrl,
-            });
-            
-            if (result?.url) {
-                window.location.href = result.url;
-            }
-        } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : 'Failed to generate GitHub App installation URL';
-            setAppInstallationError(errorMessage);
-            console.error('Error generating GitHub App installation URL:', error);
-        }
+        return result;
     };
 
     const clearErrors = () => {
-        setOrganizationsError(null);
-        setRepositoriesError(null);
-        setFilesError(null);
-        setConnectionError(null);
-        setAppInstallationError(null);
+        gitHubAppInstallation.clearError();
+        gitHubData.clearErrors();
+        repositoryImport.clearError();
+        repositoryValidation.clearError();
     };
-
-    const clearLoadingStates = () => {
-        setIsLoadingOrganizations(false);
-        setIsLoadingRepositories(false);
-        setIsLoadingFiles(false);
-        setIsCheckingConnection(false);
-        setIsFinalizing(false);
-        setIsCheckingAppInstallation(false);
-    }
 
     const clearData = () => {
         setSelectedRepo(null);
         setSelectedOrg(null);
         setRepoUrl('');
         setBranch('');
-    }
+    };
 
     const retry = () => {
         setCurrentStep(1);
-        clearLoadingStates();
     };
 
     const cancel = () => {
-        clearLoadingStates();
         clearData();
         setCurrentStep(1);
-    }
+    };
 
     const contextValue: ImportGithubContextType = {
         // Step management
@@ -399,39 +200,35 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
         setSelectedOrg,
 
         // GitHub data
-        organizations,
-        repositories,
+        organizations: gitHubData.organizations,
+        repositories: gitHubData.repositories,
 
         // Loading states
-        isLoadingOrganizations,
-        isLoadingRepositories,
-        isLoadingFiles,
-        isCheckingConnection,
-        isFinalizing,
-        isCheckingAppInstallation,
-        
+        isLoadingOrganizations: gitHubData.isLoadingOrganizations,
+        isLoadingRepositories: gitHubData.isLoadingRepositories,
+        isLoadingFiles: repositoryImport.isImporting,
+        isFinalizing: repositoryImport.isImporting,
+        isCheckingAppInstallation: gitHubAppInstallation.isChecking,
+
         // Connection state
-        isGitHubConnected,
-        hasGitHubAppInstallation,
-        gitHubInstallationId,
+        hasGitHubAppInstallation: gitHubAppInstallation.hasInstallation,
+        gitHubInstallationId: gitHubAppInstallation.installationId,
 
         // Error states
-        organizationsError,
-        repositoriesError,
-        filesError,
-        connectionError,
-        appInstallationError,
+        organizationsError: gitHubData.organizationsError,
+        repositoriesError: gitHubData.repositoriesError,
+        filesError: repositoryImport.error,
+        appInstallationError: gitHubAppInstallation.error,
 
         // Functions
-        fetchOrganizations,
-        fetchRepositories,
-        fetchUserRepositories,
-        fetchOrgRepositories,
-        importRepo,
+        fetchOrganizations: gitHubData.fetchOrganizations,
+        fetchRepositories: gitHubData.fetchRepositories,
+        fetchUserRepositories: gitHubData.fetchRepositories,
+        fetchOrgRepositories: gitHubData.fetchRepositories,
+        importRepo: () => selectedRepo && repositoryImport.importRepository(selectedRepo),
         validateRepository,
-        checkGitHubConnection,
-        checkGitHubAppInstallation,
-        redirectToGitHubAppInstallation,
+        checkGitHubAppInstallation: gitHubAppInstallation.checkInstallation,
+        redirectToGitHubAppInstallation: gitHubAppInstallation.redirectToInstallation,
         clearErrors,
         retry,
         cancel,
@@ -444,62 +241,12 @@ export const ImportGithubProjectProvider: React.FC<ImportGithubProjectProviderPr
     );
 };
 
-const ImportGithubProjectContext = createContext<ImportGithubContextType>({
-    // Step management
-    currentStep: 0,
-    setCurrentStep: () => { },
-    nextStep: () => { },
-    prevStep: () => { },
-
-    // Repository data
-    repoUrl: '',
-    setRepoUrl: () => { },
-    branch: '',
-    setBranch: () => { },
-    selectedRepo: null,
-    setSelectedRepo: () => { },
-    selectedOrg: null,
-    setSelectedOrg: () => { },
-
-    // GitHub data
-    organizations: [],
-    repositories: [],
-
-    // Loading states
-    isLoadingOrganizations: false,
-    isLoadingRepositories: false,
-    isLoadingFiles: false,
-    isCheckingConnection: false,
-    isFinalizing: false,
-    isCheckingAppInstallation: false,
-    
-    // Connection state
-    isGitHubConnected: false,
-    hasGitHubAppInstallation: false,
-    gitHubInstallationId: null,
-
-    // Error states
-    organizationsError: null,
-    repositoriesError: null,
-    filesError: null,
-    connectionError: null,
-    appInstallationError: null,
-
-    // Functions
-    fetchOrganizations: () => { },
-    fetchRepositories: () => { },
-    fetchUserRepositories: () => { },
-    fetchOrgRepositories: () => { },
-    importRepo: () => { },
-    validateRepository: async () => null,
-    checkGitHubConnection: () => { },
-    checkGitHubAppInstallation: () => { },
-    redirectToGitHubAppInstallation: () => { },
-    clearErrors: () => { },
-    retry: () => { },
-    cancel: () => { },
-});
+const ImportGithubProjectContext = createContext<ImportGithubContextType | null>(null);
 
 export const useImportGithubProject = () => {
-    return useContext(ImportGithubProjectContext);
+    const context = useContext(ImportGithubProjectContext);
+    if (!context) {
+        throw new Error('useImportGithubProject must be used within ImportGithubProjectProvider');
+    }
+    return context;
 };

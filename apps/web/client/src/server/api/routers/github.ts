@@ -1,13 +1,12 @@
-import { Routes } from '@/utils/constants';
+import {
+    createInstallationOctokit,
+    generateInstallationUrl,
+    getGitHubAppConfig
+} from '@onlook/github';
 import { TRPCError } from '@trpc/server';
 import { Octokit } from 'octokit';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
-import { 
-    generateInstallationUrl, 
-    getGitHubAppConfig,
-    createInstallationOctokit 
-} from '@onlook/github';
 
 const getUserGitHubToken = async (supabase: any) => {
     const { data: { session }, error } = await supabase.auth.getSession();
@@ -101,7 +100,7 @@ export const githubRouter = createTRPCRouter({
 
             try {
                 const octokit = createInstallationOctokit(config, userData.github_installation_id);
-                
+
                 // Get installation details to determine account type
                 const installation = await octokit.rest.apps.getInstallation({
                     installation_id: parseInt(userData.github_installation_id, 10),
@@ -125,14 +124,13 @@ export const githubRouter = createTRPCRouter({
                     .from('users')
                     .update({ github_installation_id: null })
                     .eq('id', user.user.id);
-                    
+
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'GitHub App installation is invalid or has been revoked',
                 });
             }
         }),
-
     getRepoFiles: protectedProcedure
         .input(
             z.object({
@@ -152,41 +150,6 @@ export const githubRouter = createTRPCRouter({
             });
             return data;
         }),
-
-    checkGitHubConnection: protectedProcedure
-        .query(async ({ ctx }) => {
-            try {
-                const token = await getUserGitHubToken(ctx.supabase);
-                return { connected: !!token };
-            } catch (error) {
-                return { connected: false };
-            }
-        }),
-
-    reconnectGitHub: protectedProcedure
-        .mutation(async ({ ctx }) => {
-            const origin = process.env.NEXT_PUBLIC_APP_URL;
-
-            const { data, error } = await ctx.supabase.auth.signInWithOAuth({
-                provider: 'github',
-                options: {
-                    redirectTo: `${origin}${Routes.AUTH_CALLBACK}`,
-                    skipBrowserRedirect: true,
-                    scopes: 'read:org repo read:user',
-                },
-            });
-
-            if (error) {
-                throw new TRPCError({
-                    code: 'INTERNAL_SERVER_ERROR',
-                    message: 'Failed to initiate GitHub reconnection',
-                    cause: error,
-                });
-            }
-
-            return { url: data.url };
-        }),
-
     // GitHub App Installation Flow
     generateInstallationUrl: protectedProcedure
         .input(
@@ -294,10 +257,10 @@ export const githubRouter = createTRPCRouter({
                     await octokit.rest.apps.getInstallation({
                         installation_id: parseInt(userData.github_installation_id, 10),
                     });
-                    
-                    return { 
-                        hasInstallation: true, 
-                        installationId: userData.github_installation_id 
+
+                    return {
+                        hasInstallation: true,
+                        installationId: userData.github_installation_id
                     };
                 } catch (error) {
                     // Installation might be deleted or suspended
@@ -353,13 +316,13 @@ export const githubRouter = createTRPCRouter({
 
             try {
                 const octokit = createInstallationOctokit(config, userData.github_installation_id);
-                
+
                 const { data } = await octokit.rest.apps.listReposAccessibleToInstallation({
                     installation_id: parseInt(userData.github_installation_id, 10),
                     per_page: 100,
                     page: 1,
                 });
-                
+
                 // Transform to match reference implementation pattern
                 return data.repositories.map(repo => ({
                     id: repo.id,
@@ -382,7 +345,7 @@ export const githubRouter = createTRPCRouter({
                     .from('users')
                     .update({ github_installation_id: null })
                     .eq('id', user.user.id);
-                    
+
                 throw new TRPCError({
                     code: 'FORBIDDEN',
                     message: 'GitHub App installation is invalid or has been revoked. Please reinstall the GitHub App.',
