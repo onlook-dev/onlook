@@ -86,10 +86,20 @@ export const ConnectGithub = () => {
                 </Button>
 
                 {installation.hasInstallation ? (
-                    <Button className="px-3 py-2" onClick={nextStep}>
-                        <Icons.ArrowRight className="w-4 h-4 mr-2" />
-                        <span>Continue</span>
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button
+                            size="icon"
+                            variant="outline"
+                            className="py-2"
+                            onClick={() => installation.redirectToInstallation()}
+                        >
+                            <Icons.Gear className="w-4 h-4" />
+                        </Button>
+                        <Button className="px-3 py-2" onClick={nextStep}>
+                            <Icons.ArrowRight className="w-4 h-4 mr-2" />
+                            <span>Continue</span>
+                        </Button>
+                    </div>
                 ) : (
                     <Button
                         className="px-3 py-2"

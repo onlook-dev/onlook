@@ -18,8 +18,9 @@ export const SetupGithub = () => {
         setSelectedRepo,
         githubData,
         repositoryImport,
+        installation,
     } = useImportGithubProject();
-    
+
     const [searchQuery, setSearchQuery] = useState('');
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const [canScrollUp, setCanScrollUp] = useState(false);
@@ -57,7 +58,7 @@ export const SetupGithub = () => {
     // Filter repositories by organization and search query
     const filteredRepositories = githubData.repositories.filter((repo: any) => {
         const matchesOrg = selectedOrg ? repo.owner.login === selectedOrg.login : true;
-        const matchesSearch = searchQuery.trim() === '' || 
+        const matchesSearch = searchQuery.trim() === '' ||
             repo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             repo.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             (repo.description && repo.description.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -67,7 +68,7 @@ export const SetupGithub = () => {
     const updateScrollIndicators = useCallback(() => {
         const container = scrollContainerRef.current;
         if (!container) return;
-        
+
         const { scrollTop, scrollHeight, clientHeight } = container;
         setCanScrollUp(scrollTop > 0);
         setCanScrollDown(scrollTop + clientHeight < scrollHeight);
@@ -153,12 +154,24 @@ export const SetupGithub = () => {
                                 </div>
                             )}
                         </div>
-                        
-                            <div className="flex flex-col gap-3">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-sm font-medium text-foreground-primary">
-                                        Repository
-                                    </label>
+
+                        <div className="flex flex-col gap-3">
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium text-foreground-primary">
+                                    Repository
+                                </label>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => {
+                                            githubData.fetchOrganizations();
+                                            githubData.fetchRepositories();
+                                        }}
+                                        disabled={githubData.isLoadingRepositories || githubData.isLoadingOrganizations}
+                                        className="w-8 h-8 rounded border bg-background hover:bg-secondary transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title="Refresh repositories"
+                                    >
+                                        <Icons.Reload className={`h-4 w-4 text-foreground-tertiary ${(githubData.isLoadingRepositories || githubData.isLoadingOrganizations) ? 'animate-spin' : ''}`} />
+                                    </button>
                                     <motion.div
                                         ref={searchContainerRef}
                                         className="relative"
@@ -195,91 +208,97 @@ export const SetupGithub = () => {
                                         )}
                                     </motion.div>
                                 </div>
-                                
-                                <Card className="h-64 relative">
-                                    <CardContent className="p-0 h-full">
-                                        {canScrollUp && (
-                                            <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background via-background/80 to-transparent z-10 flex items-start justify-center pt-1">
-                                                <Icons.ChevronUp className="w-4 h-4 text-foreground-secondary" />
-                                            </div>
-                                        )}
-                                        
-                                        {canScrollDown && (
-                                            <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background via-background/80 to-transparent z-10 flex items-end justify-center pb-1">
-                                                <Icons.ChevronDown className="w-4 h-4 text-foreground-secondary" />
-                                            </div>
-                                        )}
-                                        
-                                        {githubData.isLoadingRepositories ? (
-                                            <div className="flex items-center justify-center gap-2 h-full text-sm text-foreground-secondary">
-                                                <Icons.Shadow className="w-3 h-3 animate-spin" />
-                                                Loading repositories...
-                                            </div>
-                                        ) : filteredRepositories.length === 0 ? (
-                                            <div className="flex items-center justify-center h-full text-sm text-foreground-secondary">
-                                                {searchQuery ? 'No repositories match your search' : 
-                                                 selectedOrg ? `No repositories found for ${selectedOrg.login}` : 
-                                                 'No repositories found'}
-                                            </div>
-                                        ) : (
-                                            <div 
-                                                ref={scrollContainerRef}
-                                                className="h-full overflow-y-auto"
-                                                onScroll={updateScrollIndicators}
-                                            >
-                                                {filteredRepositories.map((repo: any) => (
-                                                    <button
-                                                        key={repo.id}
-                                                        onClick={() => handleRepositorySelect(repo.full_name)}
-                                                        className={`w-full text-left p-3 border-b last:border-b-0 hover:bg-secondary transition-colors ${
-                                                            selectedRepo?.id === repo.id ? 'bg-secondary' : ''
-                                                        }`}
-                                                    >
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="flex items-center gap-1">
-                                                                {repo.private ? (
-                                                                    <Icons.LockClosed className="w-3 h-3 text-foreground-secondary" />
-                                                                ) : (
-                                                                    <Icons.Globe className="w-3 h-3 text-foreground-secondary" />
-                                                                )}
-                                                                <span className="font-medium text-sm">{repo.owner.login}</span>
-                                                                <span className="text-foreground-secondary">/</span>
-                                                                <span className="text-sm">{repo.name}</span>
-                                                            </div>
-                                                            {selectedRepo?.id === repo.id && (
-                                                                <Icons.Check className="w-4 h-4 text-green-500 ml-auto" />
-                                                            )}
-                                                        </div>
-                                                        {repo.description && (
-                                                            <p className="text-xs text-foreground-secondary mt-1 truncate">
-                                                                {repo.description}
-                                                            </p>
-                                                        )}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                                
-                                {selectedRepo && (
-                                    <div className="text-sm text-foreground-secondary">
-                                        Selected: <span className="font-medium">{selectedRepo.full_name}</span>
-                                    </div>
-                                )}
                             </div>
+
+                            <Card className="h-64 relative">
+                                <CardContent className="p-0 h-full">
+                                    {canScrollUp && (
+                                        <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-b from-background via-background/80 to-transparent z-10 flex items-start justify-center pt-1">
+                                            <Icons.ChevronUp className="w-4 h-4 text-foreground-secondary" />
+                                        </div>
+                                    )}
+
+                                    {canScrollDown && (
+                                        <div className="absolute bottom-0 left-0 right-0 h-6 bg-gradient-to-t from-background via-background/80 to-transparent z-10 flex items-end justify-center pb-1">
+                                            <Icons.ChevronDown className="w-4 h-4 text-foreground-secondary" />
+                                        </div>
+                                    )}
+
+                                    {githubData.isLoadingRepositories ? (
+                                        <div className="flex items-center justify-center gap-2 h-full text-sm text-foreground-secondary">
+                                            <Icons.Shadow className="w-3 h-3 animate-spin" />
+                                            Loading repositories...
+                                        </div>
+                                    ) : filteredRepositories.length === 0 ? (
+                                        <div className="flex items-center justify-center h-full text-sm text-foreground-secondary">
+                                            {searchQuery ? 'No repositories match your search' :
+                                                selectedOrg ? `No repositories found for ${selectedOrg.login}` :
+                                                    'No repositories found'}
+                                        </div>
+                                    ) : (
+                                        <div
+                                            ref={scrollContainerRef}
+                                            className="h-full overflow-y-auto"
+                                            onScroll={updateScrollIndicators}
+                                        >
+                                            {filteredRepositories.map((repo: any) => (
+                                                <button
+                                                    key={repo.id}
+                                                    onClick={() => handleRepositorySelect(repo.full_name)}
+                                                    className={`w-full text-left p-3 border-b last:border-b-0 hover:bg-secondary transition-colors ${selectedRepo?.id === repo.id ? 'bg-secondary' : ''
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-1">
+                                                            {repo.private ? (
+                                                                <Icons.LockClosed className="w-3 h-3 text-foreground-secondary" />
+                                                            ) : (
+                                                                <Icons.Globe className="w-3 h-3 text-foreground-secondary" />
+                                                            )}
+                                                            <span className="font-medium text-sm">{repo.owner.login}</span>
+                                                            <span className="text-foreground-secondary">/</span>
+                                                            <span className="text-sm">{repo.name}</span>
+                                                        </div>
+                                                        {selectedRepo?.id === repo.id && (
+                                                            <Icons.Check className="w-4 h-4 text-green-500 ml-auto" />
+                                                        )}
+                                                    </div>
+                                                    {repo.description && (
+                                                        <p className="text-xs text-foreground-secondary mt-1 truncate">
+                                                            {repo.description}
+                                                        </p>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+
+                            {selectedRepo && (
+                                <div className="text-sm text-foreground-secondary">
+                                    Selected: <span className="font-medium">{selectedRepo.full_name}</span>
+                                </div>
+                            )}
                         </div>
+                    </div>
                 </motion.div>
             </StepContent>
             <StepFooter>
                 <Button onClick={prevStep} variant="outline">
                     Cancel
                 </Button>
-                <Button className="px-3 py-2" onClick={nextStep} disabled={!selectedRepo || repositoryImport.isImporting}>
-                    <Icons.Download className="w-4 h-4 mr-2" />
-                    <span>Import</span>
-                </Button>
-            </StepFooter>
+                <div className="flex gap-2">
+                    <Button onClick={() => installation.redirectToInstallation()} variant="outline">
+                        <Icons.Gear className="w-4 h-4 mr-2" />
+                        Configure
+                    </Button>
+                    <Button className="px-3 py-2" onClick={nextStep} disabled={!selectedRepo || repositoryImport.isImporting}>
+                        <Icons.Download className="w-4 h-4 mr-2" />
+                        <span>Import</span>
+                    </Button>
+                </div>
+            </StepFooter >
         </>
     );
 };
