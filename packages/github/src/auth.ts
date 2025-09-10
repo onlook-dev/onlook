@@ -23,6 +23,10 @@ export function createInstallationOctokit(
     config: GitHubAppConfig,
     installationId: string
 ): Octokit {
+    if (!installationId || installationId.trim() === '') {
+        throw new Error('Installation ID is required and cannot be empty.');
+    }
+
     const auth = createAppAuth({
         appId: config.appId,
         privateKey: config.privateKey,

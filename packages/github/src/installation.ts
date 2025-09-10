@@ -13,22 +13,6 @@ export interface InstallationCallbackData {
 }
 
 /**
- * Get app slug from app ID
- * This should be the actual slug of your GitHub App
- */
-function getAppSlug(): string {
-    // You need to replace this with your actual GitHub App slug
-    // You can find this in your GitHub App settings URL: https://github.com/settings/apps/YOUR_SLUG_HERE
-    const slug = process.env.GITHUB_APP_SLUG;
-
-    if (!slug) {
-        throw new Error('GITHUB_APP_SLUG environment variable is required. Please check your GitHub App settings to find the correct slug.');
-    }
-
-    return slug;
-}
-
-/**
  * Generate a secure installation URL for GitHub App
  */
 export function generateInstallationUrl(
@@ -48,7 +32,7 @@ export function generateInstallationUrl(
 
     // Use the standard GitHub App installation URL pattern
     // This should work with any properly configured GitHub App
-    const url = `https://github.com/apps/${getAppSlug()}/installations/new?${params.toString()}`;
+    const url = `https://github.com/apps/${config.slug}/installations/new?${params.toString()}`;
 
     return { url, state };
 }
