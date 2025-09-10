@@ -20,6 +20,7 @@ export const Routes = {
     PROJECTS: '/projects',
     PROJECT: '/project',
     IMPORT_PROJECT: '/projects/import',
+    IMPORT_GITHUB: '/projects/import/github',
 
     // Callback
     CALLBACK_STRIPE_SUCCESS: '/callback/stripe/success',

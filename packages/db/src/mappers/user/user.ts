@@ -12,6 +12,7 @@ export const toDbUser = (user: User): DbUser => {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
         stripeCustomerId: user.stripeCustomerId,
+        githubInstallationId: null,
     };
 };
 

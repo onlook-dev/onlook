@@ -3,8 +3,12 @@ import { TRPCError } from '@trpc/server';
 import { Octokit } from 'octokit';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../trpc';
+import { 
+    generateInstallationUrl, 
+    getGitHubAppConfig,
+    createInstallationOctokit 
+} from '@onlook/github';
 
-// Helper function to get user's GitHub access token from Supabase session
 const getUserGitHubToken = async (supabase: any) => {
     const { data: { session }, error } = await supabase.auth.getSession();
 
@@ -15,8 +19,6 @@ const getUserGitHubToken = async (supabase: any) => {
         });
     }
 
-    // GitHub OAuth token should be in provider_token, not access_token
-    // access_token is Supabase's JWT, provider_token is GitHub's OAuth token
     const githubToken = session.provider_token;
     if (!githubToken) {
         throw new TRPCError({
@@ -28,7 +30,6 @@ const getUserGitHubToken = async (supabase: any) => {
     return githubToken;
 };
 
-// Create Octokit instance with user's token
 const createUserOctokit = async (supabase: any) => {
     const token = await getUserGitHubToken(supabase);
     return new Octokit({ auth: token });
@@ -68,46 +69,67 @@ export const githubRouter = createTRPCRouter({
         }),
 
     getOrganizations: protectedProcedure
-        .input(
-            z.object({
-                username: z.string().optional()
-            }).optional()
-        )
-        .query(async ({ input, ctx }) => {
-            const octokit = await createUserOctokit(ctx.supabase);
-
-            if (input?.username) {
-                const { data } = await octokit.rest.orgs.listForUser({
-                    username: input.username
+        .query(async ({ ctx }) => {
+            const { data: user } = await ctx.supabase.auth.getUser();
+            if (!user?.user?.id) {
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                    message: 'User not authenticated',
                 });
-                return data;
-            } else {
-                const { data } = await octokit.rest.orgs.listForAuthenticatedUser();
-                return data;
             }
-        }),
 
-    getRepositories: protectedProcedure
-        .input(
-            z.object({
-                username: z.string().optional(),
-            }).optional()
-        )
-        .query(async ({ input, ctx }) => {
-            const octokit = await createUserOctokit(ctx.supabase);
+            const { data: userData } = await ctx.supabase
+                .from('users')
+                .select('github_installation_id')
+                .eq('id', user.user.id)
+                .single();
 
-            if (input?.username) {
-                // listForUser only supports 'all', 'owner', 'member' types
-                const { data } = await octokit.rest.repos.listForUser({
-                    username: input.username,
+            if (!userData?.github_installation_id) {
+                throw new TRPCError({
+                    code: 'PRECONDITION_FAILED',
+                    message: 'GitHub App installation required',
                 });
-                return data;
-            } else {
-                const { data } = await octokit.rest.repos.listForAuthenticatedUser({
-                    per_page: 100,
-                    page: 1,
+            }
+
+            const config = getGitHubAppConfig();
+            if (!config) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'GitHub App configuration not available',
                 });
-                return data;
+            }
+
+            try {
+                const octokit = createInstallationOctokit(config, userData.github_installation_id);
+                
+                // Get installation details to determine account type
+                const installation = await octokit.rest.apps.getInstallation({
+                    installation_id: parseInt(userData.github_installation_id, 10),
+                });
+
+                // If installed on an organization, return that organization
+                if (installation.data.account && 'type' in installation.data.account && installation.data.account.type === 'Organization') {
+                    return [{
+                        id: installation.data.account.id,
+                        login: 'login' in installation.data.account ? installation.data.account.login : (installation.data.account as any).name || '',
+                        avatar_url: installation.data.account.avatar_url,
+                        description: undefined, // Organizations don't have descriptions in this context
+                    }];
+                }
+
+                // If installed on a user account, return empty (no organizations)
+                return [];
+            } catch (error) {
+                // If installation is invalid, clear it from database
+                await ctx.supabase
+                    .from('users')
+                    .update({ github_installation_id: null })
+                    .eq('id', user.user.id);
+                    
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'GitHub App installation is invalid or has been revoked',
+                });
             }
         }),
 
@@ -163,6 +185,209 @@ export const githubRouter = createTRPCRouter({
             }
 
             return { url: data.url };
+        }),
+
+    // GitHub App Installation Flow
+    generateInstallationUrl: protectedProcedure
+        .input(
+            z.object({
+                redirectUrl: z.string().optional(),
+            }).optional()
+        )
+        .mutation(async ({ input }) => {
+            const config = getGitHubAppConfig();
+            if (!config) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'GitHub App configuration not found',
+                });
+            }
+
+            const { url, state } = generateInstallationUrl(config, {
+                redirectUrl: input?.redirectUrl,
+            });
+
+            // Store state in user session for verification
+            // You might want to store this in a more persistent way
+            return { url, state };
+        }),
+
+    handleInstallationCallback: protectedProcedure
+        .input(
+            z.object({
+                installationId: z.string(),
+                setupAction: z.string(),
+                state: z.string().optional(),
+            })
+        )
+        .mutation(async ({ input, ctx }) => {
+            try {
+                // Update user with GitHub installation ID
+                const { data: user } = await ctx.supabase.auth.getUser();
+                if (!user?.user?.id) {
+                    throw new TRPCError({
+                        code: 'UNAUTHORIZED',
+                        message: 'User not authenticated',
+                    });
+                }
+
+                // Update user's GitHub installation ID in the database
+                const { error } = await ctx.supabase
+                    .from('users')
+                    .update({ github_installation_id: input.installationId })
+                    .eq('id', user.user.id);
+
+                if (error) {
+                    throw new TRPCError({
+                        code: 'INTERNAL_SERVER_ERROR',
+                        message: 'Failed to update user with GitHub installation ID',
+                        cause: error,
+                    });
+                }
+
+                return {
+                    success: true,
+                    installationId: input.installationId,
+                };
+            } catch (error) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'Failed to handle GitHub App installation callback',
+                    cause: error,
+                });
+            }
+        }),
+
+    checkGitHubAppInstallation: protectedProcedure
+        .query(async ({ ctx }) => {
+            try {
+                const { data: user } = await ctx.supabase.auth.getUser();
+                if (!user?.user?.id) {
+                    return { hasInstallation: false, installationId: null };
+                }
+
+
+                // Get user's GitHub installation ID from database
+                const { data: userData, error } = await ctx.supabase
+                    .from('users')
+                    .select('github_installation_id')
+                    .eq('id', user.user.id)
+                    .single();
+
+                if (error || !userData?.github_installation_id) {
+                    return { hasInstallation: false, installationId: null };
+                }
+
+                // Verify the installation is still valid
+                const config = getGitHubAppConfig();
+                if (!config) {
+                    // If no GitHub App config, clear any stored installation ID
+                    await ctx.supabase
+                        .from('users')
+                        .update({ github_installation_id: null })
+                        .eq('id', user.user.id);
+                    return { hasInstallation: false, installationId: null };
+                }
+
+                try {
+                    const octokit = createInstallationOctokit(config, userData.github_installation_id);
+                    await octokit.rest.apps.getInstallation({
+                        installation_id: parseInt(userData.github_installation_id, 10),
+                    });
+                    
+                    return { 
+                        hasInstallation: true, 
+                        installationId: userData.github_installation_id 
+                    };
+                } catch (error) {
+                    // Installation might be deleted or suspended
+                    // Clear the invalid installation ID from database
+                    await ctx.supabase
+                        .from('users')
+                        .update({ github_installation_id: null })
+                        .eq('id', user.user.id);
+                    return { hasInstallation: false, installationId: null };
+                }
+            } catch (error) {
+                console.error('Error checking GitHub App installation:', error);
+                return { hasInstallation: false, installationId: null };
+            }
+        }),
+
+    // Repository fetching using GitHub App installation (required)
+    getRepositoriesWithApp: protectedProcedure
+        .input(
+            z.object({
+                username: z.string().optional(),
+            }).optional()
+        )
+        .query(async ({ ctx }) => {
+            const { data: user } = await ctx.supabase.auth.getUser();
+            if (!user?.user?.id) {
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                    message: 'User not authenticated',
+                });
+            }
+
+            const { data: userData } = await ctx.supabase
+                .from('users')
+                .select('github_installation_id')
+                .eq('id', user.user.id)
+                .single();
+
+            if (!userData?.github_installation_id) {
+                throw new TRPCError({
+                    code: 'PRECONDITION_FAILED',
+                    message: 'GitHub App installation required. Please install the GitHub App first.',
+                });
+            }
+
+            const config = getGitHubAppConfig();
+            if (!config) {
+                throw new TRPCError({
+                    code: 'INTERNAL_SERVER_ERROR',
+                    message: 'GitHub App configuration not available',
+                });
+            }
+
+            try {
+                const octokit = createInstallationOctokit(config, userData.github_installation_id);
+                
+                const { data } = await octokit.rest.apps.listReposAccessibleToInstallation({
+                    installation_id: parseInt(userData.github_installation_id, 10),
+                    per_page: 100,
+                    page: 1,
+                });
+                
+                // Transform to match reference implementation pattern
+                return data.repositories.map(repo => ({
+                    id: repo.id,
+                    name: repo.name,
+                    full_name: repo.full_name,
+                    description: repo.description,
+                    private: repo.private,
+                    default_branch: repo.default_branch,
+                    clone_url: repo.clone_url,
+                    html_url: repo.html_url,
+                    updated_at: repo.updated_at,
+                    owner: {
+                        login: repo.owner.login,
+                        avatar_url: repo.owner.avatar_url,
+                    },
+                }));
+            } catch (error) {
+                // If installation is invalid, clear it from database
+                await ctx.supabase
+                    .from('users')
+                    .update({ github_installation_id: null })
+                    .eq('id', user.user.id);
+                    
+                throw new TRPCError({
+                    code: 'FORBIDDEN',
+                    message: 'GitHub App installation is invalid or has been revoked. Please reinstall the GitHub App.',
+                });
+            }
         }),
 
 });

@@ -9,7 +9,15 @@ import { StepContent, StepFooter, StepHeader } from '../../steps';
 import { useImportGithubProject } from '../_context/context';
 
 export const ConnectGithub = () => {
-    const { prevStep, nextStep } = useImportGithubProject();
+    const { 
+        prevStep, 
+        nextStep, 
+        isGitHubConnected, 
+        hasGitHubAppInstallation,
+        redirectToGitHubAppInstallation,
+        appInstallationError,
+        isCheckingAppInstallation
+    } = useImportGithubProject();
 
     const itemContent = ({
         title,
@@ -58,9 +66,15 @@ export const ConnectGithub = () => {
                 >
                     <Separator orientation="horizontal" className="shrink-0 bg-border mb-6" />
                     {itemContent({
-                        title: 'This page will redirect to GitHub',
-                        description: 'Sign in and confirm permissions in GitHub',
-                        icon: <Icons.ExternalLink className="w-5 h-5" />,
+                        title: hasGitHubAppInstallation 
+                            ? 'GitHub App already connected' 
+                            : 'Install Onlook GitHub App',
+                        description: hasGitHubAppInstallation
+                            ? 'You can access your repositories through the GitHub App'
+                            : 'Get secure repository access with fine-grained permissions',
+                        icon: hasGitHubAppInstallation 
+                            ? <Icons.Check className="w-5 h-5 text-green-500" />
+                            : <Icons.GitHubLogo className="w-5 h-5" />,
                     })}
                     {itemContent({
                         title: 'You set what Onlook can access',
@@ -68,10 +82,18 @@ export const ConnectGithub = () => {
                         icon: <Icons.Key className="w-5 h-5" />,
                     })}
                     {itemContent({
-                        title: 'You’re in control',
-                        description: 'Sign in and confirm permissions in GitHub',
+                        title: 'You are in control',
+                        description: hasGitHubAppInstallation || isGitHubConnected
+                            ? 'You can revoke access at any time in GitHub settings'
+                            : 'Sign in and confirm permissions in GitHub',
                         icon: <Icons.LockClosed className="w-5 h-5" />,
                     })}
+                    
+                    {appInstallationError && (
+                        <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                            <div className="text-red-800 text-sm">{appInstallationError}</div>
+                        </div>
+                    )}
                     <Separator orientation="horizontal" className="shrink-0 bg-border mt-6" />
                 </motion.div>
             </StepContent>
@@ -79,10 +101,22 @@ export const ConnectGithub = () => {
                 <Button onClick={prevStep} variant="outline">
                     Cancel
                 </Button>
-                <Button className="px-3 py-2" onClick={nextStep}>
-                    <Icons.GitHubLogo className="w-4 h-4 mr-2" />
-                    <span>Continue to GitHub</span>
-                </Button>
+                
+                {hasGitHubAppInstallation ? (
+                    <Button className="px-3 py-2" onClick={nextStep}>
+                        <Icons.ArrowRight className="w-4 h-4 mr-2" />
+                        <span>Continue</span>
+                    </Button>
+                ) : (
+                    <Button 
+                        className="px-3 py-2" 
+                        onClick={redirectToGitHubAppInstallation}
+                        disabled={isCheckingAppInstallation}
+                    >
+                        <Icons.GitHubLogo className="w-4 h-4 mr-2" />
+                        <span>Install GitHub App</span>
+                    </Button>
+                )}
             </StepFooter>
         </>
     );
