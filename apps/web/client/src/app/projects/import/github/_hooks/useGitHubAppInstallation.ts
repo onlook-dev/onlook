@@ -45,7 +45,7 @@ export const useGitHubAppInstallation = () => {
             });
 
             if (result?.url) {
-                window.location.href = result.url;
+                window.open(result.url, '_blank');
             }
         } catch (error) {
             const errorMessage =

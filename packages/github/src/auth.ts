@@ -9,8 +9,6 @@ export function createAppOctokit(config: GitHubAppConfig): Octokit {
     const auth = createAppAuth({
         appId: config.appId,
         privateKey: config.privateKey,
-        clientId: config.clientId,
-        clientSecret: config.clientSecret,
     });
 
     return new Octokit({ auth });
@@ -30,8 +28,6 @@ export function createInstallationOctokit(
     const auth = createAppAuth({
         appId: config.appId,
         privateKey: config.privateKey,
-        clientId: config.clientId,
-        clientSecret: config.clientSecret,
         installationId: parseInt(installationId, 10),
     });
 

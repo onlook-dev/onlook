@@ -22,7 +22,6 @@ export function generateInstallationUrl(
     const state = options.state || uuidv4();
 
     const params = new URLSearchParams({
-        client_id: config.clientId,
         state,
     });
 
