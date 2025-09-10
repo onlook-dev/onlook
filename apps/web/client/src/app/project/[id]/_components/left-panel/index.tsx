@@ -7,7 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { useTranslations } from 'next-intl';
 import { BranchesTab } from './branches-tab';
 import { BrandTab } from './brand-tab';
-import { HelpDropdown } from './help-dropdown';
+import { HelpButton } from './help-button';
 import { ImagesTab } from './image-tab';
 import { LayersTab } from './layers-tab';
 import { PagesTab } from './page-tab';
@@ -123,7 +123,7 @@ export const LeftPanel = observer(() => {
 
                 <div className="mt-auto flex flex-col gap-0 items-center mb-4">
                     <ZoomControls />
-                    <HelpDropdown />
+                    <HelpButton />
                 </div>
             </div>
 
