@@ -43,6 +43,7 @@
         "@onlook/db": "*",
         "@onlook/email": "*",
         "@onlook/fonts": "*",
+        "@onlook/github": "*",
         "@onlook/growth": "*",
         "@onlook/image-server": "*",
         "@onlook/models": "*",

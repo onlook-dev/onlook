@@ -51,6 +51,11 @@ export const env = createEnv({
         LANGFUSE_SECRET_KEY: z.string().optional(),
         LANGFUSE_PUBLIC_KEY: z.string().optional(),
         LANGFUSE_BASEURL: z.string().url().optional(),
+
+        // GitHub
+        GITHUB_APP_ID: z.string().optional(),
+        GITHUB_APP_PRIVATE_KEY: z.string().optional(),
+        GITHUB_APP_SLUG: z.string().optional(),
     },
     /**
      * Specify your client-side environment variables schema here. This way you can ensure the app
@@ -135,6 +140,11 @@ export const env = createEnv({
         LANGFUSE_SECRET_KEY: process.env.LANGFUSE_SECRET_KEY,
         LANGFUSE_PUBLIC_KEY: process.env.LANGFUSE_PUBLIC_KEY,
         LANGFUSE_BASEURL: process.env.LANGFUSE_BASEURL,
+
+        // GitHub
+        GITHUB_APP_ID: process.env.GITHUB_APP_ID,
+        GITHUB_APP_PRIVATE_KEY: process.env.GITHUB_APP_PRIVATE_KEY,
+        GITHUB_APP_SLUG: process.env.GITHUB_APP_SLUG,
     },
     /**
      * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
