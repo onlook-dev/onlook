@@ -157,7 +157,7 @@ export const githubRouter = createTRPCRouter({
                 redirectUrl: z.string().optional(),
             }).optional()
         )
-        .mutation(async ({ input }) => {
+        .mutation(async ({ input, ctx }) => {
             const config = getGitHubAppConfig();
             if (!config) {
                 throw new TRPCError({
@@ -166,12 +166,20 @@ export const githubRouter = createTRPCRouter({
                 });
             }
 
+            // Get the current user ID to use as state parameter for CSRF protection
+            const { data: user } = await ctx.supabase.auth.getUser();
+            if (!user?.user?.id) {
+                throw new TRPCError({
+                    code: 'UNAUTHORIZED',
+                    message: 'User not authenticated',
+                });
+            }
+
             const { url, state } = generateInstallationUrl(config, {
                 redirectUrl: input?.redirectUrl,
+                state: user.user.id, // Use user ID as state for CSRF protection
             });
 
-            // Store state in user session for verification
-            // You might want to store this in a more persistent way
             return { url, state };
         }),
 

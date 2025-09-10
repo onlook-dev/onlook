@@ -4,6 +4,7 @@ import { convertToModelMessages, stepCountIs, streamText, type UIMessage } from 
 import { type NextRequest } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { checkMessageLimit, decrementUsage, errorHandler, getModelFromType, getSupabaseUser, getSystemPromptFromType, getToolSetFromType, incrementUsage, repairToolCall } from './helperts';
+
 const MAX_STEPS = 20;
 
 export async function POST(req: NextRequest) {
@@ -69,7 +70,7 @@ export const streamResponse = async (req: NextRequest, userId: string) => {
     try {
         const lastUserMessage = messages.findLast((message: UIMessage) => message.role === 'user');
         const traceId = lastUserMessage?.id ?? uuidv4();
-        
+
         if (chatType === ChatType.EDIT) {
             usageRecord = await incrementUsage(req, traceId);
         }

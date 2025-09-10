@@ -1,95 +1,74 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@/utils/supabase/server';
+import { db } from '@onlook/db/src/client';
+import { users } from '@onlook/db/src/schema';
+import { eq } from 'drizzle-orm';
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET!;
+export async function GET(request: NextRequest) {
+    try {
+        const url = new URL(request.url);
+        const installationId = url.searchParams.get('installation_id');
+        const setupAction = url.searchParams.get('setup_action');
+        const state = url.searchParams.get('state');
 
-function verifySignature(body: string, signature: string): boolean {
-  const expectedSignature = crypto
-    .createHmac('sha256', webhookSecret)
-    .update(body, 'utf8')
-    .digest('hex');
-  
-  const receivedSignature = signature.replace('sha256=', '');
-  
-  return crypto.timingSafeEqual(
-    Buffer.from(expectedSignature, 'hex'),
-    Buffer.from(receivedSignature, 'hex')
-  );
-}
+        console.log('GitHub setup callback:', { installationId, setupAction, state });
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.text();
-    const signature = request.headers.get('x-hub-signature-256');
-
-    if (!signature || !verifySignature(body, signature)) {
-      console.error('Invalid webhook signature');
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
-      );
-    }
-
-    const payload = JSON.parse(body);
-    const action = payload.action;
-    const installation = payload.installation;
-
-    if (action === 'created' || action === 'unsuspended') {
-      const installationId = installation.id.toString();
-      const accountLogin = installation.account.login;
-
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
-      
-      const { data: authUsers } = await supabase.auth.admin.listUsers();
-      
-      const githubUser = authUsers.users.find(user => 
-        user.identities?.some(identity => 
-          identity.provider === 'github' && 
-          identity.identity_data?.user_name === accountLogin
-        )
-      );
-
-      if (githubUser) {
-        const { error } = await supabase
-          .from('users')
-          .update({ github_installation_id: installationId })
-          .eq('id', githubUser.id);
-
-        if (error) {
-          console.error('Failed to update user installation ID:', error);
+        if (!installationId) {
+            return NextResponse.json(
+                { error: 'Missing installation_id parameter' },
+                { status: 400 }
+            );
         }
-      }
+
+        // Get the current user from session
+        const supabase = await createClient();
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+            console.error('Authentication error:', authError);
+            return NextResponse.json(
+                { error: 'Authentication required' },
+                { status: 401 }
+            );
+        }
+
+        // Validate state parameter matches current user ID for CSRF protection
+        if (state && state !== user.id) {
+            console.error('State mismatch:', { expected: user.id, received: state });
+            return NextResponse.json(
+                { error: 'Invalid state parameter' },
+                { status: 400 }
+            );
+        }
+
+        // Update user's GitHub installation ID
+        try {
+            await db
+                .update(users)
+                .set({ githubInstallationId: installationId })
+                .where(eq(users.id, user.id));
+
+            console.log(`Updated installation ID for user: ${user.id}`);
+
+            return NextResponse.json({
+                status: 'success',
+                message: 'GitHub App installation completed successfully',
+                installationId
+            });
+
+        } catch (dbError) {
+            console.error('Database error:', dbError);
+            return NextResponse.json(
+                { error: 'Failed to update installation' },
+                { status: 500 }
+            );
+        }
+
+    } catch (error) {
+        console.error('GitHub setup callback error:', error);
+        return NextResponse.json(
+            { error: 'Internal server error' },
+            { status: 500 }
+        );
     }
-
-    if (action === 'deleted' || action === 'suspended') {
-      const installationId = installation.id.toString();
-      
-      const supabase = createClient(supabaseUrl, supabaseServiceKey);
-      
-      const { error } = await supabase
-        .from('users')
-        .update({ github_installation_id: null })
-        .eq('github_installation_id', installationId);
-
-      if (error) {
-        console.error('Failed to remove installation ID:', error);
-      }
-    }
-
-    return NextResponse.json({ status: 'ok' });
-
-  } catch (error) {
-    console.error('GitHub webhook error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET() {
-  return NextResponse.json({ error: 'Method not allowed' }, { status: 405 });
 }
