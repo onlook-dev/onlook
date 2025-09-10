@@ -1,7 +1,7 @@
 'use client';
 
 import { api as clientApi } from '@/trpc/client';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 interface GitHubOrganization {
     id: number;
@@ -34,7 +34,7 @@ export const useGitHubData = () => {
     const [organizationsError, setOrganizationsError] = useState<string | null>(null);
     const [repositoriesError, setRepositoriesError] = useState<string | null>(null);
 
-    const fetchOrganizations = useCallback(async () => {
+    const fetchOrganizations = async () => {
         setIsLoadingOrganizations(true);
         setOrganizationsError(null);
 
@@ -49,9 +49,9 @@ export const useGitHubData = () => {
         } finally {
             setIsLoadingOrganizations(false);
         }
-    }, []);
+    };
 
-    const fetchRepositories = useCallback(async () => {
+    const fetchRepositories = async () => {
         setIsLoadingRepositories(true);
         setRepositoriesError(null);
 
@@ -66,20 +66,20 @@ export const useGitHubData = () => {
         } finally {
             setIsLoadingRepositories(false);
         }
-    }, []);
+    };
 
-    const clearOrganizationsError = useCallback(() => {
+    const clearOrganizationsError = () => {
         setOrganizationsError(null);
-    }, []);
+    };
 
-    const clearRepositoriesError = useCallback(() => {
+    const clearRepositoriesError = () => {
         setRepositoriesError(null);
-    }, []);
+    };
 
-    const clearErrors = useCallback(() => {
+    const clearErrors = () => {
         setOrganizationsError(null);
         setRepositoriesError(null);
-    }, []);
+    };
 
     return {
         organizations,

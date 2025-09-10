@@ -1,7 +1,7 @@
 'use client';
 
 import { api } from '@/trpc/react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 export const useRepositoryValidation = () => {
     const [isValidating, setIsValidating] = useState(false);
@@ -9,7 +9,7 @@ export const useRepositoryValidation = () => {
 
     const validateRepo = api.github.validate.useMutation();
 
-    const validateRepository = useCallback(async (owner: string, repo: string) => {
+    const validateRepository = async (owner: string, repo: string) => {
         setIsValidating(true);
         setError(null);
 
@@ -25,11 +25,11 @@ export const useRepositoryValidation = () => {
         } finally {
             setIsValidating(false);
         }
-    }, [validateRepo]);
+    };
 
-    const clearError = useCallback(() => {
+    const clearError = () => {
         setError(null);
-    }, []);
+    };
 
     return {
         isValidating,

@@ -4,7 +4,7 @@ import { api as clientApi } from '@/trpc/client';
 import { api } from '@/trpc/react';
 import { Routes } from '@/utils/constants';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 interface GitHubRepository {
     id: number;
@@ -29,7 +29,7 @@ export const useRepositoryImport = () => {
 
     const { data: user } = api.user.get.useQuery();
 
-    const importRepository = useCallback(async (selectedRepo: GitHubRepository) => {
+    const importRepository = async (selectedRepo: GitHubRepository) => {
         if (!user?.id) {
             setError('No user found');
             return;
@@ -72,11 +72,11 @@ export const useRepositoryImport = () => {
         } finally {
             setIsImporting(false);
         }
-    }, [user?.id, router]);
+    };
 
-    const clearError = useCallback(() => {
+    const clearError = () => {
         setError(null);
-    }, []);
+    };
 
     return {
         isImporting,

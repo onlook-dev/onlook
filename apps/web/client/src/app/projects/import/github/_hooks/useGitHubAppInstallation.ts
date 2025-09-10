@@ -1,7 +1,7 @@
 'use client';
 
 import { api } from '@/trpc/react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 
 export const useGitHubAppInstallation = () => {
     const [hasInstallation, setHasInstallation] = useState(false);
@@ -15,7 +15,7 @@ export const useGitHubAppInstallation = () => {
         refetchOnWindowFocus: false,
     });
 
-    const checkInstallation = useCallback(async () => {
+    const checkInstallation = async () => {
         setIsChecking(true);
         setError(null);
 
@@ -35,15 +35,15 @@ export const useGitHubAppInstallation = () => {
         } finally {
             setIsChecking(false);
         }
-    }, [checkAppInstallation]);
+    };
 
-    const redirectToInstallation = useCallback(async (redirectUrl?: string) => {
+    const redirectToInstallation = async (redirectUrl?: string) => {
         try {
             const finalRedirectUrl = redirectUrl || `${window.location.origin}/projects/import/github/setup`;
             const result = await generateInstallationUrl.mutateAsync({
                 redirectUrl: finalRedirectUrl,
             });
-            
+
             if (result?.url) {
                 window.location.href = result.url;
             }
@@ -53,11 +53,11 @@ export const useGitHubAppInstallation = () => {
             setError(errorMessage);
             console.error('Error generating GitHub App installation URL:', error);
         }
-    }, [generateInstallationUrl]);
+    };
 
-    const clearError = useCallback(() => {
+    const clearError = () => {
         setError(null);
-    }, []);
+    };
 
     return {
         hasInstallation,
